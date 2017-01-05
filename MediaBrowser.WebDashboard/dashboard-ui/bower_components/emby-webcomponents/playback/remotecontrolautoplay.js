@@ -3,7 +3,7 @@
 
     function transferPlayback(oldPlayer, newPlayer) {
 
-        oldPlayer.getPlayerState().then(function (state) {
+        playbackManager.getPlayerState(oldPlayer).then(function (state) {
 
             var item = state.NowPlayingItem;
 
@@ -13,7 +13,7 @@
 
             var playState = state.PlayState || {};
 
-            oldPlayer.stop();
+            playbackManager.stop(oldPlayer);
 
             var itemId = item.Id;
             var resumePositionTicks = playState.PositionTicks || 0;
@@ -21,7 +21,7 @@
             playbackManager.play({
                 ids: [itemId],
                 startPositionTicks: resumePositionTicks
-            });
+            }, newPlayer);
 
         });
     }
@@ -42,10 +42,7 @@
             return;
         }
 
-        // If playback is playing locally and a new player is activated, transfer the media to that player
-        if (oldPlayer.isPlaying()) {
-            transferPlayback(oldPlayer, newPlayer);
-        }
+        transferPlayback(oldPlayer, newPlayer);
     });
 
 });

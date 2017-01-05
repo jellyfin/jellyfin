@@ -31,7 +31,7 @@
 
         html += '<div class="nowPlayingBarTop">';
         html += '<div class="nowPlayingBarPositionContainer sliderContainer">';
-        html += '<input type="range" is="emby-slider" pin step=".1" min="0" max="100" value="0" class="nowPlayingBarPositionSlider"/>';
+        html += '<input type="range" is="emby-slider" pin step=".01" min="0" max="100" value="0" class="nowPlayingBarPositionSlider"/>';
         html += '</div>';
 
         html += '<div class="nowPlayingBarInfoContainer">';

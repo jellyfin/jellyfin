@@ -42,7 +42,10 @@
 
         if (range.getBubbleText) {
             value = range.getBubbleText(value);
+        } else {
+            value = Math.round(value);
         }
+
         bubbleText.innerHTML = value;
     }
 
@@ -114,7 +117,7 @@
                     var clientX = e.clientX;
                     var bubbleValue = (clientX - rect.left) / rect.width;
                     bubbleValue *= 100;
-                    updateBubble(this, Math.round(bubbleValue), sliderBubble, sliderBubbleText);
+                    updateBubble(this, bubbleValue, sliderBubble, sliderBubbleText);
 
                     if (hasHideClass) {
                         sliderBubble.classList.remove('hide');

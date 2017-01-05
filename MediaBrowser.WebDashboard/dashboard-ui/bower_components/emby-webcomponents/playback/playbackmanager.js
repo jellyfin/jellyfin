@@ -1235,7 +1235,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 state.PlayState.VolumeLevel = player.getVolume();
                 state.PlayState.IsMuted = player.isMuted();
                 state.PlayState.IsPaused = player.paused();
-                state.PlayState.RepeatMode = self.getRepeatMode();
+                state.PlayState.RepeatMode = self.getRepeatMode(player);
 
                 if (streamInfo) {
                     state.PlayState.PositionTicks = getCurrentTicks(player);
