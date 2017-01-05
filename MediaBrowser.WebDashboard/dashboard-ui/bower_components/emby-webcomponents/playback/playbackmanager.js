@@ -813,10 +813,14 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             if (player) {
 
+                if (player.playPause) {
+                    return player.playPause();
+                }
+
                 if (player.paused()) {
-                    self.unpause();
+                    return self.unpause(player);
                 } else {
-                    self.pause();
+                    return self.pause(player);
                 }
             }
         };
@@ -1236,6 +1240,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 state.PlayState.IsMuted = player.isMuted();
                 state.PlayState.IsPaused = player.paused();
                 state.PlayState.RepeatMode = self.getRepeatMode(player);
+                state.PlayState.MaxStreamingBitrate = self.getMaxStreamingBitrate(player);
 
                 if (streamInfo) {
                     state.PlayState.PositionTicks = getCurrentTicks(player);

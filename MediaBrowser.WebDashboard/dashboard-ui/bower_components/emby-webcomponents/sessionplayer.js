@@ -107,6 +107,24 @@
                 });
         };
 
+        self.currentTime = function (val) {
+
+            if (val != null) {
+                return self.seek(val);
+            }
+
+            var state = self.lastPlayerData || {};
+            state = state.PlayState || {};
+            return state.PositionTicks;
+        };
+
+        self.duration = function () {
+
+        };
+
+        self.paused = function () {
+        };
+
         self.pause = function () {
             sendPlayStateCommand('Pause');
         };
@@ -150,6 +168,10 @@
             return [];
         };
 
+        self.getAudioStreamIndex = function() {
+
+        };
+
         self.setAudioStreamIndex = function (index) {
             sendCommandByName('SetAudioStreamIndex', {
                 Index: index
@@ -160,10 +182,34 @@
             return [];
         };
 
+        self.getSubtitleStreamIndex = function () {
+
+        };
+
         self.setSubtitleStreamIndex = function (index) {
             sendCommandByName('SetSubtitleStreamIndex', {
                 Index: index
             });
+        };
+
+        self.getMaxStreamingBitrate = function () {
+
+        };
+
+        self.setMaxStreamingBitrate = function (bitrate) {
+
+        };
+
+        self.isFullscreen = function () {
+
+        };
+
+        self.toggleFullscreen = function () {
+
+        };
+
+        self.getRepeatMode = function () {
+
         };
 
         self.setRepeatMode = function (mode) {

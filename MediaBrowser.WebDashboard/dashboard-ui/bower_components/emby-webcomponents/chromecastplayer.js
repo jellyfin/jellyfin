@@ -514,8 +514,8 @@
                 }
 
                 console.log('cc: connect');
-                // Reset this so the next query doesn't make it appear like content is playing.
-                self.lastPlayerData = {};
+                // Reset this so that statechange will fire
+                self.lastPlayerData = null;
             });
 
             events.on(castPlayer, "playbackstart", function (e, data) {
@@ -551,8 +551,14 @@
 
                 console.log('cc: volumechange');
                 var state = self.getPlayerStateInternal(data);
-
                 events.trigger(self, "volumechange", [state]);
+            });
+
+            events.on(castPlayer, "repeatmodechange", function (e, data) {
+
+                console.log('cc: repeatmodechange');
+                var state = self.getPlayerStateInternal(data);
+                events.trigger(self, "repeatmodechange", [state]);
             });
 
             events.on(castPlayer, "playstatechange", function (e, data) {
@@ -608,6 +614,13 @@
             castPlayer.sendMessage({
                 options: {},
                 command: 'Unpause'
+            });
+        };
+
+        self.playPause = function () {
+            castPlayer.sendMessage({
+                options: {},
+                command: 'PlayPause'
             });
         };
 
@@ -696,6 +709,12 @@
             return state.PositionTicks;
         };
 
+        self.duration = function() {
+            var state = self.lastPlayerData || {};
+            state = state.NowPlayingItem || {};
+            return state.RunTimeTicks;
+        };
+
         self.paused = function () {
             var state = self.lastPlayerData || {};
             state = state.PlayState || {};
@@ -721,6 +740,12 @@
             } else {
                 self.setVolume(self.getVolume() + 2);
             }
+        };
+
+        self.getRepeatMode = function () {
+            var state = self.lastPlayerData || {};
+            state = state.PlayState || {};
+            return state.RepeatMode;
         };
 
         self.setRepeatMode = function (mode) {
@@ -809,8 +834,20 @@
             });
         };
 
+        self.getAudioStreamIndex = function () {
+            var state = self.lastPlayerData || {};
+            state = state.PlayState || {};
+            return state.AudioStreamIndex;
+        };
+
         self.subtitleTracks = function () {
             return [];
+        };
+
+        self.getSubtitleStreamIndex = function () {
+            var state = self.lastPlayerData || {};
+            state = state.PlayState || {};
+            return state.SubtitleStreamIndex;
         };
 
         self.setSubtitleStreamIndex = function (index) {
@@ -820,6 +857,31 @@
                 },
                 command: 'SetSubtitleStreamIndex'
             });
+        };
+
+        self.getMaxStreamingBitrate = function () {
+            var state = self.lastPlayerData || {};
+            state = state.PlayState || {};
+            return state.MaxStreamingBitrate;
+        };
+
+        self.setMaxStreamingBitrate = function (bitrate) {
+            castPlayer.sendMessage({
+                options: {
+                    bitrate: bitrate
+                },
+                command: 'SetMaxStreamingBitrate'
+            });
+        };
+
+        self.isFullscreen = function () {
+            var state = self.lastPlayerData || {};
+            state = state.PlayState || {};
+            return state.IsFullscreen;
+        };
+
+        self.toggleFullscreen = function () {
+            // not supported
         };
 
         self.nextTrack = function () {
@@ -892,18 +954,27 @@
 
         self.getPlayerState = function () {
 
-            var result = self.getPlayerStateInternal();
-            return Promise.resolve(result);
+            return Promise.resolve(self.getPlayerStateInternal());
         };
 
         self.lastPlayerData = {};
 
         self.getPlayerStateInternal = function (data) {
 
+            var triggerStateChange = false;
+            if (data && !self.lastPlayerData) {
+                triggerStateChange = true;
+            }
+
             data = data || self.lastPlayerData;
             self.lastPlayerData = data;
 
-            console.log(JSON.stringify(data));
+            //console.log(JSON.stringify(data));
+
+            if (triggerStateChange) {
+                events.trigger(self, "statechange", [data]);
+            }
+
             return data;
         };
 
