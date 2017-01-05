@@ -259,11 +259,7 @@
 
 @media all and (min-width: 800px) {
 
-    .nowPlayingBarRight .pauseButton {
-        display: none;
-    }
-
-    .nowPlayingBarRight .unpauseButton {
+    .nowPlayingBarRight .playPauseButton {
         display: none;
     }
 }

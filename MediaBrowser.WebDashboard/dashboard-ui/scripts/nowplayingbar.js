@@ -12,8 +12,7 @@
     var muteButton;
     var volumeSlider;
     var volumeSliderContainer;
-    var unpauseButtons;
-    var pauseButtons;
+    var playPauseButtons;
     var positionSlider;
     var toggleRepeatButton;
     var toggleRepeatButtonIcon;
@@ -44,8 +43,7 @@
 
         html += '<button is="paper-icon-button-light" class="previousTrackButton mediaButton autoSize"><i class="md-icon">skip_previous</i></button>';
 
-        html += '<button is="paper-icon-button-light" class="unpauseButton mediaButton autoSize"><i class="md-icon">play_arrow</i></button>';
-        html += '<button is="paper-icon-button-light" class="pauseButton mediaButton autoSize"><i class="md-icon">pause</i></button>';
+        html += '<button is="paper-icon-button-light" class="playPauseButton mediaButton autoSize"><i class="md-icon">pause</i></button>';
 
         html += '<button is="paper-icon-button-light" class="stopButton mediaButton autoSize"><i class="md-icon">stop</i></button>';
         html += '<button is="paper-icon-button-light" class="nextTrackButton mediaButton autoSize"><i class="md-icon">skip_next</i></button>';
@@ -67,8 +65,7 @@
         html += '<div class="nowPlayingBarUserDataButtons">';
         html += '</div>';
 
-        html += '<button is="paper-icon-button-light" class="unpauseButton mediaButton autoSize"><i class="md-icon">play_arrow</i></button>';
-        html += '<button is="paper-icon-button-light" class="pauseButton mediaButton autoSize"><i class="md-icon">pause</i></button>';
+        html += '<button is="paper-icon-button-light" class="playPauseButton mediaButton autoSize"><i class="md-icon">pause</i></button>';
         html += '<button is="paper-icon-button-light" class="remoteControlButton mediaButton autoSize"><i class="md-icon">tablet_android</i></button>';
         html += '<button is="paper-icon-button-light" class="playlistButton mediaButton autoSize"><i class="md-icon">queue_music</i></button>';
 
@@ -138,16 +135,8 @@
         });
     }
 
-    function onPauseClick() {
-        if (currentPlayer) {
-            currentPlayer.pause();
-        }
-    }
-
-    function onUnpauseClick() {
-        if (currentPlayer) {
-            currentPlayer.unpause();
-        }
+    function onPlayPauseClick() {
+        playbackManager.playPause(currentPlayer);
     }
 
     function bindEvents(elem) {
@@ -183,13 +172,9 @@
         });
 
         var i, length;
-        pauseButtons = elem.querySelectorAll('.pauseButton');
-        for (i = 0, length = pauseButtons.length; i < length; i++) {
-            pauseButtons[i].addEventListener('click', onPauseClick);
-        }
-        unpauseButtons = elem.querySelectorAll('.unpauseButton');
-        for (i = 0, length = unpauseButtons.length; i < length; i++) {
-            unpauseButtons[i].addEventListener('click', onUnpauseClick);
+        playPauseButtons = elem.querySelectorAll('.playPauseButton');
+        for (i = 0, length = playPauseButtons.length; i < length; i++) {
+            playPauseButtons[i].addEventListener('click', onPlayPauseClick);
         }
 
         elem.querySelector('.nextTrackButton').addEventListener('click', function () {
@@ -340,21 +325,15 @@
         var i, length;
 
         if (isPaused) {
-
-            for (i = 0, length = pauseButtons.length; i < length; i++) {
-                hideButton(pauseButtons[i]);
-            }
-            for (i = 0, length = unpauseButtons.length; i < length; i++) {
-                showButton(unpauseButtons[i]);
+            
+            for (i = 0, length = playPauseButtons.length; i < length; i++) {
+                playPauseButtons[i].querySelector('i').innerHTML = 'play_arrow';
             }
 
         } else {
 
-            for (i = 0, length = pauseButtons.length; i < length; i++) {
-                showButton(pauseButtons[i]);
-            }
-            for (i = 0, length = unpauseButtons.length; i < length; i++) {
-                hideButton(unpauseButtons[i]);
+            for (i = 0, length = playPauseButtons.length; i < length; i++) {
+                playPauseButtons[i].querySelector('i').innerHTML = 'pause';
             }
         }
     }
@@ -421,13 +400,16 @@
             }
         }
 
-        var timeText = positionTicks == null ? '--:--' : datetime.getDisplayRunningTime(positionTicks);
+        if (currentTimeElement) {
+            
+            var timeText = positionTicks == null ? '--:--' : datetime.getDisplayRunningTime(positionTicks);
 
-        if (runtimeTicks) {
-            timeText += " / " + datetime.getDisplayRunningTime(runtimeTicks);
+            if (runtimeTicks) {
+                timeText += " / " + datetime.getDisplayRunningTime(runtimeTicks);
+            }
+
+            currentTimeElement.innerHTML = timeText;
         }
-
-        currentTimeElement.innerHTML = timeText;
     }
 
     function updatePlayerVolumeState(isMuted, volumeLevel) {
@@ -709,6 +691,8 @@
 
         if (player) {
             events.off(player, 'playbackstart', onPlaybackStart);
+            events.off(player, 'statechange', onPlaybackStart);
+            events.off(player, 'repeatmodechange', onPlaybackStart);
             events.off(player, 'playbackstop', onPlaybackStopped);
             events.off(player, 'volumechange', onVolumeChanged);
             events.off(player, 'pause', onPlayPauseStateChanged);
@@ -751,6 +735,10 @@
         });
 
         events.on(player, 'playbackstart', onPlaybackStart);
+        events.on(player, 'statechange', onPlaybackStart);
+        // TODO: Replace this with smaller changes on repeatmodechange. 
+        // For now go cheap and just refresh the entire component
+        events.on(player, 'repeatmodechange', onPlaybackStart);
         events.on(player, 'playbackstop', onPlaybackStopped);
         events.on(player, 'volumechange', onVolumeChanged);
         events.on(player, 'pause', onPlayPauseStateChanged);
