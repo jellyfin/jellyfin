@@ -1,4 +1,4 @@
-define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'globalize', 'connectionManager', 'loading', 'serverNotifications'], function (events, datetime, appSettings, pluginManager, userSettings, globalize, connectionManager, loading, serverNotifications) {
+define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'globalize', 'connectionManager', 'loading', 'serverNotifications', 'apphost', 'fullscreenManager'], function (events, datetime, appSettings, pluginManager, userSettings, globalize, connectionManager, loading, serverNotifications, apphost, fullscreenManager) {
     'use strict';
 
     function enableLocalPlaylistManagement(player) {
@@ -180,7 +180,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             if (player.isLocalPlayer) {
                 // Full list
                 // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs
-                return [
+                var list = [
                     "GoHome",
                     "GoToSettings",
                     "VolumeUp",
@@ -197,6 +197,12 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                     "DisplayMessage",
                     "SetRepeatMode"
                 ];
+
+                if (apphost.supports('fullscreenchange')) {
+                    list.push('ToggleFullscreen');
+                }
+
+                return list;
             }
 
             throw new Error('player must define supported commands');
@@ -679,6 +685,30 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             changeStream(player, getCurrentTicks(player), {
                 MaxStreamingBitrate: bitrate
             });
+        };
+
+        self.isFullscreen = function (player) {
+
+            player = player || currentPlayer;
+            if (!player.isLocalPlayer || player.isFullscreen) {
+                return player.isFullscreen();
+            }
+
+            return fullscreenManager.isFullScreen();
+        };
+
+        self.toggleFullscreen = function(player) {
+
+            player = player || currentPlayer;
+            if (!player.isLocalPlayer || player.toggleFulscreen) {
+                return player.toggleFulscreen();
+            }
+
+            if (fullscreenManager.isFullScreen()) {
+                fullscreenManager.exitFullscreen();
+            } else {
+                fullscreenManager.requestFullscreen();
+            }
         };
 
         self.getSubtitleStreamIndex = function (player) {

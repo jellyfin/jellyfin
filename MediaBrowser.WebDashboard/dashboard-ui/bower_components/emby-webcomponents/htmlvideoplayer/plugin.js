@@ -207,7 +207,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
                         hls.on(Hls.Events.ERROR, function (event, data) {
 
-                            console.log('HLS Error: Type: ' + data.type + ' Details: ' + (data.details || '') + ' Fatal: ' + data.fatal);
+                            console.log('HLS Error: Type: ' + data.type + ' Details: ' + (data.details || '') + ' Fatal: ' + (data.fatal || false));
 
                             if (data.fatal) {
                                 switch (data.type) {
