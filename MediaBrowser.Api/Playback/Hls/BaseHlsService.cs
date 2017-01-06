@@ -103,7 +103,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        var waitForSegments = state.SegmentLength >= 10 ? 2 : (state.SegmentLength > 3 || !isLive ? 3 : 3);
+                        var waitForSegments = state.SegmentLength >= 10 ? 2 : 3;
                         await WaitForMinimumSegmentCount(playlist, waitForSegments, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }

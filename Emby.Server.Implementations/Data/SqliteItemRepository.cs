@@ -2548,57 +2548,53 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    return connection.RunInTransaction(db =>
+                    var list = new List<BaseItem>();
+
+                    using (var statement = PrepareStatementSafe(connection, commandText))
                     {
-                        var list = new List<BaseItem>();
-
-                        using (var statement = PrepareStatementSafe(db, commandText))
+                        if (EnableJoinUserData(query))
                         {
-                            if (EnableJoinUserData(query))
+                            statement.TryBind("@UserId", query.User.Id);
+                        }
+
+                        BindSimilarParams(query, statement);
+
+                        // Running this again will bind the params
+                        GetWhereClauses(query, statement);
+
+                        foreach (var row in statement.ExecuteQuery())
+                        {
+                            var item = GetItem(row, query);
+                            if (item != null)
                             {
-                                statement.TryBind("@UserId", query.User.Id);
+                                list.Add(item);
                             }
+                        }
+                    }
 
-                            BindSimilarParams(query, statement);
+                    // Hack for right now since we currently don't support filtering out these duplicates within a query
+                    if (query.EnableGroupByMetadataKey)
+                    {
+                        var limit = query.Limit ?? int.MaxValue;
+                        limit -= 4;
+                        var newList = new List<BaseItem>();
 
-                            // Running this again will bind the params
-                            GetWhereClauses(query, statement);
+                        foreach (var item in list)
+                        {
+                            AddItem(newList, item);
 
-                            foreach (var row in statement.ExecuteQuery())
+                            if (newList.Count >= limit)
                             {
-                                var item = GetItem(row, query);
-                                if (item != null)
-                                {
-                                    list.Add(item);
-                                }
+                                break;
                             }
                         }
 
-                        // Hack for right now since we currently don't support filtering out these duplicates within a query
-                        if (query.EnableGroupByMetadataKey)
-                        {
-                            var limit = query.Limit ?? int.MaxValue;
-                            limit -= 4;
-                            var newList = new List<BaseItem>();
+                        list = newList;
+                    }
 
-                            foreach (var item in list)
-                            {
-                                AddItem(newList, item);
+                    LogQueryTime("GetItemList", commandText, now);
 
-                                if (newList.Count >= limit)
-                                {
-                                    break;
-                                }
-                            }
-
-                            list = newList;
-                        }
-
-                        LogQueryTime("GetItemList", commandText, now);
-
-                        return list;
-
-                    }, ReadTransactionMode);
+                    return list;
                 }
             }
         }
