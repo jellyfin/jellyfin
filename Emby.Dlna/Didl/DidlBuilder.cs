@@ -686,7 +686,7 @@ namespace Emby.Dlna.Didl
 
             writer.WriteStartElement("upnp", "class", NS_UPNP);
 
-            if (item.IsFolder || stubType.HasValue)
+            if (item.IsDisplayedAsFolder || stubType.HasValue)
             {
                 string classType = null;
 

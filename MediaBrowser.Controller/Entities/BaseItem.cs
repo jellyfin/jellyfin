@@ -1631,6 +1631,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public virtual bool IsDisplayedAsFolder
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public virtual string GetClientTypeName()
         {
             if (IsFolder && SourceType == SourceType.Channel && !(this is Channel))
