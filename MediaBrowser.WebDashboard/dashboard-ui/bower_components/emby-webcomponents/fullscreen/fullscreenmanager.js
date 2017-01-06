@@ -1,4 +1,4 @@
-define([], function () {
+define(['events', 'dom'], function (events, dom) {
     'use strict';
 
     function fullscreenManager() {
@@ -38,5 +38,23 @@ define([], function () {
         return document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement ? true : false;
     };
 
-    return new fullscreenManager();
+    var manager = new fullscreenManager();
+
+    function onFullScreenChange() {
+        events.trigger(manager, 'fullscreenchange');
+    }
+
+    dom.addEventListener(document, 'fullscreenchange', onFullScreenChange, {
+        passive: true
+    });
+
+    dom.addEventListener(document, 'webkitfullscreenchange', onFullScreenChange, {
+        passive: true
+    });
+
+    dom.addEventListener(document, 'mozfullscreenchange', onFullScreenChange, {
+        passive: true
+    });
+
+    return manager;
 });

@@ -73,10 +73,6 @@ define(['inputManager', 'focusManager', 'browser', 'layoutManager', 'events', 'd
             return true;
         }
 
-        if (browser.ps4) {
-            return true;
-        }
-
         if (browser.tv) {
             return true;
         }

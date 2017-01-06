@@ -324,16 +324,18 @@
 
         var i, length;
 
-        if (isPaused) {
-            
-            for (i = 0, length = playPauseButtons.length; i < length; i++) {
-                playPauseButtons[i].querySelector('i').innerHTML = 'play_arrow';
-            }
+        if (playPauseButtons) {
+            if (isPaused) {
 
-        } else {
+                for (i = 0, length = playPauseButtons.length; i < length; i++) {
+                    playPauseButtons[i].querySelector('i').innerHTML = 'play_arrow';
+                }
 
-            for (i = 0, length = playPauseButtons.length; i < length; i++) {
-                playPauseButtons[i].querySelector('i').innerHTML = 'pause';
+            } else {
+
+                for (i = 0, length = playPauseButtons.length; i < length; i++) {
+                    playPauseButtons[i].querySelector('i').innerHTML = 'pause';
+                }
             }
         }
     }

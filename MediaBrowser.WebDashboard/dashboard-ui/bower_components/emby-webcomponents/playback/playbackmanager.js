@@ -1,4 +1,4 @@
-define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'globalize', 'connectionManager', 'loading', 'serverNotifications', 'apphost', 'fullscreenManager'], function (events, datetime, appSettings, pluginManager, userSettings, globalize, connectionManager, loading, serverNotifications, apphost, fullscreenManager) {
+define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'globalize', 'connectionManager', 'loading', 'serverNotifications', 'apphost', 'fullscreenManager', 'layoutManager'], function (events, datetime, appSettings, pluginManager, userSettings, globalize, connectionManager, loading, serverNotifications, apphost, fullscreenManager, layoutManager) {
     'use strict';
 
     function enableLocalPlaylistManagement(player) {
@@ -9,6 +9,12 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         }
 
         return false;
+    }
+
+    function bindToFullscreenChange(player) {
+        events.on(fullscreenManager, 'fullscreenchange', function () {
+            events.trigger(player, 'fullscreenchange');
+        });
     }
 
     function PlaybackManager() {
@@ -198,7 +204,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                     "SetRepeatMode"
                 ];
 
-                if (apphost.supports('fullscreenchange')) {
+                if (apphost.supports('fullscreenchange') && !layoutManager.tv) {
                     list.push('ToggleFullscreen');
                 }
 
@@ -2550,6 +2556,10 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             if (enableLocalPlaylistManagement(player)) {
                 events.on(player, 'error', onPlaybackError);
+            }
+
+            if (player.isLocalPlayer) {
+                bindToFullscreenChange(player);
             }
             bindStopped(player);
         }

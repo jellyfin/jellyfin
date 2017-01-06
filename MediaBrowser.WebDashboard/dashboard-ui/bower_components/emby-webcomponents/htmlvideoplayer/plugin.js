@@ -1145,7 +1145,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
         function createMediaElement(options) {
 
-            if (browser.operaTv || browser.web0s || browser.ps4) {
+            if (browser.tv || browser.noAnimation) {
                 // too slow
                 options.backdropUrl = null;
             }
