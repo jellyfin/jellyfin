@@ -83,9 +83,14 @@
             sendPlayCommand(options, 'PlayLast');
         };
 
-        self.canQueueMediaType = function (mediaType) {
+        self.canPlayMediaType = function (mediaType) {
 
-            return mediaType === 'Audio' || mediaType === 'Video';
+            mediaType = (mediaType || '').toLowerCase();
+            return mediaType === 'audio' || mediaType === 'video';
+        };
+
+        self.canQueueMediaType = function (mediaType) {
+            return self.canPlayMediaType(mediaType);
         };
 
         self.stop = function () {
@@ -222,6 +227,23 @@
         self.displayContent = function (options) {
 
             sendCommandByName('DisplayContent', options);
+        };
+
+        self.isPlaying = function () {
+            var state = self.lastPlayerData || {};
+            return state.NowPlayingItem != null;
+        };
+
+        self.isPlayingVideo = function () {
+            var state = self.lastPlayerData || {};
+            state = state.NowPlayingItem || {};
+            return state.MediaType === 'Video';
+        };
+
+        self.isPlayingAudio = function () {
+            var state = self.lastPlayerData || {};
+            state = state.NowPlayingItem || {};
+            return state.MediaType === 'Audio';
         };
 
         self.getPlayerState = function () {

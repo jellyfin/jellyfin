@@ -698,6 +698,23 @@
             });
         };
 
+        self.isPlaying = function () {
+            var state = self.lastPlayerData || {};
+            return state.NowPlayingItem != null;
+        };
+
+        self.isPlayingVideo = function () {
+            var state = self.lastPlayerData || {};
+            state = state.NowPlayingItem || {};
+            return state.MediaType === 'Video';
+        };
+
+        self.isPlayingAudio = function () {
+            var state = self.lastPlayerData || {};
+            state = state.NowPlayingItem || {};
+            return state.MediaType === 'Audio';
+        };
+
         self.currentTime = function (val) {
 
             if (val != null) {
