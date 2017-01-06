@@ -380,8 +380,10 @@
 
         function updateFullscreenIcon() {
             if (playbackManager.isFullscreen(currentPlayer)) {
+                view.querySelector('.btnFullscreen').setAttribute('title', globalize.translate('core#ExitFullscreen'));
                 view.querySelector('.btnFullscreen i').innerHTML = '&#xE5D1;';
             } else {
+                view.querySelector('.btnFullscreen').setAttribute('title', globalize.translate('core#Fullscreen'));
                 view.querySelector('.btnFullscreen i').innerHTML = '&#xE5D0;';
             }
         }
@@ -685,8 +687,10 @@
             }
 
             if (isMuted) {
+                view.querySelector('.buttonMute').setAttribute('title', globalize.translate('core#Unmute'));
                 view.querySelector('.buttonMute i').innerHTML = '&#xE04F;';
             } else {
+                view.querySelector('.buttonMute').setAttribute('title', globalize.translate('core#Mute'));
                 view.querySelector('.buttonMute i').innerHTML = '&#xE050;';
             }
 
