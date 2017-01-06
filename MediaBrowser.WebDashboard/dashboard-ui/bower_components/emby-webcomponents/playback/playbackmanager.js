@@ -1184,7 +1184,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
                 }
                 else if (item.IsFolder) {
-                    query.ParentId = id;
+                    query.ParentId = item.Id;
 
                 }
                 else {

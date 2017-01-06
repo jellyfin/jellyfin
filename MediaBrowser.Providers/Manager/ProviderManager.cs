@@ -921,19 +921,19 @@ namespace MediaBrowser.Providers.Manager
         {
             await item.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
 
-            if (item.IsFolder)
+            // Collection folders don't validate their children so we'll have to simulate that here
+            var collectionFolder = item as CollectionFolder;
+
+            if (collectionFolder != null)
             {
-                // Collection folders don't validate their children so we'll have to simulate that here
-                var collectionFolder = item as CollectionFolder;
+                await RefreshCollectionFolderChildren(options, collectionFolder).ConfigureAwait(false);
+            }
+            else
+            {
+                var folder = item as Folder;
 
-                if (collectionFolder != null)
+                if (folder != null)
                 {
-                    await RefreshCollectionFolderChildren(options, collectionFolder).ConfigureAwait(false);
-                }
-                else
-                {
-                    var folder = (Folder)item;
-
                     await folder.ValidateChildren(new Progress<double>(), cancellationToken, options).ConfigureAwait(false);
                 }
             }

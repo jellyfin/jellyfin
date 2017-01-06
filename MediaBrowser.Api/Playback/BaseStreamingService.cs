@@ -2710,7 +2710,12 @@ namespace MediaBrowser.Api.Playback
                     {
                         if (!string.IsNullOrWhiteSpace(stream.Codec) && stream.Index != -1)
                         {
-                            inputModifier += " -codec:" + stream.Index.ToString(UsCulture) + " " + stream.Codec;
+                            var decoder = GetDecoderFromCodec(stream.Codec);
+
+                            if (!string.IsNullOrWhiteSpace(decoder))
+                            {
+                                inputModifier += " -codec:" + stream.Index.ToString(UsCulture) + " " + decoder;
+                            }
                         }
                     }
                 }
@@ -2728,6 +2733,16 @@ namespace MediaBrowser.Api.Playback
             }
 
             return inputModifier;
+        }
+
+        private string GetDecoderFromCodec(string codec)
+        {
+            if (string.Equals(codec, "mp2", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            return codec;
         }
 
         /// <summary>
