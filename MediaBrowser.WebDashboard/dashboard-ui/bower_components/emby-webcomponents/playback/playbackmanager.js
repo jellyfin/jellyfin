@@ -1,4 +1,4 @@
-define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'globalize', 'connectionManager', 'loading', 'serverNotifications', 'apphost', 'fullscreenManager'], function (events, datetime, appSettings, pluginManager, userSettings, globalize, connectionManager, loading, serverNotifications, apphost, fullscreenManager) {
+define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'globalize', 'connectionManager', 'loading', 'serverNotifications', 'apphost', 'fullscreenManager', 'layoutManager'], function (events, datetime, appSettings, pluginManager, userSettings, globalize, connectionManager, loading, serverNotifications, apphost, fullscreenManager, layoutManager) {
     'use strict';
 
     function enableLocalPlaylistManagement(player) {
@@ -9,6 +9,12 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         }
 
         return false;
+    }
+
+    function bindToFullscreenChange(player) {
+        events.on(fullscreenManager, 'fullscreenchange', function () {
+            events.trigger(player, 'fullscreenchange');
+        });
     }
 
     function PlaybackManager() {
@@ -198,7 +204,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                     "SetRepeatMode"
                 ];
 
-                if (apphost.supports('fullscreenchange')) {
+                if (apphost.supports('fullscreenchange') && !layoutManager.tv) {
                     list.push('ToggleFullscreen');
                 }
 
@@ -478,14 +484,36 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             triggerPlayerChange(player, targetInfo, previousPlayer, previousTargetInfo);
         }
 
-        self.isPlaying = function () {
-            var player = currentPlayer;
+        self.isPlaying = function (player) {
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.isPlaying();
+            }
             return player != null && player.currentSrc() != null;
         };
 
-        self.isPlayingVideo = function () {
+        self.isPlayingLocally = function (mediaTypes, player) {
+
+            player = player || currentPlayer;
+
+            if (!player || !player.isLocalPlayer) {
+                return false;
+            }
+
+            var playerData = getPlayerData(player) || {};
+
+            return mediaTypes.indexOf((playerData.streamInfo || {}).mediaType || '') !== -1;
+        };
+
+        self.isPlayingVideo = function (player) {
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.isPlayingVideo();
+            }
+
             if (self.isPlaying()) {
-                var playerData = getPlayerData(currentPlayer);
+                var playerData = getPlayerData(player);
 
                 return playerData.streamInfo.mediaType === 'Video';
             }
@@ -493,9 +521,14 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             return false;
         };
 
-        self.isPlayingAudio = function () {
+        self.isPlayingAudio = function (player) {
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.isPlayingAudio();
+            }
+
             if (self.isPlaying()) {
-                var playerData = getPlayerData(currentPlayer);
+                var playerData = getPlayerData(player);
 
                 return playerData.streamInfo.mediaType === 'Audio';
             }
@@ -697,7 +730,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             return fullscreenManager.isFullScreen();
         };
 
-        self.toggleFullscreen = function(player) {
+        self.toggleFullscreen = function (player) {
 
             player = player || currentPlayer;
             if (!player.isLocalPlayer || player.toggleFulscreen) {
@@ -2523,6 +2556,10 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             if (enableLocalPlaylistManagement(player)) {
                 events.on(player, 'error', onPlaybackError);
+            }
+
+            if (player.isLocalPlayer) {
+                bindToFullscreenChange(player);
             }
             bindStopped(player);
         }

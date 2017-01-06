@@ -531,6 +531,7 @@
             events.on(player, 'pause', onPlayPauseStateChanged);
             events.on(player, 'playing', onPlayPauseStateChanged);
             events.on(player, 'timeupdate', onTimeUpdate);
+            events.on(player, 'fullscreenchange', updateFullscreenIcon);
         }
 
         function releaseCurrentPlayer() {
@@ -545,6 +546,7 @@
                 events.off(player, 'pause', onPlayPauseStateChanged);
                 events.off(player, 'playing', onPlayPauseStateChanged);
                 events.off(player, 'timeupdate', onTimeUpdate);
+                events.off(player, 'fullscreenchange', updateFullscreenIcon);
 
                 currentPlayer = null;
             }

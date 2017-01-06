@@ -88,7 +88,7 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
 
     function showNewItemNotification(item, apiClient) {
 
-        if (playbackManager.isPlayingVideo()) {
+        if (playbackManager.isPlayingLocally(['Video'])) {
             return;
         }
 

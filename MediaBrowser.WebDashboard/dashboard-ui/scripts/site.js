@@ -1619,7 +1619,7 @@ var AppInfo = {};
             define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);
         }
 
-        var preferNativePrompt = preferNativeAlerts || browser.xboxOne || browser.ps4;
+        var preferNativePrompt = preferNativeAlerts || browser.xboxOne;
         if (preferNativePrompt && window.confirm) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
         } else {

@@ -1,4 +1,4 @@
-define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'focusManager', 'apphost', 'loading', 'css!./style', 'material-icons', 'paper-icon-button-light'], function (dialogHelper, inputmanager, connectionManager, layoutManager, focusManager, appHost, loading) {
+define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'focusManager', 'browser', 'apphost', 'loading', 'css!./style', 'material-icons', 'paper-icon-button-light'], function (dialogHelper, inputmanager, connectionManager, layoutManager, focusManager, browser, appHost, loading) {
     'use strict';
 
     function getImageUrl(item, options, apiClient) {
@@ -576,7 +576,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                     }
                 };
 
-                if (newCardImageContainer.animate) {
+                if (newCardImageContainer.animate && !browser.noAnimation) {
 
                     var keyframes = [
                         { opacity: '0', offset: 0 },
