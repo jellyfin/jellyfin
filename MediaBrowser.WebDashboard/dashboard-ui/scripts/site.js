@@ -167,7 +167,7 @@ var Dashboard = {
                 url = '/' + url;
             }
         }
-        Emby.Page.show(url);
+        return Emby.Page.show(url);
     },
 
     showLoadingMsg: function () {
@@ -584,11 +584,6 @@ var Dashboard = {
 
     },
 
-    isServerlessPage: function () {
-        var url = window.location.href.toLowerCase();
-        return url.indexOf('connectlogin.html') != -1 || url.indexOf('selectserver.html') != -1 || url.indexOf('login.html') != -1 || url.indexOf('forgotpassword.html') != -1 || url.indexOf('forgotpasswordpin.html') != -1;
-    },
-
     capabilities: function () {
 
         var caps = {
@@ -844,20 +839,7 @@ var Dashboard = {
 
             require(['browserdeviceprofile', 'qualityoptions', 'appSettings'], function (profileBuilder, qualityoptions, appSettings) {
 
-                var supportsCustomSeeking = false;
-                if (!browserInfo.mobile) {
-                    supportsCustomSeeking = true;
-                } else if (AppInfo.isNativeApp && browserInfo.safari) {
-                    if (navigator.userAgent.toLowerCase().indexOf('ipad') == -1) {
-                        // Need to disable it in order to support picture in picture
-                        supportsCustomSeeking = true;
-                    }
-                } else if (AppInfo.isNativeApp) {
-                    supportsCustomSeeking = true;
-                }
-
                 var profile = profileBuilder(Object.assign(profileOptions || {}, {
-                    supportsCustomSeeking: supportsCustomSeeking
                 }));
 
                 if (!(AppInfo.isNativeApp && browserInfo.android) && !browserInfo.edge && !browserInfo.msie) {
@@ -934,8 +916,6 @@ var AppInfo = {};
 
         // This currently isn't working on android, unfortunately
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
-
-        AppInfo.hasPhysicalVolumeButtons = isCordova || browserInfo.mobile;
 
         if (isCordova && isIOS) {
             AppInfo.moreIcon = 'more-horiz';
@@ -1204,7 +1184,10 @@ var AppInfo = {};
             itemHelper: embyWebComponentsBowerPath + '/itemhelper',
             itemShortcuts: embyWebComponentsBowerPath + "/shortcuts",
             serverNotifications: embyWebComponentsBowerPath + '/servernotifications',
+            playbackManager: embyWebComponentsBowerPath + '/playback/playbackmanager',
+            nowPlayingHelper: embyWebComponentsBowerPath + '/playback/nowplayinghelper',
             pluginManager: embyWebComponentsBowerPath + '/pluginmanager',
+            packageManager: embyWebComponentsBowerPath + '/packagemanager',
             webAnimations: bowerPath + '/web-animations-js/web-animations-next-lite.min'
         };
 
@@ -1275,6 +1258,10 @@ var AppInfo = {};
         define("itemContextMenu", [embyWebComponentsBowerPath + "/itemcontextmenu"], returnFirstDependency);
         define("imageEditor", [embyWebComponentsBowerPath + "/imageeditor/imageeditor"], returnFirstDependency);
         define("dom", [embyWebComponentsBowerPath + "/dom"], returnFirstDependency);
+
+        define("fullscreen-doubleclick", [embyWebComponentsBowerPath + "/fullscreen/fullscreen-doubleclick"], returnFirstDependency);
+        define("fullscreenManager", [embyWebComponentsBowerPath + "/fullscreen/fullscreenmanager"], returnFirstDependency);
+
         define("layoutManager", [embyWebComponentsBowerPath + "/layoutmanager"], getLayoutManager);
         define("playMenu", [embyWebComponentsBowerPath + "/playmenu"], returnFirstDependency);
         define("refreshDialog", [embyWebComponentsBowerPath + "/refreshdialog/refreshdialog"], returnFirstDependency);
@@ -1286,6 +1273,8 @@ var AppInfo = {};
         define("cardBuilder", [embyWebComponentsBowerPath + "/cardbuilder/cardbuilder"], returnFirstDependency);
         define("peoplecardbuilder", [embyWebComponentsBowerPath + "/cardbuilder/peoplecardbuilder"], returnFirstDependency);
         define("chaptercardbuilder", [embyWebComponentsBowerPath + "/cardbuilder/chaptercardbuilder"], returnFirstDependency);
+
+        define("mouseManager", [embyWebComponentsBowerPath + "/input/mouse"], returnFirstDependency);
 
         define("deleteHelper", [embyWebComponentsBowerPath + "/deletehelper"], returnFirstDependency);
         define("tvguide", [embyWebComponentsBowerPath + "/guide/guide"], returnFirstDependency);
@@ -1447,66 +1436,14 @@ var AppInfo = {};
             return dialoghelper;
         });
 
+        define("inputmanager", ['inputManager'], returnFirstDependency);
+
         // alias
         define("historyManager", ['embyRouter'], returnFirstDependency);
 
         define("headroom-window", ['headroom'], createWindowHeadroom);
         define("hammer-main", ['hammer'], createMainContentHammer);
         define("appfooter-shared", ['appfooter'], createSharedAppFooter);
-
-        // mock this for now. not used in this app
-        define("playbackManager", [], function () {
-            return {
-                isPlaying: function () {
-                    return MediaPlayer.currentItem != null;
-                },
-                isPlayingVideo: function () {
-                    return MediaPlayer.currentItem != null;
-                },
-                play: function (options) {
-
-                    if (options.fullscreen === false) {
-                        // theme backdrops - not supported
-                        if (!options.items || options.items[0].MediaType == 'Video') {
-                            return Promise.reject();
-                        }
-                    }
-
-                    return MediaController.play(options);
-                },
-                queue: function (options) {
-
-                    MediaController.queue(options);
-                },
-                currentPlaylistIndex: function (options) {
-                    return MediaController.currentPlaylistIndex(options);
-                },
-                canQueueMediaType: function (mediaType) {
-                    return MediaController.canQueueMediaType(mediaType);
-                },
-                canPlay: function (item) {
-                    return MediaController.canPlay(item);
-                },
-                canQueue: function (item) {
-                    return MediaController.canQueueMediaType(item.MediaType, item.Type);
-                },
-                instantMix: function (item) {
-                    return MediaController.instantMix(item);
-                },
-                shuffle: function (item) {
-                    return MediaController.shuffle(item);
-                },
-                pause: function () {
-                    return MediaController.pause();
-                },
-                stop: function () {
-                    return MediaController.stop();
-                },
-                seek: function (ticks) {
-                    return MediaController.seek(ticks);
-                }
-            };
-        });
 
         // mock this for now. not used in this app
         define("skinManager", [], function () {
@@ -1516,18 +1453,6 @@ var AppInfo = {};
 
                     Emby.Page.show('/home.html');
                 }
-            };
-        });
-
-        // mock this for now. not used in this app
-        define("playbackManager", [], function () {
-            return {
-            };
-        });
-
-        // mock this for now. not used in this app
-        define("pluginManager", [], function () {
-            return {
             };
         });
 
@@ -1545,6 +1470,10 @@ var AppInfo = {};
 
             embyRouter.showLocalLogin = function (apiClient, serverId, manualLogin) {
                 Dashboard.navigate('login.html?serverid=' + serverId);
+            };
+
+            embyRouter.showVideoOsd = function () {
+                return Dashboard.navigate('videoosd.html');
             };
 
             embyRouter.showSelectServer = function () {
@@ -1590,6 +1519,9 @@ var AppInfo = {};
 
             embyRouter.showSettings = function () {
                 Dashboard.navigate('mypreferencesmenu.html');
+            };
+
+            embyRouter.setTitle = function () {
             };
 
             function showItem(item, serverId, options) {
@@ -1720,18 +1652,12 @@ var AppInfo = {};
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
 
-            //define("audiorenderer", ["scripts/htmlmediarenderer"]);
             window.VlcAudio = true;
             define("audiorenderer", ["cordova/android/vlcplayer"]);
             define("videorenderer", ["cordova/android/vlcplayer"]);
         }
         else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
             define("audiorenderer", ["cordova/audioplayer"]);
-            define("videorenderer", ["scripts/htmlmediarenderer"]);
-        }
-        else {
-            define("audiorenderer", ["scripts/htmlmediarenderer"]);
-            define("videorenderer", ["scripts/htmlmediarenderer"]);
         }
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
@@ -1747,14 +1673,7 @@ var AppInfo = {};
 
         define("buttonenabled", ["legacy/buttonenabled"]);
 
-        var deps = [];
-
-        deps.push('scripts/mediacontroller');
-
-        require(deps, function () {
-
-            initAfterDependencies();
-        });
+        initAfterDependencies();
     }
 
     function getRequirePromise(deps) {
@@ -1794,7 +1713,6 @@ var AppInfo = {};
             createConnectionManager().then(function () {
 
                 console.log('initAfterDependencies promises resolved');
-                MediaController.init();
 
                 require(['globalize'], function (globalize) {
 
@@ -1850,7 +1768,7 @@ var AppInfo = {};
 
         document.title = Globalize.translateDocument(document.title, 'core');
 
-        onAppReady();
+        loadPlugins([], browserInfo).then(onAppReady);
     }
 
     function defineRoute(newRoute, dictionary) {
@@ -2620,6 +2538,16 @@ var AppInfo = {};
         });
 
         defineRoute({
+            path: '/videoosd.html',
+            dependencies: [],
+            transition: 'fade',
+            controller: 'scripts/videoosd',
+            autoFocus: false,
+            type: 'video-osd',
+            supportsThemeMedia: true
+        });
+
+        defineRoute({
             path: '/configurationpage',
             dependencies: ['jQuery'],
             autoFocus: false,
@@ -2636,12 +2564,93 @@ var AppInfo = {};
         });
     }
 
-    function onAppReady() {
+    function loadPlugins(externalPlugins, browser, shell) {
 
-        require(['scripts/mediaplayer'], function () {
+        console.log('Loading installed plugins');
 
-            MediaPlayer.init();
+        // Load installed plugins
+
+        var list = [
+        //'plugins/defaultskin/plugin',
+        //'plugins/logoscreensaver/plugin',
+        //'plugins/backdropscreensaver/plugin',
+        //'plugins/defaultsoundeffects/plugin',
+        //'plugins/playbackvalidation/plugin'
+        ];
+
+        list.push('bower_components/emby-webcomponents/htmlaudioplayer/plugin');
+        list.push('bower_components/emby-webcomponents/htmlvideoplayer/plugin');
+        list.push('bower_components/emby-webcomponents/sessionplayer');
+
+        if (browser.chrome) {
+            list.push('bower_components/emby-webcomponents/chromecastplayer');
+        }
+
+        list.push('bower_components/emby-webcomponents/youtubeplayer/plugin');
+
+        //if (globalScope.webapis && webapis.avplay) {
+        //    list.push('plugins/tizenavplayer/plugin');
+        //} else {
+        //    list.push('plugins/htmlvideoplayer/plugin');
+        //}
+
+        //if (!browser.tv) {
+        //    list.push('plugins/confirmstillplaying/plugin');
+        //}
+
+        //if (!browser.keyboard) {
+        //    list.push('plugins/keyboard/plugin');
+        //}
+
+        for (var i = 0, length = externalPlugins.length; i < length; i++) {
+            list.push(externalPlugins[i]);
+        }
+
+        //if (shell.canExec) {
+        //    list.push('plugins/externalplayer/plugin');
+        //}
+
+        return new Promise(function (resolve, reject) {
+
+            Promise.all(list.map(loadPlugin)).then(function () {
+
+                require(['packageManager'], function (packageManager) {
+                    packageManager.init().then(resolve, reject);
+                });
+
+            }, reject);
         });
+    }
+
+    function loadPlugin(url) {
+
+        return new Promise(function (resolve, reject) {
+
+            require(['pluginManager'], function (pluginManager) {
+                pluginManager.loadPlugin(url).then(resolve, reject);
+            });
+        });
+    }
+
+    function enableNativeGamepadKeyMapping() {
+
+        // On Windows UWP, this will tell the platform to make the gamepad emit normal keyboard events
+        if (window.navigator && typeof window.navigator.gamepadInputEmulation === "string") {
+            // We want the gamepad to provide gamepad VK keyboard events rather than moving a
+            // mouse like cursor. Set to "keyboard", the gamepad will provide such keyboard events
+            // and provide input to the DOM navigator.getGamepads API.
+            window.navigator.gamepadInputEmulation = "keyboard";
+            return true;
+        }
+
+        return false;
+    }
+
+    function isGamepadSupported() {
+        return 'ongamepadconnected' in window || navigator.getGamepads || navigator.webkitGetGamepads;
+    }
+
+    function onAppReady() {
 
         console.log('Begin onAppReady');
 
@@ -2688,8 +2697,11 @@ var AppInfo = {};
 
             var postInitDependencies = [];
 
+            if (!enableNativeGamepadKeyMapping() && isGamepadSupported()) {
+                postInitDependencies.push('bower_components/emby-webcomponents/input/gamepadtokey');
+            }
+
             postInitDependencies.push('bower_components/emby-webcomponents/thememediaplayer');
-            postInitDependencies.push('scripts/remotecontrol');
             postInitDependencies.push('css!css/chromecast.css');
             postInitDependencies.push('scripts/autobackdrops');
 
@@ -2708,14 +2720,11 @@ var AppInfo = {};
 
                     //postInitDependencies.push('cordova/backgroundfetch');
                 }
-
-            } else if (browserInfo.chrome) {
-                postInitDependencies.push('scripts/chromecast');
             }
 
             postInitDependencies.push('scripts/nowplayingbar');
 
-            postInitDependencies.push('components/remotecontrolautoplay');
+            postInitDependencies.push('bower_components/emby-webcomponents/playback/remotecontrolautoplay');
 
             // Prefer custom font over Segoe if on desktop windows
             if (!browserInfo.mobile && navigator.userAgent.toLowerCase().indexOf('windows') != -1) {
@@ -2724,6 +2733,7 @@ var AppInfo = {};
             }
 
             postInitDependencies.push('bower_components/emby-webcomponents/input/api');
+            postInitDependencies.push('mouseManager');
 
             if (!browserInfo.tv) {
 
@@ -2734,6 +2744,10 @@ var AppInfo = {};
             }
 
             postInitDependencies.push('playerSelectionMenu');
+
+            //if (appHost.supports('fullscreenchange')) {
+                require(['fullscreen-doubleclick']);
+            //}
 
             require(postInitDependencies);
             upgradeLayouts();

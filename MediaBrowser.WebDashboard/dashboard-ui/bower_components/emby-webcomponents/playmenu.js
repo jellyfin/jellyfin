@@ -15,10 +15,9 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
         var serverId = item.ServerId;
         var resumePositionTicks = item.UserData ? item.UserData.PlaybackPositionTicks : null;
 
-        var showExternalPlayer = isMobileApp && mediaType === 'Video' && !isFolder && appSettings.enableExternalPlayers();
         var playableItemId = itemType === 'Program' ? channelId : itemId;
 
-        if (!resumePositionTicks && mediaType !== "Audio" && !isFolder && !showExternalPlayer) {
+        if (!resumePositionTicks && mediaType !== "Audio" && !isFolder) {
             playbackManager.play({
                 ids: [playableItemId],
                 serverId: serverId
@@ -42,13 +41,6 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
             menuItems.push({
                 name: globalize.translate('sharedcomponents#Play'),
                 id: 'play'
-            });
-        }
-
-        if (showExternalPlayer) {
-            menuItems.push({
-                name: globalize.translate('ButtonPlayExternalPlayer'),
-                id: 'externalplayer'
             });
         }
 
@@ -87,9 +79,6 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
                         serverId: serverId
                     });
                     break;
-                case 'externalplayer':
-                    LibraryBrowser.playInExternalPlayer(playableItemId);
-                    break;
                 case 'resume':
                     playbackManager.play({
                         ids: [playableItemId],
@@ -98,7 +87,9 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
                     });
                     break;
                 case 'queue':
-                    playbackManager.queue(item);
+                    playbackManager.queue({
+                        items: [item]
+                    });
                     break;
                 case 'instantmix':
                     playbackManager.instantMix(item);

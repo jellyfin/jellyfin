@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'emby-tabs', 'emby-button'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'playbackManager', 'emby-tabs', 'emby-button'], function (libraryBrowser, playbackManager) {
     'use strict';
 
     var defaultFirstSection = 'smalllibrarytiles';
@@ -348,12 +348,12 @@
         }
 
         view.addEventListener('viewshow', function (e) {
-            Events.on(MediaController, 'playbackstop', onPlaybackStop);
+            Events.on(playbackManager, 'playbackstop', onPlaybackStop);
             Events.on(ApiClient, "websocketmessage", onWebSocketMessage);
         });
 
         view.addEventListener('viewbeforehide', function (e) {
-            Events.off(MediaController, 'playbackstop', onPlaybackStop);
+            Events.off(playbackManager, 'playbackstop', onPlaybackStop);
             Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
         });
 

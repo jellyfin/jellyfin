@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'imageLoader', 'libraryMenu', 'shell', 'globalize', 'browser', 'events', 'scrollHelper', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost, imageLoader, libraryMenu, shell, globalize, browser, events, scrollHelper) {
+﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'imageLoader', 'libraryMenu', 'globalize', 'browser', 'events', 'scrollHelper', 'playbackManager', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost, imageLoader, libraryMenu, globalize, browser, events, scrollHelper, playbackManager) {
     'use strict';
 
     function getPromise(params) {
@@ -229,7 +229,7 @@
                     hideAll(page, 'btnPlay');
                 }
             }
-            else if (MediaController.canPlay(item)) {
+            else if (playbackManager.canPlay(item)) {
                 hideAll(page, 'btnPlay', true);
                 canPlay = true;
             }
@@ -2146,7 +2146,7 @@
 
     function play(startPosition) {
 
-        MediaController.play({
+        playbackManager.play({
             items: [currentItem],
             startPositionTicks: startPosition
         });
@@ -2176,17 +2176,7 @@
 
     function playTrailer(page) {
 
-        if (!currentItem.LocalTrailerCount) {
-
-            shell.openUrl(currentItem.RemoteTrailers[0].Url);
-            return;
-        }
-
-        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), currentItem.Id).then(function (trailers) {
-
-            MediaController.play({ items: trailers });
-
-        });
+        playbackManager.playTrailers(currentItem);
     }
 
     function showPlayMenu(item, target) {

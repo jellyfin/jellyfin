@@ -589,7 +589,8 @@
             var url = self.getUrl("socket");
 
             url = replaceAll(url, 'emby/socket', 'embywebsocket');
-            url = replaceAll(url, 'http', 'ws');
+            url = replaceAll(url, 'https:', 'wss:');
+            url = replaceAll(url, 'http:', 'ws:');
 
             url += "?api_key=" + accessToken;
             url += "&deviceId=" + deviceId;

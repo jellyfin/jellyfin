@@ -146,11 +146,23 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
         }
 
         if (supportsFullscreen()) {
-            features.push('fullscreen');
+            features.push('fullscreenchange');
         }
 
         if (browser.chrome || (browser.edge && !browser.slow)) {
             features.push('imageanalysis');
+        }
+
+        if (Dashboard.isConnectMode()) {
+            features.push('multiserver');
+        }
+
+        if (browser.tv || browser.xboxOne || browser.ps4 || browser.mobile) {
+            features.push('physicalvolumecontrol');
+        }
+
+        if (!browser.tv && !browser.xboxOne && !browser.ps4) {
+            features.push('remotecontrol');
         }
 
         return features;

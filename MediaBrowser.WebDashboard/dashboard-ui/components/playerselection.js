@@ -1,47 +1,53 @@
-﻿define(['appSettings', 'events', 'browser', 'libraryMenu', 'loading'], function (appSettings, events, browser, libraryMenu, loading) {
+﻿define(['appSettings', 'events', 'browser', 'libraryMenu', 'loading', 'playbackManager'], function (appSettings, events, browser, libraryMenu, loading, playbackManager) {
     'use strict';
 
     var currentDisplayInfo;
 
-    function mirrorItem(info) {
+    function mirrorItem(info, player) {
 
         var item = info.item;
 
-        MediaController.getCurrentPlayer().displayContent({
+        playbackManager.displayContent({
 
             ItemName: item.Name,
             ItemId: item.Id,
             ItemType: item.Type,
             Context: info.context
-        });
+        }, player);
     }
 
     function mirrorIfEnabled(info) {
 
         info = info || currentDisplayInfo;
 
-        if (info && MediaController.enableDisplayMirroring()) {
+        if (info && playbackManager.enableDisplayMirroring()) {
 
-            var player = MediaController.getPlayerInfo();
+            var player = playbackManager.getPlayerInfo();
 
-            if (!player.isLocalPlayer && player.supportedCommands.indexOf('DisplayContent') != -1) {
-                mirrorItem(info);
+            if (player) {
+                if (!player.isLocalPlayer && player.supportedCommands.indexOf('DisplayContent') != -1) {
+                    mirrorItem(info, player);
+                }
             }
         }
     }
 
-    function showPlayerSelection(button, enableHistory) {
+    function showPlayerSelection(button) {
 
-        var playerInfo = MediaController.getPlayerInfo();
+        var currentPlayerInfo = playbackManager.getPlayerInfo();
 
-        if (!playerInfo.isLocalPlayer) {
-            showActivePlayerMenu(playerInfo);
-            return;
+        if (currentPlayerInfo) {
+            if (!currentPlayerInfo.isLocalPlayer) {
+                showActivePlayerMenu(currentPlayerInfo);
+                return;
+            }
         }
+
+        var currentPlayerId = currentPlayerInfo ? currentPlayerInfo.id : null;
 
         loading.show();
 
-        MediaController.getTargets().then(function (targets) {
+        playbackManager.getTargets().then(function (targets) {
 
             var menuItems = targets.map(function (t) {
 
@@ -54,7 +60,7 @@
                 return {
                     name: name,
                     id: t.id,
-                    selected: playerInfo.id == t.id
+                    selected: currentPlayerId === t.id
                 };
 
             });
@@ -74,7 +80,7 @@
 
                 // Unfortunately we can't allow the url to change or chromecast will throw a security error
                 // Might be able to solve this in the future by moving the dialogs to hashbangs
-                if (!((enableHistory !== false && !browser.chrome) || AppInfo.isNativeApp)) {
+                if (!((!browser.chrome) || AppInfo.isNativeApp)) {
                     menuOptions.enableHistory = false;
                 }
 
@@ -84,7 +90,7 @@
                         return t.id == id;
                     })[0];
 
-                    MediaController.trySetActivePlayer(target.playerName, target);
+                    playbackManager.trySetActivePlayer(target.playerName, target);
 
                     mirrorIfEnabled();
 
@@ -127,7 +133,7 @@
         if (playerInfo.supportedCommands.indexOf('DisplayContent') != -1) {
 
             html += '<label class="checkboxContainer">';
-            var checkedHtml = MediaController.enableDisplayMirroring() ? ' checked' : '';
+            var checkedHtml = playbackManager.enableDisplayMirroring() ? ' checked' : '';
             html += '<input type="checkbox" is="emby-checkbox" class="chkMirror"' + checkedHtml + '/>';
             html += '<span>' + Globalize.translate('OptionEnableDisplayMirroring') + '</span>';
             html += '</label>';
@@ -162,7 +168,7 @@
         }
 
         dlg.querySelector('.btnDisconnect').addEventListener('click', function () {
-            MediaController.disconnectFromPlayer();
+            playbackManager.disconnectFromPlayer();
             dialogHelper.close(dlg);
         });
 
@@ -178,7 +184,7 @@
     }
 
     function onMirrorChange() {
-        MediaController.enableDisplayMirroring(this.checked);
+        playbackManager.enableDisplayMirroring(this.checked);
     }
 
     function onCastButtonClicked() {

@@ -42,7 +42,7 @@
     "Saturday": "L\u00f8rdag",
     "Days": "Dager",
     "RecordSeries": "Ta opp serien",
-    "HeaderCinemaMode": "Cinema Mode",
+    "HeaderCinemaMode": "Kino Modus",
     "HeaderCloudSync": "Cloud Sync",
     "HeaderOfflineDownloads": "Offline Media",
     "HeaderOfflineDownloadsDescription": "Download media to your devices for easy offline use.",
@@ -376,5 +376,6 @@
     "SyncJobItemStatusFailed": "Failed",
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
     "SyncJobItemStatusCancelled": "Cancelled",
-    "Retry": "Retry"
+    "Retry": "Retry",
+    "HeaderMyDevice": "My Device"
 }

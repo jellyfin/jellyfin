@@ -93,6 +93,12 @@ namespace MediaBrowser.Providers.TV
                 return;
             }
 
+            // Check this in order to avoid logging an exception due to directory not existing
+            if (!_fileSystem.DirectoryExists(seriesDataPath))
+            {
+                return;
+            }
+
             var episodeFiles = _fileSystem.GetFilePaths(seriesDataPath)
                 .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
                 .Select(Path.GetFileNameWithoutExtension)

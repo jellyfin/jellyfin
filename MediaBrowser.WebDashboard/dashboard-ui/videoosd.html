@@ -1,0 +1,230 @@
+﻿<div id="videoOsdPage" data-role="page" class="page libraryPage" data-backbutton="true">
+    <style>
+        .osdHeader {
+            padding-bottom: 3vh;
+            transition: transform 300ms ease-out, opacity 300ms ease-out;
+            will-change: transform;
+            position: relative;
+            z-index: 1;
+        }
+
+            .osdHeader .viewMenuBar {
+                background-color: rgba(0, 0, 0, .3);
+                background: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, 0));
+            }
+
+        .osdHeader-hidden {
+            transform: translate3d(0,-100%,0);
+            opacity: 0;
+        }
+
+        .osdHeader .headerButton:not(.headerBackButton) {
+            display: none;
+        }
+
+        .osdHeader-hidden {
+            transform: translate3d(0,-100%,0);
+            opacity: 0;
+        }
+
+        .scenePicker {
+            position: fixed;
+            left: 12%;
+            bottom: 20%;
+            right: 0;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .chapterThumb {
+            height: 24vh;
+            background-position: center center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            -moz-box-shadow: 0 0 1.9vh #000;
+            -webkit-box-shadow: 0 0 1.9vh #000;
+            box-shadow: 0 0 1.9vh #000;
+            border: solid 1px #222;
+            margin: 1vh;
+            transition: opacity ease-out .3s;
+        }
+
+            .chapterThumb:not(.selectedChapterThumb) {
+                height: 22vh;
+                opacity: .2;
+                border-color: black;
+            }
+
+        .videoOsdBottom {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, .7);
+            color: #fff;
+            padding: 1%;
+            display: flex;
+            flex-direction: row;
+            will-change: transform;
+            transition: transform 300ms ease-out, opacity 300ms ease-out;
+        }
+
+        .videoOsdBottom-hidden {
+            transform: translate3d(0,100%,0);
+            opacity: 0;
+        }
+
+        .osdControls {
+            flex-grow: 1;
+        }
+
+        .videoOsdBottom .buttons {
+            padding: .25em 0 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .videoOsdBottom paper-icon-button {
+            color: #eee;
+        }
+
+        .osdVolumeSliderContainer {
+            width: 6.5em;
+            flex-grow: 1;
+        }
+
+        .volumeButtons {
+            margin: 0 .5em 0 auto;
+            display: flex;
+            align-items: center;
+        }
+
+        .osdTimeText {
+            margin-left: 1em;
+        }
+
+        .mouseIdle .videoOsdBottom .volumeButtons {
+            display: none;
+        }
+
+        .osdPoster {
+            width: 10%;
+            position: relative;
+            margin-right: .5em;
+        }
+
+            .osdPoster img {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: auto;
+                width: 100%;
+                -moz-box-shadow: 0 0 1.9vh #000;
+                -webkit-box-shadow: 0 0 1.9vh #000;
+                box-shadow: 0 0 1.9vh #000;
+                border: solid 1px #222;
+                user-drag: none;
+                user-select: none;
+                -moz-user-select: none;
+                -webkit-user-drag: none;
+                -webkit-user-select: none;
+                -ms-user-select: none;
+            }
+
+        .osdTitle {
+            margin: 0;
+            padding-left: .4em;
+        }
+
+        .osdMediaInfo {
+            margin-left: 1em;
+            color: #eee;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .osdTextContainer {
+            display: flex;
+            align-items: baseline;
+        }
+
+        .pageContainer {
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            position: fixed;
+        }
+    </style>
+    <div class="pageContainer flex">
+
+    </div>
+    <div class="scenePicker hide hiddenScrollX">
+    </div>
+    <div class="videoOsdBottom">
+
+        <div class="osdPoster">
+
+        </div>
+        <div class="osdControls">
+            <div class="osdTextContainer">
+                <h2 class="osdTitle"></h2>
+                <div class="osdMediaInfo"></div>
+            </div>
+            <div class="sliderContainer" style="margin: .25em .5em;">
+                <input type="range" step=".01" min="0" max="100" value="0" is="emby-slider" class="osdPositionSlider" />
+            </div>
+
+            <div class="buttons">
+                <button is="paper-icon-button-light" class="btnPreviousTrack autoSize hide">
+                    <i class="xlargePaperIconButton md-icon">&#xE045;</i>
+                </button>
+
+                <button is="paper-icon-button-light" class="btnRewind">
+                    <i class="xlargePaperIconButton md-icon">&#xE020;</i>
+                </button>
+
+                <button is="paper-icon-button-light" class="btnPause autoSize" autofocus>
+                    <i class="xlargePaperIconButton md-icon">&#xE034;</i>
+                </button>
+
+                <button is="paper-icon-button-light" class="btnFastForward">
+                    <i class="xlargePaperIconButton md-icon">&#xE01F;</i>
+                </button>
+
+                <button is="paper-icon-button-light" class="btnNextTrack autoSize hide">
+                    <i class="xlargePaperIconButton md-icon">&#xE044;</i>
+                </button>
+
+                <button is="paper-icon-button-light" class="btnAudio hide autoSize">
+                    <i class="xlargePaperIconButton md-icon">&#xE3A1;</i>
+                </button>
+                <button is="paper-icon-button-light" class="btnSubtitles hide autoSize">
+                    <i class="xlargePaperIconButton md-icon">&#xE01C;</i>
+                </button>
+                <button is="paper-icon-button-light" class="btnCast hide autoSize">
+                    <i class="xlargePaperIconButton md-icon">&#xE307;</i>
+                </button>
+                <button is="paper-icon-button-light" class="btnSettings hide autoSize">
+                    <i class="largePaperIconButton md-icon">&#xE8B8;</i>
+                </button>
+                <button is="paper-icon-button-light" class="btnFullscreen hide autoSize">
+                    <i class="xlargePaperIconButton md-icon">&#xE5D0;</i>
+                </button>
+
+                <div class="osdTimeText"><span class="osdPositionText"></span><span class="osdDurationText"></span><span class="endsAtText"></span></div>
+
+                <div class="volumeButtons">
+                    <button is="paper-icon-button-light" class="buttonMute autoSize">
+                        <i class="xlargePaperIconButton md-icon">&#xE050;</i>
+                    </button>
+                    <div class="sliderContainer osdVolumeSliderContainer">
+                        <input is="emby-slider" type="range" step="1" min="0" max="100" value="0" class="osdVolumeSlider" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

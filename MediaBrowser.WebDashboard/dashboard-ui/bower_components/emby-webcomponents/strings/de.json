@@ -376,5 +376,6 @@
     "SyncJobItemStatusFailed": "Fehlgeschlagen",
     "SyncJobItemStatusRemovedFromDevice": "Vom Ger\u00e4t entfernt",
     "SyncJobItemStatusCancelled": "Abgebrochen",
-    "Retry": "Wiederholen"
+    "Retry": "Wiederholen",
+    "HeaderMyDevice": "My Device"
 }

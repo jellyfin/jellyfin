@@ -376,5 +376,6 @@
   "SyncJobItemStatusFailed": "Failed",
   "SyncJobItemStatusRemovedFromDevice": "Removed from device",
   "SyncJobItemStatusCancelled": "Cancelled",
-  "Retry": "Retry"
+  "Retry": "Retry",
+  "HeaderMyDevice": "My Device"
 }

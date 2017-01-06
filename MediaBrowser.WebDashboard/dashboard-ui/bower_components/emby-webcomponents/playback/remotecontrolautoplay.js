@@ -1,9 +1,9 @@
-﻿define(['events'], function (events) {
+﻿define(['events', 'playbackManager'], function (events, playbackManager) {
     'use strict';
 
-    function transferPlayback(oldPlayer) {
+    function transferPlayback(oldPlayer, newPlayer) {
 
-        oldPlayer.getPlayerState().then(function (state) {
+        playbackManager.getPlayerState(oldPlayer).then(function (state) {
 
             var item = state.NowPlayingItem;
 
@@ -13,23 +13,22 @@
 
             var playState = state.PlayState || {};
 
-            oldPlayer.stop();
+            playbackManager.stop(oldPlayer);
 
             var itemId = item.Id;
             var resumePositionTicks = playState.PositionTicks || 0;
 
-            MediaController.play({
+            playbackManager.play({
                 ids: [itemId],
                 startPositionTicks: resumePositionTicks
-            });
+            }, newPlayer);
 
         });
     }
 
-    events.on(MediaController, 'playerchange', function (e, newPlayer, newTarget, oldPlayer) {
+    events.on(playbackManager, 'playerchange', function (e, newPlayer, newTarget, oldPlayer) {
 
-        if (!oldPlayer) {
-            console.log('Skipping remote control autoplay because oldPlayer is null');
+        if (!oldPlayer || !newPlayer) {
             return;
         }
 
@@ -43,10 +42,7 @@
             return;
         }
 
-        // If playback is playing locally and a new player is activated, transfer the media to that player
-        if (oldPlayer.isPlaying()) {
-            transferPlayback(oldPlayer);
-        }
+        transferPlayback(oldPlayer, newPlayer);
     });
 
 });

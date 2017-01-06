@@ -208,8 +208,8 @@
     "LabelEpisodeNumber": "Numero espisodio:",
     "LabelTrackNumber": "Numero traccia:",
     "LabelNumber": "Numero:",
-    "LabelDiscNumber": "Numero disco",
-    "LabelParentNumber": "Numero superiore",
+    "LabelDiscNumber": "Numero disco:",
+    "LabelParentNumber": "Numero precursore:",
     "SortName": "Nome ordinamento",
     "ReleaseDate": "Data di rilascio",
     "Continuing": "In corso",
@@ -323,7 +323,7 @@
     "LabelStopWhenPossible": "Ferma appena possibile:",
     "MinutesBefore": "minuti prima",
     "MinutesAfter": "minuti dopo",
-    "SkipEpisodesAlreadyInMyLibrary": "Salta gli espisodi che sono gi\u00e0 nella libreria",
+    "SkipEpisodesAlreadyInMyLibrary": "Non registrare gli espisodi che sono gi\u00e0 in libreria",
     "SkipEpisodesAlreadyInMyLibraryHelp": "Gli episodi verranno confrontati usando la stagione ed il numero dell'episodio, quando disponibili.",
     "LabelKeepUpTo": "Conservane fino a:",
     "AsManyAsPossible": "Tutto il possibile",
@@ -376,5 +376,6 @@
     "SyncJobItemStatusFailed": "Failed",
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
     "SyncJobItemStatusCancelled": "Cancelled",
-    "Retry": "Retry"
+    "Retry": "Retry",
+    "HeaderMyDevice": "My Device"
 }

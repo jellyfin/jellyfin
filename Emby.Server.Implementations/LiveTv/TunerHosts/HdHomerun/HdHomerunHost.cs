@@ -103,7 +103,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 TunerHostId = info.Id,
                 IsHD = i.HD == 1,
                 AudioCodec = i.AudioCodec,
-                VideoCodec = i.VideoCodec
+                VideoCodec = i.VideoCodec,
+                ChannelType = ChannelType.TV
             });
         }
 

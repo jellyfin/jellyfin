@@ -184,7 +184,7 @@
     "LabelAirsBeforeSeason": "Airs before season:",
     "LabelAirsAfterSeason": "Airs after season:",
     "LabelAirsBeforeEpisode": "Airs before episode:",
-    "HeaderExternalIds": "External Id's:",
+    "HeaderExternalIds": "External IDs:",
     "HeaderDisplaySettings": "Display Settings",
     "LabelTreatImageAs": "Treat image as:",
     "LabelDisplayOrder": "Display order:",
@@ -208,8 +208,8 @@
     "LabelEpisodeNumber": "Episode number:",
     "LabelTrackNumber": "Track number:",
     "LabelNumber": "Number:",
-    "LabelDiscNumber": "Disc number",
-    "LabelParentNumber": "Parent number",
+    "LabelDiscNumber": "Disc number:",
+    "LabelParentNumber": "Parent number:",
     "SortName": "Sort name",
     "ReleaseDate": "Release date",
     "Continuing": "Continuing",
@@ -323,7 +323,7 @@
     "LabelStopWhenPossible": "Stop when possible:",
     "MinutesBefore": "minutes before",
     "MinutesAfter": "minutes after",
-    "SkipEpisodesAlreadyInMyLibrary": "Skip episodes that are already in my library",
+    "SkipEpisodesAlreadyInMyLibrary": "Don't record episodes that are already in my library",
     "SkipEpisodesAlreadyInMyLibraryHelp": "Episodes will be compared using season and episode numbers, when available.",
     "LabelKeepUpTo": "Keep up to:",
     "AsManyAsPossible": "As many as possible",
@@ -376,5 +376,6 @@
     "SyncJobItemStatusFailed": "Failed",
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
     "SyncJobItemStatusCancelled": "Cancelled",
-    "Retry": "Retry"
+    "Retry": "Retry",
+    "HeaderMyDevice": "My Device"
 }

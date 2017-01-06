@@ -4,7 +4,7 @@ namespace Emby.Server.Implementations.Sync
 {
     public class SyncHelper
     {
-        public static int? AdjustBitrate(int? profileBitrate, string quality)
+        public static long? AdjustBitrate(long? profileBitrate, string quality)
         {
             if (profileBitrate.HasValue)
             {

@@ -527,21 +527,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
 
         var list = [];
 
-        if (item.DateCreated && itemHelper.enableDateAddedDisplay(item)) {
-            list.push({
-                type: 'added',
-                text: globalize.translate('sharedcomponents#AddedOnValue', datetime.toLocaleDateString(datetime.parseISO8601Date(item.DateCreated)))
-            });
-        }
-
-        if (!item.MediaSources) {
-            return list;
-        }
-
-        var mediaSource = item.MediaSources[0];
-        if (!mediaSource) {
-            return list;
-        }
+        var mediaSource = (item.MediaSources || [])[0] || {};
 
         var videoStream = (mediaSource.MediaStreams || []).filter(function (i) {
             return i.Type === 'Video';
@@ -617,6 +603,16 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
             list.push({
                 type: 'mediainfo',
                 text: audioStream.Codec
+            });
+        }
+
+        if (item.DateCreated && itemHelper.enableDateAddedDisplay(item)) {
+
+            var dateCreated = datetime.parseISO8601Date(item.DateCreated);
+
+            list.push({
+                type: 'added',
+                text: globalize.translate('sharedcomponents#AddedOnValue', datetime.toLocaleDateString(dateCreated) + ' ' + datetime.getDisplayTime(dateCreated))
             });
         }
 

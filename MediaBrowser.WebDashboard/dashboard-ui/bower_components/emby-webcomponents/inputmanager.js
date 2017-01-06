@@ -146,10 +146,10 @@ define(['playbackManager', 'focusManager', 'embyRouter', 'dom'], function (playb
                 embyRouter.showLiveTV();
                 break;
             case 'mute':
-                playbackManager.mute();
+                playbackManager.setMute(true);
                 break;
             case 'unmute':
-                playbackManager.unMute();
+                playbackManager.setMute(false);
                 break;
             case 'togglemute':
                 playbackManager.toggleMute();

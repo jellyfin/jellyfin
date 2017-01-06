@@ -119,7 +119,10 @@
 
                 apiClient.getLiveTvProgram(programId, apiClient.getCurrentUserId()).then(function (item) {
 
-                    playbackManager.play(item.ChannelId, serverId);
+                    playbackManager.play({
+                        ids: [item.ChannelId],
+                        serverId: serverId
+                    });
                 });
             });
             return;

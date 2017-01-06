@@ -69,13 +69,13 @@
                     switch (id) {
 
                         case 'open':
-                            Dashboard.navigate('useredit.html?userid=' + userId);
+                            Dashboard.navigate('useredit.html?userId=' + userId);
                             break;
                         case 'access':
-                            Dashboard.navigate('userlibraryaccess.html?userid=' + userId);
+                            Dashboard.navigate('userlibraryaccess.html?userId=' + userId);
                             break;
                         case 'parentalcontrol':
-                            Dashboard.navigate('userparentalcontrol.html?userid=' + userId);
+                            Dashboard.navigate('userparentalcontrol.html?userId=' + userId);
                             break;
                         case 'delete':
                             deleteUser(page, userId);

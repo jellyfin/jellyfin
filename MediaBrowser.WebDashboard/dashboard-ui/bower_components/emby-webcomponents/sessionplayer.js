@@ -1,9 +1,9 @@
-﻿define([], function () {
+﻿define(['playbackManager', 'events', 'serverNotifications'], function (playbackManager, events, serverNotifications) {
     'use strict';
 
     function sendPlayCommand(options, playType) {
 
-        var sessionId = MediaController.getPlayerInfo().id;
+        var sessionId = playbackManager.getPlayerInfo().id;
 
         var ids = options.ids || options.items.map(function (i) {
             return i.Id;
@@ -24,16 +24,19 @@
 
     function sendPlayStateCommand(command, options) {
 
-        var sessionId = MediaController.getPlayerInfo().id;
+        var sessionId = playbackManager.getPlayerInfo().id;
 
         ApiClient.sendPlayStateCommand(sessionId, command, options);
     }
 
-    function remoteControlPlayer() {
+    function RemoteControlPlayer() {
 
         var self = this;
 
         self.name = 'Remote Control';
+        self.type = 'mediaplayer';
+        self.isLocalPlayer = false;
+        self.id = 'remoteplayer';
 
         function sendCommandByName(name, options) {
 
@@ -50,7 +53,7 @@
 
         self.sendCommand = function (command) {
 
-            var sessionId = MediaController.getPlayerInfo().id;
+            var sessionId = playbackManager.getPlayerInfo().id;
 
             ApiClient.sendCommand(sessionId, command);
         };
@@ -82,7 +85,7 @@
 
         self.canQueueMediaType = function (mediaType) {
 
-            return mediaType == 'Audio' || mediaType == 'Video';
+            return mediaType === 'Audio' || mediaType === 'Video';
         };
 
         self.stop = function () {
@@ -104,6 +107,24 @@
                 });
         };
 
+        self.currentTime = function (val) {
+
+            if (val != null) {
+                return self.seek(val);
+            }
+
+            var state = self.lastPlayerData || {};
+            state = state.PlayState || {};
+            return state.PositionTicks;
+        };
+
+        self.duration = function () {
+
+        };
+
+        self.paused = function () {
+        };
+
         self.pause = function () {
             sendPlayStateCommand('Pause');
         };
@@ -112,12 +133,13 @@
             sendPlayStateCommand('Unpause');
         };
 
-        self.mute = function () {
-            sendCommandByName('Mute');
-        };
+        self.setMute = function (isMuted) {
 
-        self.unMute = function () {
-            sendCommandByName('Unmute');
+            if (isMuted) {
+                sendCommandByName('Mute');
+            } else {
+                sendCommandByName('Unmute');
+            }
         };
 
         self.toggleMute = function () {
@@ -142,16 +164,52 @@
             sendCommandByName('ToggleFullscreen');
         };
 
+        self.audioTracks = function () {
+            return [];
+        };
+
+        self.getAudioStreamIndex = function() {
+
+        };
+
         self.setAudioStreamIndex = function (index) {
             sendCommandByName('SetAudioStreamIndex', {
                 Index: index
             });
         };
 
+        self.subtitleTracks = function () {
+            return [];
+        };
+
+        self.getSubtitleStreamIndex = function () {
+
+        };
+
         self.setSubtitleStreamIndex = function (index) {
             sendCommandByName('SetSubtitleStreamIndex', {
                 Index: index
             });
+        };
+
+        self.getMaxStreamingBitrate = function () {
+
+        };
+
+        self.setMaxStreamingBitrate = function (bitrate) {
+
+        };
+
+        self.isFullscreen = function () {
+
+        };
+
+        self.toggleFullscreen = function () {
+
+        };
+
+        self.getRepeatMode = function () {
+
         };
 
         self.setRepeatMode = function (mode) {
@@ -168,31 +226,28 @@
 
         self.getPlayerState = function () {
 
-            return new Promise(function (resolve, reject) {
+            var apiClient = window.ApiClient;
 
-                var apiClient = window.ApiClient;
+            if (apiClient) {
+                return apiClient.getSessions().then(function (sessions) {
 
-                if (apiClient) {
-                    apiClient.getSessions().then(function (sessions) {
+                    var currentTargetId = playbackManager.getPlayerInfo().id;
 
-                        var currentTargetId = MediaController.getPlayerInfo().id;
+                    // Update existing data
+                    //updateSessionInfo(popup, msg.Data);
+                    var session = sessions.filter(function (s) {
+                        return s.Id === currentTargetId;
+                    })[0];
 
-                        // Update existing data
-                        //updateSessionInfo(popup, msg.Data);
-                        var session = sessions.filter(function (s) {
-                            return s.Id == currentTargetId;
-                        })[0];
+                    if (session) {
+                        session = getPlayerState(session);
+                    }
 
-                        if (session) {
-                            session = getPlayerState(session);
-                        }
-
-                        resolve(session);
-                    });
-                } else {
-                    resolve({});
-                }
-            });
+                    return session;
+                });
+            } else {
+                return Promise.resolve({});
+            }
         };
 
         var pollInterval;
@@ -263,138 +318,105 @@
 
         self.getTargets = function () {
 
-            return new Promise(function (resolve, reject) {
+            var apiClient = window.ApiClient;
 
-                var sessionQuery = {
-                    ControllableByUserId: Dashboard.getCurrentUserId()
-                };
+            var sessionQuery = {
+                ControllableByUserId: apiClient.getCurrentUserId()
+            };
 
-                var apiClient = window.ApiClient;
+            if (apiClient) {
+                return apiClient.getSessions(sessionQuery).then(function (sessions) {
 
-                if (apiClient) {
-                    apiClient.getSessions(sessionQuery).then(function (sessions) {
+                    return sessions.filter(function (s) {
+                        return s.DeviceId !== apiClient.deviceId();
 
-                        var targets = sessions.filter(function (s) {
-
-                            return s.DeviceId != apiClient.deviceId();
-
-                        }).map(function (s) {
-                            return {
-                                name: s.DeviceName,
-                                deviceName: s.DeviceName,
-                                id: s.Id,
-                                playerName: self.name,
-                                appName: s.Client,
-                                playableMediaTypes: s.PlayableMediaTypes,
-                                isLocalPlayer: false,
-                                supportedCommands: s.SupportedCommands
-                            };
-                        });
-
-                        resolve(targets);
-
-                    }, function () {
-
-                        reject();
+                    }).map(function (s) {
+                        return {
+                            name: s.DeviceName,
+                            deviceName: s.DeviceName,
+                            id: s.Id,
+                            playerName: self.name,
+                            appName: s.Client,
+                            playableMediaTypes: s.PlayableMediaTypes,
+                            isLocalPlayer: false,
+                            supportedCommands: s.SupportedCommands
+                        };
                     });
 
-                } else {
-                    resolve([]);
-                }
-            });
+                });
+
+            } else {
+                return Promise.resolve([]);
+            }
         };
 
         self.tryPair = function(target) {
 
-            return new Promise(function (resolve, reject) {
-
-                resolve();
-            });
+            return Promise.resolve();
         };
-    }
 
-    var player = new remoteControlPlayer();
+        function getPlayerState(session) {
 
-    MediaController.registerPlayer(player);
-
-    function getPlayerState(session) {
-
-        return session;
-    }
-
-    function firePlaybackEvent(name, session) {
-
-        Events.trigger(player, name, [getPlayerState(session)]);
-    }
-
-    function onWebSocketConnectionChange() {
-
-        // Reconnect
-        if (player.isUpdating) {
-            player.subscribeToPlayerUpdates();
+            return session;
         }
-    }
 
-    function processUpdatedSessions(sessions) {
-        
-        var currentTargetId = MediaController.getPlayerInfo().id;
+        function firePlaybackEvent(name, session) {
 
-        // Update existing data
-        //updateSessionInfo(popup, msg.Data);
-        var session = sessions.filter(function (s) {
-            return s.Id == currentTargetId;
-        })[0];
-
-        if (session) {
-            firePlaybackEvent('playstatechange', session);
+            events.trigger(self, name, [getPlayerState(session)]);
         }
-    }
 
-    function onWebSocketMessageReceived(e, msg) {
+        function onWebSocketConnectionChange() {
 
-        var apiClient = this;
-
-        if (msg.MessageType === "Sessions") {
-
-            processUpdatedSessions(msg.Data);
+            // Reconnect
+            if (self.isUpdating) {
+                self.subscribeToPlayerUpdates();
+            }
         }
-        else if (msg.MessageType === "SessionEnded") {
 
+        function processUpdatedSessions(sessions) {
+
+            var currentTargetId = playbackManager.getPlayerInfo().id;
+
+            // Update existing data
+            //updateSessionInfo(popup, msg.Data);
+            var session = sessions.filter(function (s) {
+                return s.Id === currentTargetId;
+            })[0];
+
+            if (session) {
+                firePlaybackEvent('timeupdate', session);
+                firePlaybackEvent('pause', session);
+            }
+        }
+
+        events.on(serverNotifications, 'Sessions', function (e, apiClient, data) {
+            processUpdatedSessions(data);
+        });
+
+        events.on(serverNotifications, 'SessionEnded', function (e, apiClient, data) {
             console.log("Server reports another session ended");
 
-            if (MediaController.getPlayerInfo().id == msg.Data.Id) {
-                MediaController.setDefaultPlayerActive();
+            if (playbackManager.getPlayerInfo().id === data.Id) {
+                playbackManager.setDefaultPlayerActive();
             }
-        }
-        else if (msg.MessageType === "PlaybackStart") {
+        });
 
-            if (msg.Data.DeviceId != apiClient.deviceId()) {
-                if (MediaController.getPlayerInfo().id == msg.Data.Id) {
-                    firePlaybackEvent('playbackstart', msg.Data);
+        events.on(serverNotifications, 'PlaybackStart', function (e, apiClient, data) {
+            if (data.DeviceId !== apiClient.deviceId()) {
+                if (playbackManager.getPlayerInfo().id === data.Id) {
+                    firePlaybackEvent('playbackstart', data);
                 }
             }
-        }
-        else if (msg.MessageType === "PlaybackStopped") {
+        });
 
-            if (msg.Data.DeviceId != apiClient.deviceId()) {
-                if (MediaController.getPlayerInfo().id == msg.Data.Id) {
-                    firePlaybackEvent('playbackstop', msg.Data);
+        events.on(serverNotifications, 'PlaybackStopped', function (e, apiClient, data) {
+            if (data.DeviceId !== apiClient.deviceId()) {
+                if (playbackManager.getPlayerInfo().id === data.Id) {
+                    firePlaybackEvent('playbackstop', data);
                 }
             }
-        }
+        });
     }
 
-    function initializeApiClient(apiClient) {
-        Events.on(apiClient, "websocketmessage", onWebSocketMessageReceived);
-        Events.on(apiClient, "websocketopen", onWebSocketConnectionChange);
-    }
-
-    if (window.ApiClient) {
-        initializeApiClient(window.ApiClient);
-    }
-
-    Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
-        initializeApiClient(apiClient);
-    });
-
+    return RemoteControlPlayer;
 });

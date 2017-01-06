@@ -89,7 +89,7 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
                 return;
             case 'SetVolume':
                 notifyApp();
-                playbackManager.volume(cmd.Arguments.Volume);
+                playbackManager.setVolume(cmd.Arguments.Volume);
                 break;
             case 'SetAudioStreamIndex':
                 notifyApp();

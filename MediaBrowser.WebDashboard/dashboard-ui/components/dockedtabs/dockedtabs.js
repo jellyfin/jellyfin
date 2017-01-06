@@ -124,7 +124,7 @@
             });
         }
 
-        if (Dashboard.isConnectMode()) {
+        if (appHost.supports('multiserver')) {
             commands.push({
                 name: globalize.translate('HeaderSelectServer'),
                 id: 'selectserver'
