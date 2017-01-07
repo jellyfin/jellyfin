@@ -155,7 +155,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     ReadAtNativeFramerate = false,
 
                     Id = channel.Path.GetMD5().ToString("N"),
-                    IsInfiniteStream = true
+                    IsInfiniteStream = true,
+                    SupportsDirectStream = false
                 };
 
                 return new List<MediaSourceInfo> { mediaSource };

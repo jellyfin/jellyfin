@@ -51,11 +51,11 @@
 
     EmbySliderPrototype.attachedCallback = function () {
 
-        if (this.getAttribute('data-embycheckbox') === 'true') {
+        if (this.getAttribute('data-embyslider') === 'true') {
             return;
         }
 
-        this.setAttribute('data-embycheckbox', 'true');
+        this.setAttribute('data-embyslider', 'true');
 
         this.classList.add('mdl-slider');
         this.classList.add('mdl-js-slider');

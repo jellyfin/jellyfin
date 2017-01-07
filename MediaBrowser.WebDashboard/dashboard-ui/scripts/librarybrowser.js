@@ -230,13 +230,6 @@
                 return html;
             },
 
-            playInExternalPlayer: function (id) {
-
-                Dashboard.loadExternalPlayer().then(function () {
-                    ExternalPlayer.showMenu(id);
-                });
-            },
-
             getHref: function (item, context, topParentId) {
 
                 if (!item) {

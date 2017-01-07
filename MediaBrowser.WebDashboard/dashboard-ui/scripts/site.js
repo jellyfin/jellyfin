@@ -651,21 +651,6 @@ var Dashboard = {
         }
     },
 
-    loadExternalPlayer: function () {
-
-        return new Promise(function (resolve, reject) {
-
-            require(['scripts/externalplayer.js'], function () {
-
-                if (Dashboard.isRunningInCordova()) {
-                    require(['cordova/externalplayer.js'], resolve);
-                } else {
-                    resolve();
-                }
-            });
-        });
-    },
-
     getDeviceProfile: function (maxHeight, profileOptions) {
 
         return new Promise(function (resolve, reject) {
@@ -898,16 +883,13 @@ var AppInfo = {};
             AppInfo.hasLowImageBandwidth = true;
         }
 
-        AppInfo.supportsExternalPlayers = true;
-
         if (isCordova) {
             AppInfo.enableAppLayouts = true;
-            AppInfo.supportsExternalPlayerMenu = true;
             AppInfo.isNativeApp = true;
             AppInfo.enableHomeTabs = false;
 
-            if (isIOS) {
-                AppInfo.supportsExternalPlayers = false;
+            if (isAndroid) {
+                AppInfo.supportsExternalPlayerMenu = true;
             }
         }
         else {
@@ -1655,9 +1637,6 @@ var AppInfo = {};
             window.VlcAudio = true;
             define("audiorenderer", ["cordova/android/vlcplayer"]);
             define("videorenderer", ["cordova/android/vlcplayer"]);
-        }
-        else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
-            define("audiorenderer", ["cordova/audioplayer"]);
         }
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
@@ -2578,7 +2557,17 @@ var AppInfo = {};
         //'plugins/playbackvalidation/plugin'
         ];
 
-        list.push('bower_components/emby-webcomponents/htmlaudioplayer/plugin');
+        if (Dashboard.isRunningInCordova() && browser.safari) {
+            list.push('cordova/audioplayer');
+        } else {
+            list.push('bower_components/emby-webcomponents/htmlaudioplayer/plugin');
+        }
+
+        if (Dashboard.isRunningInCordova() && browser.android) {
+            // intent player
+            list.push('cordova/externalplayer');
+        }
+
         list.push('bower_components/emby-webcomponents/htmlvideoplayer/plugin');
         list.push('bower_components/emby-webcomponents/sessionplayer');
 
@@ -2746,7 +2735,7 @@ var AppInfo = {};
             postInitDependencies.push('playerSelectionMenu');
 
             //if (appHost.supports('fullscreenchange')) {
-                require(['fullscreen-doubleclick']);
+            require(['fullscreen-doubleclick']);
             //}
 
             require(postInitDependencies);
