@@ -3368,9 +3368,9 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (query.SimilarTo != null)
+            if (query.SimilarTo != null && query.MinSimilarityScore > 0)
             {
-                whereClauses.Add("SimilarityScore > 0");
+                whereClauses.Add("SimilarityScore > " + (query.MinSimilarityScore - 1).ToString(CultureInfo.InvariantCulture));
             }
 
             if (query.IsFolder.HasValue)

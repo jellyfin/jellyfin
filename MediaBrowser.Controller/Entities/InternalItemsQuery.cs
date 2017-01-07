@@ -160,6 +160,7 @@ namespace MediaBrowser.Controller.Entities
         public DateTime? MinDateLastSaved { get; set; }
 
         public DtoOptions DtoOptions { get; set; }
+        public int MinSimilarityScore { get; set; }
 
         public bool HasField(ItemFields name)
         {
@@ -197,6 +198,8 @@ namespace MediaBrowser.Controller.Entities
 
         public InternalItemsQuery()
         {
+            MinSimilarityScore = 1;
+
             GroupByPresentationUniqueKey = true;
             EnableTotalRecordCount = true;
 
