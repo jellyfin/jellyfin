@@ -100,7 +100,12 @@ namespace Emby.Server.Implementations.Intros
 
             if (trailerTypes.Count > 0)
             {
-                var trailerResult = _libraryManager.GetItemList(new InternalItemsQuery
+                if (trailerTypes.Count >= 5)
+                {
+                    trailerTypes.Clear();
+                }
+
+                var trailerResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     IncludeItemTypes = new[] { typeof(Trailer).Name },
                     TrailerTypes = trailerTypes.ToArray(),
@@ -111,7 +116,8 @@ namespace Emby.Server.Implementations.Intros
 
                     // Account for duplicates by imdb id, since the database doesn't support this yet
                     Limit = config.TrailerLimit * 2,
-                    SourceTypes = sourceTypes.ToArray()
+                    SourceTypes = sourceTypes.ToArray(),
+                    MinSimilarityScore = 0
 
                 }).Where(i => string.IsNullOrWhiteSpace(i.GetProviderId(MetadataProviders.Imdb)) || !string.Equals(i.GetProviderId(MetadataProviders.Imdb), item.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase)).Take(config.TrailerLimit);
 

@@ -1885,7 +1885,7 @@ namespace MediaBrowser.Api.Playback
                 request.AudioCodec = InferAudioCodec(url);
             }
 
-            var state = new StreamState(MediaSourceManager, Logger)
+            var state = new StreamState(MediaSourceManager, Logger, TranscodingJobType)
             {
                 Request = request,
                 RequestedUrl = url,

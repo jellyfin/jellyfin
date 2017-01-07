@@ -20,9 +20,6 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Providers.MediaInfo
@@ -35,6 +32,8 @@ namespace MediaBrowser.Providers.MediaInfo
         ICustomMetadataProvider<Trailer>,
         ICustomMetadataProvider<Video>,
         ICustomMetadataProvider<Audio>,
+        ICustomMetadataProvider<AudioPodcast>,
+        ICustomMetadataProvider<AudioBook>,
         IHasItemChangeMonitor,
         IHasOrder,
         IForcedProvider,
@@ -96,6 +95,16 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         public Task<ItemUpdateType> FetchAsync(LiveTvAudioRecording item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            return FetchAudioInfo(item, cancellationToken);
+        }
+
+        public Task<ItemUpdateType> FetchAsync(AudioPodcast item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            return FetchAudioInfo(item, cancellationToken);
+        }
+
+        public Task<ItemUpdateType> FetchAsync(AudioBook item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return FetchAudioInfo(item, cancellationToken);
         }
