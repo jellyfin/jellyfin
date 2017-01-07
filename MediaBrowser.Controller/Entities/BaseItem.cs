@@ -53,6 +53,7 @@ namespace MediaBrowser.Controller.Entities
             ImageInfos = new List<ItemImageInfo>();
             InheritedTags = new List<string>();
             ProductionLocations = new List<string>();
+            SourceType = SourceType.Library;
         }
 
         public static readonly char[] SlugReplaceChars = { '?', '/', '&' };
