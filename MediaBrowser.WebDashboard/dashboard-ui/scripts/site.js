@@ -1185,12 +1185,12 @@ var AppInfo = {};
 
         if (Dashboard.isRunningInCordova()) {
             paths.sharingMenu = "cordova/sharingwidget";
-            paths.wakeonlan = "cordova/wakeonlan";
         } else {
-            paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
 
             define("sharingMenu", [embyWebComponentsBowerPath + "/sharing/sharingmenu"], returnFirstDependency);
         }
+
+        paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
 
         define("libjass", [bowerPath + "/libjass/libjass.min", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
 
@@ -1278,7 +1278,7 @@ var AppInfo = {};
 
         // hack for an android test before browserInfo is loaded
         if (Dashboard.isRunningInCordova() && window.MainActivity) {
-            define("shell", ["cordova/android/shell"], returnFirstDependency);
+            define("shell", ["cordova/shell"], returnFirstDependency);
         } else {
             define("shell", [embyWebComponentsBowerPath + "/shell"], returnFirstDependency);
         }
@@ -1293,7 +1293,7 @@ var AppInfo = {};
 
         // hack for an android test before browserInfo is loaded
         if (Dashboard.isRunningInCordova() && window.MainActivity) {
-            paths.appStorage = "cordova/android/appstorage";
+            paths.appStorage = "cordova/appstorage";
             paths.filesystem = 'cordova/filesystem';
         } else {
             paths.appStorage = getAppStorage(apiClientBowerPath);
@@ -1559,12 +1559,8 @@ var AppInfo = {};
         var apiClientBowerPath = bowerPath + "/emby-apiclient";
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
 
-        if (Dashboard.isRunningInCordova()) {
-            if (window.MainActivity && window.MainActivity.getAndroidBuildVersion() >= 24) {
-                define("actionsheet", ["webActionSheet"], returnFirstDependency);
-            } else {
-                define("actionsheet", ["cordova/actionsheet"], returnFirstDependency);
-            }
+        if (Dashboard.isRunningInCordova() && browser.safari) {
+            define("actionsheet", ["cordova/actionsheet"], returnFirstDependency);
         } else {
             define("actionsheet", ["webActionSheet"], returnFirstDependency);
         }
@@ -1618,7 +1614,7 @@ var AppInfo = {};
         define("multi-download", [embyWebComponentsBowerPath + '/multidownload'], returnFirstDependency);
 
         if (Dashboard.isRunningInCordova() && browser.android) {
-            define("fileDownloader", ['cordova/android/filedownloader'], returnFirstDependency);
+            define("fileDownloader", ['cordova/filedownloader'], returnFirstDependency);
             define("localassetmanager", ["cordova/localassetmanager"], returnFirstDependency);
         } else {
             define("fileDownloader", [embyWebComponentsBowerPath + '/filedownloader'], returnFirstDependency);
@@ -1635,12 +1631,10 @@ var AppInfo = {};
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
 
             window.VlcAudio = true;
-            define("audiorenderer", ["cordova/android/vlcplayer"]);
-            define("videorenderer", ["cordova/android/vlcplayer"]);
         }
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
-            define("localsync", ["cordova/android/localsync"], returnFirstDependency);
+            define("localsync", ["cordova/localsync"], returnFirstDependency);
         }
         else {
             define("localsync", ["scripts/localsync"], returnFirstDependency);
@@ -2664,7 +2658,7 @@ var AppInfo = {};
             deps.push('registrationServices');
 
             if (browserInfo.android) {
-                deps.push('cordova/android/androidcredentials');
+                deps.push('cordova/androidcredentials');
             }
         }
 
@@ -2697,8 +2691,8 @@ var AppInfo = {};
             if (Dashboard.isRunningInCordova()) {
 
                 if (browserInfo.android) {
-                    postInitDependencies.push('cordova/android/mediasession');
-                    postInitDependencies.push('cordova/android/chromecast');
+                    postInitDependencies.push('cordova/mediasession');
+                    postInitDependencies.push('cordova/chromecast');
 
                 } else if (browserInfo.safari) {
 
