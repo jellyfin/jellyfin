@@ -82,6 +82,7 @@
         .videoOsdBottom .buttons {
             padding: .25em 0 0;
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
         }
 
@@ -152,6 +153,26 @@
             left: 0;
             right: 0;
             position: fixed;
+        }
+
+        @media all and (max-width:600px) {
+            .osdPoster {
+                display: none !important;
+            }
+
+            .videoOsdBottom .paper-icon-button-light {
+                margin: 0;
+            }
+
+            .videoOsdBottom .volumeButtons {
+                display: none !important;
+            }
+        }
+
+        @media all and (max-width: 1200px) {
+            .videoOsdBottom .endsAtText {
+                display: none !important;
+            }
         }
     </style>
     <div class="pageContainer flex">

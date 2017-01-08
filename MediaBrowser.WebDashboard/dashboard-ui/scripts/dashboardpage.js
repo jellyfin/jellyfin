@@ -216,7 +216,7 @@
 
                     itemHtml += '<div class="listItemBodyText secondary">';
                     var date = datetime.parseISO8601Date(item.Date, true);
-                    itemHtml += date.toLocaleDateString();
+                    itemHtml += datetime.toLocaleDateString(date);
                     itemHtml += '</div>';
 
                     //itemHtml += '<div class="listItemBodyText secondary listItemBodyText-nowrap">';
@@ -1129,7 +1129,7 @@
 
             html += '<div class="listItemBodyText secondary">';
             var date = datetime.parseISO8601Date(entry.Date, true);
-            html += date.toLocaleDateString() + ' ' + date.toLocaleTimeString().toLowerCase();
+            html += datetime.toLocaleString(date).toLowerCase();
             html += '</div>';
 
             html += '<div class="listItemBodyText secondary listItemBodyText-nowrap">';

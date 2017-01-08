@@ -1747,7 +1747,7 @@
 
                 try {
 
-                    var date = datetime.parseISO8601Date(review.Date, true).toLocaleDateString();
+                    var date = datetime.toLocaleDateString(datetime.parseISO8601Date(review.Date, true));
 
                     html += '<span class="reviewDate">' + date + '</span>';
                 }

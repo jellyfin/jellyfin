@@ -323,9 +323,20 @@
         });
     }
 
+    var instance;
+
+    function onViewShow(e) {
+        if (e.detail.type === 'video-osd') {
+            instance.hide();
+        } else {
+            instance.show();
+        }
+    }
+
     function dockedTabs(options) {
 
         var self = this;
+        instance = self;
 
         self.element = render(options);
 
@@ -339,15 +350,28 @@
         });
 
         showCurrentUserTabs(self.element);
+        document.addEventListener('viewshow', onViewShow);
     }
 
     dockedTabs.prototype.destroy = function () {
+
+        document.removeEventListener('viewshow', onViewShow);
+        instance = null;
+
         var self = this;
 
         var elem = self.element;
         if (elem) {
         }
         self.element = null;
+    };
+
+    dockedTabs.prototype.show = function () {
+        this.element.classList.remove('hide');
+    };
+
+    dockedTabs.prototype.hide = function () {
+        this.element.classList.add('hide');
     };
 
     return dockedTabs;

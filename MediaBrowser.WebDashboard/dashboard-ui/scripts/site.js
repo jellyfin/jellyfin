@@ -1242,7 +1242,7 @@ var AppInfo = {};
         define("dom", [embyWebComponentsBowerPath + "/dom"], returnFirstDependency);
 
         define("fullscreen-doubleclick", [embyWebComponentsBowerPath + "/fullscreen/fullscreen-doubleclick"], returnFirstDependency);
-        define("fullscreenManager", [embyWebComponentsBowerPath + "/fullscreen/fullscreenmanager"], returnFirstDependency);
+        define("fullscreenManager", [embyWebComponentsBowerPath + "/fullscreen/fullscreenmanager", 'events'], returnFirstDependency);
 
         define("layoutManager", [embyWebComponentsBowerPath + "/layoutmanager"], getLayoutManager);
         define("playMenu", [embyWebComponentsBowerPath + "/playmenu"], returnFirstDependency);

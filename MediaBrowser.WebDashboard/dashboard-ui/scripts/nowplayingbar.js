@@ -537,12 +537,10 @@
             return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.Id, options);
         }
 
-        if (options.type === 'Primary') {
-            if (item.AlbumId && item.AlbumPrimaryImageTag) {
+        if (item.AlbumId && item.AlbumPrimaryImageTag) {
 
-                options.tag = item.AlbumPrimaryImageTag;
-                return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.AlbumId, options);
-            }
+            options.tag = item.AlbumPrimaryImageTag;
+            return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.AlbumId, options);
         }
 
         return null;
