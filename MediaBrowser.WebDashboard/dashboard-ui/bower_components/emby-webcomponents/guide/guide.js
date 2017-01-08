@@ -512,20 +512,32 @@
 
                     html += '<div class="' + guideProgramNameClass + '">';
 
+                    html += '<div class="guideProgramNameText">' + program.Name + '</div>';
+
+                    var indicatorHtml;
                     if (program.IsLive && options.showLiveIndicator) {
-                        html += '<span class="liveTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Live') + '</span>';
+                        indicatorHtml = '<span class="liveTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Live') + '</span>';
                     }
                     else if (program.IsPremiere && options.showPremiereIndicator) {
-                        html += '<span class="premiereTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Premiere') + '</span>';
+                        indicatorHtml = '<span class="premiereTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Premiere') + '</span>';
                     }
                     else if (program.IsSeries && !program.IsRepeat && options.showNewIndicator) {
-                        html += '<span class="newTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#AttributeNew') + '</span>';
+                        indicatorHtml = '<span class="newTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#AttributeNew') + '</span>';
                     }
                     else if (program.IsSeries && program.IsRepeat && options.showRepeatIndicator) {
-                        html += '<span class="repeatTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Repeat') + '</span>';
+                        indicatorHtml = '<span class="repeatTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Repeat') + '</span>';
+                    }
+                    if (indicatorHtml || program.EpisodeTitle) {
+                        html += '<div class="guideProgramSecondaryInfo">';
+
+                        html += indicatorHtml || '';
+
+                        if (program.EpisodeTitle) {
+                            html += '<span class="programSecondaryTitle">' + program.EpisodeTitle + '</span>';
+                        }
+                        html += '</div>';
                     }
 
-                    html += program.Name;
                     html += '</div>';
 
                     if (program.IsHD && options.showHdIcon) {
@@ -610,11 +622,8 @@
                 html += '<button type="button" class="' + cssClass + '"' + dataSrc + ' data-action="link" data-isfolder="' + channel.IsFolder + '" data-id="' + channel.Id + '" data-serverid="' + channel.ServerId + '" data-type="' + channel.Type + '">';
 
                 cssClass = 'guideChannelNumber';
-                if (hasChannelImage) {
-                    cssClass += ' guideChannelNumberWithImage';
-                }
 
-                html += '<div class="' + cssClass + '">' + channel.Number + '</div>';
+                html += '<h3 class="' + cssClass + '">' + channel.Number + '</h3>';
 
                 if (!hasChannelImage) {
                     html += '<div class="guideChannelName">' + channel.Name + '</div>';

@@ -401,6 +401,7 @@
             bindToPlayer(playbackManager.getCurrentPlayer());
 
             document.addEventListener('mousemove', onMouseMove);
+            document.body.classList.add('autoScrollY');
 
             showOsd();
 
@@ -412,6 +413,7 @@
             getHeaderElement().classList.remove('osdHeader');
             getHeaderElement().classList.remove('osdHeader-hidden');
             document.removeEventListener('mousemove', onMouseMove);
+            document.body.classList.remove('autoScrollY');
 
             inputManager.off(window, onInputCommand);
             events.off(playbackManager, 'playerchange', onPlayerChange);

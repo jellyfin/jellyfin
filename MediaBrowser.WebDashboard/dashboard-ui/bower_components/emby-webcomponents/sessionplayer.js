@@ -1,9 +1,14 @@
 ﻿define(['playbackManager', 'events', 'serverNotifications'], function (playbackManager, events, serverNotifications) {
     'use strict';
 
+    function getActivePlayerId() {
+        var info = playbackManager.getPlayerInfo();
+        return info ? info.id : null;
+    }
+
     function sendPlayCommand(options, playType) {
 
-        var sessionId = playbackManager.getPlayerInfo().id;
+        var sessionId = getActivePlayerId();
 
         var ids = options.ids || options.items.map(function (i) {
             return i.Id;
@@ -24,12 +29,12 @@
 
     function sendPlayStateCommand(command, options) {
 
-        var sessionId = playbackManager.getPlayerInfo().id;
+        var sessionId = getActivePlayerId();
 
         ApiClient.sendPlayStateCommand(sessionId, command, options);
     }
 
-    function RemoteControlPlayer() {
+    return function () {
 
         var self = this;
 
@@ -53,7 +58,7 @@
 
         self.sendCommand = function (command) {
 
-            var sessionId = playbackManager.getPlayerInfo().id;
+            var sessionId = getActivePlayerId();
 
             ApiClient.sendCommand(sessionId, command);
         };
@@ -61,7 +66,7 @@
         self.play = function (options) {
 
             var playOptions = {};
-            playOptions.ids = options.ids || options.items.map(function(i) {
+            playOptions.ids = options.ids || options.items.map(function (i) {
                 return i.Id;
             });
 
@@ -116,9 +121,9 @@
 
         self.seek = function (positionTicks) {
             sendPlayStateCommand('seek',
-                {
-                    SeekPositionTicks: positionTicks
-                });
+            {
+                SeekPositionTicks: positionTicks
+            });
         };
 
         self.currentTime = function (val) {
@@ -182,7 +187,7 @@
             return [];
         };
 
-        self.getAudioStreamIndex = function() {
+        self.getAudioStreamIndex = function () {
 
         };
 
@@ -262,7 +267,7 @@
             if (apiClient) {
                 return apiClient.getSessions().then(function (sessions) {
 
-                    var currentTargetId = playbackManager.getPlayerInfo().id;
+                    var currentTargetId = getActivePlayerId();
 
                     // Update existing data
                     //updateSessionInfo(popup, msg.Data);
@@ -381,7 +386,7 @@
             }
         };
 
-        self.tryPair = function(target) {
+        self.tryPair = function (target) {
 
             return Promise.resolve();
         };
@@ -406,7 +411,7 @@
 
         function processUpdatedSessions(sessions) {
 
-            var currentTargetId = playbackManager.getPlayerInfo().id;
+            var currentTargetId = getActivePlayerId();
 
             // Update existing data
             //updateSessionInfo(popup, msg.Data);
@@ -415,6 +420,7 @@
             })[0];
 
             if (session) {
+                firePlaybackEvent('statechange', session);
                 firePlaybackEvent('timeupdate', session);
                 firePlaybackEvent('pause', session);
             }
@@ -427,14 +433,14 @@
         events.on(serverNotifications, 'SessionEnded', function (e, apiClient, data) {
             console.log("Server reports another session ended");
 
-            if (playbackManager.getPlayerInfo().id === data.Id) {
+            if (getActivePlayerId() === data.Id) {
                 playbackManager.setDefaultPlayerActive();
             }
         });
 
         events.on(serverNotifications, 'PlaybackStart', function (e, apiClient, data) {
             if (data.DeviceId !== apiClient.deviceId()) {
-                if (playbackManager.getPlayerInfo().id === data.Id) {
+                if (getActivePlayerId() === data.Id) {
                     firePlaybackEvent('playbackstart', data);
                 }
             }
@@ -442,12 +448,10 @@
 
         events.on(serverNotifications, 'PlaybackStopped', function (e, apiClient, data) {
             if (data.DeviceId !== apiClient.deviceId()) {
-                if (playbackManager.getPlayerInfo().id === data.Id) {
+                if (getActivePlayerId() === data.Id) {
                     firePlaybackEvent('playbackstop', data);
                 }
             }
         });
-    }
-
-    return RemoteControlPlayer;
+    };
 });

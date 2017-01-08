@@ -1145,8 +1145,9 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
         function createMediaElement(options) {
 
-            if (browser.tv || browser.noAnimation) {
+            if (browser.tv || browser.noAnimation || browser.iOS) {
                 // too slow
+                // also on iOS, the backdrop image doesn't look right
                 options.backdropUrl = null;
             }
             return new Promise(function (resolve, reject) {

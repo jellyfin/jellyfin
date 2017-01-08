@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'libraryBrowser', 'listView', 'userdataButtons', 'imageLoader', 'playbackManager', 'nowPlayingHelper', 'events', 'apphost', 'cardStyle'], function (browser, datetime, libraryBrowser, listView, userdataButtons, imageLoader, playbackManager, nowPlayingHelper, events, appHost) {
+﻿define(['browser', 'datetime', 'libraryBrowser', 'listView', 'userdataButtons', 'imageLoader', 'playbackManager', 'nowPlayingHelper', 'events', 'connectionManager', 'apphost', 'cardStyle'], function (browser, datetime, libraryBrowser, listView, userdataButtons, imageLoader, playbackManager, nowPlayingHelper, events, connectionManager, appHost) {
     'use strict';
 
     function showSlideshowMenu(context) {
@@ -108,6 +108,63 @@
         }).join('<br/>');
     }
 
+    function seriesImageUrl(item, options) {
+
+        if (item.Type !== 'Episode') {
+            return null;
+        }
+
+        options = options || {};
+        options.type = options.type || "Primary";
+
+        if (options.type === 'Primary') {
+
+            if (item.SeriesPrimaryImageTag) {
+
+                options.tag = item.SeriesPrimaryImageTag;
+
+                return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.SeriesId, options);
+            }
+        }
+
+        if (options.type === 'Thumb') {
+
+            if (item.SeriesThumbImageTag) {
+
+                options.tag = item.SeriesThumbImageTag;
+
+                return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.SeriesId, options);
+            }
+            if (item.ParentThumbImageTag) {
+
+                options.tag = item.ParentThumbImageTag;
+
+                return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.ParentThumbItemId, options);
+            }
+        }
+
+        return null;
+    }
+
+    function imageUrl(item, options) {
+
+        options = options || {};
+        options.type = options.type || "Primary";
+
+        if (item.ImageTags && item.ImageTags[options.type]) {
+
+            options.tag = item.ImageTags[options.type];
+            return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.Id, options);
+        }
+
+        if (item.AlbumId && item.AlbumPrimaryImageTag) {
+
+            options.tag = item.AlbumPrimaryImageTag;
+            return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.AlbumId, options);
+        }
+
+        return null;
+    }
     var currentImgUrl;
     function updateNowPlayingInfo(context, state) {
 
@@ -122,38 +179,18 @@
             context.querySelector('.nowPlayingPageTitle').classList.add('hide');
         }
 
-        var url;
+        var url = item ? seriesImageUrl(item, {
+
+            maxHeight: 300
+
+        }) || imageUrl(item, {
+            maxHeight: 300
+
+        }) : null;
+
         var backdropUrl = null;
 
-        if (!item) {
-        }
-        else if (item.PrimaryImageTag) {
-
-            url = ApiClient.getScaledImageUrl(item.PrimaryImageItemId, {
-                type: "Primary",
-                maxHeight: 300,
-                tag: item.PrimaryImageTag
-            });
-        }
-        else if (item.BackdropImageTag) {
-
-            url = ApiClient.getScaledImageUrl(item.BackdropItemId, {
-                type: "Backdrop",
-                maxHeight: 300,
-                tag: item.BackdropImageTag,
-                index: 0
-            });
-
-        } else if (item.ThumbImageTag) {
-
-            url = ApiClient.getScaledImageUrl(item.ThumbImageItemId, {
-                type: "Thumb",
-                maxHeight: 300,
-                tag: item.ThumbImageTag
-            });
-        }
-
-        if (url == currentImgUrl) {
+        if (url === currentImgUrl) {
             return;
         }
 
@@ -469,6 +506,7 @@
 
             console.log('remotecontrol event: ' + e.type);
 
+            updatePlayerState(dlg, {});
             loadPlaylist(dlg);
         }
 
@@ -497,8 +535,6 @@
             lastUpdateTime = now;
 
             var player = this;
-            var state = lastPlayerState;
-            var nowPlayingItem = state.NowPlayingItem || {};
             currentRuntimeTicks = playbackManager.duration(player);
             updateTimeDisplay(playbackManager.currentTime(player), currentRuntimeTicks);
         }
