@@ -18,6 +18,7 @@ namespace Emby.Server.Implementations.Connect
     public class ConnectEntryPoint : IServerEntryPoint
     {
         private ITimer _timer;
+        private IpAddressInfo _cachedIpAddress;
         private readonly IHttpClient _httpClient;
         private readonly IApplicationPaths _appPaths;
         private readonly ILogger _logger;
@@ -151,6 +152,12 @@ namespace Emby.Server.Implementations.Connect
 
         private void CacheAddress(IpAddressInfo address)
         {
+            if (_cachedIpAddress != null && _cachedIpAddress.Equals(address))
+            {
+                // no need to update the file if the address has not changed
+                return;
+            }
+
             var path = CacheFilePath;
 
             try
@@ -164,6 +171,7 @@ namespace Emby.Server.Implementations.Connect
             try
             {
                 _fileSystem.WriteAllText(path, _encryption.EncryptString(address.ToString()), Encoding.UTF8);
+                _cachedIpAddress = address;
             }
             catch (Exception ex)
             {
@@ -184,6 +192,7 @@ namespace Emby.Server.Implementations.Connect
 
                 if (_networkManager.TryParseIpAddress(endpoint, out ipAddress))
                 {
+                    _cachedIpAddress = ipAddress;
                     ((ConnectManager)_connectManager).OnWanAddressResolved(ipAddress);
                 }
             }
