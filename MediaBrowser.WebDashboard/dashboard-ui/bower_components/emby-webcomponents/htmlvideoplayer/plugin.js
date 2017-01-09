@@ -621,8 +621,6 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
                 if (enableCustomControls) {
                     this.removeAttribute('controls');
-                } else {
-                    this.setAttribute('controls', 'controls');
                 }
 
                 seekOnPlaybackStart(e.target);
@@ -770,15 +768,9 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
         function enableCustomVideoControls() {
 
-            //if (AppInfo.isNativeApp && browser.safari) {
-
-            //    if (browser.ipad) {
-            //        // Need to disable it in order to support picture in picture
-            //        return false;
-            //    }
-
-            //    return true;
-            //}
+            if (browser.ipad) {
+                return false;
+            }
 
             return true;
         }

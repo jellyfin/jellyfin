@@ -14,7 +14,6 @@
                 pageData = data[key] = {
                     query: {
                         StartIndex: 0,
-                        EnableFavoriteSorting: true,
                         Limit: LibraryBrowser.getDefaultPageSize(),
                         Fields: "PrimaryImageAspectRatio"
                     }
