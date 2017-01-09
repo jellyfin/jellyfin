@@ -157,6 +157,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             AddIfMissing(excludeItemTypes, typeof(CollectionFolder).Name);
+            AddIfMissing(excludeItemTypes, typeof(Folder).Name);
 
             var mediaItems = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
@@ -164,8 +165,7 @@ namespace Emby.Server.Implementations.Library
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 Limit = query.Limit,
-                IncludeItemsByName = true,
-                IsVirtualItem = false
+                IncludeItemsByName = true
             });
 
             // Add search hints based on item name

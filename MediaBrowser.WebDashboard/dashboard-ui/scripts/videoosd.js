@@ -400,19 +400,32 @@
             events.on(playbackManager, 'playerchange', onPlayerChange);
             bindToPlayer(playbackManager.getCurrentPlayer());
 
-            document.addEventListener('mousemove', onMouseMove);
+            dom.addEventListener(document, 'mousemove', onMouseMove, {
+                passive: true
+            });
             document.body.classList.add('autoScrollY');
 
             showOsd();
 
             inputManager.on(window, onInputCommand);
+
+            dom.addEventListener(window, 'keydown', onWindowKeyDown, {
+                passive: true
+            });
         });
 
         view.addEventListener('viewbeforehide', function () {
+
+            dom.removeEventListener(window, 'keydown', onWindowKeyDown, {
+                passive: true
+            });
+
             stopHideTimer();
             getHeaderElement().classList.remove('osdHeader');
             getHeaderElement().classList.remove('osdHeader-hidden');
-            document.removeEventListener('mousemove', onMouseMove);
+            dom.removeEventListener(document, 'mousemove', onMouseMove, {
+                passive: true
+            });
             document.body.classList.remove('autoScrollY');
 
             inputManager.off(window, onInputCommand);
@@ -904,15 +917,12 @@
             getHeaderElement().classList.remove('hide');
         });
 
-        dom.addEventListener(window, 'keydown', function (e) {
-
+        function onWindowKeyDown(e) {
             if (e.keyCode === 32 && !isOsdOpen()) {
                 playbackManager.playPause(currentPlayer);
                 showOsd();
             }
-        }, {
-            passive: true
-        });
+        }
 
         view.querySelector('.pageContainer').addEventListener('click', function () {
 

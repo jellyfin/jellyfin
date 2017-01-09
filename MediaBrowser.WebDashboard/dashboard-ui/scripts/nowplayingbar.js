@@ -490,6 +490,10 @@
 
     function seriesImageUrl(item, options) {
 
+        if (!item) {
+            throw new Error('item cannot be null!');
+        }
+
         if (item.Type !== 'Episode') {
             return null;
         }
@@ -528,6 +532,10 @@
 
     function imageUrl(item, options) {
 
+        if (!item) {
+            throw new Error('item cannot be null!');
+        }
+
         options = options || {};
         options.type = options.type || "Primary";
 
@@ -549,7 +557,9 @@
     var currentImgUrl;
     function updateNowPlayingInfo(state) {
 
-        nowPlayingTextElement.innerHTML = nowPlayingHelper.getNowPlayingNames(state.NowPlayingItem).map(function (nowPlayingName) {
+        var nowPlayingItem = state.NowPlayingItem;
+
+        nowPlayingTextElement.innerHTML = nowPlayingItem ? nowPlayingHelper.getNowPlayingNames(nowPlayingItem).map(function (nowPlayingName) {
 
             if (nowPlayingName.item) {
                 return '<div>' + getTextActionButton(nowPlayingName.item, nowPlayingName.text) + '</div>';
@@ -557,18 +567,17 @@
 
             return '<div>' + nowPlayingName.text + '</div>';
 
-        }).join('');
+        }).join('') : '';
 
         var imgHeight = 70;
-        var nowPlayingItem = state.NowPlayingItem;
 
-        var url = seriesImageUrl(nowPlayingItem, {
+        var url = nowPlayingItem ? (seriesImageUrl(nowPlayingItem, {
             height: imgHeight
         }) || imageUrl(nowPlayingItem, {
             height: imgHeight
-        });
+        })) : null;
 
-        if (url == currentImgUrl) {
+        if (url === currentImgUrl) {
             return;
         }
 

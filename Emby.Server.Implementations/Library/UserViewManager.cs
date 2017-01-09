@@ -287,7 +287,7 @@ namespace Emby.Server.Implementations.Library
                 SortBy = new[] { ItemSortBy.DateCreated },
                 IsFolder = includeItemTypes.Length == 0 ? false : (bool?)null,
                 ExcludeItemTypes = excludeItemTypes,
-                ExcludeLocationTypes = new[] { LocationType.Virtual },
+                IsVirtualItem = false,
                 Limit = limit * 5,
                 SourceTypes = parents.Count == 0 ? new[] { SourceType.Library } : new SourceType[] { },
                 IsPlayed = request.IsPlayed

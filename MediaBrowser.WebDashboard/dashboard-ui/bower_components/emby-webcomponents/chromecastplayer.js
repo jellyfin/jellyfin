@@ -986,6 +986,15 @@
             data = data || self.lastPlayerData;
             self.lastPlayerData = data;
 
+            if (data && data.NowPlayingItem) {
+                if (!data.NowPlayingItem.ImageTags || !data.NowPlayingItem.ImageTags.Primary) {
+                    if (data.NowPlayingItem.PrimaryImageTag) {
+                        data.NowPlayingItem.ImageTags = data.NowPlayingItem.ImageTags || {};
+                        data.NowPlayingItem.ImageTags.Primary = data.NowPlayingItem.PrimaryImageTag;
+                    }
+                }
+            }
+
             //console.log(JSON.stringify(data));
 
             if (triggerStateChange) {
