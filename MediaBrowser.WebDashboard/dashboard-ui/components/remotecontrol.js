@@ -154,7 +154,7 @@
         if (item.ImageTags && item.ImageTags[options.type]) {
 
             options.tag = item.ImageTags[options.type];
-            return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.Id, options);
+            return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.PrimaryImageItemId || item.Id, options);
         }
 
         if (item.AlbumId && item.AlbumPrimaryImageTag) {

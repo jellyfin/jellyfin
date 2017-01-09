@@ -1602,7 +1602,7 @@ namespace Emby.Server.Implementations.LiveTv
                 Recursive = true,
                 AncestorIds = folders.Select(i => i.Id.ToString("N")).ToArray(),
                 IsFolder = false,
-                ExcludeLocationTypes = new[] { LocationType.Virtual },
+                IsVirtualItem = false,
                 Limit = query.Limit,
                 SortBy = new[] { ItemSortBy.DateCreated },
                 SortOrder = SortOrder.Descending,

@@ -130,7 +130,6 @@ namespace MediaBrowser.Controller.Entities
         public string[] TopParentIds { get; set; }
 
         public LocationType[] LocationTypes { get; set; }
-        public LocationType[] ExcludeLocationTypes { get; set; }
         public string[] PresetViews { get; set; }
         public SourceType[] SourceTypes { get; set; }
         public SourceType[] ExcludeSourceTypes { get; set; }
@@ -233,7 +232,6 @@ namespace MediaBrowser.Controller.Entities
             ExcludeTags = new string[] { };
             ExcludeInheritedTags = new string[] { };
             LocationTypes = new LocationType[] { };
-            ExcludeLocationTypes = new LocationType[] { };
             PresetViews = new string[] { };
             SourceTypes = new SourceType[] { };
             ExcludeSourceTypes = new SourceType[] { };

@@ -601,6 +601,12 @@ namespace MediaBrowser.ServerApplication
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         private static bool PerformUpdateIfNeeded(ServerApplicationPaths appPaths, ILogger logger)
         {
+            // Not supported
+            if (IsRunningAsService)
+            {
+                return false;
+            }
+
             // Look for the existence of an update archive
             var updateArchive = Path.Combine(appPaths.TempUpdatePath, "MBServer" + ".zip");
             if (File.Exists(updateArchive))

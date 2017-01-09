@@ -89,7 +89,9 @@ define(['pluginManager', 'events', 'browser', 'embyRouter'], function (pluginMan
                                 enablejsapi: 1,
                                 modestbranding: 1,
                                 rel: 0,
-                                showinfo: 0
+                                showinfo: 0,
+                                fs: 0,
+                                playsinline: 1
                             }
                         });
 

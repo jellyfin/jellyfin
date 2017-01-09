@@ -527,12 +527,12 @@
                     else if (program.IsSeries && program.IsRepeat && options.showRepeatIndicator) {
                         indicatorHtml = '<span class="repeatTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Repeat') + '</span>';
                     }
-                    if (indicatorHtml || program.EpisodeTitle) {
+                    if (indicatorHtml || (program.EpisodeTitle && options.showEpisodeTitle)) {
                         html += '<div class="guideProgramSecondaryInfo">';
 
                         html += indicatorHtml || '';
 
-                        if (program.EpisodeTitle) {
+                        if (program.EpisodeTitle && options.showEpisodeTitle) {
                             html += '<span class="programSecondaryTitle">' + program.EpisodeTitle + '</span>';
                         }
                         html += '</div>';
@@ -578,7 +578,8 @@
                 showLiveIndicator: allowIndicators && userSettings.get('guide-indicator-live') !== 'false',
                 showPremiereIndicator: allowIndicators && userSettings.get('guide-indicator-premiere') !== 'false',
                 showNewIndicator: allowIndicators && userSettings.get('guide-indicator-new') === 'true',
-                showRepeatIndicator: allowIndicators && userSettings.get('guide-indicator-repeat') === 'true'
+                showRepeatIndicator: allowIndicators && userSettings.get('guide-indicator-repeat') === 'true',
+                showEpisodeTitle: layoutManager.tv ? false : true
             };
 
             for (var i = 0, length = channels.length; i < length; i++) {
@@ -625,7 +626,7 @@
 
                 html += '<h3 class="' + cssClass + '">' + channel.Number + '</h3>';
 
-                if (!hasChannelImage) {
+                if (!hasChannelImage && channel.Name) {
                     html += '<div class="guideChannelName">' + channel.Name + '</div>';
                 }
 

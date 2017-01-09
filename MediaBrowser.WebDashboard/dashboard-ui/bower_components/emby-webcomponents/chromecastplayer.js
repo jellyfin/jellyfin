@@ -974,6 +974,18 @@
             return Promise.resolve(self.getPlayerStateInternal());
         };
 
+        function normalizePrimaryImage(state) {
+            
+            if (state && state.NowPlayingItem) {
+                if (!state.NowPlayingItem.ImageTags || !state.NowPlayingItem.ImageTags.Primary) {
+                    if (state.NowPlayingItem.PrimaryImageTag) {
+                        state.NowPlayingItem.ImageTags = state.NowPlayingItem.ImageTags || {};
+                        state.NowPlayingItem.ImageTags.Primary = state.NowPlayingItem.PrimaryImageTag;
+                    }
+                }
+            }
+        }
+
         self.lastPlayerData = {};
 
         self.getPlayerStateInternal = function (data) {
@@ -985,6 +997,8 @@
 
             data = data || self.lastPlayerData;
             self.lastPlayerData = data;
+
+            normalizePrimaryImage(data);
 
             //console.log(JSON.stringify(data));
 

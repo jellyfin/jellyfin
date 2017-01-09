@@ -557,6 +557,16 @@ define(['browser'], function (browser) {
         }
 
         var isTizenFhd = false;
+        if (browser.tizen) {
+            try {
+                var isTizenUhd = webapis.productinfo.isUdPanelSupported();
+                isTizenFhd = !isTizenUhd;
+                console.log("isTizenFhd = " + isTizenFhd);
+            } catch (error) {
+                console.log("isUdPanelSupported() error code = " + error.code);
+            }
+        }
+
         var globalMaxVideoBitrate = browser.ps4 ? '8000000' :
             (browser.xboxOne ? '10000000' :
             (browser.edgeUwp ? '40000000' :

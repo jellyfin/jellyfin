@@ -227,7 +227,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
                                         break;
                                     case Hls.ErrorTypes.MEDIA_ERROR:
                                         console.log("fatal media error encountered, try to recover");
-                                        hls.recoverMediaError();
+                                        handleMediaError();
                                         break;
                                     default:
                                         // cannot recover
@@ -280,6 +280,36 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             }
         }
 
+        var recoverDecodingErrorDate, recoverSwapAudioCodecDate;
+
+        function handleMediaError() {
+
+            if (!hlsPlayer) {
+                return;
+            }
+
+            var now = Date.now();
+
+            if (window.performance && window.performance.now) {
+                now = performance.now();
+            }
+
+            if (!recoverDecodingErrorDate || (now - recoverDecodingErrorDate) > 3000) {
+                recoverDecodingErrorDate = now;
+                console.log('try to recover media Error ...');
+                hlsPlayer.recoverMediaError();
+            } else {
+                if (!recoverSwapAudioCodecDate || (now - recoverSwapAudioCodecDate) > 3000) {
+                    recoverSwapAudioCodecDate = now;
+                    console.log('try to swap Audio Codec and recover media Error ...');
+                    hlsPlayer.swapAudioCodec();
+                    hlsPlayer.recoverMediaError();
+                } else {
+                    console.error('cannot recover, last media error recovery failed ...');
+                }
+            }
+        }
+
         function applySrc(elem, src) {
 
             if (window.Windows) {
@@ -306,7 +336,10 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
                     // Chrome now returns a promise
                     return promise.catch(function (e) {
 
-                        if ((e.name || '').toLowerCase() === 'notallowederror') {
+                        var errorName = (e.name || '').toLowerCase();
+                        // safari uses aborterror
+                        if (errorName === 'notallowederror' ||
+                            errorName === 'aborterror') {
                             // swallow this error because the user can still click the play button on the video element
                             return Promise.resolve();
                         }
@@ -588,8 +621,6 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
                 if (enableCustomControls) {
                     this.removeAttribute('controls');
-                } else {
-                    this.setAttribute('controls', 'controls');
                 }
 
                 seekOnPlaybackStart(e.target);
@@ -646,10 +677,8 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
         function onError() {
 
-            destroyCustomTrack(this);
-            var errorCode = this.error ? this.error.code : '';
-            errorCode = (errorCode || '').toString();
-            console.log('Media element error code: ' + errorCode);
+            var errorCode = this.error ? (this.error.code || 0) : 0;
+            console.log('Media element error code: ' + errorCode.toString());
 
             var type;
 
@@ -664,11 +693,14 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
                     break;
                 case 3:
                     // MEDIA_ERR_DECODE
-                    break;
+                    handleMediaError();
+                    return;
                 case 4:
                     // MEDIA_ERR_SRC_NOT_SUPPORTED
                     break;
             }
+
+            destroyCustomTrack(this);
 
             //events.trigger(self, 'error', [
             //{
@@ -708,7 +740,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
                 // simple playback should use the native support
                 if (mediaSource.RunTimeTicks) {
                     //if (!browser.edge) {
-                        return false;
+                    return false;
                     //}
                 }
 
@@ -736,15 +768,9 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
         function enableCustomVideoControls() {
 
-            //if (AppInfo.isNativeApp && browser.safari) {
-
-            //    if (browser.ipad) {
-            //        // Need to disable it in order to support picture in picture
-            //        return false;
-            //    }
-
-            //    return true;
-            //}
+            if (browser.ipad) {
+                return false;
+            }
 
             return true;
         }
