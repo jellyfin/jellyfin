@@ -316,17 +316,21 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 textlines.push(displayName);
             }
 
-            if (options.artist !== false && (options.artist === true || item.AlbumArtist !== options.containerAlbumArtist)) {
+            if (item.IsFolder) {
+                if (options.artist !== false) {
 
-                if (item.ArtistItems && item.Type !== 'MusicAlbum') {
-                    textlines.push(item.ArtistItems.map(function (a) {
-                        return a.Name;
-
-                    }).join(', '));
+                    if (item.AlbumArtist && item.Type === 'MusicAlbum') {
+                        textlines.push(item.AlbumArtist);
+                    }
                 }
+            } else {
+                if (options.artist !== false && (options.artist === true || (item.Artists || [])[0] !== options.containerAlbumArtist)) {
 
-                else if (item.AlbumArtist && item.Type === 'MusicAlbum') {
-                    textlines.push(item.AlbumArtist);
+                    if (item.ArtistItems && item.Type !== 'MusicAlbum') {
+                        textlines.push(item.ArtistItems.map(function (a) {
+                            return a.Name;
+                        }).join(', '));
+                    }
                 }
             }
 
