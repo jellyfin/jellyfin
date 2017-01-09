@@ -9,6 +9,10 @@ define(['css!./indicators.css', 'material-icons'], function () {
             }
         }
 
+        if (item.Type === 'AudioBook' || item.Type === 'AudioPodcast') {
+            return true;
+        }
+
         return false;
     }
 

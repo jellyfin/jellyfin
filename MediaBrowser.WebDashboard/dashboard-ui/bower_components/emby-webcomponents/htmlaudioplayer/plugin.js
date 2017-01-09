@@ -49,6 +49,7 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
 
         self.play = function (options) {
 
+            _currentTime = null;
             var elem = createMediaElement();
 
             var val = options.url;
@@ -87,12 +88,17 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
         }
 
         // Save this for when playback stops, because querying the time at that point might return 0
+        var _currentTime;
         self.currentTime = function (val) {
 
             if (mediaElement) {
                 if (val != null) {
                     mediaElement.currentTime = val / 1000;
                     return;
+                }
+
+                if (_currentTime) {
+                    return _currentTime * 1000;
                 }
 
                 return (mediaElement.currentTime || 0) * 1000;
@@ -265,11 +271,16 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
             };
 
             events.trigger(self, 'stopped', [stopInfo]);
+
+            _currentTime = null;
             currentSrc = null;
         }
 
         function onTimeUpdate() {
 
+            // Get the player position + the transcoding offset
+            var time = this.currentTime;
+            _currentTime = time;
             events.trigger(self, 'timeupdate');
         }
 
