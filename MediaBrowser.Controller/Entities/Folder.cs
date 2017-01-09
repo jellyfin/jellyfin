@@ -1336,7 +1336,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (!user.Configuration.DisplayMissingEpisodes || !user.Configuration.DisplayUnairedEpisodes)
             {
-                query.ExcludeLocationTypes = new[] { LocationType.Virtual };
+                query.IsVirtualItem = false;
             }
 
             var itemsResult = await GetItems(query).ConfigureAwait(false);
@@ -1375,7 +1375,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 Recursive = true,
                 IsFolder = false,
-                ExcludeLocationTypes = new[] { LocationType.Virtual },
+                IsVirtualItem = false,
                 EnableTotalRecordCount = false
 
             }).Result;

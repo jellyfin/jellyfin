@@ -2481,6 +2481,8 @@ namespace Emby.Server.Implementations.Library
                 options.VideoFileExtensions.Remove(".zip");
             }
 
+            options.VideoFileExtensions.Add(".tp");
+
             return options;
         }
 
