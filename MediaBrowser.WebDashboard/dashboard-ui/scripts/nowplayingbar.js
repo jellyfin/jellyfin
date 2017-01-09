@@ -8,7 +8,6 @@
     var nowPlayingImageElement;
     var nowPlayingTextElement;
     var nowPlayingUserData;
-    var unmuteButton;
     var muteButton;
     var volumeSlider;
     var volumeSliderContainer;
@@ -54,7 +53,6 @@
         html += '<div class="nowPlayingBarRight">';
 
         html += '<button is="paper-icon-button-light" class="muteButton mediaButton autoSize"><i class="md-icon">volume_up</i></button>';
-        html += '<button is="paper-icon-button-light" class="unmuteButton mediaButton autoSize"><i class="md-icon">volume_off</i></button>';
 
         html += '<div class="sliderContainer nowPlayingBarVolumeSliderContainer hide" style="width:100px;vertical-align:middle;display:inline-flex;">';
         html += '<input type="range" is="emby-slider" pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider"/>';
@@ -146,20 +144,11 @@
         nowPlayingTextElement = elem.querySelector('.nowPlayingBarText');
         nowPlayingUserData = elem.querySelector('.nowPlayingBarUserDataButtons');
 
-        unmuteButton = elem.querySelector('.unmuteButton');
-        unmuteButton.addEventListener('click', function () {
-
-            if (currentPlayer) {
-                currentPlayer.setMute(false);
-            }
-
-        });
-
         muteButton = elem.querySelector('.muteButton');
         muteButton.addEventListener('click', function () {
 
             if (currentPlayer) {
-                currentPlayer.setMute(true);
+                playbackManager.toggleMute(currentPlayer);
             }
 
         });
@@ -419,23 +408,16 @@
         var supportedCommands = currentPlayerSupportedCommands;
 
         var showMuteButton = true;
-        var showUnmuteButton = true;
         var showVolumeSlider = true;
 
-        if (supportedCommands.indexOf('Mute') == -1) {
+        if (supportedCommands.indexOf('ToggleMute') == -1) {
             showMuteButton = false;
-        }
-
-        if (supportedCommands.indexOf('Unmute') == -1) {
-            showUnmuteButton = false;
         }
 
         if (isMuted) {
-
-            showMuteButton = false;
+            muteButton.querySelector('i').innerHTML = '&#xE04F;';
         } else {
-
-            showUnmuteButton = false;
+            muteButton.querySelector('i').innerHTML = '&#xE050;';
         }
 
         if (supportedCommands.indexOf('SetVolume') == -1) {
@@ -444,7 +426,6 @@
 
         if (currentPlayer.isLocalPlayer && appHost.supports('physicalvolumecontrol')) {
             showMuteButton = false;
-            showUnmuteButton = false;
             showVolumeSlider = false;
         }
 
@@ -452,12 +433,6 @@
             showButton(muteButton);
         } else {
             hideButton(muteButton);
-        }
-
-        if (showUnmuteButton) {
-            showButton(unmuteButton);
-        } else {
-            hideButton(unmuteButton);
         }
 
         // See bindEvents for why this is necessary
@@ -542,7 +517,7 @@
         if (item.ImageTags && item.ImageTags[options.type]) {
 
             options.tag = item.ImageTags[options.type];
-            return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.Id, options);
+            return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.PrimaryImageItemId || item.Id, options);
         }
 
         if (item.AlbumId && item.AlbumPrimaryImageTag) {
@@ -688,8 +663,6 @@
         lastUpdateTime = now;
 
         var player = this;
-        var state = lastPlayerState;
-        var nowPlayingItem = state.NowPlayingItem || {};
         currentRuntimeTicks = playbackManager.duration(player);
         updateTimeDisplay(playbackManager.currentTime(player), currentRuntimeTicks);
     }

@@ -1,4 +1,4 @@
-﻿define(['playbackManager', 'events', 'serverNotifications'], function (playbackManager, events, serverNotifications) {
+﻿define(['playbackManager', 'events', 'serverNotifications', 'connectionManager'], function (playbackManager, events, serverNotifications, connectionManager) {
     'use strict';
 
     function getActivePlayerId() {
@@ -6,7 +6,7 @@
         return info ? info.id : null;
     }
 
-    function sendPlayCommand(options, playType) {
+    function sendPlayCommand(apiClient, options, playType) {
 
         var sessionId = getActivePlayerId();
 
@@ -24,14 +24,14 @@
             remoteOptions.startPositionTicks = options.startPositionTicks;
         }
 
-        return ApiClient.sendPlayCommand(sessionId, remoteOptions);
+        return apiClient.sendPlayCommand(sessionId, remoteOptions);
     }
 
-    function sendPlayStateCommand(command, options) {
+    function sendPlayStateCommand(apiClient, command, options) {
 
         var sessionId = getActivePlayerId();
 
-        ApiClient.sendPlayStateCommand(sessionId, command, options);
+        apiClient.sendPlayStateCommand(sessionId, command, options);
     }
 
     return function () {
@@ -42,6 +42,17 @@
         self.type = 'mediaplayer';
         self.isLocalPlayer = false;
         self.id = 'remoteplayer';
+
+        var currentServerId;
+
+        function getCurrentApiClient() {
+
+            if (currentServerId) {
+                return connectionManager.getApiClient(currentServerId);
+            }
+
+            return connectionManager.currentApiClient();
+        }
 
         function sendCommandByName(name, options) {
 
@@ -60,7 +71,8 @@
 
             var sessionId = getActivePlayerId();
 
-            ApiClient.sendCommand(sessionId, command);
+            var apiClient = getCurrentApiClient();
+            apiClient.sendCommand(sessionId, command);
         };
 
         self.play = function (options) {
@@ -74,27 +86,27 @@
                 playOptions.startPositionTicks = options.startPositionTicks;
             }
 
-            return sendPlayCommand(playOptions, 'PlayNow');
+            return sendPlayCommand(getCurrentApiClient(), playOptions, 'PlayNow');
         };
 
         self.shuffle = function (item) {
 
-            sendPlayCommand({ ids: [item.Id] }, 'PlayShuffle');
+            sendPlayCommand(getCurrentApiClient(), { ids: [item.Id] }, 'PlayShuffle');
         };
 
         self.instantMix = function (item) {
 
-            sendPlayCommand({ ids: [item.Id] }, 'PlayInstantMix');
+            sendPlayCommand(getCurrentApiClient(), { ids: [item.Id] }, 'PlayInstantMix');
         };
 
         self.queue = function (options) {
 
-            sendPlayCommand(options, 'PlayNext');
+            sendPlayCommand(getCurrentApiClient(), options, 'PlayNext');
         };
 
         self.queueNext = function (options) {
 
-            sendPlayCommand(options, 'PlayLast');
+            sendPlayCommand(getCurrentApiClient(), options, 'PlayLast');
         };
 
         self.canPlayMediaType = function (mediaType) {
@@ -108,19 +120,19 @@
         };
 
         self.stop = function () {
-            sendPlayStateCommand('stop');
+            sendPlayStateCommand(getCurrentApiClient(), 'stop');
         };
 
         self.nextTrack = function () {
-            sendPlayStateCommand('nextTrack');
+            sendPlayStateCommand(getCurrentApiClient(), 'nextTrack');
         };
 
         self.previousTrack = function () {
-            sendPlayStateCommand('previousTrack');
+            sendPlayStateCommand(getCurrentApiClient(), 'previousTrack');
         };
 
         self.seek = function (positionTicks) {
-            sendPlayStateCommand('seek',
+            sendPlayStateCommand(getCurrentApiClient(), 'seek',
             {
                 SeekPositionTicks: positionTicks
             });
@@ -138,18 +150,29 @@
         };
 
         self.duration = function () {
-
+            var state = self.lastPlayerData || {};
+            state = state.NowPlayingItem || {};
+            return state.RunTimeTicks;
         };
 
         self.paused = function () {
+            var state = self.lastPlayerData || {};
+            state = state.PlayState || {};
+            return state.IsPaused;
+        };
+
+        self.getVolume = function () {
+            var state = self.lastPlayerData || {};
+            state = state.PlayState || {};
+            return state.VolumeLevel;
         };
 
         self.pause = function () {
-            sendPlayStateCommand('Pause');
+            sendPlayStateCommand(getCurrentApiClient(), 'Pause');
         };
 
         self.unpause = function () {
-            sendPlayStateCommand('Unpause');
+            sendPlayStateCommand(getCurrentApiClient(), 'Unpause');
         };
 
         self.setMute = function (isMuted) {
@@ -262,7 +285,7 @@
 
         self.getPlayerState = function () {
 
-            var apiClient = window.ApiClient;
+            var apiClient = getCurrentApiClient();
 
             if (apiClient) {
                 return apiClient.getSessions().then(function (sessions) {
@@ -290,11 +313,13 @@
 
         function onPollIntervalFired() {
 
-            if (!ApiClient.isWebSocketOpen()) {
-                var apiClient = window.ApiClient;
+            var apiClient = getCurrentApiClient();
+            if (!apiClient.isWebSocketOpen()) {
 
                 if (apiClient) {
-                    apiClient.getSessions().then(processUpdatedSessions);
+                    apiClient.getSessions().then(function (sessions) {
+                        processUpdatedSessions(sessions, apiClient);
+                    });
                 }
             }
         }
@@ -303,9 +328,10 @@
 
             self.isUpdating = true;
 
-            if (ApiClient.isWebSocketOpen()) {
+            var apiClient = getCurrentApiClient();
+            if (apiClient.isWebSocketOpen()) {
 
-                ApiClient.sendWebSocketMessage("SessionsStart", "100,800");
+                apiClient.sendWebSocketMessage("SessionsStart", "100,800");
             }
             if (pollInterval) {
                 clearInterval(pollInterval);
@@ -318,9 +344,10 @@
 
             self.isUpdating = true;
 
-            if (ApiClient.isWebSocketOpen()) {
+            var apiClient = getCurrentApiClient();
+            if (apiClient.isWebSocketOpen()) {
 
-                ApiClient.sendWebSocketMessage("SessionsStop");
+                apiClient.sendWebSocketMessage("SessionsStop");
             }
             if (pollInterval) {
                 clearInterval(pollInterval);
@@ -354,7 +381,7 @@
 
         self.getTargets = function () {
 
-            var apiClient = window.ApiClient;
+            var apiClient = getCurrentApiClient();
 
             var sessionQuery = {
                 ControllableByUserId: apiClient.getCurrentUserId()
@@ -396,9 +423,27 @@
             return session;
         }
 
+        function normalizePrimaryImage(state) {
+
+            if (state && state.NowPlayingItem) {
+                if (!state.NowPlayingItem.ImageTags || !state.NowPlayingItem.ImageTags.Primary) {
+                    if (state.NowPlayingItem.PrimaryImageTag) {
+                        state.NowPlayingItem.ImageTags = state.NowPlayingItem.ImageTags || {};
+                        state.NowPlayingItem.ImageTags.Primary = state.NowPlayingItem.PrimaryImageTag;
+                    }
+                }
+            }
+        }
+
         function firePlaybackEvent(name, session) {
 
-            events.trigger(self, name, [getPlayerState(session)]);
+            var state = getPlayerState(session);
+
+            normalizePrimaryImage(state);
+
+            self.lastPlayerData = state;
+
+            events.trigger(self, name, [state]);
         }
 
         function onWebSocketConnectionChange() {
@@ -409,10 +454,17 @@
             }
         }
 
-        function processUpdatedSessions(sessions) {
+        function processUpdatedSessions(sessions, apiClient) {
+
+            var serverId = apiClient.serverId();
+
+            sessions.map(function (s) {
+                if (s.NowPlayingItem) {
+                    s.NowPlayingItem.ServerId = serverId;
+                }
+            });
 
             var currentTargetId = getActivePlayerId();
-
             // Update existing data
             //updateSessionInfo(popup, msg.Data);
             var session = sessions.filter(function (s) {
@@ -427,7 +479,7 @@
         }
 
         events.on(serverNotifications, 'Sessions', function (e, apiClient, data) {
-            processUpdatedSessions(data);
+            processUpdatedSessions(data, apiClient);
         });
 
         events.on(serverNotifications, 'SessionEnded', function (e, apiClient, data) {
