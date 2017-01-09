@@ -666,7 +666,7 @@ namespace MediaBrowser.Api.Library
                 IncludeItemTypes = new[] { type.Name },
                 Limit = 0,
                 Recursive = true,
-                ExcludeLocationTypes = new[] { LocationType.Virtual },
+                IsVirtualItem = false,
                 SourceTypes = new[] { SourceType.Library },
                 IsFavorite = request.IsFavorite
             };

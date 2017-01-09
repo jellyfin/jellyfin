@@ -82,10 +82,10 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 MediaTypes = new string[] { MediaType.Video },
                 IsVirtualItem = false,
-                ExcludeLocationTypes = new LocationType[] { LocationType.Remote, LocationType.Virtual },
                 IncludeItemTypes = types.ToArray()
 
             }).OfType<Video>()
+                .Where(i => i.LocationType != LocationType.Remote)
                 .ToList();
 
             if (videos.Count == 0)

@@ -647,7 +647,7 @@ namespace MediaBrowser.Controller.Entities
             query.SetUser(user);
             query.Limit = GetSpecialItemsLimit();
             query.IncludeItemTypes = new[] { typeof(Episode).Name };
-            query.ExcludeLocationTypes = new[] { LocationType.Virtual };
+            query.IsVirtualItem = false;
 
             return ConvertToResult(_libraryManager.GetItemList(query));
         }
@@ -1199,7 +1199,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (query.ExcludeLocationTypes.Length > 0 && query.ExcludeLocationTypes.Contains(item.LocationType))
+            if (query.IsVirtualItem.HasValue && item.IsVirtualItem != query.IsVirtualItem.Value)
             {
                 return false;
             }
