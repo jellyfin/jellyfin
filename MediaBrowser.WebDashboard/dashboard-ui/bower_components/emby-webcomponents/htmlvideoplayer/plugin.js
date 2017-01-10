@@ -1,4 +1,4 @@
-define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackManager', 'embyRouter', 'appSettings'], function (browser, pluginManager, events, appHost, loading, playbackManager, embyRouter, appSettings) {
+define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackManager', 'embyRouter', 'appSettings', 'connectionManager'], function (browser, pluginManager, events, appHost, loading, playbackManager, embyRouter, appSettings, connectionManager) {
     "use strict";
 
     return function () {
@@ -116,6 +116,51 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             return currentSrc;
         };
 
+        function updateVideoUrl(streamInfo) {
+
+            var isHls = streamInfo.url.toLowerCase().indexOf('.m3u8') != -1;
+
+            var mediaSource = streamInfo.mediaSource;
+            var item = streamInfo.item;
+
+            // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
+            // This will start the transcoding process before actually feeding the video url into the player
+            // Edit: Also seeing stalls from hls.js
+            if (mediaSource && item && !mediaSource.RunTimeTicks && isHls && (browser.iOS || browser.osx)) {
+
+                var hlsPlaylistUrl = streamInfo.url.replace('master.m3u8', 'live.m3u8');
+
+                loading.show();
+
+                console.log('prefetching hls playlist: ' + hlsPlaylistUrl);
+
+                return connectionManager.getApiClient(item.ServerId).ajax({
+
+                    type: 'GET',
+                    url: hlsPlaylistUrl
+
+                }).then(function () {
+
+                    console.log('completed prefetching hls playlist: ' + hlsPlaylistUrl);
+
+                    loading.hide();
+                    streamInfo.url = hlsPlaylistUrl;
+
+                    return Promise.resolve();
+
+                }, function () {
+
+                    console.log('error prefetching hls playlist: ' + hlsPlaylistUrl);
+
+                    loading.hide();
+                    return Promise.resolve();
+                });
+
+            } else {
+                return Promise.resolve();
+            }
+        }
+
         self.play = function (options) {
 
             started = false;
@@ -123,7 +168,9 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
             return createMediaElement(options).then(function (elem) {
 
-                return setCurrentSrc(elem, options);
+                return updateVideoUrl(options, options.mediaSource).then(function () {
+                    return setCurrentSrc(elem, options);
+                });
             });
         };
 
