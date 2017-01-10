@@ -2384,10 +2384,11 @@ var AppInfo = {};
                 list.push('bower_components/emby-webcomponents/htmlaudioplayer/plugin');
 
             } else {
-
-                //  use vlc player
-                list.push('cordova/vlcplayer');
+                window.VlcAudio = true;
             }
+
+            // Needed for video
+            list.push('cordova/vlcplayer');
 
         } else if (Dashboard.isRunningInCordova() && browser.safari) {
             list.push('cordova/audioplayer');
@@ -2535,6 +2536,7 @@ var AppInfo = {};
                 } else if (browserInfo.safari) {
 
                     postInitDependencies.push('cordova/volume');
+                    postInitDependencies.push('cordova/statusbar');
                     postInitDependencies.push('cordova/chromecast');
                     postInitDependencies.push('cordova/orientation');
                     postInitDependencies.push('cordova/remotecontrols');

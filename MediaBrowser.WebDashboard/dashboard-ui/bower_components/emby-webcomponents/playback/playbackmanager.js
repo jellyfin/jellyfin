@@ -208,6 +208,10 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                     list.push('ToggleFullscreen');
                 }
 
+                if (player.supports && player.supports('pictureinpicture')) {
+                    list.push('PictureInPicture');
+                }
+
                 return list;
             }
 
@@ -742,6 +746,11 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             } else {
                 fullscreenManager.requestFullscreen();
             }
+        };
+
+        self.togglePictureInPicture = function (player) {
+            player = player || currentPlayer;
+            return player.togglePictureInPicture();
         };
 
         self.getSubtitleStreamIndex = function (player) {
@@ -2369,7 +2378,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 startProgressInterval(player);
 
                 events.trigger(player, 'playbackstart', [state]);
-                events.trigger(self, 'playbackstart', [player]);
+                events.trigger(self, 'playbackstart', [player, state]);
             });
         }
 

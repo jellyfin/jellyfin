@@ -17,7 +17,6 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
         var currentSrc;
         var started = false;
         var hlsPlayer;
-        var enableCustomControls;
 
         var winJsPlaybackItem;
         var currentPlayOptions;
@@ -63,7 +62,6 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             var enableMkvProgressive = (item.RunTimeTicks && browser.edgeUwp) ? true : false;
 
             return {
-                supportsCustomSeeking: appHost.supports('htmlvideoautoplay'),
                 enableMkvProgressive: enableMkvProgressive,
                 disableHlsVideoAudioCodecs: disableHlsVideoAudioCodecs
             };
@@ -76,7 +74,6 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
                 require(['browserdeviceprofile', 'environments/windows-uwp/mediacaps'], function (profileBuilder, uwpMediaCaps) {
 
                     var profileOptions = getBaseProfileOptions(item);
-                    profileOptions.supportsCustomSeeking = true;
                     profileOptions.supportsDts = uwpMediaCaps.supportsDTS();
                     profileOptions.supportsTrueHd = uwpMediaCaps.supportsDolby();
                     profileOptions.audioChannels = uwpMediaCaps.getAudioChannels();
@@ -128,6 +125,52 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
                 return setCurrentSrc(elem, options);
             });
+        };
+
+        var supportedFeatures;
+        function getSupportedFeatures() {
+
+            var list = [];
+
+            var video = document.createElement('video');
+            if (video.webkitSupportsPresentationMode && video.webkitSupportsPresentationMode('picture-in-picture') && typeof video.webkitSetPresentationMode === "function") {
+                list.push('pictureinpicture');
+            }
+
+            return list;
+        }
+
+        self.supports = function (feature) {
+
+            if (!supportedFeatures) {
+                supportedFeatures = getSupportedFeatures();
+            }
+
+            return supportedFeatures.indexOf(feature) !== -1;
+        };
+
+        self.togglePictureInPicture = function () {
+            return self.setPictureInPictureEnabled(!self.isPictureInPictureEnabled());
+        };
+
+        self.setPictureInPictureEnabled = function (isEnabled) {
+
+            var video = mediaElement;
+            if (video) {
+                if (video.webkitSupportsPresentationMode && typeof video.webkitSetPresentationMode === "function") {
+                    video.webkitSetPresentationMode(isEnabled ? "picture-in-picture" : "inline");
+                }
+            }
+        };
+
+        self.isPictureInPictureEnabled = function (isEnabled) {
+
+            var video = mediaElement;
+            if (video) {
+                return video.webkitPresentationMode === "picture-in-picture";
+            }
+
+            return false;
         };
 
         function getCrossOriginValue(mediaSource) {
@@ -619,9 +662,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
                 setCurrentTrackElement(subtitleTrackIndexToSetOnPlaying);
 
-                if (enableCustomControls) {
-                    this.removeAttribute('controls');
-                }
+                this.removeAttribute('controls');
 
                 seekOnPlaybackStart(e.target);
 
@@ -764,15 +805,6 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             }
 
             return false;
-        }
-
-        function enableCustomVideoControls() {
-
-            if (browser.ipad) {
-                return false;
-            }
-
-            return true;
         }
 
         function setTracks(elem, tracks, mediaSource, serverId) {
@@ -1186,8 +1218,6 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
                         loading.show();
 
-                        enableCustomControls = enableCustomVideoControls();
-
                         var dlg = document.createElement('div');
 
                         dlg.classList.add('videoPlayerContainer');
@@ -1206,8 +1236,8 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
                         // https://developer.apple.com/library/content/releasenotes/General/WhatsNewInSafari/Articles/Safari_10_0.html
 
                         var html = '';
-                        // Can't autoplay in these browsers so we need to use the full controls
-                        if (!enableCustomControls || !appHost.supports('htmlvideoautoplay')) {
+                        // Can't autoplay in these browsers so we need to use the full controls, at least until playback starts
+                        if (!appHost.supports('htmlvideoautoplay')) {
                             html += '<video class="htmlvideoplayer" preload="metadata" autoplay="autoplay" controls="controls" webkit-playsinline playsinline>';
                         } else {
 

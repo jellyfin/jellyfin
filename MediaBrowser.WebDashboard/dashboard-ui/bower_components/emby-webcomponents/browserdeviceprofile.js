@@ -370,6 +370,16 @@ define(['browser'], function (browser) {
 
         profile.TranscodingProfiles = [];
 
+        if (canPlayNativeHls() && browser.iOS) {
+            profile.TranscodingProfiles.push({
+                Container: 'ts',
+                Type: 'Audio',
+                AudioCodec: 'aac',
+                Context: 'Streaming',
+                Protocol: 'hls'
+            });
+        }
+
         ['opus', 'mp3', 'aac', 'wav'].filter(canPlayAudioFormat).forEach(function (audioFormat) {
 
             profile.TranscodingProfiles.push({
@@ -435,7 +445,6 @@ define(['browser'], function (browser) {
         }
 
         if (canPlayWebm) {
-
             profile.TranscodingProfiles.push({
                 Container: 'webm',
                 Type: 'Video',

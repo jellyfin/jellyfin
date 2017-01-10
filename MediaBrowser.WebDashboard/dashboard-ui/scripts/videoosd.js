@@ -448,6 +448,10 @@
             playbackManager.toggleFullscreen(currentPlayer);
         });
 
+        view.querySelector('.btnPip').addEventListener('click', function () {
+            playbackManager.togglePictureInPicture(currentPlayer);
+        });
+
         view.querySelector('.btnSettings').addEventListener('click', onSettingsButtonClick);
 
         function onPlayerChange() {
@@ -650,6 +654,12 @@
                 view.querySelector('.btnFullscreen').classList.add('hide');
             } else {
                 view.querySelector('.btnFullscreen').classList.remove('hide');
+            }
+
+            if (supportedCommands.indexOf('PictureInPicture') === -1) {
+                view.querySelector('.btnPip').classList.add('hide');
+            } else {
+                view.querySelector('.btnPip').classList.remove('hide');
             }
 
             updateFullscreenIcon();

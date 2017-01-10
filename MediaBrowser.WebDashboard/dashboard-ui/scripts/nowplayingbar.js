@@ -560,6 +560,10 @@
 
         imageLoader.lazyImage(nowPlayingImageElement, url);
 
+        userdataButtons.destroy({
+            element: nowPlayingUserData
+        });
+
         if (nowPlayingItem.Id) {
             ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).then(function (item) {
                 userdataButtons.fill({
@@ -567,10 +571,6 @@
                     includePlayed: false,
                     element: nowPlayingUserData
                 });
-            });
-        } else {
-            userdataButtons.destroy({
-                element: nowPlayingUserData
             });
         }
     }

@@ -73,14 +73,34 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
 
             currentSrc = val;
 
-            // Chrome now returns a promise
-            var promise = elem.play();
-
-            if (promise && promise.then) {
-                return promise;
-            }
-            return Promise.resolve();
+            return playWithPromise(elem);
         };
+
+        function playWithPromise(elem) {
+
+            try {
+                var promise = elem.play();
+                if (promise && promise.then) {
+                    // Chrome now returns a promise
+                    return promise.catch(function (e) {
+
+                        var errorName = (e.name || '').toLowerCase();
+                        // safari uses aborterror
+                        if (errorName === 'notallowederror' ||
+                            errorName === 'aborterror') {
+                            // swallow this error because the user can still click the play button on the video element
+                            return Promise.resolve();
+                        }
+                        return Promise.reject();
+                    });
+                } else {
+                    return Promise.resolve();
+                }
+            } catch (err) {
+                console.log('error calling video.play: ' + err);
+                return Promise.reject();
+            }
+        }
 
         function getCrossOriginValue(mediaSource) {
 
