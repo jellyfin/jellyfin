@@ -8,7 +8,7 @@ define(['connectionManager', 'globalize', 'dom', 'itemHelper', 'paper-icon-butto
         markFavorite: markFavorite
     };
 
-    function getUserDataButtonHtml(method, itemId, buttonCssClass, iconCssClass, icon, tooltip, style) {
+    function getUserDataButtonHtml(method, itemId, serverId, buttonCssClass, iconCssClass, icon, tooltip, style) {
 
         if (style === 'fab-mini') {
             style = 'fab';
@@ -30,7 +30,7 @@ define(['connectionManager', 'globalize', 'dom', 'itemHelper', 'paper-icon-butto
 
         iconCssClass += 'md-icon';
 
-        return '<button title="' + tooltip + '" data-itemid="' + itemId + '" is="' + is + '" data-method="' + method + '" class="' + className + '"><i class="'+ iconCssClass + '">' + icon + '</i></button>';
+        return '<button title="' + tooltip + '" data-itemid="' + itemId + '" data-serverid="' + serverId + '" is="' + is + '" data-method="' + method + '" class="' + className + '"><i class="' + iconCssClass + '">' + icon + '</i></button>';
     }
 
     function onContainerClick(e) {
@@ -98,15 +98,17 @@ define(['connectionManager', 'globalize', 'dom', 'itemHelper', 'paper-icon-butto
 
         var iconCssClass = options.iconCssClass;
 
+        var serverId = item.ServerId;
+
         if (includePlayed !== false) {
             var tooltipPlayed = globalize.translate('sharedcomponents#MarkPlayed');
 
             if (item.MediaType === 'Video' || item.Type === 'Series' || item.Type === 'Season' || item.Type === 'BoxSet' || item.Type === 'Playlist') {
                 if (item.Type !== 'TvChannel') {
                     if (userData.Played) {
-                        html += getUserDataButtonHtml('markPlayed', itemId, btnCssClass + ' btnUserDataOn', iconCssClass, 'check', tooltipPlayed, style);
+                        html += getUserDataButtonHtml('markPlayed', itemId, serverId, btnCssClass + ' btnUserDataOn', iconCssClass, 'check', tooltipPlayed, style);
                     } else {
-                        html += getUserDataButtonHtml('markPlayed', itemId, btnCssClass, iconCssClass, 'check', tooltipPlayed, style);
+                        html += getUserDataButtonHtml('markPlayed', itemId, serverId, btnCssClass, iconCssClass, 'check', tooltipPlayed, style);
                     }
                 }
             }
@@ -116,24 +118,24 @@ define(['connectionManager', 'globalize', 'dom', 'itemHelper', 'paper-icon-butto
         //var tooltipDislike = globalize.translate('sharedcomponents#Dislike');
 
         //if (typeof userData.Likes == "undefined") {
-        //    html += getUserDataButtonHtml('markDislike', itemId, btnCssClass + ' btnUserData btnDislike', 'thumb-down', tooltipDislike);
-        //    html += getUserDataButtonHtml('markLike', itemId, btnCssClass + ' btnUserData btnLike', 'thumb-up', tooltipLike);
+        //    html += getUserDataButtonHtml('markDislike', itemId, serverId, btnCssClass + ' btnUserData btnDislike', 'thumb-down', tooltipDislike);
+        //    html += getUserDataButtonHtml('markLike', itemId, serverId, btnCssClass + ' btnUserData btnLike', 'thumb-up', tooltipLike);
         //}
         //else if (userData.Likes) {
-        //    html += getUserDataButtonHtml('markDislike', itemId, btnCssClass + ' btnUserData btnDislike', 'thumb-down', tooltipDislike);
-        //    html += getUserDataButtonHtml('markLike', itemId, btnCssClass + ' btnUserData btnLike btnUserDataOn', 'thumb-up', tooltipLike);
+        //    html += getUserDataButtonHtml('markDislike', itemId, serverId, btnCssClass + ' btnUserData btnDislike', 'thumb-down', tooltipDislike);
+        //    html += getUserDataButtonHtml('markLike', itemId, serverId, btnCssClass + ' btnUserData btnLike btnUserDataOn', 'thumb-up', tooltipLike);
         //}
         //else {
-        //    html += getUserDataButtonHtml('markDislike', itemId, btnCssClass + ' btnUserData btnDislike btnUserDataOn', 'thumb-down', tooltipDislike);
-        //    html += getUserDataButtonHtml('markLike', itemId, btnCssClass + ' btnUserData btnLike', 'thumb-up', tooltipLike);
+        //    html += getUserDataButtonHtml('markDislike', itemId, serverId, btnCssClass + ' btnUserData btnDislike btnUserDataOn', 'thumb-down', tooltipDislike);
+        //    html += getUserDataButtonHtml('markLike', itemId, serverId, btnCssClass + ' btnUserData btnLike', 'thumb-up', tooltipLike);
         //}
 
         var tooltipFavorite = globalize.translate('sharedcomponents#Favorite');
         if (userData.IsFavorite) {
 
-            html += getUserDataButtonHtml('markFavorite', itemId, btnCssClass + ' btnUserData btnUserDataOn', iconCssClass, 'favorite', tooltipFavorite, style);
+            html += getUserDataButtonHtml('markFavorite', itemId, serverId, btnCssClass + ' btnUserData btnUserDataOn', iconCssClass, 'favorite', tooltipFavorite, style);
         } else {
-            html += getUserDataButtonHtml('markFavorite', itemId, btnCssClass + ' btnUserData', iconCssClass, 'favorite', tooltipFavorite, style);
+            html += getUserDataButtonHtml('markFavorite', itemId, serverId, btnCssClass + ' btnUserData', iconCssClass, 'favorite', tooltipFavorite, style);
         }
 
         return html;
@@ -142,10 +144,11 @@ define(['connectionManager', 'globalize', 'dom', 'itemHelper', 'paper-icon-butto
     function markFavorite(link) {
 
         var id = link.getAttribute('data-itemid');
+        var serverId = link.getAttribute('data-serverid');
 
         var markAsFavorite = !link.classList.contains('btnUserDataOn');
 
-        favorite(id, markAsFavorite);
+        favorite(id, serverId, markAsFavorite);
 
         if (markAsFavorite) {
             link.classList.add('btnUserDataOn');
@@ -157,16 +160,17 @@ define(['connectionManager', 'globalize', 'dom', 'itemHelper', 'paper-icon-butto
     function markLike(link) {
 
         var id = link.getAttribute('data-itemid');
+        var serverId = link.getAttribute('data-serverid');
 
         if (!link.classList.contains('btnUserDataOn')) {
 
-            likes(id, true);
+            likes(id, serverId, true);
 
             link.classList.add('btnUserDataOn');
 
         } else {
 
-            clearLike(id);
+            clearLike(id, serverId);
 
             link.classList.remove('btnUserDataOn');
         }
@@ -177,16 +181,17 @@ define(['connectionManager', 'globalize', 'dom', 'itemHelper', 'paper-icon-butto
     function markDislike(link) {
 
         var id = link.getAttribute('data-itemid');
+        var serverId = link.getAttribute('data-serverid');
 
         if (!link.classList.contains('btnUserDataOn')) {
 
-            likes(id, false);
+            likes(id, serverId, false);
 
             link.classList.add('btnUserDataOn');
 
         } else {
 
-            clearLike(id);
+            clearLike(id, serverId);
 
             link.classList.remove('btnUserDataOn');
         }
@@ -197,43 +202,44 @@ define(['connectionManager', 'globalize', 'dom', 'itemHelper', 'paper-icon-butto
     function markPlayed(link) {
 
         var id = link.getAttribute('data-itemid');
+        var serverId = link.getAttribute('data-serverid');
 
         if (!link.classList.contains('btnUserDataOn')) {
 
-            played(id, true);
+            played(id, serverId, true);
 
             link.classList.add('btnUserDataOn');
 
         } else {
 
-            played(id, false);
+            played(id, serverId, false);
 
             link.classList.remove('btnUserDataOn');
         }
     }
 
-    function likes(id, isLiked) {
-        var apiClient = connectionManager.currentApiClient();
+    function likes(id, serverId, isLiked) {
+        var apiClient = connectionManager.getApiClient(serverId);
         return apiClient.updateUserItemRating(apiClient.getCurrentUserId(), id, isLiked);
     }
 
-    function played(id, isPlayed) {
-        var apiClient = connectionManager.currentApiClient();
+    function played(id, serverId, isPlayed) {
+        var apiClient = connectionManager.getApiClient(serverId);
 
         var method = isPlayed ? 'markPlayed' : 'markUnplayed';
 
         return apiClient[method](apiClient.getCurrentUserId(), id, new Date());
     }
 
-    function favorite(id, isFavorite) {
-        var apiClient = connectionManager.currentApiClient();
+    function favorite(id, serverId, isFavorite) {
+        var apiClient = connectionManager.getApiClient(serverId);
 
         return apiClient.updateFavoriteStatus(apiClient.getCurrentUserId(), id, isFavorite);
     }
 
-    function clearLike(id) {
+    function clearLike(id, serverId) {
 
-        var apiClient = connectionManager.currentApiClient();
+        var apiClient = connectionManager.getApiClient(serverId);
 
         return apiClient.clearUserItemRating(apiClient.getCurrentUserId(), id);
     }

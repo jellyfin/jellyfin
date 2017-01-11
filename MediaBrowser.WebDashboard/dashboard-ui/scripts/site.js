@@ -599,7 +599,6 @@ var Dashboard = {
         };
 
         if (Dashboard.isRunningInCordova() && !browserInfo.safari) {
-            caps.SupportsOfflineAccess = true;
             caps.SupportsSync = true;
             caps.SupportsContentUploading = true;
         }
