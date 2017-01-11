@@ -49,7 +49,7 @@
     display: inline-block;
 }
 
-.htmlvideoplayer-nocontrols::-webkit-media-text-track-display {
+.htmlvideoplayer::-webkit-media-text-track-display {
     /*Style the text itself*/
     margin-top: -2.5em;
 }

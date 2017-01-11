@@ -86,7 +86,7 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
         self.enableCinemaMode = function (val) {
 
             if (val != null) {
-                self.set('enableCinemaMode', val.toString());
+                self.set('enableCinemaMode', val.toString(), false);
             }
 
             val = self.get('enableCinemaMode', false);
@@ -101,7 +101,7 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
         self.enableThemeSongs = function (val) {
 
             if (val != null) {
-                self.set('enableThemeSongs', val.toString());
+                self.set('enableThemeSongs', val.toString(), false);
             }
 
             val = self.get('enableThemeSongs', false);
@@ -112,7 +112,7 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
         self.enableThemeVideos = function (val) {
 
             if (val != null) {
-                self.set('enableThemeVideos', val.toString());
+                self.set('enableThemeVideos', val.toString(), false);
             }
 
             val = self.get('enableThemeVideos', false);
@@ -127,10 +127,10 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
         self.language = function (val) {
 
             if (val != null) {
-                self.set('language', val.toString());
+                self.set('language', val.toString(), false);
             }
 
-            return self.get('language');
+            return self.get('language', false);
         };
 
         self.skipBackLength = function (val) {

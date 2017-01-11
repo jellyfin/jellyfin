@@ -118,7 +118,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
         function updateVideoUrl(streamInfo) {
 
-            var isHls = streamInfo.url.toLowerCase().indexOf('.m3u8') != -1;
+            var isHls = streamInfo.url.toLowerCase().indexOf('.m3u8') !== -1;
 
             var mediaSource = streamInfo.mediaSource;
             var item = streamInfo.item;
@@ -699,6 +699,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
             if (!started) {
                 started = true;
+                this.removeAttribute('controls');
 
                 if (currentPlayOptions.title) {
                     self.originalDocumentTitle = document.title;
@@ -708,8 +709,6 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
                 }
 
                 setCurrentTrackElement(subtitleTrackIndexToSetOnPlaying);
-
-                this.removeAttribute('controls');
 
                 seekOnPlaybackStart(e.target);
 
@@ -1289,7 +1288,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
                         } else {
 
                             // Chrome 35 won't play with preload none
-                            html += '<video class="htmlvideoplayer htmlvideoplayer-nocontrols" preload="metadata" autoplay="autoplay" webkit-playsinline playsinline>';
+                            html += '<video class="htmlvideoplayer" preload="metadata" autoplay="autoplay" webkit-playsinline playsinline>';
                         }
 
                         html += '</video>';

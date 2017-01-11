@@ -845,8 +845,10 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             if (player) {
                 playNextAfterEnded = false;
                 // TODO: remove second param
-                player.stop(true, true);
+                return player.stop(true, true);
             }
+
+            return Promise.resolve();
         };
 
         self.playPause = function (player) {
