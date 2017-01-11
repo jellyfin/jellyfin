@@ -55,8 +55,6 @@ namespace Emby.Server.Implementations.Library
                 }).ToList();
             }
 
-            var plainFolderIds = user.Configuration.PlainFolderViews.Select(i => new Guid(i)).ToList();
-
             var groupedFolders = new List<ICollectionFolder>();
 
             var list = new List<Folder>();
@@ -69,12 +67,6 @@ namespace Emby.Server.Implementations.Library
                 if (UserView.IsUserSpecific(folder))
                 {
                     list.Add(await _libraryManager.GetNamedView(user, folder.Name, folder.Id.ToString("N"), folderViewType, null, cancellationToken).ConfigureAwait(false));
-                    continue;
-                }
-
-                if (plainFolderIds.Contains(folder.Id) && UserView.IsEligibleForEnhancedView(folderViewType))
-                {
-                    list.Add(folder);
                     continue;
                 }
 

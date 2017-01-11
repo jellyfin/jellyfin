@@ -49,6 +49,7 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
 
         self.play = function (options) {
 
+            _currentTime = null;
             var elem = createMediaElement();
 
             var val = options.url;
@@ -72,14 +73,34 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
 
             currentSrc = val;
 
-            // Chrome now returns a promise
-            var promise = elem.play();
-
-            if (promise && promise.then) {
-                return promise;
-            }
-            return Promise.resolve();
+            return playWithPromise(elem);
         };
+
+        function playWithPromise(elem) {
+
+            try {
+                var promise = elem.play();
+                if (promise && promise.then) {
+                    // Chrome now returns a promise
+                    return promise.catch(function (e) {
+
+                        var errorName = (e.name || '').toLowerCase();
+                        // safari uses aborterror
+                        if (errorName === 'notallowederror' ||
+                            errorName === 'aborterror') {
+                            // swallow this error because the user can still click the play button on the video element
+                            return Promise.resolve();
+                        }
+                        return Promise.reject();
+                    });
+                } else {
+                    return Promise.resolve();
+                }
+            } catch (err) {
+                console.log('error calling video.play: ' + err);
+                return Promise.reject();
+            }
+        }
 
         function getCrossOriginValue(mediaSource) {
 
@@ -87,12 +108,17 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
         }
 
         // Save this for when playback stops, because querying the time at that point might return 0
+        var _currentTime;
         self.currentTime = function (val) {
 
             if (mediaElement) {
                 if (val != null) {
                     mediaElement.currentTime = val / 1000;
                     return;
+                }
+
+                if (_currentTime) {
+                    return _currentTime * 1000;
                 }
 
                 return (mediaElement.currentTime || 0) * 1000;
@@ -265,11 +291,16 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
             };
 
             events.trigger(self, 'stopped', [stopInfo]);
+
+            _currentTime = null;
             currentSrc = null;
         }
 
         function onTimeUpdate() {
 
+            // Get the player position + the transcoding offset
+            var time = this.currentTime;
+            _currentTime = time;
             events.trigger(self, 'timeupdate');
         }
 

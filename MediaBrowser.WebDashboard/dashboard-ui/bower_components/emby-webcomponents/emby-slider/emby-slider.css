@@ -220,9 +220,9 @@ _:-ms-input-placeholder, :root .mdl-slider {
 
 .sliderBubble {
     position: absolute;
-    top: -3.7em;
+    top: 0;
     left: 0;
-    padding: .5em 1em;
+    transform: translate3d(-48%, -120%, 0);
     background: #282828;
     color: #fff;
     display: flex;
@@ -232,4 +232,5 @@ _:-ms-input-placeholder, :root .mdl-slider {
 
 .sliderBubbleText {
     margin: 0;
+    padding: .5em .75em;
 }

@@ -273,9 +273,6 @@ namespace MediaBrowser.Controller.Entities
         public virtual string Path { get; set; }
 
         [IgnoreDataMember]
-        public bool IsOffline { get; set; }
-
-        [IgnoreDataMember]
         public virtual SourceType SourceType { get; set; }
 
         /// <summary>
@@ -337,20 +334,6 @@ namespace MediaBrowser.Controller.Entities
                 // An item that belongs to another item but is not part of the Parent-Child tree
                 return !IsFolder && ParentId == Guid.Empty && LocationType == LocationType.FileSystem;
             }
-        }
-
-        public Task UpdateIsOffline(bool newValue)
-        {
-            var item = this;
-
-            if (item.IsOffline != newValue)
-            {
-                item.IsOffline = newValue;
-                // this is creating too many repeated db updates
-                //return item.UpdateToRepository(ItemUpdateType.None, CancellationToken.None);
-            }
-
-            return Task.FromResult(true);
         }
 
         /// <summary>

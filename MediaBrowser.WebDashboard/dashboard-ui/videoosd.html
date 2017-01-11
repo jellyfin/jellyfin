@@ -27,34 +27,57 @@
             opacity: 0;
         }
 
-        .scenePicker {
-            position: fixed;
-            left: 12%;
-            bottom: 20%;
-            right: 0;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-        }
-
-        .chapterThumb {
-            height: 24vh;
-            background-position: center center;
-            background-size: contain;
-            background-repeat: no-repeat;
+        .chapterThumbContainer {
             -moz-box-shadow: 0 0 1.9vh #000;
             -webkit-box-shadow: 0 0 1.9vh #000;
             box-shadow: 0 0 1.9vh #000;
-            border: solid 1px #222;
-            margin: 1vh;
-            transition: opacity ease-out .3s;
+            flex-grow: 1;
+            position: relative;
         }
 
-            .chapterThumb:not(.selectedChapterThumb) {
-                height: 22vh;
-                opacity: .2;
-                border-color: black;
+        .chapterThumb {
+            background-position: center center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            border: 0;
+            height: 20vh;
+            min-width: 20vh;
+        }
+
+        @media all and (orientation: portrait) {
+
+            .chapterThumb {
+                height: 30vw;
+                min-width: 30vw;
             }
+        }
+
+        @media all and (max-height: 800px) and (orientation: landscape) {
+
+            .chapterThumb {
+                height: 30vh;
+                min-width: 30vh;
+            }
+        }
+
+        .chapterThumbTextContainer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: .25em .5em;
+        }
+
+        .chapterThumbText {
+            padding: .25em 0;
+            margin: 0;
+            opacity: 1;
+        }
+
+        .chapterThumbText-dim {
+            opacity: .6;
+        }
 
         .videoOsdBottom {
             position: fixed;
@@ -182,8 +205,6 @@
     <div class="pageContainer flex">
 
     </div>
-    <div class="scenePicker hide hiddenScrollX">
-    </div>
     <div class="videoOsdBottom">
 
         <div class="osdPoster">
@@ -233,6 +254,9 @@
                 </button>
                 <button is="paper-icon-button-light" class="btnFullscreen hide autoSize" title="${Fullscreen}">
                     <i class="xlargePaperIconButton md-icon">&#xE5D0;</i>
+                </button>
+                <button is="paper-icon-button-light" class="btnPip hide autoSize" title="${PictureInPicture}">
+                    <i class="xlargePaperIconButton md-icon">&#xE911;</i>
                 </button>
 
                 <div class="osdTimeText"><span class="osdPositionText"></span><span class="osdDurationText"></span><span class="endsAtText"></span></div>

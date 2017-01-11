@@ -6,15 +6,13 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
 
         function getCardsHtml(items, options) {
 
-            var apiClient = connectionManager.currentApiClient();
-
             if (arguments.length === 1) {
 
                 options = arguments[0];
                 items = options.items;
             }
 
-            var html = buildCardsHtmlInternal(items, apiClient, options);
+            var html = buildCardsHtmlInternal(items, options);
 
             return html;
         }
@@ -254,7 +252,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
             options.width = options.width || getImageWidth(options.shape);
         }
 
-        function buildCardsHtmlInternal(items, apiClient, options) {
+        function buildCardsHtmlInternal(items, options) {
 
             var isVertical;
 
@@ -269,7 +267,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
             setCardData(items, options);
 
             if (options.indexBy === 'Genres') {
-                return buildCardsByGenreHtmlInternal(items, apiClient, options);
+                return buildCardsByGenreHtmlInternal(items, options);
             }
 
             var className = 'card';
@@ -290,10 +288,18 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
             var hasOpenSection;
 
             var sectionTitleTagName = options.sectionTitleTagName || 'div';
+            var apiClient;
+            var lastServerId;
 
             for (var i = 0, length = items.length; i < length; i++) {
 
                 var item = items[i];
+                var serverId = item.ServerId || options.serverId;
+
+                if (serverId !== lastServerId) {
+                    lastServerId = serverId;
+                    apiClient = connectionManager.getApiClient(lastServerId);
+                }
 
                 if (options.indexBy) {
                     var newIndexValue = '';
@@ -404,7 +410,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
             });
         }
 
-        function buildCardsByGenreHtmlInternal(items, apiClient, options) {
+        function buildCardsByGenreHtmlInternal(items, options) {
 
             var className = 'card';
 
@@ -435,7 +441,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
                 }
 
                 var cardClass = className;
-                currentItemHtml += buildCard(i, renderItem, apiClient, options, cardClass);
+                currentItemHtml += buildCard(i, renderItem, connectionManager.getApiClient(renderItem.ServerId || options.serverId), options, cardClass);
 
                 itemsInRow++;
 
@@ -1412,9 +1418,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
                 }
             }
 
-            var apiClient = connectionManager.currentApiClient();
-
-            var html = buildCardsHtmlInternal(items, apiClient, options);
+            var html = buildCardsHtmlInternal(items, options);
 
             if (html) {
 

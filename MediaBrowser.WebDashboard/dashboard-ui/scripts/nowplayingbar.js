@@ -392,7 +392,7 @@
         }
 
         if (currentTimeElement) {
-            
+
             var timeText = positionTicks == null ? '--:--' : datetime.getDisplayRunningTime(positionTicks);
 
             if (runtimeTicks) {
@@ -560,6 +560,10 @@
 
         imageLoader.lazyImage(nowPlayingImageElement, url);
 
+        userdataButtons.destroy({
+            element: nowPlayingUserData
+        });
+
         if (nowPlayingItem.Id) {
             ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).then(function (item) {
                 userdataButtons.fill({
@@ -567,10 +571,6 @@
                     includePlayed: false,
                     element: nowPlayingUserData
                 });
-            });
-        } else {
-            userdataButtons.destroy({
-                element: nowPlayingUserData
             });
         }
     }
@@ -599,7 +599,20 @@
         // Don't call getNowPlayingBar here because we don't want to end up creating it just to hide it
         var elem = document.getElementsByClassName('nowPlayingBar')[0];
         if (elem) {
-            slideDown(elem);
+
+            // If it's not currently visible, don't bother with the animation
+            // transitionend events not firing in mobile chrome/safari when hidden
+            if (document.body.classList.contains('hiddenNowPlayingBar')) {
+
+                dom.removeEventListener(elem, dom.whichTransitionEvent(), onSlideDownComplete, {
+                    once: true
+                });
+                elem.classList.add('hide');
+                elem.classList.add('nowPlayingBar-hidden');
+
+            } else {
+                slideDown(elem);
+            }
         }
     }
 

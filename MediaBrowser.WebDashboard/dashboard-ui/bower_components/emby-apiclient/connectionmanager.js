@@ -251,6 +251,10 @@
             return credentialProvider.credentials().ConnectAccessToken;
         };
 
+        self.getApiClients = function () {
+            return apiClients;
+        };
+
         self.getServerInfo = function (id) {
 
             var servers = credentialProvider.credentials().Servers;

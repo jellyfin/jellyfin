@@ -28,10 +28,7 @@ define(['connectionManager', 'events'], function (connectionManager, events) {
         events.on(apiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
-    var current = connectionManager.currentApiClient();
-    if (current) {
-        bindEvents(current);
-    }
+    connectionManager.getApiClients().forEach(bindEvents);
 
     events.on(connectionManager, 'apiclientcreated', function (e, newApiClient) {
 

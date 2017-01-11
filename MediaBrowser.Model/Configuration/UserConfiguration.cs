@@ -37,7 +37,6 @@ namespace MediaBrowser.Model.Configuration
         public string[] OrderedViews { get; set; }
 
         public string[] LatestItemsExcludes { get; set; }
-        public string[] PlainFolderViews { get; set; }
 
         public bool HidePlayedInLatest { get; set; }
 
@@ -60,8 +59,6 @@ namespace MediaBrowser.Model.Configuration
 
             LatestItemsExcludes = new string[] { };
             OrderedViews = new string[] { };
-
-            PlainFolderViews = new string[] { };
 
             GroupedFolders = new string[] { };
         }

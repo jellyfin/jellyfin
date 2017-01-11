@@ -208,6 +208,10 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                     list.push('ToggleFullscreen');
                 }
 
+                if (player.supports && player.supports('pictureinpicture')) {
+                    list.push('PictureInPicture');
+                }
+
                 return list;
             }
 
@@ -744,6 +748,11 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
         };
 
+        self.togglePictureInPicture = function (player) {
+            player = player || currentPlayer;
+            return player.togglePictureInPicture();
+        };
+
         self.getSubtitleStreamIndex = function (player) {
 
             player = player || currentPlayer;
@@ -836,8 +845,10 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             if (player) {
                 playNextAfterEnded = false;
                 // TODO: remove second param
-                player.stop(true, true);
+                return player.stop(true, true);
             }
+
+            return Promise.resolve();
         };
 
         self.playPause = function (player) {
@@ -2369,7 +2380,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 startProgressInterval(player);
 
                 events.trigger(player, 'playbackstart', [state]);
-                events.trigger(self, 'playbackstart', [player]);
+                events.trigger(self, 'playbackstart', [player, state]);
             });
         }
 

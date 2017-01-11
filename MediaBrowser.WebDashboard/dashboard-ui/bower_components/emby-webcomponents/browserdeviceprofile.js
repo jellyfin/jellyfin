@@ -435,7 +435,6 @@ define(['browser'], function (browser) {
         }
 
         if (canPlayWebm) {
-
             profile.TranscodingProfiles.push({
                 Container: 'webm',
                 Type: 'Video',
