@@ -41,6 +41,23 @@
             background-repeat: no-repeat;
             border: 0;
             height: 20vh;
+            min-width: 20vh;
+        }
+
+        @media all and (orientation: portrait) {
+
+            .chapterThumb {
+                height: 30vw;
+                min-width: 30vw;
+            }
+        }
+
+        @media all and (max-height: 800px) and (orientation: landscape) {
+
+            .chapterThumb {
+                height: 30vh;
+                min-width: 30vh;
+            }
         }
 
         .chapterThumbTextContainer {

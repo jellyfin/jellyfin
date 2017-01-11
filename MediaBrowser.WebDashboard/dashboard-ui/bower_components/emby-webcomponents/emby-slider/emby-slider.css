@@ -222,7 +222,7 @@ _:-ms-input-placeholder, :root .mdl-slider {
     position: absolute;
     top: 0;
     left: 0;
-    transform: translate3d(-48%, -115%, 0);
+    transform: translate3d(-48%, -120%, 0);
     background: #282828;
     color: #fff;
     display: flex;

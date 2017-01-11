@@ -2395,6 +2395,10 @@ var AppInfo = {};
             list.push('bower_components/emby-webcomponents/htmlaudioplayer/plugin');
         }
 
+        if (Dashboard.isRunningInCordova() && browser.safari) {
+            list.push('cordova/chromecast');
+        }
+
         if (Dashboard.isRunningInCordova() && browser.android) {
             // intent player
             list.push('cordova/externalplayer');
@@ -2536,7 +2540,6 @@ var AppInfo = {};
 
                     postInitDependencies.push('cordova/volume');
                     postInitDependencies.push('cordova/statusbar');
-                    postInitDependencies.push('cordova/chromecast');
                     postInitDependencies.push('cordova/orientation');
                     postInitDependencies.push('cordova/remotecontrols');
 

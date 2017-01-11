@@ -104,13 +104,8 @@
 
         var transitionEndEventName = dom.whichTransitionEvent();
 
-        function getHeaderElement() {
-            return document.querySelector('.skinHeader');
-        }
-
-        function getOsdBottom() {
-            return view.querySelector('.videoOsdBottom');
-        }
+        var headerElement = document.querySelector('.skinHeader');
+        var osdBottomElement = document.querySelector('.videoOsdBottom');
 
         function updateNowPlayingInfo(state) {
 
@@ -206,15 +201,15 @@
 
         function showOsd() {
 
-            slideDownToShow(getHeaderElement());
-            slideUpToShow(getOsdBottom());
+            slideDownToShow(headerElement);
+            slideUpToShow(osdBottomElement);
             startHideTimer();
         }
 
         function hideOsd() {
 
-            slideUpToHide(getHeaderElement());
-            slideDownToHide(getOsdBottom());
+            slideUpToHide(headerElement);
+            slideDownToHide(osdBottomElement);
         }
 
         var hideTimeout;
@@ -387,7 +382,7 @@
 
         view.addEventListener('viewbeforeshow', function (e) {
 
-            getHeaderElement().classList.add('osdHeader');
+            headerElement.classList.add('osdHeader');
             // Make sure the UI is completely transparent
             Emby.Page.setTransparency('full');
         });
@@ -418,8 +413,8 @@
             });
 
             stopHideTimer();
-            getHeaderElement().classList.remove('osdHeader');
-            getHeaderElement().classList.remove('osdHeader-hidden');
+            headerElement.classList.remove('osdHeader');
+            headerElement.classList.remove('osdHeader-hidden');
             dom.removeEventListener(document, 'mousemove', onMouseMove, {
                 passive: true
             });
@@ -921,7 +916,7 @@
 
         view.addEventListener('viewhide', function () {
 
-            getHeaderElement().classList.remove('hide');
+            headerElement.classList.remove('hide');
         });
 
         function onWindowKeyDown(e) {
@@ -1019,6 +1014,8 @@
         }
 
         nowPlayingPositionSlider.getBubbleHtml = function (value) {
+
+            showOsd();
 
             if (!currentRuntimeTicks) {
                 return '--:--';
