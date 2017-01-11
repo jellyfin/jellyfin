@@ -294,9 +294,10 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
             for (var i = 0, length = items.length; i < length; i++) {
 
                 var item = items[i];
+                var serverId = item.ServerId || options.serverId;
 
-                if (item.ServerId !== lastServerId) {
-                    lastServerId = item.ServerId;
+                if (serverId !== lastServerId) {
+                    lastServerId = serverId;
                     apiClient = connectionManager.getApiClient(lastServerId);
                 }
 
@@ -440,7 +441,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
                 }
 
                 var cardClass = className;
-                currentItemHtml += buildCard(i, renderItem, connectionManager.getApiClient(renderItem.ServerId), options, cardClass);
+                currentItemHtml += buildCard(i, renderItem, connectionManager.getApiClient(renderItem.ServerId || options.serverId), options, cardClass);
 
                 itemsInRow++;
 

@@ -27,34 +27,40 @@
             opacity: 0;
         }
 
-        .scenePicker {
-            position: fixed;
-            left: 12%;
-            bottom: 20%;
-            right: 0;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-        }
-
-        .chapterThumb {
-            height: 24vh;
-            background-position: center center;
-            background-size: contain;
-            background-repeat: no-repeat;
+        .chapterThumbContainer {
             -moz-box-shadow: 0 0 1.9vh #000;
             -webkit-box-shadow: 0 0 1.9vh #000;
             box-shadow: 0 0 1.9vh #000;
-            border: solid 1px #222;
-            margin: 1vh;
-            transition: opacity ease-out .3s;
+            flex-grow: 1;
+            position: relative;
         }
 
-            .chapterThumb:not(.selectedChapterThumb) {
-                height: 22vh;
-                opacity: .2;
-                border-color: black;
-            }
+        .chapterThumb {
+            background-position: center center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            border: 0;
+            height: 20vh;
+        }
+
+        .chapterThumbTextContainer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: .25em .5em;
+        }
+
+        .chapterThumbText {
+            padding: .25em 0;
+            margin: 0;
+            opacity: 1;
+        }
+
+        .chapterThumbText-dim {
+            opacity: .6;
+        }
 
         .videoOsdBottom {
             position: fixed;
@@ -181,8 +187,6 @@
     </style>
     <div class="pageContainer flex">
 
-    </div>
-    <div class="scenePicker hide hiddenScrollX">
     </div>
     <div class="videoOsdBottom">
 
