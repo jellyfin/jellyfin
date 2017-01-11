@@ -499,6 +499,24 @@ namespace Emby.Common.Implementations.IO
             CopyFile(temp1, file2, true);
         }
 
+        public bool AreEqual(string path1, string path2)
+        {
+            if (path1 == null && path2 == null)
+            {
+                return true;
+            }
+
+            if (path1 == null || path2 == null)
+            {
+                return false;
+            }
+
+            path1 = path1.TrimEnd(DirectorySeparatorChar);
+            path2 = path2.TrimEnd(DirectorySeparatorChar);
+
+            return string.Equals(path1, path2, StringComparison.OrdinalIgnoreCase);
+        }
+
         public bool ContainsSubPath(string parentPath, string path)
         {
             if (string.IsNullOrEmpty(parentPath))
