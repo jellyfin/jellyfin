@@ -647,7 +647,7 @@ namespace MediaBrowser.Controller.Entities
 
         private static bool ContainsPath(string parent, string path)
         {
-            return string.Equals(parent, path, StringComparison.OrdinalIgnoreCase) || FileSystem.ContainsSubPath(parent, path);
+            return FileSystem.AreEqual(parent, path) || FileSystem.ContainsSubPath(parent, path);
         }
 
         /// <summary>

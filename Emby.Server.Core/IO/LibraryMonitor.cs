@@ -87,7 +87,7 @@ namespace Emby.Server.Core.IO
         public bool IsPathLocked(string path)
         {
             var lockedPaths = _tempIgnoredPaths.Keys.ToList();
-            return lockedPaths.Any(i => string.Equals(i, path, StringComparison.OrdinalIgnoreCase) || _fileSystem.ContainsSubPath(i, path));
+            return lockedPaths.Any(i => _fileSystem.AreEqual(i, path) || _fileSystem.ContainsSubPath(i, path));
         }
 
         public async void ReportFileSystemChangeComplete(string path, bool refreshPath)

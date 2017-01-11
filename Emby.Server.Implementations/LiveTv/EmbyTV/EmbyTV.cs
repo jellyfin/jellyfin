@@ -150,7 +150,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             foreach (var recordingFolder in recordingFolders)
             {
                 var pathsToCreate = recordingFolder.Locations
-                    .Where(i => !allExistingPaths.Contains(i, StringComparer.OrdinalIgnoreCase))
+                    .Where(i => !allExistingPaths.Any(p => _fileSystem.AreEqual(p, i)))
                     .ToList();
 
                 if (pathsToCreate.Count == 0)

@@ -925,7 +925,11 @@ namespace Emby.Server.Implementations.Connect
             }
 
             _data.PendingAuthorizations = newPendingList;
-            CacheData();
+
+            if (!newPendingList.Select(i => i.Id).SequenceEqual(currentPendingList.Select(i => i.Id), StringComparer.Ordinal))
+            {
+                CacheData();
+            }
 
             await RefreshGuestNames(list, refreshImages).ConfigureAwait(false);
         }

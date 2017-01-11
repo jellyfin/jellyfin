@@ -120,6 +120,8 @@ namespace MediaBrowser.Model.IO
         /// <param name="file2">The file2.</param>
         void SwapFiles(string file1, string file2);
 
+        bool AreEqual(string path1, string path2);
+
         /// <summary>
         /// Determines whether [contains sub path] [the specified parent path].
         /// </summary>

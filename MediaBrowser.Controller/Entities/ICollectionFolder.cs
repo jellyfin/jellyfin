@@ -20,17 +20,4 @@ namespace MediaBrowser.Controller.Entities
     {
         bool EnableUserSpecificView { get; }
     }
-
-    public static class CollectionFolderExtensions
-    {
-        public static string GetViewType(this ICollectionFolder folder, User user)
-        {
-            if (user.Configuration.PlainFolderViews.Contains(folder.Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
-            {
-                return null;
-            }
-
-            return folder.CollectionType;
-        }
-    }
 }
