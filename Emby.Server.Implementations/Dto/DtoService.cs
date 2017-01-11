@@ -361,10 +361,7 @@ namespace Emby.Server.Implementations.Dto
             if (collectionFolder != null)
             {
                 dto.OriginalCollectionType = collectionFolder.CollectionType;
-
-                dto.CollectionType = user == null ?
-                    collectionFolder.CollectionType :
-                    collectionFolder.GetViewType(user);
+                dto.CollectionType = collectionFolder.CollectionType;
             }
 
             if (fields.Contains(ItemFields.CanDelete))

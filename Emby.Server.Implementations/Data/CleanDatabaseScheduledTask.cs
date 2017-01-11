@@ -137,6 +137,11 @@ namespace Emby.Server.Implementations.Data
             var numComplete = 0;
             var numItems = result.Count;
 
+            var allLibraryPaths = _libraryManager
+                .GetVirtualFolders()
+                .SelectMany(i => i.Locations)
+                .ToList();
+
             foreach (var item in result)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -170,9 +175,8 @@ namespace Emby.Server.Implementations.Data
                         continue;
                     }
 
-                    if (Folder.IsPathOffline(path))
+                    if (Folder.IsPathOffline(path, allLibraryPaths))
                     {
-                        await libraryItem.UpdateIsOffline(true).ConfigureAwait(false);
                         continue;
                     }
 

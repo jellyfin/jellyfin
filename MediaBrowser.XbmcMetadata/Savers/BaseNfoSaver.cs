@@ -846,7 +846,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             AddUserData(item, writer, userManager, userDataRepo, options);
 
-            AddActors(people, writer, libraryManager, fileSystem, config);
+            AddActors(people, writer, libraryManager, fileSystem, config, options.SaveImagePathsInNfo);
 
             var folder = item as BoxSet;
             if (folder != null)
@@ -974,7 +974,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             writer.WriteEndElement();
         }
 
-        private static void AddActors(List<PersonInfo> people, XmlWriter writer, ILibraryManager libraryManager, IFileSystem fileSystem, IServerConfigurationManager config)
+        private static void AddActors(List<PersonInfo> people, XmlWriter writer, ILibraryManager libraryManager, IFileSystem fileSystem, IServerConfigurationManager config, bool saveImagePath)
         {
             var actors = people
                 .Where(i => !IsPersonType(i, PersonType.Director) && !IsPersonType(i, PersonType.Writer))
@@ -1004,19 +1004,22 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     writer.WriteElementString("sortorder", person.SortOrder.Value.ToString(UsCulture));
                 }
 
-                try
+                if (saveImagePath)
                 {
-                    var personEntity = libraryManager.GetPerson(person.Name);
-                    var image = personEntity.GetImageInfo(ImageType.Primary, 0);
-
-                    if (image != null)
+                    try
                     {
-                        writer.WriteElementString("thumb", GetImagePathToSave(image, libraryManager, config));
+                        var personEntity = libraryManager.GetPerson(person.Name);
+                        var image = personEntity.GetImageInfo(ImageType.Primary, 0);
+
+                        if (image != null)
+                        {
+                            writer.WriteElementString("thumb", GetImagePathToSave(image, libraryManager, config));
+                        }
                     }
-                }
-                catch (Exception)
-                {
-                    // Already logged in core
+                    catch (Exception)
+                    {
+                        // Already logged in core
+                    }
                 }
 
                 writer.WriteEndElement();
