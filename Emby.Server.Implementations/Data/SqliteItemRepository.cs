@@ -372,7 +372,7 @@ namespace Emby.Server.Implementations.Data
 
             userDataRepo.Initialize(WriteLock, _connection);
 
-            _shrinkMemoryTimer = _timerFactory.Create(OnShrinkMemoryTimerCallback, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(15));
+            _shrinkMemoryTimer = _timerFactory.Create(OnShrinkMemoryTimerCallback, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(30));
         }
 
         private void OnShrinkMemoryTimerCallback(object state)
