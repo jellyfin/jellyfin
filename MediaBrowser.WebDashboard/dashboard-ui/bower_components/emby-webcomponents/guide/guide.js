@@ -514,7 +514,7 @@
 
                     html += '<div class="guideProgramNameText">' + program.Name + '</div>';
 
-                    var indicatorHtml;
+                    var indicatorHtml = null;
                     if (program.IsLive && options.showLiveIndicator) {
                         indicatorHtml = '<span class="liveTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Live') + '</span>';
                     }

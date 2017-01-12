@@ -684,7 +684,7 @@
         };
 
         self.stop = function () {
-            castPlayer.sendMessage({
+            return castPlayer.sendMessage({
                 options: {},
                 command: 'Stop'
             });
@@ -726,7 +726,7 @@
             return state.PositionTicks;
         };
 
-        self.duration = function() {
+        self.duration = function () {
             var state = self.lastPlayerData || {};
             state = state.NowPlayingItem || {};
             return state.RunTimeTicks;
@@ -941,10 +941,11 @@
 
         self.endSession = function () {
 
-            self.stop();
-            setTimeout(function () {
-                castPlayer.stopApp();
-            }, 1000);
+            self.stop().then(function () {
+                setTimeout(function () {
+                    castPlayer.stopApp();
+                }, 1000);
+            });
         };
 
         self.volumeUp = function () {
@@ -975,7 +976,7 @@
         };
 
         function normalizePrimaryImage(state) {
-            
+
             if (state && state.NowPlayingItem) {
                 if (!state.NowPlayingItem.ImageTags || !state.NowPlayingItem.ImageTags.Primary) {
                     if (state.NowPlayingItem.PrimaryImageTag) {
