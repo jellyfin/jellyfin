@@ -240,7 +240,7 @@
     "PackageInstallCompleted": "{0} telep\u00edt\u00e9se befejezve.",
     "PackageInstallFailed": "{0} telep\u00edt\u00e9se nem siker\u00fclt.",
     "PackageInstallCancelled": "{0} telep\u00edt\u00e9se megszak\u00edtva.",
-    "SeriesYearToPresent": "{0}-Napjainkig",
+    "SeriesYearToPresent": "{0} - Napjainkig",
     "ValueOneItem": "1 item",
     "ValueOneSong": "1 song",
     "ValueSongCount": "{0} songs",
@@ -263,11 +263,11 @@
     "SearchResults": "Search Results",
     "SyncToOtherDevice": "Sync to other device",
     "MakeAvailableOffline": "Make available offline",
-    "ServerNameIsRestarting": "Emby Server - {0} is restarting.",
+    "ServerNameIsRestarting": "Emby Server - {0} \u00fajraindul.",
     "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",
     "HeaderDeleteItems": "Delete Items",
     "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
-    "PleaseRestartServerName": "Please restart Emby Server - {0}.",
+    "PleaseRestartServerName": "K\u00e9rlek ind\u00edtsd \u00fajra az Emby Server-t - {0}.",
     "SyncJobCreated": "Sync job created.",
     "LabelSyncTo": "Sync to:",
     "LabelSyncJobName": "Sync job name:",
@@ -377,5 +377,7 @@
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
     "SyncJobItemStatusCancelled": "Cancelled",
     "Retry": "Retry",
-    "HeaderMyDevice": "My Device"
+    "HeaderMyDevice": "My Device",
+    "MediaQueued": "Media queued.",
+    "ContinuingInSecondsValue": "Continuing in {0} seconds."
 }

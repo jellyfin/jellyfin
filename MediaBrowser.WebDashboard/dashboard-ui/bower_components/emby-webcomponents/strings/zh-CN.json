@@ -377,5 +377,7 @@
     "SyncJobItemStatusRemovedFromDevice": "\u5df2\u4ece\u8bbe\u5907\u79fb\u9664",
     "SyncJobItemStatusCancelled": "\u5df2\u53d6\u6d88",
     "Retry": "\u91cd\u8bd5",
-    "HeaderMyDevice": "My Device"
+    "HeaderMyDevice": "My Device",
+    "MediaQueued": "Media queued.",
+    "ContinuingInSecondsValue": "Continuing in {0} seconds."
 }

@@ -24,8 +24,11 @@ define(['playbackManager'], function (playbackManager) {
             return new Promise(function (resolve, reject) {
 
                 require(["registrationServices"], function (registrationServices) {
-                    registrationServices.validateFeature('playback', options).then(resolve, function () {
-                        startAutoStopTimer();
+                    registrationServices.validateFeature('playback', options).then(function (result) {
+
+                        if (result && result.enableTimeLimit) {
+                            startAutoStopTimer();
+                        }
                         resolve();
                     });
                 });

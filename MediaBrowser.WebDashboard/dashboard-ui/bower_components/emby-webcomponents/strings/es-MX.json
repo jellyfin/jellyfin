@@ -377,5 +377,7 @@
     "SyncJobItemStatusRemovedFromDevice": "Eliminado del dispositivo",
     "SyncJobItemStatusCancelled": "Cancelado",
     "Retry": "Volver a intentar",
-    "HeaderMyDevice": "My Device"
+    "HeaderMyDevice": "Mi Dispositivo",
+    "MediaQueued": "Medios en cola.",
+    "ContinuingInSecondsValue": "Continuing in {0} seconds."
 }
