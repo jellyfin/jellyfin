@@ -972,7 +972,7 @@
 
         self.getPlayerState = function () {
 
-            return Promise.resolve(self.getPlayerStateInternal());
+            return Promise.resolve(self.getPlayerStateInternal() || {});
         };
 
         function normalizePrimaryImage(state) {
