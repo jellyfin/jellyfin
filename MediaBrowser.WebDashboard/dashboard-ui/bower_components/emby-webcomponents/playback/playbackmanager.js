@@ -2355,7 +2355,36 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 return player.queue(item);
             }
 
-            // TODO
+            if (options.items) {
+
+                return translateItemsForPlayback(options.items, options).then(function (items) {
+
+                    queueAll(items, mode);
+                });
+
+            } else {
+
+                if (!options.serverId) {
+                    throw new Error('serverId required!');
+                }
+
+                return getItemsForPlayback(options.serverId, {
+
+                    Ids: options.ids.join(',')
+
+                }).then(function (result) {
+
+                    return translateItemsForPlayback(result.Items, options).then(function (items) {
+                        queueAll(items, mode);
+                    });
+                });
+            }
+        }
+
+        function queueAll(items, mode) {
+            for (var i = 0, length = items.length; i < length; i++) {
+                playlist.push(items[i]);
+            }
         }
 
         function onPlaybackStarted(player, streamInfo, mediaSource) {
