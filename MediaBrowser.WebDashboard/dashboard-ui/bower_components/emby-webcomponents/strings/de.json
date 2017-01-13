@@ -379,5 +379,6 @@
     "Retry": "Wiederholen",
     "HeaderMyDevice": "Mein Ger\u00e4t",
     "MediaQueued": "Medien in Warteschlange",
-    "ContinuingInSecondsValue": "Continuing in {0} seconds."
+    "Continue": "Fortfahren",
+    "ContinueInSecondsValue": "Fortfahren in {0} Sekunden."
 }

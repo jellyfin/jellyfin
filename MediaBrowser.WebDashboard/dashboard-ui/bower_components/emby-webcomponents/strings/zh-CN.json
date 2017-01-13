@@ -379,5 +379,6 @@
     "Retry": "\u91cd\u8bd5",
     "HeaderMyDevice": "My Device",
     "MediaQueued": "Media queued.",
-    "ContinuingInSecondsValue": "Continuing in {0} seconds."
+    "Continue": "Continue",
+    "ContinueInSecondsValue": "Continue in {0} seconds."
 }

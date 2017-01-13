@@ -379,5 +379,6 @@
     "Retry": "Pr\u00f8v igen",
     "HeaderMyDevice": "Min Enhed",
     "MediaQueued": "Medie sat i k\u00f8",
-    "ContinuingInSecondsValue": "Continuing in {0} seconds."
+    "Continue": "Continue",
+    "ContinueInSecondsValue": "Continue in {0} seconds."
 }

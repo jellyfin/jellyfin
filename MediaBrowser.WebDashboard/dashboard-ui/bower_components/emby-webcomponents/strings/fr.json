@@ -379,5 +379,6 @@
     "Retry": "R\u00e9essayer",
     "HeaderMyDevice": "Mon appareil",
     "MediaQueued": "Media queued.",
-    "ContinuingInSecondsValue": "Continuing in {0} seconds."
+    "Continue": "Continue",
+    "ContinueInSecondsValue": "Continue in {0} seconds."
 }

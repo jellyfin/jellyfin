@@ -379,5 +379,6 @@
     "Retry": "Volver a intentar",
     "HeaderMyDevice": "Mi Dispositivo",
     "MediaQueued": "Medios en cola.",
-    "ContinuingInSecondsValue": "Continuando en {0} segundos."
+    "Continue": "Continue",
+    "ContinueInSecondsValue": "Continue in {0} seconds."
 }

@@ -379,5 +379,6 @@
     "Retry": "\u049a\u0430\u0439\u0442\u0430\u043b\u0430\u0443",
     "HeaderMyDevice": "\u041c\u0435\u043d\u0456\u04a3 \u049b\u04b1\u0440\u044b\u043b\u0493\u044b\u043c",
     "MediaQueued": "Media queued.",
-    "ContinuingInSecondsValue": "Continuing in {0} seconds."
+    "Continue": "Continue",
+    "ContinueInSecondsValue": "Continue in {0} seconds."
 }
