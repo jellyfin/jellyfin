@@ -180,8 +180,17 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             var list = [];
 
             var video = document.createElement('video');
-            if (video.webkitSupportsPresentationMode && video.webkitSupportsPresentationMode('picture-in-picture') && typeof video.webkitSetPresentationMode === "function") {
-                list.push('pictureinpicture');
+            //if (video.webkitSupportsPresentationMode && video.webkitSupportsPresentationMode('picture-in-picture') && typeof video.webkitSetPresentationMode === "function") {
+            //    list.push('pictureinpicture');
+            //}
+            if (browser.ipad) {
+
+                // Unfortunately this creates a false positive on devices where its' not actually supported
+                if (navigator.userAgent.toLowerCase().indexOf('os 9') === -1) {
+                    if (video.webkitSupportsPresentationMode && video.webkitSupportsPresentationMode && typeof video.webkitSetPresentationMode === "function") {
+                        list.push('pictureinpicture');
+                    }
+                }
             }
 
             return list;

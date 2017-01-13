@@ -370,6 +370,16 @@ define(['browser'], function (browser) {
 
         profile.TranscodingProfiles = [];
 
+        if (canPlayNativeHls() && options.enableHlsAudio) {
+            profile.TranscodingProfiles.push({
+                Container: 'ts',
+                Type: 'Audio',
+                AudioCodec: 'aac',
+                Context: 'Streaming',
+                Protocol: 'hls'
+            });
+        }
+
         ['opus', 'mp3', 'aac', 'wav'].filter(canPlayAudioFormat).forEach(function (audioFormat) {
 
             profile.TranscodingProfiles.push({
@@ -390,11 +400,6 @@ define(['browser'], function (browser) {
             });
         });
 
-        var copyTimestamps = false;
-        if (browser.chrome) {
-            copyTimestamps = true;
-        }
-
         // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
         if (canPlayMkv && !browser.tizen && options.enableMkvProgressive !== false) {
             profile.TranscodingProfiles.push({
@@ -404,7 +409,7 @@ define(['browser'], function (browser) {
                 VideoCodec: 'h264',
                 Context: 'Streaming',
                 MaxAudioChannels: physicalAudioChannels.toString(),
-                CopyTimestamps: copyTimestamps
+                CopyTimestamps: true
             });
         }
 

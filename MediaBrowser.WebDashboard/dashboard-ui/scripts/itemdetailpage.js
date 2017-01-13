@@ -1260,7 +1260,8 @@
                     action: 'playallfromhere',
                     image: false,
                     artist: 'auto',
-                    containerAlbumArtist: item.AlbumArtist
+                    containerAlbumArtist: item.AlbumArtist,
+                    queueButton: true
                 });
                 isList = true;
             }

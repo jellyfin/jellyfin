@@ -247,6 +247,9 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
                 else if (options.shape === 'square') {
                     options.width = options.width || 243;
                 }
+                else if (options.shape === 'banner') {
+                    options.width = options.width || 800;
+                }
             }
 
             options.width = options.width || getImageWidth(options.shape);
@@ -503,6 +506,9 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
                 }
                 if (shape.indexOf('square') !== -1) {
                     return 1;
+                }
+                if (shape.indexOf('banner') !== -1) {
+                    return (1000 / 185);
                 }
             }
             return null;

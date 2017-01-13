@@ -138,7 +138,7 @@ namespace Emby.Server.Implementations.Activity
 
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("UserStoppedPlayingItemWithValues"), user.Name, item.Name),
+                Name = string.Format(_localization.GetLocalizedString("UserStoppedPlayingItemWithValues"), user.Name, Notifications.Notifications.GetItemName(item)),
                 Type = "PlaybackStopped",
                 ShortOverview = string.Format(_localization.GetLocalizedString("AppDeviceValues"), e.ClientName, e.DeviceName),
                 UserId = user.Id.ToString("N")
@@ -170,7 +170,7 @@ namespace Emby.Server.Implementations.Activity
 
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("UserStartedPlayingItemWithValues"), user.Name, item.Name),
+                Name = string.Format(_localization.GetLocalizedString("UserStartedPlayingItemWithValues"), user.Name, Notifications.Notifications.GetItemName(item)),
                 Type = "PlaybackStart",
                 ShortOverview = string.Format(_localization.GetLocalizedString("AppDeviceValues"), e.ClientName, e.DeviceName),
                 UserId = user.Id.ToString("N")
@@ -233,10 +233,6 @@ namespace Emby.Server.Implementations.Activity
                 ShortOverview = string.Format(_localization.GetLocalizedString("VersionNumber"), e.Argument.versionStr),
                 Overview = e.Argument.description
             });
-        }
-
-        void _logManager_LoggerLoaded(object sender, EventArgs e)
-        {
         }
 
         void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)

@@ -276,12 +276,14 @@
 
     function downloadFile(url, localItem) {
 
-        return transfermanager.downloadFile(url, localItem);
+        var folder = filerepository.getLocalPath();
+        return transfermanager.downloadFile(url, folder, localItem);
     }
 
     function downloadSubtitles(url, fileName) {
 
-        return transfermanager.downloadSubtitles(url, fileName);
+        var folder = filerepository.getLocalPath();
+        return transfermanager.downloadSubtitles(url, folder, fileName);
     }
 
     function getImageUrl(serverId, itemId, imageType, index) {
@@ -296,7 +298,7 @@
     function hasImage(serverId, itemId, imageType, index) {
 
         var pathArray = getImagePath(serverId, itemId, imageType, index);
-        var localFilePath = filerepository.getFullLocalPath(pathArray);
+        var localFilePath = filerepository.getFullMetadataPath(pathArray);
 
         return filerepository.fileExists(localFilePath).then(function (exists) {
             // TODO: Maybe check for broken download when file size is 0 and item is not queued
@@ -316,7 +318,7 @@
     function downloadImage(localItem, url, serverId, itemId, imageType, index) {
 
         var pathArray = getImagePath(serverId, itemId, imageType, index);
-        var localFilePath = filerepository.getFullLocalPath(pathArray);
+        var localFilePath = filerepository.getFullMetadataPath(pathArray);
 
         if (!localItem.AdditionalFiles) {
             localItem.AdditionalFiles = [];
@@ -331,7 +333,8 @@
 
         localItem.AdditionalFiles.push(fileInfo);
 
-        return transfermanager.downloadImage(url, localFilePath);
+        var folder = filerepository.getMetadataPath();
+        return transfermanager.downloadImage(url, folder, localFilePath);
     }
 
     function isDownloadFileInQueue(path) {

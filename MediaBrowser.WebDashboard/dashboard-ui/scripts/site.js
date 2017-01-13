@@ -2371,7 +2371,7 @@ var AppInfo = {};
         //'plugins/logoscreensaver/plugin',
         //'plugins/backdropscreensaver/plugin',
         //'plugins/defaultsoundeffects/plugin',
-        //'plugins/playbackvalidation/plugin'
+        'bower_components/emby-webcomponents/playback/playbackvalidation'
         ];
 
         if (Dashboard.isRunningInCordova() && browser.android) {
