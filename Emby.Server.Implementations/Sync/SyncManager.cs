@@ -560,6 +560,12 @@ namespace Emby.Server.Implementations.Sync
         {
             var jobItem = _repo.GetJobItem(id);
 
+            if (jobItem == null)
+            {
+                _logger.Debug("ReportSyncJobItemTransferred: SyncJobItem {0} doesn't exist anymore", id);
+                return;
+            }
+
             jobItem.Status = SyncJobItemStatus.Synced;
             jobItem.Progress = 100;
 
