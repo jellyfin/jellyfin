@@ -151,20 +151,20 @@
             return Promise.resolve();
         }
 
-        var settingsKey = 'periodicmessage-' + feature;
+        var settingsKey = 'periodicmessage2-' + feature;
 
         var lastMessage = parseInt(appSettings.get(settingsKey) || '0');
 
         if (!lastMessage) {
 
             // Don't show on the very first playback attempt
-            appSettings.set(settingsKey, new Date().getTime());
+            appSettings.set(settingsKey, new Date().getTime() - intervalMs);
             return Promise.resolve();
         }
 
         if ((new Date().getTime() - lastMessage) > intervalMs) {
 
-            connectionManager.currentApiClient().getPluginSecurityInfo().then(function (regInfo) {
+            return connectionManager.currentApiClient().getPluginSecurityInfo().then(function (regInfo) {
 
                 if (regInfo.IsMBSupporter) {
                     appSettings.set(settingsKey, new Date().getTime());

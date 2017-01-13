@@ -38,7 +38,7 @@
                 preferThumb: true,
                 showDetailsMenu: true,
                 centerText: !supportsImageAnalysis,
-                overlayPlayButton: AppInfo.enableAppLayouts && !supportsImageAnalysis,
+                overlayPlayButton: true,
                 context: 'home-nextup',
                 cardLayout: supportsImageAnalysis,
                 vibrant: supportsImageAnalysis
