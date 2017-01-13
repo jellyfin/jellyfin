@@ -964,7 +964,19 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 default:
-                    reader.Skip();
+                    var providerId = reader.Name;
+                    if (_validProviderIds.ContainsKey(providerId))
+                    {
+                        var id = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(id))
+                        {
+                            item.SetProviderId(_validProviderIds[providerId], id);
+                        }
+                    }
+                    else
+                    {
+                        reader.Skip();
+                    }
                     break;
             }
         }
