@@ -2741,6 +2741,10 @@ namespace MediaBrowser.Api.Playback
             {
                 return null;
             }
+            if (string.Equals(codec, "aac_latm", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
 
             return codec;
         }

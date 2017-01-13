@@ -316,11 +316,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                     if ((stream.CodecTag ?? string.Empty).IndexOf("xvid", StringComparison.OrdinalIgnoreCase) != -1)
                     {
-                        codec = "xvid;";
+                        codec = "xvid";
                     }
                     else if ((stream.CodecTag ?? string.Empty).IndexOf("divx", StringComparison.OrdinalIgnoreCase) != -1)
                     {
-                        codec = "divx;";
+                        codec = "divx";
                     }
 
                     writer.WriteElementString("codec", codec);
