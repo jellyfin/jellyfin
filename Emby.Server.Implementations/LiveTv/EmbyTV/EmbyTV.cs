@@ -2106,12 +2106,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     return true;
                 }
-
-                if (!seriesTimer.Days.Contains(timer.StartDate.ToLocalTime().DayOfWeek))
-                {
-                    return true;
-                }
             }
+
+            //if (!seriesTimer.Days.Contains(timer.StartDate.ToLocalTime().DayOfWeek))
+            //{
+            //    return true;
+            //}
 
             if (seriesTimer.RecordNewOnly && timer.IsRepeat)
             {
