@@ -14,6 +14,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
@@ -273,19 +274,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             var reg = new Regex(@"([a-z0-9\-_]+)=\""([^""]+)\""", RegexOptions.IgnoreCase);
             var matches = reg.Matches(line);
-            var minIndex = int.MaxValue;
-            foreach (Match match in matches)
-            {
-                dict[match.Groups[1].Value] = match.Groups[2].Value;
-                minIndex = Math.Min(minIndex, match.Index);
-            }
-
-            if (minIndex > 0 && minIndex < line.Length)
-            {
-                line = line.Substring(0, minIndex);
-            }
 
             remaining = line;
+
+            foreach (Match match in matches)
+            {
+                var key = match.Groups[1].Value;
+                var value = match.Groups[2].Value;
+
+                dict[match.Groups[1].Value] = match.Groups[2].Value;
+                remaining = remaining.Replace(key + "=\"" + value + "\"", string.Empty, StringComparison.OrdinalIgnoreCase);
+            }
 
             return dict;
         }
