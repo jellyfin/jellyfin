@@ -40,5 +40,17 @@ namespace MediaBrowser.Tests
             Assert.AreEqual("ABC News 04", result[0].Name);
             Assert.IsNull(result[0].Number);
         }
+
+        [TestMethod]
+        public void TestFormat3()
+        {
+            BaseExtensions.CryptographyProvider = new CryptographyProvider();
+
+            var result = new M3uParser(new NullLogger(), null, null, null).ParseString("#EXTINF:0, 3.2 - Movies!\nhttp://mystream", "-", "-");
+            Assert.AreEqual(1, result.Count);
+
+            Assert.AreEqual("Movies!", result[0].Name);
+            Assert.AreEqual("3.2", result[0].Number);
+        }
     }
 }
