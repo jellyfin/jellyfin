@@ -398,8 +398,8 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             if (!clickEntireItem) {
 
-                if (options.queueButton) {
-                    html += '<button is="paper-icon-button-light" class="listItemButton itemAction autoSize" data-action="queue"><i class="md-icon">&#xE03B;</i></button>';
+                if (options.addToListButton) {
+                    html += '<button is="paper-icon-button-light" class="listItemButton itemAction autoSize" data-action="addtoplaylist"><i class="md-icon">&#xE03B;</i></button>';
                 }
 
                 if (options.moreButton !== false) {

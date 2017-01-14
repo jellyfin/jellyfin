@@ -74,7 +74,7 @@
                     action: 'playallfromhere',
                     smallIcon: true,
                     artist: true,
-                    queueButton: true
+                    addToListButton: true
                 });
 
                 var i, length;

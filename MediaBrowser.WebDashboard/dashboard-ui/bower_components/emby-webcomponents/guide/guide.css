@@ -231,9 +231,6 @@
 
 .channelTimeslotHeader, .timeslotHeader {
     background: transparent;
-}
-
-.timeslotHeader, .channelTimeslotHeader {
     height: 2.2em;
 }
 
@@ -259,6 +256,9 @@
     /* Needed for Firefox */
     text-align: left;
     contain: strict;
+    flex-grow: 1;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .programAccent {

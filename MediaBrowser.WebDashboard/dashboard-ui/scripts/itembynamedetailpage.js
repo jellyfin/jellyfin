@@ -275,7 +275,7 @@
                     action: 'playallfromhere',
                     smallIcon: true,
                     artist: true,
-                    queueButton: true
+                    addToListButton: true
                 });
                 break;
 

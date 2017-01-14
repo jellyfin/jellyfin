@@ -717,7 +717,7 @@ var AppInfo = {};
             AppInfo.enableHomeTabs = false;
 
             if (isAndroid) {
-                AppInfo.supportsExternalPlayerMenu = true;
+                AppInfo.supportsExternalPlayers = true;
             }
         }
         else {
@@ -1002,12 +1002,6 @@ var AppInfo = {};
         };
 
         paths.hlsjs = bowerPath + "/hlsjs/dist/hls.min";
-
-        if ((window.chrome && window.chrome.sockets) || Dashboard.isRunningInCordova()) {
-            paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery-chrome";
-        } else {
-            paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
-        }
 
         define("webActionSheet", [embyWebComponentsBowerPath + "/actionsheet/actionsheet"], returnFirstDependency);
 
@@ -1367,7 +1361,7 @@ var AppInfo = {};
                 appSettings.set('externalplayers', val.toString());
             }
 
-            return appSettings.get('externalplayers') == 'true';
+            return appSettings.get('externalplayers') === 'true';
         };
 
         return appSettings;
@@ -1401,6 +1395,16 @@ var AppInfo = {};
             }
         } else {
             define("registerElement", []);
+        }
+
+        if ((window.chrome && window.chrome.sockets)) {
+            define("serverdiscovery", [apiClientBowerPath + "/serverdiscovery-chrome"], returnFirstDependency);
+        } else if (Dashboard.isRunningInCordova() && browser.android) {
+            define("serverdiscovery", ["cordova/serverdiscovery"], returnFirstDependency);
+        } else if (Dashboard.isRunningInCordova() && browser.safari) {
+            define("serverdiscovery", [apiClientBowerPath + "/serverdiscovery-chrome"], returnFirstDependency);
+        } else {
+            define("serverdiscovery", [apiClientBowerPath + "/serverdiscovery"], returnFirstDependency);
         }
 
         if (Dashboard.isRunningInCordova() && browser.safari) {

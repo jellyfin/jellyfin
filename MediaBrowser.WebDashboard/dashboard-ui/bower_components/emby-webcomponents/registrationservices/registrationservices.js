@@ -36,7 +36,7 @@
             require(['listViewStyle', 'emby-button', 'formDialogStyle'], function () {
 
                 var dlg = dialogHelper.createDialog({
-                    size: 'fullscreen-border',
+                    size: layoutManager.tv ? 'fullscreen' : 'fullscreen-border',
                     removeOnClose: true,
                     scrollY: false
                 });
@@ -290,7 +290,7 @@
         }
 
         var dlg = dialogHelper.createDialog({
-            size: 'fullscreen-border',
+            size: layoutManager.tv ? 'fullscreen' : 'fullscreen-border',
             removeOnClose: true,
             scrollY: false
         });
@@ -524,7 +524,7 @@
     function restorePurchase(unlockableProductInfo) {
 
         var dlg = dialogHelper.createDialog({
-            size: 'fullscreen-border',
+            size: layoutManager.tv ? 'fullscreen' : 'fullscreen-border',
             removeOnClose: true,
             scrollY: false
         });
