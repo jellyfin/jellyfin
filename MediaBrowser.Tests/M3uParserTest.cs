@@ -52,5 +52,17 @@ namespace MediaBrowser.Tests
             Assert.AreEqual("Movies!", result[0].Name);
             Assert.AreEqual("3.2", result[0].Number);
         }
+
+        [TestMethod]
+        public void TestFormat4()
+        {
+            BaseExtensions.CryptographyProvider = new CryptographyProvider();
+
+            var result = new M3uParser(new NullLogger(), null, null, null).ParseString("#EXTINF:0 tvg-id=\"abckabclosangeles.path.to\" tvg-logo=\"path.to / channel_logos / abckabclosangeles.png\", ABC KABC Los Angeles\nhttp://mystream", "-", "-");
+            Assert.AreEqual(1, result.Count);
+
+            Assert.IsNull(result[0].Number);
+            Assert.AreEqual("ABC KABC Los Angeles", result[0].Name);
+        }
     }
 }

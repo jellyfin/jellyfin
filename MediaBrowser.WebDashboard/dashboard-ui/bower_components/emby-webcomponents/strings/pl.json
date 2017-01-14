@@ -115,7 +115,7 @@
     "RefreshDialogHelp": "Metadata is refreshed based on settings and internet services that are enabled in the Emby Server dashboard.",
     "Open": "Otw\u00f3rz",
     "Play": "Odtwarzaj",
-    "Queue": "Kolejka",
+    "AddToPlayQueue": "Add to play queue",
     "Shuffle": "Losowo",
     "Identify": "Identyfikuj",
     "EditImages": "Edit images",
@@ -378,7 +378,6 @@
     "SyncJobItemStatusCancelled": "Cancelled",
     "Retry": "Retry",
     "HeaderMyDevice": "My Device",
-    "MediaQueued": "Media queued.",
     "Continue": "Continue",
     "ContinueInSecondsValue": "Continue in {0} seconds."
 }

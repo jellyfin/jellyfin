@@ -115,7 +115,7 @@
     "RefreshDialogHelp": "Metadata is refreshed based on settings and internet services that are enabled in the Emby Server dashboard.",
     "Open": "\uc5f4\uae30",
     "Play": "\uc7ac\uc0dd",
-    "Queue": "\ub300\uae30\uc5f4 \ucd94\uac00",
+    "AddToPlayQueue": "Add to play queue",
     "Shuffle": "Shuffle",
     "Identify": "Identify",
     "EditImages": "Edit images",
@@ -378,7 +378,6 @@
     "SyncJobItemStatusCancelled": "Cancelled",
     "Retry": "Retry",
     "HeaderMyDevice": "My Device",
-    "MediaQueued": "Media queued.",
     "Continue": "Continue",
     "ContinueInSecondsValue": "Continue in {0} seconds."
 }

@@ -115,7 +115,7 @@
     "RefreshDialogHelp": "Les m\u00e9tadonn\u00e9es sont actualis\u00e9es en fonction des param\u00e8tres et des services internet qui sont activ\u00e9s dans le tableau de bord Emby Server.",
     "Open": "Ouvrir",
     "Play": "Lire",
-    "Queue": "En file d'attente",
+    "AddToPlayQueue": "Add to play queue",
     "Shuffle": "M\u00e9langer",
     "Identify": "Identifier",
     "EditImages": "Modifier les images",
@@ -378,7 +378,6 @@
     "SyncJobItemStatusCancelled": "Annul\u00e9",
     "Retry": "R\u00e9essayer",
     "HeaderMyDevice": "Mon appareil",
-    "MediaQueued": "Media queued.",
     "Continue": "Continue",
     "ContinueInSecondsValue": "Continue in {0} seconds."
 }

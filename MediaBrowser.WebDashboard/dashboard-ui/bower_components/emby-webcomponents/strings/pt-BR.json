@@ -115,7 +115,7 @@
     "RefreshDialogHelp": "Os metadados s\u00e3o atualizados com bases nas defini\u00e7\u00f5es e nos servi\u00e7os de internet que est\u00e3o ativos no painel do Servidor Emby.",
     "Open": "Abrir",
     "Play": "Reproduzir",
-    "Queue": "Adicionar \u00e0 fila",
+    "AddToPlayQueue": "Add to play queue",
     "Shuffle": "Aleat\u00f3rio",
     "Identify": "Identificar",
     "EditImages": "Editar imagens",
@@ -378,7 +378,6 @@
     "SyncJobItemStatusCancelled": "Cancelado",
     "Retry": "Tentar Novamente",
     "HeaderMyDevice": "Meu Dispositivo",
-    "MediaQueued": "M\u00eddia enfileirada.",
-    "Continue": "Continue",
-    "ContinueInSecondsValue": "Continue in {0} seconds."
+    "Continue": "Continuar",
+    "ContinueInSecondsValue": "Continuar em {0} segundos."
 }

@@ -115,7 +115,7 @@
     "RefreshDialogHelp": "Metadaten werden auf Basis der Einstellungen und Internet Services in den Emby Server Einstellungen aktualisiert.",
     "Open": "\u00d6ffnen",
     "Play": "Abspielen",
-    "Queue": "Warteschlange",
+    "AddToPlayQueue": "Zur Abspielwarteschlange hinzuf\u00fcgen",
     "Shuffle": "Zufallswiedergabe",
     "Identify": "Identifizieren",
     "EditImages": "Bearbeite Bilder",
@@ -378,7 +378,6 @@
     "SyncJobItemStatusCancelled": "Abgebrochen",
     "Retry": "Wiederholen",
     "HeaderMyDevice": "Mein Ger\u00e4t",
-    "MediaQueued": "Medien in Warteschlange",
     "Continue": "Fortfahren",
     "ContinueInSecondsValue": "Fortfahren in {0} Sekunden."
 }

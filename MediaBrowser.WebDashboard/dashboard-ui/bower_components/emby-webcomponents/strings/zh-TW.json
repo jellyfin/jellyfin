@@ -115,7 +115,7 @@
     "RefreshDialogHelp": "\u8a73\u7d30\u8cc7\u6599\u7684\u66f4\u65b0\u65b9\u5f0f\u6703\u4f9d\u64daEmby\u7684\u8a2d\u5b9a\u53ca\u5df2\u7d93\u555f\u7528\u7684\u7db2\u8def\u670d\u52d9\u4f86\u9032\u884c",
     "Open": "Open",
     "Play": "\u64ad\u653e",
-    "Queue": "Queue",
+    "AddToPlayQueue": "Add to play queue",
     "Shuffle": "Shuffle",
     "Identify": "Identify",
     "EditImages": "\u7de8\u8f2f\u5716\u7247",
@@ -378,7 +378,6 @@
     "SyncJobItemStatusCancelled": "Cancelled",
     "Retry": "Retry",
     "HeaderMyDevice": "My Device",
-    "MediaQueued": "Media queued.",
     "Continue": "Continue",
     "ContinueInSecondsValue": "Continue in {0} seconds."
 }

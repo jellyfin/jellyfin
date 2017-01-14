@@ -115,7 +115,7 @@
     "RefreshDialogHelp": "Metadata se aktualizuj\u00ed na z\u00e1klad\u011b nastaven\u00ed a internetov\u00fdch slu\u017eeb, kter\u00e9 jsou povoleny v nastaven\u00ed Emby Server.",
     "Open": "Otev\u0159\u00edt",
     "Play": "P\u0159ehr\u00e1t",
-    "Queue": "Fronta",
+    "AddToPlayQueue": "Add to play queue",
     "Shuffle": "N\u00e1hodn\u011b",
     "Identify": "Identifikuj",
     "EditImages": "Editace obr\u00e1zk\u016f",
@@ -378,7 +378,6 @@
     "SyncJobItemStatusCancelled": "Cancelled",
     "Retry": "Retry",
     "HeaderMyDevice": "My Device",
-    "MediaQueued": "Media queued.",
     "Continue": "Continue",
     "ContinueInSecondsValue": "Continue in {0} seconds."
 }

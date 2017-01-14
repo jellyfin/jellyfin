@@ -115,7 +115,7 @@
     "RefreshDialogHelp": "I Metadati sono aggiornati in base alle impostazioni ed ai servizi Internet abilitati nel Pannello di Controllo del Server Emby.",
     "Open": "Apri",
     "Play": "Riproduci",
-    "Queue": "In coda",
+    "AddToPlayQueue": "Aggiungi alla coda di riproduzione",
     "Shuffle": "Casuale",
     "Identify": "Identifica",
     "EditImages": "Modifica immagini",
@@ -378,7 +378,6 @@
     "SyncJobItemStatusCancelled": "Annullato",
     "Retry": "Riprova",
     "HeaderMyDevice": "Il Mio Dispositivo",
-    "MediaQueued": "Media aggiunto in coda.",
     "Continue": "Continua",
     "ContinueInSecondsValue": "Continua tra {0} secondi."
 }

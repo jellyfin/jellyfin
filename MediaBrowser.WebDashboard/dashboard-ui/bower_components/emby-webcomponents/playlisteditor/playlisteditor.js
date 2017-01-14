@@ -136,7 +136,10 @@
 
             var html = '';
 
-            html += '<option value="queue">' + globalize.translate('sharedcomponents#AddToPlayQueue') + '</option>';
+            if (playbackManager.isPlaying()) {
+                html += '<option value="queue">' + globalize.translate('sharedcomponents#AddToPlayQueue') + '</option>';
+            }
+
             html += '<option value="">' + globalize.translate('sharedcomponents#OptionNew') + '</option>';
 
             html += result.Items.map(function (i) {

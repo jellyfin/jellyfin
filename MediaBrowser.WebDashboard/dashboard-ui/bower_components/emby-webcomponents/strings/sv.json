@@ -115,7 +115,7 @@
     "RefreshDialogHelp": "Metadata uppdateras baserat p\u00e5 inst\u00e4llningar och internettj\u00e4nster som har aktiverats under Emby servers kontrollpanel.",
     "Open": "\u00d6ppna",
     "Play": "Spela upp",
-    "Queue": "K\u00f6",
+    "AddToPlayQueue": "Add to play queue",
     "Shuffle": "Blanda",
     "Identify": "Identifiera",
     "EditImages": "\u00c4ndra bilder",
@@ -378,7 +378,6 @@
     "SyncJobItemStatusCancelled": "Cancelled",
     "Retry": "Retry",
     "HeaderMyDevice": "My Device",
-    "MediaQueued": "Media queued.",
     "Continue": "Continue",
     "ContinueInSecondsValue": "Continue in {0} seconds."
 }

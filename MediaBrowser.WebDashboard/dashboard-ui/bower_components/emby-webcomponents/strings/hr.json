@@ -115,7 +115,7 @@
     "RefreshDialogHelp": "Meta-podaci se osvje\u017eavaju na temelju postavki i internet usluga koje su omogu\u0107ene u nadzornoj plo\u010di Emby Server-a.",
     "Open": "Otvori",
     "Play": "Pokreni",
-    "Queue": "Red",
+    "AddToPlayQueue": "Add to play queue",
     "Shuffle": "Mije\u0161aj",
     "Identify": "Identificiraj",
     "EditImages": "Ure\u0111ivanje slika",
@@ -378,7 +378,6 @@
     "SyncJobItemStatusCancelled": "Cancelled",
     "Retry": "Retry",
     "HeaderMyDevice": "My Device",
-    "MediaQueued": "Media queued.",
     "Continue": "Continue",
     "ContinueInSecondsValue": "Continue in {0} seconds."
 }

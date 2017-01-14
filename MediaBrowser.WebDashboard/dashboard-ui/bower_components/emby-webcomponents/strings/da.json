@@ -115,7 +115,7 @@
     "RefreshDialogHelp": "Metadata opdateres alt efter hvilke indstillinger og internet-servicer der er aktiveret i Emby Server-kontrolpanelet.",
     "Open": "\u00c5ben",
     "Play": "Afspil",
-    "Queue": "K\u00f8",
+    "AddToPlayQueue": "Add to play queue",
     "Shuffle": "Bland",
     "Identify": "Identificer",
     "EditImages": "Rediger billeder",
@@ -378,7 +378,6 @@
     "SyncJobItemStatusCancelled": "Annulleret",
     "Retry": "Pr\u00f8v igen",
     "HeaderMyDevice": "Min Enhed",
-    "MediaQueued": "Medie sat i k\u00f8",
     "Continue": "Continue",
     "ContinueInSecondsValue": "Continue in {0} seconds."
 }

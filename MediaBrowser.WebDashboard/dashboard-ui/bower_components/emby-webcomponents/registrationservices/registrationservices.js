@@ -31,8 +31,6 @@
 
         return new Promise(function (resolve, reject) {
 
-            appSettings.set(settingsKey, new Date().getTime());
-
             require(['listViewStyle', 'emby-button', 'formDialogStyle'], function () {
 
                 var dlg = dialogHelper.createDialog({
@@ -117,10 +115,11 @@
                         centerFocus(dlg.querySelector('.formDialogContent'), false, false);
                     }
 
-                    appSettings.set(settingsKey, new Date().getTime());
                     if (isRejected) {
                         reject();
                     } else {
+                        appSettings.set(settingsKey, new Date().getTime());
+
                         resolve();
                     }
                 });
@@ -156,7 +155,7 @@
             return Promise.resolve();
         }
 
-        var settingsKey = 'periodicmessage2-' + feature;
+        var settingsKey = 'periodicmessage10-' + feature;
 
         var lastMessage = parseInt(appSettings.get(settingsKey) || '0');
 
@@ -383,11 +382,14 @@
             btnPurchases[i].addEventListener('click', showExternalPremiereInfo);
         }
 
-        dlg.querySelector('.btnPlayMinute').addEventListener('click', function () {
+        var btnPlayMinute = dlg.querySelector('.btnPlayMinute');
+        if (btnPlayMinute) {
+            btnPlayMinute.addEventListener('click', function () {
 
-            currentDisplayingResolveResult.enableTimeLimit = true;
-            dialogHelper.close(dlg);
-        });
+                currentDisplayingResolveResult.enableTimeLimit = true;
+                dialogHelper.close(dlg);
+            });
+        }
 
         dlg.querySelector('.btnRestorePurchase').addEventListener('click', function () {
             restorePurchase(unlockableProductInfo);
