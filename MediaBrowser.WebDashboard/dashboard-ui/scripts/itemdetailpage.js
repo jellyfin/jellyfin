@@ -73,7 +73,6 @@
             item: item,
             open: false,
             play: false,
-            queue: false,
             playAllFromHere: false,
             queueAllFromHere: false,
             positionTo: button,
@@ -1261,7 +1260,7 @@
                     image: false,
                     artist: 'auto',
                     containerAlbumArtist: item.AlbumArtist,
-                    queueButton: true
+                    addToListButton: true
                 });
                 isList = true;
             }
@@ -1548,6 +1547,9 @@
                         break;
                     case 'games':
                         type = 'Game';
+                        break;
+                    case 'music':
+                        type = 'MusicAlbum';
                         break;
                     default:
                         type = 'Movie';

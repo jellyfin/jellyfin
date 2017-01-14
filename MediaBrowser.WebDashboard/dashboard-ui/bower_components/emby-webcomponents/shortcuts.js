@@ -326,6 +326,21 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         else if (action === 'playtrailer') {
             getItem(target).then(playTrailer);
         }
+
+        else if (action === 'addtoplaylist') {
+            getItem(target).then(addToPlaylist);
+        }
+    }
+
+    function addToPlaylist(item) {
+        require(['playlistEditor'], function (playlistEditor) {
+
+            new playlistEditor().show({
+                items: [item.Id],
+                serverId: item.ServerId
+
+            });
+        });
     }
 
     function playTrailer(item) {

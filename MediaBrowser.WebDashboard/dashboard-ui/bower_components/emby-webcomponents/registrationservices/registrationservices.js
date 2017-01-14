@@ -31,12 +31,10 @@
 
         return new Promise(function (resolve, reject) {
 
-            appSettings.set(settingsKey, new Date().getTime());
-
             require(['listViewStyle', 'emby-button', 'formDialogStyle'], function () {
 
                 var dlg = dialogHelper.createDialog({
-                    size: 'fullscreen-border',
+                    size: layoutManager.tv ? 'fullscreen' : 'fullscreen-border',
                     removeOnClose: true,
                     scrollY: false
                 });
@@ -69,13 +67,13 @@
 
                 html += '<div class="formDialogFooter">';
 
-                html += '<div class="formDialogFooterItem">';
-                html += '<button is="emby-button" type="button" class="raised button-submit block btnGetPremiere block" autoFocus><span>' + globalize.translate('sharedcomponents#HeaderBecomeProjectSupporter') + '</span></button>';
+                html += '<button is="emby-button" type="button" class="raised button-submit block btnGetPremiere block formDialogFooterItem" autoFocus><span>' + globalize.translate('sharedcomponents#HeaderBecomeProjectSupporter') + '</span></button>';
 
-                var seconds = 9;
+                var seconds = 12;
 
-                html += '<p class="continueTimeText" style="margin: 1.5em 0 .5em;">' + globalize.translate('sharedcomponents#ContinuingInSecondsValue', seconds) + '</p>';
-                html += '</div>';
+                html += '<div class="continueTimeText formDialogFooterItem" style="margin: 1.5em 0 .5em;">' + globalize.translate('sharedcomponents#ContinueInSecondsValue', seconds) + '</div>';
+
+                html += '<button is="emby-button" type="button" class="raised button-cancel block btnContinue block formDialogFooterItem hide"><span>' + globalize.translate('sharedcomponents#Continue') + '</span></button>';
 
                 html += '</div>';
 
@@ -90,10 +88,10 @@
 
                     seconds -= 1;
                     if (seconds <= 0) {
-                        isRejected = false;
-                        dialogHelper.close(dlg);
+                        dlg.querySelector('.continueTimeText').classList.add('hide');
+                        dlg.querySelector('.btnContinue').classList.remove('hide');
                     } else {
-                        dlg.querySelector('.continueTimeText').innerHTML = globalize.translate('sharedcomponents#ContinuingInSecondsValue', seconds);
+                        dlg.querySelector('.continueTimeText').innerHTML = globalize.translate('sharedcomponents#ContinueInSecondsValue', seconds);
                     }
 
                 }, 1000);
@@ -117,12 +115,18 @@
                         centerFocus(dlg.querySelector('.formDialogContent'), false, false);
                     }
 
-                    appSettings.set(settingsKey, new Date().getTime());
                     if (isRejected) {
                         reject();
                     } else {
+                        appSettings.set(settingsKey, new Date().getTime());
+
                         resolve();
                     }
+                });
+
+                dlg.querySelector('.btnContinue').addEventListener('click', function () {
+                    isRejected = false;
+                    dialogHelper.close(dlg);
                 });
 
                 dlg.querySelector('.btnGetPremiere').addEventListener('click', showPremiereInfo);
@@ -151,7 +155,7 @@
             return Promise.resolve();
         }
 
-        var settingsKey = 'periodicmessage2-' + feature;
+        var settingsKey = 'periodicmessage10-' + feature;
 
         var lastMessage = parseInt(appSettings.get(settingsKey) || '0');
 
@@ -285,7 +289,7 @@
         }
 
         var dlg = dialogHelper.createDialog({
-            size: 'fullscreen-border',
+            size: layoutManager.tv ? 'fullscreen' : 'fullscreen-border',
             removeOnClose: true,
             scrollY: false
         });
@@ -378,11 +382,14 @@
             btnPurchases[i].addEventListener('click', showExternalPremiereInfo);
         }
 
-        dlg.querySelector('.btnPlayMinute').addEventListener('click', function () {
+        var btnPlayMinute = dlg.querySelector('.btnPlayMinute');
+        if (btnPlayMinute) {
+            btnPlayMinute.addEventListener('click', function () {
 
-            currentDisplayingResolveResult.enableTimeLimit = true;
-            dialogHelper.close(dlg);
-        });
+                currentDisplayingResolveResult.enableTimeLimit = true;
+                dialogHelper.close(dlg);
+            });
+        }
 
         dlg.querySelector('.btnRestorePurchase').addEventListener('click', function () {
             restorePurchase(unlockableProductInfo);
@@ -519,7 +526,7 @@
     function restorePurchase(unlockableProductInfo) {
 
         var dlg = dialogHelper.createDialog({
-            size: 'fullscreen-border',
+            size: layoutManager.tv ? 'fullscreen' : 'fullscreen-border',
             removeOnClose: true,
             scrollY: false
         });

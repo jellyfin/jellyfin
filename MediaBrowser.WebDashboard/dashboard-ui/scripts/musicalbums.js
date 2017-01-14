@@ -99,7 +99,7 @@
                         items: result.Items,
                         context: 'music',
                         sortBy: query.SortBy,
-                        queueButton: true
+                        addToListButton: true
                     });
                 }
                 else if (viewStyle == "PosterCard") {

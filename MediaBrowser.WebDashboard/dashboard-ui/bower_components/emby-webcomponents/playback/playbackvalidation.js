@@ -12,8 +12,8 @@ define(['playbackManager'], function (playbackManager) {
 
         self.intercept = function (options) {
 
-            // Don't care about video backdrops or any kind of non-fullscreen playback
-            if (!options.fullscreen && options.mediaType === 'Video') {
+            // Don't care about video backdrops, or theme music or any kind of non-fullscreen playback
+            if (!options.fullscreen) {
                 return Promise.resolve();
             }
 

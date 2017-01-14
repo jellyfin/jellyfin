@@ -33,6 +33,22 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 });
             }
 
+            if (playbackManager.canQueue(item)) {
+                if (options.queue !== false) {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#AddToPlayQueue'),
+                        id: 'queue'
+                    });
+                }
+
+                //if (options.queueAllFromHere) {
+                //    commands.push({
+                //        name: globalize.translate('sharedcomponents#QueueAllFromHere'),
+                //        id: 'queueallfromhere'
+                //    });
+                //}
+            }
+
             if ((item.Type === 'Timer') && user.Policy.EnableLiveTvManagement && options.cancelTimer !== false) {
                 commands.push({
                     name: globalize.translate('sharedcomponents#CancelRecording'),
@@ -151,22 +167,6 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                         name: globalize.translate('sharedcomponents#PlayAllFromHere'),
                         id: 'playallfromhere'
                     });
-                }
-
-                if (playbackManager.canQueue(item)) {
-                    if (options.queue !== false) {
-                        commands.push({
-                            name: globalize.translate('sharedcomponents#Queue'),
-                            id: 'queue'
-                        });
-                    }
-
-                    if (options.queueAllFromHere) {
-                        commands.push({
-                            name: globalize.translate('sharedcomponents#QueueAllFromHere'),
-                            id: 'queueallfromhere'
-                        });
-                    }
                 }
             }
 

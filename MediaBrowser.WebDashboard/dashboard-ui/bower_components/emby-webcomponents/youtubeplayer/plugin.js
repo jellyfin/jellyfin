@@ -143,7 +143,7 @@ define(['pluginManager', 'events', 'browser', 'embyRouter'], function (pluginMan
 
             if (currentYoutubePlayer) {
                 if (val != null) {
-                    currentYoutubePlayer.setCurrentTime(val / 1000);
+                    currentYoutubePlayer.seekTo(val / 1000, true);
                     return;
                 }
 

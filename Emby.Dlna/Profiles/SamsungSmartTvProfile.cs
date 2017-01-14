@@ -43,7 +43,7 @@ namespace Emby.Dlna.Profiles
                    AudioCodec = "ac3",
                    VideoCodec = "h264",
                    Type = DlnaProfileType.Video,
-                   EstimateContentLength = true
+                   EstimateContentLength = false
                },
                new TranscodingProfile
                {
