@@ -43,6 +43,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
         }
 
+        public List<M3UChannel> ParseString(string text, string channelIdPrefix, string tunerHostId)
+        {
+            var urlHash = "text".GetMD5().ToString("N");
+
+            // Read the file and display it line by line.
+            using (var reader = new StringReader(text))
+            {
+                return GetChannels(reader, urlHash, channelIdPrefix, tunerHostId);
+            }
+        }
+
         public Task<Stream> GetListingsStream(string url, CancellationToken cancellationToken)
         {
             if (url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
@@ -59,7 +70,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         }
 
         const string ExtInfPrefix = "#EXTINF:";
-        private List<M3UChannel> GetChannels(StreamReader reader, string urlHash, string channelIdPrefix, string tunerHostId)
+        private List<M3UChannel> GetChannels(TextReader reader, string urlHash, string channelIdPrefix, string tunerHostId)
         {
             var channels = new List<M3UChannel>();
             string line;
@@ -122,16 +133,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
 
-            var numberString = nameParts[0];
+            string numberString = null;
 
             //Check for channel number with the format from SatIp
-            int number;
+            // #EXTINF:0,84. VOX Schweiz
             if (!string.IsNullOrWhiteSpace(nameInExtInf))
             {
                 var numberIndex = nameInExtInf.IndexOf('.');
                 if (numberIndex > 0)
                 {
-                    if (int.TryParse(nameInExtInf.Substring(0, numberIndex), out number))
+                    double number;
+                    if (double.TryParse(nameInExtInf.Substring(0, numberIndex), NumberStyles.AllowCurrencySymbol, CultureInfo.InvariantCulture, out number))
                     {
                         numberString = number.ToString();
                     }
@@ -150,7 +162,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 string value;
                 if (attributes.TryGetValue("tvg-id", out value))
                 {
-                    numberString = value;
+                    double doubleValue;
+                    if (double.TryParse(value, NumberStyles.AllowCurrencySymbol, CultureInfo.InvariantCulture, out doubleValue))
+                    {
+                        numberString = value;
+                    }
                 }
             }
 
@@ -209,16 +225,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
 
             //Check for channel number with the format from SatIp
-            int number;
             if (!string.IsNullOrWhiteSpace(nameInExtInf))
             {
                 var numberIndex = nameInExtInf.IndexOf('.');
                 if (numberIndex > 0)
                 {
-                    if (int.TryParse(nameInExtInf.Substring(0, numberIndex), out number))
+                    double number;
+                    if (double.TryParse(nameInExtInf.Substring(0, numberIndex), NumberStyles.AllowCurrencySymbol, CultureInfo.InvariantCulture, out number))
                     {
                         //channel.Number = number.ToString();
-                        nameInExtInf = nameInExtInf.Substring(numberIndex + 1);
+                        nameInExtInf = nameInExtInf.Substring(numberIndex + 1).Trim();
                     }
                 }
             }
