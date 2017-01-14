@@ -135,17 +135,20 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             string numberString = null;
 
-            //Check for channel number with the format from SatIp
+            // Check for channel number with the format from SatIp
             // #EXTINF:0,84. VOX Schweiz
+            // #EXTINF:0,84.0 - VOX Schweiz
             if (!string.IsNullOrWhiteSpace(nameInExtInf))
             {
-                var numberIndex = nameInExtInf.IndexOf('.');
+                var numberIndex = nameInExtInf.IndexOf(' ');
                 if (numberIndex > 0)
                 {
+                    var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
+
                     double number;
-                    if (double.TryParse(nameInExtInf.Substring(0, numberIndex), NumberStyles.AllowCurrencySymbol, CultureInfo.InvariantCulture, out number))
+                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out number))
                     {
-                        numberString = number.ToString();
+                        numberString = numberPart;
                     }
                 }
             }
@@ -163,7 +166,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 if (attributes.TryGetValue("tvg-id", out value))
                 {
                     double doubleValue;
-                    if (double.TryParse(value, NumberStyles.AllowCurrencySymbol, CultureInfo.InvariantCulture, out doubleValue))
+                    if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out doubleValue))
                     {
                         numberString = value;
                     }
@@ -224,17 +227,21 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
 
-            //Check for channel number with the format from SatIp
+            // Check for channel number with the format from SatIp
+            // #EXTINF:0,84. VOX Schweiz
+            // #EXTINF:0,84.0 - VOX Schweiz
             if (!string.IsNullOrWhiteSpace(nameInExtInf))
             {
-                var numberIndex = nameInExtInf.IndexOf('.');
+                var numberIndex = nameInExtInf.IndexOf(' ');
                 if (numberIndex > 0)
                 {
+                    var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
+
                     double number;
-                    if (double.TryParse(nameInExtInf.Substring(0, numberIndex), NumberStyles.AllowCurrencySymbol, CultureInfo.InvariantCulture, out number))
+                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out number))
                     {
                         //channel.Number = number.ToString();
-                        nameInExtInf = nameInExtInf.Substring(numberIndex + 1).Trim();
+                        nameInExtInf = nameInExtInf.Substring(numberIndex + 1).Trim(new[] { ' ', '-' });
                     }
                 }
             }
