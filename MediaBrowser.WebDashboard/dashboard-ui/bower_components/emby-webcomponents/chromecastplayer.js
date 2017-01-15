@@ -753,9 +753,11 @@
                     options: {},
                     command: 'Mute'
                 });
-                //castPlayer.setMute(true);
             } else {
-                self.setVolume(self.getVolume() + 2);
+                castPlayer.sendMessage({
+                    options: {},
+                    command: 'Unmute'
+                });
             }
         };
 
@@ -776,11 +778,10 @@
 
         self.toggleMute = function () {
 
-            if (self.isMuted()) {
-                self.setMute(false);
-            } else {
-                self.setMute(true);
-            }
+            castPlayer.sendMessage({
+                options: {},
+                command: 'ToggleMute'
+            });
         };
 
         self.getTargets = function () {

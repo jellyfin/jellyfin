@@ -106,7 +106,7 @@ define(['browser', 'layoutManager', 'dom', 'focusManager', 'scrollStyles'], func
             // transform is the only way to guarantee animation
             options.enableNativeScroll = false;
         }
-        else if (layoutManager.desktop || !browser.animate) {
+        else if (!layoutManager.tv || !browser.animate) {
 
             options.enableNativeScroll = true;
         }

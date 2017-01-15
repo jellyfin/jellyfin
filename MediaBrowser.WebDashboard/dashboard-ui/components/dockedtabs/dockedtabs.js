@@ -326,7 +326,7 @@
     var instance;
 
     function onViewShow(e) {
-        if (e.detail.type === 'video-osd') {
+        if (e.detail.type === 'video-osd' || !Dashboard.getCurrentUserId()) {
             instance.hide();
         } else {
             instance.show();
@@ -341,12 +341,12 @@
         self.element = render(options);
 
         events.on(connectionManager, 'localusersignedin', function (e, user) {
-            self.element.classList.remove('hide');
+            self.show();
             showUserTabs(user, self.element);
         });
 
         events.on(connectionManager, 'localusersignedout', function () {
-            self.element.classList.add('hide');
+            self.hide();
         });
 
         showCurrentUserTabs(self.element);
