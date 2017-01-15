@@ -2618,9 +2618,10 @@
 
                 var url = self.getUrl("Users/authenticatebyname");
 
-                require(["cryptojs-sha1"], function () {
+                require(["cryptojs-sha1", "cryptojs-md5"], function () {
                     var postData = {
-                        password: CryptoJS.SHA1(password || "").toString(),
+                        Password: CryptoJS.SHA1(password || "").toString(),
+                        PasswordMd5: CryptoJS.MD5(password || "").toString(),
                         Username: name
                     };
 

@@ -236,6 +236,53 @@ namespace Emby.Server.Implementations.Library
             var user = Users
                 .FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
 
+            var success = false;
+
+            if (user != null)
+            {
+                // Authenticate using local credentials if not a guest
+                if (!user.ConnectLinkType.HasValue || user.ConnectLinkType.Value != UserLinkType.Guest)
+                {
+                    success = string.Equals(GetPasswordHash(user), passwordSha1.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+
+                    if (!success && _networkManager.IsInLocalNetwork(remoteEndPoint) && user.Configuration.EnableLocalPassword)
+                    {
+                        success = string.Equals(GetLocalPasswordHash(user), passwordSha1.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+
+                // Maybe user accidently entered connect credentials. let's be flexible
+                if (!success && user.ConnectLinkType.HasValue && !string.IsNullOrWhiteSpace(passwordMd5) && !string.IsNullOrWhiteSpace(user.ConnectUserName))
+                {
+                    try
+                    {
+                        await _connectFactory().Authenticate(user.ConnectUserName, passwordMd5).ConfigureAwait(false);
+                        success = true;
+                    }
+                    catch
+                    {
+
+                    }
+                }
+            }
+
+            // Try originally entered username
+            if (!success && (user == null || !string.Equals(user.ConnectUserName, username, StringComparison.OrdinalIgnoreCase)))
+            {
+                try
+                {
+                    var connectAuthResult = await _connectFactory().Authenticate(username, passwordMd5).ConfigureAwait(false);
+
+                    user = Users.FirstOrDefault(i => string.Equals(i.ConnectUserId, connectAuthResult.User.Id, StringComparison.OrdinalIgnoreCase));
+
+                    success = user != null;
+                }
+                catch
+                {
+
+                }
+            }
+
             if (user == null)
             {
                 throw new SecurityException("Invalid username or password entered.");
@@ -244,19 +291,6 @@ namespace Emby.Server.Implementations.Library
             if (user.Policy.IsDisabled)
             {
                 throw new SecurityException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
-            }
-
-            var success = false;
-
-            // Authenticate using local credentials if not a guest
-            if (!user.ConnectLinkType.HasValue || user.ConnectLinkType.Value != UserLinkType.Guest)
-            {
-                success = string.Equals(GetPasswordHash(user), passwordSha1.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
-
-                if (!success && _networkManager.IsInLocalNetwork(remoteEndPoint) && user.Configuration.EnableLocalPassword)
-                {
-                    success = string.Equals(GetLocalPasswordHash(user), passwordSha1.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
-                }
             }
 
             // Update LastActivityDate and LastLoginDate, then save
