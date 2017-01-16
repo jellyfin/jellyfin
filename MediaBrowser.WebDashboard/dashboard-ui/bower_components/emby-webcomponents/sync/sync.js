@@ -1,9 +1,9 @@
-﻿define(['apphost', 'globalize', 'connectionManager', 'layoutManager', 'shell', 'focusManager', 'scrollHelper', 'appSettings', 'paper-icon-button-light', 'formDialogStyle'], function (appHost, globalize, connectionManager, layoutManager, shell, focusManager, scrollHelper, appSettings) {
+﻿define(['apphost', 'globalize', 'connectionManager', 'layoutManager', 'shell', 'focusManager', 'scrollHelper', 'appSettings', 'registrationServices', 'dialogHelper', 'paper-icon-button-light', 'formDialogStyle'], function (appHost, globalize, connectionManager, layoutManager, shell, focusManager, scrollHelper, appSettings, registrationServices, dialogHelper) {
     'use strict';
 
     var currentDialogOptions;
 
-    function submitJob(dlg, apiClient, userId, syncOptions, form, dialogHelper) {
+    function submitJob(dlg, apiClient, userId, syncOptions, form) {
 
         if (!userId) {
             throw new Error('userId cannot be null');
@@ -313,15 +313,8 @@
 
     function showSyncMenu(options) {
 
-        return new Promise(function (resolve, reject) {
-
-            require(["registrationServices", 'dialogHelper', 'formDialogStyle'], function (registrationServices, dialogHelper) {
-                registrationServices.validateFeature('sync').then(function () {
-
-                    showSyncMenuInternal(dialogHelper, options).then(resolve, reject);
-
-                }, reject);
-            });
+        return registrationServices.validateFeature('sync').then(function () {
+            return showSyncMenuInternal(options);
         });
     }
 
@@ -352,7 +345,7 @@
         return false;
     }
 
-    function showSyncMenuInternal(dialogHelper, options) {
+    function showSyncMenuInternal(options) {
 
         var apiClient = connectionManager.getApiClient(options.serverId);
         var userId = apiClient.getCurrentUserId();
@@ -431,7 +424,7 @@
 
             dlg.querySelector('form').addEventListener('submit', function (e) {
 
-                submitted = submitJob(dlg, apiClient, userId, options, this, dialogHelper);
+                submitted = submitJob(dlg, apiClient, userId, options, this);
 
                 e.preventDefault();
                 return false;

@@ -1512,7 +1512,8 @@ namespace Emby.Server.Implementations.Dto
                     return artist;
                 }
             }
-            return item.GetParent();
+
+            return item.DisplayParent ?? item.GetParent();
         }
 
         private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem owner)

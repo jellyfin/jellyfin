@@ -3,7 +3,6 @@
 
     var currentDisplayingProductInfos = [];
     var currentDisplayingResolve = null;
-    var currentDisplayingResolveResult = {};
 
     function alertText(options) {
         return new Promise(function (resolve, reject) {
@@ -22,7 +21,6 @@
                 showInAppPurchaseElement(subscriptionOptions, unlockableProductInfo, dialogOptions, resolve, reject);
 
                 currentDisplayingResolve = resolve;
-                currentDisplayingResolveResult = {};
             });
         });
     }
@@ -69,7 +67,7 @@
 
                 html += '<button is="emby-button" type="button" class="raised button-submit block btnGetPremiere block formDialogFooterItem" autoFocus><span>' + globalize.translate('sharedcomponents#HeaderBecomeProjectSupporter') + '</span></button>';
 
-                var seconds = 12;
+                var seconds = 16;
 
                 html += '<div class="continueTimeText formDialogFooterItem" style="margin: 1.5em 0 .5em;">' + globalize.translate('sharedcomponents#ContinueInSecondsValue', seconds) + '</div>';
 
@@ -155,14 +153,14 @@
             return Promise.resolve();
         }
 
-        var settingsKey = 'periodicmessage10-' + feature;
+        var settingsKey = 'periodicmessage11-' + feature;
 
         var lastMessage = parseInt(appSettings.get(settingsKey) || '0');
 
         if (!lastMessage) {
 
             // Don't show on the very first playback attempt
-            appSettings.set(settingsKey, new Date().getTime() - intervalMs);
+            appSettings.set(settingsKey, new Date().getTime() - (intervalMs / 2));
             return Promise.resolve();
         }
 
@@ -263,7 +261,6 @@
     function clearCurrentDisplayingInfo() {
         currentDisplayingProductInfos = [];
         currentDisplayingResolve = null;
-        currentDisplayingResolveResult = {};
     }
 
     function showExternalPremiereInfo() {
@@ -382,11 +379,14 @@
             btnPurchases[i].addEventListener('click', showExternalPremiereInfo);
         }
 
+        var rejected = false;
+        var resolveWithTimeLimit = false;
+
         var btnPlayMinute = dlg.querySelector('.btnPlayMinute');
         if (btnPlayMinute) {
             btnPlayMinute.addEventListener('click', function () {
 
-                currentDisplayingResolveResult.enableTimeLimit = true;
+                resolveWithTimeLimit = true;
                 dialogHelper.close(dlg);
             });
         }
@@ -396,8 +396,6 @@
         });
 
         loading.hide();
-
-        var rejected = false;
 
         function onCloseButtonClick() {
 
@@ -424,6 +422,10 @@
             clearCurrentDisplayingInfo();
             if (rejected) {
                 reject();
+            } else if (resolveWithTimeLimit) {
+                resolve({
+                    enableTimeLimit: true
+                });
             }
         });
     }
@@ -639,7 +641,7 @@
             }).length) {
 
                 cancelInAppPurchase();
-                resolve(currentDisplayingResolveResult);
+                resolve();
             }
         }
     }

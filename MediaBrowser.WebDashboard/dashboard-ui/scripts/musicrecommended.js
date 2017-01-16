@@ -9,7 +9,7 @@
     }
 
     function enableScrollX() {
-        return browserInfo.mobile && AppInfo.enableAppLayouts;
+        return browserInfo.mobile;
     }
 
     function getSquareShape() {
@@ -238,7 +238,7 @@
         }
 
         function enableScrollX() {
-            return browserInfo.mobile && AppInfo.enableAppLayouts;
+            return browserInfo.mobile;
         }
 
         self.initTab = function () {
