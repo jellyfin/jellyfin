@@ -136,34 +136,36 @@ namespace Mono.Nat.Pmp
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var result = await udpClient.ReceiveAsync().ConfigureAwait(false);
-                var endPoint = result.RemoteEndPoint;
-                byte[] data = data = result.Buffer;
-
-                if (data.Length < 16)
-                    continue;
-
-                if (data[0] != PmpConstants.Version)
-                    continue;
-
-                var opCode = (byte)(data[1] & 127);
-
-                var protocol = Protocol.Tcp;
-                if (opCode == PmpConstants.OperationCodeUdp)
-                    protocol = Protocol.Udp;
-
-                short resultCode = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(data, 2));
-                int epoch = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(data, 4));
-
-                short privatePort = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(data, 8));
-                short publicPort = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(data, 10));
-
-                var lifetime = (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(data, 12));
-
-                if (privatePort < 0 || publicPort < 0 || resultCode != PmpConstants.ResultCodeSuccess)
+                try
                 {
-                    var errors = new[]
-                                     {
+                    var result = await udpClient.ReceiveAsync().ConfigureAwait(false);
+                    var endPoint = result.RemoteEndPoint;
+                    byte[] data = data = result.Buffer;
+
+                    if (data.Length < 16)
+                        continue;
+
+                    if (data[0] != PmpConstants.Version)
+                        continue;
+
+                    var opCode = (byte)(data[1] & 127);
+
+                    var protocol = Protocol.Tcp;
+                    if (opCode == PmpConstants.OperationCodeUdp)
+                        protocol = Protocol.Udp;
+
+                    short resultCode = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(data, 2));
+                    int epoch = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(data, 4));
+
+                    short privatePort = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(data, 8));
+                    short publicPort = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(data, 10));
+
+                    var lifetime = (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(data, 12));
+
+                    if (privatePort < 0 || publicPort < 0 || resultCode != PmpConstants.ResultCodeSuccess)
+                    {
+                        var errors = new[]
+                                         {
                                          "Success",
                                          "Unsupported Version",
                                          "Not Authorized/Refused (e.g. box supports mapping, but user has turned feature off)"
@@ -173,19 +175,25 @@ namespace Mono.Nat.Pmp
                                          "Unsupported opcode"
                                      };
 
-                    var errorMsg = errors[resultCode];
-                    NatUtility.Log("Error in CreatePortMapListen: " + errorMsg);
+                        var errorMsg = errors[resultCode];
+                        NatUtility.Log("Error in CreatePortMapListen: " + errorMsg);
+                        return;
+                    }
+
+                    if (lifetime == 0) return; //mapping was deleted
+
+                    //mapping was created
+                    //TODO: verify that the private port+protocol are a match
+                    mapping.PublicPort = publicPort;
+                    mapping.Protocol = protocol;
+                    mapping.Expiration = DateTime.Now.AddSeconds(lifetime);
                     return;
                 }
-
-                if (lifetime == 0) return; //mapping was deleted
-
-                //mapping was created
-                //TODO: verify that the private port+protocol are a match
-                mapping.PublicPort = publicPort;
-                mapping.Protocol = protocol;
-                mapping.Expiration = DateTime.Now.AddSeconds(lifetime);
-                return;
+                catch (Exception ex)
+                {
+                    NatUtility.Logger.ErrorException("Error in CreatePortMapListen", ex);
+                    return;
+                }
             }
         }
 

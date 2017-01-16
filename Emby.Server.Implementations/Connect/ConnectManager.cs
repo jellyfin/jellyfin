@@ -1122,7 +1122,7 @@ namespace Emby.Server.Implementations.Connect
             }
         }
 
-        public async Task Authenticate(string username, string passwordMd5)
+        public async Task<ConnectAuthenticationResult> Authenticate(string username, string passwordMd5)
         {
             if (string.IsNullOrWhiteSpace(username))
             {
@@ -1151,6 +1151,7 @@ namespace Emby.Server.Implementations.Connect
             // No need to examine the response
             using (var response = (await _httpClient.SendAsync(options, "POST").ConfigureAwait(false)).Content)
             {
+                return _json.DeserializeFromStream<ConnectAuthenticationResult>(response);
             }
         }
 
