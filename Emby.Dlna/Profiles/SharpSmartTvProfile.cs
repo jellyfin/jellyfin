@@ -36,7 +36,7 @@ namespace Emby.Dlna.Profiles
 
                 new TranscodingProfile
                 {
-                    Container = "mkv",
+                    Container = "ts",
                     Type = DlnaProfileType.Video,
                     AudioCodec = "ac3,aac,mp3,dts,dca",
                     VideoCodec = "h264"
