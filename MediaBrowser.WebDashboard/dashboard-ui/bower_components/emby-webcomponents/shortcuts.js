@@ -288,7 +288,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         }
 
         else if (action === 'setplaylistindex') {
-            playbackManager.currentPlaylistIndex(parseInt(card.getAttribute('data-index')));
+            playbackManager.setCurrentPlaylistIndex(parseInt(card.getAttribute('data-index')));
         }
 
         else if (action === 'record') {
@@ -329,6 +329,20 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
         else if (action === 'addtoplaylist') {
             getItem(target).then(addToPlaylist);
+        }
+
+        else if (action === 'custom') {
+
+            var customAction = target.getAttribute('data-customaction');
+
+            card.dispatchEvent(new CustomEvent('action-' + customAction, {
+                detail: {
+                    item: getItem(target),
+                    index: parseInt(card.getAttribute('data-index') || '-1')
+                },
+                cancelable: false,
+                bubbles: true
+            }));
         }
     }
 

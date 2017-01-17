@@ -79,14 +79,12 @@
 }
 
     .mediaButton i {
-        height: auto;
-        width: auto;
+        height: 1em;
+        width: 1em;
         font-size: 36px;
     }
 
-    .mediaButton.remoteControlButton i, .mediaButton.muteButton i, .mediaButton.unmuteButton i, .mediaButton.castButton i, .mediaButton.infoButton i {
-        height: auto;
-        width: auto;
+    .mediaButton.muteButton i, .mediaButton.unmuteButton i, .mediaButton.castButton i, .mediaButton.infoButton i {
         font-size: 24px;
     }
 
@@ -228,13 +226,6 @@
 @media all and (max-width: 1100px) {
 
     .nowPlayingBarVolumeSliderContainer, .nowPlayingBar .muteButton, .nowPlayingBar .unmuteButton {
-        display: none !important;
-    }
-}
-
-@media all and (max-width: 1000px) {
-
-    .nowPlayingBar .playlistButton {
         display: none !important;
     }
 }

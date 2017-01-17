@@ -100,6 +100,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                     return;
                 }
                 setCurrentPlayerInternal(null, null);
+                return;
             }
 
             if (typeof (player) === 'string') {
@@ -244,22 +245,31 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         self.removeActivePlayer = function (name) {
 
-            if (self.getPlayerInfo().name === name) {
-                self.setDefaultPlayerActive();
+            var playerInfo = self.getPlayerInfo();
+            if (playerInfo) {
+                if (playerInfo.name === name) {
+                    self.setDefaultPlayerActive();
+                }
             }
-
         };
 
         self.removeActiveTarget = function (id) {
 
-            if (self.getPlayerInfo().id === id) {
-                self.setDefaultPlayerActive();
+            var playerInfo = self.getPlayerInfo();
+            if (playerInfo) {
+                if (playerInfo.id === id) {
+                    self.setDefaultPlayerActive();
+                }
             }
         };
 
         self.disconnectFromPlayer = function () {
 
             var playerInfo = self.getPlayerInfo();
+
+            if (!playerInfo) {
+                return;
+            }
 
             if (playerInfo.supportedCommands.indexOf('EndSession') !== -1) {
 
@@ -2205,11 +2215,11 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
         }
 
-        // Gets or sets the current playlist index
-        self.currentPlaylistIndex = function (i) {
+        self.setCurrentPlaylistIndex = function (i, player) {
 
-            if (i == null) {
-                return currentPlaylistIndex;
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.setCurrentPlaylistIndex(i);
             }
 
             var newItem = playlist[i];
@@ -2219,8 +2229,49 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             });
 
             playInternal(newItem, playOptions, function () {
-                self.setPlaylistState(i);
+                currentPlaylistIndex = i;
             });
+        };
+
+        self.removeFromPlaylist = function (index, player) {
+
+            if (index < 0) {
+                throw new Error('Invalid playlist index');
+            }
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.removeFromPlaylist(i);
+            }
+
+            if (playlist.length <= 1) {
+                return self.stop();
+            }
+
+            var isCurrentIndex = self.getCurrentPlaylistIndex(player) === index;
+
+            playlist.splice(index, 1);
+
+            events.trigger(player, 'playlistitemremove', [
+            {
+                index: index
+            }]);
+
+            if (isCurrentIndex) {
+                return self.setCurrentPlaylistIndex(Math.min(index, playlist.length - 1), player);
+            }
+
+            return Promise.resolve();
+        };
+
+        self.getCurrentPlaylistIndex = function (i, player) {
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.getCurrentPlaylistIndex();
+            }
+
+            return currentPlaylistIndex;
         };
 
         self.setRepeatMode = function (value, player) {
@@ -2231,7 +2282,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
 
             repeatMode = value;
-            events.trigger(self, 'repeatmodechange');
+            events.trigger(player, 'repeatmodechange');
         };
 
         self.getRepeatMode = function (player) {
@@ -2493,6 +2544,11 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
                 state.nextMediaType = nextMediaType;
                 state.nextItem = playbackStopInfo.nextItem;
+
+                if (!nextItem) {
+                    playlist = [];
+                    currentPlaylistIndex = -1;
+                }
 
                 events.trigger(player, 'playbackstop', [state]);
                 events.trigger(self, 'playbackstop', [playbackStopInfo]);
