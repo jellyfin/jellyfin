@@ -2215,7 +2215,12 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
         }
 
-        self.setCurrentPlaylistIndex = function (i) {
+        self.setCurrentPlaylistIndex = function (i, player) {
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.setCurrentPlaylistIndex(i);
+            }
 
             var newItem = playlist[i];
 
@@ -2228,7 +2233,43 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             });
         };
 
-        self.getCurrentPlaylistIndex = function (i) {
+        self.removeFromPlaylist = function (index, player) {
+
+            if (index < 0) {
+                throw new Error('Invalid playlist index');
+            }
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.removeFromPlaylist(i);
+            }
+
+            if (playlist.length <= 1) {
+                return self.stop();
+            }
+
+            var isCurrentIndex = self.getCurrentPlaylistIndex(player) === index;
+
+            playlist.splice(index, 1);
+
+            events.trigger(player, 'playlistitemremove', [
+            {
+                index: index
+            }]);
+
+            if (isCurrentIndex) {
+                return self.setCurrentPlaylistIndex(Math.min(index, playlist.length - 1), player);
+            }
+
+            return Promise.resolve();
+        };
+
+        self.getCurrentPlaylistIndex = function (i, player) {
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.getCurrentPlaylistIndex();
+            }
 
             return currentPlaylistIndex;
         };
@@ -2241,7 +2282,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
 
             repeatMode = value;
-            events.trigger(self, 'repeatmodechange');
+            events.trigger(player, 'repeatmodechange');
         };
 
         self.getRepeatMode = function (player) {

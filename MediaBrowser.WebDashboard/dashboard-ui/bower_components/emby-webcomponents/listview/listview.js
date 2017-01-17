@@ -142,6 +142,20 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
         return html;
     }
 
+    function getRightButtonsHtml(options) {
+
+        var html = '';
+
+        for (var i = 0, length = options.rightButtons.length; i < length; i++) {
+
+            var button = options.rightButtons[i];
+
+            html += '<button is="paper-icon-button-light" class="listItemButton itemAction autoSize" data-action="custom" data-customaction="' + button.id + '" title="' + button.title + '"><i class="md-icon">' + button.icon + '</i></button>';
+        }
+
+        return html;
+    }
+
     function getListViewHtml(options) {
 
         var items = options.items;
@@ -406,9 +420,8 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                     html += '<button is="paper-icon-button-light" class="listItemButton itemAction autoSize" data-action="menu"><i class="md-icon">' + moreIcon + '</i></button>';
                 }
 
-                if (options.recordButton) {
-
-                    html += '<button is="paper-icon-button-light" class="listItemButton itemAction autoSize" data-action="programdialog">' + indicators.getTimerIndicator(item) + '</button>';
+                if (options.rightButtons) {
+                    html += getRightButtonsHtml(options);
                 }
 
                 if (options.enableUserDataButtons !== false) {

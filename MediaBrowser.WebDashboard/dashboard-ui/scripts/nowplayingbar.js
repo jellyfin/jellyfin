@@ -188,9 +188,8 @@
         toggleRepeatButton.addEventListener('click', function () {
 
             if (currentPlayer) {
-                var state = lastPlayerState || {};
 
-                switch ((state.PlayState || {}).RepeatMode) {
+                switch (playbackManager.getRepeatMode(currentPlayer)) {
                     case 'RepeatAll':
                         playbackManager.setRepeatMode('RepeatOne', currentPlayer);
                         break;
@@ -344,17 +343,7 @@
             toggleRepeatButton.classList.remove('hide');
         }
 
-        if (playState.RepeatMode == 'RepeatAll') {
-            toggleRepeatButtonIcon.innerHTML = "repeat";
-            toggleRepeatButton.classList.add('repeatActive');
-        }
-        else if (playState.RepeatMode == 'RepeatOne') {
-            toggleRepeatButtonIcon.innerHTML = "repeat_one";
-            toggleRepeatButton.classList.add('repeatActive');
-        } else {
-            toggleRepeatButtonIcon.innerHTML = "repeat";
-            toggleRepeatButton.classList.remove('repeatActive');
-        }
+        updateRepeatModeDisplay(playState.RepeatMode);
 
         updatePlayerVolumeState(playState.IsMuted, playState.VolumeLevel);
 
@@ -366,6 +355,21 @@
         updateTimeDisplay(playState.PositionTicks, nowPlayingItem.RunTimeTicks);
 
         updateNowPlayingInfo(state);
+    }
+
+    function updateRepeatModeDisplay(repeatMode) {
+        
+        if (repeatMode == 'RepeatAll') {
+            toggleRepeatButtonIcon.innerHTML = "repeat";
+            toggleRepeatButton.classList.add('repeatActive');
+        }
+        else if (repeatMode == 'RepeatOne') {
+            toggleRepeatButtonIcon.innerHTML = "repeat_one";
+            toggleRepeatButton.classList.add('repeatActive');
+        } else {
+            toggleRepeatButtonIcon.innerHTML = "repeat";
+            toggleRepeatButton.classList.remove('repeatActive');
+        }
     }
 
     function updateTimeDisplay(positionTicks, runtimeTicks) {
@@ -576,6 +580,13 @@
         onStateChanged.call(player, e, state);
     }
 
+    function onRepeatModeChange(e) {
+        
+        var player = this;
+
+        updateRepeatModeDisplay(playbackManager.getRepeatMode(player));
+    }
+
     function showNowPlayingBar() {
 
         getNowPlayingBar().then(slideUp);
@@ -681,7 +692,7 @@
         if (player) {
             events.off(player, 'playbackstart', onPlaybackStart);
             events.off(player, 'statechange', onPlaybackStart);
-            events.off(player, 'repeatmodechange', onPlaybackStart);
+            events.off(player, 'repeatmodechange', onRepeatModeChange);
             events.off(player, 'playbackstop', onPlaybackStopped);
             events.off(player, 'volumechange', onVolumeChanged);
             events.off(player, 'pause', onPlayPauseStateChanged);
@@ -725,9 +736,7 @@
 
         events.on(player, 'playbackstart', onPlaybackStart);
         events.on(player, 'statechange', onPlaybackStart);
-        // TODO: Replace this with smaller changes on repeatmodechange. 
-        // For now go cheap and just refresh the entire component
-        events.on(player, 'repeatmodechange', onPlaybackStart);
+        events.on(player, 'repeatmodechange', onRepeatModeChange);
         events.on(player, 'playbackstop', onPlaybackStopped);
         events.on(player, 'volumechange', onVolumeChanged);
         events.on(player, 'pause', onPlayPauseStateChanged);

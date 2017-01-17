@@ -262,13 +262,11 @@
 
         var self = this;
         var playlistNeedsRefresh = true;
-        var isEnabled;
 
         function toggleRepeat(player) {
-            
-            if (player && lastPlayerState) {
-                var state = lastPlayerState;
-                switch ((state.PlayState || {}).RepeatMode) {
+
+            if (player) {
+                switch (playbackManager.getRepeatMode(player)) {
                     case 'RepeatNone':
                         playbackManager.setRepeatMode('RepeatAll', player);
                         break;
@@ -329,21 +327,26 @@
                 context.classList.add('hideVideoButtons');
             }
 
+            updateRepeatModeDisplay(playState.RepeatMode);
+            updateNowPlayingInfo(context, state);
+        }
+
+        function updateRepeatModeDisplay(repeatMode) {
+
+            var context = dlg;
             var toggleRepeatButton = context.querySelector('.repeatToggleButton');
 
-            if (playState.RepeatMode == 'RepeatAll') {
+            if (repeatMode == 'RepeatAll') {
                 toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat</i>";
                 toggleRepeatButton.classList.add('nowPlayingPageRepeatActive');
             }
-            else if (playState.RepeatMode == 'RepeatOne') {
+            else if (repeatMode == 'RepeatOne') {
                 toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat_one</i>";
                 toggleRepeatButton.classList.add('nowPlayingPageRepeatActive');
             } else {
                 toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat</i>";
                 toggleRepeatButton.classList.remove('nowPlayingPageRepeatActive');
             }
-
-            updateNowPlayingInfo(context, state);
         }
 
         function updatePlayerVolumeState(context, isMuted, volumeLevel) {
@@ -471,14 +474,20 @@
         function loadPlaylist(context, player) {
 
             getPlaylistItems(player).then(function (items) {
-                
+
                 var html = '';
 
                 html += listView.getListViewHtml({
                     items: items,
                     smallIcon: true,
                     action: 'setplaylistindex',
-                    enableUserDataButtons: false
+                    enableUserDataButtons: false,
+                    rightButtons: [
+                    {
+                        icon: '&#xE15D;',
+                        title: globalize.translate('ButtonRemove'),
+                        id: 'remove'
+                    }]
                 });
 
                 playlistNeedsRefresh = false;
@@ -512,6 +521,23 @@
             onStateChanged.call(player, e, state);
 
             loadPlaylist(dlg, player);
+        }
+
+        function onRepeatModeChange(e) {
+
+            var player = this;
+
+            updateRepeatModeDisplay(playbackManager.getRepeatMode(player));
+        }
+
+        function onPlaylistUpdate(e) {
+            
+            var player = this;
+
+            playbackManager.getPlayerState(player).then(function (state) {
+
+                onStateChanged.call(player, { type: 'init' }, state);
+            });
         }
 
         function onPlaybackStopped(e, state) {
@@ -568,7 +594,8 @@
 
                 events.off(player, 'playbackstart', onPlaybackStart);
                 events.off(player, 'statechange', onPlaybackStart);
-                events.off(player, 'repeatmodechange', onPlaybackStart);
+                events.off(player, 'repeatmodechange', onRepeatModeChange);
+                events.off(player, 'playlistitemremove', onPlaylistUpdate);
                 events.off(player, 'playbackstop', onPlaybackStopped);
                 events.off(player, 'volumechange', onVolumeChanged);
                 events.off(player, 'pause', onPlayPauseStateChanged);
@@ -596,9 +623,8 @@
 
             events.on(player, 'playbackstart', onPlaybackStart);
             events.on(player, 'statechange', onPlaybackStart);
-            // TODO: Replace this with smaller changes on repeatmodechange. 
-            // For now go cheap and just refresh the entire component
-            events.on(player, 'repeatmodechange', onPlaybackStart);
+            events.on(player, 'repeatmodechange', onRepeatModeChange);
+            events.on(player, 'playlistitemremove', onPlaylistUpdate);
             events.on(player, 'playbackstop', onPlaybackStopped);
             events.on(player, 'volumechange', onVolumeChanged);
             events.on(player, 'pause', onPlayPauseStateChanged);
@@ -739,6 +765,10 @@
             context.querySelector('.buttonMute').addEventListener('click', function () {
 
                 playbackManager.toggleMute(currentPlayer);
+            });
+            context.querySelector('.playlist').addEventListener('action-remove', function (e) {
+
+                playbackManager.removeFromPlaylist(e.detail.index, currentPlayer);
             });
         }
 
