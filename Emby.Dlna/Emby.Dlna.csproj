@@ -92,6 +92,7 @@
     <Compile Include="Profiles\PanasonicVieraProfile.cs" />
     <Compile Include="Profiles\PopcornHourProfile.cs" />
     <Compile Include="Profiles\SamsungSmartTvProfile.cs" />
+    <Compile Include="Profiles\SharpSmartTvProfile.cs" />
     <Compile Include="Profiles\SonyBlurayPlayer2013.cs" />
     <Compile Include="Profiles\SonyBlurayPlayer2014.cs" />
     <Compile Include="Profiles\SonyBlurayPlayer2015.cs" />
@@ -148,7 +149,9 @@
       <Name>RSSDP</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Sharp Smart TV.xml" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Profiles\Xml\BubbleUPnp.xml" />
     <EmbeddedResource Include="Profiles\Xml\Default.xml" />

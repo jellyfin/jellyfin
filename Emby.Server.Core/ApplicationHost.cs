@@ -1477,6 +1477,10 @@ namespace Emby.Server.Core
             {
                 AuthorizeServer();
             }
+            catch (NotImplementedException)
+            {
+                
+            }
             catch (Exception ex)
             {
                 Logger.ErrorException("Error authorizing server", ex);

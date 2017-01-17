@@ -595,6 +595,7 @@ namespace Emby.Dlna
                 new LinksysDMA2100Profile(),
                 new LgTvProfile(),
                 new Foobar2000Profile(),
+                new SharpSmartTvProfile(),
                 new MediaMonkeyProfile(),
                 //new Windows81Profile(),
                 //new WindowsMediaCenterProfile(),
