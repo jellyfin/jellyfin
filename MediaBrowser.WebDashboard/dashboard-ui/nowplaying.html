@@ -1,199 +1,174 @@
 ﻿<div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage selfBackdropPage" data-title="${TitleRemoteControl}" data-theme="b" style="padding:0;">
 
-    <div class="remoteControlContent">
+    <div class="remoteControlContent ehsContent">
 
         <div style="background: #080808;">
             <button is="paper-icon-button-light" style="position: absolute; top: .5em; left: .5em; z-index: 1;" tabindex="-1" class="btnExitRemoteControl autoSize">
                 <i class="md-icon">&#xE5C4;</i>
             </button>
-            <div style="float: right; position: absolute; top: .5em; right: .5em; text-align: right;" class="topRightContainer">
-                <span class="nowPlayingSelectedPlayer"></span>
-                <button is="paper-icon-button-light" class="nowPlayingCastIcon autoSize" style="vertical-align: middle; z-index: 1;" tabindex="-1">
-                    <i class="md-icon">cast</i>
-                </button>
-            </div>
         </div>
 
-        <div is="emby-tabs" class="libraryViewNav headroomDisabled">
-            <div class="emby-tabs-slider">
-                <button is="emby-button" class="emby-tab-button is-active" data-index="0">
-                    <div class="emby-button-foreground">${TabNowPlaying}</div>
-                </button>
-                <button is="emby-button" class="emby-tab-button" data-index="1">
-                    <div class="emby-button-foreground">${TabControls}</div>
-                </button>
-                <button is="emby-button" class="emby-tab-button" data-index="2">
-                    <div class="emby-button-foreground">${TabPlaylist}</div>
-                </button>
-            </div>
-        </div>
+        <div class="nowPlayingInfoContainer">
+            <div class="nowPlayingPageImageContainer"></div>
+            <div class="nowPlayingInfoControls">
 
-        <div class="is-active pageTabContent ehsContent" id="nowPlayingTab" data-index="0">
-            <div style="text-align:center;">
-                <div class="nowPlayingPageTitle" style="line-height: normal;">
+                <h1 class="nowPlayingPageTitle"></h1>
+
+                <div class="sliderContainer nowPlayingPositionSliderContainer">
+                    <input type="range" is="emby-slider" pin step="1" min="0" max="100" value="0" class="nowPlayingPositionSlider" />
                 </div>
-                <div class="nowPlayingInfoMetadata">
-                    <div class="nowPlayingPageImage" style="margin: 1em auto;"></div>
-                    <div class="nowPlayingPageTimeContainer" style="display:flex; align-items: center;">
-                        <div class="positionTime"></div>
-                        <div class="sliderContainer nowPlayingPositionSliderContainer" style="flex-grow:1;margin: 0 1em;">
-                            <input type="range" is="emby-slider" pin step="1" min="0" max="100" value="0" class="nowPlayingPositionSlider" />
-                        </div>
-                        <div class="runtime"></div>
-                    </div>
-                </div>
+
                 <div class="nowPlayingInfoButtons">
 
-                    <div>
+                    <button is="paper-icon-button-light" class="btnPreviousTrack btnPlayStateCommand autoSize" title="${ButtonPreviousTrack}">
+                        <i class="md-icon">skip_previous</i>
+                    </button>
 
-                        <button is="paper-icon-button-light" class="btnPreviousTrack btnPlayStateCommand autoSize" title="${ButtonPreviousTrack}">
-                            <i class="md-icon">skip_previous</i>
-                        </button>
+                    <button is="paper-icon-button-light" class="btnPlayPause btnPlayStateCommand autoSize" title="${ButtonPause}">
+                        <i class="md-icon">pause</i>
+                    </button>
 
-                        <button is="paper-icon-button-light" class="btnPlayPause btnPlayStateCommand autoSize" title="${ButtonPause}">
-                            <i class="md-icon">pause</i>
-                        </button>
+                    <button is="paper-icon-button-light" class="btnPlayStateCommand btnStop autoSize" title="${ButtonStop}">
+                        <i class="md-icon">stop</i>
+                    </button>
 
-                        <button is="paper-icon-button-light" class="btnPlayStateCommand btnStop autoSize" title="${ButtonStop}">
-                            <i class="md-icon">stop</i>
-                        </button>
+                    <button is="paper-icon-button-light" class="btnPlayStateCommand btnNextTrack autoSize" title="${ButtonNextTrack}">
+                        <i class="md-icon">skip_next</i>
+                    </button>
 
-                        <button is="paper-icon-button-light" class="btnPlayStateCommand btnNextTrack autoSize" title="${ButtonNextTrack}">
-                            <i class="md-icon">skip_next</i>
-                        </button>
+                    <button is="paper-icon-button-light" class="btnAudioTracks videoButton btnPlayStateCommand autoSize" title="${ButtonAudioTracks}" data-command="GoToSearch">
+                        <i class="md-icon">audiotrack</i>
+                    </button>
+
+                    <button is="paper-icon-button-light" class="btnSubtitles videoButton btnPlayStateCommand autoSize" title="${ButtonSubtitles}" data-command="GoToSearch">
+                        <i class="md-icon">closed_caption</i>
+                    </button>
+
+                    <div class="nowPlayingTime">
+                        <div class="positionTime"></div>
+                        <div style="margin: 0 .25em;">/</div>
+                        <div class="runtime"></div>
                     </div>
-                    <div class="buttonsRow2">
 
-                        <button is="paper-icon-button-light" class="btnAudioTracks videoButton btnPlayStateCommand autoSize" title="${ButtonAudioTracks}" data-command="GoToSearch">
-                            <i class="md-icon">audiotrack</i>
-                        </button>
+                    <div class="nowPlayingSecondaryButtons">
+                        <div class="nowPlayingPageUserDataButtons">
+                        </div>
 
-                        <button is="paper-icon-button-light" class="btnSubtitles videoButton btnPlayStateCommand autoSize" title="${ButtonSubtitles}" data-command="GoToSearch">
-                            <i class="md-icon">closed_caption</i>
-                        </button>
-
-                        <button is="paper-icon-button-light" class="btnChapters videoButton btnPlayStateCommand autoSize" title="${ButtonScenes}" data-command="GoToSearch">
-                            <i class="md-icon">movie</i>
+                        <button is="paper-icon-button-light" class="nowPlayingCastIcon">
+                            <i class="md-icon">cast</i>
                         </button>
 
                         <button is="paper-icon-button-light" class="btnToggleFullscreen videoButton btnPlayStateCommand autoSize" title="${ButtonFullscreen}" data-command="ToggleFullscreen">
                             <i class="md-icon">fullscreen</i>
                         </button>
-                    </div>
-                    <div>
 
                         <button is="paper-icon-button-light" class="btnCommand repeatToggleButton autoSize" title="${ButtonRepeat}" data-command="SetRepeatMode">
                             <i class="md-icon">repeat</i>
                         </button>
 
-                        <button is="paper-icon-button-light" class="btnCommand volumeButton autoSize" title="${ButtonMute}" data-command="ToggleMute">
-                            <i class="md-icon">volume_off</i>
+                        <button is="paper-icon-button-light" class="buttonMute autoSize" title="${Mute}">
+                            <i class="xlargePaperIconButton md-icon">&#xE050;</i>
                         </button>
-
-                        <button is="paper-icon-button-light" class="btnCommand volumeButton autoSize" title="${ButtonVolumeDown}" data-command="VolumeDown">
-                            <i class="md-icon">volume_down</i>
-                        </button>
-
-                        <button is="paper-icon-button-light" class="btnCommand volumeButton autoSize" title="${ButtonVolumeUp}" data-command="VolumeUp">
-                            <i class="md-icon">volume_up</i>
-                        </button>
-                    </div>
-                    <div class="nowPlayingPageUserDataButtons" style="margin-top:1em;">
+                        <div class="sliderContainer nowPlayingVolumeSliderContainer">
+                            <input is="emby-slider" type="range" step="1" min="0" max="100" value="0" class="nowPlayingVolumeSlider" />
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="pageTabContent ehsContent" id="controlsTab" data-index="1">
-            <div style="text-align:center;">
-                <div>
-                    <button is="paper-icon-button-light" class="btnArrowUp btnCommand autoSize" title="${ButtonArrowUp}" data-command="MoveUp">
-                        <i class="md-icon">keyboard_arrow_up</i>
-                    </button>
-                </div>
-                <div>
-                    <button is="paper-icon-button-light" class="btnArrowLeft btnCommand autoSize" title="${ButtonArrowLeft}" data-command="MoveLeft">
-                        <i class="md-icon">keyboard_arrow_left</i>
-                    </button>
 
-                    <button is="paper-icon-button-light" class="btnOk btnCommand autoSize" title="${ButtonOk}" data-command="Select">
-                        <i class="md-icon">check</i>
-                    </button>
+        <div class="hide">
+            <div>
+                <button is="paper-icon-button-light" class="btnArrowUp btnCommand autoSize" title="${ButtonArrowUp}" data-command="MoveUp">
+                    <i class="md-icon">keyboard_arrow_up</i>
+                </button>
+            </div>
+            <div>
+                <button is="paper-icon-button-light" class="btnArrowLeft btnCommand autoSize" title="${ButtonArrowLeft}" data-command="MoveLeft">
+                    <i class="md-icon">keyboard_arrow_left</i>
+                </button>
 
-                    <button is="paper-icon-button-light" class="btnArrowRight btnCommand autoSize" title="${ButtonArrowRight}" data-command="MoveRight">
-                        <i class="md-icon">keyboard_arrow_right</i>
-                    </button>
-                </div>
-                <div>
-                    <button is="paper-icon-button-light" class="btnArrowDown btnCommand autoSize" title="${ButtonArrowDown}" data-command="MoveDown">
-                        <i class="md-icon">keyboard_arrow_down</i>
-                    </button>
-                </div>
-                <div>
-                    <button is="paper-icon-button-light" class="btnBack btnCommand autoSize" title="${ButtonBack}" data-command="Back">
-                        <i class="md-icon">&#xE5C4;</i>
-                    </button>
+                <button is="paper-icon-button-light" class="btnOk btnCommand autoSize" title="${ButtonOk}" data-command="Select">
+                    <i class="md-icon">check</i>
+                </button>
 
-                    <button is="paper-icon-button-light" class="btnInfo btnCommand autoSize" title="${ButtonInfo}" data-command="ToggleContextMenu">
-                        <i class="md-icon">info</i>
-                    </button>
-                </div>
-                <br />
-                <div>
-                    <button is="paper-icon-button-light" class="btnGoHome btnCommand autoSize" title="${ButtonHome}" data-command="GoHome">
-                        <i class="md-icon">home</i>
-                    </button>
+                <button is="paper-icon-button-light" class="btnArrowRight btnCommand autoSize" title="${ButtonArrowRight}" data-command="MoveRight">
+                    <i class="md-icon">keyboard_arrow_right</i>
+                </button>
+            </div>
+            <div>
+                <button is="paper-icon-button-light" class="btnArrowDown btnCommand autoSize" title="${ButtonArrowDown}" data-command="MoveDown">
+                    <i class="md-icon">keyboard_arrow_down</i>
+                </button>
+            </div>
+            <div>
+                <button is="paper-icon-button-light" class="btnBack btnCommand autoSize" title="${ButtonBack}" data-command="Back">
+                    <i class="md-icon">&#xE5C4;</i>
+                </button>
 
-                    <button is="paper-icon-button-light" class="btnShowSearch btnCommand autoSize" title="${ButtonSearch}" data-command="GoToSearch">
-                        <i class="md-icon">search</i>
-                    </button>
-                </div>
-                <div>
-                    <button is="paper-icon-button-light" class="bthShowSettings btnCommand autoSize" title="${ButtonSettings}" data-command="GoToSettings">
-                        <i class="md-icon">settings</i>
-                    </button>
+                <button is="paper-icon-button-light" class="btnInfo btnCommand autoSize" title="${ButtonInfo}" data-command="ToggleContextMenu">
+                    <i class="md-icon">info</i>
+                </button>
+            </div>
+            <br />
+            <div>
+                <button is="paper-icon-button-light" class="btnGoHome btnCommand autoSize" title="${ButtonHome}" data-command="GoHome">
+                    <i class="md-icon">home</i>
+                </button>
 
-                    <button is="paper-icon-button-light" class="btnScreenshot btnCommand autoSize" title="${ButtonTakeScreenshot}" data-command="TakeScreenshot">
-                        <i class="md-icon">videocam</i>
-                    </button>
+                <button is="paper-icon-button-light" class="btnShowSearch btnCommand autoSize" title="${ButtonSearch}" data-command="GoToSearch">
+                    <i class="md-icon">search</i>
+                </button>
+            </div>
+            <div>
+                <button is="paper-icon-button-light" class="bthShowSettings btnCommand autoSize" title="${ButtonSettings}" data-command="GoToSettings">
+                    <i class="md-icon">settings</i>
+                </button>
+            </div>
+        </div>
+        <div class="hide">
+            <div class="sendMessageSection">
+                <br /><h1>${HeaderSendMessage}</h1>
+                <div style="text-align: left;">
+                    <form class="sendMessageForm">
+                        <div class="inputContainer">
+                            <input is="emby-input" class="sendMessageElement" type="text" id="txtMessageTitle" label="${LabelMessageTitle}" required />
+                        </div>
+                        <br />
+                        <div class="inputContainer">
+                            <input is="emby-input" class="sendMessageElement" type="text" id="txtMessageText" label="${LabelMessageText}" required />
+                        </div>
+                        <p>
+                            <button is="emby-button" class="sendMessageElement button-submit block raised" type="submit" raised>${ButtonSend}</button>
+                        </p>
+                    </form>
                 </div>
             </div>
-            <div class="readOnlyContent" style="margin: 2em auto 0; padding: 0 1em 100px;">
-                <div class="sendMessageSection">
-                    <br /><h1>${HeaderSendMessage}</h1>
-                    <div style="text-align: left;">
-                        <form class="sendMessageForm">
-                            <div class="inputContainer">
-                                <input is="emby-input" class="sendMessageElement" type="text" id="txtMessageTitle" label="${LabelMessageTitle}" required />
-                            </div>
-                            <br />
-                            <div class="inputContainer">
-                                <input is="emby-input" class="sendMessageElement" type="text" id="txtMessageText" label="${LabelMessageText}" required />
-                            </div>
-                            <p>
-                                <button is="emby-button" class="sendMessageElement button-submit block raised" type="submit" raised>${ButtonSend}</button>
-                            </p>
-                        </form>
-                    </div>
-                </div>
-                <div class="sendTextSection">
-                    <br /><h1>${HeaderTypeText}</h1>
-                    <div style="text-align: left;">
-                        <form class="typeTextForm">
-                            <div class="inputContainer">
-                                <input is="emby-input" class="typeTextElement" type="text" id="txtTypeText" label="${LabelTypeText}" required />
-                            </div>
-                            <p>
-                                <button is="emby-button" class="typeTextElement button-submit block raised" type="submit" raised>${ButtonSend}</button>
-                            </p>
-                        </form>
-                    </div>
+            <div class="sendTextSection">
+                <br /><h1>${HeaderTypeText}</h1>
+                <div style="text-align: left;">
+                    <form class="typeTextForm">
+                        <div class="inputContainer">
+                            <input is="emby-input" class="typeTextElement" type="text" id="txtTypeText" label="${LabelTypeText}" required />
+                        </div>
+                        <p>
+                            <button is="emby-button" class="typeTextElement button-submit block raised" type="submit" raised>${ButtonSend}</button>
+                        </p>
+                    </form>
                 </div>
             </div>
         </div>
-        <div class="pageTabContent ehsContent" id="playlistTab" data-index="2">
-            <div class="playlist itemsContainer vertical-list" is="emby-itemscontainer" style="max-width: 800px; margin: 3em auto 0; padding-bottom: 200px;">
+
+        <br />
+        <div>
+            <h1>${TabPlaylist}</h1>
+            <div class="playlist itemsContainer vertical-list" is="emby-itemscontainer">
             </div>
         </div>
+        <br />
+        <br />
+        <br />
+        <br />
     </div>
     <div data-role="content" style="overflow:visible;">
 

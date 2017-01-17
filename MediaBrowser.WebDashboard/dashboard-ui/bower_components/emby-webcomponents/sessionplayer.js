@@ -423,14 +423,24 @@
             return session;
         }
 
-        function normalizePrimaryImage(state) {
+        function normalizeImages(state) {
 
             if (state && state.NowPlayingItem) {
-                if (!state.NowPlayingItem.ImageTags || !state.NowPlayingItem.ImageTags.Primary) {
-                    if (state.NowPlayingItem.PrimaryImageTag) {
-                        state.NowPlayingItem.ImageTags = state.NowPlayingItem.ImageTags || {};
-                        state.NowPlayingItem.ImageTags.Primary = state.NowPlayingItem.PrimaryImageTag;
+
+                var item = state.NowPlayingItem;
+
+                if (!item.ImageTags || !item.ImageTags.Primary) {
+                    if (item.PrimaryImageTag) {
+                        item.ImageTags = item.ImageTags || {};
+                        item.ImageTags.Primary = item.PrimaryImageTag;
                     }
+                }
+                if (item.BackdropImageTag && item.BackdropItemId === item.Id) {
+                    item.BackdropImageTags = [item.BackdropImageTag];
+                }
+                if (item.BackdropImageTag && item.BackdropItemId !== item.Id) {
+                    item.ParentBackdropImageTags = [item.BackdropImageTag];
+                    item.ParentBackdropItemId = item.BackdropItemId;
                 }
             }
         }
@@ -439,7 +449,7 @@
 
             var state = getPlayerState(session);
 
-            normalizePrimaryImage(state);
+            normalizeImages(state);
 
             self.lastPlayerData = state;
 

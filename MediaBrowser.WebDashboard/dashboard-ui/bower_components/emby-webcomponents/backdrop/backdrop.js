@@ -294,7 +294,7 @@
         currentRotationIndex = -1;
 
         if (images.length > 1 && enableImageRotation !== false && enableRotation()) {
-            rotationInterval = setInterval(onRotationInterval, 20000);
+            rotationInterval = setInterval(onRotationInterval, 24000);
         }
         onRotationInterval();
     }

@@ -64,8 +64,7 @@
         html += '</div>';
 
         html += '<button is="paper-icon-button-light" class="playPauseButton mediaButton autoSize"><i class="md-icon">pause</i></button>';
-        html += '<button is="paper-icon-button-light" class="remoteControlButton mediaButton autoSize"><i class="md-icon">tablet_android</i></button>';
-        html += '<button is="paper-icon-button-light" class="playlistButton mediaButton autoSize"><i class="md-icon">queue_music</i></button>';
+        html += '<button is="paper-icon-button-light" class="remoteControlButton mediaButton autoSize"><i class="md-icon">playlist_play</i></button>';
 
         html += '</div>';
         html += '</div>';
@@ -183,11 +182,6 @@
         elem.querySelector('.remoteControlButton').addEventListener('click', function () {
 
             showRemoteControl();
-        });
-
-        elem.querySelector('.playlistButton').addEventListener('click', function () {
-
-            showRemoteControl(2);
         });
 
         toggleRepeatButton = elem.querySelector('.toggleRepeatButton');
