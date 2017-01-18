@@ -126,10 +126,8 @@
 
             var html = '';
 
-            html += '<div style="float:left;">';
             html += '<button is="paper-icon-button-light" class="btnCloseSelectionPanel autoSize"><i class="md-icon">close</i></button>';
-            html += '<span class="itemSelectionCount"></span>';
-            html += '</div>';
+            html += '<h1 class="itemSelectionCount"></h1>';
 
             var moreIcon = appHost.moreIcon === 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
             html += '<button is="paper-icon-button-light" class="btnSelectionPanelOptions autoSize" style="margin-left:auto;"><i class="md-icon">' + moreIcon + '</i></button>';

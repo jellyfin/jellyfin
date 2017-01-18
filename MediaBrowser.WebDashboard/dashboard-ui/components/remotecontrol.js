@@ -451,7 +451,7 @@
 
         function getPlaylistItems(player) {
 
-            return Promise.resolve(playbackManager.playlist(player));
+            return playbackManager.getPlaylist(player);
 
             return ApiClient.getItems(Dashboard.getCurrentUserId(), {
 
@@ -487,7 +487,8 @@
                         icon: '&#xE15D;',
                         title: globalize.translate('ButtonRemove'),
                         id: 'remove'
-                    }]
+                    }],
+                    dragHandle: true
                 });
 
                 playlistNeedsRefresh = false;
@@ -496,13 +497,12 @@
 
                 itemsContainer.innerHTML = html;
 
-                var index = playbackManager.getCurrentPlaylistIndex(player);
+                var playlistItemId = playbackManager.getCurrentPlaylistItemId(player);
 
-                if (index != -1) {
+                if (playlistItemId) {
 
-                    var item = itemsContainer.querySelectorAll('.listItem')[index];
-                    if (item) {
-                        var img = item.querySelector('.listItemImage');
+                    var img = itemsContainer.querySelector('.listItem[data-playlistItemId="' + playlistItemId + '"] .listItemImage');
+                    if (img) {
 
                         img.classList.remove('lazy');
                         img.classList.add('playlistIndexIndicatorImage');
@@ -531,7 +531,7 @@
         }
 
         function onPlaylistUpdate(e) {
-            
+
             var player = this;
 
             playbackManager.getPlayerState(player).then(function (state) {
@@ -540,13 +540,15 @@
             });
         }
 
-        function onPlaybackStopped(e, state) {
+        function onPlaybackStopped(e, stopInfo) {
 
             console.log('remotecontrol event: ' + e.type);
-
             var player = this;
-            updatePlayerState(dlg, {});
-            loadPlaylist(dlg);
+
+            if (!stopInfo.nextMediaType) {
+                updatePlayerState(dlg, {});
+                loadPlaylist(dlg);
+            }
         }
 
         function onPlayPauseStateChanged(e) {
@@ -596,6 +598,7 @@
                 events.off(player, 'statechange', onPlaybackStart);
                 events.off(player, 'repeatmodechange', onRepeatModeChange);
                 events.off(player, 'playlistitemremove', onPlaylistUpdate);
+                events.off(player, 'playlistitemmove', onPlaylistUpdate);
                 events.off(player, 'playbackstop', onPlaybackStopped);
                 events.off(player, 'volumechange', onVolumeChanged);
                 events.off(player, 'pause', onPlayPauseStateChanged);
@@ -625,6 +628,7 @@
             events.on(player, 'statechange', onPlaybackStart);
             events.on(player, 'repeatmodechange', onRepeatModeChange);
             events.on(player, 'playlistitemremove', onPlaylistUpdate);
+            events.on(player, 'playlistitemmove', onPlaylistUpdate);
             events.on(player, 'playbackstop', onPlaybackStopped);
             events.on(player, 'volumechange', onVolumeChanged);
             events.on(player, 'pause', onPlayPauseStateChanged);
@@ -766,10 +770,22 @@
 
                 playbackManager.toggleMute(currentPlayer);
             });
-            context.querySelector('.playlist').addEventListener('action-remove', function (e) {
 
-                playbackManager.removeFromPlaylist(e.detail.index, currentPlayer);
+            var playlistContainer = context.querySelector('.playlist');
+
+            playlistContainer.addEventListener('action-remove', function (e) {
+
+                playbackManager.removeFromPlaylist([e.detail.playlistItemId], currentPlayer);
             });
+            playlistContainer.addEventListener('itemdrop', function (e) {
+
+                var newIndex = e.detail.newIndex;
+                var playlistItemId = e.detail.playlistItemId;
+
+                playbackManager.movePlaylistItem(playlistItemId, newIndex, currentPlayer);
+            });
+
+            playlistContainer.enableDragReordering(true);
         }
 
         function onPlayerChange() {

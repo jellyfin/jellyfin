@@ -107,19 +107,34 @@
 
     function onDrop(evt, itemsContainer) {
 
-
-        loading.show();
-
         var el = evt.item;
 
         var newIndex = evt.newIndex;
         var itemId = el.getAttribute('data-playlistitemid');
         var playlistId = el.getAttribute('data-playlistid');
 
+        if (!playlistId) {
+
+            var oldIndex = evt.oldIndex;
+
+            el.dispatchEvent(new CustomEvent('itemdrop', {
+                detail: {
+                    oldIndex: oldIndex,
+                    newIndex: newIndex,
+                    playlistItemId: itemId
+                },
+                bubbles: true,
+                cancelable: false
+            }));
+            return;
+        }
+
         var serverId = el.getAttribute('data-serverid');
         var apiClient = connectionManager.getApiClient(serverId);
 
         newIndex = Math.max(0, newIndex - 1);
+
+        loading.show();
 
         apiClient.ajax({
 
@@ -129,7 +144,6 @@
 
         }).then(function () {
 
-            el.setAttribute('data-index', newIndex);
             loading.hide();
 
         }, function () {
@@ -171,7 +185,7 @@
                 // dragging ended
                 onEnd: function (/**Event*/evt) {
 
-                    onDrop(evt, self);
+                    return onDrop(evt, self);
                 }
             });
         });

@@ -288,7 +288,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         }
 
         else if (action === 'setplaylistindex') {
-            playbackManager.setCurrentPlaylistIndex(parseInt(card.getAttribute('data-index')));
+            playbackManager.setCurrentPlaylistItem(card.getAttribute('data-playlistitemid'));
         }
 
         else if (action === 'record') {
@@ -337,8 +337,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
             card.dispatchEvent(new CustomEvent('action-' + customAction, {
                 detail: {
-                    item: getItem(target),
-                    index: parseInt(card.getAttribute('data-index') || '-1')
+                    playlistItemId: card.getAttribute('data-playlistitemid')
                 },
                 cancelable: false,
                 bubbles: true

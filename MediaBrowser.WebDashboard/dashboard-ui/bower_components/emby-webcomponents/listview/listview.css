@@ -42,6 +42,7 @@
 
 .listViewDragHandle {
     margin-left: -.25em !important;
+    touch-action: none;
 }
 
 .listItemBody {
