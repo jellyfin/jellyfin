@@ -65,23 +65,33 @@ define(['viewcontainer', 'focusManager', 'queryString', 'layoutManager'], functi
         }
     }
 
+    function getProperties(view) {
+        var props = view.getAttribute('data-properties');
+
+        if (props) {
+            return props.split(',');
+        }
+
+        return [];
+    }
+
     function dispatchViewEvent(view, eventName, isRestored, isCancellable) {
 
+        var eventDetail = {
+            type: view.getAttribute('data-type'),
+            isRestored: isRestored,
+            properties: getProperties(view)
+        };
+
         var eventResult = view.dispatchEvent(new CustomEvent(eventName, {
-            detail: {
-                type: view.getAttribute('data-type'),
-                isRestored: isRestored
-            },
+            detail: eventDetail,
             bubbles: true,
             cancelable: isCancellable || false
         }));
 
         if (dispatchPageEvents) {
             view.dispatchEvent(new CustomEvent(eventName.replace('view', 'page'), {
-                detail: {
-                    type: view.getAttribute('data-type'),
-                    isRestored: isRestored
-                },
+                detail: eventDetail,
                 bubbles: true,
                 cancelable: false
             }));
@@ -93,13 +103,13 @@ define(['viewcontainer', 'focusManager', 'queryString', 'layoutManager'], functi
     function getViewEventDetail(view, options, isRestore) {
 
         var url = options.url;
-        var state = options.state;
         var index = url.indexOf('?');
         var params = index === -1 ? {} : queryString.parse(url.substring(index + 1));
 
         return {
             detail: {
                 type: view.getAttribute('data-type'),
+                properties: getProperties(view),
                 params: params,
                 isRestored: isRestore,
                 state: options.state,

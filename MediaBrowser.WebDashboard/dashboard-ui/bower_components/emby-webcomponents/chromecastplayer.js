@@ -971,15 +971,19 @@
             });
         };
 
+        self.getPlaylist = function () {
+            return Promise.resolve([]);
+        };
+
         self.getCurrentPlaylistIndex = function () {
             return 0;
         };
 
-        self.setCurrentPlaylistIndex = function (index) {
+        self.setCurrentPlaylistItem = function (playlistItemId) {
             return Promise.resolve();
         };
 
-        self.removeFromPlaylist = function (index) {
+        self.removeFromPlaylist = function (playlistItemIds) {
             return Promise.resolve();
         };
 

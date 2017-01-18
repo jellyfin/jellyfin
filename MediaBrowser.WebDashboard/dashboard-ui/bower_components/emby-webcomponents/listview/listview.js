@@ -235,7 +235,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             var collectionTypeData = item.CollectionType ? (' data-collectiontype="' + item.CollectionType + '"') : '';
             var channelIdData = item.ChannelId ? (' data-channelid="' + item.ChannelId + '"') : '';
 
-            html += '<' + outerTagName + ' class="' + cssClass + '" data-index="' + i + '"' + playlistItemId + ' data-action="' + action + '" data-isfolder="' + item.IsFolder + '" data-id="' + item.Id + '" data-serverid="' + item.ServerId + '" data-type="' + item.Type + '"' + mediaTypeData + collectionTypeData + channelIdData + positionTicksData + collectionIdData + playlistIdData + '>';
+            html += '<' + outerTagName + ' class="' + cssClass + '"' + playlistItemId + ' data-action="' + action + '" data-isfolder="' + item.IsFolder + '" data-id="' + item.Id + '" data-serverid="' + item.ServerId + '" data-type="' + item.Type + '"' + mediaTypeData + collectionTypeData + channelIdData + positionTicksData + collectionIdData + playlistIdData + '>';
 
             if (!clickEntireItem && options.dragHandle) {
                 //html += '<button is="paper-icon-button-light" class="listViewDragHandle autoSize listItemButton"><i class="md-icon">&#xE25D;</i></button>';

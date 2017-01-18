@@ -326,7 +326,7 @@
     var instance;
 
     function onViewShow(e) {
-        if (e.detail.type === 'video-osd' || !Dashboard.getCurrentUserId()) {
+        if (e.detail.properties.indexOf('fullscreen') !== -1 || !Dashboard.getCurrentUserId()) {
             instance.hide();
         } else {
             instance.show();

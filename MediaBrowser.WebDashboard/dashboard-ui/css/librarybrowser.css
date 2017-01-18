@@ -286,7 +286,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .detailUserDataIcons {
-    margin-left: .5em;
     white-space: nowrap;
 }
 

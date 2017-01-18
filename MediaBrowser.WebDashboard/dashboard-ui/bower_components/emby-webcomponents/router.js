@@ -178,6 +178,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
             isBack: isBackNav,
             state: ctx.state,
             type: route.type,
+            fullscreen: route.fullscreen,
             controllerFactory: controllerFactory,
             options: {
                 supportsThemeMedia: route.supportsThemeMedia || false

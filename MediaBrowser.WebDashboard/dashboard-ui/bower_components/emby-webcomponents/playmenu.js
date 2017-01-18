@@ -44,13 +44,6 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
             });
         }
 
-        if (playbackManager.canQueue(item)) {
-            menuItems.push({
-                name: globalize.translate('sharedcomponents#Queue'),
-                id: 'queue'
-            });
-        }
-
         if (itemType === "Audio" || itemType === "MusicAlbum" || itemType === "MusicArtist" || itemType === "MusicGenre") {
             menuItems.push({
                 name: globalize.translate('sharedcomponents#InstantMix'),

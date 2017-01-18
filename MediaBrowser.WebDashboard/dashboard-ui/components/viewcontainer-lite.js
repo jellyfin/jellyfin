@@ -102,6 +102,15 @@ define(['browser'], function (browser) {
                     view.setAttribute('data-type', options.type);
                 }
 
+                var properties = [];
+                if (options.fullscreen) {
+                    properties.push('fullscreen');
+                }
+
+                if (properties.length) {
+                    view.setAttribute('data-properties', properties.join(','));
+                }
+
                 var animatable = view;
                 allPages[pageIndex] = view;
 
