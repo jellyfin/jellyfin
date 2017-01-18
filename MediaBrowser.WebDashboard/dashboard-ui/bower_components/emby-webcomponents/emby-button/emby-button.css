@@ -54,8 +54,8 @@
 .emby-button > i {
     /* For non-fab buttons that have icons */
     font-size: 1.36em;
-    width: auto;
-    height: auto;
+    width: 1em;
+    height: 1em;
 }
 
 .fab {
@@ -72,8 +72,8 @@
 }
 
     .fab > i {
-        height: auto;
-        width: auto;
+        height: 1em;
+        width: 1em;
         vertical-align: middle;
         font-size: 2.85em;
     }
@@ -88,8 +88,8 @@
 }
 
     .fab.mini > i {
-        height: auto;
-        width: auto;
+        height: 1em;
+        width: 1em;
         font-size: 1.72em;
     }
 

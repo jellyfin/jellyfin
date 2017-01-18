@@ -1,8 +1,6 @@
 define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'], function (actionsheet, datetime, playbackManager, globalize, appSettings) {
     'use strict';
 
-    var isMobileApp = window.Dashboard != null;
-
     function show(options) {
 
         var item = options.item;
@@ -17,7 +15,7 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
 
         var playableItemId = itemType === 'Program' ? channelId : itemId;
 
-        if (!resumePositionTicks && mediaType !== "Audio" && !isFolder) {
+        if (!resumePositionTicks || isFolder) {
             playbackManager.play({
                 ids: [playableItemId],
                 serverId: serverId
@@ -41,13 +39,6 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
             menuItems.push({
                 name: globalize.translate('sharedcomponents#Play'),
                 id: 'play'
-            });
-        }
-
-        if (itemType === "Audio" || itemType === "MusicAlbum" || itemType === "MusicArtist" || itemType === "MusicGenre") {
-            menuItems.push({
-                name: globalize.translate('sharedcomponents#InstantMix'),
-                id: 'instantmix'
             });
         }
 
@@ -83,9 +74,6 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
                     playbackManager.queue({
                         items: [item]
                     });
-                    break;
-                case 'instantmix':
-                    playbackManager.instantMix(item);
                     break;
                 case 'shuffle':
                     playbackManager.shuffle(item);

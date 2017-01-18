@@ -540,6 +540,22 @@
             });
         }
 
+        function onPlaylistItemRemoved(e, info) {
+
+            var context = dlg;
+
+            var playlistItemIds = info.playlistItemIds;
+
+            for (var i = 0, length = playlistItemIds.length; i < length; i++) {
+
+                var listItem = context.querySelector('.listItem[data-playlistItemId="' + playlistItemIds[i] + '"]');
+
+                if (listItem) {
+                    listItem.parentNode.removeChild(listItem);
+                }
+            }
+        }
+
         function onPlaybackStopped(e, stopInfo) {
 
             console.log('remotecontrol event: ' + e.type);
@@ -627,7 +643,7 @@
             events.on(player, 'playbackstart', onPlaybackStart);
             events.on(player, 'statechange', onPlaybackStart);
             events.on(player, 'repeatmodechange', onRepeatModeChange);
-            events.on(player, 'playlistitemremove', onPlaylistUpdate);
+            events.on(player, 'playlistitemremove', onPlaylistItemRemoved);
             events.on(player, 'playlistitemmove', onPlaylistUpdate);
             events.on(player, 'playbackstop', onPlaybackStopped);
             events.on(player, 'volumechange', onVolumeChanged);
@@ -646,7 +662,7 @@
         function updateCastIcon(context) {
 
             var info = playbackManager.getPlayerInfo();
-            var btnCast = context.querySelector('.nowPlayingCastIcon');
+            var btnCast = context.querySelector('.btnCast');
 
             if (info && !info.isLocalPlayer) {
 
@@ -850,7 +866,7 @@
             context.querySelector('.sendMessageForm').addEventListener('submit', onMessageSubmit);
             context.querySelector('.typeTextForm').addEventListener('submit', onSendStringSubmit);
 
-            context.querySelector('.nowPlayingCastIcon').addEventListener('click', function () {
+            context.querySelector('.btnCast').addEventListener('click', function () {
                 var btn = this;
                 require(['playerSelectionMenu'], function (playerSelectionMenu) {
                     playerSelectionMenu.show(btn);
@@ -866,6 +882,10 @@
             //});
 
             events.on(playbackManager, 'playerchange', onPlayerChange);
+
+            if (appHost.supports('remotecontrol')) {
+                context.querySelector('.btnCast').classList.remove('hide');
+            }
         }
 
         function onDialogClosed(e) {
