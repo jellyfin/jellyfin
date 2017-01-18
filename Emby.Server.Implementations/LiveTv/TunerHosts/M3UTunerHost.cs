@@ -127,6 +127,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     protocol = MediaProtocol.Udp;
                 }
+                else if (path.StartsWith("rtp", StringComparison.OrdinalIgnoreCase))
+                {
+                    protocol = MediaProtocol.Rtmp;
+                }
 
                 var mediaSource = new MediaSourceInfo
                 {
