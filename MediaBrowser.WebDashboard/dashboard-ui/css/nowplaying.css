@@ -17,7 +17,7 @@
 }
 
 .nowPlayingPositionSliderContainer {
-    margin: .7em 1em .7em;
+    margin: .7em 0 .7em 1em;
 }
 
 .nowPlayingInfoButtons {
@@ -101,8 +101,7 @@
 
     .nowPlayingPageImage {
         width: auto;
-        max-width: 100%;
-        max-height: 36vh;
+        height: 40vh;
     }
 }
 
@@ -120,7 +119,8 @@
 @media all and (min-width: 800px) {
 
     .nowPlayingSecondaryButtons {
-        margin-left: auto;
+        flex-grow: 1;
+        justify-content: flex-end;
     }
 }
 
@@ -156,4 +156,8 @@
 
 .nowPlayingCastIcon {
     font-size: 86%;
+}
+
+.nowPlayingVolumeSliderContainer {
+    width: 6em;
 }

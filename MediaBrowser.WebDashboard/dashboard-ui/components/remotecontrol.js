@@ -540,13 +540,15 @@
             });
         }
 
-        function onPlaybackStopped(e, state) {
+        function onPlaybackStopped(e, stopInfo) {
 
             console.log('remotecontrol event: ' + e.type);
-
             var player = this;
-            updatePlayerState(dlg, {});
-            loadPlaylist(dlg);
+
+            if (!stopInfo.nextMediaType) {
+                updatePlayerState(dlg, {});
+                loadPlaylist(dlg);
+            }
         }
 
         function onPlayPauseStateChanged(e) {

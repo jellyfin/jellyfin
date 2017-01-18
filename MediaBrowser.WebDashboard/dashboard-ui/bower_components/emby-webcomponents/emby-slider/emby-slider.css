@@ -16,7 +16,7 @@ _:-ms-input-placeholder, :root .mdl-slider {
     -ms-user-select: none;
     user-select: none;
     outline: 0;
-    padding: 1.5em 0;
+    padding: 1em 0;
     color: #52B54B;
     -webkit-align-self: center;
     -ms-flex-item-align: center;

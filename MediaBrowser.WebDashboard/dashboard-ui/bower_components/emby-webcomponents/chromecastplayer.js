@@ -971,6 +971,18 @@
             });
         };
 
+        self.getCurrentPlaylistIndex = function () {
+            return 0;
+        };
+
+        self.setCurrentPlaylistIndex = function (index) {
+            return Promise.resolve();
+        };
+
+        self.removeFromPlaylist = function (index) {
+            return Promise.resolve();
+        };
+
         self.getPlayerState = function () {
 
             return Promise.resolve(self.getPlayerStateInternal() || {});
