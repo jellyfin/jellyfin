@@ -10,6 +10,9 @@ namespace Emby.Dlna.Profiles
         {
             Name = "Sharp Smart TV";
 
+            RequiresPlainFolders = true;
+            RequiresPlainVideoItems = true;
+
             Identification = new DeviceIdentification
             {
                 Manufacturer = "Sharp",
@@ -39,7 +42,8 @@ namespace Emby.Dlna.Profiles
                     Container = "ts",
                     Type = DlnaProfileType.Video,
                     AudioCodec = "ac3,aac,mp3,dts,dca",
-                    VideoCodec = "h264"
+                    VideoCodec = "h264",
+                    EnableMpegtsM2TsMode = true
                 },
 
                 new TranscodingProfile
