@@ -146,7 +146,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     border-right: 1px solid #121212;
-    width: 24vw;
     background: rgb(38, 38, 38);
     display: flex;
     align-items: center;
@@ -156,30 +155,37 @@
     contain: strict;
 }
 
-@media all and (min-width: 500px) {
+/* Important - have to put the fixed width on channelsContainer, not the individual channelHeaderCell
+   This was causing channelsContainer to extend beyond the fixed width on ps4, tizen, lg and opera tv.
+*/
+.channelsContainer, .channelTimeslotHeader {
+    width: 24vw;
+}
 
-    .channelHeaderCell, .channelTimeslotHeader {
+.channelHeaderCell {
+    width: 100%;
+}
+
+@media all and (min-width:500px) {
+    .channelsContainer, .channelTimeslotHeader {
         width: 16vw;
     }
 }
 
-@media all and (min-width: 600px) {
-
-    .channelHeaderCell, .channelTimeslotHeader {
+@media all and (min-width:600px) {
+    .channelsContainer, .channelTimeslotHeader {
         width: 16vw;
     }
 }
 
-@media all and (min-width: 800px) {
-
-    .channelHeaderCell, .channelTimeslotHeader {
+@media all and (min-width:800px) {
+    .channelsContainer, .channelTimeslotHeader {
         width: 14vw;
     }
 }
 
-@media all and (min-width: 1280px) {
-
-    .channelHeaderCell, .channelTimeslotHeader {
+@media all and (min-width:1280px) {
+    .channelsContainer, .channelTimeslotHeader {
         width: 12vw;
     }
 }
@@ -222,7 +228,7 @@
 }
 
 .channelPrograms-tv, .channelHeaderCell-tv {
-    height: 3.8em;
+    height: 3.4em;
 }
 
 .channelTimeslotHeader {

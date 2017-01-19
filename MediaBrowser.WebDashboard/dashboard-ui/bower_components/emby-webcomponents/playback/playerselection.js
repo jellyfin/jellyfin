@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'events', 'browser', 'libraryMenu', 'loading', 'playbackManager', 'embyRouter', 'globalize'], function (appSettings, events, browser, libraryMenu, loading, playbackManager, embyRouter, globalize) {
+﻿define(['appSettings', 'events', 'browser', 'loading', 'playbackManager', 'embyRouter', 'globalize'], function (appSettings, events, browser, loading, playbackManager, embyRouter, globalize) {
     'use strict';
 
     var currentDisplayInfo;
@@ -185,23 +185,6 @@
     function onMirrorChange() {
         playbackManager.enableDisplayMirroring(this.checked);
     }
-
-    function onCastButtonClicked() {
-
-        showPlayerSelection(this);
-    }
-
-    function bindCastButton() {
-        var btnCast = document.querySelector('.headerButton-btnCast');
-
-        if (btnCast) {
-            btnCast.removeEventListener('click', onCastButtonClicked);
-            btnCast.addEventListener('click', onCastButtonClicked);
-        }
-    }
-
-    document.addEventListener('headercreated', bindCastButton);
-    bindCastButton();
 
     document.addEventListener('viewbeforeshow', function () {
         currentDisplayInfo = null;
