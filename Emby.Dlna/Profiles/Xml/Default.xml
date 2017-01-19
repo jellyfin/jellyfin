@@ -29,8 +29,8 @@
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <XmlRootAttributes />
   <DirectPlayProfiles>
-    <DirectPlayProfile container="m4v,ts,mkv,avi,mpg,mpeg,mp4" audioCodec="aac,mp3,ac3" videoCodec="h264" type="Video" />
-    <DirectPlayProfile container="mp3,wma,aac,wav" type="Audio" />
+    <DirectPlayProfile container="m4v,ts,mpegts,mkv,avi,mpg,mpeg,mp4,mov" audioCodec="aac,mp3,ac3" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="mp3,wma,aac,wav,flac" type="Audio" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
