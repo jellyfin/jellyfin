@@ -250,7 +250,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 50vh;
+    height: 45vh;
     position: relative;
 }
 
@@ -491,7 +491,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .mainDetailButtons {
-    padding: 1em 0;
+    padding: .5em 0;
     display: flex;
     align-items: center;
 }
@@ -503,6 +503,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .mainDetailButtons.hide + .recordingFields {
         margin-top: 1.5em !important;
+    }
+
+    .mainDetailButtons > .raised {
+        justify-content: center;
+        padding-left: 1.5em;
+        padding-right: 1.5em;
     }
 
 @media all and (min-width: 800px) {

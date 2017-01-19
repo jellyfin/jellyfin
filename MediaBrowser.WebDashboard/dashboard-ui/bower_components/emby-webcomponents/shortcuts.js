@@ -252,7 +252,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             });
         }
 
-        else if (action === 'play') {
+        else if (action === 'play' || action === 'resume') {
 
             var startPositionTicks = parseInt(card.getAttribute('data-positionticks') || '0');
 
@@ -431,7 +431,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
         var cmd = e.detail.command;
 
-        if (cmd === 'play' || cmd === 'record' || cmd === 'menu' || cmd === 'info') {
+        if (cmd === 'play' || cmd === 'resume' || cmd === 'record' || cmd === 'menu' || cmd === 'info') {
             var card = dom.parentWithClass(e.target, 'itemAction');
 
             if (card) {

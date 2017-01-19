@@ -49,9 +49,11 @@ namespace MediaBrowser.Controller.Channels
             SupportsDirectPlay = true;
         }
 
-        public MediaSourceInfo ToMediaSource()
+        public MediaSourceInfo ToMediaSource(Guid itemId)
         {
-            var id = Path.GetMD5().ToString("N");
+            var id = string.IsNullOrWhiteSpace(Path) ?
+                itemId.ToString("N") :
+                Path.GetMD5().ToString("N");
 
             var source = new MediaSourceInfo
             {

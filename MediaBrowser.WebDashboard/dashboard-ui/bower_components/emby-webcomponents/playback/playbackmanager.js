@@ -845,10 +845,6 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
                 var val = enabled ? '1' : '0';
                 appSettings.set('displaymirror', val);
-
-                if (enabled) {
-                    mirrorIfEnabled();
-                }
                 return;
             }
 

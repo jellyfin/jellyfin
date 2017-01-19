@@ -78,7 +78,9 @@
             positionTo: button,
             cancelTimer: false,
             record: false,
-            deleteItem: item.IsFolder === true
+            deleteItem: item.IsFolder === true,
+            shuffle: false,
+            instantMix: false
         };
 
         if (appHost.supports('sync')) {
@@ -227,13 +229,24 @@
                 } else {
                     hideAll(page, 'btnPlay');
                 }
+                hideAll(page, 'btnInstantMix');
+                hideAll(page, 'btnShuffle');
             }
             else if (playbackManager.canPlay(item)) {
                 hideAll(page, 'btnPlay', true);
+
+                var enableInstantMix = ['Audio', 'MusicAlbum', 'MusicGenre', 'MusicArtist'].indexOf(item.Type) !== -1;
+                hideAll(page, 'btnInstantMix', enableInstantMix);
+
+                var enableShuffle = item.IsFolder || ['MusicAlbum', 'MusicGenre', 'MusicArtist'].indexOf(item.Type) !== -1;
+                hideAll(page, 'btnShuffle', enableShuffle);
+
                 canPlay = true;
             }
             else {
                 hideAll(page, 'btnPlay');
+                hideAll(page, 'btnInstantMix');
+                hideAll(page, 'btnShuffle');
             }
 
             var hasAnyButton = canPlay;
@@ -2184,13 +2197,9 @@
 
     function showPlayMenu(item, target) {
 
-        require(['playMenu'], function (playMenu) {
-
-            playMenu.show({
-
-                item: item,
-                positionTo: target
-            });
+        playbackManager.play({
+            items: [item],
+            startPositionTicks: item.UserData ? item.UserData.PlaybackPositionTicks : 0
         });
     }
 
@@ -2248,6 +2257,14 @@
         playCurrentItem(this);
     }
 
+    function onInstantMixClick() {
+        playbackManager.instantMix(currentItem);
+    }
+
+    function onShuffleClick() {
+        playbackManager.shuffle(currentItem);
+    }
+
     function onDeleteClick() {
 
         require(['deleteHelper'], function (deleteHelper) {
@@ -2294,6 +2311,9 @@
         for (i = 0, length = elems.length; i < length; i++) {
             elems[i].addEventListener('click', onPlayClick);
         }
+
+        view.querySelector('.btnInstantMix').addEventListener('click', onInstantMixClick);
+        view.querySelector('.btnShuffle').addEventListener('click', onShuffleClick);
 
         elems = view.querySelectorAll('.btnPlayTrailer');
         for (i = 0, length = elems.length; i < length; i++) {

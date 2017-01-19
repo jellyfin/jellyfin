@@ -379,5 +379,9 @@
   "Retry": "Retry",
   "HeaderMyDevice": "My Device",
   "Continue": "Continue",
-  "ContinueInSecondsValue": "Continue in {0} seconds."
+  "ContinueInSecondsValue": "Continue in {0} seconds.",
+  "HeaderRemoteControl": "Remote Control",
+  "Disconnect": "Disconnect",
+  "EnableDisplayMirroring": "Enable display mirroring",
+  "HeaderSelectPlayer": "Select Player"
 }
