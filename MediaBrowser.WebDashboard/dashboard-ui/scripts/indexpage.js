@@ -68,10 +68,7 @@
 
             elem.innerHTML = '';
 
-            return new Promise(function (resolve, reject) {
-
-                resolve();
-            });
+            return Promise.resolve();
         }
     }
 
@@ -82,7 +79,7 @@
 
         var elem = page.querySelector('.sections');
 
-        if (!elem.innerHTML.length) {
+        //if (!elem.innerHTML.length) {
             var html = '';
             for (i = 0, length = sectionCount; i < length; i++) {
 
@@ -90,7 +87,7 @@
             }
 
             elem.innerHTML = html;
-        }
+        //}
 
         var promises = [];
 
