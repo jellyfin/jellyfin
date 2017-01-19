@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'events', 'browser', 'libraryMenu', 'loading', 'playbackManager'], function (appSettings, events, browser, libraryMenu, loading, playbackManager) {
+﻿define(['appSettings', 'events', 'browser', 'libraryMenu', 'loading', 'playbackManager', 'embyRouter', 'globalize'], function (appSettings, events, browser, libraryMenu, loading, playbackManager, embyRouter, globalize) {
     'use strict';
 
     var currentDisplayInfo;
@@ -25,7 +25,7 @@
             var player = playbackManager.getPlayerInfo();
 
             if (player) {
-                if (!player.isLocalPlayer && player.supportedCommands.indexOf('DisplayContent') != -1) {
+                if (!player.isLocalPlayer && player.supportedCommands.indexOf('DisplayContent') !== -1) {
                     mirrorItem(info, player);
                 }
             }
@@ -53,7 +53,7 @@
 
                 var name = t.name;
 
-                if (t.appName && t.appName != t.name) {
+                if (t.appName && t.appName !== t.name) {
                     name += " - " + t.appName;
                 }
 
@@ -70,12 +70,11 @@
                 loading.hide();
 
                 var menuOptions = {
-                    title: Globalize.translate('HeaderSelectPlayer'),
+                    title: globalize.translate('sharedcomponents#HeaderSelectPlayer'),
                     items: menuItems,
                     positionTo: button,
 
                     resolveOnClick: true
-
                 };
 
                 // Unfortunately we can't allow the url to change or chromecast will throw a security error
@@ -87,7 +86,7 @@
                 actionsheet.show(menuOptions).then(function (id) {
 
                     var target = targets.filter(function (t) {
-                        return t.id == id;
+                        return t.id === id;
                     })[0];
 
                     playbackManager.trySetActivePlayer(target.playerName, target);
@@ -130,12 +129,12 @@
 
         html += '<div>';
 
-        if (playerInfo.supportedCommands.indexOf('DisplayContent') != -1) {
+        if (playerInfo.supportedCommands.indexOf('DisplayContent') !== -1) {
 
             html += '<label class="checkboxContainer">';
             var checkedHtml = playbackManager.enableDisplayMirroring() ? ' checked' : '';
             html += '<input type="checkbox" is="emby-checkbox" class="chkMirror"' + checkedHtml + '/>';
-            html += '<span>' + Globalize.translate('OptionEnableDisplayMirroring') + '</span>';
+            html += '<span>' + globalize.translate('sharedcomponents#EnableDisplayMirroring') + '</span>';
             html += '</label>';
         }
 
@@ -143,9 +142,9 @@
 
         html += '<div style="margin-top:1em;display:flex;justify-content: flex-end;">';
 
-        html += '<button is="emby-button" type="button" class="button-flat button-accent-flat btnRemoteControl promptDialogButton">' + Globalize.translate('ButtonRemoteControl') + '</button>';
-        html += '<button is="emby-button" type="button" class="button-flat button-accent-flat btnDisconnect promptDialogButton ">' + Globalize.translate('ButtonDisconnect') + '</button>';
-        html += '<button is="emby-button" type="button" class="button-flat button-accent-flat btnCancel promptDialogButton">' + Globalize.translate('ButtonCancel') + '</button>';
+        html += '<button is="emby-button" type="button" class="button-flat button-accent-flat btnRemoteControl promptDialogButton">' + globalize.translate('sharedcomponents#HeaderRemoteControl') + '</button>';
+        html += '<button is="emby-button" type="button" class="button-flat button-accent-flat btnDisconnect promptDialogButton ">' + globalize.translate('sharedcomponents#Disconnect') + '</button>';
+        html += '<button is="emby-button" type="button" class="button-flat button-accent-flat btnCancel promptDialogButton">' + globalize.translate('sharedcomponents#ButtonCancel') + '</button>';
         html += '</div>';
 
         html += '</div>';
@@ -178,7 +177,7 @@
 
         dialogHelper.open(dlg).then(function () {
             if (destination) {
-                Dashboard.navigate(destination);
+                embyRouter.show(destination);
             }
         });
     }
@@ -204,17 +203,27 @@
     document.addEventListener('headercreated', bindCastButton);
     bindCastButton();
 
-    pageClassOn('pagebeforeshow', "page", function () {
-
-        var page = this;
-
+    document.addEventListener('viewbeforeshow', function () {
         currentDisplayInfo = null;
     });
 
-    pageClassOn('displayingitem', "libraryPage", function (e) {
+    document.addEventListener('viewshow', function (e) {
 
-        var info = e.detail;
-        mirrorIfEnabled(info);
+        var state = e.detail.state || {};
+        var item = state.item;
+
+        if (item && item.ServerId) {
+            mirrorIfEnabled({
+                item: item
+            });
+            return;
+        }
+    });
+
+    events.on(appSettings, 'change', function (e, name) {
+        if (name === 'displaymirror') {
+            mirrorIfEnabled();
+        }
     });
 
     return {

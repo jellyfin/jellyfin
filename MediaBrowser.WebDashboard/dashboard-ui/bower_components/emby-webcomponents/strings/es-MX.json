@@ -115,7 +115,7 @@
     "RefreshDialogHelp": "Los metadatos son actualizados bas\u00e1ndose en las configuraciones y servicios de internet que que est\u00e9n activados en el panel de control de su Servidor de Emby.",
     "Open": "Abrir",
     "Play": "Reproducir",
-    "AddToPlayQueue": "Add to play queue",
+    "AddToPlayQueue": "Agregar a la cola de reproduccion",
     "Shuffle": "Aleatorio",
     "Identify": "Identificar",
     "EditImages": "Editar im\u00e1genes",
@@ -378,6 +378,6 @@
     "SyncJobItemStatusCancelled": "Cancelado",
     "Retry": "Volver a intentar",
     "HeaderMyDevice": "Mi Dispositivo",
-    "Continue": "Continue",
-    "ContinueInSecondsValue": "Continue in {0} seconds."
+    "Continue": "Continuar",
+    "ContinueInSecondsValue": "Continua en {0} segundos."
 }
