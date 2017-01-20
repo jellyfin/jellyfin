@@ -3617,10 +3617,12 @@ namespace Emby.Server.Implementations.Data
                 var index = 0;
                 foreach (var type in query.TrailerTypes)
                 {
-                    clauses.Add("TrailerTypes like @TrailerTypes" + index);
+                    var paramName = "@TrailerTypes" + index;
+
+                    clauses.Add("TrailerTypes like " + paramName);
                     if (statement != null)
                     {
-                        statement.TryBind("@TrailerTypes" + index, "%" + type + "%");
+                        statement.TryBind(paramName, "%" + type + "%");
                     }
                     index++;
                 }

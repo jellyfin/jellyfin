@@ -240,14 +240,49 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 try
                 {
-                    _logger.Info("Killing ffmpeg recording process for {0}", _targetPath);
+                    _logger.Info("Stopping ffmpeg recording process for {0}", _targetPath);
 
                     //process.Kill();
                     _process.StandardInput.WriteLine("q");
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error killing transcoding job for {0}", ex, _targetPath);
+                    _logger.ErrorException("Error stopping recording transcoding job for {0}", ex, _targetPath);
+                }
+
+                if (_hasExited)
+                {
+                    return;
+                }
+
+                try
+                {
+                    _logger.Info("Calling recording process.WaitForExit for {0}", _targetPath);
+
+                    if (_process.WaitForExit(5000))
+                    {
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error waiting for recording process to exit for {0}", ex, _targetPath);
+                }
+
+                if (_hasExited)
+                {
+                    return;
+                }
+
+                try
+                {
+                    _logger.Info("Killing ffmpeg recording process for {0}", _targetPath);
+
+                    _process.Kill();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error killing recording transcoding job for {0}", ex, _targetPath);
                 }
             }
         }

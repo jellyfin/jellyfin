@@ -21,6 +21,11 @@ namespace MediaBrowser.Model.Dto
 
         public string Name { get; set; }
 
+        /// <summary>
+        /// Differentiate internet url vs local network
+        /// </summary>
+        public bool IsRemote { get; set; }
+
         public string ETag { get; set; }
         public long? RunTimeTicks { get; set; }
         public bool ReadAtNativeFramerate { get; set; }

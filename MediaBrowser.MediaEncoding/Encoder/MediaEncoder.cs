@@ -1250,8 +1250,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             lock (_runningProcesses)
             {
                 proceses = _runningProcesses.ToList();
+                _runningProcesses.Clear();
             }
-            _runningProcesses.Clear();
 
             foreach (var process in proceses)
             {
@@ -1321,16 +1321,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                 }
 
-                lock (_mediaEncoder._runningProcesses)
-                {
-                    _mediaEncoder._runningProcesses.Remove(this);
-                }
-
                 DisposeProcess(process);
             }
 
             private void DisposeProcess(IProcess process)
             {
+                lock (_mediaEncoder._runningProcesses)
+                {
+                    _mediaEncoder._runningProcesses.Remove(this);
+                }
+
                 try
                 {
                     process.Dispose();
