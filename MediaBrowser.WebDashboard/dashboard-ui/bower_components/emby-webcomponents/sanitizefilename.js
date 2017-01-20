@@ -52,7 +52,7 @@ define([], function () {
         }
 
         return byteLength;
-    };
+    }
 
     function truncate(string, byteLength) {
         if (typeof string !== "string") {
@@ -84,7 +84,7 @@ define([], function () {
         }
 
         return string;
-    };
+    }
 
     return {
         sanitize: function (input, replacement) {
