@@ -178,7 +178,7 @@
         });
     }
 
-    function getNewMedia(apiClient, serverInfo, options) {
+    function getNewMedia(apiClient, serverInfo, options, downloadCount) {
 
         console.log('[mediasync] Begin getNewMedia');
 
@@ -186,10 +186,15 @@
 
             var p = Promise.resolve();
 
+            var maxDownloads = 10;
+            var currentCount = downloadCount;
+
             jobItems.forEach(function (jobItem) {
-                p = p.then(function () {
-                    return getNewItem(jobItem, apiClient, serverInfo, options);
-                });
+                if (currentCount++ <= maxDownloads) {
+                    p = p.then(function () {
+                        return getNewItem(jobItem, apiClient, serverInfo, options);
+                    });
+                }
             });
 
             return p.then(function () {
@@ -344,6 +349,7 @@
             return localassetmanager.addOrUpdateLocalItem(localItem);
         }, function (err) {
             console.log('[mediasync] Error getImages: ' + err.toString());
+            return Promise.resolve();
         });
     }
 
@@ -368,9 +374,15 @@
 
             console.log('[mediasync] downloadImage ' + itemId + ' ' + imageType + '_' + index.toString());
 
-            return localassetmanager.downloadImage(localItem, imageUrl, serverId, itemId, imageType, index);
+            return localassetmanager.downloadImage(localItem, imageUrl, serverId, itemId, imageType, index).then(function (result) {
+                return Promise.resolve();
+            }, function (err) {
+                console.log('[mediasync] Error downloadImage: ' + err.toString());
+                return Promise.resolve();
+            });
         }, function (err) {
             console.log('[mediasync] Error downloadImage: ' + err.toString());
+            return Promise.resolve();
         });
     }
 
@@ -450,26 +462,28 @@
 
             return processDownloadStatus(apiClient, serverInfo, options).then(function () {
 
-                if (options.syncCheckProgressOnly === true) {
-                    return Promise.resolve();
-                }
+                return localassetmanager.getDownloadItemCount().then(function (downloadCount) {
 
-                return reportOfflineActions(apiClient, serverInfo).then(function () {
+                    if (options.syncCheckProgressOnly === true && downloadCount > 2) {
+                        return Promise.resolve();
+                    }
 
-                    //// Do the first data sync
-                    //return syncData(apiClient, serverInfo, false).then(function () {
+                    return reportOfflineActions(apiClient, serverInfo).then(function () {
 
-                    // Download new content
-                    return getNewMedia(apiClient, serverInfo, options).then(function () {
+                        // Download new content
+                        return getNewMedia(apiClient, serverInfo, options, downloadCount).then(function () {
 
-                        // Do the second data sync
-                        return syncData(apiClient, serverInfo, false).then(function () {
-                            console.log('[mediasync]************************************* Exit sync');
-                            return Promise.resolve();
+                            // Do the second data sync
+                            return syncData(apiClient, serverInfo, false).then(function () {
+                                console.log('[mediasync]************************************* Exit sync');
+                                return Promise.resolve();
+                            });
                         });
+                        //});
                     });
-                    //});
                 });
+            }, function (err) {
+                console.error(err.toString());
             });
         };
     };

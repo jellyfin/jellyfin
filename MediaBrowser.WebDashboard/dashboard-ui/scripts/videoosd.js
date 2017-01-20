@@ -1,4 +1,4 @@
-﻿define(['playbackManager', 'dom', 'inputmanager', 'datetime', 'itemHelper', 'mediaInfo', 'focusManager', 'imageLoader', 'scrollHelper', 'events', 'connectionManager', 'browser', 'globalize', 'apphost', 'scrollStyles', 'emby-slider'], function (playbackManager, dom, inputManager, datetime, itemHelper, mediaInfo, focusManager, imageLoader, scrollHelper, events, connectionManager, browser, globalize, appHost) {
+﻿define(['playbackManager', 'dom', 'inputmanager', 'datetime', 'itemHelper', 'mediaInfo', 'focusManager', 'imageLoader', 'scrollHelper', 'events', 'connectionManager', 'browser', 'globalize', 'apphost', 'layoutManager', 'scrollStyles', 'emby-slider'], function (playbackManager, dom, inputManager, datetime, itemHelper, mediaInfo, focusManager, imageLoader, scrollHelper, events, connectionManager, browser, globalize, appHost, layoutManager) {
     'use strict';
 
     function seriesImageUrl(item, options) {
@@ -425,7 +425,7 @@
             releaseCurrentPlayer();
         });
 
-        if (appHost.supports('remotecontrol')) {
+        if (appHost.supports('remotecontrol') && !layoutManager.tv) {
             view.querySelector('.btnCast').classList.remove('hide');
         }
 

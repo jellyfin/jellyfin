@@ -2117,6 +2117,23 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             });
         }
 
+        function isHostReachable(mediaSource, apiClient) {
+
+            var url = mediaSource.Path;
+
+            var isServerAddress = url.toLowerCase().replace('https:', 'http').indexOf(apiClient.serverAddress().toLowerCase().replace('https:', 'http').substring(0, 14)) === 0;
+
+            if (isServerAddress) {
+                return Promise.resolve();
+            }
+
+            if (mediaSource.IsRemote) {
+                return Promise.resolve();
+            }
+
+            return Promise.reject();
+        }
+
         function supportsDirectPlay(apiClient, mediaSource) {
 
             return new Promise(function (resolve, reject) {
@@ -2130,12 +2147,15 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                             resolve(true);
                         }
                         else {
-                            var val = mediaSource.Path.toLowerCase().replace('https:', 'http').indexOf(apiClient.serverAddress().toLowerCase().replace('https:', 'http').substring(0, 14)) === 0;
-                            resolve(val);
+                            isHostReachable(mediaSource, apiClient).then(function () {
+                                resolve(true);
+                            }, function () {
+                                resolve(false);
+                            });
                         }
                     }
 
-                    if (mediaSource.Protocol === 'File') {
+                    else if (mediaSource.Protocol === 'File') {
 
                         // Determine if the file can be accessed directly
                         require(['filesystem'], function (filesystem) {
@@ -2241,7 +2261,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         }
 
         function findPlaylistIndex(playlistItemId, list) {
-            
+
             for (var i = 0, length = playlist.length; i < length; i++) {
                 if (list[i].PlaylistItemId === playlistItemId) {
                     return i;

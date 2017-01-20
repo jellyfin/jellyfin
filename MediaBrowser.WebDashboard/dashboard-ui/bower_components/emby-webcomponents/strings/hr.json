@@ -1,4 +1,8 @@
 {
+    "HeaderRemoteControl": "Remote Control",
+    "Disconnect": "Disconnect",
+    "EnableDisplayMirroring": "Enable display mirroring",
+    "HeaderSelectPlayer": "Select Player",
     "MessageUnlockAppWithPurchaseOrSupporter": "Otklju\u010daj ovu mogu\u0107nost s malom jednokratnom kupnjom ili s aktivnom pretplatom Emby Premijere.",
     "MessageUnlockAppWithSupporter": "Otklju\u010daj ovu mogu\u0107nost sa pretplatom Emby Premijere.",
     "MessageToValidateSupporter": "Ako imate aktivnu pretplatu Emby Premijere provjerite dali ste postavili Emby Premijeru u svojoj nadzornoj plo\u010di Emby Server-a kojoj mo\u017eete pristupiti klikom Emby Premijera u glavnom izborniku.",

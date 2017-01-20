@@ -90,7 +90,7 @@
     function clear() {
         return dbPromise.then(function (db) {
             var tx = db.transaction(dbName, 'readwrite');
-            tx.objectStore(dbName).clear(key);
+            tx.objectStore(dbName).clear();
             return tx.complete;
         });
     }

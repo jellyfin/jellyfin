@@ -1,4 +1,8 @@
 {
+    "HeaderRemoteControl": "Remote Control",
+    "Disconnect": "Disconnect",
+    "EnableDisplayMirroring": "Enable display mirroring",
+    "HeaderSelectPlayer": "Select Player",
     "MessageUnlockAppWithPurchaseOrSupporter": "L\u00e5s op for dette feature med en lille enkeltst\u00e5ende betaling, eller med et aktivt Emby Premiere abonnement.",
     "MessageUnlockAppWithSupporter": "L\u00e5s op for dette feature med et aktivt Emby Premiere abonnement.",
     "MessageToValidateSupporter": "Hvis du har et aktivt Emby Premiere abonnement, skal du v\u00e6re sikker p\u00e5 at Emby Premiere er konfigureret i dit Emby Server-kontrolpanel, som kan tilg\u00e5es ved at klikke p\u00e5 Emby Premiere i hovedmenuen.",

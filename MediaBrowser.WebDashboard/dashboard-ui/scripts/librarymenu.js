@@ -55,7 +55,6 @@
 
         lazyLoadViewMenuBarImages();
 
-        document.dispatchEvent(new CustomEvent("headercreated", {}));
         bindMenuEvents();
     }
 
@@ -223,6 +222,21 @@
 
         viewMenuBar.querySelector('.btnNotifications').addEventListener('click', function () {
             Dashboard.navigate('notificationlist.html');
+        });
+
+        var btnCast = document.querySelector('.headerButton-btnCast');
+
+        if (btnCast) {
+            btnCast.addEventListener('click', onCastButtonClicked);
+        }
+    }
+
+    function onCastButtonClicked() {
+
+        var btn = this;
+
+        require(['playerSelectionMenu'], function (playerSelectionMenu) {
+            playerSelectionMenu.show(btn);
         });
     }
 

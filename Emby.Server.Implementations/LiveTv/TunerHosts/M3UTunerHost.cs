@@ -160,7 +160,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                     Id = channel.Path.GetMD5().ToString("N"),
                     IsInfiniteStream = true,
-                    SupportsDirectStream = false
+                    SupportsDirectStream = false,
+                    IsRemote = true
                 };
 
                 return new List<MediaSourceInfo> { mediaSource };

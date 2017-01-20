@@ -1570,7 +1570,10 @@ var AppInfo = {};
 
         document.title = Globalize.translateDocument(document.title, 'core');
 
-        loadPlugins([], browserInfo).then(onAppReady);
+        require(['apphost'], function (appHost) {
+
+            loadPlugins([], appHost, browserInfo).then(onAppReady);
+        });
     }
 
     function defineRoute(newRoute, dictionary) {
@@ -2368,7 +2371,7 @@ var AppInfo = {};
         });
     }
 
-    function loadPlugins(externalPlugins, browser, shell) {
+    function loadPlugins(externalPlugins, appHost, browser, shell) {
 
         console.log('Loading installed plugins');
 
@@ -2413,10 +2416,13 @@ var AppInfo = {};
         }
 
         list.push('bower_components/emby-webcomponents/htmlvideoplayer/plugin');
-        list.push('bower_components/emby-webcomponents/sessionplayer');
 
-        if (browser.chrome) {
-            list.push('bower_components/emby-webcomponents/chromecastplayer');
+        if (appHost.supports('remotecontrol')) {
+            list.push('bower_components/emby-webcomponents/sessionplayer');
+
+            if (browser.chrome) {
+                list.push('bower_components/emby-webcomponents/chromecastplayer');
+            }
         }
 
         list.push('bower_components/emby-webcomponents/youtubeplayer/plugin');

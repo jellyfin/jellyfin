@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'backdrop', 'libraryBrowser', 'listView', 'userdataButtons', 'imageLoader', 'playbackManager', 'nowPlayingHelper', 'events', 'connectionManager', 'apphost', 'globalize', 'cardStyle'], function (browser, datetime, backdrop, libraryBrowser, listView, userdataButtons, imageLoader, playbackManager, nowPlayingHelper, events, connectionManager, appHost, globalize) {
+﻿define(['browser', 'datetime', 'backdrop', 'libraryBrowser', 'listView', 'userdataButtons', 'imageLoader', 'playbackManager', 'nowPlayingHelper', 'events', 'connectionManager', 'apphost', 'globalize', 'cardStyle', 'emby-itemscontainer', 'css!css/nowplaying.css'], function (browser, datetime, backdrop, libraryBrowser, listView, userdataButtons, imageLoader, playbackManager, nowPlayingHelper, events, connectionManager, appHost, globalize) {
     'use strict';
 
     function showSlideshowMenu(context) {
@@ -800,8 +800,6 @@
 
                 playbackManager.movePlaylistItem(playlistItemId, newIndex, currentPlayer);
             });
-
-            playlistContainer.enableDragReordering(true);
         }
 
         function onPlayerChange() {
@@ -860,7 +858,6 @@
 
         function init(ownerView, context) {
 
-            require(['css!css/nowplaying.css']);
             bindEvents(context);
 
             context.querySelector('.sendMessageForm').addEventListener('submit', onMessageSubmit);

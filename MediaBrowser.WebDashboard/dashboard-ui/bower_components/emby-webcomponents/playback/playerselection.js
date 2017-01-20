@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'events', 'browser', 'libraryMenu', 'loading', 'playbackManager', 'embyRouter', 'globalize'], function (appSettings, events, browser, libraryMenu, loading, playbackManager, embyRouter, globalize) {
+﻿define(['appSettings', 'events', 'browser', 'loading', 'playbackManager', 'embyRouter', 'globalize', 'apphost'], function (appSettings, events, browser, loading, playbackManager, embyRouter, globalize, appHost) {
     'use strict';
 
     var currentDisplayInfo;
@@ -79,7 +79,7 @@
 
                 // Unfortunately we can't allow the url to change or chromecast will throw a security error
                 // Might be able to solve this in the future by moving the dialogs to hashbangs
-                if (!((!browser.chrome) || AppInfo.isNativeApp)) {
+                if (!(!browser.chrome || appHost.supports('castmenuhashchange'))) {
                     menuOptions.enableHistory = false;
                 }
 
@@ -185,23 +185,6 @@
     function onMirrorChange() {
         playbackManager.enableDisplayMirroring(this.checked);
     }
-
-    function onCastButtonClicked() {
-
-        showPlayerSelection(this);
-    }
-
-    function bindCastButton() {
-        var btnCast = document.querySelector('.headerButton-btnCast');
-
-        if (btnCast) {
-            btnCast.removeEventListener('click', onCastButtonClicked);
-            btnCast.addEventListener('click', onCastButtonClicked);
-        }
-    }
-
-    document.addEventListener('headercreated', bindCastButton);
-    bindCastButton();
 
     document.addEventListener('viewbeforeshow', function () {
         currentDisplayInfo = null;

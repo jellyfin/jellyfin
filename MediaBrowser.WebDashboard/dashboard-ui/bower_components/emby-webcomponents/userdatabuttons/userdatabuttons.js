@@ -106,9 +106,9 @@ define(['connectionManager', 'globalize', 'dom', 'itemHelper', 'paper-icon-butto
             if (item.MediaType === 'Video' || item.Type === 'Series' || item.Type === 'Season' || item.Type === 'BoxSet' || item.Type === 'Playlist') {
                 if (item.Type !== 'TvChannel') {
                     if (userData.Played) {
-                        html += getUserDataButtonHtml('markPlayed', itemId, serverId, btnCssClass + ' btnUserDataOn', iconCssClass, 'check', tooltipPlayed, style);
+                        html += getUserDataButtonHtml('markPlayed', itemId, serverId, btnCssClass + ' btnUserDataOn', iconCssClass, '&#xE5CA;', tooltipPlayed, style);
                     } else {
-                        html += getUserDataButtonHtml('markPlayed', itemId, serverId, btnCssClass, iconCssClass, 'check', tooltipPlayed, style);
+                        html += getUserDataButtonHtml('markPlayed', itemId, serverId, btnCssClass, iconCssClass, '&#xE5CA;', tooltipPlayed, style);
                     }
                 }
             }
@@ -133,9 +133,9 @@ define(['connectionManager', 'globalize', 'dom', 'itemHelper', 'paper-icon-butto
         var tooltipFavorite = globalize.translate('sharedcomponents#Favorite');
         if (userData.IsFavorite) {
 
-            html += getUserDataButtonHtml('markFavorite', itemId, serverId, btnCssClass + ' btnUserData btnUserDataOn', iconCssClass, 'favorite', tooltipFavorite, style);
+            html += getUserDataButtonHtml('markFavorite', itemId, serverId, btnCssClass + ' btnUserData btnUserDataOn', iconCssClass, '&#xE87D;', tooltipFavorite, style);
         } else {
-            html += getUserDataButtonHtml('markFavorite', itemId, serverId, btnCssClass + ' btnUserData', iconCssClass, 'favorite', tooltipFavorite, style);
+            html += getUserDataButtonHtml('markFavorite', itemId, serverId, btnCssClass + ' btnUserData', iconCssClass, '&#xE87D;', tooltipFavorite, style);
         }
 
         return html;
