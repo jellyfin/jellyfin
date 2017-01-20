@@ -2648,7 +2648,7 @@ namespace Emby.Server.Implementations.Data
             {
                 //Logger.Debug("{2} query time: {0}ms. Query: {1}",
                 //    Convert.ToInt32(elapsed),
-                //    cmd.CommandText,
+                //    commandText,
                 //    methodName);
             }
         }
@@ -3617,10 +3617,12 @@ namespace Emby.Server.Implementations.Data
                 var index = 0;
                 foreach (var type in query.TrailerTypes)
                 {
-                    clauses.Add("TrailerTypes like @TrailerTypes" + index);
+                    var paramName = "@TrailerTypes" + index;
+
+                    clauses.Add("TrailerTypes like " + paramName);
                     if (statement != null)
                     {
-                        statement.TryBind("@TrailerTypes" + index, "%" + type + "%");
+                        statement.TryBind(paramName, "%" + type + "%");
                     }
                     index++;
                 }
@@ -4201,7 +4203,7 @@ namespace Emby.Server.Implementations.Data
 
                     var paramName = "@ExcludeProviderId" + index;
                     //excludeIds.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = '" + pair.Key + "'), '') <> " + paramName + ")");
-                    excludeIds.Add("ProviderIds not like " + paramName);
+                    excludeIds.Add("(ProviderIds is null or ProviderIds not like " + paramName + ")");
                     if (statement != null)
                     {
                         statement.TryBind(paramName, "%" + pair.Key + "=" + pair.Value + "%");
