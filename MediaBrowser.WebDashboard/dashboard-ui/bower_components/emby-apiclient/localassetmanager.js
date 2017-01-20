@@ -203,7 +203,14 @@
     }
 
     function addOrUpdateLocalItem(localItem) {
-        return itemrepository.set(localItem.Id, localItem);
+        console.log('addOrUpdateLocalItem Start');
+        return itemrepository.set(localItem.Id, localItem).then(function (res) {
+            console.log('addOrUpdateLocalItem Success');
+            return Promise.resolve(true);
+        }, function (error) {
+            console.log('addOrUpdateLocalItem Error');
+            return Promise.resolve(false);
+        });
     }
 
     function createLocalItem(libraryItem, serverInfo, jobItem) {
@@ -342,6 +349,11 @@
         return transfermanager.isDownloadFileInQueue(path);
     }
 
+    function getDownloadItemCount() {
+
+        return transfermanager.getDownloadItemCount();
+    }
+
     function translateFilePath(path) {
         return Promise.resolve(path);
     }
@@ -471,6 +483,7 @@
         getServerItems: getServerItems,
         getItemFileSize: getItemFileSize,
         isDownloadFileInQueue: isDownloadFileInQueue,
+        getDownloadItemCount: getDownloadItemCount,
         getViews: getViews,
         getViewItems: getViewItems,
         resyncTransfers: resyncTransfers

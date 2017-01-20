@@ -295,9 +295,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 case 'download':
                     {
                         require(['fileDownloader'], function (fileDownloader) {
-                            var downloadHref = apiClient.getUrl("Items/" + itemId + "/Download", {
-                                api_key: apiClient.accessToken()
-                            });
+                            var downloadHref = apiClient.getItemDownloadUrl(itemId);
 
                             fileDownloader.download([
                             {

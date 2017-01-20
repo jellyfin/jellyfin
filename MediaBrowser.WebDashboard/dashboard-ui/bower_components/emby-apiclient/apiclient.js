@@ -2123,6 +2123,19 @@
             return self.getJSON(url);
         };
 
+        self.getItemDownloadUrl = function (itemId) {
+
+            if (!itemId) {
+                throw new Error("itemId cannot be empty");
+            }
+
+            var url = "Items/" + itemId + "/Download";
+
+            return self.getUrl(url, {
+                api_key: self.accessToken()
+            });
+        };
+
         self.getSessions = function (options) {
 
             var url = self.getUrl("Sessions", options);

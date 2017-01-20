@@ -33,8 +33,9 @@
     }
 }
 
-.mediaButton img {
-    height: 24px;
+.nowPlayingBarInfoContainer {
+    display: flex;
+    align-items: center;
 }
 
 .currentTime {
@@ -111,13 +112,13 @@
 }
 
 .nowPlayingBarText {
-    display: inline-block;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     vertical-align: middle;
     text-align: left;
     max-width: 130px;
+    flex-grow: 1;
 }
 
 .repeatActive {

@@ -216,7 +216,7 @@
             return connectUser;
         };
 
-        var minServerVersion = '3.0.8000';
+        var minServerVersion = '3.0.8500';
         self.minServerVersion = function (val) {
 
             if (val) {

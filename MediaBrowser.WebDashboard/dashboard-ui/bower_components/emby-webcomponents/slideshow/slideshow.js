@@ -59,9 +59,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
         } else {
 
             if (item.MediaType === 'Photo' && original) {
-                return apiClient.getUrl("Items/" + item.Id + "/Download", {
-                    api_key: apiClient.accessToken()
-                });
+                return apiClient.getItemDownloadUrl(item.Id);
             }
             imageOptions.type = "Primary";
             return getImageUrl(item, imageOptions, apiClient);

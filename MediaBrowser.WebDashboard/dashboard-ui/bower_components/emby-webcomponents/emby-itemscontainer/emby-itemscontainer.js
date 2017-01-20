@@ -251,6 +251,11 @@
         }
     }
 
+    ItemsContainerProtoType.createdCallback = function () {
+
+        this.classList.add('itemsContainer');
+    };
+
     ItemsContainerProtoType.attachedCallback = function () {
 
         this.addEventListener('click', onClick);
@@ -278,6 +283,10 @@
         addNotificationEvent(this, 'SeriesTimerCreated', onSeriesTimerCreated);
         addNotificationEvent(this, 'TimerCancelled', onTimerCancelled);
         addNotificationEvent(this, 'SeriesTimerCancelled', onSeriesTimerCancelled);
+
+        if (this.getAttribute('data-dragreorder') === 'true') {
+            this.enableDragReordering(true);
+        }
     };
 
     ItemsContainerProtoType.detachedCallback = function () {

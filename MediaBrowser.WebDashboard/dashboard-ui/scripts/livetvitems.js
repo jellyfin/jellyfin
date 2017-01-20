@@ -120,13 +120,6 @@
             query.ParentId = LibraryMenu.getTopParentId();
 
             var page = this;
-            var limit = LibraryBrowser.getDefaultPageSize();
-
-            // If the default page size has changed, the start index will have to be reset
-            if (limit != query.Limit) {
-                query.Limit = limit;
-                query.StartIndex = 0;
-            }
 
             if (params.IsMovie == 'true') {
                 query.IsMovie = true;

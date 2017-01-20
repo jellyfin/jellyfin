@@ -171,9 +171,7 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
 
                 var originalVolume = elem.volume;
 
-                return fade(elem, function () {
-
-                }).then(function () {
+                return fade(elem, elem.volume).then(function () {
                     if (!elem.paused) {
                         elem.pause();
                     }
@@ -194,13 +192,16 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
 
         var fadeTimeout;
 
-        function fade(elem) {
+        function fade(elem, startingVolume) {
 
-            var newVolume = Math.max(0, elem.volume - 0.15);
+            // Need to record the starting volume on each pass rather than querying elem.volume
+            // This is due to iOS safari not allowing volume changes and always returning the system volume value
+
+            var newVolume = Math.max(0, startingVolume - 0.15);
             console.log('fading volume to ' + newVolume);
             elem.volume = newVolume;
 
-            if (!elem.volume) {
+            if (newVolume <= 0) {
                 return Promise.resolve();
             }
 
@@ -209,7 +210,7 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
                 cancelFadeTimeout();
 
                 fadeTimeout = setTimeout(function () {
-                    fade(elem).then(resolve, reject);
+                    fade(elem, newVolume).then(resolve, reject);
                 }, 100);
             });
         }
