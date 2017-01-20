@@ -1590,12 +1590,15 @@ namespace MediaBrowser.Controller.Entities
                     return true;
                 }
 
-                var userCollectionFolders = user.RootFolder.GetChildren(user, true).Select(i => i.Id).ToList();
-                var itemCollectionFolders = LibraryManager.GetCollectionFolders(this).Select(i => i.Id);
+                var itemCollectionFolders = LibraryManager.GetCollectionFolders(this).Select(i => i.Id).ToList();
 
-                if (!itemCollectionFolders.Any(userCollectionFolders.Contains))
+                if (itemCollectionFolders.Count > 0)
                 {
-                    return false;
+                    var userCollectionFolders = user.RootFolder.GetChildren(user, true).Select(i => i.Id).ToList();
+                    if (!itemCollectionFolders.Any(userCollectionFolders.Contains))
+                    {
+                        return false;
+                    }
                 }
             }
 
