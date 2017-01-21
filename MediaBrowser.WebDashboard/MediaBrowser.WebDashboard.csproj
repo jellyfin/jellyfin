@@ -972,9 +972,6 @@
     <Content Include="dashboard-ui\wizardlivetvtuner.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\wizardsettings.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="dashboard-ui\index.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1075,11 +1072,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\metadata.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="dashboard-ui\scripts\tvgenres.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1176,11 +1168,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\metadataconfigurationpage.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="dashboard-ui\scripts\loginpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1231,6 +1218,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="dashboard-ui\wizardsettings.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\wizardstart.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
