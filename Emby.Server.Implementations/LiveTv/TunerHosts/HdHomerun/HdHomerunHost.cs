@@ -431,6 +431,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 IsInfiniteStream = true
             };
 
+            mediaSource.InferTotalBitrate();
+
             return mediaSource;
         }
 

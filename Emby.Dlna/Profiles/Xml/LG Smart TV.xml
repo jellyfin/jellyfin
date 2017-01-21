@@ -37,7 +37,7 @@
   <DirectPlayProfiles>
     <DirectPlayProfile container="ts" audioCodec="aac,ac3,mp3,dca,dts" videoCodec="h264" type="Video" />
     <DirectPlayProfile container="mkv" audioCodec="aac,ac3,mp3,dca,dts" videoCodec="h264" type="Video" />
-    <DirectPlayProfile container="mp4" audioCodec="aac,ac3,mp3,dca,dts" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="mp4,m4v" audioCodec="aac,ac3,mp3,dca,dts" videoCodec="h264,mpeg4" type="Video" />
     <DirectPlayProfile container="mp3" type="Audio" />
     <DirectPlayProfile container="jpeg" type="Photo" />
   </DirectPlayProfiles>
@@ -79,7 +79,11 @@
       <ApplyConditions />
     </CodecProfile>
   </CodecProfiles>
-  <ResponseProfiles />
+  <ResponseProfiles>
+    <ResponseProfile container="m4v" type="Video" mimeType="video/mp4">
+      <Conditions />
+    </ResponseProfile>
+  </ResponseProfiles>
   <SubtitleProfiles>
     <SubtitleProfile format="srt" method="Embed" />
     <SubtitleProfile format="srt" method="External" />

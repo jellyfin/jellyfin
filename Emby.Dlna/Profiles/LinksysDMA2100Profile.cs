@@ -26,12 +26,20 @@ namespace Emby.Dlna.Profiles
 
                 new DirectPlayProfile
                 {
-                    Container = "avi,mp4,mkv,ts",
+                    Container = "avi,mp4,mkv,ts,m4v",
                     Type = DlnaProfileType.Video
                 }
             };
 
-            ResponseProfiles = new ResponseProfile[] { };
+            ResponseProfiles = new ResponseProfile[]
+            {
+                new ResponseProfile
+                {
+                    Container = "m4v",
+                    Type = DlnaProfileType.Video,
+                    MimeType = "video/mp4"
+                }
+            };
         }
     }
 }
