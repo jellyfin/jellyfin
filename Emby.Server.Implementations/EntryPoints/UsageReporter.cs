@@ -8,19 +8,20 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
     public class UsageReporter
     {
-        private readonly IApplicationHost _applicationHost;
+        private readonly IServerApplicationHost _applicationHost;
         private readonly IHttpClient _httpClient;
         private readonly IUserManager _userManager;
         private readonly ILogger _logger;
         private const string MbAdminUrl = "https://www.mb3admin.com/admin/";
 
-        public UsageReporter(IApplicationHost applicationHost, IHttpClient httpClient, IUserManager userManager, ILogger logger)
+        public UsageReporter(IServerApplicationHost applicationHost, IHttpClient httpClient, IUserManager userManager, ILogger logger)
         {
             _applicationHost = applicationHost;
             _httpClient = httpClient;

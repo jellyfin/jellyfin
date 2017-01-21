@@ -6,15 +6,16 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.System;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Common;
+using MediaBrowser.Controller;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
     public class SystemEvents : IServerEntryPoint
     {
         private readonly ISystemEvents _systemEvents;
-        private readonly IApplicationHost _appHost;
+        private readonly IServerApplicationHost _appHost;
 
-        public SystemEvents(ISystemEvents systemEvents, IApplicationHost appHost)
+        public SystemEvents(ISystemEvents systemEvents, IServerApplicationHost appHost)
         {
             _systemEvents = systemEvents;
             _appHost = appHost;

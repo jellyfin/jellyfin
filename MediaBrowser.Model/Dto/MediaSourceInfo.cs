@@ -1,8 +1,8 @@
-﻿using System;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.Dto
@@ -70,6 +70,32 @@ namespace MediaBrowser.Model.Dto
             SupportsDirectStream = true;
             SupportsDirectPlay = true;
             SupportsProbing = true;
+        }
+
+        public void InferTotalBitrate()
+        {
+            if (Bitrate.HasValue || MediaStreams == null)
+            {
+                return;
+            }
+
+            var internalStreams = MediaStreams
+                .Where(i => !i.IsExternal)
+                .ToList();
+
+            if (internalStreams.Count == 0)
+            {
+                return;
+            }
+
+            var bitrate = internalStreams
+                .Select(m => m.BitRate ?? 0)
+                .Sum();
+
+            if (bitrate > 0)
+            {
+                Bitrate = bitrate;
+            }
         }
 
         public int? DefaultAudioStreamIndex { get; set; }

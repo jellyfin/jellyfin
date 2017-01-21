@@ -41,7 +41,7 @@
   <DirectPlayProfiles>
     <DirectPlayProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" />
     <DirectPlayProfile container="ts" audioCodec="mp3,mp2" videoCodec="mpeg2video" type="Video" />
-    <DirectPlayProfile container="mp4" audioCodec="ac3,aac,mp3,mp2" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="mp4,m4v" audioCodec="ac3,aac,mp3,mp2" videoCodec="h264,mpeg4" type="Video" />
     <DirectPlayProfile container="avi" audioCodec="ac3,mp3" videoCodec="mpeg4" type="Video" />
     <DirectPlayProfile container="mpeg" audioCodec="mp3,mp2" videoCodec="mpeg2video,mpeg1video" type="Video" />
     <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" videoCodec="wmv2,wmv3,vc1" type="Video" />
@@ -103,6 +103,9 @@
       <Conditions />
     </ResponseProfile>
     <ResponseProfile container="mpeg" videoCodec="mpeg1video,mpeg2video" type="Video" orgPn="MPEG_PS_NTSC,MPEG_PS_PAL" mimeType="video/mpeg">
+      <Conditions />
+    </ResponseProfile>
+    <ResponseProfile container="m4v" type="Video" mimeType="video/mp4">
       <Conditions />
     </ResponseProfile>
   </ResponseProfiles>

@@ -164,6 +164,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     IsRemote = true
                 };
 
+                mediaSource.InferTotalBitrate();
+
                 return new List<MediaSourceInfo> { mediaSource };
             }
             return new List<MediaSourceInfo>();

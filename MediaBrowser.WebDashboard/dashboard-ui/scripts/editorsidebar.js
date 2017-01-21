@@ -14,7 +14,10 @@
                 selected: selected
             },
 
-            li_attr: {}
+            li_attr: {
+                serveritemtype: item.Type,
+                collectiontype: item.CollectionType
+            }
         };
 
         if (item.IsFolder) {
@@ -272,11 +275,18 @@
 
         var eventData = {
             id: node.id,
-            itemType: node.li_attr.itemtype
+            itemType: node.li_attr.itemtype,
+            serverItemType: node.li_attr.serveritemtype,
+            collectionType: node.li_attr.collectiontype
         };
 
-        if (eventData.itemType != 'livetv' && eventData.itemType != 'mediafolders') {
-            $(this).trigger('itemclicked', [eventData]);
+        if (eventData.itemType != 'livetv' && eventData.itemType != 'mediafolders' && eventData.serverItemType != 'UserView' && eventData.serverItemType != 'CollectionFolder' && !eventData.collectionType) {
+
+            this.dispatchEvent(new CustomEvent('itemclicked', {
+                detail: eventData,
+                bubbles: true,
+                cancelable: false
+            }));
         }
     }
 

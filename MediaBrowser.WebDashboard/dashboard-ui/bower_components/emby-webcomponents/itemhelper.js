@@ -13,7 +13,7 @@ define(['apphost'], function (appHost) {
             item = item.ProgramInfo || item;
         }
 
-        var name = ((item.Type === 'Program' || item.Type === 'Recording') && item.IsSeries ? item.EpisodeTitle : item.Name) || '';
+        var name = ((item.Type === 'Program' || item.Type === 'Recording') && (item.IsSeries || item.EpisodeTitle) ? item.EpisodeTitle : item.Name) || '';
 
         if (item.Type === "TvChannel") {
 

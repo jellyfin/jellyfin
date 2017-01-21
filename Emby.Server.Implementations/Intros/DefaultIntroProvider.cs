@@ -118,8 +118,7 @@ namespace Emby.Server.Implementations.Intros
 
                     // Account for duplicates by imdb id, since the database doesn't support this yet
                     Limit = config.TrailerLimit * 4,
-                    SourceTypes = sourceTypes.ToArray(),
-                    MinSimilarityScore = 0
+                    SourceTypes = sourceTypes.ToArray()
                 })
                 .Where(i => string.IsNullOrWhiteSpace(i.GetProviderId(MetadataProviders.Imdb)) || !string.Equals(i.GetProviderId(MetadataProviders.Imdb), item.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase))
                 .Where(i => i.IsVisibleStandalone(user))

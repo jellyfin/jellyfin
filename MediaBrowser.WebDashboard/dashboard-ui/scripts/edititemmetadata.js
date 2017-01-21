@@ -1,52 +1,38 @@
-﻿define(['historyManager', 'jQuery'], function (historyManager, $) {
+﻿define(['loading'], function (loading) {
     'use strict';
 
-    var currentItemId;
+    function reload(context, itemId) {
 
-    function reload(page) {
-
-        page = $(page)[0];
-
-        Dashboard.showLoadingMsg();
-
-        var itemId = MetadataEditor.getCurrentItemId();
-        currentItemId = itemId;
+        loading.show();
 
         if (itemId) {
             require(['metadataEditor'], function (metadataEditor) {
 
-                metadataEditor.embed(page.querySelector('.editPageInnerContent'), itemId, ApiClient.serverInfo().Id);
+                metadataEditor.embed(context.querySelector('.editPageInnerContent'), itemId, ApiClient.serverInfo().Id);
             });
         } else {
-            page.querySelector('.editPageInnerContent').innerHTML = '';
-            Dashboard.hideLoadingMsg();
+            context.querySelector('.editPageInnerContent').innerHTML = '';
+            loading.hide();
         }
     }
 
-    $(document).on('pageinit', "#editItemMetadataPage", function () {
+    return function (view, params) {
 
-        var page = this;
+        view.addEventListener('viewshow', function () {
+            reload(this, MetadataEditor.getCurrentItemId());
+        });
 
         MetadataEditor.setCurrentItemId(null);
 
-        $('.libraryTree', page).on('itemclicked', function (event, data) {
+        view.querySelector('.libraryTree').addEventListener('itemclicked', function (event) {
 
-            if (data.id != currentItemId) {
+            var data = event.detail;
+
+            if (data.id != MetadataEditor.getCurrentItemId()) {
 
                 MetadataEditor.setCurrentItemId(data.id);
-                reload(page);
+                reload(view, data.id);
             }
         });
-
-    }).on('pageshow', "#editItemMetadataPage", function () {
-
-        var page = this;
-
-        reload(page);
-
-    }).on('pagebeforehide', "#editItemMetadataPage", function () {
-
-        var page = this;
-    });
-
+    };
 });

@@ -326,6 +326,8 @@ namespace Emby.Server.Core
             }
         }
 
+        public abstract bool IsRunningAsService { get; }
+
         private Assembly GetAssembly(Type type)
         {
             return type.GetTypeInfo().Assembly;
@@ -1247,7 +1249,6 @@ namespace Emby.Server.Core
                 HasUpdateAvailable = HasUpdateAvailable,
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
-                IsRunningAsService = IsRunningAsService,
                 SupportsRunningAsService = SupportsRunningAsService,
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,

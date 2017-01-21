@@ -1780,7 +1780,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             var contentType;
             var transcodingOffsetTicks = 0;
             var playerStartPositionTicks = startPosition;
-            var liveStreamId;
+            var liveStreamId = mediaSource.LiveStreamId;
 
             var playMethod = 'Transcode';
 
@@ -1813,7 +1813,6 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
                         if (mediaSource.LiveStreamId) {
                             directOptions.LiveStreamId = mediaSource.LiveStreamId;
-                            liveStreamId = mediaSource.LiveStreamId;
                         }
 
                         mediaUrl = apiClient.getUrl('Videos/' + item.Id + '/stream.' + mediaSourceContainer, directOptions);
@@ -1868,7 +1867,6 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
                         if (mediaSource.LiveStreamId) {
                             directOptions.LiveStreamId = mediaSource.LiveStreamId;
-                            liveStreamId = mediaSource.LiveStreamId;
                         }
 
                         mediaUrl = apiClient.getUrl('Audio/' + item.Id + '/stream.' + mediaSourceContainer, directOptions);
