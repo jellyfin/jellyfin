@@ -1,5 +1,43 @@
-﻿define(['globalize', 'emby-checkbox'], function (globalize) {
+﻿define(['globalize', 'emby-checkbox', 'emby-select'], function (globalize) {
     'use strict';
+
+    function populateLanguages(select) {
+
+        return ApiClient.getCultures().then(function (languages) {
+
+            var html = "";
+
+            html += "<option value=''></option>";
+
+            for (var i = 0, length = languages.length; i < length; i++) {
+
+                var culture = languages[i];
+
+                html += "<option value='" + culture.TwoLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
+            }
+
+            select.innerHTML = html;
+        });
+    }
+
+    function populateCountries(select) {
+
+        return ApiClient.getCountries().then(function (allCountries) {
+
+            var html = "";
+
+            html += "<option value=''></option>";
+
+            for (var i = 0, length = allCountries.length; i < length; i++) {
+
+                var culture = allCountries[i];
+
+                html += "<option value='" + culture.TwoLetterISORegionName + "'>" + culture.DisplayName + "</option>";
+            }
+
+            select.innerHTML = html;
+        });
+    }
 
     function embed(parent, contentType, libraryOptions) {
 
@@ -13,13 +51,21 @@
                 var template = this.response;
                 parent.innerHTML = globalize.translateDocument(template);
 
-                setContentType(parent, contentType);
+                var promises = [
+                    populateLanguages(parent.querySelector('#selectLanguage')),
+                    populateCountries(parent.querySelector('#selectCountry'))
+                ];
 
-                if (libraryOptions) {
-                    setLibraryOptions(parent, libraryOptions);
-                }
+                Promise.all(promises).then(function () {
 
-                resolve();
+                    setContentType(parent, contentType);
+
+                    if (libraryOptions) {
+                        setLibraryOptions(parent, libraryOptions);
+                    }
+
+                    resolve();
+                });
             }
 
             xhr.send();
@@ -28,20 +74,18 @@
 
     function setContentType(parent, contentType) {
 
-        if (contentType == 'music' || contentType == 'tvshows' || contentType == 'movies' || contentType == 'homevideos' || contentType == 'musicvideos' || contentType == 'mixed' || !contentType) {
-            parent.querySelector('.chkArhiveAsMediaContainer').classList.add('hide');
-        } else {
-            parent.querySelector('.chkArhiveAsMediaContainer').classList.add('hide');
-        }
-
         if (contentType == 'homevideos' || contentType == 'photos') {
             parent.querySelector('.chkEnablePhotosContainer').classList.remove('hide');
             parent.querySelector('.chkDownloadImagesInAdvanceContainer').classList.add('hide');
             parent.querySelector('.chkEnableInternetProvidersContainer').classList.add('hide');
+            parent.querySelector('.fldMetadataLanguage').classList.add('hide');
+            parent.querySelector('.fldMetadataCountry').classList.add('hide');
         } else {
             parent.querySelector('.chkEnablePhotosContainer').classList.add('hide');
             parent.querySelector('.chkDownloadImagesInAdvanceContainer').classList.remove('hide');
             parent.querySelector('.chkEnableInternetProvidersContainer').classList.remove('hide');
+            parent.querySelector('.fldMetadataLanguage').classList.remove('hide');
+            parent.querySelector('.fldMetadataCountry').classList.remove('hide');
         }
 
         if (contentType == 'photos') {
@@ -51,11 +95,9 @@
         }
 
         if (contentType == 'tvshows' || contentType == 'movies' || contentType == 'homevideos' || contentType == 'musicvideos' || contentType == 'mixed' || !contentType) {
-            parent.querySelector('.fldExtractChaptersDuringLibraryScan').classList.remove('hide');
-            parent.querySelector('.fldExtractChapterImages').classList.remove('hide');
+            parent.querySelector('.chapterSettingsSection').classList.remove('hide');
         } else {
-            parent.querySelector('.fldExtractChaptersDuringLibraryScan').classList.add('hide');
-            parent.querySelector('.fldExtractChapterImages').classList.add('hide');
+            parent.querySelector('.chapterSettingsSection').classList.add('hide');
         }
 
         if (contentType == 'tvshows') {
@@ -70,7 +112,7 @@
     function getLibraryOptions(parent) {
 
         var options = {
-            EnableArchiveMediaFiles: parent.querySelector('.chkArhiveAsMedia').checked,
+            EnableArchiveMediaFiles: false,
             EnablePhotos: parent.querySelector('.chkEnablePhotos').checked,
             EnableRealtimeMonitor: parent.querySelector('.chkEnableRealtimeMonitor').checked,
             ExtractChapterImagesDuringLibraryScan: parent.querySelector('.chkExtractChaptersDuringLibraryScan').checked,
@@ -79,7 +121,9 @@
             EnableInternetProviders: parent.querySelector('#chkEnableInternetProviders').checked,
             ImportMissingEpisodes: parent.querySelector('#chkImportMissingEpisodes').checked,
             SaveLocalMetadata: parent.querySelector('#chkSaveLocal').checked,
-            EnableAutomaticSeriesGrouping: parent.querySelector('.chkAutomaticallyGroupSeries').checked
+            EnableAutomaticSeriesGrouping: parent.querySelector('.chkAutomaticallyGroupSeries').checked,
+            PreferredMetadataLanguage: parent.querySelector('#selectLanguage').value,
+            MetadataCountryCode: parent.querySelector('#selectCountry').value
         };
 
         return options;
@@ -87,7 +131,9 @@
 
     function setLibraryOptions(parent, options) {
 
-        parent.querySelector('.chkArhiveAsMedia').checked = options.EnableArchiveMediaFiles;
+        parent.querySelector('#selectLanguage').value = options.PreferredMetadataLanguage || '';
+        parent.querySelector('#selectCountry').value = options.MetadataCountryCode || '';
+
         parent.querySelector('.chkEnablePhotos').checked = options.EnablePhotos;
         parent.querySelector('.chkEnableRealtimeMonitor').checked = options.EnableRealtimeMonitor;
         parent.querySelector('.chkExtractChaptersDuringLibraryScan').checked = options.ExtractChapterImagesDuringLibraryScan;

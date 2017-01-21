@@ -466,15 +466,9 @@ var Dashboard = {
             divider: true,
             name: Globalize.translate('TabLibrary'),
             href: "library.html",
-            pageIds: ['mediaLibraryPage', 'librarySettingsPage', 'libraryDisplayPage'],
+            pageIds: ['mediaLibraryPage', 'librarySettingsPage', 'libraryDisplayPage', 'metadataImagesConfigurationPage', 'metadataNfoPage'],
             icon: 'folder',
             color: '#38c'
-        }, {
-            name: Globalize.translate('TabMetadata'),
-            href: "metadata.html",
-            pageIds: ['metadataConfigurationPage', 'metadataImagesConfigurationPage', 'metadataNfoPage'],
-            icon: 'insert_drive_file',
-            color: '#FF9800'
         }, {
             name: Globalize.translate('TabSubtitles'),
             href: "metadatasubtitles.html",
@@ -1704,6 +1698,7 @@ var AppInfo = {};
         defineRoute({
             path: '/edititemmetadata.html',
             dependencies: [],
+            controller: 'scripts/edititemmetadata',
             autoFocus: false
         });
 
@@ -1907,13 +1902,6 @@ var AppInfo = {};
             anonymous: true,
             startup: true,
             controller: 'scripts/loginpage'
-        });
-
-        defineRoute({
-            path: '/metadata.html',
-            dependencies: [],
-            autoFocus: false,
-            roles: 'admin'
         });
 
         defineRoute({

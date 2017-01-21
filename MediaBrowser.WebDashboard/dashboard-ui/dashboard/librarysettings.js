@@ -88,6 +88,14 @@
              name: Globalize.translate('TabDisplay')
          },
          {
+             href: 'metadataimages.html',
+             name: Globalize.translate('TabMetadata')
+         },
+         {
+             href: 'metadatanfo.html',
+             name: Globalize.translate('TabNfoSettings')
+         },
+         {
              href: 'librarysettings.html',
              name: Globalize.translate('TabAdvanced')
          }];
@@ -128,7 +136,7 @@
         $('.librarySettingsForm').off('submit', onSubmit).on('submit', onSubmit);
 
         view.addEventListener('viewshow', function () {
-            LibraryMenu.setTabs('librarysetup', 3, getTabs);
+            LibraryMenu.setTabs('librarysetup', 4, getTabs);
             Dashboard.showLoadingMsg();
 
             var page = this;
