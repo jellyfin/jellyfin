@@ -77,7 +77,7 @@ namespace Emby.Dlna.Profiles
                 },
                 new DirectPlayProfile
                 {
-                    Container = "mp4",
+                    Container = "mp4,m4v",
                     VideoCodec = "h264,mpeg4",
                     AudioCodec = "mp3,aac",
                     Type = DlnaProfileType.Video
@@ -335,6 +335,12 @@ namespace Emby.Dlna.Profiles
                     Container = "flac",
                     MimeType = "audio/x-flac",
                     Type = DlnaProfileType.Audio
+                },
+                new ResponseProfile
+                {
+                    Container = "m4v",
+                    Type = DlnaProfileType.Video,
+                    MimeType = "video/mp4"
                 }
             };
 

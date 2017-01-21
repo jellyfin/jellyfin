@@ -29,7 +29,7 @@
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <XmlRootAttributes />
   <DirectPlayProfiles>
-    <DirectPlayProfile container="mp4,mov" audioCodec="aac" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="mp4,mov,m4v" audioCodec="aac" videoCodec="h264,mpeg4" type="Video" />
     <DirectPlayProfile container="ts" audioCodec="aac,ac3,eac3,mp3,mp2,pcm" videoCodec="h264" type="Video" />
     <DirectPlayProfile container="asf,wmv" audioCodec="wmav2,wmapro" videoCodec="wmv3,vc1" type="Video" />
     <DirectPlayProfile container="avi" audioCodec="mp3,ac3,eac3,mp2,pcm" videoCodec="mpeg4,msmpeg4" type="Video" />
@@ -81,7 +81,11 @@
       <ApplyConditions />
     </CodecProfile>
   </CodecProfiles>
-  <ResponseProfiles />
+  <ResponseProfiles>
+    <ResponseProfile container="m4v" type="Video" mimeType="video/mp4">
+      <Conditions />
+    </ResponseProfile>
+  </ResponseProfiles>
   <SubtitleProfiles>
     <SubtitleProfile format="srt" method="Embed" />
   </SubtitleProfiles>
