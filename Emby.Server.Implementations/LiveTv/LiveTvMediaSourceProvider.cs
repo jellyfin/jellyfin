@@ -200,15 +200,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
 
             // Try to estimate this
-            if (!mediaSource.Bitrate.HasValue)
-            {
-                var total = mediaSource.MediaStreams.Select(i => i.BitRate ?? 0).Sum();
-
-                if (total > 0)
-                {
-                    mediaSource.Bitrate = total;
-                }
-            }
+            mediaSource.InferTotalBitrate();
         }
 
         public Task CloseMediaSource(string liveStreamId)

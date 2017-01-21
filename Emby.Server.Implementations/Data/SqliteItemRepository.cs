@@ -2384,8 +2384,17 @@ namespace Emby.Server.Implementations.Data
 
                 var excludeIds = query.ExcludeItemIds.ToList();
                 excludeIds.Add(item.Id.ToString("N"));
-                query.ExcludeItemIds = excludeIds.ToArray();
 
+                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(typeof(Trailer).Name))
+                {
+                    var hasTrailers = item as IHasTrailers;
+                    if (hasTrailers != null)
+                    {
+                        excludeIds.AddRange(hasTrailers.GetTrailerIds().Select(i => i.ToString("N")));
+                    }
+                }
+
+                query.ExcludeItemIds = excludeIds.ToArray();
                 query.ExcludeProviderIds = item.ProviderIds;
             }
 
@@ -2821,8 +2830,9 @@ namespace Emby.Server.Implementations.Data
             {
                 if (orderBy.Count == 0)
                 {
-                    orderBy.Add(new Tuple<string, SortOrder>("SimilarityScore", SortOrder.Descending));
                     orderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
+                    orderBy.Add(new Tuple<string, SortOrder>("SimilarityScore", SortOrder.Descending));
+                    //orderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
                     query.SortOrder = SortOrder.Descending;
                     enableOrderInversion = false;
                 }

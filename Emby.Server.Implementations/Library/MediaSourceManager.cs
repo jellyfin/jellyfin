@@ -199,6 +199,8 @@ namespace Emby.Server.Implementations.Library
 
                 foreach (var mediaSource in list)
                 {
+                    mediaSource.InferTotalBitrate();
+
                     SetKeyProperties(provider, mediaSource);
                 }
 

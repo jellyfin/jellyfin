@@ -649,22 +649,8 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            try
-            {
-                var bitrate = i.TotalBitrate ??
-                    info.MediaStreams.Where(m => m.Type != MediaStreamType.Subtitle && !string.Equals(m.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
-                    .Select(m => m.BitRate ?? 0)
-                    .Sum();
-
-                if (bitrate > 0)
-                {
-                    info.Bitrate = bitrate;
-                }
-            }
-            catch (OverflowException ex)
-            {
-                Logger.ErrorException("Error calculating total bitrate", ex);
-            }
+            info.Bitrate = i.TotalBitrate;
+            info.InferTotalBitrate();
 
             return info;
         }

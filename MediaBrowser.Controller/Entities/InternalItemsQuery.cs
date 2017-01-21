@@ -197,7 +197,7 @@ namespace MediaBrowser.Controller.Entities
 
         public InternalItemsQuery()
         {
-            MinSimilarityScore = 1;
+            MinSimilarityScore = 20;
 
             GroupByPresentationUniqueKey = true;
             EnableTotalRecordCount = true;
