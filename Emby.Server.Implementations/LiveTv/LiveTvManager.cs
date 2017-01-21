@@ -459,15 +459,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
 
             // Set the total bitrate if not already supplied
-            if (!mediaSource.Bitrate.HasValue)
-            {
-                var total = mediaSource.MediaStreams.Select(i => i.BitRate ?? 0).Sum();
-
-                if (total > 0)
-                {
-                    mediaSource.Bitrate = total;
-                }
-            }
+            mediaSource.InferTotalBitrate();
 
             if (!(service is EmbyTV.EmbyTV))
             {

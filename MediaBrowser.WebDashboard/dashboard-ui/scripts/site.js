@@ -648,43 +648,6 @@ var Dashboard = {
             }
             options.quality = quality;
         }
-    },
-
-    getDeviceProfile: function (maxHeight, profileOptions) {
-
-        return new Promise(function (resolve, reject) {
-
-            require(['browserdeviceprofile', 'qualityoptions', 'appSettings'], function (profileBuilder, qualityoptions, appSettings) {
-
-                var profile = profileBuilder(Object.assign(profileOptions || {}, {
-                }));
-
-                if (!(AppInfo.isNativeApp && browserInfo.android) && !browserInfo.edge && !browserInfo.msie) {
-                    // libjass not working here
-                    profile.SubtitleProfiles.push({
-                        Format: 'ass',
-                        Method: 'External'
-                    });
-                    profile.SubtitleProfiles.push({
-                        Format: 'ssa',
-                        Method: 'External'
-                    });
-                }
-
-                var bitrateSetting = appSettings.maxStreamingBitrate();
-
-                if (!maxHeight) {
-                    maxHeight = qualityoptions.getVideoQualityOptions(bitrateSetting).filter(function (q) {
-                        return q.selected;
-                    })[0].maxHeight;
-                }
-
-                profile.MaxStreamingBitrate = bitrateSetting;
-                profile.MaxStaticMusicBitrate = appSettings.maxStaticMusicBitrate();
-
-                resolve(profile);
-            });
-        });
     }
 };
 
@@ -753,11 +716,6 @@ var AppInfo = {};
         Events.on(apiClient, 'requestfail', Dashboard.onRequestFail);
     }
 
-    function getSyncProfile() {
-
-        return Dashboard.getDeviceProfile(Math.max(screen.height, screen.width));
-    }
-
     function onApiClientCreated(e, newApiClient) {
         initializeApiClient(newApiClient);
 
@@ -814,49 +772,51 @@ var AppInfo = {};
     //localStorage.clear();
     function createConnectionManager() {
 
-        return getSyncProfile().then(function (deviceProfile) {
+        return new Promise(function (resolve, reject) {
 
-            return new Promise(function (resolve, reject) {
+            require(['connectionManagerFactory', 'apphost', 'credentialprovider', 'events', 'userSettings'], function (connectionManagerExports, apphost, credentialProvider, events, userSettings) {
 
-                require(['connectionManagerFactory', 'apphost', 'credentialprovider', 'events', 'userSettings'], function (connectionManagerExports, apphost, credentialProvider, events, userSettings) {
+                window.MediaBrowser = Object.assign(window.MediaBrowser || {}, connectionManagerExports);
 
-                    window.MediaBrowser = Object.assign(window.MediaBrowser || {}, connectionManagerExports);
+                var credentialProviderInstance = new credentialProvider();
 
-                    var credentialProviderInstance = new credentialProvider();
+                var promises = [apphost.getSyncProfile(), apphost.appInfo()];
 
-                    apphost.appInfo().then(function (appInfo) {
+                Promise.all(promises).then(function (responses) {
 
-                        var capabilities = Dashboard.capabilities();
-                        capabilities.DeviceProfile = deviceProfile;
+                    var deviceProfile = responses[0];
+                    var appInfo = responses[1];
 
-                        var connectionManager = new MediaBrowser.ConnectionManager(credentialProviderInstance, appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, capabilities, window.devicePixelRatio);
+                    var capabilities = Dashboard.capabilities();
+                    capabilities.DeviceProfile = deviceProfile;
 
-                        defineConnectionManager(connectionManager);
-                        bindConnectionManagerEvents(connectionManager, events, userSettings);
+                    var connectionManager = new MediaBrowser.ConnectionManager(credentialProviderInstance, appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, capabilities, window.devicePixelRatio);
 
-                        if (Dashboard.isConnectMode()) {
+                    defineConnectionManager(connectionManager);
+                    bindConnectionManagerEvents(connectionManager, events, userSettings);
 
+                    if (Dashboard.isConnectMode()) {
+
+                        resolve();
+
+                    } else {
+
+                        console.log('loading ApiClient singleton');
+
+                        return getRequirePromise(['apiclient']).then(function (apiClientFactory) {
+
+                            console.log('creating ApiClient singleton');
+
+                            var apiClient = new apiClientFactory(Dashboard.serverAddress(), appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, window.devicePixelRatio);
+                            apiClient.enableAutomaticNetworking = false;
+                            connectionManager.addApiClient(apiClient);
+                            require(['css!' + apiClient.getUrl('Branding/Css')]);
+                            window.ApiClient = apiClient;
+                            localApiClient = apiClient;
+                            console.log('loaded ApiClient singleton');
                             resolve();
-
-                        } else {
-
-                            console.log('loading ApiClient singleton');
-
-                            return getRequirePromise(['apiclient']).then(function (apiClientFactory) {
-
-                                console.log('creating ApiClient singleton');
-
-                                var apiClient = new apiClientFactory(Dashboard.serverAddress(), appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, window.devicePixelRatio);
-                                apiClient.enableAutomaticNetworking = false;
-                                connectionManager.addApiClient(apiClient);
-                                require(['css!' + apiClient.getUrl('Branding/Css')]);
-                                window.ApiClient = apiClient;
-                                localApiClient = apiClient;
-                                console.log('loaded ApiClient singleton');
-                                resolve();
-                            });
-                        }
-                    });
+                        });
+                    }
                 });
             });
         });

@@ -237,17 +237,17 @@ namespace MediaBrowser.Providers.Manager
             });
         }
 
-		public IEnumerable<IImageProvider> GetImageProviders(IHasImages item, ImageRefreshOptions refreshOptions)
+        public IEnumerable<IImageProvider> GetImageProviders(IHasImages item, ImageRefreshOptions refreshOptions)
         {
             return GetImageProviders(item, GetMetadataOptions(item), refreshOptions, false);
         }
 
-		private IEnumerable<IImageProvider> GetImageProviders(IHasImages item, MetadataOptions options, ImageRefreshOptions refreshOptions, bool includeDisabled)
+        private IEnumerable<IImageProvider> GetImageProviders(IHasImages item, MetadataOptions options, ImageRefreshOptions refreshOptions, bool includeDisabled)
         {
             // Avoid implicitly captured closure
             var currentOptions = options;
 
-			return ImageProviders.Where(i => CanRefresh(i, item, options, refreshOptions, includeDisabled))
+            return ImageProviders.Where(i => CanRefresh(i, item, options, refreshOptions, includeDisabled))
             .OrderBy(i =>
             {
                 // See if there's a user-defined order
@@ -291,7 +291,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var options = GetMetadataOptions(item);
 
-			return GetImageProviders(item, options, new ImageRefreshOptions(new DirectoryService(_logger, _fileSystem)), includeDisabled).OfType<IRemoteImageProvider>();
+            return GetImageProviders(item, options, new ImageRefreshOptions(new DirectoryService(_logger, _fileSystem)), includeDisabled).OfType<IRemoteImageProvider>();
         }
 
         private bool CanRefresh(IMetadataProvider provider, IHasMetadata item, MetadataOptions options, bool includeDisabled, bool forceEnableInternetMetadata, bool checkIsOwnedItem)
@@ -335,17 +335,17 @@ namespace MediaBrowser.Providers.Manager
             return true;
         }
 
-		private bool CanRefresh(IImageProvider provider, IHasImages item, MetadataOptions options, ImageRefreshOptions refreshOptions, bool includeDisabled)
+        private bool CanRefresh(IImageProvider provider, IHasImages item, MetadataOptions options, ImageRefreshOptions refreshOptions, bool includeDisabled)
         {
             if (!includeDisabled)
             {
                 // If locked only allow local providers
                 if (item.IsLocked && !(provider is ILocalImageProvider))
                 {
-					if (refreshOptions.ImageRefreshMode != ImageRefreshMode.FullRefresh) 
-					{
-						return false;
-					}
+                    if (refreshOptions.ImageRefreshMode != ImageRefreshMode.FullRefresh)
+                    {
+                        return false;
+                    }
                 }
 
                 if (provider is IRemoteImageProvider || provider is IDynamicImageProvider)
@@ -481,7 +481,7 @@ namespace MediaBrowser.Providers.Manager
                 ItemType = typeof(T).Name
             };
 
-			var imageProviders = GetImageProviders(dummy, options, new ImageRefreshOptions(new DirectoryService(_logger, _fileSystem)), true).ToList();
+            var imageProviders = GetImageProviders(dummy, options, new ImageRefreshOptions(new DirectoryService(_logger, _fileSystem)), true).ToList();
 
             AddMetadataPlugins(summary.Plugins, dummy, options);
             AddImagePlugins(summary.Plugins, dummy, imageProviders);
@@ -578,7 +578,7 @@ namespace MediaBrowser.Providers.Manager
             return SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
         }
 
-        private readonly SemaphoreSlim _saveLock = new SemaphoreSlim(1,1);
+        private readonly SemaphoreSlim _saveLock = new SemaphoreSlim(1, 1);
         /// <summary>
         /// Saves the metadata.
         /// </summary>
@@ -958,11 +958,14 @@ namespace MediaBrowser.Providers.Manager
         {
             var cancellationToken = CancellationToken.None;
 
-            var albums = _libraryManagerFactory().RootFolder
-                                        .GetRecursiveChildren()
-                                        .OfType<MusicAlbum>()
-                                        .Where(i => i.HasAnyArtist(item.Name))
-                                        .ToList();
+            var albums = _libraryManagerFactory()
+                .GetItemList(new InternalItemsQuery
+                {
+                    IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+                    ArtistIds = new[] { item.Id.ToString("N") }
+                })
+                .OfType<MusicAlbum>()
+                .ToList();
 
             var musicArtists = albums
                 .Select(i => i.MusicArtist)

@@ -72,12 +72,7 @@ namespace MediaBrowser.Controller.Channels
                 IsRemote = true
             };
 
-            var bitrate = (AudioBitrate ?? 0) + (VideoBitrate ?? 0);
-
-            if (bitrate > 0)
-            {
-                source.Bitrate = bitrate;
-            }
+            source.InferTotalBitrate();
 
             return source;
         }

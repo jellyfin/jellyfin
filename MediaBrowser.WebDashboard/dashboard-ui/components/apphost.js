@@ -114,6 +114,21 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
             element.msRequestFullscreen;
     }
 
+    function getSyncProfile() {
+        
+        return new Promise(function (resolve, reject) {
+
+            require(['browserdeviceprofile', 'qualityoptions', 'appSettings'], function (profileBuilder, qualityoptions, appSettings) {
+
+                var profile = profileBuilder();
+
+                profile.MaxStaticMusicBitrate = appSettings.maxStaticMusicBitrate();
+
+                resolve(profile);
+            });
+        });
+    }
+
     var supportedFeatures = function () {
 
         var features = [
@@ -225,6 +240,7 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
         },
         capabilities: getCapabilities,
         preferVisualCards: browser.android || browser.chrome,
-        moreIcon: browser.safari || browser.edge ? 'dots-horiz' : 'dots-vert'
+        moreIcon: browser.safari || browser.edge ? 'dots-horiz' : 'dots-vert',
+        getSyncProfile: getSyncProfile
     };
 });
