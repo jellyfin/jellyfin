@@ -60,6 +60,9 @@
 }
 
 .listItem-odd {
+}
+
+.listItem-shaded:nth-child(even) {
     background: #1c1c1c;
 }
 

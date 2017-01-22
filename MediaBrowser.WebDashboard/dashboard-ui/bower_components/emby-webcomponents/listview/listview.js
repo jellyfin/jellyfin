@@ -206,9 +206,10 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             var cssClass = "listItem";
 
             if (options.highlight !== false) {
-                if (i % 2 === 1) {
-                    cssClass += ' listItem-odd';
-                }
+                //if (i % 2 === 1) {
+                //    cssClass += ' listItem-odd';
+                //}
+                cssClass += ' listItem-shaded';
             }
 
             if (clickEntireItem) {
@@ -299,7 +300,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                     parentTitle = item.SeriesName;
                 }
 
-                else if (item.IsSeries) {
+                else if (item.IsSeries || (item.EpisodeTitle && item.Name)) {
                     parentTitle = item.Name;
                 }
             }
