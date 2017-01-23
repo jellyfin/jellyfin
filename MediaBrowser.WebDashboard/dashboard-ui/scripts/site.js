@@ -2548,7 +2548,7 @@ var AppInfo = {};
                     return navigator.serviceWorker.ready;
                 }).then(function (reg) {
 
-                    if (reg.sync) {
+                    if (reg && reg.sync) {
                         // https://github.com/WICG/BackgroundSync/blob/master/explainer.md
                         return reg.sync.register('emby-sync').then(function () {
                             window.SyncRegistered = Dashboard.isConnectMode();

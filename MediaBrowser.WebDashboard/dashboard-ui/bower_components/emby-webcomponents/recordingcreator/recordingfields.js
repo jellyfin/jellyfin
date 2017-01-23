@@ -63,7 +63,7 @@
 
     function getDvrFeatureCode() {
 
-        return appHost.dvrFeatureCode || 'dvr';
+        return 'dvr';
     }
 
     function showSingleRecordingFields(context, programId, apiClient) {

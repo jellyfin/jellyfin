@@ -2197,25 +2197,38 @@
 
     function showPlayMenu(item, target) {
 
-        playbackManager.play({
-            items: [item],
-            startPositionTicks: item.UserData ? item.UserData.PlaybackPositionTicks : 0
+        require(['playMenu'], function (playMenu) {
+            playMenu.show({
+                item: item,
+                positionTo: target
+            });
         });
     }
 
-    function playCurrentItem(button) {
+    function playCurrentItem(button, mode) {
 
-        if (currentItem.Type == 'Program') {
+        var item = currentItem;
 
-            ApiClient.getLiveTvChannel(currentItem.ChannelId, Dashboard.getCurrentUserId()).then(function (channel) {
+        if (item.Type === 'Program') {
 
-                showPlayMenu(channel, button);
+            ApiClient.getLiveTvChannel(item.ChannelId, Dashboard.getCurrentUserId()).then(function (channel) {
+
+                playbackManager.play({
+                    items: [channel]
+                });
             });
 
             return;
         }
 
-        showPlayMenu(currentItem, button);
+        if (mode === 'playmenu') {
+            showPlayMenu(item, button);
+        } else {
+            playbackManager.play({
+                items: [item],
+                startPositionTicks: item.UserData && mode === 'resume' ? item.UserData.PlaybackPositionTicks : 0
+            });
+        }
     }
 
     function deleteTimer(page, params, id) {
@@ -2254,7 +2267,9 @@
     window.ItemDetailPage = new itemDetailPage();
 
     function onPlayClick() {
-        playCurrentItem(this);
+
+        var mode = this.getAttribute('data-mode');
+        playCurrentItem(this, mode);
     }
 
     function onInstantMixClick() {
