@@ -1554,7 +1554,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
         }
 
-        function playInternal(item, playOptions, callback) {
+        function playInternal(item, playOptions, onPlaybackStartedFn) {
 
             if (item.IsPlaceHolder) {
                 loading.hide();
@@ -1578,16 +1578,16 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
                         appSettings.maxStreamingBitrate(bitrate);
 
-                        return playAfterBitrateDetect(connectionManager, bitrate, item, playOptions).then(callback);
+                        return playAfterBitrateDetect(connectionManager, bitrate, item, playOptions, onPlaybackStartedFn);
 
                     }, function () {
 
-                        return playAfterBitrateDetect(connectionManager, appSettings.maxStreamingBitrate(), item, playOptions).then(callback);
+                        return playAfterBitrateDetect(connectionManager, appSettings.maxStreamingBitrate(), item, playOptions, onPlaybackStartedFn);
                     });
 
                 } else {
 
-                    return playAfterBitrateDetect(connectionManager, appSettings.maxStreamingBitrate(), item, playOptions).then(callback);
+                    return playAfterBitrateDetect(connectionManager, appSettings.maxStreamingBitrate(), item, playOptions, onPlaybackStartedFn);
                 }
 
             }, function () {
@@ -1647,7 +1647,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }, reject);
         }
 
-        function playAfterBitrateDetect(connectionManager, maxBitrate, item, playOptions) {
+        function playAfterBitrateDetect(connectionManager, maxBitrate, item, playOptions, onPlaybackStartedFn) {
 
             var startPosition = playOptions.startPositionTicks;
 
@@ -1671,8 +1671,9 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                     streamInfo.fullscreen = playOptions.fullscreen;
                     getPlayerData(player).isChangingStream = false;
                     return player.play(streamInfo).then(function () {
-                        onPlaybackStarted(player, streamInfo);
                         loading.hide();
+                        onPlaybackStartedFn();
+                        onPlaybackStarted(player, streamInfo);
                         return Promise.resolve();
                     });
                 });
@@ -1693,8 +1694,9 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                         getPlayerData(player).maxStreamingBitrate = maxBitrate;
 
                         return player.play(streamInfo).then(function () {
-                            onPlaybackStarted(player, streamInfo, mediaSource);
                             loading.hide();
+                            onPlaybackStartedFn();
+                            onPlaybackStarted(player, streamInfo, mediaSource);
                             return Promise.resolve();
                         });
                     });

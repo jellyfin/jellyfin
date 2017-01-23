@@ -259,9 +259,13 @@
 
     browser.xboxOne = userAgent.toLowerCase().indexOf('xbox') !== -1;
     browser.animate = typeof document !== 'undefined' && document.documentElement.animate != null;
-    browser.tizen = userAgent.toLowerCase().indexOf('tizen') !== -1 || userAgent.toLowerCase().indexOf('smarthub') !== -1;
+    browser.tizen = userAgent.toLowerCase().indexOf('tizen') !== -1 || self.tizen != null;
     browser.web0s = userAgent.toLowerCase().indexOf('Web0S'.toLowerCase()) !== -1;
     browser.edgeUwp = browser.edge && userAgent.toLowerCase().indexOf('msapphost') !== -1;
+
+    if (!browser.tizen) {
+        browser.orsay = userAgent.toLowerCase().indexOf('smarthub') !== -1;
+    }
 
     if (browser.edgeUwp) {
         browser.edge = true;
