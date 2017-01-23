@@ -104,7 +104,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         {
                             Type = HdHomerunHost.DeviceType,
                             Url = url,
-                            DataVersion = 1,
                             DeviceId = response.DeviceID
 
                         }).ConfigureAwait(false);
