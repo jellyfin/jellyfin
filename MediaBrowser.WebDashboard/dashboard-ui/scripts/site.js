@@ -1170,8 +1170,6 @@ var AppInfo = {};
 
         define("material-icons", ['css!' + embyWebComponentsBowerPath + '/fonts/material-icons/style']);
         define("robotoFont", ['css!' + embyWebComponentsBowerPath + '/fonts/roboto/style']);
-        define("opensansFont", ['css!' + embyWebComponentsBowerPath + '/fonts/opensans/style']);
-        define("montserratFont", ['css!' + embyWebComponentsBowerPath + '/fonts/montserrat/style']);
         define("scrollStyles", ['css!' + embyWebComponentsBowerPath + '/scrollstyles']);
 
         define("navdrawer", ['components/navdrawer/navdrawer'], returnFirstDependency);
@@ -1484,7 +1482,7 @@ var AppInfo = {};
 
         var baseUrl = 'bower_components/emby-webcomponents/strings/';
 
-        var languages = ['ar', 'bg-BG', 'ca', 'cs', 'da', 'de', 'el', 'en-GB', 'en-US', 'es-AR', 'es-MX', 'es', 'fi', 'fr', 'gsw', 'he', 'hr', 'hu', 'id', 'it', 'kk', 'ko', 'ms', 'nb', 'nl', 'pl', 'pt-BR', 'pt-PT', 'ro', 'ru', 'sk', 'sl-SI', 'sv', 'tr', 'uk', 'vi', 'zh-CN', 'zh-HK', 'zh-TW'];
+        var languages = ['ar', 'bg-bg', 'ca', 'cs', 'da', 'de', 'el', 'en-gb', 'en-us', 'es-ar', 'es-mx', 'es', 'fi', 'fr', 'gsw', 'he', 'hr', 'hu', 'id', 'it', 'kk', 'ko', 'ms', 'nb', 'nl', 'pl', 'pt-br', 'pt-pt', 'ro', 'ru', 'sk', 'sl-si', 'sv', 'tr', 'uk', 'vi', 'zh-cn', 'zh-hk', 'zh-tw'];
 
         var translations = languages.map(function (i) {
             return {

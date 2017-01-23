@@ -75,6 +75,7 @@
         function getItems(userId, options) {
 
             var serverInfo = apiclientcore.serverInfo();
+            var i;
 
             if (serverInfo && options.ParentId === 'localview') {
 
@@ -87,13 +88,15 @@
                     return Promise.resolve(result);
                 });
 
-            } else if (serverInfo && options && startsWith(options.ParentId, localViewPrefix)) {
+            } else if (serverInfo && options && (startsWith(options.ParentId, localViewPrefix) || startsWith(options.ParentId, localPrefix))) {
 
                 return localassetmanager.getViewItems(serverInfo.Id, userId, options.ParentId).then(function (items) {
 
                     items.forEach(function (item) {
                         item.Id = localPrefix + item.Id;
                     });
+
+                    items.sort(function (a, b) { return a.SortName.toLowerCase().localeCompare(b.SortName.toLowerCase()); });
 
                     var result = {
                         Items: items,
@@ -104,12 +107,38 @@
                 });
             } else if (options && options.ExcludeItemIds && options.ExcludeItemIds.length) {
 
-                var exItems = options.ExcludeItemIds;
+                var exItems = options.ExcludeItemIds.split(',');
 
-                for (var i = 0; i < exItems.length; i++) {
+                for (i = 0; i < exItems.length; i++) {
                     if (startsWith(exItems[i], localPrefix)) {
-                        return Promise.resolve(this.createEmptyList());
+                        return Promise.resolve(createEmptyList());
                     }
+                }
+            } else if (options && options.Ids && options.Ids.length) {
+
+                var ids = options.Ids.split(',');
+                var hasLocal = false;
+
+                for (i = 0; i < ids.length; i++) {
+                    if (startsWith(ids[i], localPrefix)) {
+                        hasLocal = true;
+                    }
+                }
+
+                if (hasLocal) {
+                    return localassetmanager.getItemsFromIds(serverInfo.Id, ids).then(function (items) {
+
+                        items.forEach(function (item) {
+                            item.Id = localPrefix + item.Id;
+                        });
+
+                        var result = {
+                            Items: items,
+                            TotalRecordCount: items.length
+                        };
+
+                        return Promise.resolve(result);
+                    });
                 }
             }
 
@@ -160,6 +189,37 @@
             }
 
             return apiclientcore.getItem(userId, itemId);
+        }
+
+        function getNextUpEpisodes(options) {
+
+            if (options.SeriesId) {
+                if (startsWith(options.SeriesId, localPrefix)) {
+                    return Promise.resolve(createEmptyList());
+                }
+            }
+
+            return apiclientcore.getNextUpEpisodes(options);
+        }
+
+        function getSeasons(itemId, options) {
+
+            if (startsWith(itemId, localPrefix)) {
+                options.ParentId = itemId;
+                return getItems(apiclientcore.getCurrentUserId(), options);
+            }
+
+            return apiclientcore.getSeasons(itemId, options);
+        }
+
+        function getEpisodes(itemId, options) {
+
+            if (startsWith(options.SeasonId, localPrefix)) {
+                options.ParentId = options.SeasonId;
+                return getItems(apiclientcore.getCurrentUserId(), options);
+            }
+
+            return apiclientcore.getEpisodes(itemId, options);
         }
 
         function getThemeMedia(userId, itemId, inherit) {
@@ -242,7 +302,10 @@
         self.getUserViews = getUserViews;
         self.getItems = getItems;
         self.getItem = getItem;
+        self.getSeasons = getSeasons;
+        self.getEpisodes = getEpisodes;
         self.getThemeMedia = getThemeMedia;
+        self.getNextUpEpisodes = getNextUpEpisodes;
         self.getSimilarItems = getSimilarItems;
         self.updateFavoriteStatus = updateFavoriteStatus;
         self.getScaledImageUrl = getScaledImageUrl;
