@@ -405,13 +405,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetLocalTrailers request)
         {
-            var result = GetAsync(request);
-
-            return ToOptimizedSerializedResultUsingCache(result);
-        }
-
-        private List<BaseItemDto> GetAsync(GetLocalTrailers request)
-        {
             var user = _userManager.GetUserById(request.UserId);
 
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _libraryManager.GetItemById(request.Id);
@@ -430,7 +423,7 @@ namespace MediaBrowser.Api.UserLibrary
                 .Select(_libraryManager.GetItemById)
                 .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
-            return dtos.ToList();
+            return ToOptimizedSerializedResultUsingCache(dtos);
         }
 
         /// <summary>

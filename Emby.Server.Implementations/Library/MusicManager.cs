@@ -105,11 +105,10 @@ namespace Emby.Server.Implementations.Library
             return inputItems
                 .Cast<Audio>()
                 .Select(i => new Tuple<Audio, int>(i, i.Genres.Count(genresDictionary.ContainsKey)))
-                .Where(i => i.Item2 > 0)
                 .OrderByDescending(i => i.Item2)
                 .ThenBy(i => Guid.NewGuid())
                 .Select(i => i.Item1)
-                .Take(100)
+                .Take(200)
                 .OrderBy(i => Guid.NewGuid());
         }
 
