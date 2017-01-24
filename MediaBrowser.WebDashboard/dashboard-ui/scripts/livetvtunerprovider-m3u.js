@@ -23,8 +23,7 @@
 
         var info = {
             Type: 'm3u',
-            Url: page.querySelector('.txtDevicePath').value,
-            EnableTvgId: true
+            Url: page.querySelector('.txtDevicePath').value
         };
 
         var id = getParameterByName('id');
