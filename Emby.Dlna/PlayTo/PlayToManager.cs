@@ -43,6 +43,7 @@ namespace Emby.Dlna.PlayTo
 
         private readonly List<string> _nonRendererUrls = new List<string>();
         private DateTime _lastRendererClear;
+        private bool _disposed;
 
         public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, ITimerFactory timerFactory)
         {
@@ -70,6 +71,11 @@ namespace Emby.Dlna.PlayTo
 
         async void _deviceDiscovery_DeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             var info = e.Argument;
 
             string usn;
@@ -121,6 +127,11 @@ namespace Emby.Dlna.PlayTo
                     }
                 }
 
+                if (_disposed)
+                {
+                    return;
+                }
+
                 _logger.Debug("Logging session activity from location {0}", location);
                 var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, _appHost.ApplicationVersion.ToString(), device.Properties.UUID, device.Properties.Name, uri.OriginalString, null)
                     .ConfigureAwait(false);
@@ -129,6 +140,11 @@ namespace Emby.Dlna.PlayTo
 
                 if (controller == null)
                 {
+                    if (_disposed)
+                    {
+                        return;
+                    }
+
                     string serverAddress;
                     if (info.LocalIpAddress == null)
                     {
@@ -187,6 +203,11 @@ namespace Emby.Dlna.PlayTo
             catch (Exception ex)
             {
                 _logger.ErrorException("Error creating PlayTo device.", ex);
+
+                lock (_nonRendererUrls)
+                {
+                    _nonRendererUrls.Add(location);
+                }
             }
         }
 
@@ -202,6 +223,7 @@ namespace Emby.Dlna.PlayTo
 
         public void Dispose()
         {
+            _disposed = true;
             _deviceDiscovery.DeviceDiscovered -= _deviceDiscovery_DeviceDiscovered;
         }
     }

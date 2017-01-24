@@ -1519,7 +1519,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             var apiClient = connectionManager.getApiClient(firstItem.ServerId);
 
-            return apiClient.getJSON(apiClient.getUrl('Users/' + apiClient.getCurrentUserId() + '/Items/' + firstItem.Id + '/Intros')).then(function (intros) {
+            return apiClient.getIntros(firstItem.Id).then(function (intros) {
 
                 items = intros.Items.concat(items);
                 currentPlayOptions = options;
@@ -1895,6 +1895,11 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 playMethod = 'DirectPlay';
             }
 
+            // Fallback (used for offline items)
+            if (!mediaUrl && mediaSource.SupportsDirectPlay) {
+                mediaUrl = mediaSource.Path;
+            }
+
             var resultInfo = {
                 url: mediaUrl,
                 mimeType: contentType,
@@ -2013,10 +2018,6 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         function getPlaybackInfo(apiClient, itemId, deviceProfile, maxBitrate, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId) {
 
-            var postData = {
-                DeviceProfile: deviceProfile
-            };
-
             var query = {
                 UserId: apiClient.getCurrentUserId(),
                 StartTimeTicks: startPosition || 0
@@ -2038,14 +2039,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 query.MaxStreamingBitrate = maxBitrate;
             }
 
-            return apiClient.ajax({
-                url: apiClient.getUrl('Items/' + itemId + '/PlaybackInfo', query),
-                type: 'POST',
-                data: JSON.stringify(postData),
-                contentType: "application/json",
-                dataType: "json"
-
-            });
+            return apiClient.getPlaybackInfo(itemId, query, deviceProfile);
         }
 
         function getOptimalMediaSource(apiClient, item, versions) {
@@ -2081,7 +2075,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                     return s.SupportsTranscoding;
                 })[0];
 
-                return optimalVersion;
+                return optimalVersion || versions[0];
             });
         }
 

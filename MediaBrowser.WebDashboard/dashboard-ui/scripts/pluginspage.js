@@ -37,7 +37,7 @@
 
         var html = '';
 
-        var isConnectMode = AppInfo.isNativeApp ? true : false;
+        var isConnectMode = Dashboard.isConnectMode();
         var configPageUrl = configPage ? Dashboard.getConfigurationPageUrl(configPage.Name) : null;
 
         var href = configPage && !isConnectMode ?

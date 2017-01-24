@@ -164,7 +164,7 @@
 
 
 
-@media all and (max-width: 440px) {
+@media all and (max-width: 400px) {
 
     .playlist .listItemMediaInfo {
         display: none !important;

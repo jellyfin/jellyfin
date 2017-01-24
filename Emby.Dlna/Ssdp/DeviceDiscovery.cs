@@ -104,7 +104,8 @@ namespace Emby.Dlna.Ssdp
                 Argument = new UpnpDeviceInfo
                 {
                     Location = e.DiscoveredDevice.DescriptionLocation,
-                    Headers = headers
+                    Headers = headers,
+                    LocalIpAddress = e.LocalIpAddress
                 }
             };
 
