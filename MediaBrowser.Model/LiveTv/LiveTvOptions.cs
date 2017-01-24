@@ -57,7 +57,6 @@ namespace MediaBrowser.Model.LiveTv
         public string SourceB { get; set; }
         public string SourceC { get; set; }
         public string SourceD { get; set; }
-        public bool EnableTvgId { get; set; }
 
         public TunerHostInfo()
         {
