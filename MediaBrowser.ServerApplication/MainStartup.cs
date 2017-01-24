@@ -324,7 +324,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="options">The options.</param>
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, bool runService, StartupOptions options)
         {
-            var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), true, true, true);
+            var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), true, true, true, appPaths.TempDirectory);
             fileSystem.AddShortcutHandler(new LnkShortcutHandler());
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 

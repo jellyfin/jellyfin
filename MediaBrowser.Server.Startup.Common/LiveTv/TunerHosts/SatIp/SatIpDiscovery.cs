@@ -113,7 +113,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                         Type = SatIpHost.DeviceType,
                         Url = deviceUrl,
                         InfoUrl = infoUrl,
-                        DataVersion = 1,
                         DeviceId = info.DeviceId,
                         FriendlyName = info.FriendlyName,
                         Tuners = info.Tuners,

@@ -161,3 +161,12 @@
 .nowPlayingVolumeSliderContainer {
     width: 6em;
 }
+
+
+
+@media all and (max-width: 440px) {
+
+    .playlist .listItemMediaInfo {
+        display: none !important;
+    }
+}

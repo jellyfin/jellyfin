@@ -286,7 +286,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .detailUserDataIcons {
-    white-space: nowrap;
+    display: flex;
+    align-items: center;
 }
 
 .detailImageContainer {
@@ -500,6 +501,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .mainDetailButtons button, .recordingFields button {
         margin-left: 0;
         margin-right: .5em;
+        flex-shrink: 0;
     }
 
     .mainDetailButtons.hide + .recordingFields {
@@ -508,9 +510,15 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .mainDetailButtons > .raised {
         justify-content: center;
+    }
+
+@media all and (min-width: 400px) {
+
+    .mainDetailButtons > .raised {
         padding-left: 1.5em;
         padding-right: 1.5em;
     }
+}
 
 @media all and (min-width: 800px) {
 

@@ -81,7 +81,6 @@
                 ids: itemIds.split(',')
             });
             dialogHelper.close(dlg);
-            showToast();
             return;
         }
 
@@ -102,13 +101,6 @@
             loading.hide();
 
             dialogHelper.close(dlg);
-            showToast();
-        });
-    }
-
-    function showToast() {
-        require(['toast'], function (toast) {
-            toast(globalize.translate('sharedcomponents#MessageItemsAdded'));
         });
     }
 
@@ -116,7 +108,7 @@
         select.dispatchEvent(new CustomEvent('change', {}));
     }
 
-    function populatePlaylists(panel) {
+    function populatePlaylists(editorOptions, panel) {
 
         var select = panel.querySelector('#selectPlaylistToAddTo');
 
@@ -136,7 +128,7 @@
 
             var html = '';
 
-            if (playbackManager.isPlaying()) {
+            if (editorOptions.enableAddToPlayQueue !== false && playbackManager.isPlaying()) {
                 html += '<option value="queue">' + globalize.translate('sharedcomponents#AddToPlayQueue') + '</option>';
             }
 
@@ -148,7 +140,12 @@
             });
 
             select.innerHTML = html;
-            select.value = userSettings.get('playlisteditor-lastplaylistid') || '';
+
+            var defaultValue = editorOptions.defaultValue;
+            if (!defaultValue) {
+                defaultValue = userSettings.get('playlisteditor-lastplaylistid') || '';
+            }
+            select.value = defaultValue === 'new' ? '' : defaultValue;
 
             // If the value is empty set it again, in case we tried to set a lastplaylistid that is no longer valid
             if (!select.value) {
@@ -195,7 +192,7 @@
         return html;
     }
 
-    function initEditor(content, items) {
+    function initEditor(content, options, items) {
 
         content.querySelector('#selectPlaylistToAddTo').addEventListener('change', function () {
             if (this.value) {
@@ -213,7 +210,7 @@
 
         if (items.length) {
             content.querySelector('.fldSelectPlaylist').classList.remove('hide');
-            populatePlaylists(content);
+            populatePlaylists(options, content);
         } else {
             content.querySelector('.fldSelectPlaylist').classList.add('hide');
 
@@ -270,7 +267,7 @@
 
             dlg.innerHTML = html;
 
-            initEditor(dlg, items);
+            initEditor(dlg, options, items);
 
             dlg.querySelector('.btnCancel').addEventListener('click', function () {
 

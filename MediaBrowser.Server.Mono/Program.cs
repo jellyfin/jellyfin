@@ -108,7 +108,7 @@ namespace MediaBrowser.Server.Mono
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
-            var fileSystem = new MonoFileSystem(logManager.GetLogger("FileSystem"), false, false);
+            var fileSystem = new MonoFileSystem(logManager.GetLogger("FileSystem"), false, false, appPaths.TempDirectory);
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
             var environmentInfo = GetEnvironmentInfo();

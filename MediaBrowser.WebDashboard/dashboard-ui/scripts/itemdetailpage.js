@@ -229,6 +229,7 @@
                 } else {
                     hideAll(page, 'btnPlay');
                 }
+                hideAll(page, 'btnResume');
                 hideAll(page, 'btnInstantMix');
                 hideAll(page, 'btnShuffle');
             }
@@ -242,9 +243,12 @@
                 hideAll(page, 'btnShuffle', enableShuffle);
 
                 canPlay = true;
+
+                hideAll(page, 'btnResume', item.UserData && item.UserData.PlaybackPositionTicks > 0);
             }
             else {
                 hideAll(page, 'btnPlay');
+                hideAll(page, 'btnResume');
                 hideAll(page, 'btnInstantMix');
                 hideAll(page, 'btnShuffle');
             }
@@ -2327,6 +2331,7 @@
             elems[i].addEventListener('click', onPlayClick);
         }
 
+        view.querySelector('.btnResume').addEventListener('click', onPlayClick);
         view.querySelector('.btnInstantMix').addEventListener('click', onInstantMixClick);
         view.querySelector('.btnShuffle').addEventListener('click', onShuffleClick);
 

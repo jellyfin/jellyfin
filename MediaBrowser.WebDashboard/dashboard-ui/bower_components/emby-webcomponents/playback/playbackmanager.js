@@ -1118,9 +1118,8 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             var apiClient = connectionManager.getApiClient(item.ServerId);
 
             if (item.LocalTrailerCount) {
-                apiClient.getLocalTrailers(apiClient.getCurrentUserId(), item.Id).then(function (result) {
-
-                    self.play({
+                return apiClient.getLocalTrailers(apiClient.getCurrentUserId(), item.Id).then(function (result) {
+                    return self.play({
                         items: result
                     });
                 });
@@ -1128,10 +1127,10 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 var remoteTrailers = item.RemoteTrailers || [];
 
                 if (!remoteTrailers.length) {
-                    return;
+                    return Promise.reject();
                 }
 
-                self.play({
+                return self.play({
                     items: remoteTrailers.map(function (t) {
                         return {
                             Name: t.Name || (item.Name + ' Trailer'),
