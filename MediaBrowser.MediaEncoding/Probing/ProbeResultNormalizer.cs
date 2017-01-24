@@ -47,6 +47,8 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             info.MediaStreams = internalStreams.Select(s => GetMediaStream(isAudio, s, data.format))
                 .Where(i => i != null)
+                // Drop subtitle streams if we don't know the codec because it will just cause failures if we don't know how to handle them
+                .Where(i => i.Type != MediaStreamType.Subtitle || !string.IsNullOrWhiteSpace(i.Codec))
                 .ToList();
 
             if (data.format != null)

@@ -20,10 +20,13 @@ namespace Emby.Common.Implementations.IO
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
         private bool EnableFileSystemRequestConcat = true;
 
-        public ManagedFileSystem(ILogger logger, bool supportsAsyncFileStreams, bool enableManagedInvalidFileNameChars, bool enableFileSystemRequestConcat)
+        private string _tempPath;
+
+        public ManagedFileSystem(ILogger logger, bool supportsAsyncFileStreams, bool enableManagedInvalidFileNameChars, bool enableFileSystemRequestConcat, string tempPath)
         {
             Logger = logger;
             _supportsAsyncFileStreams = supportsAsyncFileStreams;
+            _tempPath = tempPath;
             EnableFileSystemRequestConcat = enableFileSystemRequestConcat;
             SetInvalidFileNameChars(enableManagedInvalidFileNameChars);
         }
@@ -487,12 +490,13 @@ namespace Emby.Common.Implementations.IO
                 throw new ArgumentNullException("file2");
             }
 
-            var temp1 = Path.GetTempFileName();
+            var temp1 = Path.Combine(_tempPath, Guid.NewGuid().ToString("N"));
 
             // Copying over will fail against hidden files
             SetHidden(file1, false);
             SetHidden(file2, false);
 
+            Directory.CreateDirectory(_tempPath);
             CopyFile(file1, temp1, true);
 
             CopyFile(file2, file1, true);
@@ -674,21 +678,7 @@ namespace Emby.Common.Implementations.IO
 
         private IEnumerable<FileSystemMetadata> ToMetadata(string parentPath, IEnumerable<FileSystemInfo> infos)
         {
-            return infos.Select(i =>
-            {
-                try
-                {
-                    return GetFileSystemMetadata(i);
-                }
-                catch (PathTooLongException)
-                {
-                    // Can't log using the FullName because it will throw the PathTooLongExceptiona again
-                    //Logger.Warn("Path too long: {0}", i.FullName);
-                    Logger.Warn("File or directory path too long. Parent folder: {0}", parentPath);
-                    return null;
-                }
-
-            }).Where(i => i != null);
+            return infos.Select(GetFileSystemMetadata);
         }
 
         public string[] ReadAllLines(string path)

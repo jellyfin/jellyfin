@@ -37,8 +37,8 @@ namespace OpenSubtitlesHandler
         public static IHttpClient HttpClient { get; set; }
         public static ITextEncoding EncodingHelper { get; set; }
 
-        //private static string XML_RPC_SERVER = "https://api.opensubtitles.org/xml-rpc";
-        private static string XML_RPC_SERVER = "https://92.240.234.122/xml-rpc";
+        private static string XML_RPC_SERVER = "https://api.opensubtitles.org/xml-rpc";
+        //private static string XML_RPC_SERVER = "https://92.240.234.122/xml-rpc";
         private static string HostHeader = "api.opensubtitles.org:443";
 
         /// <summary>
