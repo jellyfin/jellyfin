@@ -11,6 +11,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Threading;
 using Mono.Nat;
+using System.Threading.Tasks;
 
 namespace Emby.Server.Core.EntryPoints
 {
@@ -223,7 +224,7 @@ namespace Emby.Server.Core.EntryPoints
 
         private List<string> _createdRules = new List<string>();
         private List<string> _usnsHandled = new List<string>();
-        private void CreateRules(INatDevice device)
+        private async void CreateRules(INatDevice device)
         {
             if (_disposed)
             {
@@ -239,12 +240,16 @@ namespace Emby.Server.Core.EntryPoints
             {
                 _createdRules.Add(address);
 
-                CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
-                CreatePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort);
+                var success = await CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort).ConfigureAwait(false);
+
+                if (success)
+                {
+                    await CreatePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort).ConfigureAwait(false);
+                }
             }
         }
 
-        private async void CreatePortMap(INatDevice device, int privatePort, int publicPort)
+        private async Task<bool> CreatePortMap(INatDevice device, int privatePort, int publicPort)
         {
             _logger.Debug("Creating port map on port {0}", privatePort);
 
@@ -255,10 +260,14 @@ namespace Emby.Server.Core.EntryPoints
                     Description = _appHost.Name
 
                 }).ConfigureAwait(false);
+
+                return true;
             }
             catch (Exception ex)
             {
                 _logger.Error("Error creating port map: " + ex.Message);
+
+                return false;
             }
         }
 

@@ -1011,7 +1011,7 @@
             ticks *= value;
 
             var item = currentItem;
-            if (item && item.Chapters && item.Chapters[0].ImageTag) {
+            if (item && item.Chapters && item.Chapters.length && item.Chapters[0].ImageTag) {
                 var html = getChapterBubbleHtml(connectionManager.getApiClient(item.ServerId), item, item.Chapters, ticks);
 
                 if (html) {

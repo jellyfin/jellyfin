@@ -229,7 +229,7 @@
         html += '</div>';
 
         html += '<div class="fldQuality selectContainer hide">';
-        html += '<select is="emby-select" id="selectQuality" data-mini="true" required="required" label="' + globalize.translate('sharedcomponents#LabelQuality') + '">';
+        html += '<select is="emby-select" id="selectQuality" required="required" label="' + globalize.translate('sharedcomponents#LabelQuality') + '">';
         html += '</select>';
         html += '<div class="fieldDescription qualityDescription"></div>';
         html += '</div>';
@@ -479,7 +479,10 @@
                 fldQuality.classList.remove('hide');
             }
             if (selectQuality) {
-                selectQuality.setAttribute('required', 'required');
+                //selectQuality.setAttribute('required', 'required');
+
+                // This is a hack due to what appears to be a edge bug but it shoudln't matter as the list always has selectable items
+                selectQuality.removeAttribute('required');
             }
         } else {
             if (fldQuality) {

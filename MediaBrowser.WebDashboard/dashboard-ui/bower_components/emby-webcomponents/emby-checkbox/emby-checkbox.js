@@ -23,7 +23,7 @@
 
     function forceRefresh(loading) {
 
-        var elem = document.body;
+        var elem = this.parentNode;
 
         elem.style.webkitAnimationName = 'repaintChrome';
         elem.style.webkitAnimationDelay = (loading === true ? '500ms' : '');
@@ -66,7 +66,7 @@
 
         if (enableRefreshHack) {
 
-            forceRefresh(true);
+            forceRefresh.call(this, true);
             dom.addEventListener(this, 'click', forceRefresh, {
                 passive: true
             });

@@ -1408,6 +1408,26 @@
             return self.getJSON(url);
         };
 
+        self.getPlaybackInfo = function(itemId, options, deviceProfile) {
+
+            var postData = {
+                DeviceProfile: deviceProfile
+            };
+
+            return self.ajax({
+                url: self.getUrl('Items/' + itemId + '/PlaybackInfo', options),
+                type: 'POST',
+                data: JSON.stringify(postData),
+                contentType: "application/json",
+                dataType: "json"
+            });
+        };
+
+        self.getIntros = function(itemId) {
+
+            return self.getJSON(self.getUrl('Users/' + self.getCurrentUserId() + '/Items/' + itemId + '/Intros'));
+        };
+
         /**
          * Gets the directory contents of a path on the server
          */

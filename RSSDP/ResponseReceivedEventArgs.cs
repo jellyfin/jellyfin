@@ -15,9 +15,11 @@ namespace Rssdp.Infrastructure
 	public sealed class ResponseReceivedEventArgs : EventArgs
 	{
 
-		#region Fields
+        public IpAddressInfo LocalIpAddress { get; set; }
 
-		private readonly HttpResponseMessage _Message;
+        #region Fields
+
+        private readonly HttpResponseMessage _Message;
 		private readonly IpEndPointInfo _ReceivedFrom;
 
 		#endregion
