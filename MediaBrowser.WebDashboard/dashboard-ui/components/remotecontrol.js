@@ -7,7 +7,9 @@
         });
     }
 
-    function showAudioMenu(context, player, button, item, currentIndex) {
+    function showAudioMenu(context, player, button, item) {
+
+        var currentIndex = playbackManager.getAudioStreamIndex(player);
 
         var streams = (item.MediaStreams || []).filter(function (i) {
 
@@ -42,7 +44,9 @@
         });
     }
 
-    function showSubtitleMenu(context, player, button, item, currentIndex) {
+    function showSubtitleMenu(context, player, button, item) {
+
+        var currentIndex = playbackManager.getSubtitleStreamIndex(player);
 
         var streams = (item.MediaStreams || []).filter(function (i) {
 
@@ -490,6 +494,12 @@
                     dragHandle: true
                 });
 
+                if (items.length) {
+                    context.querySelector('.playlistSection').classList.remove('hide');
+                } else {
+                    context.querySelector('.playlistSection').classList.add('hide');
+                }
+
                 var itemsContainer = context.querySelector('.playlist');
 
                 itemsContainer.innerHTML = html;
@@ -680,6 +690,36 @@
             }
         }
 
+        function getSaveablePlaylistItems() {
+            
+            return getPlaylistItems(currentPlayer).then(function (items) {
+
+                return items.filter(function (i) {
+                    return i.Id && i.ServerId;
+                });
+            });
+        }
+
+        function savePlaylist() {
+            
+            require(['playlistEditor'], function (playlistEditor) {
+
+                getSaveablePlaylistItems().then(function (items) {
+
+                    var serverId = items.length ? items[0].ServerId : ApiClient.serverId();
+
+                    new playlistEditor().show({
+                        items: items.map(function(i) {
+                            return i.Id;
+                        }),
+                        serverId: serverId,
+                        enableAddToPlayQueue: false,
+                        defaultValue: 'new'
+                    });
+                });
+            });
+        }
+
         function bindEvents(context) {
 
             var btnCommand = context.querySelectorAll('.btnCommand');
@@ -699,19 +739,17 @@
 
             context.querySelector('.btnAudioTracks').addEventListener('click', function (e) {
 
-                if (currentPlayer && lastPlayerState && lastPlayerState.PlayState) {
+                if (currentPlayer && lastPlayerState && lastPlayerState.NowPlayingItem) {
 
-                    var currentIndex = lastPlayerState.PlayState.AudioStreamIndex;
-                    showAudioMenu(context, currentPlayer, e.target, lastPlayerState.NowPlayingItem, currentIndex);
+                    showAudioMenu(context, currentPlayer, e.target, lastPlayerState.NowPlayingItem);
                 }
             });
 
             context.querySelector('.btnSubtitles').addEventListener('click', function (e) {
 
-                if (currentPlayer && lastPlayerState && lastPlayerState.PlayState) {
+                if (currentPlayer && lastPlayerState && lastPlayerState.NowPlayingItem) {
 
-                    var currentIndex = lastPlayerState.PlayState.SubtitleStreamIndex;
-                    showSubtitleMenu(context, currentPlayer, e.target, lastPlayerState.NowPlayingItem, currentIndex);
+                    showSubtitleMenu(context, currentPlayer, e.target, lastPlayerState.NowPlayingItem);
                 }
             });
 
@@ -792,6 +830,8 @@
 
                 playbackManager.movePlaylistItem(playlistItemId, newIndex, currentPlayer);
             });
+
+            context.querySelector('.btnSavePlaylist').addEventListener('click', savePlaylist);
         }
 
         function onPlayerChange() {

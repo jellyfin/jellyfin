@@ -840,7 +840,12 @@
         };
 
         self.audioTracks = function () {
-            return [];
+            var state = self.lastPlayerData || {};
+            state = state.NowPlayingItem || {};
+            var streams = state.MediaStreams || [];
+            return streams.filter(function (s) {
+                return s.Type === 'Audio';
+            });
         };
 
         self.setAudioStreamIndex = function (index) {
@@ -859,7 +864,12 @@
         };
 
         self.subtitleTracks = function () {
-            return [];
+            var state = self.lastPlayerData || {};
+            state = state.NowPlayingItem || {};
+            var streams = state.MediaStreams || [];
+            return streams.filter(function (s) {
+                return s.Type === 'Subtitle';
+            });
         };
 
         self.getSubtitleStreamIndex = function () {
@@ -975,8 +985,7 @@
             return Promise.resolve([]);
         };
 
-        self.getCurrentPlaylistIndex = function () {
-            return 0;
+        self.getCurrentPlaylistItemId = function () {
         };
 
         self.setCurrentPlaylistItem = function (playlistItemId) {

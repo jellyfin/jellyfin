@@ -160,8 +160,13 @@
         </div>
 
         <br />
-        <div>
-            <h1>${TabPlaylist}</h1>
+        <div class="playlistSection hide">
+            <div style="display: flex; align-items: center;margin:2em 0 1em">
+                <h1 style="margin:0;">${TabPlaylist}</h1>
+                <button is="paper-icon-button-light" class="btnSavePlaylist" title="${ButtonSave}" style="margin-left:1em;">
+                    <i class="md-icon">&#xE161;</i>
+                </button>
+            </div>
             <div class="playlist itemsContainer vertical-list" is="emby-itemscontainer" data-dragreorder="true">
             </div>
         </div>
