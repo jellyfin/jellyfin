@@ -33,14 +33,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             _appHost = appHost;
         }
 
-        public async Task<List<M3UChannel>> Parse(string url, string channelIdPrefix, string tunerHostId, CancellationToken cancellationToken)
+        public async Task<List<M3UChannel>> Parse(string url, string channelIdPrefix, string tunerHostId, bool enableStreamUrlAsIdentifier, CancellationToken cancellationToken)
         {
             var urlHash = url.GetMD5().ToString("N");
 
             // Read the file and display it line by line.
             using (var reader = new StreamReader(await GetListingsStream(url, cancellationToken).ConfigureAwait(false)))
             {
-                return GetChannels(reader, urlHash, channelIdPrefix, tunerHostId);
+                return GetChannels(reader, urlHash, channelIdPrefix, tunerHostId, enableStreamUrlAsIdentifier);
             }
         }
 
@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             // Read the file and display it line by line.
             using (var reader = new StringReader(text))
             {
-                return GetChannels(reader, urlHash, channelIdPrefix, tunerHostId);
+                return GetChannels(reader, urlHash, channelIdPrefix, tunerHostId, false);
             }
         }
 
@@ -71,7 +71,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         }
 
         const string ExtInfPrefix = "#EXTINF:";
-        private List<M3UChannel> GetChannels(TextReader reader, string urlHash, string channelIdPrefix, string tunerHostId)
+        private List<M3UChannel> GetChannels(TextReader reader, string urlHash, string channelIdPrefix, string tunerHostId, bool enableStreamUrlAsIdentifier)
         {
             var channels = new List<M3UChannel>();
             string line;
@@ -97,7 +97,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 else if (!string.IsNullOrWhiteSpace(extInf) && !line.StartsWith("#", StringComparison.OrdinalIgnoreCase))
                 {
                     var channel = GetChannelnfo(extInf, tunerHostId, line);
-                    if (string.IsNullOrWhiteSpace(channel.Id))
+                    if (string.IsNullOrWhiteSpace(channel.Id) || enableStreamUrlAsIdentifier)
                     {
                         channel.Id = channelIdPrefix + urlHash + line.GetMD5().ToString("N");
                     }

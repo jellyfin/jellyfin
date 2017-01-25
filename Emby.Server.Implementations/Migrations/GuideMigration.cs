@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.Migrations
 
         public async Task Run()
         {
-            var name = "GuideRefresh1";
+            var name = "GuideRefresh2";
 
             if (!_config.Configuration.Migrations.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
