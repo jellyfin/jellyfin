@@ -31,32 +31,14 @@
     height: 100%;
 }
 
-.videoSubtitles {
-    position: fixed;
-    bottom: 10%;
-    text-align: center;
-    left: 0;
-    right: 0;
-    color: #fff;
-    font-size: 150%;
-}
+    .htmlvideoplayer::-webkit-media-text-track-display {
+        /*Style the text itself*/
+        margin-top: -2.5em;
+    }
 
-.videoSubtitlesInner {
-    max-width: 70%;
-    background-color: rgba(0,0,0,.8);
-    padding: .25em;
-    margin: auto;
-    display: inline-block;
-}
-
-.htmlvideoplayer::-webkit-media-text-track-display {
-    /*Style the text itself*/
-    margin-top: -2.5em;
-}
-
-::cue {
-    background-color: transparent;
-    text-shadow: 2px 2px 2px rgba(0, 0, 0, 1);
-    -webkit-font-smoothing: antialiased;
-    font-family: inherit;
-}
+    .htmlvideoplayer::cue {
+        background-color: transparent;
+        text-shadow: 2px 2px 2px rgba(0, 0, 0, 1);
+        -webkit-font-smoothing: antialiased;
+        font-family: inherit;
+    }

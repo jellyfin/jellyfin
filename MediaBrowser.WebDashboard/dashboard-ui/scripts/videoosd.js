@@ -763,52 +763,13 @@
         function onSettingsButtonClick(e) {
 
             var btn = this;
-            require(['qualityoptions', 'actionsheet'], function (qualityoptions, actionsheet) {
 
-                //var currentSrc = self.getCurrentSrc(self.currentMediaRenderer).toLowerCase();
-                //var isStatic = currentSrc.indexOf('static=true') != -1;
-
-                var videoStream = playbackManager.currentMediaSource(currentPlayer).MediaStreams.filter(function (stream) {
-                    return stream.Type === "Video";
-                })[0];
-                var videoWidth = videoStream ? videoStream.Width : null;
-
-                var options = qualityoptions.getVideoQualityOptions(playbackManager.getMaxStreamingBitrate(currentPlayer), videoWidth);
-
-                //if (isStatic) {
-                //    options[0].name = "Direct";
-                //}
-
-                var menuItems = options.map(function (o) {
-
-                    var opt = {
-                        name: o.name,
-                        id: o.bitrate
-                    };
-
-                    if (o.selected) {
-                        opt.selected = true;
-                    }
-
-                    return opt;
+            require(['playerSettingsMenu'], function (playerSettingsMenu) {
+                playerSettingsMenu.show({
+                    mediaType: 'Video',
+                    player: currentPlayer,
+                    positionTo: btn
                 });
-
-                var selectedId = options.filter(function (o) {
-                    return o.selected;
-                });
-                selectedId = selectedId.length ? selectedId[0].bitrate : null;
-                actionsheet.show({
-                    items: menuItems,
-                    positionTo: btn,
-                    callback: function (id) {
-
-                        var bitrate = parseInt(id);
-                        if (bitrate !== selectedId) {
-                            playbackManager.setMaxStreamingBitrate(bitrate, currentPlayer);
-                        }
-                    }
-                });
-
             });
         }
 

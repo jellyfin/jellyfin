@@ -749,10 +749,6 @@
 
                 return "<img src='css/images/clients/roku.jpg' />";
             }
-            if (clientLowered == "windows phone") {
-
-                return "<img src='css/images/clients/windowsphone.png' />";
-            }
             if (clientLowered == "dlna") {
 
                 return "<img src='css/images/clients/dlna.png' />";

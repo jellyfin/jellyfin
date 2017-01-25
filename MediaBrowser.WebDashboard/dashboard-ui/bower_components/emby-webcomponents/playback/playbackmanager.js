@@ -1594,7 +1594,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 var player = currentPlayer;
 
                 if (player) {
-                    player.destroy();
+                    destroyPlayer(player);
                 }
                 setCurrentPlayerInternal(null);
 
@@ -1602,6 +1602,11 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
                 return Promise.reject();
             });
+        }
+
+        function destroyPlayer(player) {
+            player.destroy();
+            releaseResourceLocks(player);
         }
 
         function runInterceptors(item, playOptions) {
@@ -2567,7 +2572,66 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
                 events.trigger(player, 'playbackstart', [state]);
                 events.trigger(self, 'playbackstart', [player, state]);
+
+                acquireResourceLocks(player, streamInfo.mediaType);
             });
+        }
+
+        function acquireResourceLocks(player, mediaType) {
+
+            if (!player.isLocalPlayer || player.hasResourceLocks) {
+                return;
+            }
+
+            var playerData = getPlayerData(player);
+            playerData.resourceLocks = playerData.resourceLocks || {};
+            var locks = playerData.resourceLocks;
+
+            ensureLock(locks, 'network');
+            ensureLock(locks, 'wake');
+
+            if (mediaType === 'Video') {
+                ensureLock(locks, 'screen');
+            }
+        }
+
+        function ensureLock(locks, resourceType) {
+
+            var prop = resourceType + 'Lock';
+            var existingLock = locks[prop];
+            if (existingLock) {
+                existingLock.acquire();
+                return;
+            }
+
+            require(['resourceLockManager'], function (resourceLockManager) {
+                resourceLockManager.request(resourceType).then(function (resourceLock) {
+                    locks[prop] = resourceLock;
+                    resourceLock.acquire();
+                }, function () {
+                    // not supported or not allowed
+                });
+            });
+        }
+
+        function releaseResourceLocks(player) {
+
+            if (!player.isLocalPlayer || player.hasResourceLocks) {
+                return;
+            }
+
+            var playerData = getPlayerData(player);
+            var locks = playerData.resourceLocks || {};
+
+            if (locks.wakeLock) {
+                locks.wakeLock.release();
+            }
+            if (locks.networkLock) {
+                locks.networkLock.release();
+            }
+            if (locks.screenLock) {
+                locks.screenLock.release();
+            }
         }
 
         function onPlaybackError(e, error) {
@@ -2666,7 +2730,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 var newPlayer = nextItem ? getPlayer(nextItem.item, currentPlayOptions) : null;
 
                 if (newPlayer !== player) {
-                    player.destroy();
+                    destroyPlayer(player);
                     setCurrentPlayerInternal(null);
                 }
 
