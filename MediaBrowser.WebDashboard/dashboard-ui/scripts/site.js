@@ -2358,8 +2358,6 @@ var AppInfo = {};
             if (document.createElement('audio').canPlayType('audio/flac').replace(/no/, '') &&
                 document.createElement('audio').canPlayType('audio/ogg; codecs="opus"').replace(/no/, '')) {
 
-                list.push('bower_components/emby-webcomponents/htmlaudioplayer/plugin');
-
             } else {
                 window.VlcAudio = true;
             }
@@ -2369,9 +2367,9 @@ var AppInfo = {};
 
         } else if (Dashboard.isRunningInCordova() && browser.safari) {
             list.push('cordova/audioplayer');
-        } else {
-            list.push('bower_components/emby-webcomponents/htmlaudioplayer/plugin');
         }
+
+        list.push('bower_components/emby-webcomponents/htmlaudioplayer/plugin');
 
         if (Dashboard.isRunningInCordova() && browser.safari) {
             list.push('cordova/chromecast');
