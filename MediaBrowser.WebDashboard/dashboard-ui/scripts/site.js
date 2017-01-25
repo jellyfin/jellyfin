@@ -984,6 +984,7 @@ var AppInfo = {};
         define("metadataEditor", [embyWebComponentsBowerPath + "/metadataeditor/metadataeditor"], returnFirstDependency);
         define("personEditor", [embyWebComponentsBowerPath + "/metadataeditor/personeditor"], returnFirstDependency);
         define("playerSelectionMenu", [embyWebComponentsBowerPath + "/playback/playerselection"], returnFirstDependency);
+        define("playerSettingsMenu", [embyWebComponentsBowerPath + "/playback/playersettingsmenu"], returnFirstDependency);
 
         define("libraryMenu", ["scripts/librarymenu"], returnFirstDependency);
 
@@ -1406,6 +1407,26 @@ var AppInfo = {};
             define("fileDownloader", [embyWebComponentsBowerPath + '/filedownloader'], returnFirstDependency);
             define("localassetmanager", [apiClientBowerPath + "/localassetmanager"], returnFirstDependency);
         }
+
+        define("screenLock", [embyWebComponentsBowerPath + "/resourcelocks/nullresourcelock"], returnFirstDependency);
+
+        if (Dashboard.isRunningInCordova() && browser.android) {
+            define("resourceLockManager", [embyWebComponentsBowerPath + "/resourcelocks/resourcelockmanager"], returnFirstDependency);
+            define("wakeLock", ["cordova/wakelock"], returnFirstDependency);
+            define("networkLock", ["cordova/networklock"], returnFirstDependency);
+        } else {
+            define("resourceLockManager", [embyWebComponentsBowerPath + "/resourcelocks/resourcelockmanager"], returnFirstDependency);
+            define("wakeLock", [embyWebComponentsBowerPath + "/resourcelocks/nullresourcelock"], returnFirstDependency);
+            define("networkLock", [embyWebComponentsBowerPath + "/resourcelocks/nullresourcelock"], returnFirstDependency);
+        }
+    }
+
+    function getDummyResourceLockManager() {
+        return {
+            request: function (resourceType) {
+                return Promise.reject();
+            }
+        };
     }
 
     function init() {
@@ -2441,6 +2462,7 @@ var AppInfo = {};
 
         var deps = [];
 
+        deps.push('apphost');
         deps.push('embyRouter');
 
         if (!(AppInfo.isNativeApp && browserInfo.android)) {
@@ -2468,7 +2490,7 @@ var AppInfo = {};
 
         console.log('onAppReady - loading dependencies');
 
-        require(deps, function (pageObjects) {
+        require(deps, function (appHost, pageObjects) {
 
             console.log('Loaded dependencies in onAppReady');
 
@@ -2530,9 +2552,9 @@ var AppInfo = {};
 
             postInitDependencies.push('playerSelectionMenu');
 
-            //if (appHost.supports('fullscreenchange')) {
-            require(['fullscreen-doubleclick']);
-            //}
+            if (appHost.supports('fullscreenchange')) {
+                require(['fullscreen-doubleclick']);
+            }
 
             require(postInitDependencies);
             upgradeLayouts();
@@ -2687,4 +2709,3 @@ pageClassOn('viewshow', "page", function () {
 
     Dashboard.ensureHeader(page);
 });
-

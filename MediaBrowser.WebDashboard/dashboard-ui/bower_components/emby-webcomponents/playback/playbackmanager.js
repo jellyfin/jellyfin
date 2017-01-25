@@ -2579,7 +2579,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         function acquireResourceLocks(player, mediaType) {
 
-            if (!player.isLocalPlayer) {
+            if (!player.isLocalPlayer || player.hasResourceLocks) {
                 return;
             }
 
@@ -2608,13 +2608,15 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 resourceLockManager.request(resourceType).then(function (resourceLock) {
                     locks[prop] = resourceLock;
                     resourceLock.acquire();
+                }, function () {
+                    // not supported or not allowed
                 });
             });
         }
 
         function releaseResourceLocks(player) {
 
-            if (!player.isLocalPlayer) {
+            if (!player.isLocalPlayer || player.hasResourceLocks) {
                 return;
             }
 

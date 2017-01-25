@@ -103,7 +103,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     }
                     else
                     {
-                        channel.Id = channelIdPrefix + channel.Id.GetMD5().ToString("N");
+                        channel.Id = channelIdPrefix + urlHash + channel.Id.GetMD5().ToString("N");
                     }
 
                     channel.Path = line;
