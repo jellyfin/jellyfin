@@ -23,8 +23,6 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
         var subtitleTrackIndexToSetOnPlaying;
 
-        var currentSubtitlesElement;
-        var currentTrackEvents;
         var lastCustomTrackMs = 0;
         var currentClock;
         var currentAssRenderer;
@@ -923,11 +921,6 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             window.removeEventListener('resize', onVideoResize);
             window.removeEventListener('orientationchange', onVideoResize);
 
-            var videoSubtitlesElem = document.querySelector('.videoSubtitles');
-            if (videoSubtitlesElem) {
-                videoSubtitlesElem.parentNode.removeChild(videoSubtitlesElem);
-            }
-
             if (isPlaying) {
 
                 var allTracks = mediaElement.textTracks; // get list of tracks
@@ -942,8 +935,6 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             }
 
             customTrackIndex = -1;
-            currentSubtitlesElement = null;
-            currentTrackEvents = null;
             currentClock = null;
 
             var renderer = currentAssRenderer;
@@ -1084,44 +1075,6 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             if (clock) {
                 clock.seek(timeMs / 1000);
             }
-
-            var trackEvents = currentTrackEvents;
-            if (!trackEvents) {
-                return;
-            }
-
-            if (!currentSubtitlesElement) {
-                var videoSubtitlesElem = document.querySelector('.videoSubtitles');
-                if (!videoSubtitlesElem) {
-                    videoSubtitlesElem = document.createElement('div');
-                    videoSubtitlesElem.classList.add('videoSubtitles');
-                    videoSubtitlesElem.innerHTML = '<div class="videoSubtitlesInner"></div>';
-                    videoDialog.appendChild(videoSubtitlesElem);
-                }
-                currentSubtitlesElement = videoSubtitlesElem.querySelector('.videoSubtitlesInner');
-            }
-
-            if (lastCustomTrackMs > 0) {
-                if (Math.abs(lastCustomTrackMs - timeMs) < 500) {
-                    return;
-                }
-            }
-
-            lastCustomTrackMs = new Date().getTime();
-
-            var positionTicks = timeMs * 10000;
-            for (var i = 0, length = trackEvents.length; i < length; i++) {
-
-                var caption = trackEvents[i];
-                if (positionTicks >= caption.StartPositionTicks && positionTicks <= caption.EndPositionTicks) {
-                    currentSubtitlesElement.innerHTML = caption.Text;
-                    currentSubtitlesElement.classList.remove('hide');
-                    return;
-                }
-            }
-
-            currentSubtitlesElement.innerHTML = '';
-            currentSubtitlesElement.classList.add('hide');
         }
 
         function getMediaStreamAudioTracks(mediaSource) {

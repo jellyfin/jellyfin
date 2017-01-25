@@ -383,5 +383,6 @@
   "HeaderRemoteControl": "Remote Control",
   "Disconnect": "Disconnect",
   "EnableDisplayMirroring": "Enable display mirroring",
-  "HeaderSelectPlayer": "Select Player"
+  "HeaderSelectPlayer": "Select Player",
+  "Quality": "Quality"
 }
