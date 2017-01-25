@@ -35,8 +35,6 @@ namespace Emby.Server.Implementations.Migrations
                 {
                     _taskManager.QueueScheduledTask(_taskManager.ScheduledTasks.Select(i => i.ScheduledTask)
                             .First(i => string.Equals(i.Key, "RefreshLibrary", StringComparison.OrdinalIgnoreCase)));
-                    _taskManager.QueueScheduledTask(_taskManager.ScheduledTasks.Select(i => i.ScheduledTask)
-                            .First(i => string.Equals(i.Key, "RefreshGuide", StringComparison.OrdinalIgnoreCase)));
                 });
 
                 var list = _config.Configuration.Migrations.ToList();

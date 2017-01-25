@@ -112,7 +112,7 @@ namespace Emby.Dlna.PlayTo
 
         private int GetInactiveTimerIntervalMs()
         {
-            return 20000;
+            return 30000;
         }
 
         public void Start()
