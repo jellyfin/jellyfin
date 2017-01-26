@@ -94,6 +94,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The priority.</value>
         public int Priority { get; set; }
 
+        public int RetryCount { get; set; }
 
         // Program properties
         public int? SeasonNumber { get; set; }

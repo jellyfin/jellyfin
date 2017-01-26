@@ -96,7 +96,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
 
             // Try to estimate this
-            mediaSource.InferTotalBitrate();
+            mediaSource.InferTotalBitrate(true);
         }
     }
 }

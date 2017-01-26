@@ -64,5 +64,29 @@ namespace MediaBrowser.Tests
             Assert.IsNull(result[0].Number);
             Assert.AreEqual("ABC KABC Los Angeles", result[0].Name);
         }
+
+        [TestMethod]
+        public void TestFormat5()
+        {
+            BaseExtensions.CryptographyProvider = new CryptographyProvider();
+
+            var result = new M3uParser(new NullLogger(), null, null, null).ParseString("#EXTINF:-1 channel-id=\"2101\" tvg-id=\"I69387.json.schedulesdirect.org\" group-title=\"Entertainment\",BBC 1 HD\nhttp://mystream", "-", "-");
+            Assert.AreEqual(1, result.Count);
+
+            Assert.AreEqual("BBC 1 HD", result[0].Name);
+            Assert.AreEqual("2101", result[0].Number);
+        }
+
+        [TestMethod]
+        public void TestFormat6()
+        {
+            BaseExtensions.CryptographyProvider = new CryptographyProvider();
+
+            var result = new M3uParser(new NullLogger(), null, null, null).ParseString("#EXTINF:-1 tvg-id=\"2101\" group-title=\"Entertainment\",BBC 1 HD\nhttp://mystream", "-", "-");
+            Assert.AreEqual(1, result.Count);
+
+            Assert.AreEqual("BBC 1 HD", result[0].Name);
+            Assert.AreEqual("2101", result[0].Number);
+        }
     }
 }
