@@ -260,7 +260,9 @@
 
             elem.classList.remove('videoOsdBottom-hidden');
 
-            focusManager.focus(elem.querySelector('.btnPause'));
+            setTimeout(function () {
+                focusManager.focus(elem.querySelector('.btnPause'));
+            }, 50);
 
             view.dispatchEvent(new CustomEvent('video-osd-show', {
                 bubbles: true,

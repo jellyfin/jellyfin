@@ -1678,7 +1678,6 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                         loading.hide();
                         onPlaybackStartedFn();
                         onPlaybackStarted(player, streamInfo);
-                        return Promise.resolve();
                     });
                 });
             }
@@ -1701,7 +1700,6 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                             loading.hide();
                             onPlaybackStartedFn();
                             onPlaybackStarted(player, streamInfo, mediaSource);
-                            return Promise.resolve();
                         });
                     });
                 });
@@ -1996,7 +1994,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
                             if (mediaSource.RequiresOpening) {
 
-                                return getLiveStream(apiClient, item.Id, playbackInfoResult.PlaySessionId, deviceProfile, startPosition, mediaSource, null, null).then(function (openLiveStreamResult) {
+                                return getLiveStream(apiClient, item.Id, playbackInfoResult.PlaySessionId, deviceProfile, maxBitrate, startPosition, mediaSource, null, null).then(function (openLiveStreamResult) {
 
                                     return supportsDirectPlay(apiClient, openLiveStreamResult.MediaSource).then(function (result) {
 
@@ -2084,7 +2082,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             });
         }
 
-        function getLiveStream(apiClient, itemId, playSessionId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex) {
+        function getLiveStream(apiClient, itemId, playSessionId, deviceProfile, maxBitrate, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex) {
 
             var postData = {
                 DeviceProfile: deviceProfile,
@@ -2098,6 +2096,9 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 PlaySessionId: playSessionId
             };
 
+            if (maxBitrate) {
+                query.MaxStreamingBitrate = maxBitrate;
+            }
             if (audioStreamIndex != null) {
                 query.AudioStreamIndex = audioStreamIndex;
             }
@@ -2122,38 +2123,34 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             var isServerAddress = url.toLowerCase().replace('https:', 'http').indexOf(apiClient.serverAddress().toLowerCase().replace('https:', 'http').substring(0, 14)) === 0;
 
             if (isServerAddress) {
-                return Promise.resolve();
+                return Promise.resolve(true);
             }
 
             if (mediaSource.IsRemote) {
-                return Promise.resolve();
+                return Promise.resolve(true);
             }
 
-            return Promise.reject();
+            return Promise.resolve(false);
         }
 
         function supportsDirectPlay(apiClient, mediaSource) {
 
-            return new Promise(function (resolve, reject) {
+            if (mediaSource.SupportsDirectPlay) {
 
-                if (mediaSource.SupportsDirectPlay) {
+                if (mediaSource.Protocol === 'Http' && !mediaSource.RequiredHttpHeaders.length) {
 
-                    if (mediaSource.Protocol === 'Http' && !mediaSource.RequiredHttpHeaders.length) {
-
-                        // If this is the only way it can be played, then allow it
-                        if (!mediaSource.SupportsDirectStream && !mediaSource.SupportsTranscoding) {
-                            resolve(true);
-                        }
-                        else {
-                            isHostReachable(mediaSource, apiClient).then(function () {
-                                resolve(true);
-                            }, function () {
-                                resolve(false);
-                            });
-                        }
+                    // If this is the only way it can be played, then allow it
+                    if (!mediaSource.SupportsDirectStream && !mediaSource.SupportsTranscoding) {
+                        return Promise.resolve(true);
                     }
+                    else {
+                        return isHostReachable(mediaSource, apiClient);
+                    }
+                }
 
-                    else if (mediaSource.Protocol === 'File') {
+                else if (mediaSource.Protocol === 'File') {
+
+                    return new Promise(function (resolve, reject) {
 
                         // Determine if the file can be accessed directly
                         require(['filesystem'], function (filesystem) {
@@ -2169,12 +2166,11 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                             });
 
                         });
-                    }
+                    });
                 }
-                else {
-                    resolve(false);
-                }
-            });
+            }
+
+            return Promise.resolve(false);
         }
 
         function validatePlaybackInfoResult(result) {
