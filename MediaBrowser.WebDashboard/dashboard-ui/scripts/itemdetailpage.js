@@ -926,7 +926,7 @@
     }
 
     function enableScrollX() {
-        return browserInfo.mobile && AppInfo.enableAppLayouts && screen.availWidth <= 1000;
+        return browserInfo.mobile && screen.availWidth <= 1000;
     }
 
     function getPortraitShape(scrollX) {

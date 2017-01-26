@@ -56,7 +56,7 @@
     }
 
     function enableScrollX() {
-        return browserInfo.mobile && AppInfo.enableAppLayouts;
+        return browserInfo.mobile;
     }
 
     function renderRecordings(elem, recordings, cardOptions) {
