@@ -72,9 +72,14 @@ namespace MediaBrowser.Model.Dto
             SupportsProbing = true;
         }
 
-        public void InferTotalBitrate()
+        public void InferTotalBitrate(bool force = false)
         {
-            if (Bitrate.HasValue || MediaStreams == null)
+            if (MediaStreams == null)
+            {
+                return;
+            }
+
+            if (!force && Bitrate.HasValue)
             {
                 return;
             }
