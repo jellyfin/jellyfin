@@ -10,7 +10,7 @@
     }
 
     function enableScrollX() {
-        return browserInfo.mobile && AppInfo.enableAppLayouts;
+        return browserInfo.mobile;
     }
 
     function getSquareShape() {
@@ -166,10 +166,6 @@
 
             if (!browserInfo.safari || !AppInfo.isNativeApp) {
                 infos.push(getTheaterInfo);
-            }
-
-            if (!AppInfo.enableAppLayouts) {
-                infos.push(getUpgradeMobileLayoutsInfo);
             }
 
             return infos[getRandomInt(0, infos.length - 1)]();

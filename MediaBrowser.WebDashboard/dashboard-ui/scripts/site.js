@@ -162,11 +162,6 @@ var Dashboard = {
             url += queryString;
         }
 
-        if (url.indexOf('/') != 0) {
-            if (url.indexOf('://') == -1) {
-                url = '/' + url;
-            }
-        }
         return Emby.Page.show(url);
     },
 
@@ -656,7 +651,6 @@ var AppInfo = {};
 
         AppInfo.enableHomeTabs = true;
         AppInfo.enableAutoSave = browserInfo.touch;
-        AppInfo.enableHashBang = Dashboard.isRunningInCordova();
 
         AppInfo.enableAppStorePolicy = isCordova;
 
@@ -669,7 +663,6 @@ var AppInfo = {};
         }
 
         if (isCordova) {
-            AppInfo.enableAppLayouts = true;
             AppInfo.isNativeApp = true;
             AppInfo.enableHomeTabs = false;
 
@@ -2498,7 +2491,7 @@ var AppInfo = {};
             defineCoreRoutes();
             Emby.Page.start({
                 click: true,
-                hashbang: AppInfo.enableHashBang
+                hashbang: Dashboard.isRunningInCordova()
             });
 
             var postInitDependencies = [];
@@ -2556,7 +2549,6 @@ var AppInfo = {};
             }
 
             require(postInitDependencies);
-            upgradeLayouts();
             initAutoSync();
         });
     }
@@ -2580,16 +2572,6 @@ var AppInfo = {};
             } catch (err) {
                 console.log('Error registering serviceWorker: ' + err);
             }
-        }
-    }
-
-    function upgradeLayouts() {
-        if (!AppInfo.enableAppLayouts) {
-            Dashboard.getPluginSecurityInfo().then(function (info) {
-                if (info.IsMBSupporter) {
-                    AppInfo.enableAppLayouts = true;
-                }
-            });
         }
     }
 

@@ -472,6 +472,10 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
     }
     function show(path, options) {
 
+        if (path.indexOf('/') !== 0 && path.indexOf('://') === -1) {
+            path = '/' + path;
+        }
+
         var baseRoute = baseUrl();
         path = path.replace(baseRoute, '');
 
