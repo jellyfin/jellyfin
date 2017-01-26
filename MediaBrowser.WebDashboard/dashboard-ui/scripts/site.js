@@ -2066,7 +2066,8 @@ var AppInfo = {};
             controller: 'scripts/nowplayingpage',
             autoFocus: false,
             transition: 'fade',
-            fullscreen: true
+            fullscreen: true,
+            supportsThemeMedia: true
         });
 
         defineRoute({

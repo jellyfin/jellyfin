@@ -147,7 +147,7 @@
                 DisplayOrder: form.querySelector('#selectDisplayOrder').value,
                 Players: form.querySelector('#txtPlayers').value,
                 Album: form.querySelector('#txtAlbum').value,
-                AlbumArtist: getAlbumArtists(form),
+                AlbumArtists: getAlbumArtists(form),
                 ArtistItems: getArtists(form),
                 Metascore: form.querySelector('#txtMetascore').value,
                 AwardSummary: form.querySelector('#txtAwardSummary').value,
