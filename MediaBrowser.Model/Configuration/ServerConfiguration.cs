@@ -182,7 +182,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableAnonymousUsageReporting { get; set; }
         public bool EnableStandaloneMusicKeys { get; set; }
-        public bool EnableLocalizedGuids { get; set; }
         public bool EnableFolderView { get; set; }
         public bool EnableGroupingIntoCollections { get; set; }
         public bool DisplaySpecialsWithinSeasons { get; set; }
@@ -205,7 +204,6 @@ namespace MediaBrowser.Model.Configuration
             Migrations = new string[] { };
             ImageExtractionTimeoutMs = 0;
 
-            EnableLocalizedGuids = true;
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
 
