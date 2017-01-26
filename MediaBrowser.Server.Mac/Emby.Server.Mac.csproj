@@ -1500,6 +1500,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\playerselection.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\playerselection.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\playersettingsmenu.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\playersettingsmenu.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\remotecontrolautoplay.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\remotecontrolautoplay.js</Link>
     </BundleResource>
@@ -1580,6 +1583,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\require\requiretext.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\require\requiretext.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\resourcelocks\nullresourcelock.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\resourcelocks\nullresourcelock.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\resourcelocks\resourcelockmanager.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\resourcelocks\resourcelockmanager.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\scroller\smoothscroller.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\scroller\smoothscroller.js</Link>
