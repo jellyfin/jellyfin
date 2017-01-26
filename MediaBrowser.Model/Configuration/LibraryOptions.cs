@@ -5,7 +5,6 @@
         public bool EnableArchiveMediaFiles { get; set; }
         public bool EnablePhotos { get; set; }
         public bool EnableRealtimeMonitor { get; set; }
-        public int SchemaVersion { get; set; }
         public bool EnableChapterImageExtraction { get; set; }
         public bool ExtractChapterImagesDuringLibraryScan { get; set; }
         public bool DownloadImagesInAdvance { get; set; }
@@ -15,6 +14,18 @@
         public bool EnableInternetProviders { get; set; }
         public bool ImportMissingEpisodes { get; set; }
         public bool EnableAutomaticSeriesGrouping { get; set; }
+
+        /// <summary>
+        /// Gets or sets the preferred metadata language.
+        /// </summary>
+        /// <value>The preferred metadata language.</value>
+        public string PreferredMetadataLanguage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metadata country code.
+        /// </summary>
+        /// <value>The metadata country code.</value>
+        public string MetadataCountryCode { get; set; }
 
         public LibraryOptions()
         {

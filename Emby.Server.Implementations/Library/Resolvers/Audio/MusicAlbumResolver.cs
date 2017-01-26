@@ -142,12 +142,14 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                         }
                     }
                 }
-
-                var fullName = fileSystemInfo.FullName;
-
-                if (libraryManager.IsAudioFile(fullName, libraryOptions))
+                else
                 {
-                    return true;
+                    var fullName = fileSystemInfo.FullName;
+
+                    if (libraryManager.IsAudioFile(fullName, libraryOptions))
+                    {
+                        return true;
+                    }
                 }
             }
 

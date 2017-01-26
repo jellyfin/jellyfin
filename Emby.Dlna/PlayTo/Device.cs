@@ -112,7 +112,7 @@ namespace Emby.Dlna.PlayTo
 
         private int GetInactiveTimerIntervalMs()
         {
-            return 20000;
+            return 30000;
         }
 
         public void Start()
@@ -440,6 +440,11 @@ namespace Emby.Dlna.PlayTo
             {
                 var transportState = await GetTransportInfo().ConfigureAwait(false);
 
+                if (_disposed)
+                {
+                    return;
+                }
+
                 DateLastActivity = DateTime.UtcNow;
 
                 if (transportState.HasValue)
@@ -530,6 +535,11 @@ namespace Emby.Dlna.PlayTo
 
         private async Task GetVolume()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             var command = RendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetVolume");
             if (command == null)
                 return;
@@ -563,6 +573,11 @@ namespace Emby.Dlna.PlayTo
 
         private async Task GetMute()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             var command = RendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetMute");
             if (command == null)
                 return;
@@ -793,6 +808,11 @@ namespace Emby.Dlna.PlayTo
 
         private async Task GetAVProtocolAsync()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             var avService = GetAvTransportService();
             if (avService == null)
                 return;
@@ -807,6 +827,11 @@ namespace Emby.Dlna.PlayTo
 
         private async Task GetRenderingProtocolAsync()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             var avService = GetServiceRenderingControl();
 
             if (avService == null)

@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.Session
         public List<string> SupportedCommands { get; set; }
 
         public bool SupportsMediaControl { get; set; }
-
+        public bool SupportsContentUploading { get; set; }
         public string MessageCallbackUrl { get; set; }
 
         public bool SupportsPersistentIdentifier { get; set; }

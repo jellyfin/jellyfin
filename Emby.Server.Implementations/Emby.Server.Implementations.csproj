@@ -182,6 +182,7 @@
     <Compile Include="MediaEncoder\EncodingManager.cs" />
     <Compile Include="Migrations\IVersionMigration.cs" />
     <Compile Include="Migrations\LibraryScanMigration.cs" />
+    <Compile Include="Migrations\GuideMigration.cs" />
     <Compile Include="Migrations\UpdateLevelMigration.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />
     <Compile Include="News\NewsService.cs" />

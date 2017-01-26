@@ -11,7 +11,6 @@ namespace MediaBrowser.Model.LiveTv
         public string RecordingPath { get; set; }
         public string MovieRecordingPath { get; set; }
         public string SeriesRecordingPath { get; set; }
-        public bool EnableAutoOrganize { get; set; }
         public bool EnableRecordingEncoding { get; set; }
         public string RecordingEncodingFormat { get; set; }
         public bool EnableRecordingSubfolders { get; set; }
@@ -58,8 +57,7 @@ namespace MediaBrowser.Model.LiveTv
         public string SourceB { get; set; }
         public string SourceC { get; set; }
         public string SourceD { get; set; }
-
-        public int DataVersion { get; set; }
+        public bool EnableTvgId { get; set; }
 
         public TunerHostInfo()
         {

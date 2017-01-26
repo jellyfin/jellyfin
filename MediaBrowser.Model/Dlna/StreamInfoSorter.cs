@@ -7,7 +7,7 @@ namespace MediaBrowser.Model.Dlna
 {
     public class StreamInfoSorter
     {
-        public static List<StreamInfo> SortMediaSources(List<StreamInfo> streams, int? maxBitrate)
+        public static List<StreamInfo> SortMediaSources(List<StreamInfo> streams, long? maxBitrate)
         {
             return streams.OrderBy(i =>
             {

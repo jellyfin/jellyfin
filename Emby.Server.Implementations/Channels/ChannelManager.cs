@@ -343,7 +343,7 @@ namespace Emby.Server.Implementations.Channels
 
         private MediaSourceInfo GetMediaSource(BaseItem item, ChannelMediaInfo info)
         {
-            var source = info.ToMediaSource();
+            var source = info.ToMediaSource(item.Id);
 
             source.RunTimeTicks = source.RunTimeTicks ?? item.RunTimeTicks;
 

@@ -137,6 +137,7 @@ fon|||Fon|fon
 fre|fra|fr|French|français
 frm|||French, Middle (ca.1400-1600)|français moyen (1400-1600)
 fro|||French, Old (842-ca.1400)|français ancien (842-ca.1400)
+frc||fr-ca|French (Canada)|french
 frr|||Northern Frisian|frison septentrional
 frs|||Eastern Frisian|frison oriental
 fry||fy|Western Frisian|frison occidental

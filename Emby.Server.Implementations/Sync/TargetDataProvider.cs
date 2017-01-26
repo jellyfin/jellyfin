@@ -19,6 +19,7 @@ namespace Emby.Server.Implementations.Sync
         private readonly IServerSyncProvider _provider;
 
         private readonly SemaphoreSlim _dataLock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _remoteDataLock = new SemaphoreSlim(1, 1);
         private List<LocalItem> _items;
 
         private readonly ILogger _logger;
@@ -63,14 +64,23 @@ namespace Emby.Server.Implementations.Sync
         {
             _logger.Debug("Getting {0} from {1}", string.Join(MediaSync.PathSeparatorString, GetRemotePath().ToArray()), _provider.Name);
 
-            var fileResult = await _provider.GetFiles(GetRemotePath().ToArray(), _target, cancellationToken).ConfigureAwait(false);
+            await _remoteDataLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            if (fileResult.Items.Length > 0)
+            try
             {
-                using (var stream = await _provider.GetFile(fileResult.Items[0].FullName, _target, new Progress<double>(), cancellationToken))
+                var fileResult = await _provider.GetFiles(GetRemotePath().ToArray(), _target, cancellationToken).ConfigureAwait(false);
+
+                if (fileResult.Items.Length > 0)
                 {
-                    return _json.DeserializeFromStream<List<LocalItem>>(stream);
+                    using (var stream = await _provider.GetFile(fileResult.Items[0].FullName, _target, new Progress<double>(), cancellationToken))
+                    {
+                        return _json.DeserializeFromStream<List<LocalItem>>(stream);
+                    }
                 }
+            }
+            finally
+            {
+                _remoteDataLock.Release();
             }
 
             return new List<LocalItem>();
@@ -93,9 +103,19 @@ namespace Emby.Server.Implementations.Sync
                 // Save to sync provider
                 stream.Position = 0;
                 var remotePath = GetRemotePath();
-                _logger.Debug("Saving data.json to {0}. Remote path: {1}", _provider.Name, string.Join("/", remotePath));
 
-                await _provider.SendFile(stream, remotePath, _target, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+                await _remoteDataLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                try
+                {
+                    _logger.Debug("Saving data.json to {0}. Remote path: {1}", _provider.Name, string.Join("/", remotePath));
+
+                    await _provider.SendFile(stream, remotePath, _target, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+                }
+                finally
+                {
+                    _remoteDataLock.Release();
+                }
             }
         }
 

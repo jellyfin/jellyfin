@@ -100,20 +100,30 @@ namespace Emby.Server.Implementations.Intros
 
             if (trailerTypes.Count > 0)
             {
+                if (trailerTypes.Count >= 5)
+                {
+                    trailerTypes.Clear();
+                }
+
+                // hack - can't filter by user library because local trailers get TopParentId =null in the db. 
+                // for now we have to use a post-query filter afterwards to solve that
                 var trailerResult = _libraryManager.GetItemList(new InternalItemsQuery
                 {
                     IncludeItemTypes = new[] { typeof(Trailer).Name },
                     TrailerTypes = trailerTypes.ToArray(),
                     SimilarTo = item,
-                    IsPlayed = config.EnableIntrosForWatchedContent ? (bool?)null : false,
+                    //IsPlayed = config.EnableIntrosForWatchedContent ? (bool?)null : false,
                     MaxParentalRating = config.EnableIntrosParentalControl ? ratingLevel : null,
                     BlockUnratedItems = config.EnableIntrosParentalControl ? new[] { UnratedItem.Trailer } : new UnratedItem[] { },
 
                     // Account for duplicates by imdb id, since the database doesn't support this yet
-                    Limit = config.TrailerLimit * 2,
+                    Limit = config.TrailerLimit * 4,
                     SourceTypes = sourceTypes.ToArray()
-
-                }).Where(i => string.IsNullOrWhiteSpace(i.GetProviderId(MetadataProviders.Imdb)) || !string.Equals(i.GetProviderId(MetadataProviders.Imdb), item.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase)).Take(config.TrailerLimit);
+                })
+                .Where(i => string.IsNullOrWhiteSpace(i.GetProviderId(MetadataProviders.Imdb)) || !string.Equals(i.GetProviderId(MetadataProviders.Imdb), item.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase))
+                .Where(i => i.IsVisibleStandalone(user))
+                .Where(i => config.EnableIntrosForWatchedContent || !i.IsPlayed(user))
+                .Take(config.TrailerLimit);
 
                 candidates.AddRange(trailerResult.Select(i => new ItemWithTrailer
                 {

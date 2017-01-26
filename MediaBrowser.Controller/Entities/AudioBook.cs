@@ -17,6 +17,15 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
+        public override bool SupportsPlayedStatus
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        [IgnoreDataMember]
         public string SeriesPresentationUniqueKey { get; set; }
         [IgnoreDataMember]
         public string SeriesName { get; set; }

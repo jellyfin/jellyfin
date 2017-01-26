@@ -92,6 +92,11 @@ namespace MediaBrowser.Model.Entities
                     {
                         attributes.Add(StringHelper.FirstToUpper(Language));
                     }
+                    else
+                    {
+                        attributes.Add("Und");
+                    }
+
                     if (IsDefault)
                     {
                         attributes.Add("Default");

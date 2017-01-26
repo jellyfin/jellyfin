@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Threading;
 using RSSDP;
 
@@ -163,7 +164,7 @@ namespace Rssdp.Infrastructure
             {
                 foreach (var device in GetUnexpiredDevices().Where(NotificationTypeMatchesFilter))
                 {
-                    DeviceFound(device, false);
+                    DeviceFound(device, false, null);
                 }
             }
 
@@ -237,16 +238,17 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Raises the <see cref="DeviceAvailable"/> event.
         /// </summary>
-        /// <param name="device">A <see cref="DiscoveredSsdpDevice"/> representing the device that is now available.</param>
-        /// <param name="isNewDevice">True if the device was not currently in the cahce before this event was raised.</param>
         /// <seealso cref="DeviceAvailable"/>
-        protected virtual void OnDeviceAvailable(DiscoveredSsdpDevice device, bool isNewDevice)
+        protected virtual void OnDeviceAvailable(DiscoveredSsdpDevice device, bool isNewDevice, IpAddressInfo localIpAddress)
         {
             if (this.IsDisposed) return;
 
             var handlers = this.DeviceAvailable;
             if (handlers != null)
-                handlers(this, new DeviceAvailableEventArgs(device, isNewDevice));
+                handlers(this, new DeviceAvailableEventArgs(device, isNewDevice)
+                {
+                    LocalIpAddress = localIpAddress
+                });
         }
 
         /// <summary>
@@ -335,7 +337,7 @@ namespace Rssdp.Infrastructure
 
         #region Discovery/Device Add
 
-        private void AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device)
+        private void AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IpAddressInfo localIpAddress)
         {
             bool isNewDevice = false;
             lock (_Devices)
@@ -353,10 +355,10 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            DeviceFound(device, isNewDevice);
+            DeviceFound(device, isNewDevice, localIpAddress);
         }
 
-        private void DeviceFound(DiscoveredSsdpDevice device, bool isNewDevice)
+        private void DeviceFound(DiscoveredSsdpDevice device, bool isNewDevice, IpAddressInfo localIpAddress)
         {
             // Don't raise the event if we've already done it for a cached
             // version of this device, and the cached version isn't
@@ -391,7 +393,7 @@ namespace Rssdp.Infrastructure
             }
 
             if (raiseEvent)
-                OnDeviceAvailable(device, isNewDevice);
+                OnDeviceAvailable(device, isNewDevice, localIpAddress);
         }
 
         private bool NotificationTypeMatchesFilter(DiscoveredSsdpDevice device)
@@ -428,7 +430,7 @@ namespace Rssdp.Infrastructure
             return _CommunicationsServer.SendMulticastMessage(message);
         }
 
-        private void ProcessSearchResponseMessage(HttpResponseMessage message)
+        private void ProcessSearchResponseMessage(HttpResponseMessage message, IpAddressInfo localIpAddress)
         {
             if (!message.IsSuccessStatusCode) return;
 
@@ -445,22 +447,22 @@ namespace Rssdp.Infrastructure
                     ResponseHeaders = message.Headers
                 };
 
-                AddOrUpdateDiscoveredDevice(device);
+                AddOrUpdateDiscoveredDevice(device, localIpAddress);
             }
         }
 
-        private void ProcessNotificationMessage(HttpRequestMessage message)
+        private void ProcessNotificationMessage(HttpRequestMessage message, IpAddressInfo localIpAddress)
         {
             if (String.Compare(message.Method.Method, "Notify", StringComparison.OrdinalIgnoreCase) != 0) return;
 
             var notificationType = GetFirstHeaderStringValue("NTS", message);
             if (String.Compare(notificationType, SsdpConstants.SsdpKeepAliveNotification, StringComparison.OrdinalIgnoreCase) == 0)
-                ProcessAliveNotification(message);
+                ProcessAliveNotification(message, localIpAddress);
             else if (String.Compare(notificationType, SsdpConstants.SsdpByeByeNotification, StringComparison.OrdinalIgnoreCase) == 0)
                 ProcessByeByeNotification(message);
         }
 
-        private void ProcessAliveNotification(HttpRequestMessage message)
+        private void ProcessAliveNotification(HttpRequestMessage message, IpAddressInfo localIpAddress)
         {
             var location = GetFirstHeaderUriValue("Location", message);
             if (location != null)
@@ -475,7 +477,7 @@ namespace Rssdp.Infrastructure
                     ResponseHeaders = message.Headers
                 };
 
-                AddOrUpdateDiscoveredDevice(device);
+                AddOrUpdateDiscoveredDevice(device, localIpAddress);
 
                 ResetExpireCachedDevicesTimer();
             }
@@ -702,12 +704,12 @@ namespace Rssdp.Infrastructure
 
         private void CommsServer_ResponseReceived(object sender, ResponseReceivedEventArgs e)
         {
-            ProcessSearchResponseMessage(e.Message);
+            ProcessSearchResponseMessage(e.Message, e.LocalIpAddress);
         }
 
         private void CommsServer_RequestReceived(object sender, RequestReceivedEventArgs e)
         {
-            ProcessNotificationMessage(e.Message);
+            ProcessNotificationMessage(e.Message, e.LocalIpAddress);
         }
 
         #endregion

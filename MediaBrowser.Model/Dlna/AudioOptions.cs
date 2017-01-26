@@ -41,7 +41,7 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// The application's configured quality setting
         /// </summary>
-        public int? MaxBitrate { get; set; }
+        public long? MaxBitrate { get; set; }
 
         /// <summary>
         /// Gets or sets the context.
@@ -59,7 +59,7 @@ namespace MediaBrowser.Model.Dlna
         /// Gets the maximum bitrate.
         /// </summary>
         /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
-        public int? GetMaxBitrate(bool isAudio)
+        public long? GetMaxBitrate(bool isAudio)
         {
             if (MaxBitrate.HasValue)
             {

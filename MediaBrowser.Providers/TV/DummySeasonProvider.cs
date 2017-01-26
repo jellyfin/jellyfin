@@ -66,28 +66,38 @@ namespace MediaBrowser.Providers.TV
                 .Distinct()
                 .ToList())
             {
-                var hasSeason = series.Children.OfType<Season>()
-                    .Any(i => i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber);
+                var existingSeason = series.Children.OfType<Season>()
+                    .FirstOrDefault(i => i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber);
 
-                if (!hasSeason)
+                if (existingSeason == null)
                 {
                     await AddSeason(series, seasonNumber, false, cancellationToken).ConfigureAwait(false);
 
                     hasChanges = true;
+                }
+                else if (existingSeason.IsVirtualItem)
+                {
+                    existingSeason.IsVirtualItem = false;
+                    await existingSeason.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                 }
             }
 
             // Unknown season - create a dummy season to put these under
             if (episodesInSeriesFolder.Any(i => !i.ParentIndexNumber.HasValue))
             {
-                var hasSeason = series.Children.OfType<Season>()
-                    .Any(i => !i.IndexNumber.HasValue);
+                var existingSeason = series.Children.OfType<Season>()
+                    .FirstOrDefault(i => !i.IndexNumber.HasValue);
 
-                if (!hasSeason)
+                if (existingSeason == null)
                 {
                     await AddSeason(series, null, false, cancellationToken).ConfigureAwait(false);
 
                     hasChanges = true;
+                }
+                else if (existingSeason.IsVirtualItem)
+                {
+                    existingSeason.IsVirtualItem = false;
+                    await existingSeason.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                 }
             }
 

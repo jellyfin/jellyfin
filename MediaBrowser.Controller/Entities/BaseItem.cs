@@ -53,6 +53,7 @@ namespace MediaBrowser.Controller.Entities
             ImageInfos = new List<ItemImageInfo>();
             InheritedTags = new List<string>();
             ProductionLocations = new List<string>();
+            SourceType = SourceType.Library;
         }
 
         public static readonly char[] SlugReplaceChars = { '?', '/', '&' };
@@ -272,9 +273,6 @@ namespace MediaBrowser.Controller.Entities
         public virtual string Path { get; set; }
 
         [IgnoreDataMember]
-        public bool IsOffline { get; set; }
-
-        [IgnoreDataMember]
         public virtual SourceType SourceType { get; set; }
 
         /// <summary>
@@ -336,20 +334,6 @@ namespace MediaBrowser.Controller.Entities
                 // An item that belongs to another item but is not part of the Parent-Child tree
                 return !IsFolder && ParentId == Guid.Empty && LocationType == LocationType.FileSystem;
             }
-        }
-
-        public Task UpdateIsOffline(bool newValue)
-        {
-            var item = this;
-
-            if (item.IsOffline != newValue)
-            {
-                item.IsOffline = newValue;
-                // this is creating too many repeated db updates
-                //return item.UpdateToRepository(ItemUpdateType.None, CancellationToken.None);
-            }
-
-            return Task.FromResult(true);
         }
 
         /// <summary>
@@ -1355,6 +1339,11 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrWhiteSpace(lang))
             {
+                lang = LibraryManager.GetLibraryOptions(this).PreferredMetadataLanguage;
+            }
+
+            if (string.IsNullOrWhiteSpace(lang))
+            {
                 lang = ConfigurationManager.Configuration.PreferredMetadataLanguage;
             }
 
@@ -1381,6 +1370,11 @@ namespace MediaBrowser.Controller.Entities
                 lang = LibraryManager.GetCollectionFolders(this)
                     .Select(i => i.PreferredMetadataCountryCode)
                     .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
+            }
+
+            if (string.IsNullOrWhiteSpace(lang))
+            {
+                lang = LibraryManager.GetLibraryOptions(this).MetadataCountryCode;
             }
 
             if (string.IsNullOrWhiteSpace(lang))
@@ -1606,12 +1600,15 @@ namespace MediaBrowser.Controller.Entities
                     return true;
                 }
 
-                var userCollectionFolders = user.RootFolder.GetChildren(user, true).Select(i => i.Id).ToList();
-                var itemCollectionFolders = LibraryManager.GetCollectionFolders(this).Select(i => i.Id);
+                var itemCollectionFolders = LibraryManager.GetCollectionFolders(this).Select(i => i.Id).ToList();
 
-                if (!itemCollectionFolders.Any(userCollectionFolders.Contains))
+                if (itemCollectionFolders.Count > 0)
                 {
-                    return false;
+                    var userCollectionFolders = user.RootFolder.GetChildren(user, true).Select(i => i.Id).ToList();
+                    if (!itemCollectionFolders.Any(userCollectionFolders.Contains))
+                    {
+                        return false;
+                    }
                 }
             }
 
@@ -1624,6 +1621,15 @@ namespace MediaBrowser.Controller.Entities
         /// <value><c>true</c> if this instance is folder; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
         public virtual bool IsFolder
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        [IgnoreDataMember]
+        public virtual bool IsDisplayedAsFolder
         {
             get
             {

@@ -87,7 +87,7 @@ namespace Emby.Server.Core.IO
         public bool IsPathLocked(string path)
         {
             var lockedPaths = _tempIgnoredPaths.Keys.ToList();
-            return lockedPaths.Any(i => string.Equals(i, path, StringComparison.OrdinalIgnoreCase) || _fileSystem.ContainsSubPath(i, path));
+            return lockedPaths.Any(i => _fileSystem.AreEqual(i, path) || _fileSystem.ContainsSubPath(i, path));
         }
 
         public async void ReportFileSystemChangeComplete(string path, bool refreshPath)
@@ -288,6 +288,13 @@ namespace Emby.Server.Core.IO
             {
                 try
                 {
+                    if (!_fileSystem.DirectoryExists(path))
+                    {
+                        // Seeing a crash in the mono runtime due to an exception being thrown on a different thread
+                        Logger.Info("Skipping realtime monitor for {0} because the path does not exist", path);
+                        return;
+                    }
+
                     var newWatcher = new FileSystemWatcher(path, "*")
                     {
                         IncludeSubdirectories = true

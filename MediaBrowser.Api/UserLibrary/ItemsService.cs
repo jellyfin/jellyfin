@@ -318,7 +318,11 @@ namespace MediaBrowser.Api.UserLibrary
             // ExcludeLocationTypes
             if (!string.IsNullOrEmpty(request.ExcludeLocationTypes))
             {
-                query.ExcludeLocationTypes = request.ExcludeLocationTypes.Split(',').Select(d => (LocationType)Enum.Parse(typeof(LocationType), d, true)).ToArray();
+                var excludeLocationTypes = request.ExcludeLocationTypes.Split(',').Select(d => (LocationType)Enum.Parse(typeof(LocationType), d, true)).ToArray();
+                if (excludeLocationTypes.Contains(LocationType.Virtual))
+                {
+                    query.IsVirtualItem = false;
+                }
             }
 
             if (!string.IsNullOrEmpty(request.LocationTypes))

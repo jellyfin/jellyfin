@@ -176,6 +176,18 @@ namespace Emby.Dlna.Didl
             return new NullLogger();
         }
 
+        private string GetMimeType(string input)
+        {
+            var mime = MimeTypes.GetMimeType(input);
+
+            if (string.Equals(mime, "video/mp2t", StringComparison.OrdinalIgnoreCase))
+            {
+                mime = "video/mpeg";
+            }
+
+            return mime;
+        }
+
         private void AddVideoResource(DlnaOptions options, XmlWriter writer, IHasMediaSources video, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             if (streamInfo == null)
@@ -360,7 +372,7 @@ namespace Emby.Dlna.Didl
             var filename = url.Substring(0, url.IndexOf('?'));
 
             var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
-               ? MimeTypes.GetMimeType(filename)
+               ? GetMimeType(filename)
                : mediaProfile.MimeType;
 
             writer.WriteAttributeString("protocolInfo", String.Format(
@@ -481,7 +493,7 @@ namespace Emby.Dlna.Didl
             var filename = url.Substring(0, url.IndexOf('?'));
 
             var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
-                ? MimeTypes.GetMimeType(filename)
+                ? GetMimeType(filename)
                 : mediaProfile.MimeType;
 
             var contentFeatures = new ContentFeatureBuilder(_profile).BuildAudioHeader(streamInfo.Container,
@@ -674,7 +686,7 @@ namespace Emby.Dlna.Didl
 
             writer.WriteStartElement("upnp", "class", NS_UPNP);
 
-            if (item.IsFolder || stubType.HasValue)
+            if (item.IsDisplayedAsFolder || stubType.HasValue)
             {
                 string classType = null;
 
@@ -760,7 +772,7 @@ namespace Emby.Dlna.Didl
 
             // Seeing some LG models locking up due content with large lists of people
             // The actual issue might just be due to processing a more metadata than it can handle
-            var limit = 10;
+            var limit = 6;
 
             foreach (var actor in people)
             {
@@ -1007,7 +1019,7 @@ namespace Emby.Dlna.Didl
 
             writer.WriteAttributeString("protocolInfo", String.Format(
                 "http-get:*:{0}:{1}",
-                MimeTypes.GetMimeType("file." + format),
+                GetMimeType("file." + format),
                 contentFeatures
                 ));
 

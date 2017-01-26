@@ -14,12 +14,12 @@ using System.Linq;
 
 namespace Emby.Server.Implementations.Migrations
 {
-    public class LibraryScanMigration : IVersionMigration
+    public class GuideMigration : IVersionMigration
     {
         private readonly IServerConfigurationManager _config;
         private readonly ITaskManager _taskManager;
 
-        public LibraryScanMigration(IServerConfigurationManager config, ITaskManager taskManager)
+        public GuideMigration(IServerConfigurationManager config, ITaskManager taskManager)
         {
             _config = config;
             _taskManager = taskManager;
@@ -27,14 +27,14 @@ namespace Emby.Server.Implementations.Migrations
 
         public async Task Run()
         {
-            var name = "LibraryScan6";
+            var name = "GuideRefresh2";
 
             if (!_config.Configuration.Migrations.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
                 Task.Run(() =>
                 {
                     _taskManager.QueueScheduledTask(_taskManager.ScheduledTasks.Select(i => i.ScheduledTask)
-                            .First(i => string.Equals(i.Key, "RefreshLibrary", StringComparison.OrdinalIgnoreCase)));
+                            .First(i => string.Equals(i.Key, "RefreshGuide", StringComparison.OrdinalIgnoreCase)));
                 });
 
                 var list = _config.Configuration.Migrations.ToList();

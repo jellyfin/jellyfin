@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
 
 namespace Rssdp
 {
@@ -11,10 +12,11 @@ namespace Rssdp
 	/// </summary>
 	public sealed class DeviceAvailableEventArgs : EventArgs
 	{
+        public IpAddressInfo LocalIpAddress { get; set; }
 
-		#region Fields
+        #region Fields
 
-		private readonly DiscoveredSsdpDevice _DiscoveredDevice;
+        private readonly DiscoveredSsdpDevice _DiscoveredDevice;
 		private readonly bool _IsNewlyDiscovered;
 
 		#endregion

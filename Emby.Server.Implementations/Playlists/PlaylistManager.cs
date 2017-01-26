@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.Playlists
 
             if (string.IsNullOrWhiteSpace(options.MediaType))
             {
-                throw new ArgumentException("A playlist media type is required.");
+                options.MediaType = "Audio";
             }
 
             var user = _userManager.GetUserById(options.UserId);

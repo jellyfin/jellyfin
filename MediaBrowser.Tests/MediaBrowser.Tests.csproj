@@ -37,6 +37,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Emby.Common.Implementations">
+      <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.XML" />
   </ItemGroup>
@@ -58,12 +61,21 @@
     <Compile Include="ConsistencyTests\TextIndexing\WordIndex.cs" />
     <Compile Include="ConsistencyTests\TextIndexing\WordOccurrence.cs" />
     <Compile Include="ConsistencyTests\TextIndexing\WordOccurrences.cs" />
+    <Compile Include="M3uParserTest.cs" />
     <Compile Include="MediaEncoding\Subtitles\AssParserTests.cs" />
     <Compile Include="MediaEncoding\Subtitles\SrtParserTests.cs" />
     <Compile Include="MediaEncoding\Subtitles\VttWriterTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj">
+      <Project>{e383961b-9356-4d5d-8233-9a1079d03055}</Project>
+      <Name>Emby.Server.Implementations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
+      <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
+      <Name>MediaBrowser.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
       <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
       <Name>MediaBrowser.Controller</Name>

@@ -130,7 +130,6 @@ namespace MediaBrowser.Controller.Entities
         public string[] TopParentIds { get; set; }
 
         public LocationType[] LocationTypes { get; set; }
-        public LocationType[] ExcludeLocationTypes { get; set; }
         public string[] PresetViews { get; set; }
         public SourceType[] SourceTypes { get; set; }
         public SourceType[] ExcludeSourceTypes { get; set; }
@@ -160,6 +159,7 @@ namespace MediaBrowser.Controller.Entities
         public DateTime? MinDateLastSaved { get; set; }
 
         public DtoOptions DtoOptions { get; set; }
+        public int MinSimilarityScore { get; set; }
 
         public bool HasField(ItemFields name)
         {
@@ -197,6 +197,8 @@ namespace MediaBrowser.Controller.Entities
 
         public InternalItemsQuery()
         {
+            MinSimilarityScore = 20;
+
             GroupByPresentationUniqueKey = true;
             EnableTotalRecordCount = true;
 
@@ -230,7 +232,6 @@ namespace MediaBrowser.Controller.Entities
             ExcludeTags = new string[] { };
             ExcludeInheritedTags = new string[] { };
             LocationTypes = new LocationType[] { };
-            ExcludeLocationTypes = new LocationType[] { };
             PresetViews = new string[] { };
             SourceTypes = new SourceType[] { };
             ExcludeSourceTypes = new SourceType[] { };

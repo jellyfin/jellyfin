@@ -361,10 +361,7 @@ namespace Emby.Server.Implementations.Dto
             if (collectionFolder != null)
             {
                 dto.OriginalCollectionType = collectionFolder.CollectionType;
-
-                dto.CollectionType = user == null ?
-                    collectionFolder.CollectionType :
-                    collectionFolder.GetViewType(user);
+                dto.CollectionType = collectionFolder.CollectionType;
             }
 
             if (fields.Contains(ItemFields.CanDelete))
@@ -1515,7 +1512,8 @@ namespace Emby.Server.Implementations.Dto
                     return artist;
                 }
             }
-            return item.GetParent();
+
+            return item.DisplayParent ?? item.GetParent();
         }
 
         private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem owner)

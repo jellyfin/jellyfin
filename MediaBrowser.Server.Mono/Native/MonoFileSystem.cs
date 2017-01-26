@@ -6,8 +6,8 @@ namespace MediaBrowser.Server.Mono.Native
 {
     public class MonoFileSystem : ManagedFileSystem
     {
-        public MonoFileSystem(ILogger logger, bool supportsAsyncFileStreams, bool enableManagedInvalidFileNameChars)
-            : base(logger, supportsAsyncFileStreams, enableManagedInvalidFileNameChars, true)
+        public MonoFileSystem(ILogger logger, bool supportsAsyncFileStreams, bool enableManagedInvalidFileNameChars, string tempPath)
+            : base(logger, supportsAsyncFileStreams, enableManagedInvalidFileNameChars, true, tempPath)
         {
         }
 

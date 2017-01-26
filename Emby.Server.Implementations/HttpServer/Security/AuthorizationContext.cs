@@ -49,6 +49,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             string device = null;
             string client = null;
             string version = null;
+            string token = null;
 
             if (auth != null)
             {
@@ -56,9 +57,13 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 auth.TryGetValue("Device", out device);
                 auth.TryGetValue("Client", out client);
                 auth.TryGetValue("Version", out version);
+                auth.TryGetValue("Token", out token);
             }
 
-            var token = httpReq.Headers["X-Emby-Token"];
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                token = httpReq.Headers["X-Emby-Token"];
+            }
 
             if (string.IsNullOrWhiteSpace(token))
             {
@@ -156,8 +161,10 @@ namespace Emby.Server.Implementations.HttpServer.Security
             // There should be at least to parts
             if (parts.Length != 2) return null;
 
+            var acceptedNames = new[] { "MediaBrowser", "Emby"};
+
             // It has to be a digest request
-            if (!string.Equals(parts[0], "MediaBrowser", StringComparison.OrdinalIgnoreCase))
+            if (!acceptedNames.Contains(parts[0] ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
                 return null;
             }
@@ -174,7 +181,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
                 if (param.Length == 2)
                 {
-					var value = NormalizeValue (param[1].Trim(new[] { '"' }));
+                    var value = NormalizeValue(param[1].Trim(new[] { '"' }));
                     result.Add(param[0], value);
                 }
             }
@@ -182,14 +189,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return result;
         }
 
-		private string NormalizeValue(string value)
-		{
-			if (string.IsNullOrWhiteSpace (value)) 
-			{
-				return value;
-			}
+        private string NormalizeValue(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
 
-			return System.Net.WebUtility.HtmlEncode(value);
-		}
+            return System.Net.WebUtility.HtmlEncode(value);
+        }
     }
 }

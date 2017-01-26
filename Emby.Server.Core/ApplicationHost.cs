@@ -326,6 +326,8 @@ namespace Emby.Server.Core
             }
         }
 
+        public abstract bool IsRunningAsService { get; }
+
         private Assembly GetAssembly(Type type)
         {
             return type.GetTypeInfo().Assembly;
@@ -489,7 +491,8 @@ namespace Emby.Server.Core
         {
             var migrations = new List<IVersionMigration>
             {
-                new LibraryScanMigration(ServerConfigurationManager, TaskManager)
+                new LibraryScanMigration(ServerConfigurationManager, TaskManager),
+                new GuideMigration(ServerConfigurationManager, TaskManager)
             };
 
             foreach (var task in migrations)
@@ -1247,7 +1250,6 @@ namespace Emby.Server.Core
                 HasUpdateAvailable = HasUpdateAvailable,
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
-                IsRunningAsService = IsRunningAsService,
                 SupportsRunningAsService = SupportsRunningAsService,
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,
@@ -1476,6 +1478,10 @@ namespace Emby.Server.Core
             try
             {
                 AuthorizeServer();
+            }
+            catch (NotImplementedException)
+            {
+                
             }
             catch (Exception ex)
             {

@@ -63,7 +63,7 @@ namespace Emby.Dlna.Profiles
                 },
                 new DirectPlayProfile
                 {
-                    Container = "mp4,mkv",
+                    Container = "mp4,mkv,m4v",
                     Type = DlnaProfileType.Video,
                     VideoCodec = "h264,mpeg4",
                     AudioCodec = "aac,ac3"
@@ -86,7 +86,9 @@ namespace Emby.Dlna.Profiles
                 {
                     Container = "mp3",
                     AudioCodec = "mp3",
-                    Type = DlnaProfileType.Audio
+                    Type = DlnaProfileType.Audio,
+                    // Transcoded audio won't be playable at all without this
+                    TranscodeSeekInfo = TranscodeSeekInfo.Bytes
                 },
                 new TranscodingProfile
                 {
@@ -253,6 +255,13 @@ namespace Emby.Dlna.Profiles
                     Container = "wav",
                     MimeType = "audio/wav",
                     Type = DlnaProfileType.Audio
+                },
+
+                new ResponseProfile
+                {
+                    Container = "m4v",
+                    Type = DlnaProfileType.Video,
+                    MimeType = "video/mp4"
                 }
             };
         }

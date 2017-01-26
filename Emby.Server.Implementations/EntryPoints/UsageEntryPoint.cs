@@ -10,6 +10,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -19,7 +20,7 @@ namespace Emby.Server.Implementations.EntryPoints
     /// </summary>
     public class UsageEntryPoint : IServerEntryPoint
     {
-        private readonly IApplicationHost _applicationHost;
+        private readonly IServerApplicationHost _applicationHost;
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
@@ -28,7 +29,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private readonly ConcurrentDictionary<Guid, ClientInfo> _apps = new ConcurrentDictionary<Guid, ClientInfo>();
 
-        public UsageEntryPoint(ILogger logger, IApplicationHost applicationHost, IHttpClient httpClient, ISessionManager sessionManager, IUserManager userManager, IServerConfigurationManager config)
+        public UsageEntryPoint(ILogger logger, IServerApplicationHost applicationHost, IHttpClient httpClient, ISessionManager sessionManager, IUserManager userManager, IServerConfigurationManager config)
         {
             _logger = logger;
             _applicationHost = applicationHost;
