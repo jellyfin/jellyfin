@@ -115,7 +115,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                     RequiresClosing = false
                 };
 
-                mediaSource.InferTotalBitrate();
+                mediaSource.InferTotalBitrate(true);
 
                 return new List<MediaSourceInfo> { mediaSource };
             }

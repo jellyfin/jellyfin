@@ -1064,8 +1064,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 var isAudio = false;
                 await new LiveStreamHelper(_mediaEncoder, _logger).AddMediaInfoWithProbe(stream, isAudio, cancellationToken).ConfigureAwait(false);
 
-                stream.InferTotalBitrate();
-
                 return new List<MediaSourceInfo>
                 {
                     stream
@@ -1372,13 +1370,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             ActiveRecordingInfo removed;
             _activeRecordings.TryRemove(timer.Id, out removed);
 
-            if (recordingStatus != RecordingStatus.Completed && DateTime.UtcNow < timer.EndDate)
+            if (recordingStatus != RecordingStatus.Completed && DateTime.UtcNow < timer.EndDate && timer.RetryCount < 10)
             {
                 const int retryIntervalSeconds = 60;
                 _logger.Info("Retrying recording in {0} seconds.", retryIntervalSeconds);
 
                 timer.Status = RecordingStatus.New;
                 timer.StartDate = DateTime.UtcNow.AddSeconds(retryIntervalSeconds);
+                timer.RetryCount++;
                 _timerProvider.AddOrUpdate(timer);
             }
             else if (_fileSystem.FileExists(recordPath))
