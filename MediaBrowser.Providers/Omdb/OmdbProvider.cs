@@ -294,7 +294,7 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            var url = string.Format("https://www.omdbapi.com/?i={0}&tomatoes=true", imdbParam);
+            var url = string.Format("https://www.omdbapi.com/?i={0}&plot=full&tomatoes=true&r=json", imdbParam);
 
             using (var stream = await _httpClient.Get(new HttpRequestOptions
             {
@@ -421,7 +421,7 @@ namespace MediaBrowser.Providers.Omdb
             }
 
             // Imdb plots are usually pretty short
-            item.ShortOverview = result.Plot;
+            item.Overview = result.Plot;
 
             //if (!string.IsNullOrWhiteSpace(result.Director))
             //{

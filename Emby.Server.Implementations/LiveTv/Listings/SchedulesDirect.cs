@@ -479,7 +479,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 }
                 else if (details.descriptions.description100 != null)
                 {
-                    info.ShortOverview = details.descriptions.description100[0].description;
+                    info.Overview = details.descriptions.description100[0].description;
                 }
             }
 

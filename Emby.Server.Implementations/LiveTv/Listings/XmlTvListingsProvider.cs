@@ -139,7 +139,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 StartDate = GetDate(p.StartDate),
                 Name = p.Title,
                 Overview = p.Description,
-                ShortOverview = p.Description,
                 ProductionYear = !p.CopyrightDate.HasValue ? (int?)null : p.CopyrightDate.Value.Year,
                 SeasonNumber = p.Episode == null ? null : p.Episode.Series,
                 IsSeries = p.Episode != null,
