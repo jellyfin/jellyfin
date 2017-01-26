@@ -186,14 +186,6 @@
                 view.querySelector('.fldExternalPlayer').classList.add('hide');
             }
 
-            if (AppInfo.supportsExternalPlayerMenu) {
-                view.querySelector('.labelNativeExternalPlayers').classList.remove('hide');
-                view.querySelector('.labelGenericExternalPlayers').classList.add('hide');
-            } else {
-                view.querySelector('.labelGenericExternalPlayers').classList.remove('hide');
-                view.querySelector('.labelNativeExternalPlayers').classList.add('hide');
-            }
-
             loadPage(view);
         });
 

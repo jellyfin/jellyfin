@@ -36,6 +36,7 @@
         DisplayMessage = 28,
         SetRepeatMode = 29,
         ChannelUp = 30,
-        ChannelDown = 31
+        ChannelDown = 31,
+        SetMaxStreamingBitrate = 31
     }
 }

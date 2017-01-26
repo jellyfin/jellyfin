@@ -185,7 +185,10 @@ Configuration parameters could be provided to hls.js upon instantiation of `Hls`
       maxBufferSize: 60*1000*1000,
       maxBufferHole: 0.5,
       maxSeekHole: 2,
-      seekHoleNudgeDuration: 0.01,
+      lowBufferWatchdogPeriod: 0.5,
+      highBufferWatchdogPeriod: 3,
+      nudgeOffset: 0.1,
+      nudgeMaxRetry : 3,
       maxFragLookUpTolerance: 0.2,
       liveSyncDurationCount: 3,
       liveMaxLatencyDurationCount: 10,
@@ -317,10 +320,27 @@ In case no quality level with this criteria can be found (lets say for example t
 
 max video loading delay used in  automatic start level selection : in that mode ABR controller will ensure that video loading time (ie the time to fetch the first fragment at lowest quality level + the time to fetch the fragment at the appropriate quality level is less than ```maxLoadingDelay``` )
 
-#### ```seekHoleNudgeDuration```
-(default 0.01s)
+#### ```lowBufferWatchdogPeriod```
+(default 0.5s)
 
-In case playback is still stalling although a seek over buffer hole just occured, hls.js will seek to next buffer start + (number of consecutive stalls * `seekHoleNudgeDuration`) to try to restore playback.
+if media element is expected to play and if currentTime has not moved for more than ```lowBufferWatchdogPeriod``` and if there are less than `maxBufferHole` seconds buffered upfront, hls.js will try to nudge playhead to recover playback
+
+#### ```highBufferWatchdogPeriod```
+(default 3s)
+
+if media element is expected to play and if currentTime has not moved for more than ```highBufferWatchdogPeriod``` and if there are more than `maxBufferHole` seconds buffered upfront, hls.js will try to nudge playhead to recover playback
+
+
+#### ```nudgeOffset```
+(default 0.1s)
+
+In case playback continues to stall after first playhead nudging, currentTime will be nudged evenmore following nudgeOffset to try to restore playback.
+media.currentTime += (nb nudge retry -1)*nudgeOffset
+
+#### ```nudgeMaxRetry```
+(default 3)
+
+Max nb of nudge retries before hls.js raise a fatal BUFFER_STALLED_ERROR
 
 #### `maxFragLookUpTolerance`
 

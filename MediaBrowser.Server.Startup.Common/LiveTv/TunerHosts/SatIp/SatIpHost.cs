@@ -44,7 +44,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
         {
             if (!string.IsNullOrWhiteSpace(tuner.M3UUrl))
             {
-                return await new M3uParser(Logger, _fileSystem, _httpClient, _appHost).Parse(tuner.M3UUrl, ChannelIdPrefix, tuner.Id, cancellationToken).ConfigureAwait(false);
+                return await new M3uParser(Logger, _fileSystem, _httpClient, _appHost).Parse(tuner.M3UUrl, ChannelIdPrefix, tuner.Id, false, cancellationToken).ConfigureAwait(false);
             }
 
             var channels = await new ChannelScan(Logger).Scan(tuner, cancellationToken).ConfigureAwait(false);
@@ -114,6 +114,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                     RequiresOpening = false,
                     RequiresClosing = false
                 };
+
+                mediaSource.InferTotalBitrate(true);
 
                 return new List<MediaSourceInfo> { mediaSource };
             }

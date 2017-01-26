@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'libraryBrowser', 'listView', 'userdataButtons', 'imageLoader', 'cardStyle'], function (browser, datetime, libraryBrowser, listView, userdataButtons, imageLoader) {
+﻿define(['browser', 'datetime', 'backdrop', 'libraryBrowser', 'listView', 'userdataButtons', 'imageLoader', 'playbackManager', 'nowPlayingHelper', 'events', 'connectionManager', 'apphost', 'globalize', 'cardStyle', 'emby-itemscontainer', 'css!css/nowplaying.css'], function (browser, datetime, backdrop, libraryBrowser, listView, userdataButtons, imageLoader, playbackManager, nowPlayingHelper, events, connectionManager, appHost, globalize) {
     'use strict';
 
     function showSlideshowMenu(context) {
@@ -7,7 +7,9 @@
         });
     }
 
-    function showAudioMenu(context, player, button, item, currentIndex) {
+    function showAudioMenu(context, player, button, item) {
+
+        var currentIndex = playbackManager.getAudioStreamIndex(player);
 
         var streams = (item.MediaStreams || []).filter(function (i) {
 
@@ -16,24 +18,8 @@
 
         var menuItems = streams.map(function (s) {
 
-            var name = (s.Codec || '').toUpperCase();
-
-            if (s.Profile) {
-                name += ' ' + s.Profile;
-            }
-
-            if (s.Language) {
-                name += ' · ' + s.Language;
-            }
-            if (s.Layout) {
-                name += ' · ' + s.Layout;
-            }
-            else if (s.Channels) {
-                name += ' · ' + s.Channels + ' ch';
-            }
-
             var menuItem = {
-                name: s.DisplayTitle || name,
+                name: s.DisplayTitle,
                 id: s.Index
             };
 
@@ -51,14 +37,16 @@
                 positionTo: button,
                 callback: function (id) {
 
-                    player.setAudioStreamIndex(parseInt(id));
+                    playbackManager.setAudioStreamIndex(parseInt(id), player);
                 }
             });
 
         });
     }
 
-    function showSubtitleMenu(context, player, button, item, currentIndex) {
+    function showSubtitleMenu(context, player, button, item) {
+
+        var currentIndex = playbackManager.getSubtitleStreamIndex(player);
 
         var streams = (item.MediaStreams || []).filter(function (i) {
 
@@ -67,24 +55,8 @@
 
         var menuItems = streams.map(function (s) {
 
-            var name = (s.Language || Globalize.translate('LabelUnknownLanguage'));
-
-            if (s.IsDefault && s.IsForced) {
-                name += ' · ' + Globalize.translate('LabelDefaultForcedStream');
-            }
-            else if (s.IsDefault) {
-                name += ' · ' + Globalize.translate('LabelDefaultStream');
-            }
-            else if (s.IsForced) {
-                name += ' · ' + Globalize.translate('LabelForcedStream');
-            }
-
-            if (s.Codec) {
-                name += ' · ' + s.Codec.toUpperCase();
-            }
-
             var menuItem = {
-                name: s.DisplayTitle || name,
+                name: s.DisplayTitle,
                 id: s.Index
             };
 
@@ -97,7 +69,7 @@
 
         menuItems.unshift({
             id: -1,
-            name: Globalize.translate('ButtonOff'),
+            name: globalize.translate('ButtonOff'),
             selected: currentIndex == null
         });
 
@@ -108,7 +80,7 @@
                 positionTo: button,
                 callback: function (id) {
 
-                    player.setSubtitleStreamIndex(parseInt(id));
+                    playbackManager.setSubtitleStreamIndex(parseInt(id), player);
                 }
             });
 
@@ -129,11 +101,79 @@
         }).length > 0;
     }
 
+    function getNowPlayingNameHtml(nowPlayingItem, includeNonNameInfo) {
+
+        var names = nowPlayingHelper.getNowPlayingNames(nowPlayingItem, includeNonNameInfo);
+
+        return names.map(function (i) {
+
+            return i.text;
+
+        }).join('<br/>');
+    }
+
+    function seriesImageUrl(item, options) {
+
+        if (item.Type !== 'Episode') {
+            return null;
+        }
+
+        options = options || {};
+        options.type = options.type || "Primary";
+
+        if (options.type === 'Primary') {
+
+            if (item.SeriesPrimaryImageTag) {
+
+                options.tag = item.SeriesPrimaryImageTag;
+
+                return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.SeriesId, options);
+            }
+        }
+
+        if (options.type === 'Thumb') {
+
+            if (item.SeriesThumbImageTag) {
+
+                options.tag = item.SeriesThumbImageTag;
+
+                return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.SeriesId, options);
+            }
+            if (item.ParentThumbImageTag) {
+
+                options.tag = item.ParentThumbImageTag;
+
+                return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.ParentThumbItemId, options);
+            }
+        }
+
+        return null;
+    }
+
+    function imageUrl(item, options) {
+
+        options = options || {};
+        options.type = options.type || "Primary";
+
+        if (item.ImageTags && item.ImageTags[options.type]) {
+
+            options.tag = item.ImageTags[options.type];
+            return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.PrimaryImageItemId || item.Id, options);
+        }
+
+        if (item.AlbumId && item.AlbumPrimaryImageTag) {
+
+            options.tag = item.AlbumPrimaryImageTag;
+            return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.AlbumId, options);
+        }
+
+        return null;
+    }
     var currentImgUrl;
     function updateNowPlayingInfo(context, state) {
 
         var item = state.NowPlayingItem;
-        var displayName = item ? MediaController.getNowPlayingNameHtml(item).replace('<br/>', ' - ') : '';
+        var displayName = item ? getNowPlayingNameHtml(item).replace('<br/>', ' - ') : '';
 
         context.querySelector('.nowPlayingPageTitle').innerHTML = displayName;
 
@@ -143,74 +183,37 @@
             context.querySelector('.nowPlayingPageTitle').classList.add('hide');
         }
 
-        var url;
-        var backdropUrl = null;
+        var url = item ? seriesImageUrl(item, {
 
-        if (!item) {
-        }
-        else if (item.PrimaryImageTag) {
+            maxHeight: 300
 
-            url = ApiClient.getScaledImageUrl(item.PrimaryImageItemId, {
-                type: "Primary",
-                maxHeight: 300,
-                tag: item.PrimaryImageTag
-            });
-        }
-        else if (item.BackdropImageTag) {
+        }) || imageUrl(item, {
+            maxHeight: 300
 
-            url = ApiClient.getScaledImageUrl(item.BackdropItemId, {
-                type: "Backdrop",
-                maxHeight: 300,
-                tag: item.BackdropImageTag,
-                index: 0
-            });
+        }) : null;
 
-        } else if (item.ThumbImageTag) {
-
-            url = ApiClient.getScaledImageUrl(item.ThumbImageItemId, {
-                type: "Thumb",
-                maxHeight: 300,
-                tag: item.ThumbImageTag
-            });
-        }
-
-        if (url == currentImgUrl) {
+        if (url === currentImgUrl) {
             return;
-        }
-
-        if (item && item.BackdropImageTag) {
-
-            backdropUrl = ApiClient.getScaledImageUrl(item.BackdropItemId, {
-                type: "Backdrop",
-                maxHeight: 300,
-                tag: item.BackdropImageTag,
-                index: 0
-            });
-
         }
 
         setImageUrl(context, url);
 
         if (item) {
 
-            // This should be outside of the IF
-            // But for now, if you change songs but keep the same artist, the backdrop will flicker because in-between songs it clears out the image
-            if (!browser.slow) {
-                // Exclude from mobile because it just doesn't perform well
-                require(['backdrop'], function (backdrop) {
-                    backdrop.setBackdrop(backdropUrl);
-                });
-            }
+            backdrop.setBackdrops([item]);
 
             ApiClient.getItem(Dashboard.getCurrentUserId(), item.Id).then(function (fullItem) {
                 userdataButtons.fill({
                     item: fullItem,
                     includePlayed: false,
-                    style: 'fab-mini',
-                    element: context.querySelector('.nowPlayingPageUserDataButtons')
+                    style: 'icon',
+                    element: context.querySelector('.nowPlayingPageUserDataButtons'),
                 });
             });
         } else {
+
+            backdrop.clear();
+
             userdataButtons.destroy({
                 element: context.querySelector('.nowPlayingPageUserDataButtons')
             });
@@ -220,15 +223,27 @@
     function setImageUrl(context, url) {
         currentImgUrl = url;
 
+        var imgContainer = context.querySelector('.nowPlayingPageImageContainer');
+
         if (url) {
-            imageLoader.lazyImage(context.querySelector('.nowPlayingPageImage'), url);
+            imgContainer.innerHTML = '<img class="nowPlayingPageImage" src="' + url + '" />';
+            imgContainer.classList.remove('hide');
         } else {
-            context.querySelector('.nowPlayingPageImage').style.backgroundImage = '';
+            imgContainer.classList.add('hide');
+            imgContainer.innerHTML = '';
         }
     }
 
     function buttonEnabled(btn, enabled) {
         btn.disabled = !enabled;
+    }
+
+    function buttonVisible(btn, enabled) {
+        if (enabled) {
+            btn.classList.remove('hide');
+        } else {
+            btn.classList.add('hide');
+        }
     }
 
     function updateSupportedCommands(context, commands) {
@@ -240,33 +255,29 @@
         }
     }
 
-    function hideChapterMenu(page) {
-
-    }
-
     return function () {
 
         var dlg;
         var currentPlayer;
+        var currentPlayerSupportedCommands = [];
         var lastPlayerState;
         var lastUpdateTime = 0;
+        var currentRuntimeTicks = 0;
 
         var self = this;
-        var playlistNeedsRefresh = true;
 
         function toggleRepeat(player) {
 
-            if (player && lastPlayerState) {
-                var state = lastPlayerState;
-                switch ((state.PlayState || {}).RepeatMode) {
+            if (player) {
+                switch (playbackManager.getRepeatMode(player)) {
                     case 'RepeatNone':
-                        player.setRepeatMode('RepeatAll');
+                        playbackManager.setRepeatMode('RepeatAll', player);
                         break;
                     case 'RepeatAll':
-                        player.setRepeatMode('RepeatOne');
+                        playbackManager.setRepeatMode('RepeatOne', player);
                         break;
                     case 'RepeatOne':
-                        player.setRepeatMode('RepeatNone');
+                        playbackManager.setRepeatMode('RepeatNone', player);
                         break;
                 }
             }
@@ -278,22 +289,14 @@
 
             var item = state.NowPlayingItem;
 
-            var playerInfo = MediaController.getPlayerInfo();
+            var playerInfo = playbackManager.getPlayerInfo();
 
             var supportedCommands = playerInfo.supportedCommands;
             var playState = state.PlayState || {};
 
-            buttonEnabled(context.querySelector('.btnToggleFullscreen'), item && item.MediaType == 'Video' && supportedCommands.indexOf('ToggleFullscreen') != -1);
-            buttonEnabled(context.querySelector('.btnAudioTracks'), hasStreams(item, 'Audio') && supportedCommands.indexOf('SetAudioStreamIndex') != -1);
-            buttonEnabled(context.querySelector('.btnSubtitles'), hasStreams(item, 'Subtitle') && supportedCommands.indexOf('SetSubtitleStreamIndex') != -1);
-
-            if (item && item.Chapters && item.Chapters.length && playState.CanSeek) {
-                buttonEnabled(context.querySelector('.btnChapters'), true);
-
-            } else {
-                buttonEnabled(context.querySelector('.btnChapters'), false);
-                hideChapterMenu(context);
-            }
+            buttonVisible(context.querySelector('.btnToggleFullscreen'), item && item.MediaType == 'Video' && supportedCommands.indexOf('ToggleFullscreen') != -1);
+            buttonVisible(context.querySelector('.btnAudioTracks'), hasStreams(item, 'Audio') && supportedCommands.indexOf('SetAudioStreamIndex') != -1);
+            buttonVisible(context.querySelector('.btnSubtitles'), hasStreams(item, 'Subtitle') && supportedCommands.indexOf('SetSubtitleStreamIndex') != -1);
 
             if (supportedCommands.indexOf('DisplayMessage') != -1) {
                 context.querySelector('.sendMessageSection').classList.remove('hide');
@@ -306,34 +309,126 @@
                 context.querySelector('.sendTextSection').classList.add('hide');
             }
 
-            buttonEnabled(context.querySelector('.btnStop'), item != null);
-            buttonEnabled(context.querySelector('.btnNextTrack'), item != null);
-            buttonEnabled(context.querySelector('.btnPreviousTrack'), item != null);
-
-            var btnPause = context.querySelector('.btnPause');
-            var btnPlay = context.querySelector('.btnPlay');
-
-            buttonEnabled(btnPause, item != null);
-            buttonEnabled(btnPlay, item != null);
-
-            if (playState.IsPaused) {
-
-                hideButton(btnPause);
-                showButton(btnPlay);
-
-            } else {
-
-                showButton(btnPause);
-                hideButton(btnPlay);
-            }
+            buttonVisible(context.querySelector('.btnStop'), item != null);
+            buttonVisible(context.querySelector('.btnNextTrack'), item != null);
+            buttonVisible(context.querySelector('.btnPreviousTrack'), item != null);
 
             var positionSlider = context.querySelector('.nowPlayingPositionSlider');
+            if (positionSlider && !positionSlider.dragging) {
+                positionSlider.disabled = !playState.CanSeek;
+            }
 
-            if (!positionSlider.dragging) {
+            updatePlayPauseState(playState.IsPaused, item != null);
 
-                if (item && item.RunTimeTicks) {
+            var runtimeTicks = item ? item.RunTimeTicks : null;
+            updateTimeDisplay(playState.PositionTicks, runtimeTicks);
+            updatePlayerVolumeState(context, playState.IsMuted, playState.VolumeLevel);
 
-                    var pct = playState.PositionTicks / item.RunTimeTicks;
+            if (item && item.MediaType == 'Video') {
+                context.classList.remove('hideVideoButtons');
+            } else {
+                context.classList.add('hideVideoButtons');
+            }
+
+            updateRepeatModeDisplay(playState.RepeatMode);
+            updateNowPlayingInfo(context, state);
+        }
+
+        function updateRepeatModeDisplay(repeatMode) {
+
+            var context = dlg;
+            var toggleRepeatButton = context.querySelector('.repeatToggleButton');
+
+            if (repeatMode == 'RepeatAll') {
+                toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat</i>";
+                toggleRepeatButton.classList.add('nowPlayingPageRepeatActive');
+            }
+            else if (repeatMode == 'RepeatOne') {
+                toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat_one</i>";
+                toggleRepeatButton.classList.add('nowPlayingPageRepeatActive');
+            } else {
+                toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat</i>";
+                toggleRepeatButton.classList.remove('nowPlayingPageRepeatActive');
+            }
+        }
+
+        function updatePlayerVolumeState(context, isMuted, volumeLevel) {
+
+            var view = context;
+            var supportedCommands = currentPlayerSupportedCommands;
+
+            var showMuteButton = true;
+            var showVolumeSlider = true;
+
+            if (supportedCommands.indexOf('Mute') === -1) {
+                showMuteButton = false;
+            }
+
+            if (supportedCommands.indexOf('SetVolume') === -1) {
+                showVolumeSlider = false;
+            }
+
+            if (currentPlayer.isLocalPlayer && appHost.supports('physicalvolumecontrol')) {
+                showMuteButton = false;
+                showVolumeSlider = false;
+            }
+
+            if (isMuted) {
+                view.querySelector('.buttonMute').setAttribute('title', globalize.translate('Unmute'));
+                view.querySelector('.buttonMute i').innerHTML = '&#xE04F;';
+            } else {
+                view.querySelector('.buttonMute').setAttribute('title', globalize.translate('Mute'));
+                view.querySelector('.buttonMute i').innerHTML = '&#xE050;';
+            }
+
+            if (showMuteButton) {
+                view.querySelector('.buttonMute').classList.remove('hide');
+            } else {
+                view.querySelector('.buttonMute').classList.add('hide');
+            }
+
+            var nowPlayingVolumeSlider = context.querySelector('.nowPlayingVolumeSlider');
+            var nowPlayingVolumeSliderContainer = context.querySelector('.nowPlayingVolumeSliderContainer');
+
+            // See bindEvents for why this is necessary
+            if (nowPlayingVolumeSlider) {
+
+                if (showVolumeSlider) {
+                    nowPlayingVolumeSliderContainer.classList.remove('hide');
+                } else {
+                    nowPlayingVolumeSliderContainer.classList.add('hide');
+                }
+
+                if (!nowPlayingVolumeSlider.dragging) {
+                    nowPlayingVolumeSlider.value = volumeLevel || 0;
+                }
+            }
+        }
+
+        function updatePlayPauseState(isPaused, isActive) {
+
+            var context = dlg;
+
+            var btnPlayPause = context.querySelector('.btnPlayPause');
+            if (isPaused) {
+                btnPlayPause.querySelector('i').innerHTML = 'play_arrow';
+            } else {
+                btnPlayPause.querySelector('i').innerHTML = 'pause';
+            }
+
+            buttonVisible(btnPlayPause, isActive);
+        }
+
+        function updateTimeDisplay(positionTicks, runtimeTicks) {
+
+            // See bindEvents for why this is necessary
+            var context = dlg;
+            var positionSlider = context.querySelector('.nowPlayingPositionSlider');
+
+            if (positionSlider && !positionSlider.dragging) {
+                if (runtimeTicks) {
+
+                    var pct = positionTicks / runtimeTicks;
                     pct *= 100;
 
                     positionSlider.value = pct;
@@ -342,106 +437,79 @@
 
                     positionSlider.value = 0;
                 }
-
-                positionSlider.disabled = !playState.CanSeek;
             }
 
-            if (playState.PositionTicks == null) {
+            if (positionTicks == null) {
                 context.querySelector('.positionTime').innerHTML = '--:--';
             } else {
-                context.querySelector('.positionTime').innerHTML = datetime.getDisplayRunningTime(playState.PositionTicks);
+                context.querySelector('.positionTime').innerHTML = datetime.getDisplayRunningTime(positionTicks);
             }
 
-            if (item && item.RunTimeTicks != null) {
-                context.querySelector('.runtime').innerHTML = datetime.getDisplayRunningTime(item.RunTimeTicks);
+            if (runtimeTicks != null) {
+                context.querySelector('.runtime').innerHTML = datetime.getDisplayRunningTime(runtimeTicks);
             } else {
                 context.querySelector('.runtime').innerHTML = '--:--';
             }
-
-            if (item && item.MediaType == 'Video') {
-                context.classList.remove('hideVideoButtons');
-            } else {
-                context.classList.add('hideVideoButtons');
-            }
-
-            if (playerInfo.isLocalPlayer && AppInfo.hasPhysicalVolumeButtons) {
-                context.classList.add('hideVolumeButtons');
-            } else {
-                context.classList.remove('hideVolumeButtons');
-            }
-
-            if (item && item.MediaType == 'Audio') {
-                context.querySelector('.buttonsRow2').classList.add('hide');
-            } else {
-                context.querySelector('.buttonsRow2').classList.remove('hide');
-            }
-
-            var toggleRepeatButton = context.querySelector('.repeatToggleButton');
-
-            if (playState.RepeatMode == 'RepeatAll') {
-                toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat</i>";
-                toggleRepeatButton.classList.add('nowPlayingPageRepeatActive');
-            }
-            else if (playState.RepeatMode == 'RepeatOne') {
-                toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat_one</i>";
-                toggleRepeatButton.classList.add('nowPlayingPageRepeatActive');
-            } else {
-                toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat</i>";
-                toggleRepeatButton.classList.remove('nowPlayingPageRepeatActive');
-            }
-
-            updateNowPlayingInfo(context, state);
         }
 
-        function loadPlaylist(context) {
+        function getPlaylistItems(player) {
 
-            var html = '';
+            return playbackManager.getPlaylist(player);
 
-            //ApiClient.getItems(Dashboard.getCurrentUserId(), {
+            return ApiClient.getItems(Dashboard.getCurrentUserId(), {
 
-            //    SortBy: "SortName",
-            //    SortOrder: "Ascending",
-            //    IncludeItemTypes: "Audio",
-            //    Recursive: true,
-            //    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount",
-            //    StartIndex: 0,
-            //    ImageTypeLimit: 1,
-            //    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
-            //    Limit: 100
+                SortBy: "SortName",
+                SortOrder: "Ascending",
+                IncludeItemTypes: "Audio",
+                Recursive: true,
+                Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount",
+                StartIndex: 0,
+                ImageTypeLimit: 1,
+                EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+                Limit: 100
 
-            //}).then(function (result) {
+            }).then(function (result) {
 
-            //    html += listView.getListViewHtml({
-            //        items: result.Items,
-            //        smallIcon: true
-            //    });
-
-            //    page(".playlist").html(html).lazyChildren();
-            //});
-
-            html += listView.getListViewHtml({
-                items: MediaController.playlist(),
-                smallIcon: true,
-                action: 'setplaylistindex'
+                return result.Items;
             });
+        }
 
-            playlistNeedsRefresh = false;
+        function loadPlaylist(context, player) {
 
-            var deps = [];
+            getPlaylistItems(player).then(function (items) {
 
-            require(deps, function () {
+                var html = '';
+
+                html += listView.getListViewHtml({
+                    items: items,
+                    smallIcon: true,
+                    action: 'setplaylistindex',
+                    enableUserDataButtons: false,
+                    rightButtons: [
+                    {
+                        icon: '&#xE15D;',
+                        title: globalize.translate('ButtonRemove'),
+                        id: 'remove'
+                    }],
+                    dragHandle: true
+                });
+
+                if (items.length) {
+                    context.querySelector('.playlistSection').classList.remove('hide');
+                } else {
+                    context.querySelector('.playlistSection').classList.add('hide');
+                }
 
                 var itemsContainer = context.querySelector('.playlist');
 
                 itemsContainer.innerHTML = html;
 
-                var index = MediaController.currentPlaylistIndex();
+                var playlistItemId = playbackManager.getCurrentPlaylistItemId(player);
 
-                if (index != -1) {
+                if (playlistItemId) {
 
-                    var item = itemsContainer.querySelectorAll('.listItem')[index];
-                    if (item) {
-                        var img = item.querySelector('.listItemImage');
+                    var img = itemsContainer.querySelector('.listItem[data-playlistItemId="' + playlistItemId + '"] .listItemImage');
+                    if (img) {
 
                         img.classList.remove('lazy');
                         img.classList.add('playlistIndexIndicatorImage');
@@ -452,54 +520,109 @@
             });
         }
 
-        function onStateChanged(e, state) {
-
-            if (e.type == 'positionchange') {
-                // Try to avoid hammering the document with changes
-                var now = new Date().getTime();
-                if ((now - lastUpdateTime) < 700) {
-
-                    return;
-                }
-                lastUpdateTime = now;
-            }
-
-            updatePlayerState(dlg, state);
-        }
-
         function onPlaybackStart(e, state) {
 
+            console.log('remotecontrol event: ' + e.type);
+
             var player = this;
-
-            player.beginPlayerUpdates();
-
             onStateChanged.call(player, e, state);
-
-            loadPlaylist(dlg);
         }
 
-        function onPlaybackStopped(e, state) {
+        function onRepeatModeChange(e) {
 
             var player = this;
 
-            player.endPlayerUpdates();
+            updateRepeatModeDisplay(playbackManager.getRepeatMode(player));
+        }
 
-            onStateChanged.call(player, e, {});
+        function onPlaylistUpdate(e) {
 
-            loadPlaylist(dlg);
+            var player = this;
+
+            loadPlaylist(dlg, player);
+        }
+
+        function onPlaylistItemRemoved(e, info) {
+
+            var context = dlg;
+
+            var playlistItemIds = info.playlistItemIds;
+
+            for (var i = 0, length = playlistItemIds.length; i < length; i++) {
+
+                var listItem = context.querySelector('.listItem[data-playlistItemId="' + playlistItemIds[i] + '"]');
+
+                if (listItem) {
+                    listItem.parentNode.removeChild(listItem);
+                }
+            }
+        }
+
+        function onPlaybackStopped(e, stopInfo) {
+
+            console.log('remotecontrol event: ' + e.type);
+            var player = this;
+
+            if (!stopInfo.nextMediaType) {
+                updatePlayerState(dlg, {});
+                loadPlaylist(dlg);
+            }
+        }
+
+        function onPlayPauseStateChanged(e) {
+
+            var player = this;
+            updatePlayPauseState(player.paused(), true);
+        }
+
+        function onStateChanged(event, state) {
+
+            //console.log('nowplaying event: ' + e.type);
+            var player = this;
+
+            updatePlayerState(dlg, state);
+            loadPlaylist(dlg, player);
+        }
+
+        function onTimeUpdate(e) {
+
+            // Try to avoid hammering the document with changes
+            var now = new Date().getTime();
+            if ((now - lastUpdateTime) < 700) {
+
+                return;
+            }
+            lastUpdateTime = now;
+
+            var player = this;
+            currentRuntimeTicks = playbackManager.duration(player);
+            updateTimeDisplay(playbackManager.currentTime(player), currentRuntimeTicks);
+        }
+
+        function onVolumeChanged(e) {
+
+            var player = this;
+
+            updatePlayerVolumeState(dlg, player.isMuted(), player.getVolume());
         }
 
         function releaseCurrentPlayer() {
 
-            if (currentPlayer) {
+            var player = currentPlayer;
 
-                Events.off(currentPlayer, 'playbackstart', onPlaybackStart);
-                Events.off(currentPlayer, 'playbackstop', onPlaybackStopped);
-                Events.off(currentPlayer, 'volumechange', onStateChanged);
-                Events.off(currentPlayer, 'playstatechange', onStateChanged);
-                Events.off(currentPlayer, 'positionchange', onStateChanged);
+            if (player) {
 
-                currentPlayer.endPlayerUpdates();
+                events.off(player, 'playbackstart', onPlaybackStart);
+                events.off(player, 'statechange', onStateChanged);
+                events.off(player, 'repeatmodechange', onRepeatModeChange);
+                events.off(player, 'playlistitemremove', onPlaylistUpdate);
+                events.off(player, 'playlistitemmove', onPlaylistUpdate);
+                events.off(player, 'playbackstop', onPlaybackStopped);
+                events.off(player, 'volumechange', onVolumeChanged);
+                events.off(player, 'pause', onPlayPauseStateChanged);
+                events.off(player, 'playing', onPlayPauseStateChanged);
+                events.off(player, 'timeupdate', onTimeUpdate);
+
                 currentPlayer = null;
             }
         }
@@ -510,58 +633,47 @@
 
             currentPlayer = player;
 
-            player.getPlayerState().then(function (state) {
+            if (!player) {
+                return;
+            }
 
-                if (state.NowPlayingItem) {
-                    player.beginPlayerUpdates();
-                }
+            playbackManager.getPlayerState(player).then(function (state) {
 
                 onStateChanged.call(player, { type: 'init' }, state);
             });
 
-            Events.on(player, 'playbackstart', onPlaybackStart);
-            Events.on(player, 'playbackstop', onPlaybackStopped);
-            Events.on(player, 'volumechange', onStateChanged);
-            Events.on(player, 'playstatechange', onStateChanged);
-            Events.on(player, 'positionchange', onStateChanged);
+            events.on(player, 'playbackstart', onPlaybackStart);
+            events.on(player, 'statechange', onStateChanged);
+            events.on(player, 'repeatmodechange', onRepeatModeChange);
+            events.on(player, 'playlistitemremove', onPlaylistItemRemoved);
+            events.on(player, 'playlistitemmove', onPlaylistUpdate);
+            events.on(player, 'playbackstop', onPlaybackStopped);
+            events.on(player, 'volumechange', onVolumeChanged);
+            events.on(player, 'pause', onPlayPauseStateChanged);
+            events.on(player, 'playing', onPlayPauseStateChanged);
+            events.on(player, 'timeupdate', onTimeUpdate);
 
-            var playerInfo = MediaController.getPlayerInfo();
+            var playerInfo = playbackManager.getPlayerInfo();
 
             var supportedCommands = playerInfo.supportedCommands;
+            currentPlayerSupportedCommands = supportedCommands;
 
             updateSupportedCommands(context, supportedCommands);
         }
 
         function updateCastIcon(context) {
 
-            var info = MediaController.getPlayerInfo();
-            var btnCast = context.querySelector('.nowPlayingCastIcon');
+            var info = playbackManager.getPlayerInfo();
+            var btnCast = context.querySelector('.btnCast');
 
-            if (info.isLocalPlayer) {
-
-                btnCast.querySelector('i').innerHTML = 'cast';
-                btnCast.classList.remove('btnActiveCast');
-                context.querySelector('.nowPlayingSelectedPlayer').innerHTML = '';
-
-            } else {
+            if (info && !info.isLocalPlayer) {
 
                 btnCast.querySelector('i').innerHTML = 'cast_connected';
                 btnCast.classList.add('btnActiveCast');
-                context.querySelector('.nowPlayingSelectedPlayer').innerHTML = info.deviceName || info.name;
+            } else {
+                btnCast.querySelector('i').innerHTML = 'cast';
+                btnCast.classList.remove('btnActiveCast');
             }
-        }
-
-        function parentWithClass(elem, className) {
-
-            while (!elem.classList || !elem.classList.contains(className)) {
-                elem = elem.parentNode;
-
-                if (!elem) {
-                    return null;
-                }
-            }
-
-            return elem;
         }
 
         function onBtnCommandClick() {
@@ -570,12 +682,42 @@
                 if (this.classList.contains('repeatToggleButton')) {
                     toggleRepeat(currentPlayer);
                 } else {
-                    MediaController.sendCommand({
+                    playbackManager.sendCommand({
                         Name: this.getAttribute('data-command')
 
                     }, currentPlayer);
                 }
             }
+        }
+
+        function getSaveablePlaylistItems() {
+            
+            return getPlaylistItems(currentPlayer).then(function (items) {
+
+                return items.filter(function (i) {
+                    return i.Id && i.ServerId;
+                });
+            });
+        }
+
+        function savePlaylist() {
+            
+            require(['playlistEditor'], function (playlistEditor) {
+
+                getSaveablePlaylistItems().then(function (items) {
+
+                    var serverId = items.length ? items[0].ServerId : ApiClient.serverId();
+
+                    new playlistEditor().show({
+                        items: items.map(function(i) {
+                            return i.Id;
+                        }),
+                        serverId: serverId,
+                        enableAddToPlayQueue: false,
+                        defaultValue: 'new'
+                    });
+                });
+            });
         }
 
         function bindEvents(context) {
@@ -588,7 +730,7 @@
             context.querySelector('.btnToggleFullscreen').addEventListener('click', function (e) {
 
                 if (currentPlayer) {
-                    MediaController.sendCommand({
+                    playbackManager.sendCommand({
                         Name: e.target.getAttribute('data-command')
 
                     }, currentPlayer);
@@ -597,63 +739,45 @@
 
             context.querySelector('.btnAudioTracks').addEventListener('click', function (e) {
 
-                if (currentPlayer && lastPlayerState && lastPlayerState.PlayState) {
+                if (currentPlayer && lastPlayerState && lastPlayerState.NowPlayingItem) {
 
-                    var currentIndex = lastPlayerState.PlayState.AudioStreamIndex;
-                    showAudioMenu(context, currentPlayer, e.target, lastPlayerState.NowPlayingItem, currentIndex);
+                    showAudioMenu(context, currentPlayer, e.target, lastPlayerState.NowPlayingItem);
                 }
             });
 
             context.querySelector('.btnSubtitles').addEventListener('click', function (e) {
 
-                if (currentPlayer && lastPlayerState && lastPlayerState.PlayState) {
+                if (currentPlayer && lastPlayerState && lastPlayerState.NowPlayingItem) {
 
-                    var currentIndex = lastPlayerState.PlayState.SubtitleStreamIndex;
-                    showSubtitleMenu(context, currentPlayer, e.target, lastPlayerState.NowPlayingItem, currentIndex);
+                    showSubtitleMenu(context, currentPlayer, e.target, lastPlayerState.NowPlayingItem);
                 }
-            });
-
-            context.querySelector('.btnChapters').addEventListener('click', function () {
-
-                //if (currentPlayer && lastPlayerState) {
-
-                //    var currentPositionTicks = lastPlayerState.PlayState.PositionTicks;
-                //    showChapterMenu(context, lastPlayerState.NowPlayingItem, currentPositionTicks);
-                //}
             });
 
             context.querySelector('.btnStop').addEventListener('click', function () {
 
                 if (currentPlayer) {
-                    currentPlayer.stop();
+                    playbackManager.stop(currentPlayer);
                 }
             });
 
-            context.querySelector('.btnPlay').addEventListener('click', function () {
+            context.querySelector('.btnPlayPause').addEventListener('click', function () {
 
                 if (currentPlayer) {
-                    currentPlayer.unpause();
-                }
-            });
-
-            context.querySelector('.btnPause').addEventListener('click', function () {
-
-                if (currentPlayer) {
-                    currentPlayer.pause();
+                    playbackManager.playPause(currentPlayer);
                 }
             });
 
             context.querySelector('.btnNextTrack').addEventListener('click', function () {
 
                 if (currentPlayer) {
-                    currentPlayer.nextTrack();
+                    playbackManager.nextTrack(currentPlayer);
                 }
             });
 
             context.querySelector('.btnPreviousTrack').addEventListener('click', function () {
 
                 if (currentPlayer) {
-                    currentPlayer.previousTrack();
+                    playbackManager.previousTrack(currentPlayer);
                 }
             });
 
@@ -661,42 +785,67 @@
 
                 var value = this.value;
 
-                if (currentPlayer && lastPlayerState) {
+                if (currentPlayer) {
 
                     var newPercent = parseFloat(value);
-                    var newPositionTicks = (newPercent / 100) * lastPlayerState.NowPlayingItem.RunTimeTicks;
-                    currentPlayer.seek(Math.floor(newPositionTicks));
+                    playbackManager.seekPercent(newPercent, currentPlayer);
                 }
             });
 
-            context.querySelector('.nowPlayingPositionSlider', context).getBubbleText = function (value) {
+            context.querySelector('.nowPlayingPositionSlider').getBubbleText = function (value) {
 
                 var state = lastPlayerState;
 
-                if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
+                if (!state || !state.NowPlayingItem || !currentRuntimeTicks) {
                     return '--:--';
                 }
 
-                var ticks = state.NowPlayingItem.RunTimeTicks;
+                var ticks = currentRuntimeTicks;
                 ticks /= 100;
                 ticks *= value;
 
                 return datetime.getDisplayRunningTime(ticks);
             };
+
+            context.querySelector('.nowPlayingVolumeSlider').addEventListener('change', function () {
+
+                playbackManager.setVolume(this.value, currentPlayer);
+            });
+
+            context.querySelector('.buttonMute').addEventListener('click', function () {
+
+                playbackManager.toggleMute(currentPlayer);
+            });
+
+            var playlistContainer = context.querySelector('.playlist');
+
+            playlistContainer.addEventListener('action-remove', function (e) {
+
+                playbackManager.removeFromPlaylist([e.detail.playlistItemId], currentPlayer);
+            });
+            playlistContainer.addEventListener('itemdrop', function (e) {
+
+                var newIndex = e.detail.newIndex;
+                var playlistItemId = e.detail.playlistItemId;
+
+                playbackManager.movePlaylistItem(playlistItemId, newIndex, currentPlayer);
+            });
+
+            context.querySelector('.btnSavePlaylist').addEventListener('click', savePlaylist);
         }
 
         function onPlayerChange() {
 
             var context = dlg;
             updateCastIcon(context);
-            bindToPlayer(context, MediaController.getCurrentPlayer());
+            bindToPlayer(context, playbackManager.getCurrentPlayer());
         }
 
         function onMessageSubmit(e) {
 
             var form = e.target;
 
-            MediaController.sendCommand({
+            playbackManager.sendCommand({
                 Name: 'DisplayMessage',
                 Arguments: {
 
@@ -720,7 +869,7 @@
 
             var form = e.target;
 
-            MediaController.sendCommand({
+            playbackManager.sendCommand({
                 Name: 'SendString',
                 Arguments: {
 
@@ -741,14 +890,16 @@
 
         function init(ownerView, context) {
 
-            require(['css!css/nowplaying.css']);
             bindEvents(context);
 
             context.querySelector('.sendMessageForm').addEventListener('submit', onMessageSubmit);
             context.querySelector('.typeTextForm').addEventListener('submit', onSendStringSubmit);
 
-            context.querySelector('.nowPlayingCastIcon').addEventListener('click', function () {
-                MediaController.showPlayerSelection();
+            context.querySelector('.btnCast').addEventListener('click', function () {
+                var btn = this;
+                require(['playerSelectionMenu'], function (playerSelectionMenu) {
+                    playerSelectionMenu.show(btn);
+                });
             });
 
             context.querySelector('.btnExitRemoteControl').addEventListener('click', function () {
@@ -759,27 +910,18 @@
             //    showSlideshowMenu(context);
             //});
 
-            var mdlTabs = context.querySelector('.libraryViewNav');
+            events.on(playbackManager, 'playerchange', onPlayerChange);
 
-            context.querySelector('.libraryViewNav').classList.add('bottom');
-
-            libraryBrowser.configurePaperLibraryTabs(ownerView, mdlTabs, ownerView.querySelectorAll('.pageTabContent'));
-
-            mdlTabs.addEventListener('tabchange', function (e) {
-
-                if (e.detail.selectedTabIndex == 2 && playlistNeedsRefresh) {
-                    loadPlaylist(context);
-                }
-            });
-
-            Events.on(MediaController, 'playerchange', onPlayerChange);
+            if (appHost.supports('remotecontrol')) {
+                context.querySelector('.btnCast').classList.remove('hide');
+            }
         }
 
         function onDialogClosed(e) {
 
             releaseCurrentPlayer();
 
-            Events.off(MediaController, 'playerchange', onPlayerChange);
+            events.off(playbackManager, 'playerchange', onPlayerChange);
 
             lastPlayerState = null;
         }
@@ -788,7 +930,7 @@
 
             currentImgUrl = null;
 
-            bindToPlayer(context, MediaController.getCurrentPlayer());
+            bindToPlayer(context, playbackManager.getCurrentPlayer());
 
             updateCastIcon(context);
         }

@@ -68,7 +68,7 @@ hls.js is (being) integrated in the following players:
  - [Akamai Adaptive Media Player (AMP)] (https://www.akamai.com/us/en/solutions/products/media-delivery/adaptive-media-player.jsp)
  - [Clappr] (https://github.com/clappr/clappr)
  - [Flowplayer] (https://www.flowplayer.org)  through [flowplayer-hlsjs] (https://github.com/flowplayer/flowplayer-hlsjs)
- - [MediaElement.js] (http://mediaelementjs.com/) integrated in [3.x-dev] (https://github.com/johndyer/mediaelement/tree/3.x-dev)
+ - [MediaElement.js] (http://www.mediaelementjs.com)
  - [Videojs] (http://videojs.com) through [Videojs-hlsjs] (https://github.com/benjipott/videojs-hlsjs)
  - [Videojs] (http://videojs.com) through [videojs-hls.js] (https://github.com/streamroot/videojs-hls.js). hls.js is integrated as a SourceHandler -- new feature in Video.js 5.
  - [Videojs] (http://videojs.com) through [videojs-contrib-hls.js](https://github.com/Peer5/videojs-contrib-hls.js). Production ready plug-in with full fallback compatibility built-in.

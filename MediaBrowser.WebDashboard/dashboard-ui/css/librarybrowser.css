@@ -13,7 +13,7 @@
 
     .background-theme-b .backgroundContainer.withBackdrop {
         background-color: rgba(6, 6, 6, .94) !important;
-        background: linear-gradient(to right, rgba(0, 0, 0, .99), rgba(0, 0, 0, .92), rgba(0, 0, 0, .5)) !important;
+        background: linear-gradient(to right, rgba(0, 0, 0, .99), rgba(0, 0, 0, .94), rgba(0, 0, 0, .5)) !important;
     }
 
 .ui-body-b {
@@ -250,7 +250,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 50vh;
+    height: 45vh;
     position: relative;
 }
 
@@ -286,8 +286,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .detailUserDataIcons {
-    margin-left: .5em;
-    white-space: nowrap;
+    display: flex;
+    align-items: center;
 }
 
 .detailImageContainer {
@@ -492,19 +492,33 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .mainDetailButtons {
-    padding: 1em 0;
+    padding: .5em 0;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
 }
 
     .mainDetailButtons button, .recordingFields button {
         margin-left: 0;
         margin-right: .5em;
+        flex-shrink: 0;
     }
 
     .mainDetailButtons.hide + .recordingFields {
         margin-top: 1.5em !important;
     }
+
+    .mainDetailButtons > .raised {
+        justify-content: center;
+    }
+
+@media all and (min-width: 400px) {
+
+    .mainDetailButtons > .raised {
+        padding-left: 1.5em;
+        padding-right: 1.5em;
+    }
+}
 
 @media all and (min-width: 800px) {
 
@@ -797,17 +811,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .mediaInfoText {
-    background: rgba(31,31,31,.7);
-    padding: .3em .5em;
-    border-radius: .25em;
-    color: #ddd;
+    padding: .3em .5em !important;
     margin-right: .5em;
     margin-bottom: .5em;
-    font-size: 94%;
-    background: rgba(170,170,190, .2);
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
+    font-size: 94% !important;
 }
 
 .mediaInfoText-upper {

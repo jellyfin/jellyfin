@@ -142,6 +142,20 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
         return html;
     }
 
+    function getRightButtonsHtml(options) {
+
+        var html = '';
+
+        for (var i = 0, length = options.rightButtons.length; i < length; i++) {
+
+            var button = options.rightButtons[i];
+
+            html += '<button is="paper-icon-button-light" class="listItemButton itemAction" data-action="custom" data-customaction="' + button.id + '" title="' + button.title + '"><i class="md-icon">' + button.icon + '</i></button>';
+        }
+
+        return html;
+    }
+
     function getListViewHtml(options) {
 
         var items = options.items;
@@ -192,9 +206,10 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             var cssClass = "listItem";
 
             if (options.highlight !== false) {
-                if (i % 2 === 1) {
-                    cssClass += ' listItem-odd';
-                }
+                //if (i % 2 === 1) {
+                //    cssClass += ' listItem-odd';
+                //}
+                cssClass += ' listItem-shaded';
             }
 
             if (clickEntireItem) {
@@ -221,10 +236,10 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             var collectionTypeData = item.CollectionType ? (' data-collectiontype="' + item.CollectionType + '"') : '';
             var channelIdData = item.ChannelId ? (' data-channelid="' + item.ChannelId + '"') : '';
 
-            html += '<' + outerTagName + ' class="' + cssClass + '" data-index="' + i + '"' + playlistItemId + ' data-action="' + action + '" data-isfolder="' + item.IsFolder + '" data-id="' + item.Id + '" data-serverid="' + item.ServerId + '" data-type="' + item.Type + '"' + mediaTypeData + collectionTypeData + channelIdData + positionTicksData + collectionIdData + playlistIdData + '>';
+            html += '<' + outerTagName + ' class="' + cssClass + '"' + playlistItemId + ' data-action="' + action + '" data-isfolder="' + item.IsFolder + '" data-id="' + item.Id + '" data-serverid="' + item.ServerId + '" data-type="' + item.Type + '"' + mediaTypeData + collectionTypeData + channelIdData + positionTicksData + collectionIdData + playlistIdData + '>';
 
             if (!clickEntireItem && options.dragHandle) {
-                //html += '<button is="paper-icon-button-light" class="listViewDragHandle autoSize listItemButton"><i class="md-icon">&#xE25D;</i></button>';
+                //html += '<button is="paper-icon-button-light" class="listViewDragHandle listItemButton"><i class="md-icon">&#xE25D;</i></button>';
                 // Firefox and Edge are not allowing the button to be draggable
                 html += '<i class="listViewDragHandle md-icon listItemIcon listItemIcon-transparent">&#xE25D;</i>';
             }
@@ -234,8 +249,12 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
                 var imageClass = isLargeStyle ? 'listItemImage listItemImage-large' : 'listItemImage';
 
+                if (!clickEntireItem) {
+                    imageClass += ' itemAction';
+                }
+
                 if (imgUrl) {
-                    html += '<div class="' + imageClass + ' lazy" data-src="' + imgUrl + '" item-icon>';
+                    html += '<div data-action="link" class="' + imageClass + ' lazy" data-src="' + imgUrl + '" item-icon>';
                 } else {
                     html += '<div class="' + imageClass + '">';
                 }
@@ -281,7 +300,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                     parentTitle = item.SeriesName;
                 }
 
-                else if (item.IsSeries) {
+                else if (item.IsSeries || (item.EpisodeTitle && item.Name)) {
                     parentTitle = item.Name;
                 }
             }
@@ -312,17 +331,21 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 textlines.push(displayName);
             }
 
-            if (options.artist !== false && (options.artist === true || item.AlbumArtist !== options.containerAlbumArtist)) {
+            if (item.IsFolder) {
+                if (options.artist !== false) {
 
-                if (item.ArtistItems && item.Type !== 'MusicAlbum') {
-                    textlines.push(item.ArtistItems.map(function (a) {
-                        return a.Name;
-
-                    }).join(', '));
+                    if (item.AlbumArtist && item.Type === 'MusicAlbum') {
+                        textlines.push(item.AlbumArtist);
+                    }
                 }
+            } else {
+                if (options.artist !== false && (options.artist === true || (item.Artists || [])[0] !== options.containerAlbumArtist)) {
 
-                else if (item.AlbumArtist && item.Type === 'MusicAlbum') {
-                    textlines.push(item.AlbumArtist);
+                    if (item.ArtistItems && item.Type !== 'MusicAlbum') {
+                        textlines.push(item.ArtistItems.map(function (a) {
+                            return a.Name;
+                        }).join(', '));
+                    }
                 }
             }
 
@@ -390,13 +413,16 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             if (!clickEntireItem) {
 
-                if (options.moreButton !== false) {
-                    html += '<button is="paper-icon-button-light" class="listItemButton itemAction autoSize" data-action="menu"><i class="md-icon">' + moreIcon + '</i></button>';
+                if (options.addToListButton) {
+                    html += '<button is="paper-icon-button-light" class="listItemButton itemAction" data-action="addtoplaylist"><i class="md-icon">&#xE03B;</i></button>';
                 }
 
-                if (options.recordButton) {
+                if (options.moreButton !== false) {
+                    html += '<button is="paper-icon-button-light" class="listItemButton itemAction" data-action="menu"><i class="md-icon">' + moreIcon + '</i></button>';
+                }
 
-                    html += '<button is="paper-icon-button-light" class="listItemButton itemAction autoSize" data-action="programdialog">' + indicators.getTimerIndicator(item) + '</button>';
+                if (options.rightButtons) {
+                    html += getRightButtonsHtml(options);
                 }
 
                 if (options.enableUserDataButtons !== false) {

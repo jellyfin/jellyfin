@@ -181,7 +181,7 @@ namespace Emby.Server.Implementations.Sync
 
             await _repo.Create(job).ConfigureAwait(false);
 
-            await processor.EnsureJobItems(job).ConfigureAwait(false);
+            await processor.EnsureJobItems(job, user).ConfigureAwait(false);
 
             // If it already has a converting status then is must have been aborted during conversion
             var jobItemsResult = GetJobItems(new SyncJobItemQuery
@@ -559,6 +559,12 @@ namespace Emby.Server.Implementations.Sync
         public async Task ReportSyncJobItemTransferred(string id)
         {
             var jobItem = _repo.GetJobItem(id);
+
+            if (jobItem == null)
+            {
+                _logger.Debug("ReportSyncJobItemTransferred: SyncJobItem {0} doesn't exist anymore", id);
+                return;
+            }
 
             jobItem.Status = SyncJobItemStatus.Synced;
             jobItem.Progress = 100;

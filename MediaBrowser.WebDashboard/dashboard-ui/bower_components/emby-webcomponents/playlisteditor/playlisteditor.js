@@ -1,4 +1,4 @@
-﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'connectionManager', 'userSettings', 'embyRouter', 'globalize', 'emby-input', 'paper-icon-button-light', 'emby-select', 'material-icons', 'css!./../formdialog', 'emby-button'], function (shell, dialogHelper, loading, layoutManager, connectionManager, userSettings, embyRouter, globalize) {
+﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'playbackManager', 'connectionManager', 'userSettings', 'embyRouter', 'globalize', 'emby-input', 'paper-icon-button-light', 'emby-select', 'material-icons', 'css!./../formdialog', 'emby-button'], function (shell, dialogHelper, loading, layoutManager, playbackManager, connectionManager, userSettings, embyRouter, globalize) {
     'use strict';
 
     var currentServerId;
@@ -18,8 +18,6 @@
 
     function onSubmit(e) {
 
-        loading.show();
-
         var panel = parentWithClass(this, 'dialog');
 
         var playlistId = panel.querySelector('#selectPlaylistToAddTo').value;
@@ -37,6 +35,8 @@
     }
 
     function createPlaylist(apiClient, dlg) {
+
+        loading.show();
 
         var url = apiClient.getUrl("Playlists", {
 
@@ -72,9 +72,23 @@
 
     function addToPlaylist(apiClient, dlg, id) {
 
+        var itemIds = dlg.querySelector('.fldSelectedItemIds').value || '';
+
+        if (id === 'queue') {
+
+            playbackManager.queue({
+                serverId: apiClient.serverId(),
+                ids: itemIds.split(',')
+            });
+            dialogHelper.close(dlg);
+            return;
+        }
+
+        loading.show();
+
         var url = apiClient.getUrl("Playlists/" + id + "/Items", {
 
-            Ids: dlg.querySelector('.fldSelectedItemIds').value || '',
+            Ids: itemIds,
             userId: apiClient.getCurrentUserId()
         });
 
@@ -87,10 +101,6 @@
             loading.hide();
 
             dialogHelper.close(dlg);
-
-            require(['toast'], function (toast) {
-                toast(globalize.translate('sharedcomponents#MessageItemsAdded'));
-            });
         });
     }
 
@@ -98,7 +108,7 @@
         select.dispatchEvent(new CustomEvent('change', {}));
     }
 
-    function populatePlaylists(panel) {
+    function populatePlaylists(editorOptions, panel) {
 
         var select = panel.querySelector('#selectPlaylistToAddTo');
 
@@ -118,6 +128,10 @@
 
             var html = '';
 
+            if (editorOptions.enableAddToPlayQueue !== false && playbackManager.isPlaying()) {
+                html += '<option value="queue">' + globalize.translate('sharedcomponents#AddToPlayQueue') + '</option>';
+            }
+
             html += '<option value="">' + globalize.translate('sharedcomponents#OptionNew') + '</option>';
 
             html += result.Items.map(function (i) {
@@ -126,8 +140,13 @@
             });
 
             select.innerHTML = html;
-            select.value = userSettings.get('playlisteditor-lastplaylistid') || '';
-            
+
+            var defaultValue = editorOptions.defaultValue;
+            if (!defaultValue) {
+                defaultValue = userSettings.get('playlisteditor-lastplaylistid') || '';
+            }
+            select.value = defaultValue === 'new' ? '' : defaultValue;
+
             // If the value is empty set it again, in case we tried to set a lastplaylistid that is no longer valid
             if (!select.value) {
                 select.value = '';
@@ -161,7 +180,7 @@
         html += '</div>';
 
         html += '<div class="formDialogFooter">';
-        html += '<button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
+        html += '<button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit">' + globalize.translate('sharedcomponents#Add') + '</button>';
         html += '</div>';
 
         html += '<input type="hidden" class="fldSelectedItemIds" />';
@@ -173,7 +192,7 @@
         return html;
     }
 
-    function initEditor(content, items) {
+    function initEditor(content, options, items) {
 
         content.querySelector('#selectPlaylistToAddTo').addEventListener('change', function () {
             if (this.value) {
@@ -191,7 +210,7 @@
 
         if (items.length) {
             content.querySelector('.fldSelectPlaylist').classList.remove('hide');
-            populatePlaylists(content);
+            populatePlaylists(options, content);
         } else {
             content.querySelector('.fldSelectPlaylist').classList.add('hide');
 
@@ -248,7 +267,7 @@
 
             dlg.innerHTML = html;
 
-            initEditor(dlg, items);
+            initEditor(dlg, options, items);
 
             dlg.querySelector('.btnCancel').addEventListener('click', function () {
 

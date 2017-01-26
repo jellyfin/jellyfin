@@ -512,20 +512,32 @@
 
                     html += '<div class="' + guideProgramNameClass + '">';
 
+                    html += '<div class="guideProgramNameText">' + program.Name + '</div>';
+
+                    var indicatorHtml = null;
                     if (program.IsLive && options.showLiveIndicator) {
-                        html += '<span class="liveTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Live') + '</span>';
+                        indicatorHtml = '<span class="liveTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Live') + '</span>';
                     }
                     else if (program.IsPremiere && options.showPremiereIndicator) {
-                        html += '<span class="premiereTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Premiere') + '</span>';
+                        indicatorHtml = '<span class="premiereTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Premiere') + '</span>';
                     }
                     else if (program.IsSeries && !program.IsRepeat && options.showNewIndicator) {
-                        html += '<span class="newTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#AttributeNew') + '</span>';
+                        indicatorHtml = '<span class="newTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#AttributeNew') + '</span>';
                     }
                     else if (program.IsSeries && program.IsRepeat && options.showRepeatIndicator) {
-                        html += '<span class="repeatTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Repeat') + '</span>';
+                        indicatorHtml = '<span class="repeatTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Repeat') + '</span>';
+                    }
+                    if (indicatorHtml || (program.EpisodeTitle && options.showEpisodeTitle)) {
+                        html += '<div class="guideProgramSecondaryInfo">';
+
+                        html += indicatorHtml || '';
+
+                        if (program.EpisodeTitle && options.showEpisodeTitle) {
+                            html += '<span class="programSecondaryTitle">' + program.EpisodeTitle + '</span>';
+                        }
+                        html += '</div>';
                     }
 
-                    html += program.Name;
                     html += '</div>';
 
                     if (program.IsHD && options.showHdIcon) {
@@ -566,7 +578,8 @@
                 showLiveIndicator: allowIndicators && userSettings.get('guide-indicator-live') !== 'false',
                 showPremiereIndicator: allowIndicators && userSettings.get('guide-indicator-premiere') !== 'false',
                 showNewIndicator: allowIndicators && userSettings.get('guide-indicator-new') === 'true',
-                showRepeatIndicator: allowIndicators && userSettings.get('guide-indicator-repeat') === 'true'
+                showRepeatIndicator: allowIndicators && userSettings.get('guide-indicator-repeat') === 'true',
+                showEpisodeTitle: layoutManager.tv ? false : true
             };
 
             for (var i = 0, length = channels.length; i < length; i++) {
@@ -610,20 +623,17 @@
                 html += '<button type="button" class="' + cssClass + '"' + dataSrc + ' data-action="link" data-isfolder="' + channel.IsFolder + '" data-id="' + channel.Id + '" data-serverid="' + channel.ServerId + '" data-type="' + channel.Type + '">';
 
                 cssClass = 'guideChannelNumber';
-                if (hasChannelImage) {
-                    cssClass += ' guideChannelNumberWithImage';
-                }
 
-                html += '<div class="' + cssClass + '">' + channel.Number + '</div>';
+                html += '<h3 class="' + cssClass + '">' + channel.Number + '</h3>';
 
-                if (!hasChannelImage) {
+                if (!hasChannelImage && channel.Name) {
                     html += '<div class="guideChannelName">' + channel.Name + '</div>';
                 }
 
                 html += '</button>';
             }
 
-            var channelList = context.querySelector('.channelList');
+            var channelList = context.querySelector('.channelsContainer');
             channelList.innerHTML = html;
             imageLoader.lazyChildren(channelList);
         }

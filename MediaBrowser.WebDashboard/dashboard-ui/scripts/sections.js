@@ -10,7 +10,7 @@
     }
 
     function enableScrollX() {
-        return browserInfo.mobile && AppInfo.enableAppLayouts;
+        return browserInfo.mobile;
     }
 
     function getSquareShape() {
@@ -168,10 +168,6 @@
                 infos.push(getTheaterInfo);
             }
 
-            if (!AppInfo.enableAppLayouts) {
-                infos.push(getUpgradeMobileLayoutsInfo);
-            }
-
             return infos[getRandomInt(0, infos.length - 1)]();
         });
     }
@@ -204,7 +200,7 @@
 
         var html = '';
         html += '<div>';
-        html += '<h1>Try Emby Theater<button is="paper-icon-button-light" style="margin-left:1em;" onclick="this.parentNode.parentNode.remove();" class="autoSize"><i class="md-icon">close</i></button></h1>';
+        html += '<h1>Discover Emby Theater<button is="paper-icon-button-light" style="margin-left:1em;" onclick="this.parentNode.parentNode.remove();" class="autoSize"><i class="md-icon">close</i></button></h1>';
 
         var nameText = AppInfo.isNativeApp ? 'Emby Theater' : '<a href="https://emby.media/download" target="_blank">Emby Theater</a>';
         html += '<p>A beautiful app for your TV and large screen tablet. ' + nameText + ' runs on Windows, Xbox One, Raspberry Pi, Samsung Smart TVs, Sony PS4, Web Browsers, and more.</p>';
@@ -222,7 +218,7 @@
 
         var html = '';
         html += '<div>';
-        html += '<h1>Try Emby Premiere<button is="paper-icon-button-light" style="margin-left:1em;" onclick="this.parentNode.parentNode.remove();" class="autoSize"><i class="md-icon">close</i></button></h1>';
+        html += '<h1>Discover Emby Premiere<button is="paper-icon-button-light" style="margin-left:1em;" onclick="this.parentNode.parentNode.remove();" class="autoSize"><i class="md-icon">close</i></button></h1>';
 
         var cardTarget = AppInfo.isNativeApp ? '' : 'https://emby.media/premiere';
         var learnMoreText = AppInfo.isNativeApp ? '' : '<a href="https://emby.media/premiere" target="_blank">Learn more</a>';

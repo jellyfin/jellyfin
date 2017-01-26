@@ -42,6 +42,7 @@
 
 .listViewDragHandle {
     margin-left: -.25em !important;
+    touch-action: none;
 }
 
 .listItemBody {
@@ -59,7 +60,11 @@
 }
 
 .listItem-odd {
+}
+
+.listItem-shaded:nth-child(even) {
     background: #1c1c1c;
+    background: rgba(30, 30, 30, .9);
 }
 
 .three-line {
@@ -108,9 +113,9 @@
     color: #fff;
 }
 
-.listItemIcon:not(.listItemIcon-transparent) {
-    background-color: #52B54B;
-}
+    .listItemIcon:not(.listItemIcon-transparent) {
+        background-color: #52B54B;
+    }
 
 .listItemProgressBar {
     position: absolute;

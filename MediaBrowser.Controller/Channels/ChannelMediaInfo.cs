@@ -49,9 +49,11 @@ namespace MediaBrowser.Controller.Channels
             SupportsDirectPlay = true;
         }
 
-        public MediaSourceInfo ToMediaSource()
+        public MediaSourceInfo ToMediaSource(Guid itemId)
         {
-            var id = Path.GetMD5().ToString("N");
+            var id = string.IsNullOrWhiteSpace(Path) ?
+                itemId.ToString("N") :
+                Path.GetMD5().ToString("N");
 
             var source = new MediaSourceInfo
             {
@@ -65,16 +67,12 @@ namespace MediaBrowser.Controller.Channels
                 Name = id,
                 Id = id,
                 ReadAtNativeFramerate = ReadAtNativeFramerate,
-                SupportsDirectStream = Protocol == MediaProtocol.File,
-                SupportsDirectPlay = SupportsDirectPlay
+                SupportsDirectStream = false,
+                SupportsDirectPlay = SupportsDirectPlay,
+                IsRemote = true
             };
 
-            var bitrate = (AudioBitrate ?? 0) + (VideoBitrate ?? 0);
-
-            if (bitrate > 0)
-            {
-                source.Bitrate = bitrate;
-            }
+            source.InferTotalBitrate();
 
             return source;
         }

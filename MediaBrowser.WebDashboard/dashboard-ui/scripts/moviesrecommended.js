@@ -1,8 +1,8 @@
-﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'cardBuilder', 'dom', 'apphost', 'imageLoader', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, categorysyncbuttons, cardBuilder, dom, appHost, imageLoader) {
+﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'cardBuilder', 'dom', 'apphost', 'imageLoader', 'playbackManager', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, categorysyncbuttons, cardBuilder, dom, appHost, imageLoader, playbackManager) {
     'use strict';
 
     function enableScrollX() {
-        return browserInfo.mobile && AppInfo.enableAppLayouts;
+        return browserInfo.mobile;
     }
 
     function getPortraitShape() {
@@ -332,11 +332,11 @@
         }
 
         view.addEventListener('viewshow', function (e) {
-            Events.on(MediaController, 'playbackstop', onPlaybackStop);
+            Events.on(playbackManager, 'playbackstop', onPlaybackStop);
         });
 
         view.addEventListener('viewbeforehide', function (e) {
-            Events.off(MediaController, 'playbackstop', onPlaybackStop);
+            Events.off(playbackManager, 'playbackstop', onPlaybackStop);
         });
 
         require(["headroom-window"], function (headroom) {

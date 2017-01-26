@@ -454,7 +454,7 @@ namespace Rssdp.Infrastructure
                 }
 
                 if (responseMessage != null)
-                    OnResponseReceived(responseMessage, endPoint);
+                    OnResponseReceived(responseMessage, endPoint, receivedOnLocalIpAddress);
             }
             else
             {
@@ -490,11 +490,14 @@ namespace Rssdp.Infrastructure
                 handlers(this, new RequestReceivedEventArgs(data, remoteEndPoint, receivedOnLocalIpAddress));
         }
 
-        private void OnResponseReceived(HttpResponseMessage data, IpEndPointInfo endPoint)
+        private void OnResponseReceived(HttpResponseMessage data, IpEndPointInfo endPoint, IpAddressInfo localIpAddress)
         {
             var handlers = this.ResponseReceived;
             if (handlers != null)
-                handlers(this, new ResponseReceivedEventArgs(data, endPoint));
+                handlers(this, new ResponseReceivedEventArgs(data, endPoint)
+                {
+                    LocalIpAddress = localIpAddress
+                });
         }
 
         #endregion

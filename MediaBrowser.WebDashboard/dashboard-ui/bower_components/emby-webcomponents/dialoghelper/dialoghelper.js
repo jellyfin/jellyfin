@@ -10,6 +10,10 @@
             return false;
         }
 
+        if (browser.noAnimation) {
+            return false;
+        }
+
         return browser.supportsCssAnimation();
     }
 

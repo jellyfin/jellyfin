@@ -98,7 +98,8 @@
                     html = listView.getListViewHtml({
                         items: result.Items,
                         context: 'music',
-                        sortBy: query.SortBy
+                        sortBy: query.SortBy,
+                        addToListButton: true
                     });
                 }
                 else if (viewStyle == "PosterCard") {

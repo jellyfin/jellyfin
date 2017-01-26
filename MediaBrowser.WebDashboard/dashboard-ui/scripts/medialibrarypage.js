@@ -444,6 +444,14 @@
              name: Globalize.translate('TabDisplay')
          },
          {
+             href: 'metadataimages.html',
+             name: Globalize.translate('TabMetadata')
+         },
+         {
+             href: 'metadatanfo.html',
+             name: Globalize.translate('TabNfoSettings')
+         },
+         {
              href: 'librarysettings.html',
              name: Globalize.translate('TabAdvanced')
          }];

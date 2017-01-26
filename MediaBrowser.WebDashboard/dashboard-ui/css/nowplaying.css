@@ -1,60 +1,142 @@
-﻿.nowPlayingPage {
-    padding-top: 0 !important;
+﻿/*.nowPlayingPage {
+    padding-top: 1em !important;
+}*/
+
+.remoteControlContent {
+    padding: 1em 0 0;
+    max-width: 96%;
 }
 
-    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-        margin: 2px 1px;
-    }
+.nowPlayingInfoContainer {
+    display: flex;
+    flex-direction: row;
+}
 
-        .nowPlayingPage .btnCommand:not(.hide), .nowPlayingPage .btnPlayStateCommand:not(.hide) {
-            display: inline-block !important;
-        }
+.nowPlayingPageTitle {
+    margin: 0 0 .5em .5em;
+}
+
+.nowPlayingPositionSliderContainer {
+    margin: .7em 0 .7em 1em;
+}
+
+.nowPlayingInfoButtons {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 130%;
+}
+
+.nowPlayingPageImageContainer {
+    width: 20%;
+    margin-right: .25em;
+    position: relative;
+    flex-shrink: 0;
+}
+
+@media all and (min-width: 800px) {
+
+    .nowPlayingPageImageContainer {
+        width: 16%;
+    }
+}
+
+.nowPlayingInfoControls {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
 
 .nowPlayingPageImage {
-    height: 360px;
-    width: 360px;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-size: cover;
+    /*position: absolute;*/
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    -moz-box-shadow: 0 0 1.9vh #000;
+    -webkit-box-shadow: 0 0 1.9vh #000;
+    box-shadow: 0 0 1.9vh #000;
+    border: solid 1px #222;
+    user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
 }
 
-.nowPlayingPageTimeContainer {
-    min-width: 200px;
-    max-width: 280px;
-    margin: 1.5em auto 1em;
+@media all and (orientation: portrait) and (max-width: 800px) {
+
+    .remoteControlContent {
+        padding-top: 0;
+    }
+
+    .nowPlayingInfoContainer {
+        flex-direction: column !important;
+        align-items: center;
+    }
+
+    .nowPlayingPageTitle {
+        text-align: center;
+        margin: .5em 0 .75em 0;
+    }
+
+    .nowPlayingPositionSliderContainer {
+        margin: .7em 1em;
+    }
+
+    .nowPlayingInfoButtons {
+        justify-content: center;
+    }
+
+    .nowPlayingPageImageContainer {
+        width: auto;
+        margin-right: 0;
+    }
+
+    .nowPlayingInfoControls {
+        margin-top: 1em;
+    }
+
+    .nowPlayingPageImage {
+        width: auto;
+        height: 36vh;
+    }
+}
+
+.nowPlayingTime {
+    display: flex;
+    align-items: center;
+    margin: 0 1em;
+}
+
+.nowPlayingSecondaryButtons {
+    display: flex;
+    align-items: center;
+}
+
+@media all and (min-width: 800px) {
+
+    .nowPlayingSecondaryButtons {
+        flex-grow: 1;
+        justify-content: flex-end;
+    }
+}
+
+@media all and (min-width: 1280px) {
+
+    .nowPlayingPageImageContainer {
+        margin-right: .75em;
+    }
 }
 
 .nowPlayingNavButtonContainer {
     width: 400px;
 }
 
-.chapterMenuOverlay {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 999;
-}
-
-.chapterMenu {
-    position: fixed;
-    top: 30%;
-    height: 180px;
-    left: 0;
-    right: 0;
-    background-color: rgba(0,0,0,.9);
-    z-index: 1000;
-}
-
 .nowPlayingPageRepeatActive {
     color: #2ad !important;
-}
-
-.chapterMenuInner {
-    padding: 1em 0;
-    text-align: center;
-    white-space: nowrap;
 }
 
 .smallBackdropPosterItem .cardOverlayInner > div {
@@ -63,141 +145,28 @@
     overflow: hidden;
 }
 
-.chapterPosterItem {
-    width: 240px !important;
-    cursor: pointer;
-}
-
-    .chapterPosterItem .posterItemImage {
-        height: 135px !important;
-    }
-
-.currentChapter {
-    box-shadow: 0 0 12px 7px #cc3333;
-}
-
 .playlistIndexIndicatorImage {
     background-size: initial !important;
     background-image: url(images/ani_equalizer_white.gif) !important;
 }
 
-@media all and (max-width: 700px) {
-
-    .nowPlayingPageImage {
-        height: 160px;
-        width: 160px;
-    }
+.hideVideoButtons .videoButton {
+    display: none;
 }
 
-.nowPlayingPage .btnCommand i, .nowPlayingPage .btnPlayStateCommand i {
-    width: 44px;
-    height: 44px;
-    font-size: 44px;
+.nowPlayingCastIcon {
+    font-size: 86%;
+}
+
+.nowPlayingVolumeSliderContainer {
+    width: 6em;
 }
 
 
-@media all and (max-width: 600px) and (orientation: portrait) {
-
-    .btnSlideshow {
-        display: block !important;
-        margin-top: 1em;
-    }
-}
-
-@media all and (max-height: 600px) {
-
-    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-        margin: 2px 0;
-    }
-
-    .nowPlayingPageImage {
-        height: 160px;
-        width: 160px;
-    }
-}
-
-@media all and (max-height: 500px) {
-
-    .nowPlayingPageImage {
-        height: 120px;
-        width: 120px;
-    }
-}
 
 @media all and (max-width: 400px) {
 
-    .nowPlayingNavButtonContainer {
-        width: 300px;
+    .playlist .listItemMediaInfo {
+        display: none !important;
     }
-}
-
-.nowPlayingPageTitle {
-    margin: 1.5em auto .5em;
-    max-width: 50%;
-}
-
-.nowPlayingInfoButtons {
-    padding-top: .5em;
-}
-
-@media all and (min-height: 600px) {
-
-    .nowPlayingPageTitle {
-        margin-top: 2em;
-    }
-
-    .nowPlayingInfoButtons {
-        padding-top: 1em;
-    }
-}
-
-@media all and (min-width: 800px) {
-
-    .nowPlayingPageTimeContainer {
-        max-width: 340px;
-    }
-}
-
-@media (orientation: landscape) {
-    .nowPlayingInfoMetadata, .nowPlayingInfoButtons {
-        display: inline-block;
-        vertical-align: top;
-    }
-
-    .nowPlayingInfoButtons {
-        margin-left: 1em;
-    }
-}
-
-@media (orientation: landscape) and (min-width: 700px) {
-    .nowPlayingInfoButtons {
-        margin-left: 3em;
-    }
-}
-
-.nowPlayingSelectedPlayer {
-    display: inline-block;
-    vertical-align: middle;
-    color: #eee;
-    margin-right: .25em;
-}
-
-@media all and (max-width: 700px) {
-
-    .nowPlayingSelectedPlayer {
-        display: none;
-    }
-}
-
-.nowPlayingPageUserDataButtons paper-icon-button {
-    width: 40px;
-    height: 40px;
-}
-
-.hideVideoButtons .videoButton {
-    visibility: hidden;
-}
-
-.hideVolumeButtons .volumeButton {
-    visibility: hidden;
 }

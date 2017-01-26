@@ -1,10 +1,10 @@
-﻿define(['serverNotifications', 'events', 'loading', 'connectionManager', 'imageLoader', 'dom', 'globalize', 'registrationServices', 'listViewStyle'], function (serverNotifications, events, loading, connectionManager, imageLoader, dom, globalize, registrationServices) {
+﻿define(['serverNotifications', 'events', 'loading', 'connectionManager', 'imageLoader', 'dom', 'globalize', 'registrationServices', 'layoutManager', 'listViewStyle'], function (serverNotifications, events, loading, connectionManager, imageLoader, dom, globalize, registrationServices, layoutManager) {
     'use strict';
 
     function onSyncJobsUpdated(e, apiClient, data) {
 
         var listInstance = this;
-        renderList(listInstance, data);
+        renderList(listInstance, data, apiClient);
     }
 
     function refreshList(listInstance, jobs) {
@@ -54,41 +54,60 @@ globalize.translate('sharedcomponents#CancelSyncJobConfirmation');
             return;
         }
 
-        var progress = job.Progress || 0;
-        var statusIcon = listItem.querySelector('.statusIcon');
-
-        if (progress === 0) {
-            statusIcon.innerHTML = 'file_download';
-            statusIcon.classList.add('md-icon');
-            statusIcon.classList.remove('status-text-icon');
-            statusIcon.classList.add('zeroProgressStatus');
-        } else if (progress >= 100) {
-            statusIcon.innerHTML = 'check';
-            statusIcon.classList.add('md-icon');
-            statusIcon.classList.remove('status-text-icon');
-            statusIcon.classList.remove('zeroProgressStatus');
-        } else {
-            statusIcon.classList.remove('md-icon');
-            statusIcon.classList.remove('zeroProgressStatus');
-            statusIcon.classList.add('status-text-icon');
-            statusIcon.innerHTML = (Math.round(progress)) + '%';
-        }
+        listItem.querySelector('.jobStatus').innerHTML = getProgressText(job);
     }
 
-    function getSyncJobHtml(listInstance, job) {
+    function getProgressText(job) {
+
+        var status = job.Status;
+
+        if (status === 'Completed') {
+            status = 'Synced';
+        }
+
+        var html = globalize.translate('sharedcomponents#SyncJobItemStatus' + status);
+
+        if (job.Status === 'Transferring' || job.Status === 'Converting' || job.Status === 'Completed') {
+            html += ' ';
+            html += (job.Progress || 0) + '%';
+        }
+
+        return html;
+    }
+
+    function getSyncJobHtml(listInstance, job, apiClient) {
 
         var html = '';
 
-        html += '<div class="listItem" data-id="' + job.Id + '" data-status="' + job.Status + '">';
+        var tagName = layoutManager.tv ? 'button' : 'div';
+        var typeAttribute = tagName === 'button' ? ' type="button"' : '';
 
-        var progress = job.Progress || 0;
+        var listItemClass = 'listItem';
 
-        if (progress === 0) {
-            html += '<i class="md-icon listItemIcon statusIcon zeroProgressStatus">file_download</i>';
-        } else if (progress >= 100) {
-            html += '<i class="md-icon listItemIcon statusIcon">check</i>';
-        } else {
-            html += '<i class="listItemIcon statusIcon status-text-icon">' + (Math.round(progress)) + '%</i>';
+        if (layoutManager.tv) {
+            listItemClass += ' listItem-button listItem-focusscale';
+        }
+
+        html += '<' + tagName + typeAttribute + ' class="' + listItemClass + '" data-id="' + job.Id + '" data-status="' + job.Status + '">';
+
+        var imgUrl;
+
+        if (job.PrimaryImageItemId) {
+
+            imgUrl = apiClient.getImageUrl(job.PrimaryImageItemId, {
+                type: "Primary",
+                width: 80,
+                tag: job.PrimaryImageTag,
+                minScale: 1.5
+            });
+        }
+
+        if (imgUrl) {
+            html += '<div class="listItemImage lazy" data-src="' + imgUrl + '" item-icon>';
+            html += '</div>';
+        }
+        else {
+            html += '<i class="md-icon listItemIcon">file_download</i>';
         }
 
         var textLines = [];
@@ -105,11 +124,7 @@ globalize.translate('sharedcomponents#CancelSyncJobConfirmation');
             textLines.push(globalize.translate('sharedcomponents#ItemCount', job.ItemCount));
         }
 
-        if (textLines >= 3) {
-            html += '<div class="listItemBody three-line">';
-        } else {
-            html += '<div class="listItemBody two-line">';
-        }
+        html += '<div class="listItemBody three-line">';
 
         for (var i = 0, length = textLines.length; i < length; i++) {
 
@@ -124,16 +139,22 @@ globalize.translate('sharedcomponents#CancelSyncJobConfirmation');
             }
         }
 
+        html += '<div class="secondary listItemBodyText jobStatus" style="color:green;">';
+        html += getProgressText(job);
         html += '</div>';
 
-        html += '<button type="button" is="paper-icon-button-light" class="btnJobMenu listItemButton"><i class="md-icon">more_vert</i></button>';
-
         html += '</div>';
+
+        if (!layoutManager.tv) {
+            html += '<button type="button" is="paper-icon-button-light" class="btnJobMenu listItemButton"><i class="md-icon">more_vert</i></button>';
+        }
+
+        html += '</' + tagName + '>';
 
         return html;
     }
 
-    function renderList(listInstance, jobs) {
+    function renderList(listInstance, jobs, apiClient) {
 
         if ((new Date().getTime() - listInstance.lastDataLoad) < 60000) {
             refreshList(listInstance, jobs);
@@ -176,7 +197,7 @@ globalize.translate('sharedcomponents#CancelSyncJobConfirmation');
                 }
             }
 
-            html += getSyncJobHtml(listInstance, job);
+            html += getSyncJobHtml(listInstance, job, apiClient);
         }
 
         if (hasOpenSection) {
@@ -218,7 +239,7 @@ globalize.translate('sharedcomponents#CancelSyncJobConfirmation');
 
         return apiClient.getJSON(apiClient.getUrl('Sync/Jobs', options)).then(function (response) {
 
-            renderList(listInstance, response.Items);
+            renderList(listInstance, response.Items, apiClient);
             loading.hide();
         });
     }

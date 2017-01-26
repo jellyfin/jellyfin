@@ -1,4 +1,8 @@
 {
+    "HeaderRemoteControl": "Remote Control",
+    "Disconnect": "Disconnect",
+    "EnableDisplayMirroring": "Enable display mirroring",
+    "HeaderSelectPlayer": "Select Player",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -42,7 +46,7 @@
     "Saturday": "L\u00f8rdag",
     "Days": "Dager",
     "RecordSeries": "Ta opp serien",
-    "HeaderCinemaMode": "Cinema Mode",
+    "HeaderCinemaMode": "Kino Modus",
     "HeaderCloudSync": "Cloud Sync",
     "HeaderOfflineDownloads": "Offline Media",
     "HeaderOfflineDownloadsDescription": "Download media to your devices for easy offline use.",
@@ -115,7 +119,7 @@
     "RefreshDialogHelp": "Metadata er oppdatert basert p\u00e5 innstillinger og internett-tjenester som er aktivert i Emby Server dashbordet",
     "Open": "\u00c5pne",
     "Play": "Spill",
-    "Queue": "K\u00f8",
+    "AddToPlayQueue": "Add to play queue",
     "Shuffle": "Shuffle",
     "Identify": "Identifiser",
     "EditImages": "Endre bilder",
@@ -376,5 +380,8 @@
     "SyncJobItemStatusFailed": "Failed",
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
     "SyncJobItemStatusCancelled": "Cancelled",
-    "Retry": "Retry"
+    "Retry": "Retry",
+    "HeaderMyDevice": "My Device",
+    "Continue": "Continue",
+    "ContinueInSecondsValue": "Continue in {0} seconds."
 }

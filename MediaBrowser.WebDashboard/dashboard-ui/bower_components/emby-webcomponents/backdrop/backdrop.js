@@ -201,7 +201,7 @@
 
             return item.BackdropImageTags.map(function (imgTag, index) {
 
-                return apiClient.getScaledImageUrl(item.Id, Object.assign(imageOptions, {
+                return apiClient.getScaledImageUrl(item.BackdropItemId || item.Id, Object.assign(imageOptions, {
                     type: "Backdrop",
                     tag: imgTag,
                     maxWidth: getBackdropMaxWidth(),
@@ -294,14 +294,14 @@
         currentRotationIndex = -1;
 
         if (images.length > 1 && enableImageRotation !== false && enableRotation()) {
-            rotationInterval = setInterval(onRotationInterval, 20000);
+            rotationInterval = setInterval(onRotationInterval, 24000);
         }
         onRotationInterval();
     }
 
     function onRotationInterval() {
 
-        if (playbackManager.isPlayingVideo()) {
+        if (playbackManager.isPlayingLocally(['Video'])) {
             return;
         }
 

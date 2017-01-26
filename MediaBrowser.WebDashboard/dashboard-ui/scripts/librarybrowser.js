@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'dom', 'browser', 'scrollStyles'], function (appSettings, dom, browser) {
+﻿define(['appSettings', 'dom', 'browser', 'datetime', 'scrollStyles'], function (appSettings, dom, browser, datetime) {
     'use strict';
 
     function fadeInRight(elem) {
@@ -230,13 +230,6 @@
                 return html;
             },
 
-            playInExternalPlayer: function (id) {
-
-                Dashboard.loadExternalPlayer().then(function () {
-                    ExternalPlayer.showMenu(id);
-                });
-            },
-
             getHref: function (item, context, topParentId) {
 
                 if (!item) {
@@ -439,7 +432,7 @@
                 weekday[6] = Globalize.translate('OptionSaturday');
 
                 var day = weekday[date.getDay()];
-                date = date.toLocaleDateString();
+                date = datetime.toLocaleDateString(date);
 
                 if (date.toLowerCase().indexOf(day.toLowerCase()) == -1) {
                     return day + " " + date;

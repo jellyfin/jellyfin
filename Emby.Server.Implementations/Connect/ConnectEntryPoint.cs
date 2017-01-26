@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Threading;
 
@@ -17,6 +18,7 @@ namespace Emby.Server.Implementations.Connect
     public class ConnectEntryPoint : IServerEntryPoint
     {
         private ITimer _timer;
+        private IpAddressInfo _cachedIpAddress;
         private readonly IHttpClient _httpClient;
         private readonly IApplicationPaths _appPaths;
         private readonly ILogger _logger;
@@ -26,8 +28,9 @@ namespace Emby.Server.Implementations.Connect
         private readonly IApplicationHost _appHost;
         private readonly IFileSystem _fileSystem;
         private readonly ITimerFactory _timerFactory;
+        private readonly IEncryptionManager _encryption;
 
-        public ConnectEntryPoint(IHttpClient httpClient, IApplicationPaths appPaths, ILogger logger, INetworkManager networkManager, IConnectManager connectManager, IApplicationHost appHost, IFileSystem fileSystem, ITimerFactory timerFactory)
+        public ConnectEntryPoint(IHttpClient httpClient, IApplicationPaths appPaths, ILogger logger, INetworkManager networkManager, IConnectManager connectManager, IApplicationHost appHost, IFileSystem fileSystem, ITimerFactory timerFactory, IEncryptionManager encryption)
         {
             _httpClient = httpClient;
             _appPaths = appPaths;
@@ -37,6 +40,7 @@ namespace Emby.Server.Implementations.Connect
             _appHost = appHost;
             _fileSystem = fileSystem;
             _timerFactory = timerFactory;
+            _encryption = encryption;
         }
 
         public void Run()
@@ -143,17 +147,31 @@ namespace Emby.Server.Implementations.Connect
 
         private string CacheFilePath
         {
-            get { return Path.Combine(_appPaths.DataPath, "wan.txt"); }
+            get { return Path.Combine(_appPaths.DataPath, "wan.dat"); }
         }
 
         private void CacheAddress(IpAddressInfo address)
         {
+            if (_cachedIpAddress != null && _cachedIpAddress.Equals(address))
+            {
+                // no need to update the file if the address has not changed
+                return;
+            }
+
             var path = CacheFilePath;
 
             try
             {
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
-                _fileSystem.WriteAllText(path, address.ToString(), Encoding.UTF8);
+            }
+            catch (Exception ex)
+            {
+            }
+
+            try
+            {
+                _fileSystem.WriteAllText(path, _encryption.EncryptString(address.ToString()), Encoding.UTF8);
+                _cachedIpAddress = address;
             }
             catch (Exception ex)
             {
@@ -169,11 +187,12 @@ namespace Emby.Server.Implementations.Connect
 
             try
             {
-                var endpoint = _fileSystem.ReadAllText(path, Encoding.UTF8);
+                var endpoint = _encryption.DecryptString(_fileSystem.ReadAllText(path, Encoding.UTF8));
                 IpAddressInfo ipAddress;
 
                 if (_networkManager.TryParseIpAddress(endpoint, out ipAddress))
                 {
+                    _cachedIpAddress = ipAddress;
                     ((ConnectManager)_connectManager).OnWanAddressResolved(ipAddress);
                 }
             }

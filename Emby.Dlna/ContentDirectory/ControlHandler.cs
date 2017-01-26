@@ -260,7 +260,7 @@ namespace Emby.Dlna.ContentDirectory
                 {
                     totalCount = 1;
 
-                    if (item.IsFolder || serverItem.StubType.HasValue)
+                    if (item.IsDisplayedAsFolder || serverItem.StubType.HasValue)
                     {
                         var childrenResult = (await GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount).ConfigureAwait(false));
 
@@ -285,7 +285,7 @@ namespace Emby.Dlna.ContentDirectory
                         var childItem = i.Item;
                         var displayStubType = i.StubType;
 
-                        if (childItem.IsFolder || displayStubType.HasValue)
+                        if (childItem.IsDisplayedAsFolder || displayStubType.HasValue)
                         {
                             var childCount = (await GetUserItems(childItem, displayStubType, user, sortCriteria, null, 0).ConfigureAwait(false))
                                 .TotalRecordCount;
@@ -381,7 +381,7 @@ namespace Emby.Dlna.ContentDirectory
 
                 foreach (var i in childrenResult.Items)
                 {
-                    if (i.IsFolder)
+                    if (i.IsDisplayedAsFolder)
                     {
                         var childCount = (await GetChildrenSorted(i, user, searchCriteria, sortCriteria, null, 0).ConfigureAwait(false))
                             .TotalRecordCount;

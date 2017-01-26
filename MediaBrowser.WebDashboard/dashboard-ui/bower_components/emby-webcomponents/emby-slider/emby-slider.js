@@ -38,21 +38,29 @@
 
     function updateBubble(range, value, bubble, bubbleText) {
 
-        bubble.style.left = (value - 1) + '%';
+        bubble.style.left = value + '%';
 
-        if (range.getBubbleText) {
-            value = range.getBubbleText(value);
+        if (range.getBubbleHtml) {
+            value = range.getBubbleHtml(value);
+        } else {
+            if (range.getBubbleText) {
+                value = range.getBubbleText(value);
+            } else {
+                value = Math.round(value);
+            }
+            value = '<h1 class="sliderBubbleText">' + value + '</h1>';
         }
-        bubbleText.innerHTML = value;
+
+        bubble.innerHTML = value;
     }
 
     EmbySliderPrototype.attachedCallback = function () {
 
-        if (this.getAttribute('data-embycheckbox') === 'true') {
+        if (this.getAttribute('data-embyslider') === 'true') {
             return;
         }
 
-        this.setAttribute('data-embycheckbox', 'true');
+        this.setAttribute('data-embyslider', 'true');
 
         this.classList.add('mdl-slider');
         this.classList.add('mdl-js-slider');
@@ -70,21 +78,20 @@
             htmlToInsert += '<div class="mdl-slider__background-flex"><div class="mdl-slider__background-lower"></div><div class="mdl-slider__background-upper"></div></div>';
         }
 
-        htmlToInsert += '<div class="sliderBubble hide"><h1 class="sliderBubbleText"></h1></div>';
+        htmlToInsert += '<div class="sliderBubble hide"></div>';
 
         containerElement.insertAdjacentHTML('beforeend', htmlToInsert);
 
         var backgroundLower = containerElement.querySelector('.mdl-slider__background-lower');
         var backgroundUpper = containerElement.querySelector('.mdl-slider__background-upper');
         var sliderBubble = containerElement.querySelector('.sliderBubble');
-        var sliderBubbleText = containerElement.querySelector('.sliderBubbleText');
 
         var hasHideClass = sliderBubble.classList.contains('hide');
 
         dom.addEventListener(this, 'input', function (e) {
             this.dragging = true;
 
-            updateBubble(this, this.value, sliderBubble, sliderBubbleText);
+            updateBubble(this, this.value, sliderBubble);
 
             if (hasHideClass) {
                 sliderBubble.classList.remove('hide');
@@ -114,7 +121,7 @@
                     var clientX = e.clientX;
                     var bubbleValue = (clientX - rect.left) / rect.width;
                     bubbleValue *= 100;
-                    updateBubble(this, Math.round(bubbleValue), sliderBubble, sliderBubbleText);
+                    updateBubble(this, bubbleValue, sliderBubble);
 
                     if (hasHideClass) {
                         sliderBubble.classList.remove('hide');

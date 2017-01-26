@@ -430,6 +430,23 @@ namespace Emby.Server.Implementations.Notifications
             return name;
         }
 
+        public static string GetItemName(BaseItemInfo item)
+        {
+            var name = item.Name;
+
+            if (!string.IsNullOrWhiteSpace(item.SeriesName))
+            {
+                name = item.SeriesName + " - " + name;
+            }
+
+            if (item.Artists != null && item.Artists.Count > 0)
+            {
+                name = item.Artists[0] + " - " + name;
+            }
+
+            return name;
+        }
+
         async void _userManager_UserCreated(object sender, GenericEventArgs<User> e)
         {
             var notification = new NotificationRequest

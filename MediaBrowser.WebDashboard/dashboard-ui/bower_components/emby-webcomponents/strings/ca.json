@@ -1,4 +1,8 @@
 {
+    "HeaderRemoteControl": "Remote Control",
+    "Disconnect": "Disconnect",
+    "EnableDisplayMirroring": "Enable display mirroring",
+    "HeaderSelectPlayer": "Select Player",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -115,7 +119,7 @@
     "RefreshDialogHelp": "Metadata is refreshed based on settings and internet services that are enabled in the Emby Server dashboard.",
     "Open": "Obre",
     "Play": "Reprodueix",
-    "Queue": "Queue",
+    "AddToPlayQueue": "Add to play queue",
     "Shuffle": "Shuffle",
     "Identify": "Identify",
     "EditImages": "Edit images",
@@ -376,5 +380,8 @@
     "SyncJobItemStatusFailed": "Failed",
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
     "SyncJobItemStatusCancelled": "Cancelled",
-    "Retry": "Retry"
+    "Retry": "Retry",
+    "HeaderMyDevice": "My Device",
+    "Continue": "Continue",
+    "ContinueInSecondsValue": "Continue in {0} seconds."
 }

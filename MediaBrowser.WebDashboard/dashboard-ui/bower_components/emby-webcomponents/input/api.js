@@ -89,7 +89,7 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
                 return;
             case 'SetVolume':
                 notifyApp();
-                playbackManager.volume(cmd.Arguments.Volume);
+                playbackManager.setVolume(cmd.Arguments.Volume);
                 break;
             case 'SetAudioStreamIndex':
                 notifyApp();
@@ -196,10 +196,7 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
         events.on(apiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
-    var current = connectionManager.currentApiClient();
-    if (current) {
-        bindEvents(current);
-    }
+    connectionManager.getApiClients().forEach(bindEvents);
 
     events.on(connectionManager, 'apiclientcreated', function (e, newApiClient) {
 

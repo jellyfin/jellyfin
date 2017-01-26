@@ -128,7 +128,7 @@
 
         if (playbackManager.canPlay(item)) {
 
-            html += '<button is="emby-button" class="itemAction autoSize fab cardOverlayFab mini" data-action="playmenu"><i class="md-icon cardOverlayFab-md-icon">&#xE037;</i></button>';
+            html += '<button is="emby-button" class="itemAction autoSize fab cardOverlayFab mini" data-action="resume"><i class="md-icon cardOverlayFab-md-icon">&#xE037;</i></button>';
             buttonCount++;
         }
 

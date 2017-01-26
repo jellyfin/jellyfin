@@ -1956,30 +1956,6 @@ namespace Emby.Server.Implementations.Library
 
             var options = collectionFolder == null ? new LibraryOptions() : collectionFolder.GetLibraryOptions();
 
-            if (options.SchemaVersion < 3)
-            {
-                options.SaveLocalMetadata = ConfigurationManager.Configuration.SaveLocalMeta;
-                options.EnableInternetProviders = ConfigurationManager.Configuration.EnableInternetProviders;
-            }
-
-            if (options.SchemaVersion < 2)
-            {
-                var chapterOptions = ConfigurationManager.GetConfiguration<ChapterOptions>("chapters");
-                options.ExtractChapterImagesDuringLibraryScan = chapterOptions.ExtractDuringLibraryScan;
-
-                if (collectionFolder != null)
-                {
-                    if (string.Equals(collectionFolder.CollectionType, "movies", StringComparison.OrdinalIgnoreCase))
-                    {
-                        options.EnableChapterImageExtraction = chapterOptions.EnableMovieChapterImageExtraction;
-                    }
-                    else if (string.Equals(collectionFolder.CollectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
-                    {
-                        options.EnableChapterImageExtraction = chapterOptions.EnableEpisodeChapterImageExtraction;
-                    }
-                }
-            }
-
             return options;
         }
 
@@ -2034,7 +2010,7 @@ namespace Emby.Server.Implementations.Library
 
         private string GetContentTypeOverride(string path, bool inherit)
         {
-            var nameValuePair = ConfigurationManager.Configuration.ContentTypes.FirstOrDefault(i => string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase) || (inherit && !string.IsNullOrWhiteSpace(i.Name) && _fileSystem.ContainsSubPath(i.Name, path)));
+            var nameValuePair = ConfigurationManager.Configuration.ContentTypes.FirstOrDefault(i => _fileSystem.AreEqual(i.Name, path) || (inherit && !string.IsNullOrWhiteSpace(i.Name) && _fileSystem.ContainsSubPath(i.Name, path)));
             if (nameValuePair != null)
             {
                 return nameValuePair.Value;
@@ -2505,6 +2481,8 @@ namespace Emby.Server.Implementations.Library
                 options.VideoFileExtensions.Remove(".zip");
             }
 
+            options.VideoFileExtensions.Add(".tp");
+
             return options;
         }
 
@@ -2615,7 +2593,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     foreach (var pathInfo in libraryOptions.PathInfos)
                     {
-                        if (string.IsNullOrWhiteSpace(pathInfo.NetworkPath))
+                        if (string.IsNullOrWhiteSpace(pathInfo.Path) || string.IsNullOrWhiteSpace(pathInfo.NetworkPath))
                         {
                             continue;
                         }
@@ -2643,10 +2621,13 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var map in ConfigurationManager.Configuration.PathSubstitutions)
             {
-                var substitutionResult = SubstitutePathInternal(path, map.From, map.To);
-                if (substitutionResult.Item2)
+                if (!string.IsNullOrWhiteSpace(map.From))
                 {
-                    return substitutionResult.Item1;
+                    var substitutionResult = SubstitutePathInternal(path, map.From, map.To);
+                    if (substitutionResult.Item2)
+                    {
+                        return substitutionResult.Item1;
+                    }
                 }
             }
 
@@ -3088,7 +3069,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     removeList.Add(contentType);
                 }
-                else if (string.Equals(path, contentType.Name, StringComparison.OrdinalIgnoreCase)
+                else if (_fileSystem.AreEqual(path, contentType.Name)
                     || _fileSystem.ContainsSubPath(path, contentType.Name))
                 {
                     removeList.Add(contentType);

@@ -237,7 +237,8 @@ namespace MediaBrowser.Providers.TV
             {
                 Url = url,
                 ResourcePool = TvDbResourcePool,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                BufferContent = false
 
             }).ConfigureAwait(false))
             {
@@ -281,7 +282,8 @@ namespace MediaBrowser.Providers.TV
             {
                 Url = url,
                 ResourcePool = TvDbResourcePool,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                BufferContent = false
 
             }).ConfigureAwait(false))
             {
@@ -535,7 +537,8 @@ namespace MediaBrowser.Providers.TV
             {
                 Url = url,
                 ResourcePool = TvDbResourcePool,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                BufferContent = false
 
             }).ConfigureAwait(false))
             {
@@ -1664,7 +1667,8 @@ namespace MediaBrowser.Providers.TV
             {
                 CancellationToken = cancellationToken,
                 Url = url,
-                ResourcePool = TvDbResourcePool
+                ResourcePool = TvDbResourcePool,
+                BufferContent = false
             });
         }
     }

@@ -8,25 +8,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
     {
         public static string GetInputArgument(List<string> inputFiles, MediaProtocol protocol)
         {
-            if (protocol == MediaProtocol.Http)
-            {
-                var url = inputFiles.First();
-
-                return string.Format("\"{0}\"", url);
-            }
-            if (protocol == MediaProtocol.Rtmp)
-            {
-                var url = inputFiles.First();
-
-                return string.Format("\"{0}\"", url);
-            }
-            if (protocol == MediaProtocol.Rtsp)
-            {
-                var url = inputFiles.First();
-
-                return string.Format("\"{0}\"", url);
-            }
-            if (protocol == MediaProtocol.Udp)
+            if (protocol != MediaProtocol.File)
             {
                 var url = inputFiles.First();
 

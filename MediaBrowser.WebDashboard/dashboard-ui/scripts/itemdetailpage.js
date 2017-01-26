@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'imageLoader', 'libraryMenu', 'shell', 'globalize', 'browser', 'events', 'scrollHelper', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost, imageLoader, libraryMenu, shell, globalize, browser, events, scrollHelper) {
+﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'imageLoader', 'libraryMenu', 'globalize', 'browser', 'events', 'scrollHelper', 'playbackManager', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost, imageLoader, libraryMenu, globalize, browser, events, scrollHelper, playbackManager) {
     'use strict';
 
     function getPromise(params) {
@@ -73,13 +73,14 @@
             item: item,
             open: false,
             play: false,
-            queue: false,
             playAllFromHere: false,
             queueAllFromHere: false,
             positionTo: button,
             cancelTimer: false,
             record: false,
-            deleteItem: item.IsFolder === true
+            deleteItem: item.IsFolder === true,
+            shuffle: false,
+            instantMix: false
         };
 
         if (appHost.supports('sync')) {
@@ -228,13 +229,28 @@
                 } else {
                     hideAll(page, 'btnPlay');
                 }
+                hideAll(page, 'btnResume');
+                hideAll(page, 'btnInstantMix');
+                hideAll(page, 'btnShuffle');
             }
-            else if (MediaController.canPlay(item)) {
+            else if (playbackManager.canPlay(item)) {
                 hideAll(page, 'btnPlay', true);
+
+                var enableInstantMix = ['Audio', 'MusicAlbum', 'MusicGenre', 'MusicArtist'].indexOf(item.Type) !== -1;
+                hideAll(page, 'btnInstantMix', enableInstantMix);
+
+                var enableShuffle = item.IsFolder || ['MusicAlbum', 'MusicGenre', 'MusicArtist'].indexOf(item.Type) !== -1;
+                hideAll(page, 'btnShuffle', enableShuffle);
+
                 canPlay = true;
+
+                hideAll(page, 'btnResume', item.UserData && item.UserData.PlaybackPositionTicks > 0);
             }
             else {
                 hideAll(page, 'btnPlay');
+                hideAll(page, 'btnResume');
+                hideAll(page, 'btnInstantMix');
+                hideAll(page, 'btnShuffle');
             }
 
             var hasAnyButton = canPlay;
@@ -910,7 +926,7 @@
     }
 
     function enableScrollX() {
-        return browserInfo.mobile && AppInfo.enableAppLayouts && screen.availWidth <= 1000;
+        return browserInfo.mobile && screen.availWidth <= 1000;
     }
 
     function getPortraitShape(scrollX) {
@@ -1260,7 +1276,8 @@
                     action: 'playallfromhere',
                     image: false,
                     artist: 'auto',
-                    containerAlbumArtist: item.AlbumArtist
+                    containerAlbumArtist: item.AlbumArtist,
+                    addToListButton: true
                 });
                 isList = true;
             }
@@ -1548,6 +1565,9 @@
                     case 'games':
                         type = 'Game';
                         break;
+                    case 'music':
+                        type = 'MusicAlbum';
+                        break;
                     default:
                         type = 'Movie';
                         break;
@@ -1747,7 +1767,7 @@
 
                 try {
 
-                    var date = datetime.parseISO8601Date(review.Date, true).toLocaleDateString();
+                    var date = datetime.toLocaleDateString(datetime.parseISO8601Date(review.Date, true));
 
                     html += '<span class="reviewDate">' + date + '</span>';
                 }
@@ -2146,7 +2166,7 @@
 
     function play(startPosition) {
 
-        MediaController.play({
+        playbackManager.play({
             items: [currentItem],
             startPositionTicks: startPosition
         });
@@ -2176,44 +2196,43 @@
 
     function playTrailer(page) {
 
-        if (!currentItem.LocalTrailerCount) {
-
-            shell.openUrl(currentItem.RemoteTrailers[0].Url);
-            return;
-        }
-
-        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), currentItem.Id).then(function (trailers) {
-
-            MediaController.play({ items: trailers });
-
-        });
+        playbackManager.playTrailers(currentItem);
     }
 
     function showPlayMenu(item, target) {
 
         require(['playMenu'], function (playMenu) {
-
             playMenu.show({
-
                 item: item,
                 positionTo: target
             });
         });
     }
 
-    function playCurrentItem(button) {
+    function playCurrentItem(button, mode) {
 
-        if (currentItem.Type == 'Program') {
+        var item = currentItem;
 
-            ApiClient.getLiveTvChannel(currentItem.ChannelId, Dashboard.getCurrentUserId()).then(function (channel) {
+        if (item.Type === 'Program') {
 
-                showPlayMenu(channel, button);
+            ApiClient.getLiveTvChannel(item.ChannelId, Dashboard.getCurrentUserId()).then(function (channel) {
+
+                playbackManager.play({
+                    items: [channel]
+                });
             });
 
             return;
         }
 
-        showPlayMenu(currentItem, button);
+        if (mode === 'playmenu') {
+            showPlayMenu(item, button);
+        } else {
+            playbackManager.play({
+                items: [item],
+                startPositionTicks: item.UserData && mode === 'resume' ? item.UserData.PlaybackPositionTicks : 0
+            });
+        }
     }
 
     function deleteTimer(page, params, id) {
@@ -2252,7 +2271,17 @@
     window.ItemDetailPage = new itemDetailPage();
 
     function onPlayClick() {
-        playCurrentItem(this);
+
+        var mode = this.getAttribute('data-mode');
+        playCurrentItem(this, mode);
+    }
+
+    function onInstantMixClick() {
+        playbackManager.instantMix(currentItem);
+    }
+
+    function onShuffleClick() {
+        playbackManager.shuffle(currentItem);
     }
 
     function onDeleteClick() {
@@ -2301,6 +2330,10 @@
         for (i = 0, length = elems.length; i < length; i++) {
             elems[i].addEventListener('click', onPlayClick);
         }
+
+        view.querySelector('.btnResume').addEventListener('click', onPlayClick);
+        view.querySelector('.btnInstantMix').addEventListener('click', onInstantMixClick);
+        view.querySelector('.btnShuffle').addEventListener('click', onShuffleClick);
 
         elems = view.querySelectorAll('.btnPlayTrailer');
         for (i = 0, length = elems.length; i < length; i++) {

@@ -1,4 +1,8 @@
 {
+    "HeaderRemoteControl": "Remote Control",
+    "Disconnect": "Disconnect",
+    "EnableDisplayMirroring": "Enable display mirroring",
+    "HeaderSelectPlayer": "Select Player",
     "MessageUnlockAppWithPurchaseOrSupporter": "Odemknout tuto funkci pomoc\u00ed jednor\u00e1zov\u00e9 platby, nebo pomoc\u00ed aktivace p\u0159edplatn\u00e9ho Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Odemknout tuto funkci pomoc\u00ed aktivn\u00edho p\u0159edplatn\u00e9ho Emby Premiere.",
     "MessageToValidateSupporter": "Pokud m\u00e1te aktivn\u00ed p\u0159edplatn\u00e9 Emby Premiere, ujist\u011bte se, \u017ee m\u00e1te nastaven Emby Premiere v panelu Nastaven\u00ed pod N\u00e1pov\u011bda -> Emby Premiere.",
@@ -115,7 +119,7 @@
     "RefreshDialogHelp": "Metadata se aktualizuj\u00ed na z\u00e1klad\u011b nastaven\u00ed a internetov\u00fdch slu\u017eeb, kter\u00e9 jsou povoleny v nastaven\u00ed Emby Server.",
     "Open": "Otev\u0159\u00edt",
     "Play": "P\u0159ehr\u00e1t",
-    "Queue": "Fronta",
+    "AddToPlayQueue": "Add to play queue",
     "Shuffle": "N\u00e1hodn\u011b",
     "Identify": "Identifikuj",
     "EditImages": "Editace obr\u00e1zk\u016f",
@@ -376,5 +380,8 @@
     "SyncJobItemStatusFailed": "Failed",
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
     "SyncJobItemStatusCancelled": "Cancelled",
-    "Retry": "Retry"
+    "Retry": "Retry",
+    "HeaderMyDevice": "My Device",
+    "Continue": "Continue",
+    "ContinueInSecondsValue": "Continue in {0} seconds."
 }

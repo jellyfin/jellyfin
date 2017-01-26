@@ -589,7 +589,8 @@
             var url = self.getUrl("socket");
 
             url = replaceAll(url, 'emby/socket', 'embywebsocket');
-            url = replaceAll(url, 'http', 'ws');
+            url = replaceAll(url, 'https:', 'wss:');
+            url = replaceAll(url, 'http:', 'ws:');
 
             url += "?api_key=" + accessToken;
             url += "&deviceId=" + deviceId;
@@ -1407,6 +1408,26 @@
             return self.getJSON(url);
         };
 
+        self.getPlaybackInfo = function(itemId, options, deviceProfile) {
+
+            var postData = {
+                DeviceProfile: deviceProfile
+            };
+
+            return self.ajax({
+                url: self.getUrl('Items/' + itemId + '/PlaybackInfo', options),
+                type: 'POST',
+                data: JSON.stringify(postData),
+                contentType: "application/json",
+                dataType: "json"
+            });
+        };
+
+        self.getIntros = function(itemId) {
+
+            return self.getJSON(self.getUrl('Users/' + self.getCurrentUserId() + '/Items/' + itemId + '/Intros'));
+        };
+
         /**
          * Gets the directory contents of a path on the server
          */
@@ -2122,6 +2143,19 @@
             return self.getJSON(url);
         };
 
+        self.getItemDownloadUrl = function (itemId) {
+
+            if (!itemId) {
+                throw new Error("itemId cannot be empty");
+            }
+
+            var url = "Items/" + itemId + "/Download";
+
+            return self.getUrl(url, {
+                api_key: self.accessToken()
+            });
+        };
+
         self.getSessions = function (options) {
 
             var url = self.getUrl("Sessions", options);
@@ -2617,9 +2651,10 @@
 
                 var url = self.getUrl("Users/authenticatebyname");
 
-                require(["cryptojs-sha1"], function () {
+                require(["cryptojs-sha1", "cryptojs-md5"], function () {
                     var postData = {
-                        password: CryptoJS.SHA1(password || "").toString(),
+                        Password: CryptoJS.SHA1(password || "").toString(),
+                        PasswordMd5: CryptoJS.MD5(password || "").toString(),
                         Username: name
                     };
 

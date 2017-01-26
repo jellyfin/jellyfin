@@ -216,7 +216,7 @@
             return connectUser;
         };
 
-        var minServerVersion = '3.0.7200';
+        var minServerVersion = '3.0.8500';
         self.minServerVersion = function (val) {
 
             if (val) {
@@ -249,6 +249,10 @@
         self.connectToken = function () {
 
             return credentialProvider.credentials().ConnectAccessToken;
+        };
+
+        self.getApiClients = function () {
+            return apiClients;
         };
 
         self.getServerInfo = function (id) {
@@ -352,6 +356,8 @@
         };
 
         function onConnectUserSignIn(user) {
+
+            appStorage.removeItem('lastLocalServerId');
 
             connectUser = user;
             events.trigger(self, 'connectusersignedin', [user]);
@@ -458,6 +464,12 @@
 
         function onLocalUserSignIn(server, connectionMode, user) {
 
+            if (self.connectUserId()) {
+                appStorage.removeItem('lastLocalServerId');
+            } else {
+                appStorage.setItem('lastLocalServerId', server.Id);
+            }
+
             // Ensure this is created so that listeners of the event can get the apiClient instance
             getOrAddApiClient(server, connectionMode);
 
@@ -471,29 +483,26 @@
 
         function ensureConnectUser(credentials) {
 
-            return new Promise(function (resolve, reject) {
+            if (connectUser && connectUser.Id === credentials.ConnectUserId) {
+                return Promise.resolve();
+            }
 
-                if (connectUser && connectUser.Id === credentials.ConnectUserId) {
-                    resolve();
-                }
+            else if (credentials.ConnectUserId && credentials.ConnectAccessToken) {
 
-                else if (credentials.ConnectUserId && credentials.ConnectAccessToken) {
+                connectUser = null;
 
-                    connectUser = null;
+                return getConnectUser(credentials.ConnectUserId, credentials.ConnectAccessToken).then(function (user) {
 
-                    getConnectUser(credentials.ConnectUserId, credentials.ConnectAccessToken).then(function (user) {
+                    onConnectUserSignIn(user);
+                    return Promise.resolve();
 
-                        onConnectUserSignIn(user);
-                        resolve();
+                }, function () {
+                    return Promise.resolve();
+                });
 
-                    }, function () {
-                        resolve();
-                    });
-
-                } else {
-                    resolve();
-                }
-            });
+            } else {
+                return Promise.resolve();
+            }
         }
 
         function getConnectUrl(handler) {
@@ -728,6 +737,10 @@
                     }
                 }
 
+                if (credentials.ConnectAccessToken) {
+                    appStorage.removeItem('lastLocalServerId');
+                }
+
                 credentials.Servers = servers;
                 credentials.ConnectAccessToken = null;
                 credentials.ConnectUserId = null;
@@ -926,9 +939,18 @@
 
             console.log('Begin connectToServers, with ' + servers.length + ' servers');
 
-            if (servers.length === 1) {
+            var defaultServer = servers.length === 1 ? servers[0] : null;
 
-                return self.connectToServer(servers[0], options).then(function (result) {
+            if (!defaultServer) {
+                var lastLocalServerId = appStorage.getItem('lastLocalServerId');
+                defaultServer = servers.filter(function (s) {
+                    return s.Id === lastLocalServerId;
+                })[0];
+            }
+
+            if (defaultServer) {
+
+                return self.connectToServer(defaultServer, options).then(function (result) {
 
                     if (result.State === ConnectionState.Unavailable) {
 

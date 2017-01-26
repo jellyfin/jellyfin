@@ -53,8 +53,8 @@
 
     function getPeriodicMessageIntervalMs(feature) {
 
-        if (feature == 'playback') {
-            return 259200000;
+        if (feature === 'playback') {
+            return 43200000;
         }
 
         return 0;

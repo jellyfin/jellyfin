@@ -175,6 +175,15 @@ namespace MediaBrowser.Api.Playback
             return ToOptimizedResult(info);
         }
 
+        private T Clone<T>(T obj)
+        {
+            // Since we're going to be setting properties on MediaSourceInfos that come out of _mediaSourceManager, we should clone it
+            // Should we move this directly into MediaSourceManager?
+
+            var json = _json.SerializeToString(obj);
+            return _json.DeserializeFromString<T>(json);
+        }
+
         private async Task<PlaybackInfoResponse> GetPlaybackInfo(string id, string userId, string[] supportedLiveMediaTypes, string mediaSourceId = null, string liveStreamId = null)
         {
             var result = new PlaybackInfoResponse();
@@ -217,6 +226,8 @@ namespace MediaBrowser.Api.Playback
             }
             else
             {
+                result.MediaSources = Clone(result.MediaSources);
+
                 result.PlaySessionId = Guid.NewGuid().ToString("N");
             }
 
@@ -227,7 +238,7 @@ namespace MediaBrowser.Api.Playback
             PlaybackInfoResponse result,
             DeviceProfile profile,
             AuthorizationInfo auth,
-            int? maxBitrate,
+            long? maxBitrate,
             long startTimeTicks,
             string mediaSourceId,
             int? audioStreamIndex,
@@ -249,7 +260,7 @@ namespace MediaBrowser.Api.Playback
             MediaSourceInfo mediaSource,
             DeviceProfile profile,
             AuthorizationInfo auth,
-            int? maxBitrate,
+            long? maxBitrate,
             long startTimeTicks,
             string mediaSourceId,
             int? audioStreamIndex,
@@ -383,7 +394,7 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        private int? GetMaxBitrate(int? clientMaxBitrate)
+        private long? GetMaxBitrate(long? clientMaxBitrate)
         {
             var maxBitrate = clientMaxBitrate;
             var remoteClientMaxBitrate = _config.Configuration.RemoteClientBitrateLimit;
@@ -425,7 +436,7 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        private void SortMediaSources(PlaybackInfoResponse result, int? maxBitrate)
+        private void SortMediaSources(PlaybackInfoResponse result, long? maxBitrate)
         {
             var originalList = result.MediaSources.ToList();
 

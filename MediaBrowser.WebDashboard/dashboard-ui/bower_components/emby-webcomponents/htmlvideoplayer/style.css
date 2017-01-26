@@ -1,0 +1,44 @@
+.videoPlayerContainer {
+    position: fixed !important;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+}
+
+    .videoPlayerContainer:not(.videoPlayerContainer-withBackdrop) {
+        background: #000 !important;
+    }
+
+.videoPlayerContainer-withBackdrop {
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    background-attachment: fixed;
+    background-color: #000;
+}
+
+.videoPlayerContainer-onTop {
+    z-index: 1000;
+}
+
+.htmlvideoplayer {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+    height: 100%;
+}
+
+    .htmlvideoplayer::-webkit-media-text-track-display {
+        /*Style the text itself*/
+        margin-top: -2.5em;
+    }
+
+    .htmlvideoplayer::cue {
+        background-color: transparent;
+        text-shadow: 2px 2px 2px rgba(0, 0, 0, 1);
+        -webkit-font-smoothing: antialiased;
+        font-family: inherit;
+    }

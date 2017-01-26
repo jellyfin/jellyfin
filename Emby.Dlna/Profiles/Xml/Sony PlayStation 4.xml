@@ -40,12 +40,12 @@
     <DirectPlayProfile container="avi" audioCodec="mp2,mp3" videoCodec="mpeg4" type="Video" />
     <DirectPlayProfile container="ts" audioCodec="ac3,mp2,mp3,aac" videoCodec="mpeg1video,mpeg2video,h264" type="Video" />
     <DirectPlayProfile container="mpeg" audioCodec="mp2" videoCodec="mpeg1video,mpeg2video" type="Video" />
-    <DirectPlayProfile container="mp4,mkv" audioCodec="aac,ac3" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="mp4,mkv,m4v" audioCodec="aac,ac3" videoCodec="h264,mpeg4" type="Video" />
     <DirectPlayProfile container="aac,mp3,wav" type="Audio" />
     <DirectPlayProfile container="jpeg,png,gif,bmp,tiff" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Bytes" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
     <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
     <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
   </TranscodingProfiles>
@@ -96,6 +96,9 @@
       <Conditions />
     </ResponseProfile>
     <ResponseProfile container="wav" type="Audio" mimeType="audio/wav">
+      <Conditions />
+    </ResponseProfile>
+    <ResponseProfile container="m4v" type="Video" mimeType="video/mp4">
       <Conditions />
     </ResponseProfile>
   </ResponseProfiles>

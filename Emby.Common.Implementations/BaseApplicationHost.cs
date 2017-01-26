@@ -161,12 +161,6 @@ namespace Emby.Common.Implementations
         /// <value>The name.</value>
         public abstract string Name { get; }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance is running as service.
-        /// </summary>
-        /// <value><c>true</c> if this instance is running as service; otherwise, <c>false</c>.</value>
-        public abstract bool IsRunningAsService { get; }
-
         protected ICryptoProvider CryptographyProvider = new CryptographyProvider();
 
         protected IEnvironmentInfo EnvironmentInfo { get; private set; }

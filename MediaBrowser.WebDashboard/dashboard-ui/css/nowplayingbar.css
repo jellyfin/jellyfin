@@ -33,8 +33,9 @@
     }
 }
 
-.mediaButton img {
-    height: 24px;
+.nowPlayingBarInfoContainer {
+    display: flex;
+    align-items: center;
 }
 
 .currentTime {
@@ -54,6 +55,11 @@
     will-change: transform;
     contain: layout style;
     font-size: 90%;
+    transition: transform 200ms ease-out;
+}
+
+.nowPlayingBar-hidden {
+    transform: translate3d(0,100%,0);
 }
 
 .hiddenNowPlayingBar .nowPlayingBar {
@@ -74,14 +80,12 @@
 }
 
     .mediaButton i {
-        height: auto;
-        width: auto;
+        height: 1em;
+        width: 1em;
         font-size: 36px;
     }
 
-    .mediaButton.remoteControlButton i, .mediaButton.muteButton i, .mediaButton.unmuteButton i, .mediaButton.castButton i, .mediaButton.infoButton i {
-        height: auto;
-        width: auto;
+    .mediaButton.muteButton i, .mediaButton.unmuteButton i, .mediaButton.castButton i, .mediaButton.infoButton i {
         font-size: 24px;
     }
 
@@ -108,13 +112,13 @@
 }
 
 .nowPlayingBarText {
-    display: inline-block;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     vertical-align: middle;
     text-align: left;
     max-width: 130px;
+    flex-grow: 1;
 }
 
 .repeatActive {
@@ -227,13 +231,6 @@
     }
 }
 
-@media all and (max-width: 1000px) {
-
-    .nowPlayingBar .playlistButton {
-        display: none !important;
-    }
-}
-
 @media all and (max-width: 800px) {
 
     .nowPlayingBarCurrentTime {
@@ -254,11 +251,7 @@
 
 @media all and (min-width: 800px) {
 
-    .nowPlayingBarRight .pauseButton {
-        display: none;
-    }
-
-    .nowPlayingBarRight .unpauseButton {
+    .nowPlayingBarRight .playPauseButton {
         display: none;
     }
 }

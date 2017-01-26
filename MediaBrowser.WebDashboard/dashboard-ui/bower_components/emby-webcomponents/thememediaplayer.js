@@ -53,7 +53,7 @@ define(['playbackManager', 'userSettings'], function (playbackManager, userSetti
 
         require(['connectionManager'], function (connectionManager) {
 
-            var apiClient = connectionManager.currentApiClient();
+            var apiClient = connectionManager.getApiClient(item.ServerId);
             apiClient.getThemeMedia(apiClient.getCurrentUserId(), item.Id, true).then(function (themeMediaResult) {
 
                 var ownerId = themeMediaResult.ThemeVideosResult.Items.length ? themeMediaResult.ThemeVideosResult.OwnerId : themeMediaResult.ThemeSongsResult.OwnerId;
@@ -74,7 +74,7 @@ define(['playbackManager', 'userSettings'], function (playbackManager, userSetti
         var state = e.detail.state || {};
         var item = state.item;
 
-        if (item) {
+        if (item && item.ServerId) {
             loadThemeMedia(item);
             return;
         }

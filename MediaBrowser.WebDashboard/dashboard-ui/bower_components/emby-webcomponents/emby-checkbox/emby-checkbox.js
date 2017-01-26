@@ -1,4 +1,4 @@
-﻿define(['css!./emby-checkbox', 'registerElement'], function () {
+﻿define(['browser', 'dom', 'css!./emby-checkbox', 'registerElement'], function (browser, dom) {
     'use strict';
 
     var EmbyCheckboxPrototype = Object.create(HTMLInputElement.prototype);
@@ -17,6 +17,22 @@
 
             return false;
         }
+    }
+
+    var enableRefreshHack = browser.tizen || browser.orsay || browser.operaTv || browser.web0s ? true : false;
+
+    function forceRefresh(loading) {
+
+        var elem = this.parentNode;
+
+        elem.style.webkitAnimationName = 'repaintChrome';
+        elem.style.webkitAnimationDelay = (loading === true ? '500ms' : '');
+        elem.style.webkitAnimationDuration = '10ms';
+        elem.style.webkitAnimationIterationCount = '1';
+
+        setTimeout(function () {
+            elem.style.webkitAnimationName = '';
+        }, (loading === true ? 520 : 20));
     }
 
     EmbyCheckboxPrototype.attachedCallback = function () {
@@ -47,6 +63,23 @@
         labelTextElement.classList.add('checkboxLabel');
 
         this.addEventListener('keydown', onKeyDown);
+
+        if (enableRefreshHack) {
+
+            forceRefresh.call(this, true);
+            dom.addEventListener(this, 'click', forceRefresh, {
+                passive: true
+            });
+            dom.addEventListener(this, 'blur', forceRefresh, {
+                passive: true
+            });
+            dom.addEventListener(this, 'focus', forceRefresh, {
+                passive: true
+            });
+            dom.addEventListener(this, 'change', forceRefresh, {
+                passive: true
+            });
+        }
     };
 
     document.registerElement('emby-checkbox', {

@@ -178,7 +178,7 @@
         });
     }
 
-    function getNewMedia(apiClient, serverInfo, options) {
+    function getNewMedia(apiClient, serverInfo, options, downloadCount) {
 
         console.log('[mediasync] Begin getNewMedia');
 
@@ -186,10 +186,15 @@
 
             var p = Promise.resolve();
 
+            var maxDownloads = 10;
+            var currentCount = downloadCount;
+
             jobItems.forEach(function (jobItem) {
-                p = p.then(function () {
-                    return getNewItem(jobItem, apiClient, serverInfo, options);
-                });
+                if (currentCount++ <= maxDownloads) {
+                    p = p.then(function () {
+                        return getNewItem(jobItem, apiClient, serverInfo, options);
+                    });
+                }
             });
 
             return p.then(function () {
@@ -216,7 +221,9 @@
 
             libraryItem.CanDelete = false;
             libraryItem.CanDownload = false;
+            libraryItem.SupportsSync = false;
             libraryItem.People = [];
+            libraryItem.UserData = [];
             libraryItem.SpecialFeatureCount = null;
 
             return localassetmanager.createLocalItem(libraryItem, serverInfo, jobItem).then(function (localItem) {
@@ -225,15 +232,91 @@
 
                 localItem.SyncStatus = 'queued';
 
-                return downloadMedia(apiClient, jobItem, localItem, options).then(function () {
+                return downloadParentItems(apiClient, jobItem, localItem, serverInfo, options).then(function () {
 
-                    return getImages(apiClient, jobItem, localItem).then(function () {
+                    return downloadMedia(apiClient, jobItem, localItem, options).then(function () {
 
-                        return getSubtitles(apiClient, jobItem, localItem);
+                        return getImages(apiClient, jobItem, localItem).then(function () {
 
+                            return getSubtitles(apiClient, jobItem, localItem);
+
+                        });
                     });
                 });
             });
+        });
+    }
+
+    function downloadParentItems(apiClient, jobItem, localItem, serverInfo, options) {
+
+        var p = Promise.resolve();
+
+        var libraryItem = localItem.Item;
+
+        var itemType = (libraryItem.Type || '').toLowerCase();
+        var logoImageTag = (libraryItem.ImageTags || {}).Logo;
+
+        switch (itemType) {
+            case 'episode':
+                if (libraryItem.SeriesId && libraryItem.SeriesId) {
+                    p = p.then(function () {
+                        return downloadItem(apiClient, libraryItem, libraryItem.SeriesId, serverInfo).then(function (seriesItem) {
+                            libraryItem.SeriesLogoImageTag = (seriesItem.Item.ImageTags || {}).Logo;
+                            return Promise.resolve();
+                        });
+                    });
+                }
+                if (libraryItem.SeasonId && libraryItem.SeasonId) {
+                    p = p.then(function () {
+                        return downloadItem(apiClient, libraryItem, libraryItem.SeasonId, serverInfo).then(function (seasonItem) {
+                            libraryItem.SeasonPrimaryImageTag = (seasonItem.Item.ImageTags || {}).Primary;
+                            return Promise.resolve();
+                        });
+                    });
+                }
+                break;
+
+            case 'audio':
+            case 'photo':
+                if (libraryItem.AlbumId && libraryItem.AlbumId) {
+                    p = p.then(function () {
+                        return downloadItem(apiClient, libraryItem, libraryItem.AlbumId, serverInfo);
+                    });
+                }
+                break;
+
+            case 'video':
+            case 'movie':
+            case 'musicvideo':
+                // no parent item download for now
+                break;
+        }
+
+        return p;
+    }
+
+    function downloadItem(apiClient, libraryItem, itemId, serverInfo) {
+
+        return apiClient.getItem(apiClient.getCurrentUserId(), itemId).then(function (downloadedItem) {
+
+            downloadedItem.CanDelete = false;
+            downloadedItem.CanDownload = false;
+            downloadedItem.SupportsSync = false;
+            downloadedItem.People = [];
+            downloadedItem.UserData = {};
+            downloadedItem.SpecialFeatureCount = null;
+            downloadedItem.BackdropImageTags = null;
+
+            return localassetmanager.createLocalItem(downloadedItem, serverInfo, null).then(function (localItem) {
+
+                return localassetmanager.addOrUpdateLocalItem(localItem).then(function () {
+                    return Promise.resolve(localItem);
+                });
+            });
+        }, function (err) {
+
+            console.error('[mediasync] downloadItem failed: ' + err.toString());
+            return Promise.resolve(null);
         });
     }
 
@@ -327,8 +410,23 @@
             p = p.then(function () {
                 return downloadImage(localItem, apiClient, serverId, libraryItem.SeriesId, libraryItem.SeriesPrimaryImageTag, 'Primary');
             });
+        }
+
+        if (libraryItem.SeriesId && libraryItem.SeriesThumbImageTag) {
             p = p.then(function () {
-                return downloadImage(localItem, apiClient, serverId, libraryItem.SeriesId, libraryItem.SeriesPrimaryImageTag, 'Thumb');
+                return downloadImage(localItem, apiClient, serverId, libraryItem.SeriesId, libraryItem.SeriesThumbImageTag, 'Thumb');
+            });
+        }
+
+        if (libraryItem.SeriesId && libraryItem.SeriesLogoImageTag) {
+            p = p.then(function () {
+                return downloadImage(localItem, apiClient, serverId, libraryItem.SeriesId, libraryItem.SeriesLogoImageTag, 'Logo');
+            });
+        }
+
+        if (libraryItem.SeasonId && libraryItem.SeasonPrimaryImageTag) {
+            p = p.then(function () {
+                return downloadImage(localItem, apiClient, serverId, libraryItem.SeasonId, libraryItem.SeasonPrimaryImageTag, 'Primary');
             });
         }
 
@@ -344,6 +442,7 @@
             return localassetmanager.addOrUpdateLocalItem(localItem);
         }, function (err) {
             console.log('[mediasync] Error getImages: ' + err.toString());
+            return Promise.resolve();
         });
     }
 
@@ -359,18 +458,30 @@
                 return Promise.resolve();
             }
 
-            var imageUrl = apiClient.getImageUrl(itemId, {
+            var maxWidth = 400;
+
+            if (imageType === 'backdrop') {
+                maxWidth = null;
+            }
+
+            var imageUrl = apiClient.getScaledImageUrl(itemId, {
                 tag: imageTag,
                 type: imageType,
-                format: 'png',
+                maxWidth: maxWidth,
                 api_key: apiClient.accessToken()
             });
 
             console.log('[mediasync] downloadImage ' + itemId + ' ' + imageType + '_' + index.toString());
 
-            return localassetmanager.downloadImage(localItem, imageUrl, serverId, itemId, imageType, index);
+            return localassetmanager.downloadImage(localItem, imageUrl, serverId, itemId, imageType, index).then(function (result) {
+                return Promise.resolve();
+            }, function (err) {
+                console.log('[mediasync] Error downloadImage: ' + err.toString());
+                return Promise.resolve();
+            });
         }, function (err) {
             console.log('[mediasync] Error downloadImage: ' + err.toString());
+            return Promise.resolve();
         });
     }
 
@@ -450,26 +561,28 @@
 
             return processDownloadStatus(apiClient, serverInfo, options).then(function () {
 
-                if (options.syncCheckProgressOnly === true) {
-                    return Promise.resolve();
-                }
+                return localassetmanager.getDownloadItemCount().then(function (downloadCount) {
 
-                return reportOfflineActions(apiClient, serverInfo).then(function () {
+                    if (options.syncCheckProgressOnly === true && downloadCount > 2) {
+                        return Promise.resolve();
+                    }
 
-                    //// Do the first data sync
-                    //return syncData(apiClient, serverInfo, false).then(function () {
+                    return reportOfflineActions(apiClient, serverInfo).then(function () {
 
-                    // Download new content
-                    return getNewMedia(apiClient, serverInfo, options).then(function () {
+                        // Download new content
+                        return getNewMedia(apiClient, serverInfo, options, downloadCount).then(function () {
 
-                        // Do the second data sync
-                        return syncData(apiClient, serverInfo, false).then(function () {
-                            console.log('[mediasync]************************************* Exit sync');
-                            return Promise.resolve();
+                            // Do the second data sync
+                            return syncData(apiClient, serverInfo, false).then(function () {
+                                console.log('[mediasync]************************************* Exit sync');
+                                return Promise.resolve();
+                            });
                         });
+                        //});
                     });
-                    //});
                 });
+            }, function (err) {
+                console.error(err.toString());
             });
         };
     };

@@ -47,6 +47,8 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             info.MediaStreams = internalStreams.Select(s => GetMediaStream(isAudio, s, data.format))
                 .Where(i => i != null)
+                // Drop subtitle streams if we don't know the codec because it will just cause failures if we don't know how to handle them
+                .Where(i => i.Type != MediaStreamType.Subtitle || !string.IsNullOrWhiteSpace(i.Codec))
                 .ToList();
 
             if (data.format != null)
@@ -185,11 +187,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 // If ffprobe reported the container bitrate as being the same as the video stream bitrate, then it's wrong
                 if (videoStreamsBitrate == (info.Bitrate ?? 0))
                 {
-                    var streamBitrates = info.MediaStreams.Where(i => !i.IsExternal).Select(i => i.BitRate ?? 0).Sum();
-                    if (streamBitrates > (info.Bitrate ?? 0))
-                    {
-                        info.Bitrate = streamBitrates;
-                    }
+                    info.InferTotalBitrate(true);
                 }
             }
 

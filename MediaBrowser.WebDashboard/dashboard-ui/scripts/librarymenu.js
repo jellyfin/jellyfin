@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'viewManager', 'libraryBrowser', 'embyRouter', 'paper-icon-button-light', 'material-icons'], function (layoutManager, viewManager, libraryBrowser, embyRouter) {
+﻿define(['layoutManager', 'viewManager', 'libraryBrowser', 'embyRouter', 'playbackManager', 'paper-icon-button-light', 'material-icons'], function (layoutManager, viewManager, libraryBrowser, embyRouter, playbackManager) {
     'use strict';
 
     var enableBottomTabs = AppInfo.isNativeApp;
@@ -27,7 +27,7 @@
         html += '<div class="viewMenuSecondary">';
 
         html += '<span class="headerSelectedPlayer"></span>';
-        html += '<button is="paper-icon-button-light" class="btnCast headerButton headerButtonRight hide autoSize"><i class="md-icon">cast</i></button>';
+        html += '<button is="paper-icon-button-light" class="btnCast headerButton-btnCast headerButton headerButtonRight hide autoSize"><i class="md-icon">cast</i></button>';
 
         html += '<button type="button" is="paper-icon-button-light" class="headerButton headerButtonRight headerSearchButton hide autoSize"><i class="md-icon">search</i></button>';
 
@@ -37,7 +37,7 @@
 
         html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight headerUserButton autoSize"><i class="md-icon">person</i></button>';
 
-        if (!browserInfo.mobile && !Dashboard.isConnectMode()) {
+        if (!browserInfo.mobile) {
             html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight dashboardEntryHeaderButton autoSize" onclick="return LibraryMenu.onSettingsClicked(event);"><i class="md-icon">settings</i></button>';
         }
 
@@ -55,7 +55,6 @@
 
         lazyLoadViewMenuBarImages();
 
-        document.dispatchEvent(new CustomEvent("headercreated", {}));
         bindMenuEvents();
     }
 
@@ -223,6 +222,21 @@
 
         viewMenuBar.querySelector('.btnNotifications').addEventListener('click', function () {
             Dashboard.navigate('notificationlist.html');
+        });
+
+        var btnCast = document.querySelector('.headerButton-btnCast');
+
+        if (btnCast) {
+            btnCast.addEventListener('click', onCastButtonClicked);
+        }
+    }
+
+    function onCastButtonClicked() {
+
+        var btn = this;
+
+        require(['playerSelectionMenu'], function (playerSelectionMenu) {
+            playerSelectionMenu.show(btn);
         });
     }
 
@@ -730,20 +744,19 @@
             return;
         }
 
-        var info = MediaController.getPlayerInfo();
+        var info = playbackManager.getPlayerInfo();
 
-        if (info.isLocalPlayer) {
-
-            btnCast.querySelector('i').innerHTML = 'cast';
-            btnCast.classList.remove('btnActiveCast');
-
-            context.querySelector('.headerSelectedPlayer').innerHTML = '';
-
-        } else {
+        if (info && !info.isLocalPlayer) {
 
             btnCast.querySelector('i').icon = 'cast_connected';
             btnCast.classList.add('btnActiveCast');
             context.querySelector('.headerSelectedPlayer').innerHTML = info.deviceName || info.name;
+
+        } else {
+            btnCast.querySelector('i').innerHTML = 'cast';
+            btnCast.classList.remove('btnActiveCast');
+
+            context.querySelector('.headerSelectedPlayer').innerHTML = '';
         }
     }
 
@@ -1044,7 +1057,7 @@
     });
 
     Events.on(ConnectionManager, 'localusersignedout', updateUserInHeader);
-    Events.on(MediaController, 'playerchange', updateCastIcon);
+    Events.on(playbackManager, 'playerchange', updateCastIcon);
 
     setDrawerClass();
 

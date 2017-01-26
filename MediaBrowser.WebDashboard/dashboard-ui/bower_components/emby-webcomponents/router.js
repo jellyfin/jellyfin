@@ -178,6 +178,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
             isBack: isBackNav,
             state: ctx.state,
             type: route.type,
+            fullscreen: route.fullscreen,
             controllerFactory: controllerFactory,
             options: {
                 supportsThemeMedia: route.supportsThemeMedia || false
@@ -470,6 +471,10 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         return page.canGoBack();
     }
     function show(path, options) {
+
+        if (path.indexOf('/') !== 0 && path.indexOf('://') === -1) {
+            path = '/' + path;
+        }
 
         var baseRoute = baseUrl();
         path = path.replace(baseRoute, '');

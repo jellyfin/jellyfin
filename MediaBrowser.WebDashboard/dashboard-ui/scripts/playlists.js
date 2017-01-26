@@ -207,6 +207,18 @@
             reloadItems();
         });
 
+        view.querySelector('.btnNewPlaylist').addEventListener('click', function () {
+
+            require(['playlistEditor'], function (playlistEditor) {
+
+                var serverId = ApiClient.serverInfo().Id;
+                new playlistEditor().show({
+                    items: [],
+                    serverId: serverId
+                });
+            });
+        });
+
         onViewStyleChange();
 
     };

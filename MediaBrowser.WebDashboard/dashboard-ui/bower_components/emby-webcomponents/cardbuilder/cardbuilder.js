@@ -6,15 +6,13 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
 
         function getCardsHtml(items, options) {
 
-            var apiClient = connectionManager.currentApiClient();
-
             if (arguments.length === 1) {
 
                 options = arguments[0];
                 items = options.items;
             }
 
-            var html = buildCardsHtmlInternal(items, apiClient, options);
+            var html = buildCardsHtmlInternal(items, options);
 
             return html;
         }
@@ -249,12 +247,15 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
                 else if (options.shape === 'square') {
                     options.width = options.width || 243;
                 }
+                else if (options.shape === 'banner') {
+                    options.width = options.width || 800;
+                }
             }
 
             options.width = options.width || getImageWidth(options.shape);
         }
 
-        function buildCardsHtmlInternal(items, apiClient, options) {
+        function buildCardsHtmlInternal(items, options) {
 
             var isVertical;
 
@@ -269,7 +270,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
             setCardData(items, options);
 
             if (options.indexBy === 'Genres') {
-                return buildCardsByGenreHtmlInternal(items, apiClient, options);
+                return buildCardsByGenreHtmlInternal(items, options);
             }
 
             var className = 'card';
@@ -290,10 +291,18 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
             var hasOpenSection;
 
             var sectionTitleTagName = options.sectionTitleTagName || 'div';
+            var apiClient;
+            var lastServerId;
 
             for (var i = 0, length = items.length; i < length; i++) {
 
                 var item = items[i];
+                var serverId = item.ServerId || options.serverId;
+
+                if (serverId !== lastServerId) {
+                    lastServerId = serverId;
+                    apiClient = connectionManager.getApiClient(lastServerId);
+                }
 
                 if (options.indexBy) {
                     var newIndexValue = '';
@@ -404,7 +413,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
             });
         }
 
-        function buildCardsByGenreHtmlInternal(items, apiClient, options) {
+        function buildCardsByGenreHtmlInternal(items, options) {
 
             var className = 'card';
 
@@ -435,7 +444,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
                 }
 
                 var cardClass = className;
-                currentItemHtml += buildCard(i, renderItem, apiClient, options, cardClass);
+                currentItemHtml += buildCard(i, renderItem, connectionManager.getApiClient(renderItem.ServerId || options.serverId), options, cardClass);
 
                 itemsInRow++;
 
@@ -497,6 +506,9 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
                 }
                 if (shape.indexOf('square') !== -1) {
                     return 1;
+                }
+                if (shape.indexOf('banner') !== -1) {
+                    return (1000 / 185);
                 }
             }
             return null;
@@ -583,7 +595,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
 
                 height = width && primaryImageAspectRatio ? Math.round(width / primaryImageAspectRatio) : null;
 
-                imgUrl = apiClient.getScaledImageUrl(item.Id || item.ItemId, {
+                imgUrl = apiClient.getScaledImageUrl(item.PrimaryImageItemId || item.Id || item.ItemId, {
                     type: "Primary",
                     maxHeight: height,
                     maxWidth: width,
@@ -1412,9 +1424,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
                 }
             }
 
-            var apiClient = connectionManager.currentApiClient();
-
-            var html = buildCardsHtmlInternal(items, apiClient, options);
+            var html = buildCardsHtmlInternal(items, options);
 
             if (html) {
 

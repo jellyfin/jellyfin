@@ -124,7 +124,7 @@
             });
         }
 
-        if (Dashboard.isConnectMode()) {
+        if (appHost.supports('multiserver')) {
             commands.push({
                 name: globalize.translate('HeaderSelectServer'),
                 id: 'selectserver'
@@ -323,31 +323,55 @@
         });
     }
 
+    var instance;
+
+    function onViewShow(e) {
+        if (e.detail.properties.indexOf('fullscreen') !== -1 || !Dashboard.getCurrentUserId()) {
+            instance.hide();
+        } else {
+            instance.show();
+        }
+    }
+
     function dockedTabs(options) {
 
         var self = this;
+        instance = self;
 
         self.element = render(options);
 
         events.on(connectionManager, 'localusersignedin', function (e, user) {
-            self.element.classList.remove('hide');
+            self.show();
             showUserTabs(user, self.element);
         });
 
         events.on(connectionManager, 'localusersignedout', function () {
-            self.element.classList.add('hide');
+            self.hide();
         });
 
         showCurrentUserTabs(self.element);
+        document.addEventListener('viewshow', onViewShow);
     }
 
     dockedTabs.prototype.destroy = function () {
+
+        document.removeEventListener('viewshow', onViewShow);
+        instance = null;
+
         var self = this;
 
         var elem = self.element;
         if (elem) {
         }
         self.element = null;
+    };
+
+    dockedTabs.prototype.show = function () {
+        this.element.classList.remove('hide');
+    };
+
+    dockedTabs.prototype.hide = function () {
+        this.element.classList.add('hide');
     };
 
     return dockedTabs;

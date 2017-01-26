@@ -53,14 +53,14 @@
 
         html += '<div class="listItemBody three-line">';
 
-        html += '<div>';
+        html += '<h3 class="listItemBodyText">';
         html += jobItem.ItemName;
-        html += '</div>';
+        html += '</h3>';
 
         if (jobItem.Status === 'Failed') {
-            html += '<div class="secondary" style="color:red;">';
+            html += '<div class="secondary listItemBodyText" style="color:red;">';
         } else {
-            html += '<div class="secondary">';
+            html += '<div class="secondary listItemBodyText">';
         }
         html += globalize.translate('sharedcomponents#SyncJobItemStatus' + jobItem.Status);
         if (jobItem.Status === 'Synced' && jobItem.IsMarkedForRemoval) {
@@ -69,7 +69,7 @@
         }
         html += '</div>';
 
-        html += '<div class="secondary" style="padding-top:5px;">';
+        html += '<div class="secondary listItemBodyText" style="padding-top:5px;">';
         html += '<div style="background:#e0e0e0;height:4px;"><div style="background:#52B54B;width:' + (jobItem.Progress || 0) + '%;height:100%;"></div></div>';
         html += '</div>';
 

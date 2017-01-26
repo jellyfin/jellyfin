@@ -97,7 +97,7 @@
 }
 
 .actionSheetTitle {
-    margin: .5em 0 1em !important;
+    margin: .5em 0 !important;
     padding: 0 1em;
     flex-grow: 0;
 }

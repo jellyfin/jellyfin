@@ -12,12 +12,12 @@
     <div id="itemBackdrop" class="itemBackdrop noBackdrop">
         <div class="itemBackdropContent">
         </div>
-        <button is="emby-button" type="button" class="btnPlay detailFloatingButton hide fab autoSize" title="${ButtonPlay}"><i class="md-icon">play_arrow</i></button>
+        <button is="emby-button" type="button" class="btnPlay detailFloatingButton hide fab autoSize" title="${ButtonPlay}" data-mode="playmenu"><i class="md-icon">play_arrow</i></button>
     </div>
 
     <div class="detailLogo"></div>
 
-   <div class="detailPageContent">
+    <div class="detailPageContent">
 
         <div class="detailPagePrimaryContainer">
             <div class="detailImageContainer">
@@ -38,25 +38,30 @@
                     </div>
 
                     <div class="mainDetailButtons">
-                        <button is="emby-button" type="button" class="raised subdued btnPlay btnPlaySimple hide">
-                            <i class="md-icon">play_arrow</i>
+                        <button is="emby-button" type="button" class="raised subdued btnPlaySimple btnResume hide" data-mode="resume">
+                            <span>${ButtonResume}</span>
+                        </button>
+                        <button is="emby-button" type="button" class="raised subdued btnPlay btnPlaySimple hide" data-mode="play">
                             <span>${ButtonPlay}</span>
                         </button>
+                        <button is="emby-button" type="button" class="raised subdued btnInstantMix hide">
+                            <span>${HeaderInstantMix}</span>
+                        </button>
+                        <button is="emby-button" type="button" class="raised subdued btnShuffle hide">
+                            <span>${ButtonShuffle}</span>
+                        </button>
                         <button is="emby-button" type="button" class="raised subdued btnPlayTrailer hide">
-                            <i class="md-icon">videocam</i>
                             <span>${ButtonTrailer}</span>
                         </button>
                         <button is="emby-button" type="button" class="raised subdued btnCancelSeriesTimer hide">
-                            <i class="md-icon">cancel</i>
                             <span>${ButtonCancelSeries}</span>
                         </button>
-                        <button is="emby-button" type="button" class="raised subdued btnMoreCommands hide notext">
-                            &nbsp;
-                            <i class="md-icon">more_vert</i>
-                            &nbsp;
-                        </button>
-                        <div class="detailUserDataIcons userDataIcons"></div>
-                        <button is="emby-button" type="button" class="btnDeleteItem fab mini hide" title="${DeleteMedia}"><i class="md-icon">&#xE872;</i></button>
+
+                        <div style="margin-left:.5em; display: flex; align-items: center;">
+                            <button is="emby-button" type="button" class="btnMoreCommands fab mini hide" title="${ButtonMore}"><i class="md-icon">more_vert</i></button>
+                            <button is="emby-button" type="button" class="btnDeleteItem fab mini hide" title="${DeleteMedia}"><i class="md-icon">&#xE872;</i></button>
+                            <div class="detailUserDataIcons userDataIcons"></div>
+                        </div>
                     </div>
 
                     <div class="syncLocalContainer hide" style="margin: 1em 0;">

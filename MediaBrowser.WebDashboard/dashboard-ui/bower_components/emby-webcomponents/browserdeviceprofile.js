@@ -370,6 +370,16 @@ define(['browser'], function (browser) {
 
         profile.TranscodingProfiles = [];
 
+        if (canPlayNativeHls() && options.enableHlsAudio) {
+            profile.TranscodingProfiles.push({
+                Container: 'ts',
+                Type: 'Audio',
+                AudioCodec: 'aac',
+                Context: 'Streaming',
+                Protocol: 'hls'
+            });
+        }
+
         ['opus', 'mp3', 'aac', 'wav'].filter(canPlayAudioFormat).forEach(function (audioFormat) {
 
             profile.TranscodingProfiles.push({
@@ -390,13 +400,8 @@ define(['browser'], function (browser) {
             });
         });
 
-        var copyTimestamps = false;
-        if (browser.chrome) {
-            copyTimestamps = true;
-        }
-
         // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
-        if (canPlayMkv && options.supportsCustomSeeking && !browser.tizen && options.enableMkvProgressive !== false) {
+        if (canPlayMkv && !browser.tizen && options.enableMkvProgressive !== false) {
             profile.TranscodingProfiles.push({
                 Container: 'mkv',
                 Type: 'Video',
@@ -404,7 +409,7 @@ define(['browser'], function (browser) {
                 VideoCodec: 'h264',
                 Context: 'Streaming',
                 MaxAudioChannels: physicalAudioChannels.toString(),
-                CopyTimestamps: copyTimestamps
+                CopyTimestamps: true
             });
         }
 
@@ -435,7 +440,6 @@ define(['browser'], function (browser) {
         }
 
         if (canPlayWebm) {
-
             profile.TranscodingProfiles.push({
                 Container: 'webm',
                 Type: 'Video',
@@ -557,6 +561,16 @@ define(['browser'], function (browser) {
         }
 
         var isTizenFhd = false;
+        if (browser.tizen) {
+            try {
+                var isTizenUhd = webapis.productinfo.isUdPanelSupported();
+                isTizenFhd = !isTizenUhd;
+                console.log("isTizenFhd = " + isTizenFhd);
+            } catch (error) {
+                console.log("isUdPanelSupported() error code = " + error.code);
+            }
+        }
+
         var globalMaxVideoBitrate = browser.ps4 ? '8000000' :
             (browser.xboxOne ? '10000000' :
             (browser.edgeUwp ? '40000000' :

@@ -1,8 +1,6 @@
 define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter', 'playbackManager', 'loading', 'appSettings'], function (appHost, globalize, connectionManager, itemHelper, embyRouter, playbackManager, loading, appSettings) {
     'use strict';
 
-    var isMobileApp = window.Dashboard != null;
-
     function getCommands(options) {
 
         var item = options.item;
@@ -33,6 +31,22 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     name: globalize.translate('sharedcomponents#AddToPlaylist'),
                     id: 'addtoplaylist'
                 });
+            }
+
+            if (playbackManager.canQueue(item)) {
+                if (options.queue !== false) {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#AddToPlayQueue'),
+                        id: 'queue'
+                    });
+                }
+
+                //if (options.queueAllFromHere) {
+                //    commands.push({
+                //        name: globalize.translate('sharedcomponents#QueueAllFromHere'),
+                //        id: 'queueallfromhere'
+                //    });
+                //}
             }
 
             if ((item.Type === 'Timer') && user.Policy.EnableLiveTvManagement && options.cancelTimer !== false) {
@@ -146,13 +160,6 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                         name: globalize.translate('sharedcomponents#Play'),
                         id: 'resume'
                     });
-
-                    if (isMobileApp && appSettings.enableExternalPlayers()) {
-                        commands.push({
-                            name: globalize.translate('ButtonPlayExternalPlayer'),
-                            id: 'externalplayer'
-                        });
-                    }
                 }
 
                 if (options.playAllFromHere && item.Type !== 'Program' && item.Type !== 'TvChannel') {
@@ -160,22 +167,6 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                         name: globalize.translate('sharedcomponents#PlayAllFromHere'),
                         id: 'playallfromhere'
                     });
-                }
-
-                if (playbackManager.canQueue(item)) {
-                    if (options.queue !== false) {
-                        commands.push({
-                            name: globalize.translate('sharedcomponents#Queue'),
-                            id: 'queue'
-                        });
-                    }
-
-                    if (options.queueAllFromHere) {
-                        commands.push({
-                            name: globalize.translate('sharedcomponents#QueueAllFromHere'),
-                            id: 'queueallfromhere'
-                        });
-                    }
                 }
             }
 
@@ -304,9 +295,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 case 'download':
                     {
                         require(['fileDownloader'], function (fileDownloader) {
-                            var downloadHref = apiClient.getUrl("Items/" + itemId + "/Download", {
-                                api_key: apiClient.accessToken()
-                            });
+                            var downloadHref = apiClient.getItemDownloadUrl(itemId);
 
                             fileDownloader.download([
                             {
@@ -416,10 +405,6 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                         });
                         break;
                     }
-                case 'externalplayer':
-                    LibraryBrowser.playInExternalPlayer(itemId);
-                    getResolveFunction(resolve, id)();
-                    break;
                 case 'album':
                     {
                         embyRouter.showItem(item.AlbumId, item.ServerId);

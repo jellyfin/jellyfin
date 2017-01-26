@@ -73,7 +73,8 @@
                     items: result.Items,
                     action: 'playallfromhere',
                     smallIcon: true,
-                    artist: true
+                    artist: true,
+                    addToListButton: true
                 });
 
                 var i, length;

@@ -66,6 +66,26 @@
         });
     }
 
+    function getItemsFromIds(serverId, ids) {
+
+        var actions = ids.map(function (id) {
+            var strippedId = stripStart(id, 'local:');
+
+            return getLocalItem(serverId, strippedId);
+        });
+
+        return Promise.all(actions).then(function (items) {
+
+            var libItems = items.map(function (locItem) {
+
+                return locItem.Item;
+            });
+
+
+            return Promise.resolve(libItems);
+        });
+    }
+
     function getViews(serverId, userId) {
 
         return itemrepository.getServerItemTypes(serverId, userId).then(function (types) {
@@ -80,7 +100,7 @@
                     ServerId: serverId,
                     Id: 'localview:MusicView',
                     Type: 'MusicView',
-                    CollectionType: 'Music',
+                    CollectionType: 'music',
                     IsFolder: true
                 };
 
@@ -94,7 +114,7 @@
                     ServerId: serverId,
                     Id: 'localview:PhotosView',
                     Type: 'PhotosView',
-                    CollectionType: 'Photos',
+                    CollectionType: 'photos',
                     IsFolder: true
                 };
 
@@ -108,23 +128,49 @@
                     ServerId: serverId,
                     Id: 'localview:TVView',
                     Type: 'TVView',
-                    CollectionType: 'TvShows',
+                    CollectionType: 'tvshows',
                     IsFolder: true
                 };
 
                 list.push(item);
             }
 
-            if (types.indexOf('video') > -1 ||
-                types.indexOf('movie') > -1 ||
-                types.indexOf('musicvideo') > -1) {
+            if (types.indexOf('movie') > -1) {
+
+                item = {
+                    Name: 'Movies',
+                    ServerId: serverId,
+                    Id: 'localview:MoviesView',
+                    Type: 'MoviesView',
+                    CollectionType: 'movies',
+                    IsFolder: true
+                };
+
+                list.push(item);
+            }
+
+            if (types.indexOf('video') > -1) {
 
                 item = {
                     Name: 'Videos',
                     ServerId: serverId,
                     Id: 'localview:VideosView',
                     Type: 'VideosView',
-                    CollectionType: 'HomeVideos',
+                    CollectionType: 'videos',
+                    IsFolder: true
+                };
+
+                list.push(item);
+            }
+
+            if (types.indexOf('musicvideo') > -1) {
+
+                item = {
+                    Name: 'Music Videos',
+                    ServerId: serverId,
+                    Id: 'localview:MusicVideosView',
+                    Type: 'MusicVideosView',
+                    CollectionType: 'videos',
                     IsFolder: true
                 };
 
@@ -135,28 +181,80 @@
         });
     }
 
+    function getTypeFilterForTopLevelView(parentId) {
+
+        var typeFilter = null;
+
+        switch (parentId) {
+            case 'localview:MusicView':
+                typeFilter = 'audio';
+                break;
+            case 'localview:PhotosView':
+                typeFilter = 'photo';
+                break;
+            case 'localview:TVView':
+                typeFilter = 'episode';
+                break;
+            case 'localview:VideosView':
+                typeFilter = 'video';
+                break;
+            case 'localview:MoviesView':
+                typeFilter = 'movie';
+                break;
+            case 'localview:MusicVideosView':
+                typeFilter = 'musicvideo';
+                break;
+        }
+
+        return typeFilter;
+    }
+
     function getViewItems(serverId, userId, parentId) {
+
+        var typeFilter = getTypeFilterForTopLevelView(parentId);
+
+        parentId = stripStart(parentId, 'localview:');
+        parentId = stripStart(parentId, 'local:');
 
         return getServerItems(serverId).then(function (items) {
 
-            var resultItems = items.filter(function (item) {
+            var resultItemIds = items.filter(function (item) {
 
-                var type = (item.Item.Type || '').toLowerCase();
-
-                switch (parentId) {
-                    case 'localview:MusicView':
-                        return type === 'audio';
-                    case 'localview:PhotosView':
-                        return type === 'photo';
-                    case 'localview:TVView':
-                        return type === 'episode';
-                    case 'localview:VideosView':
-                        return type === 'movie' || type === 'video' || type === 'musicvideo';
-                    default:
-                        return false;
+                if (item.SyncStatus && item.SyncStatus !== 'synced') {
+                    return false;
                 }
+
+                if (typeFilter) {
+                    var type = (item.Item.Type || '').toLowerCase();
+                    return typeFilter === type;
+                }
+
+                return item.Item.ParentId === parentId;
+
             }).map(function (item2) {
-                return item2.Item;
+
+                switch (typeFilter) {
+                    case 'audio':
+                    case 'photo':
+                        return item2.Item.AlbumId;
+                    case 'episode':
+                        return item2.Item.SeriesId;
+                }
+
+                return item2.Item.Id;
+
+            }).filter(filterDistinct);
+
+            var resultItems = [];
+
+            items.forEach(function (item) {
+                var found = false;
+
+                resultItemIds.forEach(function (id) {
+                    if (item.Item.Id === id) {
+                        resultItems.push(item.Item);
+                    }
+                });
             });
 
             return Promise.resolve(resultItems);
@@ -203,7 +301,14 @@
     }
 
     function addOrUpdateLocalItem(localItem) {
-        return itemrepository.set(localItem.Id, localItem);
+        console.log('addOrUpdateLocalItem Start');
+        return itemrepository.set(localItem.Id, localItem).then(function (res) {
+            console.log('addOrUpdateLocalItem Success');
+            return Promise.resolve(true);
+        }, function (error) {
+            console.log('addOrUpdateLocalItem Error');
+            return Promise.resolve(false);
+        });
     }
 
     function createLocalItem(libraryItem, serverInfo, jobItem) {
@@ -211,14 +316,19 @@
         var path = getDirectoryPath(libraryItem, serverInfo);
         var localFolder = filerepository.getFullLocalPath(path);
 
-        path.push(getLocalFileName(libraryItem, jobItem.OriginalFileName));
+        var localPath;
 
-        var localPath = filerepository.getFullLocalPath(path);
+        if (jobItem) {
+            path.push(getLocalFileName(libraryItem, jobItem.OriginalFileName));
+            localPath = filerepository.getFullLocalPath(path);
+        }
 
-        for (var i = 0; i < libraryItem.MediaSources.length; i++) {
-            var mediaSource = libraryItem.MediaSources[i];
-            mediaSource.Path = localPath;
-            mediaSource.Protocol = 'File';
+        if (libraryItem.MediaSources) {
+            for (var i = 0; i < libraryItem.MediaSources.length; i++) {
+                var mediaSource = libraryItem.MediaSources[i];
+                mediaSource.Path = localPath;
+                mediaSource.Protocol = 'File';
+            }
         }
 
         var item = {
@@ -228,10 +338,13 @@
             ServerId: serverInfo.Id,
             LocalPath: localPath,
             LocalFolder: localFolder,
-            AdditionalFiles: jobItem.AdditionalFiles.slice(0),
-            Id: getLocalId(serverInfo.Id, libraryItem.Id),
-            SyncJobItemId: jobItem.SyncJobItemId
+            Id: getLocalId(serverInfo.Id, libraryItem.Id)
         };
+
+        if (jobItem) {
+            item.AdditionalFiles = jobItem.AdditionalFiles.slice(0);
+            item.SyncJobItemId = jobItem.SyncJobItemId;
+        }
 
         return Promise.resolve(item);
     }
@@ -276,12 +389,14 @@
 
     function downloadFile(url, localItem) {
 
-        return transfermanager.downloadFile(url, localItem);
+        var folder = filerepository.getLocalPath();
+        return transfermanager.downloadFile(url, folder, localItem);
     }
 
     function downloadSubtitles(url, fileName) {
 
-        return transfermanager.downloadSubtitles(url, fileName);
+        var folder = filerepository.getLocalPath();
+        return transfermanager.downloadSubtitles(url, folder, fileName);
     }
 
     function getImageUrl(serverId, itemId, imageType, index) {
@@ -296,7 +411,7 @@
     function hasImage(serverId, itemId, imageType, index) {
 
         var pathArray = getImagePath(serverId, itemId, imageType, index);
-        var localFilePath = filerepository.getFullLocalPath(pathArray);
+        var localFilePath = filerepository.getFullMetadataPath(pathArray);
 
         return filerepository.fileExists(localFilePath).then(function (exists) {
             // TODO: Maybe check for broken download when file size is 0 and item is not queued
@@ -316,7 +431,7 @@
     function downloadImage(localItem, url, serverId, itemId, imageType, index) {
 
         var pathArray = getImagePath(serverId, itemId, imageType, index);
-        var localFilePath = filerepository.getFullLocalPath(pathArray);
+        var localFilePath = filerepository.getFullMetadataPath(pathArray);
 
         if (!localItem.AdditionalFiles) {
             localItem.AdditionalFiles = [];
@@ -331,12 +446,18 @@
 
         localItem.AdditionalFiles.push(fileInfo);
 
-        return transfermanager.downloadImage(url, localFilePath);
+        var folder = filerepository.getMetadataPath();
+        return transfermanager.downloadImage(url, folder, localFilePath);
     }
 
     function isDownloadFileInQueue(path) {
 
         return transfermanager.isDownloadFileInQueue(path);
+    }
+
+    function getDownloadItemCount() {
+
+        return transfermanager.getDownloadItemCount();
     }
 
     function translateFilePath(path) {
@@ -409,7 +530,9 @@
         parts.push('Metadata');
         parts.push(serverId);
         parts.push('images');
-        parts.push(itemId + '_' + imageType + '_' + index.toString() + '.png');
+        // Store without extension. This allows mixed image types since the browser will
+        // detect the type from the content
+        parts.push(itemId + '_' + imageType + '_' + index.toString()); // + '.jpg');
 
         var finalParts = [];
         for (var i = 0; i < parts.length; i++) {
@@ -444,6 +567,29 @@
         return uuid;
     }
 
+    function startsWith(str, find) {
+
+        if (str && find && str.length > find.length) {
+            if (str.indexOf(find) === 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function stripStart(str, find) {
+        if (startsWith(str, find)) {
+            return str.substr(find.length);
+        }
+
+        return str;
+    }
+
+    function filterDistinct(value, index, self) {
+        return self.indexOf(value) === index;
+    }
+
     return {
 
         getLocalItem: getLocalItem,
@@ -468,8 +614,10 @@
         getServerItems: getServerItems,
         getItemFileSize: getItemFileSize,
         isDownloadFileInQueue: isDownloadFileInQueue,
+        getDownloadItemCount: getDownloadItemCount,
         getViews: getViews,
         getViewItems: getViewItems,
-        resyncTransfers: resyncTransfers
+        resyncTransfers: resyncTransfers,
+        getItemsFromIds: getItemsFromIds
     };
 });

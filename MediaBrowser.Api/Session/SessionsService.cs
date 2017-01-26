@@ -243,6 +243,8 @@ namespace MediaBrowser.Api.Session
         [ApiMember(Name = "SupportsPersistentIdentifier", Description = "Determines whether the device supports a unique identifier.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool SupportsPersistentIdentifier { get; set; }
 
+        public bool SupportsContentUploading { get; set; }
+
         public PostCapabilities()
         {
             SupportsPersistentIdentifier = true;
@@ -558,6 +560,8 @@ namespace MediaBrowser.Api.Session
                 MessageCallbackUrl = request.MessageCallbackUrl,
 
                 SupportsSync = request.SupportsSync,
+
+                SupportsContentUploading = request.SupportsContentUploading,
 
                 SupportsPersistentIdentifier = request.SupportsPersistentIdentifier
             });
