@@ -212,12 +212,6 @@ namespace MediaBrowser.Model.Dto
         public string Overview { get; set; }
 
         /// <summary>
-        /// Gets or sets the short overview.
-        /// </summary>
-        /// <value>The short overview.</value>
-        public string ShortOverview { get; set; }
-
-        /// <summary>
         /// Gets or sets the taglines.
         /// </summary>
         /// <value>The taglines.</value>

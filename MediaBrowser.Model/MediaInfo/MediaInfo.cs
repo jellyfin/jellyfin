@@ -51,11 +51,6 @@ namespace MediaBrowser.Model.MediaInfo
         /// </summary>
         /// <value>The overview.</value>
         public string Overview { get; set; }
-        /// <summary>
-        /// Gets or sets the short overview.
-        /// </summary>
-        /// <value>The short overview.</value>
-        public string ShortOverview { get; set; }
 
         public MediaInfo()
         {

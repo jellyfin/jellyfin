@@ -663,7 +663,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             existingTimer.ProductionYear = updatedTimer.ProductionYear;
             existingTimer.ProgramId = updatedTimer.ProgramId;
             existingTimer.SeasonNumber = updatedTimer.SeasonNumber;
-            existingTimer.ShortOverview = updatedTimer.ShortOverview;
             existingTimer.StartDate = updatedTimer.StartDate;
             existingTimer.ShowId = updatedTimer.ShowId;
         }
@@ -1755,7 +1754,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     {
                         Name = timer.Name,
                         HomePageUrl = timer.HomePageUrl,
-                        ShortOverview = timer.ShortOverview,
                         Overview = timer.Overview,
                         Genres = timer.Genres,
                         CommunityRating = timer.CommunityRating,
@@ -1957,11 +1955,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     foreach (var genre in item.Genres)
                     {
                         writer.WriteElementString("genre", genre);
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(item.ShortOverview))
-                    {
-                        writer.WriteElementString("outline", item.ShortOverview);
                     }
 
                     if (!string.IsNullOrWhiteSpace(item.HomePageUrl))

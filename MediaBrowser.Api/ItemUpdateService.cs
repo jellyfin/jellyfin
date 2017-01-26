@@ -276,8 +276,6 @@ namespace MediaBrowser.Api
                 item.Tagline = request.Taglines.FirstOrDefault();
             }
 
-            item.ShortOverview = request.ShortOverview;
-
             item.Keywords = request.Keywords;
 
             if (request.Studios != null)

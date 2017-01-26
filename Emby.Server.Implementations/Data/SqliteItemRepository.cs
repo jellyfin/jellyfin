@@ -257,7 +257,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "SeriesId", "GUID", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "SeriesSortName", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "ExternalSeriesId", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "ShortOverview", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "Tagline", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "Keywords", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "ProviderIds", "Text", existingColumnNames);
@@ -466,7 +465,6 @@ namespace Emby.Server.Implementations.Data
             "InheritedParentalRatingValue",
             "InheritedTags",
             "ExternalSeriesId",
-            "ShortOverview",
             "Tagline",
             "Keywords",
             "ProviderIds",
@@ -598,7 +596,6 @@ namespace Emby.Server.Implementations.Data
                 "SeriesId",
                 "SeriesSortName",
                 "ExternalSeriesId",
-                "ShortOverview",
                 "Tagline",
                 "Keywords",
                 "ProviderIds",
@@ -1038,7 +1035,6 @@ namespace Emby.Server.Implementations.Data
             }
 
             saveItemStatement.TryBind("@ExternalSeriesId", item.ExternalSeriesId);
-            saveItemStatement.TryBind("@ShortOverview", item.ShortOverview);
             saveItemStatement.TryBind("@Tagline", item.Tagline);
 
             if (item.Keywords.Count > 0)
@@ -1892,15 +1888,6 @@ namespace Emby.Server.Implementations.Data
                 item.ExternalSeriesId = reader.GetString(index);
             }
             index++;
-
-            if (query.HasField(ItemFields.ShortOverview))
-            {
-                if (!reader.IsDBNull(index))
-                {
-                    item.ShortOverview = reader.GetString(index);
-                }
-                index++;
-            }
 
             if (query.HasField(ItemFields.Taglines))
             {
