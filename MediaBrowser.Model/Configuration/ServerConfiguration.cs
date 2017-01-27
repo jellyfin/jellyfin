@@ -163,8 +163,6 @@ namespace MediaBrowser.Model.Configuration
         public bool SkipDeserializationForPrograms { get; set; }
         public bool SkipDeserializationForAudio { get; set; }
 
-        public PathSubstitution[] PathSubstitutions { get; set; }
-
         public string ServerName { get; set; }
         public string WanDdns { get; set; }
 
@@ -229,7 +227,6 @@ namespace MediaBrowser.Model.Configuration
 
             LibraryMonitorDelay = 60;
 
-            PathSubstitutions = new PathSubstitution[] { };
             ContentTypes = new NameValuePair[] { };
 
             PreferredMetadataLanguage = "en";

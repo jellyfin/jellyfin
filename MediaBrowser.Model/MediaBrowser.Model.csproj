@@ -198,7 +198,6 @@
     <Compile Include="Notifications\NotificationOption.cs" />
     <Compile Include="Notifications\NotificationOptions.cs" />
     <Compile Include="Notifications\NotificationType.cs" />
-    <Compile Include="Configuration\PathSubstitution.cs" />
     <Compile Include="Notifications\SendToUserType.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
     <Compile Include="Playlists\PlaylistCreationRequest.cs" />
