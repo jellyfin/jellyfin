@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'viewManager', 'libraryBrowser', 'embyRouter', 'playbackManager', 'paper-icon-button-light', 'material-icons'], function (layoutManager, viewManager, libraryBrowser, embyRouter, playbackManager) {
+﻿define(['layoutManager', 'viewManager', 'libraryBrowser', 'embyRouter', 'playbackManager', 'paper-icon-button-light', 'material-icons', 'scrollStyles'], function (layoutManager, viewManager, libraryBrowser, embyRouter, playbackManager) {
     'use strict';
 
     var enableBottomTabs = AppInfo.isNativeApp;
@@ -290,12 +290,9 @@
 
         var homeHref = window.ApiClient ? 'home.html' : 'selectserver.html?showuser=1';
 
-        html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '" onclick="return LibraryMenu.onLinkClicked(event, this);">';
-        html += '<div style="background-image:url(\'css/images/mblogoicon.png\');width:' + 28 + 'px;height:' + 28 + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.25em 0 1.55em;display:inline-block;"></div>';
-        html += Globalize.translate('ButtonHome');
-        html += '</a>';
+        html += '<a class="sidebarLink lnkMediaFolder" href="' + homeHref + '" onclick="return LibraryMenu.onLinkClicked(event, this);"><span class="sidebarLinkText">' + Globalize.translate('ButtonHome') + '</span></a>';
 
-        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="nowplaying.html" onclick="return LibraryMenu.onLinkClicked(event, this);"><i class="md-icon sidebarLinkIcon">tablet_android</i><span class="sidebarLinkText">' + Globalize.translate('ButtonRemote') + '</span></a>';
+        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="nowplaying.html" onclick="return LibraryMenu.onLinkClicked(event, this);"><span class="sidebarLinkText">' + Globalize.translate('ButtonRemote') + '</span></a>';
 
         html += '<div class="sidebarDivider"></div>';
 
@@ -312,11 +309,11 @@
             html += Globalize.translate('HeaderAdmin');
             html += '</div>';
 
-            html += '<a class="sidebarLink lnkMediaFolder lnkManageServer" data-itemid="dashboard" href="#"><i class="md-icon sidebarLinkIcon">dashboard</i><span class="sidebarLinkText">' + Globalize.translate('ButtonManageServer') + '</span></a>';
-            html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" onclick="return LibraryMenu.onLinkClicked(event, this);" href="edititemmetadata.html"><i class="md-icon sidebarLinkIcon">mode_edit</i><span class="sidebarLinkText">' + Globalize.translate('MetadataManager') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder lnkManageServer" data-itemid="dashboard" href="#"><span class="sidebarLinkText">' + Globalize.translate('ButtonManageServer') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" onclick="return LibraryMenu.onLinkClicked(event, this);" href="edititemmetadata.html"><span class="sidebarLinkText">' + Globalize.translate('MetadataManager') + '</span></a>';
 
             if (!browserInfo.mobile) {
-                html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" onclick="return LibraryMenu.onLinkClicked(event, this);" href="reports.html"><i class="md-icon sidebarLinkIcon">insert_chart</i><span class="sidebarLinkText">' + Globalize.translate('ButtonReports') + '</span></a>';
+                html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" onclick="return LibraryMenu.onLinkClicked(event, this);" href="reports.html"><span class="sidebarLinkText">' + Globalize.translate('ButtonReports') + '</span></a>';
             }
             html += '</div>';
         }
@@ -326,19 +323,19 @@
         html += '<div class="sidebarDivider"></div>';
 
         if (user.localUser && (AppInfo.isNativeApp && browserInfo.android)) {
-            html += '<a class="sidebarLink lnkMediaFolder lnkMySettings" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mypreferencesmenu.html"><i class="md-icon sidebarLinkIcon">settings</i><span class="sidebarLinkText">' + Globalize.translate('ButtonSettings') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder lnkMySettings" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mypreferencesmenu.html"><span class="sidebarLinkText">' + Globalize.translate('ButtonSettings') + '</span></a>';
         }
 
-        html += '<a class="sidebarLink lnkMediaFolder lnkManageOffline" data-itemid="manageoffline" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mysync.html?mode=offline"><i class="md-icon sidebarLinkIcon">file_download</i><span class="sidebarLinkText">' + Globalize.translate('ManageOfflineDownloads') + '</span></a>';
+        html += '<a class="sidebarLink lnkMediaFolder lnkManageOffline" data-itemid="manageoffline" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mysync.html?mode=offline"><span class="sidebarLinkText">' + Globalize.translate('ManageOfflineDownloads') + '</span></a>';
 
-        html += '<a class="sidebarLink lnkMediaFolder lnkSyncToOtherDevices" data-itemid="syncotherdevices" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mysync.html"><i class="md-icon sidebarLinkIcon">sync</i><span class="sidebarLinkText">' + Globalize.translate('SyncToOtherDevices') + '</span></a>';
+        html += '<a class="sidebarLink lnkMediaFolder lnkSyncToOtherDevices" data-itemid="syncotherdevices" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mysync.html"><span class="sidebarLinkText">' + Globalize.translate('SyncToOtherDevices') + '</span></a>';
 
         if (Dashboard.isConnectMode()) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="return LibraryMenu.onLinkClicked(event, this);" href="selectserver.html?showuser=1"><i class="md-icon sidebarLinkIcon">wifi</i><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="return LibraryMenu.onLinkClicked(event, this);" href="selectserver.html?showuser=1"><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
         }
 
         if (user.localUser) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="logout" onclick="return LibraryMenu.onLogoutClicked(this);" href="#"><i class="md-icon sidebarLinkIcon">lock</i><span class="sidebarLinkText">' + Globalize.translate('ButtonSignOut') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="logout" onclick="return LibraryMenu.onLogoutClicked(this);" href="#"><span class="sidebarLinkText">' + Globalize.translate('ButtonSignOut') + '</span></a>';
         }
 
         html += '</div>';
@@ -558,7 +555,7 @@
                 icon = i.icon || icon;
 
                 var onclick = i.onclick ? ' function(){' + i.onclick + '}' : 'null';
-                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder sidebarLink" onclick="return LibraryMenu.onLinkClicked(event, this, ' + onclick + ');" href="' + getItemHref(i, i.CollectionType) + '"><i class="md-icon sidebarLinkIcon" style="color:' + color + '">' + icon + '</i><span class="sectionName">' + i.Name + '</span></a>';
+                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder sidebarLink" onclick="return LibraryMenu.onLinkClicked(event, this, ' + onclick + ');" href="' + getItemHref(i, i.CollectionType) + '"><span class="sectionName">' + i.Name + '</span></a>';
 
             }).join('');
 
@@ -851,6 +848,12 @@
 
         if (!page.classList.contains('withTabs')) {
             LibraryMenu.setTabs(null);
+
+            if (page.classList.contains('pageWithAbsoluteTabs')) {
+                document.body.classList.add('withTallToolbar');
+            } else {
+                document.body.classList.remove('withTallToolbar');
+            }
         }
     });
 

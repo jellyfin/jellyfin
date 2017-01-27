@@ -520,13 +520,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (min-width: 800px) {
-
-    .mainDetailButtons, .itemDetailPage .recordingFields button {
-        font-size: 110%;
-    }
-}
-
 .detailImageProgressContainer {
     position: absolute;
     bottom: 4px;

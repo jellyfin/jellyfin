@@ -269,7 +269,7 @@
                     IncludeItemTypes: "Audio",
                     PersonTypes: "",
                     ArtistIds: "",
-                    Limit: 30
+                    Limit: 40
                 }, {
                     playFromHere: true,
                     action: 'playallfromhere',

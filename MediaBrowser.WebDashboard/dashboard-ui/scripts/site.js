@@ -383,14 +383,6 @@ var Dashboard = {
         pageIds = pageIds ? (' data-pageids="' + pageIds + '"') : '';
         menuHtml += '<a class="sidebarLink" href="' + item.href + '"' + pageIds + '>';
 
-        var icon = item.icon;
-
-        if (icon) {
-            var style = item.color ? ' style="color:' + item.color + '"' : '';
-
-            menuHtml += '<i class="md-icon sidebarLinkIcon"' + style + '>' + icon + '</i>';
-        }
-
         menuHtml += '<span class="sidebarLinkText">';
         menuHtml += item.name;
         menuHtml += '</span>';

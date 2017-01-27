@@ -116,72 +116,13 @@ progress {
     background: #fff !important;
 }
 
-.dashboardDocument .mainDrawerPanelContent {
-    transition: left ease-in-out 0.3s, padding ease-in-out 0.3s;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-}
-
-.adminDrawer {
-    background: #fff !important;
-}
-
-.dashboardDocument .mainDrawerPanelContent {
-    transition: left ease-in-out 0.3s, padding ease-in-out 0.3s;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-}
-
-@media all and (min-width: 640px) {
-
-    .dashboardDocument .mainDrawer {
-        z-index: inherit !important;
-        top: 58px !important;
-        left: 0 !important;
-        transform: none !important;
-    }
-
-    .dashboardDocument .tmla-mask {
-        display: none !important;
-    }
-
-    .dashboardDocument .mainDrawerButton {
-        display: none !important;
-    }
-
-    .dashboardDocument .mainDrawerPanelContent {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 260px;
-    }
-
-    .dashboardDocument .adminDrawerLogo {
-        display: none;
-    }
-}
-
 .adminDrawer .sidebarLink {
     color: #333 !important;
-    font-weight: 400 !important;
-    padding: .7em 0 .7em 2em;
 }
 
 .adminDrawer .sidebarHeader {
     color: #666 !important;
     font-weight: 500 !important;
-}
-
-.adminDrawer .sidebarLinkIcon {
-    color: #666;
-    margin-right: 1em;
 }
 
 .adminDrawer .sidebarLink:hover {
@@ -192,10 +133,6 @@ progress {
     background: #52B54B !important;
     color: #fff !important;
 }
-
-    .adminDrawer .sidebarLink.selectedSidebarLink .sidebarLinkIcon {
-        color: #fff !important;
-    }
 
 .adminDrawerLogo {
     padding: 1.5em 1em 1.2em;

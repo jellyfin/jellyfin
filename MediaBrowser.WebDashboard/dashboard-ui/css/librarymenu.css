@@ -213,6 +213,29 @@
     }
 }
 
+.sidebarLink {
+    display: block;
+    text-decoration: none;
+    color: #111 !important;
+    font-weight: normal !important;
+    vertical-align: middle;
+    padding: 1em 0 1em 2.4em;
+}
+
+    .sidebarLink:hover {
+        background: #f2f2f2;
+    }
+
+    .sidebarLink.selectedSidebarLink {
+        background: #f2f2f2 !important;
+    }
+
+.sidebarHeader {
+    padding-left: 1.4em;
+    margin: 1.2em 0 .7em;
+    color: #666;
+}
+
 body:not(.dashboardDocument) .btnNotifications {
     display: none !important;
 }
@@ -224,36 +247,26 @@ body:not(.dashboardDocument) .btnNotifications {
     backdrop-filter: blur(5px);*/
 }
 
-    .darkDrawer .sidebarLinkIcon {
-        color: #bbb !important;
-        margin-left: 1.6em;
+    .darkDrawer .sidebarLinkText, .darkDrawer .sidebarLink {
+        color: #fff !important;
     }
 
-.darkDrawer i.sidebarLinkIcon {
-    margin-left: 1.9em;
-}
+    .darkDrawer .sidebarHeader {
+        color: #bbb !important;
+    }
 
-.darkDrawer .sidebarLinkText, .darkDrawer .sidebarLink {
-    color: #fff !important;
-    font-weight: normal !important;
-}
+    .darkDrawer .sidebarDivider {
+        background: #262626 !important;
+    }
 
-.darkDrawer .sidebarHeader {
-    color: #bbb !important;
-}
+    .darkDrawer .sidebarLink:hover {
+        background: #252528;
+    }
 
-.darkDrawer .sidebarDivider {
-    background: #282828 !important;
-}
-
-.darkDrawer .sidebarLink:hover {
-    background: #252528;
-}
-
-.darkDrawer .sidebarLink.selectedSidebarLink, .darkDrawer .selectedMediaFolder {
-    background: #252528 !important;
-    color: #52B54B !important;
-}
+    .darkDrawer .sidebarLink.selectedSidebarLink, .darkDrawer .selectedMediaFolder {
+        background: #252528 !important;
+        color: #52B54B !important;
+    }
 
 body:not(.dashboardDocument) .headerAppsButton {
     display: none;
@@ -261,6 +274,15 @@ body:not(.dashboardDocument) .headerAppsButton {
 
 .mainDrawer-scrollContainer {
     padding-bottom: 10vh;
+}
+
+.dashboardDocument .mainDrawerPanelContent {
+    transition: left ease-in-out 0.3s, padding ease-in-out 0.3s;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
 }
 
 @media all and (min-width: 640px) {
@@ -272,5 +294,48 @@ body:not(.dashboardDocument) .headerAppsButton {
 
     .viewMenuBarTabs .libraryViewNav {
         text-align: left !important;
+    }
+
+    .dashboardDocument .sidebarLink {
+        padding: .7em 0 .7em 2.4em;
+    }
+
+    .dashboardDocument .mainDrawer {
+        z-index: inherit !important;
+        left: 0 !important;
+        top: 0 !important;
+        transform: none !important;
+    }
+
+    .dashboardDocument .mainDrawer-scrollContainer {
+        margin-top: 50px !important;
+    }
+
+    .dashboardDocument.withTallToolbar .mainDrawer-scrollContainer {
+        margin-top: 98px !important;
+    }
+
+    .dashboardDocument .tmla-mask {
+        display: none !important;
+    }
+
+    .dashboardDocument .mainDrawerButton {
+        display: none !important;
+    }
+
+    .dashboardDocument .mainDrawerPanelContent {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 260px;
+    }
+
+    .dashboardDocument .adminDrawerLogo {
+        display: none !important;
+    }
+
+    .dashboardDocument .darkDrawer {
+        background-color: rgba(28,28,31,.3) !important;
     }
 }

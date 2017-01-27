@@ -211,46 +211,6 @@ div[data-role='page'] {
     background-color: #f0f0f0;
 }
 
-.sidebarLinks {
-    margin-top: 1.5em;
-    padding-bottom: 50px;
-}
-
-.sidebarLink {
-    display: block;
-    padding: .8em 20px .8em 0;
-    text-decoration: none;
-    color: #111 !important;
-    font-weight: 500 !important;
-    vertical-align: middle;
-    font-size: 110%;
-}
-
-    .sidebarLink:hover {
-        background: #f2f2f2;
-    }
-
-    .sidebarLink.selectedSidebarLink {
-        background: #f2f2f2 !important;
-    }
-
-.sidebarLinkIcon {
-    text-align: center;
-    vertical-align: middle;
-    margin-right: 1.2em;
-}
-
-    .sidebarLinkIcon + span {
-        vertical-align: middle;
-    }
-
-.sidebarHeader {
-    padding-left: 20px;
-    margin: 15px 0 10px;
-    color: #666;
-    font-weight: 500;
-}
-
 .ui-content {
     border-width: 0;
     overflow: visible;
