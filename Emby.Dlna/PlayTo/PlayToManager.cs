@@ -146,7 +146,7 @@ namespace Emby.Dlna.PlayTo
                     }
 
                     string serverAddress;
-                    if (info.LocalIpAddress == null)
+                    if (info.LocalIpAddress == null || info.LocalIpAddress.Equals(IpAddressInfo.Any) || info.LocalIpAddress.Equals(IpAddressInfo.IPv6Loopback))
                     {
                         serverAddress = await GetServerAddress(null).ConfigureAwait(false);
                     }
