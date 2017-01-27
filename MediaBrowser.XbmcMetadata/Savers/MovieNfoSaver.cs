@@ -113,16 +113,16 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
-        protected override List<string> GetTagsUsed()
+        protected override List<string> GetTagsUsed(IHasMetadata item)
         {
-            var list = new List<string>
+            var list = base.GetTagsUsed(item);
+            list.AddRange(new string[]
             {
-                    "album",
-                    "artist",
-                    "set",
-                    "id"
-            };
-
+                "album",
+                "artist",
+                "set",
+                "id"
+            });
             return list;
         }
 
