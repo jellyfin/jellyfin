@@ -2737,16 +2737,18 @@ namespace MediaBrowser.Api.Playback
 
         private string GetDecoderFromCodec(string codec)
         {
-            if (string.Equals(codec, "mp2", StringComparison.OrdinalIgnoreCase))
-            {
-                return null;
-            }
-            if (string.Equals(codec, "aac_latm", StringComparison.OrdinalIgnoreCase))
-            {
-                return null;
-            }
+            return null;
 
-            return codec;
+            //if (string.Equals(codec, "mp2", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    return null;
+            //}
+            //if (string.Equals(codec, "aac_latm", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    return null;
+            //}
+
+            //return codec;
         }
 
         /// <summary>
