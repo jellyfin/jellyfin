@@ -152,7 +152,6 @@
                 Metascore: form.querySelector('#txtMetascore').value,
                 AwardSummary: form.querySelector('#txtAwardSummary').value,
                 Overview: form.querySelector('#txtOverview').value,
-                ShortOverview: form.querySelector('#txtShortOverview').value,
                 Status: form.querySelector('#selectStatus').value,
                 AirDays: getSelectedAirDays(form),
                 AirTime: form.querySelector('#txtAirTime').value,
@@ -842,7 +841,6 @@
         context.querySelector('#txtName').value = item.Name || "";
         context.querySelector('#txtOriginalName').value = item.OriginalTitle || "";
         context.querySelector('#txtOverview').value = item.Overview || '';
-        context.querySelector('#txtShortOverview').value = item.ShortOverview || "";
         context.querySelector('#txtTagline').value = (item.Taglines && item.Taglines.length ? item.Taglines[0] : '');
         context.querySelector('#txtSortName').value = item.ForcedSortName || "";
         context.querySelector('#txtDisplayMediaType').value = item.DisplayMediaType || "";
@@ -1134,12 +1132,6 @@
 
             setFieldVisibilities(context, item);
             fillItemInfo(context, item, metadataEditorInfo.ParentalRatingOptions);
-
-            if (item.MediaType === "Video" && item.Type !== "Episode") {
-                showElement('#fldShortOverview', context);
-            } else {
-                hideElement('#fldShortOverview', context);
-            }
 
             if (item.MediaType === "Video" && item.Type !== "Episode") {
                 showElement('#fldTagline', context);

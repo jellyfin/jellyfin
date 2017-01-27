@@ -2704,21 +2704,25 @@ namespace MediaBrowser.Api.Playback
                     //inputModifier += " -noaccurate_seek";
                 }
 
-                foreach (var stream in state.MediaSource.MediaStreams)
+                if (state.RunTimeTicks.HasValue)
                 {
-                    if (!stream.IsExternal && stream.Type != MediaStreamType.Subtitle)
+                    foreach (var stream in state.MediaSource.MediaStreams)
                     {
-                        if (!string.IsNullOrWhiteSpace(stream.Codec) && stream.Index != -1)
+                        if (!stream.IsExternal && stream.Type != MediaStreamType.Subtitle)
                         {
-                            var decoder = GetDecoderFromCodec(stream.Codec);
-
-                            if (!string.IsNullOrWhiteSpace(decoder))
+                            if (!string.IsNullOrWhiteSpace(stream.Codec) && stream.Index != -1)
                             {
-                                inputModifier += " -codec:" + stream.Index.ToString(UsCulture) + " " + decoder;
+                                var decoder = GetDecoderFromCodec(stream.Codec);
+
+                                if (!string.IsNullOrWhiteSpace(decoder))
+                                {
+                                    inputModifier += " -codec:" + stream.Index.ToString(UsCulture) + " " + decoder;
+                                }
                             }
                         }
                     }
                 }
+
                 //var videoStream = state.VideoStream;
                 //if (videoStream != null && !string.IsNullOrWhiteSpace(videoStream.Codec))
                 //{
@@ -2737,18 +2741,16 @@ namespace MediaBrowser.Api.Playback
 
         private string GetDecoderFromCodec(string codec)
         {
-            return null;
+            if (string.Equals(codec, "mp2", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+            if (string.Equals(codec, "aac_latm", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
 
-            //if (string.Equals(codec, "mp2", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    return null;
-            //}
-            //if (string.Equals(codec, "aac_latm", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    return null;
-            //}
-
-            //return codec;
+            return codec;
         }
 
         /// <summary>
