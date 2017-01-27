@@ -14,6 +14,9 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
 
         var mediaElement;
         var currentSrc;
+        var currentPlayOptions;
+        var started;
+        var _currentTime;
 
         function getSavedVolume() {
             return appSettings.get("volume") || 1;
@@ -50,9 +53,15 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
         self.play = function (options) {
 
             _currentTime = null;
+            started = false;
             var elem = createMediaElement();
 
             var val = options.url;
+
+            var seconds = (options.playerStartPositionTicks || 0) / 10000000;
+            if (seconds) {
+                val += '#t=' + seconds;
+            }
 
             elem.crossOrigin = getCrossOriginValue(options.mediaSource);
             elem.title = options.title;
@@ -72,6 +81,7 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
             }
 
             currentSrc = val;
+            currentPlayOptions = options;
 
             return playWithPromise(elem);
         };
@@ -108,7 +118,6 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
         }
 
         // Save this for when playback stops, because querying the time at that point might return 0
-        var _currentTime;
         self.currentTime = function (val) {
 
             if (mediaElement) {
@@ -295,6 +304,7 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
 
             _currentTime = null;
             currentSrc = null;
+            currentPlayOptions = null;
         }
 
         function onTimeUpdate() {
@@ -313,9 +323,38 @@ define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], functio
             }
         }
 
-        function onPlaying() {
+        function onPlaying(e) {
 
+            if (!started) {
+                started = true;
+                this.removeAttribute('controls');
+
+                seekOnPlaybackStart(e.target);
+            }
             events.trigger(self, 'playing');
+        }
+
+        function seekOnPlaybackStart(element) {
+
+            var seconds = (currentPlayOptions.playerStartPositionTicks || 0) / 10000000;
+
+            if (seconds) {
+                var src = (self.currentSrc() || '').toLowerCase();
+
+                // Appending #t=xxx to the query string doesn't seem to work with HLS
+                // For plain video files, not all browsers support it either
+                if (!browser.chrome || src.indexOf('.m3u8') !== -1) {
+
+                    var delay = browser.safari ? 2500 : 0;
+                    if (delay) {
+                        setTimeout(function () {
+                            element.currentTime = seconds;
+                        }, delay);
+                    } else {
+                        element.currentTime = seconds;
+                    }
+                }
+            }
         }
 
         function onPause() {
