@@ -152,9 +152,17 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 HasImage = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source),
                 OfficialRating = p.Rating != null && !String.IsNullOrEmpty(p.Rating.Value) ? p.Rating.Value : null,
                 CommunityRating = p.StarRating.HasValue ? p.StarRating.Value : (float?)null,
-                SeriesId = p.Episode != null ? p.Title.GetMD5().ToString("N") : null,
-                ShowId = ((p.Title ?? string.Empty) + (episodeTitle ?? string.Empty)).GetMD5().ToString("N")
+                SeriesId = p.Episode != null ? p.Title.GetMD5().ToString("N") : null
             };
+
+            if (!string.IsNullOrWhiteSpace(p.ProgramId))
+            {
+                programInfo.ShowId = p.ProgramId;
+            }
+            else
+            {
+                programInfo.ShowId = ((p.Title ?? string.Empty) + (episodeTitle ?? string.Empty)).GetMD5().ToString("N");
+            }
 
             if (programInfo.IsMovie)
             {
