@@ -1,17 +1,1 @@
-﻿.btnActiveCast {
-    color: #52B54B !important;
-}
-
-.headerSelectedPlayer {
-    font-weight: normal;
-    max-width: 160px;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-@media all and (max-width: 600px) {
-    .headerSelectedPlayer {
-        display: none;
-    }
-}
+.btnActiveCast{color:#52B54B!important}.headerSelectedPlayer{font-weight:400;max-width:160px;-o-text-overflow:ellipsis;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}@media all and (max-width:600px){.headerSelectedPlayer{display:none}}

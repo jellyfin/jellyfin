@@ -76,6 +76,11 @@ namespace MediaBrowser.WebDashboard.Api
         public string V { get; set; }
     }
 
+    [Route("/favicon.ico", "GET")]
+    public class GetFavIcon
+    {
+    }
+
     /// <summary>
     /// Class DashboardService
     /// </summary>
@@ -132,6 +137,14 @@ namespace MediaBrowser.WebDashboard.Api
             _logger = logger;
             _resultFactory = resultFactory;
             _memoryStreamFactory = memoryStreamFactory;
+        }
+
+        public object Get(GetFavIcon request)
+        {
+            return Get(new GetDashboardResource
+            {
+                ResourceName = "favicon.ico"
+            });
         }
 
         /// <summary>
