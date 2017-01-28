@@ -114,7 +114,6 @@ namespace MediaBrowser.Controller.LiveTv
         public bool IsRepeat { get; set; }
         public string HomePageUrl { get; set; }
         public float? CommunityRating { get; set; }
-        public string ShortOverview { get; set; }
         public string OfficialRating { get; set; }
         public List<string> Genres { get; set; }
         public string RecordingPath { get; set; }

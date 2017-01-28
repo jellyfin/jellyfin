@@ -1,14 +1,1 @@
-﻿define([], function () {
-    'use strict';
-
-    return {
-
-        findServers: function (timeoutMs) {
-
-            // Expected server properties
-            // Name, Id, Address, EndpointAddress (optional)
-            return Promise.resolve([]);
-        }
-    };
-
-});
+define([],function(){"use strict";return{findServers:function(timeoutMs){return Promise.resolve([])}}});

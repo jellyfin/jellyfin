@@ -61,7 +61,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             timerInfo.HomePageUrl = programInfo.HomePageUrl;
             timerInfo.CommunityRating = programInfo.CommunityRating;
             timerInfo.Overview = programInfo.Overview;
-            timerInfo.ShortOverview = programInfo.ShortOverview;
             timerInfo.OfficialRating = programInfo.OfficialRating;
             timerInfo.IsRepeat = programInfo.IsRepeat;
             timerInfo.SeriesId = programInfo.SeriesId;

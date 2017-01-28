@@ -141,7 +141,6 @@ namespace Emby.Server.Core.Configuration
         {
             var newConfig = (ServerConfiguration)newConfiguration;
 
-            ValidatePathSubstitutions(newConfig);
             ValidateMetadataPath(newConfig);
             ValidateSslCertificate(newConfig);
 
@@ -169,17 +168,6 @@ namespace Emby.Server.Core.Configuration
                 if (!FileSystem.FileExists(newPath))
                 {
                     throw new FileNotFoundException(string.Format("Certificate file '{0}' does not exist.", newPath));
-                }
-            }
-        }
-
-        private void ValidatePathSubstitutions(ServerConfiguration newConfig)
-        {
-            foreach (var map in newConfig.PathSubstitutions)
-            {
-                if (string.IsNullOrWhiteSpace(map.From) || string.IsNullOrWhiteSpace(map.To))
-                {
-                    throw new ArgumentException("Invalid path substitution");
                 }
             }
         }

@@ -457,7 +457,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (item is Video)
             {
-                var outline = (item.ShortOverview ?? string.Empty)
+                var outline = (item.Tagline ?? item.Overview ?? string.Empty)
                     .StripHtml()
                     .Replace("&quot;", "'");
 

@@ -1052,11 +1052,6 @@ namespace Emby.Server.Implementations.Dto
                 dto.OriginalTitle = item.OriginalTitle;
             }
 
-            if (fields.Contains(ItemFields.ShortOverview))
-            {
-                dto.ShortOverview = item.ShortOverview;
-            }
-
             if (fields.Contains(ItemFields.ParentId))
             {
                 var displayParentId = item.DisplayParentId;

@@ -1,9 +1,1 @@
-﻿/* Allow vertical space for anything that slides up at the bottom */
-.guideVerticalScroller {
-    padding-bottom: 160px;
-}
-
-.tvGuideHeader.headroom--unpinned {
-    -webkit-transform: none;
-    transform: none;
-}
+.guideVerticalScroller{padding-bottom:160px}.tvGuideHeader.headroom--unpinned{-webkit-transform:none;transform:none}

@@ -646,11 +646,6 @@ namespace Emby.Dlna.Didl
             {
                 var desc = item.Overview;
 
-                if (!string.IsNullOrEmpty(item.ShortOverview))
-                {
-                    desc = item.ShortOverview;
-                }
-
                 if (!string.IsNullOrWhiteSpace(desc))
                 {
                     AddValue(writer, "dc", "description", desc, NS_DC);

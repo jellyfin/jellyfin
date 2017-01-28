@@ -85,7 +85,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                     "MusicbrainzId",
 
                     "Overview",
-                    "ShortOverview",
                     "Persons",
                     "PlotKeywords",
                     "PremiereDate",
@@ -350,10 +349,6 @@ namespace MediaBrowser.LocalMetadata.Savers
             if (!string.IsNullOrEmpty(item.OriginalTitle))
             {
                 writer.WriteElementString("OriginalTitle", item.OriginalTitle);
-            }
-            if (!string.IsNullOrEmpty(item.ShortOverview))
-            {
-                writer.WriteElementString("ShortOverview", item.ShortOverview);
             }
             if (!string.IsNullOrEmpty(item.CustomRating))
             {

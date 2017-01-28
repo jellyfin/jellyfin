@@ -1,16 +1,1 @@
-﻿.imageEditor-buttons {
-    display: flex;
-    align-items: center;
-    margin: 1em 0 1em;
-}
-
-.first-imageEditor-buttons {
-    margin-top: 2em;
-}
-
-@media all and (min-width: 1200px) {
-
-    .imageEditorCard {
-        width: 20%;
-    }
-}
+.imageEditor-buttons{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:center;-webkit-align-items:center;align-items:center;margin:1em 0}.first-imageEditor-buttons{margin-top:2em}@media all and (min-width:1200px){.imageEditorCard{width:20%}}
