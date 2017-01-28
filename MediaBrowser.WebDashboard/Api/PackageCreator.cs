@@ -33,16 +33,7 @@ namespace MediaBrowser.WebDashboard.Api
             string localizationCulture,
             string appVersion)
         {
-            Stream resourceStream;
-
-            if (path.Equals("css/all.css", StringComparison.OrdinalIgnoreCase))
-            {
-                resourceStream = await GetAllCss().ConfigureAwait(false);
-            }
-            else
-            {
-                resourceStream = GetRawResourceStream(path);
-            }
+            var resourceStream = GetRawResourceStream(path);
 
             if (resourceStream != null)
             {
@@ -267,7 +258,10 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                "css/all.css" + versionString
+                                      "css/site.css" + versionString,
+                                      "css/librarymenu.css" + versionString,
+                                      "css/librarybrowser.css" + versionString,
+                                      "thirdparty/paper-button-style.css" + versionString
                             };
 
             var tags = files.Select(s => string.Format("<link rel=\"stylesheet\" href=\"{0}\" async />", s)).ToArray();
@@ -316,48 +310,6 @@ namespace MediaBrowser.WebDashboard.Api
             builder.Append(string.Join(string.Empty, tags));
 
             return builder.ToString();
-        }
-
-        /// <summary>
-        /// Gets all CSS.
-        /// </summary>
-        /// <returns>Task{Stream}.</returns>
-        private async Task<Stream> GetAllCss()
-        {
-            var memoryStream = _memoryStreamFactory.CreateNew();
-
-            var files = new[]
-                                  {
-                                      "css/site.css",
-                                      "css/librarymenu.css",
-                                      "css/librarybrowser.css",
-                                      "thirdparty/paper-button-style.css"
-                                  };
-
-            var builder = new StringBuilder();
-
-            foreach (var file in files)
-            {
-                var path = GetDashboardResourcePath(file);
-
-                using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true))
-                {
-                    using (var streamReader = new StreamReader(fs))
-                    {
-                        var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-                        builder.Append(text);
-                        builder.Append(Environment.NewLine);
-                    }
-                }
-            }
-
-            var css = builder.ToString();
-
-            var bytes = Encoding.UTF8.GetBytes(css);
-            memoryStream.Write(bytes, 0, bytes.Length);
-
-            memoryStream.Position = 0;
-            return memoryStream;
         }
 
         /// <summary>

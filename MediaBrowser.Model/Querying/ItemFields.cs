@@ -189,11 +189,6 @@
         Settings,
 
         /// <summary>
-        /// The short overview
-        /// </summary>
-        ShortOverview,
-
-        /// <summary>
         /// The screenshot image tags
         /// </summary>
         ScreenshotImageTags,

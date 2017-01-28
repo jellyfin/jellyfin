@@ -111,7 +111,6 @@ namespace MediaBrowser.Api
 
         private void SetWizardFinishValues(ServerConfiguration config)
         {
-            config.EnableLocalizedGuids = true;
             config.EnableStandaloneMusicKeys = true;
             config.EnableCaseSensitiveItemIds = true;
             config.EnableFolderView = true;
