@@ -47,6 +47,7 @@ namespace MediaBrowser.Api.Playback
         public MediaStream AudioStream { get; set; }
         public MediaStream VideoStream { get; set; }
         public MediaStream SubtitleStream { get; set; }
+        public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
 
         /// <summary>
         /// Gets or sets the iso mount.
@@ -124,6 +125,7 @@ namespace MediaBrowser.Api.Playback
         public string OutputAudioSync = "1";
         public string OutputVideoSync = "-1";
 
+        public List<string> SupportedSubtitleCodecs { get; set; }
         public List<string> SupportedAudioCodecs { get; set; }
         public List<string> SupportedVideoCodecs { get; set; }
         public string UserAgent { get; set; }
@@ -133,6 +135,7 @@ namespace MediaBrowser.Api.Playback
         {
             _mediaSourceManager = mediaSourceManager;
             _logger = logger;
+            SupportedSubtitleCodecs = new List<string>();
             SupportedAudioCodecs = new List<string>();
             SupportedVideoCodecs = new List<string>();
             PlayableStreamFileNames = new List<string>();

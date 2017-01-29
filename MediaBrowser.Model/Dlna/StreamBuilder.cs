@@ -435,7 +435,7 @@ namespace MediaBrowser.Model.Dlna
 
                     if (subtitleStream != null)
                     {
-                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, directPlay.Value);
+                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, directPlay.Value, null, null);
 
                         playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                         playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -465,10 +465,11 @@ namespace MediaBrowser.Model.Dlna
 
                 if (subtitleStream != null)
                 {
-                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, PlayMethod.Transcode);
+                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, PlayMethod.Transcode, transcodingProfile.Protocol, transcodingProfile.Container);
 
                     playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                     playlistItem.SubtitleFormat = subtitleProfile.Format;
+                    playlistItem.SubtitleCodecs = new[] { subtitleProfile.Format };
                 }
 
                 playlistItem.PlayMethod = PlayMethod.Transcode;
@@ -874,7 +875,7 @@ namespace MediaBrowser.Model.Dlna
         {
             if (subtitleStream != null)
             {
-                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, playMethod);
+                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, playMethod, null, null);
 
                 if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
@@ -886,11 +887,11 @@ namespace MediaBrowser.Model.Dlna
             return IsAudioEligibleForDirectPlay(item, maxBitrate);
         }
 
-        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod)
+        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, string transcodingSubProtocol, string transcodingContainer)
         {
-            if (playMethod != PlayMethod.Transcode && !subtitleStream.IsExternal)
+            if (!subtitleStream.IsExternal && (playMethod != PlayMethod.Transcode || !string.Equals(transcodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase)))
             {
-                // Look for supported embedded subs
+                // Look for supported embedded subs of the same format
                 foreach (SubtitleProfile profile in subtitleProfiles)
                 {
                     if (!profile.SupportsLanguage(subtitleStream.Language))
@@ -903,7 +904,36 @@ namespace MediaBrowser.Model.Dlna
                         continue;
                     }
 
+                    if (playMethod == PlayMethod.Transcode && !IsSubtitleEmbedSupported(subtitleStream, profile, transcodingSubProtocol, transcodingContainer))
+                    {
+                        continue;
+                    }
+
                     if (subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format) && StringHelper.EqualsIgnoreCase(profile.Format, subtitleStream.Codec))
+                    {
+                        return profile;
+                    }
+                }
+
+                // Look for supported embedded subs of a convertible format
+                foreach (SubtitleProfile profile in subtitleProfiles)
+                {
+                    if (!profile.SupportsLanguage(subtitleStream.Language))
+                    {
+                        continue;
+                    }
+
+                    if (profile.Method != SubtitleDeliveryMethod.Embed)
+                    {
+                        continue;
+                    }
+
+                    if (playMethod == PlayMethod.Transcode && !IsSubtitleEmbedSupported(subtitleStream, profile, transcodingSubProtocol, transcodingContainer))
+                    {
+                        continue;
+                    }
+
+                    if (subtitleStream.IsTextSubtitleStream && subtitleStream.SupportsSubtitleConversionTo(profile.Format))
                     {
                         return profile;
                     }
@@ -916,6 +946,28 @@ namespace MediaBrowser.Model.Dlna
                 Method = SubtitleDeliveryMethod.Encode,
                 Format = subtitleStream.Codec
             };
+        }
+
+        private static bool IsSubtitleEmbedSupported(MediaStream subtitleStream, SubtitleProfile subtitleProfile, string transcodingSubProtocol, string transcodingContainer)
+        {
+            if (string.Equals(transcodingContainer, "ts", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            if (string.Equals(transcodingContainer, "mpegts", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            if (string.Equals(transcodingContainer, "mp4", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            if (string.Equals(transcodingContainer, "mkv", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private static SubtitleProfile GetExternalSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, bool allowConversion)
