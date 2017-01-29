@@ -501,7 +501,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException("type");
             }
 
-            if (key.StartsWith(ConfigurationManager.ApplicationPaths.ProgramDataPath))
+            if (ConfigurationManager.Configuration.EnableLocalizedGuids && key.StartsWith(ConfigurationManager.ApplicationPaths.ProgramDataPath))
             {
                 // Try to normalize paths located underneath program-data in an attempt to make them more portable
                 key = key.Substring(ConfigurationManager.ApplicationPaths.ProgramDataPath.Length)
@@ -1927,11 +1927,18 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.RetrieveItem(id);
         }
 
-        public IEnumerable<Folder> GetCollectionFolders(BaseItem item)
+        public List<Folder> GetCollectionFolders(BaseItem item)
         {
-            while (!(item.GetParent() is AggregateFolder) && item.GetParent() != null)
+            while (item != null)
             {
-                item = item.GetParent();
+                var parent = item.GetParent();
+
+                if (parent == null || parent is AggregateFolder)
+                {
+                    break;
+                }
+
+                item = parent;
             }
 
             if (item == null)
@@ -1941,7 +1948,8 @@ namespace Emby.Server.Implementations.Library
 
             return GetUserRootFolder().Children
                 .OfType<Folder>()
-                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path, StringComparer.OrdinalIgnoreCase));
+                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path, StringComparer.OrdinalIgnoreCase))
+                .ToList();
         }
 
         public LibraryOptions GetLibraryOptions(BaseItem item)

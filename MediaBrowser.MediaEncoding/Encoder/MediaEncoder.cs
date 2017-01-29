@@ -496,6 +496,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return SupportsEncoder(codec);
         }
 
+        public bool CanEncodeToSubtitleCodec(string codec)
+        {
+            // TODO
+            return true;
+        }
+
         /// <summary>
         /// Gets the encoder path.
         /// </summary>

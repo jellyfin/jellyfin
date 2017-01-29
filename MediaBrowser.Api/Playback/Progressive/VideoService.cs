@@ -9,6 +9,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
@@ -111,7 +112,12 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var inputModifier = GetInputModifier(state);
 
-            return string.Format("{0} {1}{2} {3} {4} -map_metadata -1 -map_chapters -1 -threads {5} {6}{7} -y \"{8}\"",
+            var subtitleArguments = state.SubtitleStream != null &&
+                                    state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed
+                ? GetSubtitleArguments(state)
+                : string.Empty;
+
+            return string.Format("{0} {1}{2} {3} {4} -map_metadata -1 -map_chapters -1 -threads {5} {6}{7}{8} -y \"{9}\"",
                 inputModifier,
                 GetInputArgument(state),
                 keyFrame,
@@ -119,9 +125,27 @@ namespace MediaBrowser.Api.Playback.Progressive
                 GetVideoArguments(state, videoCodec),
                 threads,
                 GetAudioArguments(state),
+                subtitleArguments,
                 format,
                 outputPath
                 ).Trim();
+        }
+
+        private string GetSubtitleArguments(StreamState state)
+        {
+            var format = state.SupportedSubtitleCodecs.FirstOrDefault();
+            string codec;
+
+            if (string.IsNullOrWhiteSpace(format) || string.Equals(format, state.SubtitleStream.Codec, StringComparison.OrdinalIgnoreCase))
+            {
+                codec = "copy";
+            }
+            else
+            {
+                codec = format;
+            }
+
+            return " -codec:s:0 " + codec;
         }
 
         /// <summary>

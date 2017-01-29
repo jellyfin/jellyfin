@@ -456,7 +456,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable&lt;Folder&gt;.</returns>
-        IEnumerable<Folder> GetCollectionFolders(BaseItem item);
+        List<Folder> GetCollectionFolders(BaseItem item);
 
         LibraryOptions GetLibraryOptions(BaseItem item);
 
