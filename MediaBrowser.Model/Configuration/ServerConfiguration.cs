@@ -47,6 +47,7 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if [use HTTPS]; otherwise, <c>false</c>.</value>
         public bool EnableHttps { get; set; }
         public bool EnableSeriesPresentationUniqueKey { get; set; }
+        public bool EnableLocalizedGuids { get; set; }
 
         /// <summary>
         /// Gets or sets the value pointing to the file system where the ssl certiifcate is located..
@@ -189,7 +190,6 @@ namespace MediaBrowser.Model.Configuration
         public string[] Migrations { get; set; }
         public bool EnableChannelView { get; set; }
         public bool EnableExternalContentInSuggestions { get; set; }
-        public bool EnableSimpleArtistDetection { get; set; }
 
         public int ImageExtractionTimeoutMs { get; set; }
         /// <summary>
@@ -201,6 +201,7 @@ namespace MediaBrowser.Model.Configuration
             CodecsUsed = new string[] { };
             Migrations = new string[] { };
             ImageExtractionTimeoutMs = 0;
+            EnableLocalizedGuids = true;
 
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
