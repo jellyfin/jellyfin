@@ -18,6 +18,7 @@ namespace MediaBrowser.Model.Dlna
         public StreamInfo()
         {
             AudioCodecs = new string[] { };
+            SubtitleCodecs = new string[] { };
         }
 
         public string ItemId { get; set; }
@@ -74,6 +75,7 @@ namespace MediaBrowser.Model.Dlna
 
         public MediaSourceInfo MediaSource { get; set; }
 
+        public string[] SubtitleCodecs { get; set; }
         public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
         public string SubtitleFormat { get; set; }
 
@@ -268,6 +270,12 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("Tag", item.MediaSource.ETag ?? string.Empty));
             list.Add(new NameValuePair("RequireAvc", item.RequireAvc.ToString().ToLower()));
 
+            string subtitleCodecs = item.SubtitleCodecs.Length == 0 ?
+               string.Empty :
+               string.Join(",", item.SubtitleCodecs);
+
+            list.Add(new NameValuePair("SubtitleCodec", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed ? subtitleCodecs : string.Empty));
+
             return list;
         }
 
@@ -354,7 +362,7 @@ namespace MediaBrowser.Model.Dlna
 
         private SubtitleStreamInfo GetSubtitleStreamInfo(MediaStream stream, string baseUrl, string accessToken, long startPositionTicks, SubtitleProfile[] subtitleProfiles)
         {
-            SubtitleProfile subtitleProfile = StreamBuilder.GetSubtitleProfile(stream, subtitleProfiles, PlayMethod);
+            SubtitleProfile subtitleProfile = StreamBuilder.GetSubtitleProfile(stream, subtitleProfiles, PlayMethod, SubProtocol, Container);
             SubtitleStreamInfo info = new SubtitleStreamInfo
             {
                 IsForced = stream.IsForced,

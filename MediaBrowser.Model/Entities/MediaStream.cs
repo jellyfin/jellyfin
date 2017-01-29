@@ -311,29 +311,31 @@ namespace MediaBrowser.Model.Entities
                    !StringHelper.EqualsIgnoreCase(codec, "dvb_subtitle");
         }
 
-        public bool SupportsSubtitleConversionTo(string codec)
+        public bool SupportsSubtitleConversionTo(string toCodec)
         {
             if (!IsTextSubtitleStream)
             {
                 return false;
             }
 
+            var fromCodec = Codec;
+
             // Can't convert from this 
-            if (StringHelper.EqualsIgnoreCase(Codec, "ass"))
+            if (StringHelper.EqualsIgnoreCase(fromCodec, "ass"))
             {
                 return false;
             }
-            if (StringHelper.EqualsIgnoreCase(Codec, "ssa"))
+            if (StringHelper.EqualsIgnoreCase(fromCodec, "ssa"))
             {
                 return false;
             }
 
             // Can't convert to this 
-            if (StringHelper.EqualsIgnoreCase(codec, "ass"))
+            if (StringHelper.EqualsIgnoreCase(toCodec, "ass"))
             {
                 return false;
             }
-            if (StringHelper.EqualsIgnoreCase(codec, "ssa"))
+            if (StringHelper.EqualsIgnoreCase(toCodec, "ssa"))
             {
                 return false;
             }

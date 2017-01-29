@@ -223,6 +223,10 @@ namespace MediaBrowser.Api.Playback
             {
                 args += " -map -0:s";
             }
+            else if (state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed)
+            {
+                args += string.Format(" -map 0:{0}", state.SubtitleStream.Index);
+            }
             else if (state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream)
             {
                 args += " -map 1:0 -sn";
@@ -1797,6 +1801,10 @@ namespace MediaBrowser.Api.Playback
                         videoRequest.RequireAvc = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     }
                 }
+                else if (i == 30)
+                {
+                    request.SubtitleCodec = val;
+                }
             }
         }
 
@@ -1913,6 +1921,13 @@ namespace MediaBrowser.Api.Playback
                 state.SupportedAudioCodecs = request.AudioCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
                 state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(i => MediaEncoder.CanEncodeToAudioCodec(i))
                     ?? state.SupportedAudioCodecs.FirstOrDefault();
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.SubtitleCodec))
+            {
+                state.SupportedSubtitleCodecs = request.SubtitleCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+                state.Request.SubtitleCodec = state.SupportedSubtitleCodecs.FirstOrDefault(i => MediaEncoder.CanEncodeToSubtitleCodec(i))
+                    ?? state.SupportedSubtitleCodecs.FirstOrDefault();
             }
 
             var item = LibraryManager.GetItemById(request.Id);
@@ -2109,6 +2124,7 @@ namespace MediaBrowser.Api.Playback
 
                 state.VideoStream = GetMediaStream(mediaStreams, videoRequest.VideoStreamIndex, MediaStreamType.Video);
                 state.SubtitleStream = GetMediaStream(mediaStreams, videoRequest.SubtitleStreamIndex, MediaStreamType.Subtitle, false);
+                state.SubtitleDeliveryMethod = videoRequest.SubtitleMethod;
                 state.AudioStream = GetMediaStream(mediaStreams, videoRequest.AudioStreamIndex, MediaStreamType.Audio);
 
                 if (state.SubtitleStream != null && !state.SubtitleStream.IsExternal)
