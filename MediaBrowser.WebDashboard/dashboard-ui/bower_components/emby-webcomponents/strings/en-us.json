@@ -384,5 +384,6 @@
   "Disconnect": "Disconnect",
   "EnableDisplayMirroring": "Enable display mirroring",
   "HeaderSelectPlayer": "Select Player",
-  "Quality": "Quality"
+  "Quality": "Quality",
+  "Auto": "Auto"
 }
