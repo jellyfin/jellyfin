@@ -213,6 +213,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "MediaSourceId", Description = "The id of the MediaSource", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
         public string MediaSourceId { get; set; }
 
+        [ApiMember(Name = "NextMediaType", Description = "The next media type that will play", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public string NextMediaType { get; set; }
+
         /// <summary>
         /// Gets or sets the position ticks.
         /// </summary>
@@ -363,7 +366,8 @@ namespace MediaBrowser.Api.UserLibrary
                 PositionTicks = request.PositionTicks,
                 MediaSourceId = request.MediaSourceId,
                 PlaySessionId = request.PlaySessionId,
-                LiveStreamId = request.LiveStreamId
+                LiveStreamId = request.LiveStreamId,
+                NextMediaType = request.NextMediaType
             });
         }
 
