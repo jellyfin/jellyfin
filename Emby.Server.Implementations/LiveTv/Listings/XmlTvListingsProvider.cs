@@ -161,7 +161,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
             else
             {
-                programInfo.ShowId = ((p.Title ?? string.Empty) + (episodeTitle ?? string.Empty)).GetMD5().ToString("N");
+                var uniqueString = (p.Title ?? string.Empty) + (episodeTitle ?? string.Empty);
+
+                if (programInfo.EpisodeNumber.HasValue)
+                {
+                    uniqueString = "-" + programInfo.EpisodeNumber.Value.ToString(CultureInfo.InvariantCulture);
+                }
+
+                programInfo.ShowId = uniqueString.GetMD5().ToString("N");
             }
 
             if (programInfo.IsMovie)
