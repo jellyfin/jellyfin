@@ -151,10 +151,13 @@ namespace MediaBrowser.WebDashboard.Api
                         if (index != -1)
                         {
                             html = html.Substring(index);
+
+                            html = html.Substring(html.IndexOf('>') + 1);
+
                             index = html.IndexOf("</body>", StringComparison.OrdinalIgnoreCase);
                             if (index != -1)
                             {
-                                html = html.Substring(0, index+7);
+                                html = html.Substring(0, index);
                             }
                         }
                         var mainFile = _fileSystem.ReadAllText(GetDashboardResourcePath("index.html"));

@@ -847,11 +847,15 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 var channelMappings = GetChannelMappings(provider.Item2);
                 var channelNumber = channel.Number;
-                string mappedChannelNumber;
-                if (channelMappings.TryGetValue(channelNumber, out mappedChannelNumber))
+
+                if (!string.IsNullOrWhiteSpace(channelNumber))
                 {
-                    _logger.Debug("Found mapped channel on provider {0}. Tuner channel number: {1}, Mapped channel number: {2}", provider.Item1.Name, channelNumber, mappedChannelNumber);
-                    channelNumber = mappedChannelNumber;
+                    string mappedChannelNumber;
+                    if (channelMappings.TryGetValue(channelNumber, out mappedChannelNumber))
+                    {
+                        _logger.Debug("Found mapped channel on provider {0}. Tuner channel number: {1}, Mapped channel number: {2}", provider.Item1.Name, channelNumber, mappedChannelNumber);
+                        channelNumber = mappedChannelNumber;
+                    }
                 }
 
                 var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channelNumber, channel.Name, startDateUtc, endDateUtc, cancellationToken)
