@@ -47,5 +47,7 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value><c>true</c> if failed; otherwise, <c>false</c>.</value>
         public bool Failed { get; set; }
+
+        public string NextMediaType { get; set; }
     }
 }
