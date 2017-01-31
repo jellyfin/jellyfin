@@ -167,7 +167,12 @@ namespace MediaBrowser.Providers.TV
                     //and the rest from crew
                     if (credits.crew != null)
                     {
-                        var keepTypes = new[] { PersonType.Director, PersonType.Writer, PersonType.Producer };
+                        var keepTypes = new[]
+                        {
+                            PersonType.Director,
+                            //PersonType.Writer,
+                            //PersonType.Producer
+                        };
 
                         foreach (var person in credits.crew)
                         {
