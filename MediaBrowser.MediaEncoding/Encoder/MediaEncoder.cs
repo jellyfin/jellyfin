@@ -699,16 +699,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private async Task<bool> DetectInterlaced(MediaSourceInfo video, MediaStream videoStream, string inputPath, string probeSizeArgument)
         {
-            if (video.Protocol != MediaProtocol.File)
-            {
-                // If it's mpeg based, assume true
-                if ((videoStream.Codec ?? string.Empty).IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    return true;
-                }
-                return false;
-            }
-
             var formats = (video.Container ?? string.Empty).Split(',').ToList();
             var enableInterlacedDection = formats.Contains("vob", StringComparer.OrdinalIgnoreCase) ||
                                           formats.Contains("m2ts", StringComparer.OrdinalIgnoreCase) ||
@@ -731,6 +721,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     return false;
                 }
+            }
+
+            if (video.Protocol != MediaProtocol.File)
+            {
+                // If it's mpeg based, assume true
+                if ((videoStream.Codec ?? string.Empty).IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    return true;
+                }
+                return false;
             }
 
             var args = "{0} -i {1} -map 0:v:{2} -an -filter:v idet -frames:v 500 -an -f null /dev/null";
