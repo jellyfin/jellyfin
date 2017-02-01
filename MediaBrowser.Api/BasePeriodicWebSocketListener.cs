@@ -23,8 +23,8 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The _active connections
         /// </summary>
-        protected readonly List<Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType, SemaphoreSlim>> ActiveConnections =
-            new List<Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType, SemaphoreSlim>>();
+        protected readonly List<Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType>> ActiveConnections =
+            new List<Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType>>();
 
         /// <summary>
         /// Gets the name.
@@ -132,11 +132,9 @@ namespace MediaBrowser.Api
                 InitialDelayMs = dueTimeMs
             };
 
-            var semaphore = new SemaphoreSlim(1, 1);
-
             lock (ActiveConnections)
             {
-                ActiveConnections.Add(new Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType, SemaphoreSlim>(message.Connection, cancellationTokenSource, timer, state, semaphore));
+                ActiveConnections.Add(new Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType>(message.Connection, cancellationTokenSource, timer, state));
             }
 
             if (timer != null)
@@ -153,7 +151,7 @@ namespace MediaBrowser.Api
         {
             var connection = (IWebSocketConnection)state;
 
-            Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType, SemaphoreSlim> tuple;
+            Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType> tuple;
 
             lock (ActiveConnections)
             {
@@ -176,7 +174,7 @@ namespace MediaBrowser.Api
 
         protected void SendData(bool force)
         {
-            List<Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType, SemaphoreSlim>> tuples;
+            List<Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType>> tuples;
 
             lock (ActiveConnections)
             {
@@ -204,14 +202,12 @@ namespace MediaBrowser.Api
             }
         }
 
-        private async void SendData(Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType, SemaphoreSlim> tuple)
+        private async void SendData(Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType> tuple)
         {
             var connection = tuple.Item1;
 
             try
             {
-                await tuple.Item5.WaitAsync(tuple.Item2.Token).ConfigureAwait(false);
-
                 var state = tuple.Item4;
 
                 var data = await GetDataToSend(state).ConfigureAwait(false);
@@ -227,8 +223,6 @@ namespace MediaBrowser.Api
 
                     state.DateLastSendUtc = DateTime.UtcNow;
                 }
-
-                tuple.Item5.Release();
             }
             catch (OperationCanceledException)
             {
@@ -265,7 +259,7 @@ namespace MediaBrowser.Api
         /// Disposes the connection.
         /// </summary>
         /// <param name="connection">The connection.</param>
-        private void DisposeConnection(Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType, SemaphoreSlim> connection)
+        private void DisposeConnection(Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType> connection)
         {
             Logger.Debug("{1} stop transmitting over websocket to {0}", connection.Item1.RemoteEndPoint, GetType().Name);
 
@@ -287,15 +281,6 @@ namespace MediaBrowser.Api
             {
                 connection.Item2.Cancel();
                 connection.Item2.Dispose();
-            }
-            catch (ObjectDisposedException)
-            {
-
-            }
-
-            try
-            {
-                connection.Item5.Dispose();
             }
             catch (ObjectDisposedException)
             {
