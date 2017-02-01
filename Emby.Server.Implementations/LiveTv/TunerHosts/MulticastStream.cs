@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,10 +12,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public class MulticastStream
     {
-        private readonly List<QueueStream> _outputStreams = new List<QueueStream>();
+        private readonly ConcurrentDictionary<Guid,QueueStream> _outputStreams = new ConcurrentDictionary<Guid, QueueStream>();
         private const int BufferSize = 81920;
         private CancellationToken _cancellationToken;
         private readonly ILogger _logger;
+        private readonly ConcurrentQueue<byte[]> _sharedBuffer = new ConcurrentQueue<byte[]>();
 
         public MulticastStream(ILogger logger)
         {
@@ -35,17 +37,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     byte[] copy = new byte[bytesRead];
                     Buffer.BlockCopy(buffer, 0, copy, 0, bytesRead);
-                   
-                    List<QueueStream> streams = null;
 
-                    lock (_outputStreams)
+                    _sharedBuffer.Enqueue(copy);
+
+                    while (_sharedBuffer.Count > 3000)
                     {
-                        streams = _outputStreams.ToList();
+                        byte[] bytes;
+                        _sharedBuffer.TryDequeue(out bytes);
                     }
 
-                    foreach (var stream in streams)
+                    var allStreams = _outputStreams.ToList();
+                    foreach (var stream in allStreams)
                     {
-                        stream.Queue(copy);
+                        stream.Value.Queue(copy);
                     }
 
                     if (onStarted != null)
@@ -70,10 +74,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 OnFinished = OnFinished
             };
 
-            lock (_outputStreams)
+            var initial = _sharedBuffer.ToList();
+            var list = new List<byte>();
+
+            foreach (var bytes in initial)
             {
-                _outputStreams.Add(result);
+                list.AddRange(bytes);
             }
+
+            _logger.Info("QueueStream started with {0} initial bytes", list.Count);
+
+            result.Queue(list.ToArray());
+
+            _outputStreams.TryAdd(result.Id, result);
 
             result.Start(_cancellationToken);
 
@@ -82,10 +95,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public void RemoveOutputStream(QueueStream stream)
         {
-            lock (_outputStreams)
-            {
-                _outputStreams.Remove(stream);
-            }
+            QueueStream removed;
+            _outputStreams.TryRemove(stream.Id, out removed);
         }
 
         private void OnFinished(QueueStream queueStream)
