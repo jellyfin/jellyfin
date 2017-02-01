@@ -176,7 +176,7 @@ namespace Emby.Server.Implementations.Library
                 return new Tuple<BaseItem, string, int>(item, index.Item1, index.Item2);
             }));
 
-            var returnValue = hints.Where(i => i.Item3 >= 0).OrderBy(i => i.Item3).Select(i => new SearchHintInfo
+            var returnValue = hints.Where(i => i.Item3 >= 0).OrderBy(i => i.Item3).ThenBy(i => i.Item1.SortName).Select(i => new SearchHintInfo
             {
                 Item = i.Item1,
                 MatchedTerm = i.Item2
