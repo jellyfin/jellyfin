@@ -76,6 +76,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var channels = new List<M3UChannel>();
             string line;
             string extInf = "";
+
             while ((line = reader.ReadLine()) != null)
             {
                 line = line.Trim();
@@ -111,6 +112,18 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     extInf = "";
                 }
             }
+
+            var startingNumber = 1;
+            foreach (var channel in channels)
+            {
+                if (!string.IsNullOrWhiteSpace(channel.Number))
+                {
+                    continue;
+                }
+
+                channel.Number = startingNumber.ToString(CultureInfo.InvariantCulture);
+                startingNumber++;
+            }
             return channels;
         }
 
@@ -137,6 +150,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             if (attributes.TryGetValue("tvg-id", out value))
             {
                 channel.Id = value;
+                channel.TunerChannelId = value;
             }
 
             return channel;

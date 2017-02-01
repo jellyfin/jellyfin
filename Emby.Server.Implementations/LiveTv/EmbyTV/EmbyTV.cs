@@ -847,6 +847,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 var channelMappings = GetChannelMappings(provider.Item2);
                 var channelNumber = channel.Number;
+                var tunerChannelId = channel.TunerChannelId;
 
                 if (!string.IsNullOrWhiteSpace(channelNumber))
                 {
@@ -858,7 +859,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                 }
 
-                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channelNumber, channel.Name, startDateUtc, endDateUtc, cancellationToken)
+                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, tunerChannelId, channelNumber, channel.Name, startDateUtc, endDateUtc, cancellationToken)
                         .ConfigureAwait(false);
 
                 var list = programs.ToList();

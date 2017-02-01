@@ -106,7 +106,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return cacheFile;
         }
 
-        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, string channelName, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, string channelNumber, string channelName, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             if (!await EmbyTV.EmbyTVRegistration.Instance.EnableXmlTv().ConfigureAwait(false))
             {
@@ -161,8 +161,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
             else
             {
-                var uniqueString = (p.Title ?? string.Empty) + (episodeTitle ?? string.Empty);
+                var uniqueString = (p.Title ?? string.Empty) + (episodeTitle ?? string.Empty) + (p.IceTvEpisodeNumber ?? string.Empty);
 
+                if (programInfo.SeasonNumber.HasValue)
+                {
+                    uniqueString = "-" + programInfo.SeasonNumber.Value.ToString(CultureInfo.InvariantCulture);
+                }
                 if (programInfo.EpisodeNumber.HasValue)
                 {
                     uniqueString = "-" + programInfo.EpisodeNumber.Value.ToString(CultureInfo.InvariantCulture);

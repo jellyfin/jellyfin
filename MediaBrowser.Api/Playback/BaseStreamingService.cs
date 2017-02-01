@@ -2720,6 +2720,15 @@ namespace MediaBrowser.Api.Playback
                     //inputModifier += " -noaccurate_seek";
                 }
 
+                if (!string.IsNullOrWhiteSpace(state.InputContainer))
+                {
+                    var inputFormat = GetInputFormat(state.InputContainer);
+                    if (!string.IsNullOrWhiteSpace(inputFormat))
+                    {
+                        inputModifier += " -f " + inputFormat;
+                    }
+                }
+
                 if (state.RunTimeTicks.HasValue)
                 {
                     foreach (var stream in state.MediaSource.MediaStreams)
@@ -2738,21 +2747,19 @@ namespace MediaBrowser.Api.Playback
                         }
                     }
                 }
-
-                //var videoStream = state.VideoStream;
-                //if (videoStream != null && !string.IsNullOrWhiteSpace(videoStream.Codec))
-                //{
-                //    inputModifier += "  -codec:0 " + videoStream.Codec;
-
-                //    var audioStream = state.AudioStream;
-                //    if (audioStream != null && !string.IsNullOrWhiteSpace(audioStream.Codec))
-                //    {
-                //        inputModifier += "  -codec:1 " + audioStream.Codec;
-                //    }
-                //}
             }
 
             return inputModifier;
+        }
+
+        private string GetInputFormat(string container)
+        {
+            if (string.Equals(container, "mkv", StringComparison.OrdinalIgnoreCase))
+            {
+                return "matroska";
+            }
+
+            return container;
         }
 
         private string GetDecoderFromCodec(string codec)
