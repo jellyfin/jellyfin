@@ -137,6 +137,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             if (attributes.TryGetValue("tvg-id", out value))
             {
                 channel.Id = value;
+                channel.TunerChannelId = value;
             }
 
             return channel;
