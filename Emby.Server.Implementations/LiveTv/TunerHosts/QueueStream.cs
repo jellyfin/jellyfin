@@ -19,7 +19,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public Action<QueueStream> OnFinished { get; set; }
         private readonly ILogger _logger;
-        private bool _isActive;
+        public Guid Id = Guid.NewGuid();
 
         public QueueStream(Stream outputStream, ILogger logger)
         {
@@ -30,10 +30,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public void Queue(byte[] bytes)
         {
-            if (_isActive)
-            {
-                _queue.Enqueue(bytes);
-            }
+            _queue.Enqueue(bytes);
         }
 
         public void Start(CancellationToken cancellationToken)
@@ -59,10 +56,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             try
             {
-                while (!cancellationToken.IsCancellationRequested)
+                while (true)
                 {
-                    _isActive = true;
-
                     var bytes = Dequeue();
                     if (bytes != null)
                     {
@@ -73,9 +68,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         await Task.Delay(50, cancellationToken).ConfigureAwait(false);
                     }
                 }
-
-                TaskCompletion.TrySetResult(true);
-                _logger.Debug("QueueStream complete");
             }
             catch (OperationCanceledException)
             {
@@ -89,8 +81,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
             finally
             {
-                _isActive = false;
-
                 if (OnFinished != null)
                 {
                     OnFinished(this);
