@@ -21,7 +21,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected override async Task<string> GetCommandLineArguments(EncodingJob state)
         {
             // Get the output codec name
-            var videoCodec = EncodingJobFactory.GetVideoEncoder(MediaEncoder, state, GetEncodingOptions());
+            var encodingOptions = GetEncodingOptions();
+            var videoCodec = EncodingHelper.GetVideoEncoder(state, encodingOptions);
 
             var format = string.Empty;
             var keyFrame = string.Empty;
@@ -33,17 +34,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 format = " -f mp4 -movflags frag_keyframe+empty_moov";
             }
 
-            var threads = GetNumberOfThreads(state, string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase));
+            var threads = EncodingHelper.GetNumberOfThreads(state, encodingOptions, string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase));
 
-            var inputModifier = GetInputModifier(state);
+            var inputModifier = EncodingHelper.GetInputModifier(state, encodingOptions);
 
             var videoArguments = await GetVideoArguments(state, videoCodec).ConfigureAwait(false);
 
             return string.Format("{0} {1}{2} {3} {4} -map_metadata -1 -threads {5} {6}{7} -y \"{8}\"",
                 inputModifier,
-                GetInputArgument(state),
+                EncodingHelper.GetInputArgument(state, encodingOptions),
                 keyFrame,
-                GetMapArgs(state),
+                EncodingHelper.GetMapArgs(state),
                 videoArguments,
                 threads,
                 GetAudioArguments(state),
@@ -76,7 +77,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                if (state.VideoStream != null && IsH264(state.VideoStream) && string.Equals(state.Options.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
+                if (state.VideoStream != null && EncodingHelper.IsH264(state.VideoStream) && string.Equals(state.Options.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
                     args += " -bsf:v h264_mp4toannexb";
                 }
@@ -94,10 +95,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
-                args += await GetOutputSizeParam(state, videoCodec).ConfigureAwait(false);
+                args += EncodingHelper.GetOutputSizeParam(state, videoCodec);
             }
 
-            var qualityParam = GetVideoQualityParam(state, videoCodec);
+            var qualityParam = EncodingHelper.GetVideoQualityParam(state, videoCodec, GetEncodingOptions(), "superfast");
 
             if (!string.IsNullOrEmpty(qualityParam))
             {
@@ -107,7 +108,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // This is for internal graphical subs
             if (hasGraphicalSubs)
             {
-                args += await GetGraphicalSubtitleParam(state, videoCodec).ConfigureAwait(false);
+                args += EncodingHelper.GetGraphicalSubtitleParam(state, videoCodec);
             }
 
             return args;
@@ -127,7 +128,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // Get the output codec name
-            var codec = EncodingJobFactory.GetAudioEncoder(state);
+            var codec = EncodingHelper.GetAudioEncoder(state);
 
             var args = "-codec:a:0 " + codec;
 
@@ -151,7 +152,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 args += " -ab " + bitrate.Value.ToString(UsCulture);
             }
 
-            args += " " + GetAudioFilterParam(state, false);
+            args += " " + EncodingHelper.GetAudioFilterParam(state, GetEncodingOptions(), false);
 
             return args;
         }
