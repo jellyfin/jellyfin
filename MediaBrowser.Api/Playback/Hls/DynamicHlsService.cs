@@ -758,7 +758,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override string GetAudioArguments(StreamState state)
         {
-            var codec = GetAudioEncoder(state);
+            var codec = EncodingHelper.GetAudioEncoder(state);
 
             if (!state.IsOutputVideo)
             {
@@ -811,7 +811,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 args += " -ab " + bitrate.Value.ToString(UsCulture);
             }
 
-            args += " " + GetAudioFilterParam(state, true);
+            args += " " + EncodingHelper.GetAudioFilterParam(state, ApiEntryPoint.Instance.GetEncodingOptions(), true);
 
             return args;
         }
@@ -823,7 +823,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 return string.Empty;
             }
 
-            var codec = GetVideoEncoder(state);
+            var codec = EncodingHelper.GetVideoEncoder(state, ApiEntryPoint.Instance.GetEncodingOptions());
 
             var args = "-codec:v:0 " + codec;
 
@@ -835,7 +835,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // See if we can save come cpu cycles by avoiding encoding
             if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                if (state.VideoStream != null && IsH264(state.VideoStream) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
+                if (state.VideoStream != null && EncodingHelper.IsH264(state.VideoStream) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
                     args += " -bsf:v h264_mp4toannexb";
                 }
@@ -849,20 +849,22 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode;
 
-                args += " " + GetVideoQualityParam(state, GetH264Encoder(state)) + keyFrameArg;
+                var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+
+                args += " " + EncodingHelper.GetVideoQualityParam(state, EncodingHelper.GetH264Encoder(state, encodingOptions), encodingOptions, GetDefaultH264Preset()) + keyFrameArg;
 
                 //args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
                 // Add resolution params, if specified
                 if (!hasGraphicalSubs)
                 {
-                    args += GetOutputSizeParam(state, codec, EnableCopyTs(state));
+                    args += EncodingHelper.GetOutputSizeParam(state, codec, EnableCopyTs(state));
                 }
 
                 // This is for internal graphical subs
                 if (hasGraphicalSubs)
                 {
-                    args += GetGraphicalSubtitleParam(state, codec);
+                    args += EncodingHelper.GetGraphicalSubtitleParam(state, codec);
                 }
 
                 //args += " -flags -global_header";
@@ -884,15 +886,16 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
         {
-            var threads = GetNumberOfThreads(state, false);
+            var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+            var threads = EncodingHelper.GetNumberOfThreads(state, encodingOptions, false);
 
-            var inputModifier = GetInputModifier(state, false);
+            var inputModifier = EncodingHelper.GetInputModifier(state, encodingOptions);
 
             // If isEncoding is true we're actually starting ffmpeg
             var startNumber = GetStartNumber(state);
             var startNumberParam = isEncoding ? startNumber.ToString(UsCulture) : "0";
 
-            var mapArgs = state.IsOutputVideo ? GetMapArgs(state) : string.Empty;
+            var mapArgs = state.IsOutputVideo ? EncodingHelper.GetMapArgs(state) : string.Empty;
             var useGenericSegmenter = true;
 
             if (useGenericSegmenter)
@@ -909,7 +912,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 return string.Format("{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f segment -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -segment_time {6} {10} -individual_header_trailer 0 -segment_format mpegts -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
                     inputModifier,
-                    GetInputArgument(state),
+                    EncodingHelper.GetInputArgument(state, encodingOptions),
                     threads,
                     mapArgs,
                     GetVideoArguments(state),
@@ -924,7 +927,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             return string.Format("{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -hls_time {6} -individual_header_trailer 0 -start_number {7} -hls_list_size {8} -y \"{9}\"",
                             inputModifier,
-                            GetInputArgument(state),
+                            EncodingHelper.GetInputArgument(state, encodingOptions),
                             threads,
                             mapArgs,
                             GetVideoArguments(state),
