@@ -237,13 +237,15 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
         {
+            var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+
             var itsOffsetMs = 0;
 
             var itsOffset = itsOffsetMs == 0 ? string.Empty : string.Format("-itsoffset {0} ", TimeSpan.FromMilliseconds(itsOffsetMs).TotalSeconds.ToString(UsCulture));
 
-            var threads = GetNumberOfThreads(state, false);
+            var threads = EncodingHelper.GetNumberOfThreads(state, encodingOptions, false);
 
-            var inputModifier = GetInputModifier(state, true);
+            var inputModifier = EncodingHelper.GetInputModifier(state, encodingOptions);
 
             // If isEncoding is true we're actually starting ffmpeg
             var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
@@ -265,9 +267,9 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 return string.Format("{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f segment -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -segment_time {6} {10} -individual_header_trailer 0 -segment_format mpegts -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
                     inputModifier,
-                    GetInputArgument(state),
+                    EncodingHelper.GetInputArgument(state, encodingOptions),
                     threads,
-                    GetMapArgs(state),
+                    EncodingHelper.GetMapArgs(state),
                     GetVideoArguments(state),
                     GetAudioArguments(state),
                     state.SegmentLength.ToString(UsCulture),
@@ -284,9 +286,9 @@ namespace MediaBrowser.Api.Playback.Hls
             var args = string.Format("{0} {1} {2} -map_metadata -1 -map_chapters -1 -threads {3} {4} {5} -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero {6} -hls_time {7} -individual_header_trailer 0 -start_number {8} -hls_list_size {9}{10} -y \"{11}\"",
                 itsOffset,
                 inputModifier,
-                GetInputArgument(state),
+                    EncodingHelper.GetInputArgument(state, encodingOptions),
                 threads,
-                GetMapArgs(state),
+                EncodingHelper.GetMapArgs(state),
                 GetVideoArguments(state),
                 GetAudioArguments(state),
                 state.SegmentLength.ToString(UsCulture),
