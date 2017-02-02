@@ -108,24 +108,24 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        protected override List<string> GetTagsUsed()
+        protected override List<string> GetTagsUsed(IHasMetadata item)
         {
-            var list = new List<string>
+            var list = base.GetTagsUsed(item);
+            list.AddRange(new string[]
             {
-                    "aired",
-                    "season",
-                    "episode",
-                    "episodenumberend",
-                    "airsafter_season",
-                    "airsbefore_episode",
-                    "airsbefore_season",
-                    "DVD_episodenumber",
-                    "DVD_season",
-                    "absolute_number",
-                    "displayseason",
-                    "displayepisode"
-            };
-
+                "aired",
+                "season",
+                "episode",
+                "episodenumberend",
+                "airsafter_season",
+                "airsbefore_episode",
+                "airsbefore_season",
+                "DVD_episodenumber",
+                "DVD_season",
+                "absolute_number",
+                "displayseason",
+                "displayepisode"
+            });
             return list;
         }
 
