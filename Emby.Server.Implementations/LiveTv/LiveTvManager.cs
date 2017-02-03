@@ -2112,7 +2112,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (timer == null)
             {
-                throw new ResourceNotFoundException(string.Format("Timer with Id {0} not found", id));
+                throw new ResourceNotFoundException(string.Format("SeriesTimer with Id {0} not found", id));
             }
 
             var service = GetService(timer.ServiceName);
