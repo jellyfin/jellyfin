@@ -283,18 +283,24 @@ namespace Emby.Server.Core.IO
         /// <param name="path">The path.</param>
         private void StartWatchingPath(string path)
         {
+            if (!_fileSystem.DirectoryExists(path))
+            {
+                // Seeing a crash in the mono runtime due to an exception being thrown on a different thread
+                Logger.Info("Skipping realtime monitor for {0} because the path does not exist", path);
+                return;
+            }
+
+            // Already being watched
+            if (_fileSystemWatchers.ContainsKey(path))
+            {
+                return;
+            }
+
             // Creating a FileSystemWatcher over the LAN can take hundreds of milliseconds, so wrap it in a Task to do them all in parallel
             Task.Run(() =>
             {
                 try
                 {
-                    if (!_fileSystem.DirectoryExists(path))
-                    {
-                        // Seeing a crash in the mono runtime due to an exception being thrown on a different thread
-                        Logger.Info("Skipping realtime monitor for {0} because the path does not exist", path);
-                        return;
-                    }
-
                     var newWatcher = new FileSystemWatcher(path, "*")
                     {
                         IncludeSubdirectories = true
@@ -326,7 +332,6 @@ namespace Emby.Server.Core.IO
                     }
                     else
                     {
-                        Logger.Info("Unable to add directory watcher for {0}. It already exists in the dictionary.", path);
                         newWatcher.Dispose();
                     }
 
