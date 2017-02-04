@@ -2884,20 +2884,20 @@ namespace Emby.Server.Implementations.LiveTv
             _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
         }
 
-        public async Task<TunerChannelMapping> SetChannelMapping(string providerId, string tunerChannelNumber, string providerChannelNumber)
+        public async Task<TunerChannelMapping> SetChannelMapping(string providerId, string tunerChannelId, string providerChannelId)
         {
             var config = GetConfiguration();
 
             var listingsProviderInfo = config.ListingProviders.First(i => string.Equals(providerId, i.Id, StringComparison.OrdinalIgnoreCase));
-            listingsProviderInfo.ChannelMappings = listingsProviderInfo.ChannelMappings.Where(i => !string.Equals(i.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
+            listingsProviderInfo.ChannelMappings = listingsProviderInfo.ChannelMappings.Where(i => !string.Equals(i.Name, tunerChannelId, StringComparison.OrdinalIgnoreCase)).ToArray();
 
-            if (!string.Equals(tunerChannelNumber, providerChannelNumber, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(tunerChannelId, providerChannelId, StringComparison.OrdinalIgnoreCase))
             {
                 var list = listingsProviderInfo.ChannelMappings.ToList();
                 list.Add(new NameValuePair
                 {
-                    Name = tunerChannelNumber,
-                    Value = providerChannelNumber
+                    Name = tunerChannelId,
+                    Value = providerChannelId
                 });
                 listingsProviderInfo.ChannelMappings = list.ToArray();
             }
@@ -2917,31 +2917,33 @@ namespace Emby.Server.Implementations.LiveTv
 
             _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
 
-            return tunerChannelMappings.First(i => string.Equals(i.Number, tunerChannelNumber, StringComparison.OrdinalIgnoreCase));
+            return tunerChannelMappings.First(i => string.Equals(i.Id, tunerChannelId, StringComparison.OrdinalIgnoreCase));
         }
 
-        public TunerChannelMapping GetTunerChannelMapping(ChannelInfo channel, List<NameValuePair> mappings, List<ChannelInfo> providerChannels)
+        public TunerChannelMapping GetTunerChannelMapping(ChannelInfo tunerChannel, List<NameValuePair> mappings, List<ChannelInfo> epgChannels)
         {
             var result = new TunerChannelMapping
             {
-                Name = channel.Number + " " + channel.Name,
-                Number = channel.Number
+                Name = tunerChannel.Name,
+                Id = tunerChannel.TunerChannelId
             };
 
-            var mapping = mappings.FirstOrDefault(i => string.Equals(i.Name, channel.Number, StringComparison.OrdinalIgnoreCase));
-            var providerChannelNumber = channel.Number;
-
-            if (mapping != null)
+            if (!string.IsNullOrWhiteSpace(tunerChannel.Number))
             {
-                providerChannelNumber = mapping.Value;
+                result.Name = tunerChannel.Number + " " + result.Name;
             }
 
-            var providerChannel = providerChannels.FirstOrDefault(i => string.Equals(i.Number, providerChannelNumber, StringComparison.OrdinalIgnoreCase));
+            if (string.IsNullOrWhiteSpace(result.Id))
+            {
+                result.Id = tunerChannel.Id;
+            }
+
+            var providerChannel = EmbyTV.EmbyTV.Current.GetEpgChannelFromTunerChannel(mappings, tunerChannel, epgChannels);
 
             if (providerChannel != null)
             {
-                result.ProviderChannelNumber = providerChannel.Number;
                 result.ProviderChannelName = providerChannel.Name;
+                result.ProviderChannelId = providerChannel.Id;
             }
 
             return result;

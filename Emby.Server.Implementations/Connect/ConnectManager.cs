@@ -995,7 +995,7 @@ namespace Emby.Server.Implementations.Connect
 
                         if (changed)
                         {
-                            await _providerManager.SaveImage(user, imageUrl, null, ImageType.Primary, null, CancellationToken.None).ConfigureAwait(false);
+                            await _providerManager.SaveImage(user, imageUrl, ImageType.Primary, null, CancellationToken.None).ConfigureAwait(false);
 
                             await user.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
                             {

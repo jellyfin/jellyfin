@@ -113,17 +113,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
             }
 
-            var startingNumber = 1;
-            foreach (var channel in channels)
-            {
-                if (!string.IsNullOrWhiteSpace(channel.Number))
-                {
-                    continue;
-                }
-
-                channel.Number = startingNumber.ToString(CultureInfo.InvariantCulture);
-                startingNumber++;
-            }
             return channels;
         }
 
@@ -147,10 +136,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             channel.Name = GetChannelName(extInf, attributes);
             channel.Number = GetChannelNumber(extInf, attributes, mediaUrl);
 
-            if (attributes.TryGetValue("tvg-id", out value))
+            var channelId = GetTunerChannelId(attributes);
+            if (!string.IsNullOrWhiteSpace(channelId))
             {
-                channel.Id = value;
-                channel.TunerChannelId = value;
+                channel.Id = channelId;
+                channel.TunerChannelId = channelId;
             }
 
             return channel;
@@ -186,9 +176,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 numberString = numberString.Trim();
             }
 
-            if (string.IsNullOrWhiteSpace(numberString) ||
-                string.Equals(numberString, "-1", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(numberString, "0", StringComparison.OrdinalIgnoreCase))
+            if (!IsValidChannelNumber(numberString))
             {
                 string value;
                 if (attributes.TryGetValue("tvg-id", out value))
@@ -206,9 +194,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 numberString = numberString.Trim();
             }
 
-            if (string.IsNullOrWhiteSpace(numberString) ||
-                string.Equals(numberString, "-1", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(numberString, "0", StringComparison.OrdinalIgnoreCase))
+            if (!IsValidChannelNumber(numberString))
             {
                 string value;
                 if (attributes.TryGetValue("channel-id", out value))
@@ -222,9 +208,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 numberString = numberString.Trim();
             }
 
-            if (string.IsNullOrWhiteSpace(numberString) ||
-                string.Equals(numberString, "-1", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(numberString, "0", StringComparison.OrdinalIgnoreCase))
+            if (!IsValidChannelNumber(numberString))
             {
                 numberString = null;
             }
@@ -239,8 +223,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     numberString = Path.GetFileNameWithoutExtension(mediaUrl.Split('/').Last());
 
-                    double value;
-                    if (!double.TryParse(numberString, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+                    if (!IsValidChannelNumber(numberString))
                     {
                         numberString = null;
                     }
@@ -248,6 +231,24 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
 
             return numberString;
+        }
+
+        private bool IsValidChannelNumber(string numberString)
+        {
+            if (string.IsNullOrWhiteSpace(numberString) ||
+                string.Equals(numberString, "-1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(numberString, "0", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            double value;
+            if (!double.TryParse(numberString, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private string GetChannelName(string extInf, Dictionary<string, string> attributes)
@@ -293,6 +294,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
 
             return name;
+        }
+
+        private string GetTunerChannelId(Dictionary<string, string> attributes)
+        {
+            string result;
+            attributes.TryGetValue("tvg-id", out result);
+
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                attributes.TryGetValue("channel-id", out result);
+            }
+
+            return result;
         }
 
         private Dictionary<string, string> ParseExtInf(string line, out string remaining)
