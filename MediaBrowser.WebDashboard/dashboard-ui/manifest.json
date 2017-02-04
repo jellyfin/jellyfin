@@ -1,7 +1,7 @@
 ﻿{
   "name": "Emby",
   "short_name": "Emby",
-  "start_url": "web/index.html",
+  "start_url": "/web/index.html",
   "description": "The open media solution.",
   "lang": "en-US",
   "related_applications": [
