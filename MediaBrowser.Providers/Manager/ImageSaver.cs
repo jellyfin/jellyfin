@@ -16,7 +16,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.Manager
@@ -234,6 +233,7 @@ namespace MediaBrowser.Providers.Manager
             return retryPath;
         }
 
+        private SemaphoreSlim _imageSaveSemaphore = new SemaphoreSlim(1, 1);
         /// <summary>
         /// Saves the image to location.
         /// </summary>
@@ -247,11 +247,13 @@ namespace MediaBrowser.Providers.Manager
 
             var parentFolder = Path.GetDirectoryName(path);
 
-            _libraryMonitor.ReportFileSystemChangeBeginning(path);
-            _libraryMonitor.ReportFileSystemChangeBeginning(parentFolder);
+            await _imageSaveSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
+                _libraryMonitor.ReportFileSystemChangeBeginning(path);
+                _libraryMonitor.ReportFileSystemChangeBeginning(parentFolder);
+
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 // If the file is currently hidden we'll have to remove that or the save will fail
@@ -283,6 +285,8 @@ namespace MediaBrowser.Providers.Manager
             }
             finally
             {
+                _imageSaveSemaphore.Release();
+
                 _libraryMonitor.ReportFileSystemChangeComplete(path, false);
                 _libraryMonitor.ReportFileSystemChangeComplete(parentFolder, false);
             }
