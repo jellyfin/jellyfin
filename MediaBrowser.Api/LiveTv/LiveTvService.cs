@@ -640,8 +640,8 @@ namespace MediaBrowser.Api.LiveTv
     {
         [ApiMember(Name = "Id", Description = "Provider id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ProviderId { get; set; }
-        public string TunerChannelNumber { get; set; }
-        public string ProviderChannelNumber { get; set; }
+        public string TunerChannelId { get; set; }
+        public string ProviderChannelId { get; set; }
     }
 
     public class ChannelMappingOptions
@@ -765,7 +765,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Post(SetChannelMapping request)
         {
-            return await _liveTvManager.SetChannelMapping(request.ProviderId, request.TunerChannelNumber, request.ProviderChannelNumber).ConfigureAwait(false);
+            return await _liveTvManager.SetChannelMapping(request.ProviderId, request.TunerChannelId, request.ProviderChannelId).ConfigureAwait(false);
         }
 
         public async Task<object> Get(GetChannelMappingOptions request)
@@ -791,7 +791,7 @@ namespace MediaBrowser.Api.LiveTv
                 ProviderChannels = providerChannels.Select(i => new NameIdPair
                 {
                     Name = i.Name,
-                    Id = i.Number
+                    Id = i.TunerChannelId
 
                 }).ToList(),
 
