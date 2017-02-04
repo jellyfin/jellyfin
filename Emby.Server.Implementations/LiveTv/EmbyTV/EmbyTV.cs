@@ -393,7 +393,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     try
                     {
-                        await provider.Item1.AddMetadata(provider.Item2, enabledChannels, cancellationToken).ConfigureAwait(false);
+                        await AddMetadata(provider.Item1, provider.Item2, enabledChannels, enableCache, cancellationToken).ConfigureAwait(false);
                     }
                     catch (NotSupportedException)
                     {
@@ -407,6 +407,120 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             return list;
+        }
+
+        private async Task AddMetadata(IListingsProvider provider, ListingsProviderInfo info, List<ChannelInfo> tunerChannels, bool enableCache, CancellationToken cancellationToken)
+        {
+            var epgChannels = await GetEpgChannels(provider, info, enableCache, cancellationToken).ConfigureAwait(false);
+
+            foreach (var tunerChannel in tunerChannels)
+            {
+                var epgChannel = GetEpgChannelFromTunerChannel(info, tunerChannel, epgChannels);
+
+                if (epgChannel != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(epgChannel.Name))
+                    {
+                        tunerChannel.Name = epgChannel.Name;
+                    }
+                }
+            }
+        }
+
+        private readonly ConcurrentDictionary<string, List<ChannelInfo>> _epgChannels =
+            new ConcurrentDictionary<string, List<ChannelInfo>>(StringComparer.OrdinalIgnoreCase);
+
+        private async Task<List<ChannelInfo>> GetEpgChannels(IListingsProvider provider, ListingsProviderInfo info, bool enableCache, CancellationToken cancellationToken)
+        {
+            List<ChannelInfo> result;
+            if (!enableCache || !_epgChannels.TryGetValue(info.Id, out result))
+            {
+                result = await provider.GetChannels(info, cancellationToken).ConfigureAwait(false);
+
+                _epgChannels.AddOrUpdate(info.Id, result, (k, v) => result);
+            }
+
+            return result;
+        }
+
+        private async Task<ChannelInfo> GetEpgChannelFromTunerChannel(IListingsProvider provider, ListingsProviderInfo info, ChannelInfo tunerChannel, CancellationToken cancellationToken)
+        {
+            var epgChannels = await GetEpgChannels(provider, info, true, cancellationToken).ConfigureAwait(false);
+
+            return GetEpgChannelFromTunerChannel(info, tunerChannel, epgChannels);
+        }
+
+        private string GetMappedChannel(string channelId, List<NameValuePair> mappings)
+        {
+            foreach (NameValuePair mapping in mappings)
+            {
+                if (StringHelper.EqualsIgnoreCase(mapping.Name, channelId))
+                {
+                    return mapping.Value;
+                }
+            }
+            return channelId;
+        }
+
+        private ChannelInfo GetEpgChannelFromTunerChannel(ListingsProviderInfo info, ChannelInfo tunerChannel, List<ChannelInfo> epgChannels)
+        {
+            return GetEpgChannelFromTunerChannel(info.ChannelMappings.ToList(), tunerChannel, epgChannels);
+        }
+
+        public ChannelInfo GetEpgChannelFromTunerChannel(List<NameValuePair> mappings, ChannelInfo tunerChannel, List<ChannelInfo> epgChannels)
+        {
+            if (!string.IsNullOrWhiteSpace(tunerChannel.TunerChannelId))
+            {
+                var tunerChannelId = GetMappedChannel(tunerChannel.TunerChannelId, mappings);
+
+                if (string.IsNullOrWhiteSpace(tunerChannelId))
+                {
+                    tunerChannelId = tunerChannel.TunerChannelId;
+                }
+
+                var channel = epgChannels.FirstOrDefault(i => string.Equals(tunerChannelId, i.Id, StringComparison.OrdinalIgnoreCase));
+
+                if (channel != null)
+                {
+                    return channel;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(tunerChannel.Number))
+            {
+                var tunerChannelNumber = GetMappedChannel(tunerChannel.Number, mappings);
+
+                if (string.IsNullOrWhiteSpace(tunerChannelNumber))
+                {
+                    tunerChannelNumber = tunerChannel.Number;
+                }
+
+                var channel = epgChannels.FirstOrDefault(i => string.Equals(tunerChannelNumber, i.Number, StringComparison.OrdinalIgnoreCase));
+
+                if (channel != null)
+                {
+                    return channel;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(tunerChannel.Name))
+            {
+                var normalizedName = NormalizeName(tunerChannel.Name);
+
+                var channel = epgChannels.FirstOrDefault(i => string.Equals(normalizedName, NormalizeName(i.Name ?? string.Empty), StringComparison.OrdinalIgnoreCase));
+
+                if (channel != null)
+                {
+                    return channel;
+                }
+            }
+
+            return null;
+        }
+
+        private string NormalizeName(string value)
+        {
+            return value.Replace(" ", string.Empty).Replace("-", string.Empty);
         }
 
         public async Task<List<ChannelInfo>> GetChannelsForListingsProvider(ListingsProviderInfo listingsProvider, CancellationToken cancellationToken)
@@ -845,52 +959,35 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 _logger.Debug("Getting programs for channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
 
-                var channelMappings = GetChannelMappings(provider.Item2);
-                var channelNumber = channel.Number;
-                var tunerChannelId = channel.TunerChannelId;
+                var epgChannel = await GetEpgChannelFromTunerChannel(provider.Item1, provider.Item2, channel, cancellationToken).ConfigureAwait(false);
 
-                if (!string.IsNullOrWhiteSpace(channelNumber))
+                List<ProgramInfo> programs;
+
+                if (epgChannel == null)
                 {
-                    string mappedChannelNumber;
-                    if (channelMappings.TryGetValue(channelNumber, out mappedChannelNumber))
-                    {
-                        _logger.Debug("Found mapped channel on provider {0}. Tuner channel number: {1}, Mapped channel number: {2}", provider.Item1.Name, channelNumber, mappedChannelNumber);
-                        channelNumber = mappedChannelNumber;
-                    }
+                    programs = new List<ProgramInfo>();
+                }
+                else
+                {
+                    programs = (await provider.Item1.GetProgramsAsync(provider.Item2, epgChannel.Id, startDateUtc, endDateUtc, cancellationToken)
+                           .ConfigureAwait(false)).ToList();
                 }
 
-                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, tunerChannelId, channelNumber, channel.Name, startDateUtc, endDateUtc, cancellationToken)
-                        .ConfigureAwait(false);
-
-                var list = programs.ToList();
-
                 // Replace the value that came from the provider with a normalized value
-                foreach (var program in list)
+                foreach (var program in programs)
                 {
                     program.ChannelId = channelId;
                 }
 
-                if (list.Count > 0)
+                if (programs.Count > 0)
                 {
-                    SaveEpgDataForChannel(channelId, list);
+                    SaveEpgDataForChannel(channelId, programs);
 
-                    return list;
+                    return programs;
                 }
             }
 
             return new List<ProgramInfo>();
-        }
-
-        private Dictionary<string, string> GetChannelMappings(ListingsProviderInfo info)
-        {
-            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var mapping in info.ChannelMappings)
-            {
-                dict[mapping.Name] = mapping.Value;
-            }
-
-            return dict;
         }
 
         private List<Tuple<IListingsProvider, ListingsProviderInfo>> GetListingProviders()

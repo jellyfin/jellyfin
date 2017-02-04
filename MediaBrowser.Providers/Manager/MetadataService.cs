@@ -253,7 +253,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 try
                 {
-                    await ProviderManager.SaveImage(personEntity, imageUrl, null, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
+                    await ProviderManager.SaveImage(personEntity, imageUrl, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
                     return;
                 }
                 catch (Exception ex)

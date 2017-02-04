@@ -123,12 +123,11 @@ namespace MediaBrowser.Providers.Manager
             return Task.FromResult(ItemUpdateType.None);
         }
 
-        public async Task SaveImage(IHasImages item, string url, SemaphoreSlim resourcePool, ImageType type, int? imageIndex, CancellationToken cancellationToken)
+        public async Task SaveImage(IHasImages item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
             var response = await _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                ResourcePool = resourcePool,
                 Url = url,
                 BufferContent = false
 
