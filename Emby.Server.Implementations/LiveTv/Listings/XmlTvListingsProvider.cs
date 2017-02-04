@@ -106,8 +106,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return cacheFile;
         }
 
-        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, string channelNumber, string channelName, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(channelId))
+            {
+                throw new ArgumentNullException("channelId");
+            }
+
             if (!await EmbyTV.EmbyTVRegistration.Instance.EnableXmlTv().ConfigureAwait(false))
             {
                 var length = endDateUtc - startDateUtc;
@@ -120,7 +125,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
             var reader = new XmlTvReader(path, GetLanguage());
 
-            var results = reader.GetProgrammes(channelNumber, startDateUtc, endDateUtc, cancellationToken);
+            var results = reader.GetProgrammes(channelId, startDateUtc, endDateUtc, cancellationToken);
             return results.Select(p => GetProgramInfo(p, info));
         }
 
@@ -192,28 +197,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
             }
             return date;
-        }
-
-        public async Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels, CancellationToken cancellationToken)
-        {
-            // Add the channel image url
-            var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
-            var reader = new XmlTvReader(path, GetLanguage());
-            var results = reader.GetChannels().ToList();
-
-            if (channels != null)
-            {
-                foreach (var c in channels)
-                {
-                    var channelNumber = info.GetMappedChannel(c.Number);
-                    var match = results.FirstOrDefault(r => string.Equals(r.Id, channelNumber, StringComparison.OrdinalIgnoreCase));
-
-                    if (match != null && match.Icon != null && !String.IsNullOrEmpty(match.Icon.Source))
-                    {
-                        c.ImageUrl = match.Icon.Source;
-                    }
-                }
-            }
         }
 
         public Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
