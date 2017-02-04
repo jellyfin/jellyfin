@@ -127,14 +127,7 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            using (var stream = await _httpClient.Get(new HttpRequestOptions
-            {
-                Url = url,
-                ResourcePool = OmdbProvider.ResourcePool,
-                CancellationToken = cancellationToken,
-                BufferContent = true
-
-            }).ConfigureAwait(false))
+            using (var stream = await OmdbProvider.GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
                 var resultList = new List<SearchResult>();
 
