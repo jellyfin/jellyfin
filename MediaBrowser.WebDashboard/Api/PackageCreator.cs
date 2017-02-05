@@ -142,7 +142,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                     html = Encoding.UTF8.GetString(originalBytes, 0, originalBytes.Length);
 
-                    if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+                    if (!string.IsNullOrWhiteSpace(mode))
                     {
                     }
                     else if (!string.IsNullOrWhiteSpace(path) && !string.Equals(path, "index.html", StringComparison.OrdinalIgnoreCase))
@@ -208,7 +208,8 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var sb = new StringBuilder();
 
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(mode, "android", StringComparison.OrdinalIgnoreCase))
             {
                 sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: file: filesystem: ws: wss:;\">");
             }
@@ -257,7 +258,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.String.</returns>
         private string GetCommonCss(string mode, string version)
         {
-            var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + version : string.Empty;
+            var versionString = string.IsNullOrWhiteSpace(mode) ? "?v=" + version : string.Empty;
 
             var files = new[]
                             {
@@ -288,14 +289,14 @@ namespace MediaBrowser.WebDashboard.Api
                 builder.AppendFormat("window.appMode='{0}';", mode);
             }
 
-            if (!string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(mode))
             {
                 builder.AppendFormat("window.dashboardVersion='{0}';", version);
             }
 
             builder.Append("</script>");
 
-            var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + version : string.Empty;
+            var versionString = string.IsNullOrWhiteSpace(mode) ? "?v=" + version : string.Empty;
 
             var files = new List<string>();
 
