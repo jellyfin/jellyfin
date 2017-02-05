@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Model.Net
@@ -22,6 +23,6 @@ namespace MediaBrowser.Model.Net
         /// <summary>
         /// Sends a UDP message to a particular end point (uni or multicast).
         /// </summary>
-        Task SendAsync(byte[] buffer, int bytes, IpEndPointInfo endPoint);
+        Task SendAsync(byte[] buffer, int bytes, IpEndPointInfo endPoint, CancellationToken cancellationToken);
     }
 }

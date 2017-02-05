@@ -340,7 +340,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var mode = request.Mode;
 
-            var path = string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ?
+            var path = !string.IsNullOrWhiteSpace(mode) ?
                 Path.Combine(_serverConfigurationManager.ApplicationPaths.ProgramDataPath, "webclient-dump")
                 : "C:\\dev\\emby-web-mobile\\src";
 
@@ -364,14 +364,11 @@ namespace MediaBrowser.WebDashboard.Api
             // Try to trim the output size a bit
             var bowerPath = Path.Combine(path, "bower_components");
 
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
-            {
-                DeleteFoldersByName(Path.Combine(bowerPath, "emby-webcomponents", "fonts"), "roboto");
-            }
-
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(mode))
             {
                 // Delete things that are unneeded in an attempt to keep the output as trim as possible
+
+                DeleteFoldersByName(Path.Combine(bowerPath, "emby-webcomponents", "fonts"), "roboto");
                 _fileSystem.DeleteDirectory(Path.Combine(path, "css", "images", "tour"), true);
             }
 

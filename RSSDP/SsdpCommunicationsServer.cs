@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
@@ -149,12 +150,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Sends a message to a particular address (uni or multicast) and port.
         /// </summary>
-        /// <param name="messageData">A byte array containing the data to send.</param>
-        /// <param name="destination">A <see cref="IpEndPointInfo"/> representing the destination address for the data. Can be either a multicast or unicast destination.</param>
-        /// <param name="fromLocalIpAddress">A <see cref="IpEndPointInfo"/> The local ip address to send from, or .Any if sending from all available</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="messageData"/> argument is null.</exception>
-        /// <exception cref="System.ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
-        public async Task SendMessage(byte[] messageData, IpEndPointInfo destination, IpAddressInfo fromLocalIpAddress)
+        public async Task SendMessage(byte[] messageData, IpEndPointInfo destination, IpAddressInfo fromLocalIpAddress, CancellationToken cancellationToken)
         {
             if (messageData == null) throw new ArgumentNullException("messageData");
 
@@ -170,18 +166,18 @@ namespace Rssdp.Infrastructure
             // SSDP spec recommends sending messages multiple times (not more than 3) to account for possible packet loss over UDP.
             for (var i = 0; i < SsdpConstants.UdpResendCount; i++)
             {
-                var tasks = sockets.Select(s => SendFromSocket(s, messageData, destination)).ToArray();
+                var tasks = sockets.Select(s => SendFromSocket(s, messageData, destination, cancellationToken)).ToArray();
                 await Task.WhenAll(tasks).ConfigureAwait(false);
 
-                await Task.Delay(100).ConfigureAwait(false);
+                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private async Task SendFromSocket(IUdpSocket socket, byte[] messageData, IpEndPointInfo destination)
+        private async Task SendFromSocket(IUdpSocket socket, byte[] messageData, IpEndPointInfo destination, CancellationToken cancellationToken)
         {
             try
             {
-                await socket.SendAsync(messageData, messageData.Length, destination).ConfigureAwait(false);
+                await socket.SendAsync(messageData, messageData.Length, destination, cancellationToken).ConfigureAwait(false);
             }
             catch (ObjectDisposedException)
             {
@@ -230,13 +226,15 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
-        public async Task SendMulticastMessage(string message)
+        public async Task SendMulticastMessage(string message, CancellationToken cancellationToken)
         {
             if (message == null) throw new ArgumentNullException("messageData");
 
             byte[] messageData = Encoding.UTF8.GetBytes(message);
 
             ThrowIfDisposed();
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             EnsureSendSocketCreated();
 
@@ -251,9 +249,9 @@ namespace Rssdp.Infrastructure
                     },
                     Port = SsdpConstants.MulticastPort
 
-                }).ConfigureAwait(false);
+                }, cancellationToken).ConfigureAwait(false);
 
-                await Task.Delay(100).ConfigureAwait(false);
+                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -334,7 +332,7 @@ namespace Rssdp.Infrastructure
 
         #region Private Methods
 
-        private async Task SendMessageIfSocketNotDisposed(byte[] messageData, IpEndPointInfo destination)
+        private async Task SendMessageIfSocketNotDisposed(byte[] messageData, IpEndPointInfo destination, CancellationToken cancellationToken)
         {
             var sockets = _sendSockets;
             if (sockets != null)
@@ -343,7 +341,7 @@ namespace Rssdp.Infrastructure
 
                 foreach (var socket in sockets)
                 {
-                    await socket.SendAsync(messageData, messageData.Length, destination).ConfigureAwait(false);
+                    await socket.SendAsync(messageData, messageData.Length, destination, cancellationToken).ConfigureAwait(false);
                 }
             }
 

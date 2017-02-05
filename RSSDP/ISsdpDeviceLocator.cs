@@ -58,11 +58,6 @@ namespace Rssdp.Infrastructure
 			set;
 		}
 
-		/// <summary>
-		/// Returns a boolean indicating whether or not a search is currently active.
-		/// </summary>
-		bool IsSearching { get; }
-
 		#endregion
 
 		#region Methods
