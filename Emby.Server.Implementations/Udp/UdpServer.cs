@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Net;
@@ -246,7 +247,7 @@ namespace Emby.Server.Implementations.Udp
 
             try
             {
-                await _udpClient.SendAsync(bytes, bytes.Length, remoteEndPoint).ConfigureAwait(false);
+                await _udpClient.SendAsync(bytes, bytes.Length, remoteEndPoint, CancellationToken.None).ConfigureAwait(false);
 
                 _logger.Info("Udp message sent to {0}", remoteEndPoint);
             }
