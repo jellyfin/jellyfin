@@ -47,6 +47,7 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if [use HTTPS]; otherwise, <c>false</c>.</value>
         public bool EnableHttps { get; set; }
         public bool EnableSeriesPresentationUniqueKey { get; set; }
+        public bool EnableLocalizedGuids { get; set; }
 
         /// <summary>
         /// Gets or sets the value pointing to the file system where the ssl certiifcate is located..
@@ -163,8 +164,6 @@ namespace MediaBrowser.Model.Configuration
         public bool SkipDeserializationForPrograms { get; set; }
         public bool SkipDeserializationForAudio { get; set; }
 
-        public PathSubstitution[] PathSubstitutions { get; set; }
-
         public string ServerName { get; set; }
         public string WanDdns { get; set; }
 
@@ -182,7 +181,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableAnonymousUsageReporting { get; set; }
         public bool EnableStandaloneMusicKeys { get; set; }
-        public bool EnableLocalizedGuids { get; set; }
         public bool EnableFolderView { get; set; }
         public bool EnableGroupingIntoCollections { get; set; }
         public bool DisplaySpecialsWithinSeasons { get; set; }
@@ -192,7 +190,6 @@ namespace MediaBrowser.Model.Configuration
         public string[] Migrations { get; set; }
         public bool EnableChannelView { get; set; }
         public bool EnableExternalContentInSuggestions { get; set; }
-        public bool EnableSimpleArtistDetection { get; set; }
 
         public int ImageExtractionTimeoutMs { get; set; }
         /// <summary>
@@ -204,8 +201,8 @@ namespace MediaBrowser.Model.Configuration
             CodecsUsed = new string[] { };
             Migrations = new string[] { };
             ImageExtractionTimeoutMs = 0;
-
             EnableLocalizedGuids = true;
+
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
 
@@ -231,7 +228,6 @@ namespace MediaBrowser.Model.Configuration
 
             LibraryMonitorDelay = 60;
 
-            PathSubstitutions = new PathSubstitution[] { };
             ContentTypes = new NameValuePair[] { };
 
             PreferredMetadataLanguage = "en";

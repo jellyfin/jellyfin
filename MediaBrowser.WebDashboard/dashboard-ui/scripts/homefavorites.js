@@ -1,15 +1,1 @@
-﻿define(['components/favoriteitems'], function (favoriteItems) {
-    'use strict';
-
-    return function (view, params, tabContent) {
-
-        var self = this;
-
-        self.renderTab = function () {
-
-            var parentId = null;
-            favoriteItems.render(tabContent, Dashboard.getCurrentUserId(), parentId);
-        };
-    };
-
-});
+define(["components/favoriteitems"],function(favoriteItems){"use strict";return function(view,params,tabContent){var self=this;self.renderTab=function(){var parentId=null;favoriteItems.render(tabContent,Dashboard.getCurrentUserId(),parentId)}}});

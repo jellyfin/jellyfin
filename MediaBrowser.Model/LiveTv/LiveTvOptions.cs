@@ -96,17 +96,5 @@ namespace MediaBrowser.Model.LiveTv
             EnableAllTuners = true;
             ChannelMappings = new NameValuePair[] {};
         }
-
-        public string GetMappedChannel(string channelNumber)
-        {
-            foreach (NameValuePair mapping in ChannelMappings)
-            {
-                if (StringHelper.EqualsIgnoreCase(mapping.Name, channelNumber))
-                {
-                    return mapping.Value;
-                }
-            }
-            return channelNumber;
-        }
     }
 }

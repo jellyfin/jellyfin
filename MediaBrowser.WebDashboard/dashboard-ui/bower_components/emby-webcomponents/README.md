@@ -1,2 +1,0 @@
-# emby-webcomponents
-

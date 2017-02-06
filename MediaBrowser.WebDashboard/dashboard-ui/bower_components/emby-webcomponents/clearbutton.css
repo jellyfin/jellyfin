@@ -1,12 +1,1 @@
-.clearButton {
-    background: transparent;
-    border: 0 !important;
-    padding: 0 !important;
-    cursor: pointer;
-    outline: none !important;
-    color: inherit;
-    width: 100%;
-    vertical-align: middle;
-    font-family: inherit;
-    font-size: inherit;
-}
+.clearButton{background:0 0;border:0!important;padding:0!important;cursor:pointer;outline:0!important;color:inherit;width:100%;vertical-align:middle;font-family:inherit;font-size:inherit}

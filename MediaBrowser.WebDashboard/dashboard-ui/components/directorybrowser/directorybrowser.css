@@ -1,16 +1,1 @@
-﻿#ulDirectoryPickerList a {
-    padding-top: .4em;
-    padding-bottom: .4em;
-}
-
-.lblDirectoryPickerPath {
-    white-space: nowrap;
-}
-
-.directoryPickerHeadline {
-    color: #000;
-    background: #fff3a5;
-    padding: 1em;
-    border-radius: 5px;
-    margin-bottom: 1.5em;
-}
+#ulDirectoryPickerList a{padding-top:.4em;padding-bottom:.4em}.lblDirectoryPickerPath{white-space:nowrap}.directoryPickerHeadline{color:#000;background:#fff3a5;padding:1em;-webkit-border-radius:5px;border-radius:5px;margin-bottom:1.5em}

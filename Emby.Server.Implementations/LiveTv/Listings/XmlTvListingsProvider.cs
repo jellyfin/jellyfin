@@ -106,8 +106,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return cacheFile;
         }
 
-        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, string channelName, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(channelId))
+            {
+                throw new ArgumentNullException("channelId");
+            }
+
             if (!await EmbyTV.EmbyTVRegistration.Instance.EnableXmlTv().ConfigureAwait(false))
             {
                 var length = endDateUtc - startDateUtc;
@@ -120,7 +125,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
             var reader = new XmlTvReader(path, GetLanguage());
 
-            var results = reader.GetProgrammes(channelNumber, startDateUtc, endDateUtc, cancellationToken);
+            var results = reader.GetProgrammes(channelId, startDateUtc, endDateUtc, cancellationToken);
             return results.Select(p => GetProgramInfo(p, info));
         }
 
@@ -139,7 +144,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 StartDate = GetDate(p.StartDate),
                 Name = p.Title,
                 Overview = p.Description,
-                ShortOverview = p.Description,
                 ProductionYear = !p.CopyrightDate.HasValue ? (int?)null : p.CopyrightDate.Value.Year,
                 SeasonNumber = p.Episode == null ? null : p.Episode.Series,
                 IsSeries = p.Episode != null,
@@ -153,9 +157,28 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 HasImage = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source),
                 OfficialRating = p.Rating != null && !String.IsNullOrEmpty(p.Rating.Value) ? p.Rating.Value : null,
                 CommunityRating = p.StarRating.HasValue ? p.StarRating.Value : (float?)null,
-                SeriesId = p.Episode != null ? p.Title.GetMD5().ToString("N") : null,
-                ShowId = ((p.Title ?? string.Empty) + (episodeTitle ?? string.Empty)).GetMD5().ToString("N")
+                SeriesId = p.Episode != null ? p.Title.GetMD5().ToString("N") : null
             };
+
+            if (!string.IsNullOrWhiteSpace(p.ProgramId))
+            {
+                programInfo.ShowId = p.ProgramId;
+            }
+            else
+            {
+                var uniqueString = (p.Title ?? string.Empty) + (episodeTitle ?? string.Empty) + (p.IceTvEpisodeNumber ?? string.Empty);
+
+                if (programInfo.SeasonNumber.HasValue)
+                {
+                    uniqueString = "-" + programInfo.SeasonNumber.Value.ToString(CultureInfo.InvariantCulture);
+                }
+                if (programInfo.EpisodeNumber.HasValue)
+                {
+                    uniqueString = "-" + programInfo.EpisodeNumber.Value.ToString(CultureInfo.InvariantCulture);
+                }
+
+                programInfo.ShowId = uniqueString.GetMD5().ToString("N");
+            }
 
             if (programInfo.IsMovie)
             {
@@ -174,28 +197,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
             }
             return date;
-        }
-
-        public async Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels, CancellationToken cancellationToken)
-        {
-            // Add the channel image url
-            var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
-            var reader = new XmlTvReader(path, GetLanguage());
-            var results = reader.GetChannels().ToList();
-
-            if (channels != null)
-            {
-                foreach (var c in channels)
-                {
-                    var channelNumber = info.GetMappedChannel(c.Number);
-                    var match = results.FirstOrDefault(r => string.Equals(r.Id, channelNumber, StringComparison.OrdinalIgnoreCase));
-
-                    if (match != null && match.Icon != null && !String.IsNullOrEmpty(match.Icon.Source))
-                    {
-                        c.ImageUrl = match.Icon.Source;
-                    }
-                }
-            }
         }
 
         public Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)

@@ -42,9 +42,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            var threads = GetNumberOfThreads(state, false);
+            var encodingOptions = GetEncodingOptions();
 
-            var inputModifier = GetInputModifier(state);
+            var threads = EncodingHelper.GetNumberOfThreads(state, encodingOptions, false);
+
+            var inputModifier = EncodingHelper.GetInputModifier(state, encodingOptions);
 
             var albumCoverInput = string.Empty;
             var mapArgs = string.Empty;
@@ -67,7 +69,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var result = string.Format("{0} {1}{6}{7} -threads {2}{3} {4} -id3v2_version 3 -write_id3v1 1{8} -y \"{5}\"",
                 inputModifier,
-                GetInputArgument(state),
+                EncodingHelper.GetInputArgument(state, GetEncodingOptions()),
                 threads,
                 vn,
                 string.Join(" ", audioTranscodeParams.ToArray()),

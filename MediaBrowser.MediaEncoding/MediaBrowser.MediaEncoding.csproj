@@ -50,8 +50,10 @@
     <Compile Include="Configuration\EncodingConfigurationFactory.cs" />
     <Compile Include="Encoder\AudioEncoder.cs" />
     <Compile Include="Encoder\BaseEncoder.cs" />
+    <Compile Include="Encoder\EncodingHelper.cs" />
     <Compile Include="Encoder\EncodingJob.cs" />
     <Compile Include="Encoder\EncodingJobFactory.cs" />
+    <Compile Include="Encoder\EncodingJobInfo.cs" />
     <Compile Include="Encoder\EncodingUtils.cs" />
     <Compile Include="Encoder\EncoderValidator.cs" />
     <Compile Include="Encoder\FontConfigLoader.cs" />

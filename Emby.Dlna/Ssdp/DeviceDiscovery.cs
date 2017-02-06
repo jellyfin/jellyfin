@@ -75,16 +75,20 @@ namespace Emby.Dlna.Ssdp
                         // Enable listening for notifications (optional)
                         _deviceLocator.StartListeningForNotifications();
 
-                        await _deviceLocator.SearchAsync().ConfigureAwait(false);
+                        await _deviceLocator.SearchAsync(_tokenSource.Token).ConfigureAwait(false);
+
+                        var delay = _config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds * 1000;
+
+                        await Task.Delay(delay, _tokenSource.Token).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+
                     }
                     catch (Exception ex)
                     {
                         _logger.ErrorException("Error searching for devices", ex);
                     }
-
-                    var delay = _config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds * 1000;
-
-                    await Task.Delay(delay, _tokenSource.Token).ConfigureAwait(false);
                 }
 
             }, CancellationToken.None, TaskCreationOptions.LongRunning);
