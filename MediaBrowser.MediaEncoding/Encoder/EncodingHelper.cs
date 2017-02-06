@@ -159,6 +159,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 return "matroska";
             }
+            if (string.Equals(container, "ts", StringComparison.OrdinalIgnoreCase))
+            {
+                return "mpegts";
+            }
 
             return container;
         }
