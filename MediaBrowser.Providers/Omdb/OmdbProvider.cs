@@ -294,16 +294,9 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            var url = string.Format("https://www.omdbapi.com/?i={0}&tomatoes=true", imdbParam);
+            var url = string.Format("https://www.omdbapi.com/?i={0}&plot=full&tomatoes=true&r=json", imdbParam);
 
-            using (var stream = await _httpClient.Get(new HttpRequestOptions
-            {
-                Url = url,
-                ResourcePool = ResourcePool,
-                CancellationToken = cancellationToken,
-                BufferContent = true
-
-            }).ConfigureAwait(false))
+            using (var stream = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
                 var rootObject = _jsonSerializer.DeserializeFromStream<RootObject>(stream);
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
@@ -337,14 +330,7 @@ namespace MediaBrowser.Providers.Omdb
 
             var url = string.Format("https://www.omdbapi.com/?i={0}&season={1}&detail=full", imdbParam, seasonId);
 
-            using (var stream = await _httpClient.Get(new HttpRequestOptions
-            {
-                Url = url,
-                ResourcePool = ResourcePool,
-                CancellationToken = cancellationToken,
-                BufferContent = true
-
-            }).ConfigureAwait(false))
+            using (var stream = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
                 var rootObject = _jsonSerializer.DeserializeFromStream<SeasonRootObject>(stream);
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
@@ -352,6 +338,17 @@ namespace MediaBrowser.Providers.Omdb
             }
 
             return path;
+        }
+
+        public static Task<Stream> GetOmdbResponse(IHttpClient httpClient, string url, CancellationToken cancellationToken)
+        {
+            return httpClient.Get(new HttpRequestOptions
+            {
+                Url = url,
+                ResourcePool = ResourcePool,
+                CancellationToken = cancellationToken,
+                BufferContent = true
+            });
         }
 
         internal string GetDataFilePath(string imdbId)
@@ -421,7 +418,7 @@ namespace MediaBrowser.Providers.Omdb
             }
 
             // Imdb plots are usually pretty short
-            item.ShortOverview = result.Plot;
+            item.Overview = result.Plot;
 
             //if (!string.IsNullOrWhiteSpace(result.Director))
             //{

@@ -57,6 +57,8 @@ namespace MediaBrowser.Api.Playback.Progressive
 
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
         {
+            var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+
             var audioTranscodeParams = new List<string>();
 
             var bitrate = state.OutputAudioBitrate;
@@ -82,13 +84,13 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             const string vn = " -vn";
 
-            var threads = GetNumberOfThreads(state, false);
+            var threads = EncodingHelper.GetNumberOfThreads(state, encodingOptions, false);
 
-            var inputModifier = GetInputModifier(state);
+            var inputModifier = EncodingHelper.GetInputModifier(state, encodingOptions);
 
             return string.Format("{0} {1} -threads {2}{3} {4} -id3v2_version 3 -write_id3v1 1 -y \"{5}\"",
                 inputModifier,
-                GetInputArgument(state),
+                EncodingHelper.GetInputArgument(state, encodingOptions),
                 threads,
                 vn,
                 string.Join(" ", audioTranscodeParams.ToArray()),

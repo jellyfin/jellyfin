@@ -189,24 +189,10 @@ namespace MediaBrowser.Api
                 result.Series = hasSeries.SeriesName;
             }
 
-            var season = item as Season;
-            if (season != null)
-            {
-                result.EpisodeCount = season.GetRecursiveChildren(i => i is Episode).Count;
-            }
-
-            var series = item as Series;
-            if (series != null)
-            {
-                result.EpisodeCount = series.GetRecursiveChildren(i => i is Episode).Count;
-            }
-
             var album = item as MusicAlbum;
 
             if (album != null)
             {
-                result.SongCount = album.Tracks.Count();
-
                 result.Artists = album.Artists.ToArray();
                 result.AlbumArtist = album.AlbumArtist;
             }

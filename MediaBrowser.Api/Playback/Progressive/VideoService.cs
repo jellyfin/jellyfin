@@ -9,6 +9,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
@@ -95,8 +96,10 @@ namespace MediaBrowser.Api.Playback.Progressive
 
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
         {
+            var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+
             // Get the output codec name
-            var videoCodec = GetVideoEncoder(state);
+            var videoCodec = EncodingHelper.GetVideoEncoder(state, encodingOptions);
 
             var format = string.Empty;
             var keyFrame = string.Empty;
@@ -107,21 +110,44 @@ namespace MediaBrowser.Api.Playback.Progressive
                 format = " -f mp4 -movflags frag_keyframe+empty_moov";
             }
 
-            var threads = GetNumberOfThreads(state, string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase));
+            var threads = EncodingHelper.GetNumberOfThreads(state, encodingOptions, string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase));
 
-            var inputModifier = GetInputModifier(state);
+            var inputModifier = EncodingHelper.GetInputModifier(state, encodingOptions);
 
-            return string.Format("{0} {1}{2} {3} {4} -map_metadata -1 -map_chapters -1 -threads {5} {6}{7} -y \"{8}\"",
+            var subtitleArguments = state.SubtitleStream != null &&
+                                    state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed
+                ? GetSubtitleArguments(state)
+                : string.Empty;
+
+            return string.Format("{0} {1}{2} {3} {4} -map_metadata -1 -map_chapters -1 -threads {5} {6}{7}{8} -y \"{9}\"",
                 inputModifier,
-                GetInputArgument(state),
+                EncodingHelper.GetInputArgument(state, encodingOptions),
                 keyFrame,
-                GetMapArgs(state),
+                EncodingHelper.GetMapArgs(state),
                 GetVideoArguments(state, videoCodec),
                 threads,
                 GetAudioArguments(state),
+                subtitleArguments,
                 format,
                 outputPath
                 ).Trim();
+        }
+
+        private string GetSubtitleArguments(StreamState state)
+        {
+            var format = state.SupportedSubtitleCodecs.FirstOrDefault();
+            string codec;
+
+            if (string.IsNullOrWhiteSpace(format) || string.Equals(format, state.SubtitleStream.Codec, StringComparison.OrdinalIgnoreCase))
+            {
+                codec = "copy";
+            }
+            else
+            {
+                codec = format;
+            }
+
+            return " -codec:s:0 " + codec;
         }
 
         /// <summary>
@@ -141,7 +167,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                if (state.VideoStream != null && IsH264(state.VideoStream) && string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
+                if (state.VideoStream != null && EncodingHelper.IsH264(state.VideoStream) && string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
                     args += " -bsf:v h264_mp4toannexb";
                 }
@@ -170,7 +196,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
-                var outputSizeParam = GetOutputSizeParam(state, videoCodec);
+                var outputSizeParam = EncodingHelper.GetOutputSizeParam(state, videoCodec);
                 args += outputSizeParam;
                 hasCopyTs = outputSizeParam.IndexOf("copyts", StringComparison.OrdinalIgnoreCase) != -1;
             }
@@ -184,7 +210,8 @@ namespace MediaBrowser.Api.Playback.Progressive
                 args += " -avoid_negative_ts disabled -start_at_zero";
             }
 
-            var qualityParam = GetVideoQualityParam(state, videoCodec);
+            var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+            var qualityParam = EncodingHelper.GetVideoQualityParam(state, videoCodec, encodingOptions, GetDefaultH264Preset());
 
             if (!string.IsNullOrEmpty(qualityParam))
             {
@@ -194,7 +221,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // This is for internal graphical subs
             if (hasGraphicalSubs)
             {
-                args += GetGraphicalSubtitleParam(state, videoCodec);
+                args += EncodingHelper.GetGraphicalSubtitleParam(state, videoCodec);
             }
 
             if (!state.RunTimeTicks.HasValue)
@@ -219,7 +246,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
 
             // Get the output codec name
-            var codec = GetAudioEncoder(state);
+            var codec = EncodingHelper.GetAudioEncoder(state);
 
             var args = "-codec:a:0 " + codec;
 
@@ -243,7 +270,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 args += " -ab " + bitrate.Value.ToString(UsCulture);
             }
 
-            args += " " + GetAudioFilterParam(state, false);
+            args += " " + EncodingHelper.GetAudioFilterParam(state, ApiEntryPoint.Instance.GetEncodingOptions(), false);
 
             return args;
         }

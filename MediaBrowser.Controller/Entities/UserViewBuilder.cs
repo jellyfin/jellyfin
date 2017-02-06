@@ -788,7 +788,7 @@ namespace MediaBrowser.Controller.Entities
                 query.IsVirtualUnaired,
                 query.IsUnaired);
 
-            if (collapseBoxSetItems)
+            if (collapseBoxSetItems && user != null)
             {
                 items = CollapseBoxSetItemsIfNeeded(items, query, queryParent, user, configurationManager);
             }
@@ -1119,13 +1119,11 @@ namespace MediaBrowser.Controller.Entities
             InternalItemsQuery query,
             ILibraryManager libraryManager, bool enableSorting)
         {
-            var user = query.User;
-
             items = items.DistinctBy(i => i.GetPresentationUniqueKey(), StringComparer.OrdinalIgnoreCase);
 
             if (query.SortBy.Length > 0)
             {
-                items = libraryManager.Sort(items, user, query.SortBy, query.SortOrder);
+                items = libraryManager.Sort(items, query.User, query.SortBy, query.SortOrder);
             }
 
             var itemsArray = totalRecordLimit.HasValue ? items.Take(totalRecordLimit.Value).ToArray() : items.ToArray();

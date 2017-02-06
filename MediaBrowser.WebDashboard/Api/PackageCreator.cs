@@ -33,16 +33,7 @@ namespace MediaBrowser.WebDashboard.Api
             string localizationCulture,
             string appVersion)
         {
-            Stream resourceStream;
-
-            if (path.Equals("css/all.css", StringComparison.OrdinalIgnoreCase))
-            {
-                resourceStream = await GetAllCss().ConfigureAwait(false);
-            }
-            else
-            {
-                resourceStream = GetRawResourceStream(path);
-            }
+            var resourceStream = GetRawResourceStream(path);
 
             if (resourceStream != null)
             {
@@ -151,7 +142,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                     html = Encoding.UTF8.GetString(originalBytes, 0, originalBytes.Length);
 
-                    if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+                    if (!string.IsNullOrWhiteSpace(mode))
                     {
                     }
                     else if (!string.IsNullOrWhiteSpace(path) && !string.Equals(path, "index.html", StringComparison.OrdinalIgnoreCase))
@@ -160,10 +151,13 @@ namespace MediaBrowser.WebDashboard.Api
                         if (index != -1)
                         {
                             html = html.Substring(index);
+
+                            html = html.Substring(html.IndexOf('>') + 1);
+
                             index = html.IndexOf("</body>", StringComparison.OrdinalIgnoreCase);
                             if (index != -1)
                             {
-                                html = html.Substring(0, index+7);
+                                html = html.Substring(0, index);
                             }
                         }
                         var mainFile = _fileSystem.ReadAllText(GetDashboardResourcePath("index.html"));
@@ -214,7 +208,8 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var sb = new StringBuilder();
 
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(mode, "android", StringComparison.OrdinalIgnoreCase))
             {
                 sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: file: filesystem: ws: wss:;\">");
             }
@@ -263,11 +258,14 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.String.</returns>
         private string GetCommonCss(string mode, string version)
         {
-            var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + version : string.Empty;
+            var versionString = string.IsNullOrWhiteSpace(mode) ? "?v=" + version : string.Empty;
 
             var files = new[]
                             {
-                                "css/all.css" + versionString
+                                      "css/site.css" + versionString,
+                                      "css/librarymenu.css" + versionString,
+                                      "css/librarybrowser.css" + versionString,
+                                      "thirdparty/paper-button-style.css" + versionString
                             };
 
             var tags = files.Select(s => string.Format("<link rel=\"stylesheet\" href=\"{0}\" async />", s)).ToArray();
@@ -291,14 +289,14 @@ namespace MediaBrowser.WebDashboard.Api
                 builder.AppendFormat("window.appMode='{0}';", mode);
             }
 
-            if (!string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(mode))
             {
                 builder.AppendFormat("window.dashboardVersion='{0}';", version);
             }
 
             builder.Append("</script>");
 
-            var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + version : string.Empty;
+            var versionString = string.IsNullOrWhiteSpace(mode) ? "?v=" + version : string.Empty;
 
             var files = new List<string>();
 
@@ -316,48 +314,6 @@ namespace MediaBrowser.WebDashboard.Api
             builder.Append(string.Join(string.Empty, tags));
 
             return builder.ToString();
-        }
-
-        /// <summary>
-        /// Gets all CSS.
-        /// </summary>
-        /// <returns>Task{Stream}.</returns>
-        private async Task<Stream> GetAllCss()
-        {
-            var memoryStream = _memoryStreamFactory.CreateNew();
-
-            var files = new[]
-                                  {
-                                      "css/site.css",
-                                      "css/librarymenu.css",
-                                      "css/librarybrowser.css",
-                                      "thirdparty/paper-button-style.css"
-                                  };
-
-            var builder = new StringBuilder();
-
-            foreach (var file in files)
-            {
-                var path = GetDashboardResourcePath(file);
-
-                using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true))
-                {
-                    using (var streamReader = new StreamReader(fs))
-                    {
-                        var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-                        builder.Append(text);
-                        builder.Append(Environment.NewLine);
-                    }
-                }
-            }
-
-            var css = builder.ToString();
-
-            var bytes = Encoding.UTF8.GetBytes(css);
-            memoryStream.Write(bytes, 0, bytes.Length);
-
-            memoryStream.Position = 0;
-            return memoryStream;
         }
 
         /// <summary>

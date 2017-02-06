@@ -84,7 +84,6 @@ namespace MediaBrowser.Controller.Entities
 
         public long? Size { get; set; }
         public string Container { get; set; }
-        public string ShortOverview { get; set; }
         [IgnoreDataMember]
         public string Tagline { get; set; }
 
@@ -2261,11 +2260,6 @@ namespace MediaBrowser.Controller.Entities
                 if (!string.Equals(item.Overview, ownedItem.Overview, StringComparison.Ordinal))
                 {
                     ownedItem.Overview = item.Overview;
-                    newOptions.ForceSave = true;
-                }
-                if (!string.Equals(item.ShortOverview, ownedItem.ShortOverview, StringComparison.Ordinal))
-                {
-                    ownedItem.ShortOverview = item.ShortOverview;
                     newOptions.ForceSave = true;
                 }
                 if (!string.Equals(item.OfficialRating, ownedItem.OfficialRating, StringComparison.Ordinal))

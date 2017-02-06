@@ -90,13 +90,11 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             FetchGenres(info, tags);
-            var shortOverview = FFProbeHelpers.GetDictionaryValue(tags, "description");
             var overview = FFProbeHelpers.GetDictionaryValue(tags, "synopsis");
 
             if (string.IsNullOrWhiteSpace(overview))
             {
-                overview = shortOverview;
-                shortOverview = null;
+                overview = FFProbeHelpers.GetDictionaryValue(tags, "description");
             }
             if (string.IsNullOrWhiteSpace(overview))
             {
@@ -106,11 +104,6 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (!string.IsNullOrWhiteSpace(overview))
             {
                 info.Overview = overview;
-            }
-
-            if (!string.IsNullOrWhiteSpace(shortOverview))
-            {
-                info.ShortOverview = shortOverview;
             }
 
             var title = FFProbeHelpers.GetDictionaryValue(tags, "title");

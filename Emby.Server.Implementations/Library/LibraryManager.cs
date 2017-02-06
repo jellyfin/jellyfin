@@ -1927,11 +1927,18 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.RetrieveItem(id);
         }
 
-        public IEnumerable<Folder> GetCollectionFolders(BaseItem item)
+        public List<Folder> GetCollectionFolders(BaseItem item)
         {
-            while (!(item.GetParent() is AggregateFolder) && item.GetParent() != null)
+            while (item != null)
             {
-                item = item.GetParent();
+                var parent = item.GetParent();
+
+                if (parent == null || parent is AggregateFolder)
+                {
+                    break;
+                }
+
+                item = parent;
             }
 
             if (item == null)
@@ -1941,7 +1948,8 @@ namespace Emby.Server.Implementations.Library
 
             return GetUserRootFolder().Children
                 .OfType<Folder>()
-                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path, StringComparer.OrdinalIgnoreCase));
+                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path, StringComparer.OrdinalIgnoreCase))
+                .ToList();
         }
 
         public LibraryOptions GetLibraryOptions(BaseItem item)
@@ -2619,18 +2627,6 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            foreach (var map in ConfigurationManager.Configuration.PathSubstitutions)
-            {
-                if (!string.IsNullOrWhiteSpace(map.From))
-                {
-                    var substitutionResult = SubstitutePathInternal(path, map.From, map.To);
-                    if (substitutionResult.Item2)
-                    {
-                        return substitutionResult.Item1;
-                    }
-                }
-            }
-
             return path;
         }
 
@@ -2764,7 +2760,6 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.UpdatePeople(item.Id, people);
         }
 
-        private readonly SemaphoreSlim _dynamicImageResourcePool = new SemaphoreSlim(1, 1);
         public async Task<ItemImageInfo> ConvertImageToLocal(IHasImages item, ItemImageInfo image, int imageIndex)
         {
             foreach (var url in image.Path.Split('|'))
@@ -2773,7 +2768,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     _logger.Debug("ConvertImageToLocal item {0} - image url: {1}", item.Id, url);
 
-                    await _providerManagerFactory().SaveImage(item, url, _dynamicImageResourcePool, image.Type, imageIndex, CancellationToken.None).ConfigureAwait(false);
+                    await _providerManagerFactory().SaveImage(item, url, image.Type, imageIndex, CancellationToken.None).ConfigureAwait(false);
 
                     var newImage = item.GetImageInfo(image.Type, imageIndex);
 

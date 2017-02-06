@@ -271,7 +271,12 @@ namespace MediaBrowser.Providers.Movies
             //and the rest from crew
             if (movieData.casts != null && movieData.casts.crew != null)
             {
-                var keepTypes = new[] { PersonType.Director, PersonType.Writer, PersonType.Producer };
+                var keepTypes = new[]
+                {
+                    PersonType.Director,
+                    PersonType.Writer,
+                    //PersonType.Producer
+                };
 
                 foreach (var person in movieData.casts.crew)
                 {

@@ -440,11 +440,6 @@ namespace MediaBrowser.Providers.MediaInfo
                     video.Overview = data.Overview;
                 }
             }
-
-            if (string.IsNullOrWhiteSpace(video.ShortOverview) || isFullRefresh)
-            {
-                video.ShortOverview = data.ShortOverview;
-            }
         }
 
         private async Task FetchPeople(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions options)

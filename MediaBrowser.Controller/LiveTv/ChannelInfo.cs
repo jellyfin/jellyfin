@@ -25,6 +25,10 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The id of the channel.</value>
         public string Id { get; set; }
 
+        public string TunerChannelId { get; set; }
+
+        public string CallSign { get; set; }
+
         /// <summary>
         /// Gets or sets the tuner host identifier.
         /// </summary>

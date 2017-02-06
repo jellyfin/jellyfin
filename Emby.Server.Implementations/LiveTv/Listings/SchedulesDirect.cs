@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.LiveTv.Listings
 {
@@ -60,8 +61,16 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return dates;
         }
 
-        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, string channelName, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(channelId))
+            {
+                throw new ArgumentNullException("channelId");
+            }
+
+            // Normalize incoming input
+            channelId = channelId.Replace(".json.schedulesdirect.org", string.Empty, StringComparison.OrdinalIgnoreCase).TrimStart('I');
+
             List<ProgramInfo> programsInfo = new List<ProgramInfo>();
 
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
@@ -80,15 +89,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             var dates = GetScheduleRequestDates(startDateUtc, endDateUtc);
 
-            ScheduleDirect.Station station = GetStation(info.ListingsId, channelNumber, channelName);
-
-            if (station == null)
-            {
-                _logger.Info("No Schedules Direct Station found for channel {0} with name {1}", channelNumber, channelName);
-                return programsInfo;
-            }
-
-            string stationID = station.stationID;
+            string stationID = channelId;
 
             _logger.Info("Channel Station ID is: " + stationID);
             List<ScheduleDirect.RequestScheduleForChannel> requestList =
@@ -122,7 +123,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 StreamReader reader = new StreamReader(response.Content);
                 string responseString = reader.ReadToEnd();
                 var dailySchedules = _jsonSerializer.DeserializeFromString<List<ScheduleDirect.Day>>(responseString);
-                _logger.Debug("Found " + dailySchedules.Count + " programs on " + channelNumber + " ScheduleDirect");
+                _logger.Debug("Found " + dailySchedules.Count + " programs on " + stationID + " ScheduleDirect");
 
                 httpOptions = new HttpRequestOptions()
                 {
@@ -180,7 +181,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                             }
                         }
 
-                        programsInfo.Add(GetProgram(channelNumber, schedule, programDict[schedule.programID]));
+                        programsInfo.Add(GetProgram(channelId, schedule, programDict[schedule.programID]));
                     }
                 }
             }
@@ -202,183 +203,24 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return 0;
         }
 
-        private readonly object _channelCacheLock = new object();
-        private ScheduleDirect.Station GetStation(string listingsId, string channelNumber, string channelName)
+        private string GetChannelNumber(ScheduleDirect.Map map)
         {
-            lock (_channelCacheLock)
+            var channelNumber = map.logicalChannelNumber;
+
+            if (string.IsNullOrWhiteSpace(channelNumber))
             {
-                Dictionary<string, ScheduleDirect.Station> channelPair;
-                if (_channelPairingCache.TryGetValue(listingsId, out channelPair))
-                {
-                    ScheduleDirect.Station station;
-
-                    if (!string.IsNullOrWhiteSpace(channelNumber) && channelPair.TryGetValue(channelNumber, out station))
-                    {
-                        return station;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(channelName))
-                    {
-                        channelName = NormalizeName(channelName);
-
-                        var result = channelPair.Values.FirstOrDefault(i => string.Equals(NormalizeName(i.callsign ?? string.Empty), channelName, StringComparison.OrdinalIgnoreCase));
-
-                        if (result != null)
-                        {
-                            return result;
-                        }
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(channelNumber))
-                    {
-                        return channelPair.Values.FirstOrDefault(i => string.Equals(NormalizeName(i.stationID ?? string.Empty), channelNumber, StringComparison.OrdinalIgnoreCase));
-                    }
-                }
-
-                return null;
+                channelNumber = map.channel;
             }
+            if (string.IsNullOrWhiteSpace(channelNumber))
+            {
+                channelNumber = map.atscMajor + "." + map.atscMinor;
+            }
+            channelNumber = channelNumber.TrimStart('0');
+
+            return channelNumber;
         }
 
-        private void AddToChannelPairCache(string listingsId, string channelNumber, ScheduleDirect.Station schChannel)
-        {
-            lock (_channelCacheLock)
-            {
-                Dictionary<string, ScheduleDirect.Station> cache;
-                if (_channelPairingCache.TryGetValue(listingsId, out cache))
-                {
-                    cache[channelNumber] = schChannel;
-                }
-                else
-                {
-                    cache = new Dictionary<string, ScheduleDirect.Station>();
-                    cache[channelNumber] = schChannel;
-                    _channelPairingCache[listingsId] = cache;
-                }
-            }
-        }
-
-        private void ClearPairCache(string listingsId)
-        {
-            lock (_channelCacheLock)
-            {
-                Dictionary<string, ScheduleDirect.Station> cache;
-                if (_channelPairingCache.TryGetValue(listingsId, out cache))
-                {
-                    cache.Clear();
-                }
-            }
-        }
-
-        private int GetChannelPairCacheCount(string listingsId)
-        {
-            lock (_channelCacheLock)
-            {
-                Dictionary<string, ScheduleDirect.Station> cache;
-                if (_channelPairingCache.TryGetValue(listingsId, out cache))
-                {
-                    return cache.Count;
-                }
-
-                return 0;
-            }
-        }
-
-        private string NormalizeName(string value)
-        {
-            return value.Replace(" ", string.Empty).Replace("-", string.Empty);
-        }
-
-        public async Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels,
-            CancellationToken cancellationToken)
-        {
-            var listingsId = info.ListingsId;
-            if (string.IsNullOrWhiteSpace(listingsId))
-            {
-                throw new Exception("ListingsId required");
-            }
-
-            var token = await GetToken(info, cancellationToken);
-
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                throw new Exception("token required");
-            }
-
-            ClearPairCache(listingsId);
-
-            var httpOptions = new HttpRequestOptions()
-            {
-                Url = ApiUrl + "/lineups/" + listingsId,
-                UserAgent = UserAgent,
-                CancellationToken = cancellationToken,
-                LogErrorResponseBody = true,
-                // The data can be large so give it some extra time
-                TimeoutMs = 60000
-            };
-
-            httpOptions.RequestHeaders["token"] = token;
-
-            using (var response = await Get(httpOptions, true, info).ConfigureAwait(false))
-            {
-                var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Channel>(response);
-
-                foreach (ScheduleDirect.Map map in root.map)
-                {
-                    var channelNumber = map.logicalChannelNumber;
-
-                    if (string.IsNullOrWhiteSpace(channelNumber))
-                    {
-                        channelNumber = map.channel;
-                    }
-                    if (string.IsNullOrWhiteSpace(channelNumber))
-                    {
-                        channelNumber = map.atscMajor + "." + map.atscMinor;
-                    }
-                    channelNumber = channelNumber.TrimStart('0');
-
-                    _logger.Debug("Found channel: " + channelNumber + " in Schedules Direct");
-
-                    var schChannel = (root.stations ?? new List<ScheduleDirect.Station>()).FirstOrDefault(item => string.Equals(item.stationID, map.stationID, StringComparison.OrdinalIgnoreCase));
-                    if (schChannel != null)
-                    {
-                        AddToChannelPairCache(listingsId, channelNumber, schChannel);
-                    }
-                    else
-                    {
-                        AddToChannelPairCache(listingsId, channelNumber, new ScheduleDirect.Station
-                        {
-                            stationID = map.stationID
-                        });
-                    }
-                }
-
-                foreach (ChannelInfo channel in channels)
-                {
-                    var station = GetStation(listingsId, channel.Number, channel.Name);
-
-                    if (station != null)
-                    {
-                        if (station.logo != null)
-                        {
-                            channel.ImageUrl = station.logo.URL;
-                            channel.HasImage = true;
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(station.name))
-                        {
-                            channel.Name = station.name;
-                        }
-                    }
-                    else
-                    {
-                        _logger.Info("Schedules Direct doesnt have data for channel: " + channel.Number + " " + channel.Name);
-                    }
-                }
-            }
-        }
-
-        private ProgramInfo GetProgram(string channel, ScheduleDirect.Program programInfo,
-            ScheduleDirect.ProgramDetails details)
+        private ProgramInfo GetProgram(string channelId, ScheduleDirect.Program programInfo, ScheduleDirect.ProgramDetails details)
         {
             //_logger.Debug("Show type is: " + (details.showType ?? "No ShowType"));
             DateTime startAt = GetDate(programInfo.airDateTime);
@@ -386,7 +228,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             ProgramAudio audioType = ProgramAudio.Stereo;
 
             bool repeat = programInfo.@new == null;
-            string newID = programInfo.programID + "T" + startAt.Ticks + "C" + channel;
+            string newID = programInfo.programID + "T" + startAt.Ticks + "C" + channelId;
 
             if (programInfo.audioProperties != null)
             {
@@ -422,7 +264,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             
             var info = new ProgramInfo
             {
-                ChannelId = channel,
+                ChannelId = channelId,
                 Id = newID,
                 StartDate = startAt,
                 EndDate = endAt,
@@ -479,7 +321,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 }
                 else if (details.descriptions.description100 != null)
                 {
-                    info.ShortOverview = details.descriptions.description100[0].description;
+                    info.Overview = details.descriptions.description100[0].description;
                 }
             }
 
@@ -969,8 +811,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 throw new Exception("ListingsId required");
             }
 
-            await AddMetadata(info, new List<ChannelInfo>(), cancellationToken).ConfigureAwait(false);
-
             var token = await GetToken(info, cancellationToken);
 
             if (string.IsNullOrWhiteSpace(token))
@@ -997,37 +837,79 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Channel>(response);
                 _logger.Info("Found " + root.map.Count + " channels on the lineup on ScheduleDirect");
                 _logger.Info("Mapping Stations to Channel");
+
+                var allStations = root.stations ?? new List<ScheduleDirect.Station>();
+
                 foreach (ScheduleDirect.Map map in root.map)
                 {
-                    var channelNumber = map.logicalChannelNumber;
-
-                    if (string.IsNullOrWhiteSpace(channelNumber))
+                    var channelNumber = GetChannelNumber(map);
+                    
+                    var station = allStations.FirstOrDefault(item => string.Equals(item.stationID, map.stationID, StringComparison.OrdinalIgnoreCase));
+                    if (station == null)
                     {
-                        channelNumber = map.channel;
+                        station = new ScheduleDirect.Station
+                        {
+                            stationID = map.stationID
+                        };
                     }
-                    if (string.IsNullOrWhiteSpace(channelNumber))
-                    {
-                        channelNumber = map.atscMajor + "." + map.atscMinor;
-                    }
-                    channelNumber = channelNumber.TrimStart('0');
 
                     var name = channelNumber;
-                    var station = GetStation(listingsId, channelNumber, null);
 
-                    if (station != null && !string.IsNullOrWhiteSpace(station.name))
-                    {
-                        name = station.name;
-                    }
-
-                    list.Add(new ChannelInfo
+                    var channelInfo = new ChannelInfo
                     {
                         Number = channelNumber,
                         Name = name
-                    });
+                    };
+
+                    if (station != null)
+                    {
+                        if (!string.IsNullOrWhiteSpace(station.name))
+                        {
+                            channelInfo.Name = station.name;
+                        }
+                       
+                        channelInfo.Id = station.stationID;
+                        channelInfo.CallSign = station.callsign;
+
+                        if (station.logo != null)
+                        {
+                            channelInfo.ImageUrl = station.logo.URL;
+                            channelInfo.HasImage = true;
+                        }
+                    }
+
+                    list.Add(channelInfo);
                 }
             }
 
             return list;
+        }
+
+        private ScheduleDirect.Station GetStation(List<ScheduleDirect.Station> allStations, string channelNumber, string channelName)
+        {
+            if (!string.IsNullOrWhiteSpace(channelName))
+            {
+                channelName = NormalizeName(channelName);
+
+                var result = allStations.FirstOrDefault(i => string.Equals(NormalizeName(i.callsign ?? string.Empty), channelName, StringComparison.OrdinalIgnoreCase));
+
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(channelNumber))
+            {
+                return allStations.FirstOrDefault(i => string.Equals(NormalizeName(i.stationID ?? string.Empty), channelNumber, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return null;
+        }
+
+        private string NormalizeName(string value)
+        {
+            return value.Replace(" ", string.Empty).Replace("-", string.Empty);
         }
 
         public class ScheduleDirect

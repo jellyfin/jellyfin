@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Security;
+using System.Threading;
 using System.Threading.Tasks;
 using Emby.Common.Implementations.Networking;
 using MediaBrowser.Model.Net;
@@ -56,7 +57,7 @@ namespace Emby.Common.Implementations.Net
             state.TaskCompletionSource = tcs;
 
 #if NETSTANDARD1_6
-            _Socket.ReceiveFromAsync(new ArraySegment<Byte>(state.Buffer),SocketFlags.None, state.RemoteEndPoint)
+            _Socket.ReceiveFromAsync(new ArraySegment<Byte>(state.Buffer), SocketFlags.None, state.RemoteEndPoint)
                 .ContinueWith((task, asyncState) =>
                 {
                     if (task.Status != TaskStatus.Faulted)
@@ -73,7 +74,7 @@ namespace Emby.Common.Implementations.Net
             return tcs.Task;
         }
 
-        public Task SendAsync(byte[] buffer, int size, IpEndPointInfo endPoint)
+        public Task SendAsync(byte[] buffer, int size, IpEndPointInfo endPoint, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -91,6 +92,8 @@ namespace Emby.Common.Implementations.Net
                 buffer = copy;
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             _Socket.SendTo(buffer, ipEndPoint);
             return Task.FromResult(true);
 #else
@@ -100,6 +103,11 @@ namespace Emby.Common.Implementations.Net
             {
                 _Socket.BeginSendTo(buffer, 0, size, SocketFlags.None, ipEndPoint, result =>
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        taskSource.TrySetCanceled();
+                        return;
+                    }
                     try
                     {
                         _Socket.EndSend(result);

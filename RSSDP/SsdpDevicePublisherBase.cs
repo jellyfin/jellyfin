@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Threading;
@@ -122,7 +123,7 @@ namespace Rssdp.Infrastructure
 
                 SetRebroadcastAliveNotificationsTimer(minCacheTime);
 
-                SendAliveNotifications(device, true);
+                SendAliveNotifications(device, true, CancellationToken.None);
             }
         }
 
@@ -161,7 +162,7 @@ namespace Rssdp.Infrastructure
 
                 WriteTrace("Device Removed", device);
 
-                await SendByeByeNotifications(device, true).ConfigureAwait(false);
+                await SendByeByeNotifications(device, true, CancellationToken.None).ConfigureAwait(false);
 
                 SetRebroadcastAliveNotificationsTimer(minCacheTime);
             }
@@ -237,7 +238,7 @@ namespace Rssdp.Infrastructure
 
         #region Search Related Methods
 
-        private void ProcessSearchRequest(string mx, string searchTarget, IpEndPointInfo remoteEndPoint, IpAddressInfo receivedOnlocalIpAddress)
+        private void ProcessSearchRequest(string mx, string searchTarget, IpEndPointInfo remoteEndPoint, IpAddressInfo receivedOnlocalIpAddress, CancellationToken cancellationToken)
         {
             if (String.IsNullOrEmpty(searchTarget))
             {
@@ -295,7 +296,7 @@ namespace Rssdp.Infrastructure
 
                     foreach (var device in deviceList)
                     {
-                        SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress);
+                        SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);
                     }
                 }
                 else
@@ -310,19 +311,19 @@ namespace Rssdp.Infrastructure
             return _Devices.Union(_Devices.SelectManyRecursive<SsdpDevice>((d) => d.Devices));
         }
 
-        private void SendDeviceSearchResponses(SsdpDevice device, IpEndPointInfo endPoint, IpAddressInfo receivedOnlocalIpAddress)
+        private void SendDeviceSearchResponses(SsdpDevice device, IpEndPointInfo endPoint, IpAddressInfo receivedOnlocalIpAddress, CancellationToken cancellationToken)
         {
             bool isRootDevice = (device as SsdpRootDevice) != null;
             if (isRootDevice)
             {
-                SendSearchResponse(SsdpConstants.UpnpDeviceTypeRootDevice, device, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice), endPoint, receivedOnlocalIpAddress);
+                SendSearchResponse(SsdpConstants.UpnpDeviceTypeRootDevice, device, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice), endPoint, receivedOnlocalIpAddress, cancellationToken);
                 if (this.SupportPnpRootDevice)
-                    SendSearchResponse(SsdpConstants.PnpDeviceTypeRootDevice, device, GetUsn(device.Udn, SsdpConstants.PnpDeviceTypeRootDevice), endPoint, receivedOnlocalIpAddress);
+                    SendSearchResponse(SsdpConstants.PnpDeviceTypeRootDevice, device, GetUsn(device.Udn, SsdpConstants.PnpDeviceTypeRootDevice), endPoint, receivedOnlocalIpAddress, cancellationToken);
             }
 
-            SendSearchResponse(device.Udn, device, device.Udn, endPoint, receivedOnlocalIpAddress);
+            SendSearchResponse(device.Udn, device, device.Udn, endPoint, receivedOnlocalIpAddress, cancellationToken);
 
-            SendSearchResponse(device.FullDeviceType, device, GetUsn(device.Udn, device.FullDeviceType), endPoint, receivedOnlocalIpAddress);
+            SendSearchResponse(device.FullDeviceType, device, GetUsn(device.Udn, device.FullDeviceType), endPoint, receivedOnlocalIpAddress, cancellationToken);
         }
 
         private static string GetUsn(string udn, string fullDeviceType)
@@ -330,7 +331,7 @@ namespace Rssdp.Infrastructure
             return String.Format("{0}::{1}", udn, fullDeviceType);
         }
 
-        private async void SendSearchResponse(string searchTarget, SsdpDevice device, string uniqueServiceName, IpEndPointInfo endPoint, IpAddressInfo receivedOnlocalIpAddress)
+        private async void SendSearchResponse(string searchTarget, SsdpDevice device, string uniqueServiceName, IpEndPointInfo endPoint, IpAddressInfo receivedOnlocalIpAddress, CancellationToken cancellationToken)
         {
             var rootDevice = device.ToRootDevice();
 
@@ -352,7 +353,7 @@ namespace Rssdp.Infrastructure
 
             try
             {
-                await _CommsServer.SendMessage(System.Text.Encoding.UTF8.GetBytes(message), endPoint, receivedOnlocalIpAddress).ConfigureAwait(false);
+                await _CommsServer.SendMessage(System.Text.Encoding.UTF8.GetBytes(message), endPoint, receivedOnlocalIpAddress, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -427,7 +428,7 @@ namespace Rssdp.Infrastructure
                 {
                     if (IsDisposed) return;
 
-                    SendAliveNotifications(device, true);
+                    SendAliveNotifications(device, true, CancellationToken.None);
                 }
 
                 //WriteTrace("Completed Sending Alive Notifications For All Devices");
@@ -445,25 +446,25 @@ namespace Rssdp.Infrastructure
             //}
         }
 
-        private void SendAliveNotifications(SsdpDevice device, bool isRoot)
+        private void SendAliveNotifications(SsdpDevice device, bool isRoot, CancellationToken cancellationToken)
         {
             if (isRoot)
             {
-                SendAliveNotification(device, SsdpConstants.UpnpDeviceTypeRootDevice, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice));
+                SendAliveNotification(device, SsdpConstants.UpnpDeviceTypeRootDevice, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice), cancellationToken);
                 if (this.SupportPnpRootDevice)
-                    SendAliveNotification(device, SsdpConstants.PnpDeviceTypeRootDevice, GetUsn(device.Udn, SsdpConstants.PnpDeviceTypeRootDevice));
+                    SendAliveNotification(device, SsdpConstants.PnpDeviceTypeRootDevice, GetUsn(device.Udn, SsdpConstants.PnpDeviceTypeRootDevice), cancellationToken);
             }
 
-            SendAliveNotification(device, device.Udn, device.Udn);
-            SendAliveNotification(device, device.FullDeviceType, GetUsn(device.Udn, device.FullDeviceType));
+            SendAliveNotification(device, device.Udn, device.Udn, cancellationToken);
+            SendAliveNotification(device, device.FullDeviceType, GetUsn(device.Udn, device.FullDeviceType), cancellationToken);
 
             foreach (var childDevice in device.Devices)
             {
-                SendAliveNotifications(childDevice, false);
+                SendAliveNotifications(childDevice, false, cancellationToken);
             }
         }
 
-        private void SendAliveNotification(SsdpDevice device, string notificationType, string uniqueServiceName)
+        private void SendAliveNotification(SsdpDevice device, string notificationType, string uniqueServiceName, CancellationToken cancellationToken)
         {
             var rootDevice = device.ToRootDevice();
 
@@ -483,7 +484,7 @@ namespace Rssdp.Infrastructure
 
             var message = SsdpHelper.BuildMessage(header, values);
 
-            _CommsServer.SendMulticastMessage(message);
+            _CommsServer.SendMulticastMessage(message, cancellationToken);
 
             //WriteTrace(String.Format("Sent alive notification"), device);
         }
@@ -492,26 +493,26 @@ namespace Rssdp.Infrastructure
 
         #region ByeBye
 
-        private async Task SendByeByeNotifications(SsdpDevice device, bool isRoot)
+        private async Task SendByeByeNotifications(SsdpDevice device, bool isRoot, CancellationToken cancellationToken)
         {
             if (isRoot)
             {
-                await SendByeByeNotification(device, SsdpConstants.UpnpDeviceTypeRootDevice, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice)).ConfigureAwait(false);
+                await SendByeByeNotification(device, SsdpConstants.UpnpDeviceTypeRootDevice, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice), cancellationToken).ConfigureAwait(false);
                 if (this.SupportPnpRootDevice)
-                    await SendByeByeNotification(device, "pnp:rootdevice", GetUsn(device.Udn, "pnp:rootdevice")).ConfigureAwait(false); ;
+                    await SendByeByeNotification(device, "pnp:rootdevice", GetUsn(device.Udn, "pnp:rootdevice"), cancellationToken).ConfigureAwait(false); ;
             }
 
-            await SendByeByeNotification(device, device.Udn, device.Udn).ConfigureAwait(false); ;
-            await SendByeByeNotification(device, String.Format("urn:{0}", device.FullDeviceType), GetUsn(device.Udn, device.FullDeviceType)).ConfigureAwait(false); ;
+            await SendByeByeNotification(device, device.Udn, device.Udn, cancellationToken).ConfigureAwait(false); ;
+            await SendByeByeNotification(device, String.Format("urn:{0}", device.FullDeviceType), GetUsn(device.Udn, device.FullDeviceType), cancellationToken).ConfigureAwait(false); ;
 
             foreach (var childDevice in device.Devices)
             {
-                await SendByeByeNotifications(childDevice, false).ConfigureAwait(false); ;
+                await SendByeByeNotifications(childDevice, false, cancellationToken).ConfigureAwait(false); ;
             }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "byebye", Justification = "Correct value for this type of notification in SSDP.")]
-        private Task SendByeByeNotification(SsdpDevice device, string notificationType, string uniqueServiceName)
+        private Task SendByeByeNotification(SsdpDevice device, string notificationType, string uniqueServiceName, CancellationToken cancellationToken)
         {
             const string header = "NOTIFY * HTTP/1.1";
 
@@ -527,7 +528,7 @@ namespace Rssdp.Infrastructure
 
             var message = SsdpHelper.BuildMessage(header, values);
 
-            return _CommsServer.SendMulticastMessage(message);
+            return _CommsServer.SendMulticastMessage(message, cancellationToken);
 
             //WriteTrace(String.Format("Sent byebye notification"), device);
         }
@@ -653,13 +654,13 @@ namespace Rssdp.Infrastructure
 
         private void device_DeviceAdded(object sender, DeviceEventArgs e)
         {
-            SendAliveNotifications(e.Device, false);
+            SendAliveNotifications(e.Device, false, CancellationToken.None);
             ConnectToDeviceEvents(e.Device);
         }
 
         private void device_DeviceRemoved(object sender, DeviceEventArgs e)
         {
-            var task = SendByeByeNotifications(e.Device, false);
+            var task = SendByeByeNotifications(e.Device, false, CancellationToken.None);
             Task.WaitAll(task);
             DisconnectFromDeviceEvents(e.Device);
         }
@@ -677,7 +678,7 @@ namespace Rssdp.Infrastructure
                 //else if (!e.Message.Headers.Contains("MAN"))
                 //	WriteTrace("Ignoring search request - missing MAN header.");
                 //else
-                ProcessSearchRequest(GetFirstHeaderValue(e.Message.Headers, "MX"), GetFirstHeaderValue(e.Message.Headers, "ST"), e.ReceivedFrom, e.LocalIpAddress);
+                ProcessSearchRequest(GetFirstHeaderValue(e.Message.Headers, "MX"), GetFirstHeaderValue(e.Message.Headers, "ST"), e.ReceivedFrom, e.LocalIpAddress, CancellationToken.None);
             }
         }
 

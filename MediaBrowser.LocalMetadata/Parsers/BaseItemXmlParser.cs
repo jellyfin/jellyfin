@@ -294,18 +294,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         break;
                     }
 
-                case "ShortOverview":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.ShortOverview = val;
-                        }
-
-                        break;
-                    }
-
                 case "CriticRatingSummary":
                     {
                         var val = reader.ReadElementContentAsString();
