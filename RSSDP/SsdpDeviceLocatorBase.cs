@@ -24,11 +24,9 @@ namespace Rssdp.Infrastructure
         private List<DiscoveredSsdpDevice> _Devices;
         private ISsdpCommunicationsServer _CommunicationsServer;
 
-        private IList<DiscoveredSsdpDevice> _SearchResults;
-        private object _SearchResultsSynchroniser;
-
-        private ITimer _ExpireCachedDevicesTimer;
+        private ITimer _BroadcastTimer;
         private ITimerFactory _timerFactory;
+        private object _timerLock = new object();
 
         private static readonly TimeSpan DefaultSearchWaitTime = TimeSpan.FromSeconds(4);
         private static readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
@@ -48,7 +46,6 @@ namespace Rssdp.Infrastructure
             _timerFactory = timerFactory;
             _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
 
-            _SearchResultsSynchroniser = new object();
             _Devices = new List<DiscoveredSsdpDevice>();
         }
 
@@ -92,11 +89,52 @@ namespace Rssdp.Infrastructure
 
         #region Search Overloads
 
+        public void RestartBroadcastTimer(TimeSpan dueTime, TimeSpan period)
+        {
+            lock (_timerLock)
+            {
+                if (_BroadcastTimer == null)
+                {
+                    _BroadcastTimer = _timerFactory.Create(OnBroadcastTimerCallback, null, dueTime, period);
+                }
+                else
+                {
+                    _BroadcastTimer.Change(dueTime, period);
+                }
+            }
+        }
+
+        public void DisposeBroadcastTimer()
+        {
+            lock (_timerLock)
+            {
+                if (_BroadcastTimer != null)
+                {
+                    _BroadcastTimer.Dispose();
+                    _BroadcastTimer = null;
+                }
+            }
+        }
+
+        private async void OnBroadcastTimerCallback(object state)
+        {
+            StartListeningForNotifications();
+            RemoveExpiredDevicesFromCache();
+
+            try
+            {
+                await SearchAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                
+            }
+        }
+
         /// <summary>
         /// Performs a search for all devices using the default search timeout.
         /// </summary>
-        /// <returns>A task whose result is an <see cref="IEnumerable{T}"/> of <see cref="DiscoveredSsdpDevice" /> instances, representing all found devices.</returns>
-        public Task<IEnumerable<DiscoveredSsdpDevice>> SearchAsync(CancellationToken cancellationToken)
+        private Task SearchAsync(CancellationToken cancellationToken)
         {
             return SearchAsync(SsdpConstants.SsdpDiscoverAllSTHeader, DefaultSearchWaitTime, cancellationToken);
         }
@@ -111,8 +149,7 @@ namespace Rssdp.Infrastructure
         /// <item><term>Device type</term><description>Fully qualified device type starting with urn: i.e urn:schemas-upnp-org:Basic:1</description></item>
         /// </list>
         /// </param>
-        /// <returns>A task whose result is an <see cref="IEnumerable{T}"/> of <see cref="DiscoveredSsdpDevice" /> instances, representing all found devices.</returns>
-        public Task<IEnumerable<DiscoveredSsdpDevice>> SearchAsync(string searchTarget)
+        private Task SearchAsync(string searchTarget)
         {
             return SearchAsync(searchTarget, DefaultSearchWaitTime, CancellationToken.None);
         }
@@ -121,13 +158,12 @@ namespace Rssdp.Infrastructure
         /// Performs a search for all devices using the specified search timeout.
         /// </summary>
         /// <param name="searchWaitTime">The amount of time to wait for network responses to the search request. Longer values will likely return more devices, but increase search time. A value between 1 and 5 seconds is recommended by the UPnP 1.1 specification, this method requires the value be greater 1 second if it is not zero. Specify TimeSpan.Zero to return only devices already in the cache.</param>
-        /// <returns>A task whose result is an <see cref="IEnumerable{T}"/> of <see cref="DiscoveredSsdpDevice" /> instances, representing all found devices.</returns>
-        public Task<IEnumerable<DiscoveredSsdpDevice>> SearchAsync(TimeSpan searchWaitTime)
+        private Task SearchAsync(TimeSpan searchWaitTime)
         {
             return SearchAsync(SsdpConstants.SsdpDiscoverAllSTHeader, searchWaitTime, CancellationToken.None);
         }
 
-        public async Task<IEnumerable<DiscoveredSsdpDevice>> SearchAsync(string searchTarget, TimeSpan searchWaitTime, CancellationToken cancellationToken)
+        private Task SearchAsync(string searchTarget, TimeSpan searchWaitTime, CancellationToken cancellationToken)
         {
             if (searchTarget == null) throw new ArgumentNullException("searchTarget");
             if (searchTarget.Length == 0) throw new ArgumentException("searchTarget cannot be an empty string.", "searchTarget");
@@ -136,48 +172,7 @@ namespace Rssdp.Infrastructure
 
             ThrowIfDisposed();
 
-            if (_SearchResults != null) throw new InvalidOperationException("Search already in progress. Only one search at a time is allowed.");
-            _SearchResults = new List<DiscoveredSsdpDevice>();
-
-            // If searchWaitTime == 0 then we are only going to report unexpired cached items, not actually do a search.
-            if (searchWaitTime > TimeSpan.Zero)
-                await BroadcastDiscoverMessage(searchTarget, SearchTimeToMXValue(searchWaitTime), cancellationToken).ConfigureAwait(false);
-
-            lock (_SearchResultsSynchroniser)
-            {
-                foreach (var device in GetUnexpiredDevices().Where(NotificationTypeMatchesFilter))
-                {
-                    DeviceFound(device, false, null);
-                }
-            }
-
-            if (searchWaitTime != TimeSpan.Zero)
-                await Task.Delay(searchWaitTime, cancellationToken).ConfigureAwait(false);
-
-            IEnumerable<DiscoveredSsdpDevice> retVal = null;
-
-            try
-            {
-                lock (_SearchResultsSynchroniser)
-                {
-                    retVal = _SearchResults;
-                    _SearchResults = null;
-                }
-
-                RemoveExpiredDevicesFromCache();
-            }
-            finally
-            {
-                var server = _CommunicationsServer;
-                try
-                {
-                    if (server != null) // In case we were disposed while searching.
-                        server.StopListeningForResponses();
-                }
-                catch (ObjectDisposedException) { }
-            }
-
-            return retVal;
+            return BroadcastDiscoverMessage(searchTarget, SearchTimeToMXValue(searchWaitTime), cancellationToken);
         }
 
         #endregion
@@ -287,9 +282,7 @@ namespace Rssdp.Infrastructure
 
             if (disposing)
             {
-                var timer = _ExpireCachedDevicesTimer;
-                if (timer != null)
-                    timer.Dispose();
+                DisposeBroadcastTimer();
 
                 var commsServer = _CommunicationsServer;
                 _CommunicationsServer = null;
@@ -332,40 +325,9 @@ namespace Rssdp.Infrastructure
 
         private void DeviceFound(DiscoveredSsdpDevice device, bool isNewDevice, IpAddressInfo localIpAddress)
         {
-            // Don't raise the event if we've already done it for a cached
-            // version of this device, and the cached version isn't
-            // "significantly" different, i.e location and cachelifetime 
-            // haven't changed.
-            var raiseEvent = false;
-
             if (!NotificationTypeMatchesFilter(device)) return;
 
-            lock (_SearchResultsSynchroniser)
-            {
-                if (_SearchResults != null)
-                {
-                    var existingDevice = FindExistingDeviceNotification(_SearchResults, device.NotificationType, device.Usn);
-                    if (existingDevice == null)
-                    {
-                        _SearchResults.Add(device);
-                        raiseEvent = true;
-                    }
-                    else
-                    {
-                        if (existingDevice.DescriptionLocation != device.DescriptionLocation || existingDevice.CacheLifetime != device.CacheLifetime)
-                        {
-                            _SearchResults.Remove(existingDevice);
-                            _SearchResults.Add(device);
-                            raiseEvent = true;
-                        }
-                    }
-                }
-                else
-                    raiseEvent = true;
-            }
-
-            if (raiseEvent)
-                OnDeviceAvailable(device, isNewDevice, localIpAddress);
+            OnDeviceAvailable(device, isNewDevice, localIpAddress);
         }
 
         private bool NotificationTypeMatchesFilter(DiscoveredSsdpDevice device)
@@ -450,8 +412,6 @@ namespace Rssdp.Infrastructure
                 };
 
                 AddOrUpdateDiscoveredDevice(device, localIpAddress);
-
-                ResetExpireCachedDevicesTimer();
             }
         }
 
@@ -477,24 +437,7 @@ namespace Rssdp.Infrastructure
                     if (NotificationTypeMatchesFilter(deadDevice))
                         OnDeviceUnavailable(deadDevice, false);
                 }
-
-                ResetExpireCachedDevicesTimer();
             }
-        }
-
-        private void ResetExpireCachedDevicesTimer()
-        {
-            if (IsDisposed) return;
-
-            if (_ExpireCachedDevicesTimer == null)
-                _ExpireCachedDevicesTimer = _timerFactory.Create(this.ExpireCachedDevices, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-
-            _ExpireCachedDevicesTimer.Change(60000, System.Threading.Timeout.Infinite);
-        }
-
-        private void ExpireCachedDevices(object state)
-        {
-            RemoveExpiredDevicesFromCache();
         }
 
         #region Header/Message Processing Utilities
@@ -624,20 +567,6 @@ namespace Rssdp.Infrastructure
 
             if (existingDevices != null && existingDevices.Any())
             {
-                lock (_SearchResultsSynchroniser)
-                {
-                    if (_SearchResults != null)
-                    {
-                        var resultsToRemove = (from result in _SearchResults where result.Usn == deviceUsn select result).ToArray();
-                        foreach (var result in resultsToRemove)
-                        {
-                            if (this.IsDisposed) return true;
-
-                            _SearchResults.Remove(result);
-                        }
-                    }
-                }
-
                 foreach (var removedDevice in existingDevices)
                 {
                     if (NotificationTypeMatchesFilter(removedDevice))
