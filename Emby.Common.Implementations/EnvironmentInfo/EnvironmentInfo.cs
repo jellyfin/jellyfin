@@ -12,7 +12,7 @@ namespace Emby.Common.Implementations.EnvironmentInfo
         public MediaBrowser.Model.System.Architecture? CustomArchitecture { get; set; }
         public MediaBrowser.Model.System.OperatingSystem? CustomOperatingSystem { get; set; }
 
-        public MediaBrowser.Model.System.OperatingSystem OperatingSystem
+        public virtual MediaBrowser.Model.System.OperatingSystem OperatingSystem
         {
             get
             {
