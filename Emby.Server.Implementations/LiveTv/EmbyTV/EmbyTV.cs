@@ -2092,13 +2092,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         writer.WriteElementString("credits", person);
                     }
 
-                    var rt = item.GetProviderId(MetadataProviders.RottenTomatoes);
-
-                    if (!string.IsNullOrEmpty(rt))
-                    {
-                        writer.WriteElementString("rottentomatoesid", rt);
-                    }
-
                     var tmdbCollection = item.GetProviderId(MetadataProviders.TmdbCollection);
 
                     if (!string.IsNullOrEmpty(tmdbCollection))
