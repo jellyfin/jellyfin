@@ -365,7 +365,6 @@ namespace Emby.Server.Implementations.LiveTv
                 }
             }
 
-            _logger.Info("Live stream info: {0}", _jsonSerializer.SerializeToString(info));
             Normalize(info, service, isVideo);
 
             return new Tuple<MediaSourceInfo, IDirectStreamProvider>(info, directStreamProvider);

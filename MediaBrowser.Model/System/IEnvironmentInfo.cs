@@ -17,6 +17,7 @@ namespace MediaBrowser.Model.System
     {
         Windows,
         Linux,
-        OSX
+        OSX,
+        BSD
     }
 }
