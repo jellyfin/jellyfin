@@ -24,10 +24,6 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         Tvcom = 5,
         /// <summary>
-        /// The rotten tomatoes
-        /// </summary>
-        RottenTomatoes = 6,
-        /// <summary>
         /// Tmdb Collection Id
         /// </summary>
         TmdbCollection = 7,
