@@ -579,14 +579,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("website", item.HomePageUrl);
             }
 
-            var rt = item.GetProviderId(MetadataProviders.RottenTomatoes);
-
-            if (!string.IsNullOrEmpty(rt))
-            {
-                writer.WriteElementString("rottentomatoesid", rt);
-                writtenProviderIds.Add(MetadataProviders.RottenTomatoes.ToString());
-            }
-
             var tmdbCollection = item.GetProviderId(MetadataProviders.TmdbCollection);
 
             if (!string.IsNullOrEmpty(tmdbCollection))
