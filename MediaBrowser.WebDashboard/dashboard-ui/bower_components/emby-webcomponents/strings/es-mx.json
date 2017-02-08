@@ -380,10 +380,10 @@
     "ContinueInSecondsValue": "Continua en {0} segundos.",
     "Continue": "Continuar",
     "AddToPlayQueue": "Agregar a la cola de reproduccion",
-    "HeaderRemoteControl": "Remote Control",
-    "Disconnect": "Disconnect",
-    "EnableDisplayMirroring": "Enable display mirroring",
-    "HeaderSelectPlayer": "Select Player",
-    "Quality": "Quality",
+    "HeaderRemoteControl": "Control Remoto",
+    "Disconnect": "Desconectar",
+    "EnableDisplayMirroring": "Habilitar duplicaci\u00f3n de pantalla",
+    "HeaderSelectPlayer": "Seleccionar Reproductor",
+    "Quality": "Calidad",
     "Auto": "Auto"
 }
