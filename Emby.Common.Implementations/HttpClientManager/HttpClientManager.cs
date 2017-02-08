@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Common.Implementations.HttpClientManager;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Common;
 
 namespace Emby.Common.Implementations.HttpClientManager
 {
@@ -43,6 +44,7 @@ namespace Emby.Common.Implementations.HttpClientManager
 
         private readonly IFileSystem _fileSystem;
         private readonly IMemoryStreamFactory _memoryStreamProvider;
+        private readonly IApplicationHost _appHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
@@ -257,6 +259,8 @@ namespace Emby.Common.Implementations.HttpClientManager
 
         private void AddRequestHeaders(HttpWebRequest request, HttpRequestOptions options)
         {
+            var hasUserAgent = false;
+
             foreach (var header in options.RequestHeaders.ToList())
             {
                 if (string.Equals(header.Key, "Accept", StringComparison.OrdinalIgnoreCase))
@@ -265,11 +269,8 @@ namespace Emby.Common.Implementations.HttpClientManager
                 }
                 else if (string.Equals(header.Key, "User-Agent", StringComparison.OrdinalIgnoreCase))
                 {
-#if NET46
-                    request.UserAgent = header.Value;
-#elif NETSTANDARD1_6
-                    request.Headers["User-Agent"] = header.Value;
-#endif
+                    SetUserAgent(request, header.Value);
+                    hasUserAgent = true;
                 }
                 else
                 {
@@ -280,6 +281,20 @@ namespace Emby.Common.Implementations.HttpClientManager
 #endif
                 }
             }
+
+            if (!hasUserAgent && options.EnableDefaultUserAgent)
+            {
+                SetUserAgent(request, _appHost.Name + "/" + _appHost.ApplicationVersion.ToString());
+            }
+        }
+
+        private void SetUserAgent(HttpWebRequest request, string userAgent)
+        {
+#if NET46
+            request.UserAgent = userAgent;
+#elif NETSTANDARD1_6
+                    request.Headers["User-Agent"] = userAgent;
+#endif
         }
 
         /// <summary>
