@@ -469,16 +469,20 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public ChannelInfo GetEpgChannelFromTunerChannel(List<NameValuePair> mappings, ChannelInfo tunerChannel, List<ChannelInfo> epgChannels)
         {
-            if (!string.IsNullOrWhiteSpace(tunerChannel.TunerChannelId))
-            {
-                var tunerChannelId = GetMappedChannel(tunerChannel.TunerChannelId, mappings);
+            var tunerChannelId = string.IsNullOrWhiteSpace(tunerChannel.TunerChannelId)
+                ? tunerChannel.Id
+                : tunerChannel.TunerChannelId;
 
-                if (string.IsNullOrWhiteSpace(tunerChannelId))
+            if (!string.IsNullOrWhiteSpace(tunerChannelId))
+            {
+                var mappedTunerChannelId = GetMappedChannel(tunerChannelId, mappings);
+
+                if (string.IsNullOrWhiteSpace(mappedTunerChannelId))
                 {
-                    tunerChannelId = tunerChannel.TunerChannelId;
+                    mappedTunerChannelId = tunerChannelId;
                 }
 
-                var channel = epgChannels.FirstOrDefault(i => string.Equals(tunerChannelId, i.Id, StringComparison.OrdinalIgnoreCase));
+                var channel = epgChannels.FirstOrDefault(i => string.Equals(mappedTunerChannelId, i.Id, StringComparison.OrdinalIgnoreCase));
 
                 if (channel != null)
                 {
