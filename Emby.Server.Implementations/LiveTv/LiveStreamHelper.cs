@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 
 namespace Emby.Server.Implementations.LiveTv
@@ -21,7 +22,7 @@ namespace Emby.Server.Implementations.LiveTv
             _logger = logger;
         }
 
-        public async Task AddMediaInfoWithProbe(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
+        public async Task AddMediaInfoWithProbe(MediaSourceInfo mediaSource, bool isAudio, bool assumeInterlaced, CancellationToken cancellationToken)
         {
             var originalRuntime = mediaSource.RunTimeTicks;
 
@@ -93,6 +94,17 @@ namespace Emby.Server.Implementations.LiveTv
 
                 // This is coming up false and preventing stream copy
                 videoStream.IsAVC = null;
+            }
+
+            if (assumeInterlaced)
+            {
+                foreach (var mediaStream in mediaSource.MediaStreams)
+                {
+                    if (mediaStream.Type == MediaStreamType.Video)
+                    {
+                        mediaStream.IsInterlaced = true;
+                    }
+                }
             }
 
             // Try to estimate this
