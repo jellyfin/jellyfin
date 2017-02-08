@@ -119,6 +119,7 @@ namespace MediaBrowser.Api
             config.SkipDeserializationForAudio = true;
             config.EnableSeriesPresentationUniqueKey = true;
             config.EnableLocalizedGuids = true;
+            config.EnableSimpleArtistDetection = true;
         }
 
         public void Post(UpdateStartupConfiguration request)

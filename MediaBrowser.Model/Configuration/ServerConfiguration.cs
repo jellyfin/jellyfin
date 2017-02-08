@@ -192,6 +192,10 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableExternalContentInSuggestions { get; set; }
 
         public int ImageExtractionTimeoutMs { get; set; }
+
+        public PathSubstitution[] PathSubstitutions { get; set; }
+        public bool EnableSimpleArtistDetection { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -202,6 +206,8 @@ namespace MediaBrowser.Model.Configuration
             Migrations = new string[] { };
             ImageExtractionTimeoutMs = 0;
             EnableLocalizedGuids = true;
+            PathSubstitutions = new PathSubstitution[] { };
+            EnableSimpleArtistDetection = true;
 
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
@@ -562,5 +568,11 @@ namespace MediaBrowser.Model.Configuration
                 }
             };
         }
+    }
+
+    public class PathSubstitution
+    {
+        public string From { get; set; }
+        public string To { get; set; }
     }
 }
