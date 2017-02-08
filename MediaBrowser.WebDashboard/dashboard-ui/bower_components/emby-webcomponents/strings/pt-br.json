@@ -379,11 +379,11 @@
     "HeaderMyDevice": "Meu Dispositivo",
     "ContinueInSecondsValue": "Continuar em {0} segundos.",
     "Continue": "Continuar",
-    "AddToPlayQueue": "Add to play queue",
-    "HeaderRemoteControl": "Remote Control",
-    "Disconnect": "Disconnect",
-    "EnableDisplayMirroring": "Enable display mirroring",
-    "HeaderSelectPlayer": "Select Player",
-    "Quality": "Quality",
+    "AddToPlayQueue": "Adicionar \u00e0 fila de reprodu\u00e7\u00e3o",
+    "HeaderRemoteControl": "Controle Remoto",
+    "Disconnect": "Desconectar",
+    "EnableDisplayMirroring": "Ativar espelhamento de tela",
+    "HeaderSelectPlayer": "Selecionar Reprodutor",
+    "Quality": "Qualidade",
     "Auto": "Auto"
 }
