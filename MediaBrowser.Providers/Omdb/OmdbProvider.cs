@@ -347,7 +347,8 @@ namespace MediaBrowser.Providers.Omdb
                 Url = url,
                 ResourcePool = ResourcePool,
                 CancellationToken = cancellationToken,
-                BufferContent = true
+                BufferContent = true,
+                EnableDefaultUserAgent = true
             });
         }
 
