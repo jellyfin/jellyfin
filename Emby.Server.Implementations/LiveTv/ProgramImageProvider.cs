@@ -50,13 +50,16 @@ namespace Emby.Server.Implementations.LiveTv
                 {
                     var channel = _liveTvManager.GetInternalChannel(liveTvItem.ChannelId);
 
-                    var response = await service.GetProgramImageAsync(GetItemExternalId(liveTvItem), GetItemExternalId(channel), cancellationToken).ConfigureAwait(false);
-
-                    if (response != null)
+                    if (channel != null)
                     {
-                        imageResponse.HasImage = true;
-                        imageResponse.Stream = response.Stream;
-                        imageResponse.Format = response.Format;
+                        var response = await service.GetProgramImageAsync(GetItemExternalId(liveTvItem), GetItemExternalId(channel), cancellationToken).ConfigureAwait(false);
+
+                        if (response != null)
+                        {
+                            imageResponse.HasImage = true;
+                            imageResponse.Stream = response.Stream;
+                            imageResponse.Format = response.Format;
+                        }
                     }
                 }
                 catch (NotImplementedException)
