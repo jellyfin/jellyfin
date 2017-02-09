@@ -44,18 +44,12 @@ namespace Emby.Common.Implementations.HttpClientManager
 
         private readonly IFileSystem _fileSystem;
         private readonly IMemoryStreamFactory _memoryStreamProvider;
-        private readonly IApplicationHost _appHost;
+        private readonly Func<string> _defaultUserAgentFn;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
         /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="fileSystem">The file system.</param>
-        /// <exception cref="System.ArgumentNullException">appPaths
-        /// or
-        /// logger</exception>
-        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem, IMemoryStreamFactory memoryStreamProvider)
+        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem, IMemoryStreamFactory memoryStreamProvider, Func<string> defaultUserAgentFn)
         {
             if (appPaths == null)
             {
@@ -70,6 +64,7 @@ namespace Emby.Common.Implementations.HttpClientManager
             _fileSystem = fileSystem;
             _memoryStreamProvider = memoryStreamProvider;
             _appPaths = appPaths;
+            _defaultUserAgentFn = defaultUserAgentFn;
 
 #if NET46
             // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
@@ -284,7 +279,7 @@ namespace Emby.Common.Implementations.HttpClientManager
 
             if (!hasUserAgent && options.EnableDefaultUserAgent)
             {
-                SetUserAgent(request, _appHost.Name + "/" + _appHost.ApplicationVersion.ToString());
+                SetUserAgent(request, _defaultUserAgentFn());
             }
         }
 
