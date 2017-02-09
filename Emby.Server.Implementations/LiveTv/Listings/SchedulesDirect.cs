@@ -152,7 +152,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                             responseString);
                     var programDict = programDetails.ToDictionary(p => p.programID, y => y);
 
-                    var images = await GetImageForPrograms(info, programDetails.Where(p => p.hasImageArtwork).Select(p => p.programID).ToList(), cancellationToken);
+                    var programIdsWithImages =
+                        programDetails.Where(p => p.hasImageArtwork).Select(p => p.programID)
+                        .ToList();
+
+                    var images = await GetImageForPrograms(info, programIdsWithImages, cancellationToken);
 
                     var schedules = dailySchedules.SelectMany(d => d.programs);
                     foreach (ScheduleDirect.Program schedule in schedules)
@@ -439,13 +443,20 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             List<string> programIds,
            CancellationToken cancellationToken)
         {
+            if (programIds.Count == 0)
+            {
+                return new List<ScheduleDirect.ShowImages>();
+            }
+
             var imageIdString = "[";
 
             foreach (var i in programIds)
             {
-                if (!imageIdString.Contains(i.Substring(0, 10)))
+                var imageId = i.Substring(0, 10);
+
+                if (!imageIdString.Contains(imageId))
                 {
-                    imageIdString += "\"" + i.Substring(0, 10) + "\",";
+                    imageIdString += "\"" + imageId + "\",";
                 }
             }
 
@@ -461,14 +472,21 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 // The data can be large so give it some extra time
                 TimeoutMs = 60000
             };
-            List<ScheduleDirect.ShowImages> images;
-            using (var innerResponse2 = await Post(httpOptions, true, info).ConfigureAwait(false))
-            {
-                images = _jsonSerializer.DeserializeFromStream<List<ScheduleDirect.ShowImages>>(
-                    innerResponse2.Content);
-            }
 
-            return images;
+            try
+            {
+                using (var innerResponse2 = await Post(httpOptions, true, info).ConfigureAwait(false))
+                {
+                    return _jsonSerializer.DeserializeFromStream<List<ScheduleDirect.ShowImages>>(
+                        innerResponse2.Content);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting image info from schedules direct", ex);
+
+                return new List<ScheduleDirect.ShowImages>();
+            }
         }
 
         public async Task<List<NameIdPair>> GetHeadends(ListingsProviderInfo info, string country, string location, CancellationToken cancellationToken)
