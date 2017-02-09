@@ -458,15 +458,22 @@ namespace Emby.Common.Implementations.HttpClientManager
                 !string.IsNullOrEmpty(options.RequestContent) ||
                 string.Equals(httpMethod, "post", StringComparison.OrdinalIgnoreCase))
             {
-                var bytes = options.RequestContentBytes ??
-                    Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
+                try
+                {
+                    var bytes = options.RequestContentBytes ??
+                        Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
 
-                httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
+                    httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
 
 #if NET46
-                httpWebRequest.ContentLength = bytes.Length;
-#endif    
-                (await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false)).Write(bytes, 0, bytes.Length);
+                    httpWebRequest.ContentLength = bytes.Length;
+#endif
+                    (await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false)).Write(bytes, 0, bytes.Length);
+                }
+                catch (Exception ex)
+                {
+                    throw new HttpException(ex.Message) { IsTimedOut = true };
+                }
             }
 
             if (options.ResourcePool != null)
