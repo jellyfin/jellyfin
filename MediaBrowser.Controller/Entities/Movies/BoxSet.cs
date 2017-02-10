@@ -57,6 +57,14 @@ namespace MediaBrowser.Controller.Entities.Movies
             return config.BlockUnratedItems.Contains(UnratedItem.Movie);
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            double value = 2;
+            value /= 3;
+
+            return value;
+        }
+
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Movie;
