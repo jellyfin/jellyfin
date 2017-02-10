@@ -38,6 +38,14 @@ namespace MediaBrowser.Controller.Entities
             return GetItemLookupInfo<PersonLookupInfo>();
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            double value = 2;
+            value /= 3;
+
+            return value;
+        }
+
         public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
             query.PersonIds = new[] { Id.ToString("N") };

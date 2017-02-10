@@ -1396,7 +1396,7 @@ namespace Emby.Server.Implementations.Dto
                             }
                             catch (Exception ex)
                             {
-                                
+
                             }
                         }
                     }
@@ -1630,7 +1630,19 @@ namespace Emby.Server.Implementations.Dto
                 return null;
             }
 
+            var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary).ToList();
+
             ImageSize size;
+
+            if (supportedEnhancers.Count == 0)
+            {
+                var defaultAspectRatio = item.GetDefaultPrimaryImageAspectRatio();
+
+                if (defaultAspectRatio.HasValue)
+                {
+                    return defaultAspectRatio.Value;
+                }
+            }
 
             try
             {
@@ -1641,8 +1653,6 @@ namespace Emby.Server.Implementations.Dto
                 //_logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
                 return null;
             }
-
-            var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary).ToList();
 
             foreach (var enhancer in supportedEnhancers)
             {

@@ -46,6 +46,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             AlbumArtists = new List<string>();
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            return 1;
+        }
+
         [IgnoreDataMember]
         public override bool SupportsPlayedStatus
         {

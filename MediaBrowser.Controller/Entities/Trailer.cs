@@ -29,6 +29,14 @@ namespace MediaBrowser.Controller.Entities
             get { return TrailerTypes.Contains(TrailerType.LocalTrailer); }
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            double value = 2;
+            value /= 3;
+
+            return value;
+        }
+
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Trailer;

@@ -54,6 +54,14 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public string SeriesSortName { get; set; }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            double value = 2;
+            value /= 3;
+
+            return value;
+        }
+
         public string FindSeriesSortName()
         {
             var series = Series;

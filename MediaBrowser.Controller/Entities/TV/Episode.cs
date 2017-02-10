@@ -116,6 +116,14 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            double value = 16;
+            value /= 9;
+
+            return value;
+        }
+
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();
