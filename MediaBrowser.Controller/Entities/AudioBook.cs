@@ -47,6 +47,11 @@ namespace MediaBrowser.Controller.Entities
             return SeriesPresentationUniqueKey;
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            return null;
+        }
+
         [IgnoreDataMember]
         public override bool EnableRefreshOnDateModifiedChange
         {

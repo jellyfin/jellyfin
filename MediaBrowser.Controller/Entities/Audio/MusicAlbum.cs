@@ -119,6 +119,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             return Tracks;
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            return 1;
+        }
+
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();

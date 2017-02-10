@@ -93,6 +93,14 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            double value = 2;
+            value /= 3;
+
+            return value;
+        }
+
         public override string CreatePresentationUniqueKey()
         {
             if (LibraryManager.GetLibraryOptions(this).EnableAutomaticSeriesGrouping)
