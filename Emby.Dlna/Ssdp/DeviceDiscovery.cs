@@ -19,13 +19,12 @@ using Rssdp.Infrastructure;
 
 namespace Emby.Dlna.Ssdp
 {
-    public class DeviceDiscovery : IDeviceDiscovery, IDisposable
+    public class DeviceDiscovery : IDeviceDiscovery
     {
         private bool _disposed;
 
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
-        private readonly CancellationTokenSource _tokenSource;
 
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscovered;
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
@@ -37,8 +36,6 @@ namespace Emby.Dlna.Ssdp
 
         public DeviceDiscovery(ILogger logger, IServerConfigurationManager config, ISocketFactory socketFactory, ITimerFactory timerFactory)
         {
-            _tokenSource = new CancellationTokenSource();
-
             _logger = logger;
             _config = config;
             _socketFactory = socketFactory;
@@ -59,39 +56,10 @@ namespace Emby.Dlna.Ssdp
             _deviceLocator.DeviceAvailable += deviceLocator_DeviceAvailable;
             _deviceLocator.DeviceUnavailable += _DeviceLocator_DeviceUnavailable;
 
-            // Perform a search so we don't have to wait for devices to broadcast notifications 
-            // again to get any results right away (notifications are broadcast periodically).
-            StartAsyncSearch();
-        }
+            var dueTime = TimeSpan.FromSeconds(5);
+            var interval = TimeSpan.FromSeconds(_config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds);
 
-        private void StartAsyncSearch()
-        {
-            Task.Factory.StartNew(async (o) =>
-            {
-                while (!_tokenSource.IsCancellationRequested)
-                {
-                    try
-                    {
-                        // Enable listening for notifications (optional)
-                        _deviceLocator.StartListeningForNotifications();
-
-                        await _deviceLocator.SearchAsync(_tokenSource.Token).ConfigureAwait(false);
-
-                        var delay = _config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds * 1000;
-
-                        await Task.Delay(delay, _tokenSource.Token).ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error searching for devices", ex);
-                    }
-                }
-
-            }, CancellationToken.None, TaskCreationOptions.LongRunning);
+            _deviceLocator.RestartBroadcastTimer(dueTime, interval);
         }
 
         // Process each found device in the event handler
@@ -141,7 +109,11 @@ namespace Emby.Dlna.Ssdp
             if (!_disposed)
             {
                 _disposed = true;
-                _tokenSource.Cancel();
+                if (_deviceLocator != null)
+                {
+                    _deviceLocator.Dispose();
+                    _deviceLocator = null;
+                }
             }
         }
     }

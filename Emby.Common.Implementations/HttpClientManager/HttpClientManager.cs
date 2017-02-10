@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Common.Implementations.HttpClientManager;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Common;
 
 namespace Emby.Common.Implementations.HttpClientManager
 {
@@ -43,17 +44,12 @@ namespace Emby.Common.Implementations.HttpClientManager
 
         private readonly IFileSystem _fileSystem;
         private readonly IMemoryStreamFactory _memoryStreamProvider;
+        private readonly Func<string> _defaultUserAgentFn;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
         /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="fileSystem">The file system.</param>
-        /// <exception cref="System.ArgumentNullException">appPaths
-        /// or
-        /// logger</exception>
-        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem, IMemoryStreamFactory memoryStreamProvider)
+        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem, IMemoryStreamFactory memoryStreamProvider, Func<string> defaultUserAgentFn)
         {
             if (appPaths == null)
             {
@@ -68,6 +64,7 @@ namespace Emby.Common.Implementations.HttpClientManager
             _fileSystem = fileSystem;
             _memoryStreamProvider = memoryStreamProvider;
             _appPaths = appPaths;
+            _defaultUserAgentFn = defaultUserAgentFn;
 
 #if NET46
             // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
@@ -257,6 +254,8 @@ namespace Emby.Common.Implementations.HttpClientManager
 
         private void AddRequestHeaders(HttpWebRequest request, HttpRequestOptions options)
         {
+            var hasUserAgent = false;
+
             foreach (var header in options.RequestHeaders.ToList())
             {
                 if (string.Equals(header.Key, "Accept", StringComparison.OrdinalIgnoreCase))
@@ -265,11 +264,8 @@ namespace Emby.Common.Implementations.HttpClientManager
                 }
                 else if (string.Equals(header.Key, "User-Agent", StringComparison.OrdinalIgnoreCase))
                 {
-#if NET46
-                    request.UserAgent = header.Value;
-#elif NETSTANDARD1_6
-                    request.Headers["User-Agent"] = header.Value;
-#endif
+                    SetUserAgent(request, header.Value);
+                    hasUserAgent = true;
                 }
                 else
                 {
@@ -280,6 +276,20 @@ namespace Emby.Common.Implementations.HttpClientManager
 #endif
                 }
             }
+
+            if (!hasUserAgent && options.EnableDefaultUserAgent)
+            {
+                SetUserAgent(request, _defaultUserAgentFn());
+            }
+        }
+
+        private void SetUserAgent(HttpWebRequest request, string userAgent)
+        {
+#if NET46
+            request.UserAgent = userAgent;
+#elif NETSTANDARD1_6
+                    request.Headers["User-Agent"] = userAgent;
+#endif
         }
 
         /// <summary>
@@ -448,15 +458,22 @@ namespace Emby.Common.Implementations.HttpClientManager
                 !string.IsNullOrEmpty(options.RequestContent) ||
                 string.Equals(httpMethod, "post", StringComparison.OrdinalIgnoreCase))
             {
-                var bytes = options.RequestContentBytes ??
-                    Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
+                try
+                {
+                    var bytes = options.RequestContentBytes ??
+                        Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
 
-                httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
+                    httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
 
 #if NET46
-                httpWebRequest.ContentLength = bytes.Length;
-#endif    
-                (await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false)).Write(bytes, 0, bytes.Length);
+                    httpWebRequest.ContentLength = bytes.Length;
+#endif
+                    (await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false)).Write(bytes, 0, bytes.Length);
+                }
+                catch (Exception ex)
+                {
+                    throw new HttpException(ex.Message) { IsTimedOut = true };
+                }
             }
 
             if (options.ResourcePool != null)

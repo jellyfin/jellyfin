@@ -19,31 +19,33 @@ namespace MediaBrowser.WebDashboard.Api
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IMemoryStreamFactory _memoryStreamFactory;
+        private readonly string _basePath;
 
-        public PackageCreator(IFileSystem fileSystem, ILogger logger, IServerConfigurationManager config, IMemoryStreamFactory memoryStreamFactory)
+        public PackageCreator(string basePath, IFileSystem fileSystem, ILogger logger, IServerConfigurationManager config, IMemoryStreamFactory memoryStreamFactory)
         {
             _fileSystem = fileSystem;
             _logger = logger;
             _config = config;
             _memoryStreamFactory = memoryStreamFactory;
+            _basePath = basePath;
         }
 
-        public async Task<Stream> GetResource(string path,
+        public async Task<Stream> GetResource(string virtualPath,
             string mode,
             string localizationCulture,
             string appVersion)
         {
-            var resourceStream = GetRawResourceStream(path);
+            var resourceStream = GetRawResourceStream(virtualPath);
 
             if (resourceStream != null)
             {
                 // Don't apply any caching for html pages
                 // jQuery ajax doesn't seem to handle if-modified-since correctly
-                if (IsFormat(path, "html"))
+                if (IsFormat(virtualPath, "html"))
                 {
-                    if (IsCoreHtml(path))
+                    if (IsCoreHtml(virtualPath))
                     {
-                        resourceStream = await ModifyHtml(path, resourceStream, mode, appVersion, localizationCulture).ConfigureAwait(false);
+                        resourceStream = await ModifyHtml(virtualPath, resourceStream, mode, appVersion, localizationCulture).ConfigureAwait(false);
                     }
                 }
             }
@@ -63,32 +65,12 @@ namespace MediaBrowser.WebDashboard.Api
         }
 
         /// <summary>
-        /// Gets the dashboard UI path.
-        /// </summary>
-        /// <value>The dashboard UI path.</value>
-        public string DashboardUIPath
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(_config.Configuration.DashboardSourcePath))
-                {
-                    return _config.Configuration.DashboardSourcePath;
-                }
-
-                return Path.Combine(_config.ApplicationPaths.ApplicationResourcesPath, "dashboard-ui");
-            }
-        }
-
-        /// <summary>
         /// Gets the dashboard resource path.
         /// </summary>
-        /// <param name="virtualPath">The virtual path.</param>
         /// <returns>System.String.</returns>
         private string GetDashboardResourcePath(string virtualPath)
         {
-            var rootPath = DashboardUIPath;
-
-            var fullPath = Path.Combine(rootPath, virtualPath.Replace('/', _fileSystem.DirectorySeparatorChar));
+            var fullPath = Path.Combine(_basePath, virtualPath.Replace('/', _fileSystem.DirectorySeparatorChar));
 
             try
             {
@@ -100,7 +82,7 @@ namespace MediaBrowser.WebDashboard.Api
             }
 
             // Don't allow file system access outside of the source folder
-            if (!_fileSystem.ContainsSubPath(rootPath, fullPath))
+            if (!_fileSystem.ContainsSubPath(_basePath, fullPath))
             {
                 throw new SecurityException("Access denied");
             }
@@ -118,10 +100,8 @@ namespace MediaBrowser.WebDashboard.Api
             path = GetDashboardResourcePath(path);
             var parent = Path.GetDirectoryName(path);
 
-            var basePath = DashboardUIPath;
-
-            return string.Equals(basePath, parent, StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(Path.Combine(basePath, "voice"), parent, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(_basePath, parent, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(Path.Combine(_basePath, "voice"), parent, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -319,11 +299,9 @@ namespace MediaBrowser.WebDashboard.Api
         /// <summary>
         /// Gets the raw resource stream.
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>Task{Stream}.</returns>
-        private Stream GetRawResourceStream(string path)
+        private Stream GetRawResourceStream(string virtualPath)
         {
-            return _fileSystem.GetFileStream(GetDashboardResourcePath(path), FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
+            return _fileSystem.GetFileStream(GetDashboardResourcePath(virtualPath), FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
         }
 
     }
