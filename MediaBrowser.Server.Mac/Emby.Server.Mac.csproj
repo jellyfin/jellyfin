@@ -1569,15 +1569,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\font-roboto\roboto.html">
       <Link>Resources\dashboard-ui\bower_components\font-roboto\roboto.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\changelog.js">
-      <Link>Resources\dashboard-ui\bower_components\hammerjs\changelog.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\hammer.js">
-      <Link>Resources\dashboard-ui\bower_components\hammerjs\hammer.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\hammer.min.js">
-      <Link>Resources\dashboard-ui\bower_components\hammerjs\hammer.min.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\headroomjs\LICENSE">
       <Link>Resources\dashboard-ui\bower_components\headroomjs\LICENSE</Link>
     </BundleResource>
@@ -1916,6 +1907,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\logo.png">
       <Link>Resources\dashboard-ui\css\images\logo.png</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\logoblack.png">
+      <Link>Resources\dashboard-ui\css\images\logoblack.png</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\mblogoicon.png">
       <Link>Resources\dashboard-ui\css\images\mblogoicon.png</Link>
