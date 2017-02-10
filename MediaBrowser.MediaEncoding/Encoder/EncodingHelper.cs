@@ -1486,33 +1486,33 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     //inputModifier += " -noaccurate_seek";
                 }
 
-                if (!string.IsNullOrWhiteSpace(state.InputContainer))
-                {
-                    var inputFormat = GetInputFormat(state.InputContainer);
-                    if (!string.IsNullOrWhiteSpace(inputFormat))
-                    {
-                        inputModifier += " -f " + inputFormat;
-                    }
-                }
+                //if (!string.IsNullOrWhiteSpace(state.InputContainer))
+                //{
+                //    var inputFormat = GetInputFormat(state.InputContainer);
+                //    if (!string.IsNullOrWhiteSpace(inputFormat))
+                //    {
+                //        inputModifier += " -f " + inputFormat;
+                //    }
+                //}
 
-                if (state.RunTimeTicks.HasValue)
-                {
-                    foreach (var stream in state.MediaSource.MediaStreams)
-                    {
-                        if (!stream.IsExternal && stream.Type != MediaStreamType.Subtitle)
-                        {
-                            if (!string.IsNullOrWhiteSpace(stream.Codec) && stream.Index != -1)
-                            {
-                                var decoder = GetDecoderFromCodec(stream.Codec);
+                //if (state.RunTimeTicks.HasValue)
+                //{
+                //    foreach (var stream in state.MediaSource.MediaStreams)
+                //    {
+                //        if (!stream.IsExternal && stream.Type != MediaStreamType.Subtitle)
+                //        {
+                //            if (!string.IsNullOrWhiteSpace(stream.Codec) && stream.Index != -1)
+                //            {
+                //                var decoder = GetDecoderFromCodec(stream.Codec);
 
-                                if (!string.IsNullOrWhiteSpace(decoder))
-                                {
-                                    inputModifier += " -codec:" + stream.Index.ToString(_usCulture) + " " + decoder;
-                                }
-                            }
-                        }
-                    }
-                }
+                //                if (!string.IsNullOrWhiteSpace(decoder))
+                //                {
+                //                    inputModifier += " -codec:" + stream.Index.ToString(_usCulture) + " " + decoder;
+                //                }
+                //            }
+                //        }
+                //    }
+                //}
             }
 
             return inputModifier;
