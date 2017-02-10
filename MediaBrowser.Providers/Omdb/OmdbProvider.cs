@@ -347,7 +347,8 @@ namespace MediaBrowser.Providers.Omdb
                 Url = url,
                 ResourcePool = ResourcePool,
                 CancellationToken = cancellationToken,
-                BufferContent = true
+                BufferContent = true,
+                EnableDefaultUserAgent = true
             });
         }
 
@@ -384,10 +385,11 @@ namespace MediaBrowser.Providers.Omdb
         {
             T item = itemResult.Item;
 
+            var isConfiguredForEnglish = IsConfiguredForEnglish(item);
+
             // Grab series genres because imdb data is better than tvdb. Leave movies alone
             // But only do it if english is the preferred language because this data will not be localized
-            if (ShouldFetchGenres(item) &&
-                !string.IsNullOrWhiteSpace(result.Genre))
+            if (isConfiguredForEnglish && !string.IsNullOrWhiteSpace(result.Genre))
             {
                 item.Genres.Clear();
 
@@ -417,8 +419,11 @@ namespace MediaBrowser.Providers.Omdb
                 hasAwards.AwardSummary = WebUtility.HtmlDecode(result.Awards);
             }
 
-            // Imdb plots are usually pretty short
-            item.Overview = result.Plot;
+            if (isConfiguredForEnglish)
+            {
+                // Omdb is currently english only, so for other languages skip this and let secondary providers fill it in
+                item.Overview = result.Plot;
+            }
 
             //if (!string.IsNullOrWhiteSpace(result.Director))
             //{
@@ -461,7 +466,7 @@ namespace MediaBrowser.Providers.Omdb
             //}
         }
 
-        private bool ShouldFetchGenres(BaseItem item)
+        private bool IsConfiguredForEnglish(BaseItem item)
         {
             var lang = item.GetPreferredMetadataLanguage();
 

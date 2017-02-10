@@ -423,6 +423,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     {
                         tunerChannel.Name = epgChannel.Name;
                     }
+                    if (!string.IsNullOrWhiteSpace(epgChannel.ImageUrl))
+                    {
+                        tunerChannel.ImageUrl = epgChannel.ImageUrl;
+                        tunerChannel.HasImage = true;
+                    }
                 }
             }
         }
@@ -469,16 +474,20 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public ChannelInfo GetEpgChannelFromTunerChannel(List<NameValuePair> mappings, ChannelInfo tunerChannel, List<ChannelInfo> epgChannels)
         {
-            if (!string.IsNullOrWhiteSpace(tunerChannel.TunerChannelId))
-            {
-                var tunerChannelId = GetMappedChannel(tunerChannel.TunerChannelId, mappings);
+            var tunerChannelId = string.IsNullOrWhiteSpace(tunerChannel.TunerChannelId)
+                ? tunerChannel.Id
+                : tunerChannel.TunerChannelId;
 
-                if (string.IsNullOrWhiteSpace(tunerChannelId))
+            if (!string.IsNullOrWhiteSpace(tunerChannelId))
+            {
+                var mappedTunerChannelId = GetMappedChannel(tunerChannelId, mappings);
+
+                if (string.IsNullOrWhiteSpace(mappedTunerChannelId))
                 {
-                    tunerChannelId = tunerChannel.TunerChannelId;
+                    mappedTunerChannelId = tunerChannelId;
                 }
 
-                var channel = epgChannels.FirstOrDefault(i => string.Equals(tunerChannelId, i.Id, StringComparison.OrdinalIgnoreCase));
+                var channel = epgChannels.FirstOrDefault(i => string.Equals(mappedTunerChannelId, i.Id, StringComparison.OrdinalIgnoreCase));
 
                 if (channel != null)
                 {
@@ -1163,7 +1172,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 };
 
                 var isAudio = false;
-                await new LiveStreamHelper(_mediaEncoder, _logger).AddMediaInfoWithProbe(stream, isAudio, cancellationToken).ConfigureAwait(false);
+                await new LiveStreamHelper(_mediaEncoder, _logger).AddMediaInfoWithProbe(stream, isAudio, false, cancellationToken).ConfigureAwait(false);
 
                 return new List<MediaSourceInfo>
                 {
@@ -2090,13 +2099,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     foreach (var person in writers)
                     {
                         writer.WriteElementString("credits", person);
-                    }
-
-                    var rt = item.GetProviderId(MetadataProviders.RottenTomatoes);
-
-                    if (!string.IsNullOrEmpty(rt))
-                    {
-                        writer.WriteElementString("rottentomatoesid", rt);
                     }
 
                     var tmdbCollection = item.GetProviderId(MetadataProviders.TmdbCollection);

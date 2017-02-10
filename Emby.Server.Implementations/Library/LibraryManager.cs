@@ -2627,6 +2627,18 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
+            foreach (var map in ConfigurationManager.Configuration.PathSubstitutions)
+            {
+                if (!string.IsNullOrWhiteSpace(map.From))
+                {
+                    var substitutionResult = SubstitutePathInternal(path, map.From, map.To);
+                    if (substitutionResult.Item2)
+                    {
+                        return substitutionResult.Item1;
+                    }
+                }
+            }
+
             return path;
         }
 

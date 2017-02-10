@@ -45,7 +45,7 @@
     <DirectPlayProfile container="asf" audioCodec="mp2,ac3" videoCodec="mpeg2video" type="Video" />
     <DirectPlayProfile container="mp3" audioCodec="mp2,mp3" type="Audio" />
     <DirectPlayProfile container="mp4" audioCodec="mp4" type="Audio" />
-    <DirectPlayProfile container="flac" audioCodec="flac" type="Audio" />
+    <DirectPlayProfile container="flac,ac3" type="Audio" />
     <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" type="Audio" />
     <DirectPlayProfile container="ogg" audioCodec="vorbis" type="Audio" />
     <DirectPlayProfile container="jpeg,png,gif,bmp,tiff" type="Photo" />
