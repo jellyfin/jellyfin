@@ -22,10 +22,19 @@ namespace ServiceStack
             }
 
             string contentType;
-            var restPath = RestHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, out contentType);
-            if (restPath != null)
-                return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
+            var restPath = RestHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, logger, out contentType);
 
+            if (restPath != null)
+            {
+                return new RestHandler
+                {
+                    RestPath = restPath,
+                    RequestName = restPath.RequestType.GetOperationName(),
+                    ResponseContentType = contentType
+                };
+            }
+
+            logger.Error("Could not find handler for {0}", pathInfo);
             return null;
         }
     }

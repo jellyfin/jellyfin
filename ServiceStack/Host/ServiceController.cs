@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Services;
 
 namespace ServiceStack.Host
@@ -135,7 +136,7 @@ namespace ServiceStack.Host
             appHost.RestPaths.AddRange(RestPathMap.Values.SelectMany(x => x));
         }
 
-        public RestPath GetRestPathForRequest(string httpMethod, string pathInfo)
+        public RestPath GetRestPathForRequest(string httpMethod, string pathInfo, ILogger logger)
         {
             var matchUsingPathParts = RestPath.GetPathPartsForMatching(pathInfo);
 
@@ -144,19 +145,23 @@ namespace ServiceStack.Host
             var yieldedHashMatches = RestPath.GetFirstMatchHashKeys(matchUsingPathParts);
             foreach (var potentialHashMatch in yieldedHashMatches)
             {
-                if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches)) continue;
+                if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches))
+                {
+                    continue;
+                }
 
                 var bestScore = -1;
                 foreach (var restPath in firstMatches)
                 {
-                    var score = restPath.MatchScore(httpMethod, matchUsingPathParts);
+                    var score = restPath.MatchScore(httpMethod, matchUsingPathParts, logger);
                     if (score > bestScore) bestScore = score;
                 }
+
                 if (bestScore > 0)
                 {
                     foreach (var restPath in firstMatches)
                     {
-                        if (bestScore == restPath.MatchScore(httpMethod, matchUsingPathParts))
+                        if (bestScore == restPath.MatchScore(httpMethod, matchUsingPathParts, logger))
                             return restPath;
                     }
                 }
@@ -170,14 +175,14 @@ namespace ServiceStack.Host
                 var bestScore = -1;
                 foreach (var restPath in firstMatches)
                 {
-                    var score = restPath.MatchScore(httpMethod, matchUsingPathParts);
+                    var score = restPath.MatchScore(httpMethod, matchUsingPathParts, logger);
                     if (score > bestScore) bestScore = score;
                 }
                 if (bestScore > 0)
                 {
                     foreach (var restPath in firstMatches)
                     {
-                        if (bestScore == restPath.MatchScore(httpMethod, matchUsingPathParts))
+                        if (bestScore == restPath.MatchScore(httpMethod, matchUsingPathParts, logger))
                             return restPath;
                     }
                 }
