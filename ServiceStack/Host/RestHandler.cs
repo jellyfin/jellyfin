@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Services;
 
 namespace ServiceStack.Host
@@ -54,11 +55,11 @@ namespace ServiceStack.Host
             return requestFactoryFn != null ? requestFactoryFn(httpReq) : null;
         }
 
-        public static RestPath FindMatchingRestPath(string httpMethod, string pathInfo, out string contentType)
+        public static RestPath FindMatchingRestPath(string httpMethod, string pathInfo, ILogger logger, out string contentType)
         {
             pathInfo = GetSanitizedPathInfo(pathInfo, out contentType);
 
-            return ServiceStackHost.Instance.ServiceController.GetRestPathForRequest(httpMethod, pathInfo);
+            return ServiceStackHost.Instance.ServiceController.GetRestPathForRequest(httpMethod, pathInfo, logger);
         }
 
         public static string GetSanitizedPathInfo(string pathInfo, out string contentType)
@@ -93,7 +94,7 @@ namespace ServiceStack.Host
             if (this.RestPath == null)
             {
                 string contentType;
-                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, out contentType);
+                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, new NullLogger(), out contentType);
 
                 if (contentType != null)
                     ResponseContentType = contentType;
