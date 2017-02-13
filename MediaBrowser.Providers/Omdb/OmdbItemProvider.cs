@@ -18,8 +18,6 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Providers.Omdb
 {
@@ -74,7 +72,8 @@ namespace MediaBrowser.Providers.Omdb
 
             var imdbId = searchInfo.GetProviderId(MetadataProviders.Imdb);
 
-            var url = "https://www.omdbapi.com/?plot=full&r=json";
+            var baseUrl = await OmdbProvider.GetOmdbBaseUrl(cancellationToken).ConfigureAwait(false);
+            var url = baseUrl + "/?plot=full&r=json";
             if (type == "episode" && episodeSearchInfo != null)
             {
                 episodeSearchInfo.SeriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out imdbId);
