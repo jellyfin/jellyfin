@@ -1,6 +1,3 @@
-//Copyright (c) Service Stack LLC. All Rights Reserved.
-//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,11 +5,25 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
+using ServiceStack;
 
-namespace ServiceStack.Host
+namespace Emby.Server.Implementations.Services
 {
     public static class ServiceExecExtensions
     {
+        public static HashSet<string> AllVerbs = new HashSet<string>(new[] {
+            "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT", // RFC 2616
+            "PROPFIND", "PROPPATCH", "MKCOL", "COPY", "MOVE", "LOCK", "UNLOCK",    // RFC 2518
+            "VERSION-CONTROL", "REPORT", "CHECKOUT", "CHECKIN", "UNCHECKOUT",
+            "MKWORKSPACE", "UPDATE", "LABEL", "MERGE", "BASELINE-CONTROL", "MKACTIVITY",  // RFC 3253
+            "ORDERPATCH", // RFC 3648
+            "ACL",        // RFC 3744
+            "PATCH",      // https://datatracker.ietf.org/doc/draft-dusseault-http-patch/
+            "SEARCH",     // https://datatracker.ietf.org/doc/draft-reschke-webdav-search/
+            "BCOPY", "BDELETE", "BMOVE", "BPROPFIND", "BPROPPATCH", "NOTIFY",
+            "POLL",  "SUBSCRIBE", "UNSUBSCRIBE"
+        });
+
         public static IEnumerable<MethodInfo> GetActions(this Type serviceType)
         {
             foreach (var mi in serviceType.GetRuntimeMethods().Where(i => i.IsPublic && !i.IsStatic))
@@ -20,8 +31,8 @@ namespace ServiceStack.Host
                 if (mi.GetParameters().Length != 1)
                     continue;
 
-                var actionName = mi.Name.ToUpper();
-                if (!HttpMethods.AllVerbs.Contains(actionName) && actionName != ActionContext.AnyAction)
+                var actionName = mi.Name;
+                if (!AllVerbs.Contains(actionName, StringComparer.OrdinalIgnoreCase) && !string.Equals(actionName, ServiceMethod.AnyAction, StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 yield return mi;
@@ -31,9 +42,9 @@ namespace ServiceStack.Host
 
     internal static class ServiceExecGeneral
     {
-        public static Dictionary<string, ActionContext> execMap = new Dictionary<string, ActionContext>();
+        public static Dictionary<string, ServiceMethod> execMap = new Dictionary<string, ServiceMethod>();
 
-        public static void CreateServiceRunnersFor(Type requestType, List<ActionContext> actions)
+        public static void CreateServiceRunnersFor(Type requestType, List<ServiceMethod> actions)
         {
             foreach (var actionCtx in actions)
             {
@@ -45,12 +56,11 @@ namespace ServiceStack.Host
 
         public static async Task<object> Execute(Type serviceType, IRequest request, object instance, object requestDto, string requestName)
         {
-            var actionName = request.Verb
-                ?? HttpMethods.Post; //MQ Services
+            var actionName = request.Verb ?? "POST";
 
-            ActionContext actionContext;
-            if (ServiceExecGeneral.execMap.TryGetValue(ActionContext.Key(serviceType, actionName, requestName), out actionContext)
-                || ServiceExecGeneral.execMap.TryGetValue(ActionContext.AnyKey(serviceType, requestName), out actionContext))
+            ServiceMethod actionContext;
+            if (ServiceExecGeneral.execMap.TryGetValue(ServiceMethod.Key(serviceType, actionName, requestName), out actionContext)
+                || ServiceExecGeneral.execMap.TryGetValue(ServiceMethod.AnyKey(serviceType, requestName), out actionContext))
             {
                 if (actionContext.RequestFilters != null)
                 {
@@ -67,7 +77,7 @@ namespace ServiceStack.Host
                 if (taskResponse != null)
                 {
                     await taskResponse.ConfigureAwait(false);
-                    response = ServiceStackHost.Instance.GetTaskResult(taskResponse, requestName);
+                    response = ServiceHandler.GetTaskResult(taskResponse);
                 }
 
                 return response;
@@ -77,19 +87,19 @@ namespace ServiceStack.Host
             throw new NotImplementedException(string.Format("Could not find method named {1}({0}) or Any({0}) on Service {2}", requestDto.GetType().GetOperationName(), expectedMethodName, serviceType.GetOperationName()));
         }
 
-        public static List<ActionContext> Reset(Type serviceType)
+        public static List<ServiceMethod> Reset(Type serviceType)
         {
-            var actions = new List<ActionContext>();
+            var actions = new List<ServiceMethod>();
 
             foreach (var mi in serviceType.GetActions())
             {
-                var actionName = mi.Name.ToUpper();
+                var actionName = mi.Name;
                 var args = mi.GetParameters();
 
                 var requestType = args[0].ParameterType;
-                var actionCtx = new ActionContext
+                var actionCtx = new ServiceMethod
                 {
-                    Id = ActionContext.Key(serviceType, actionName, requestType.GetOperationName())
+                    Id = ServiceMethod.Key(serviceType, actionName, requestType.GetOperationName())
                 };
 
                 try

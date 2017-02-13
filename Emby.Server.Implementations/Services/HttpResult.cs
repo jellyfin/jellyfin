@@ -1,14 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
-using ServiceStack.Host;
+using ServiceStack;
 
-namespace ServiceStack
+namespace Emby.Server.Implementations.Services
 {
     public class HttpResult
         : IHttpResult, IAsyncStreamWriter
@@ -55,7 +53,7 @@ namespace ServiceStack
                 return;
             }
 
-            await HttpResponseExtensionsInternal.WriteObject(this.RequestContext, this.Response, response).ConfigureAwait(false);
+            await ResponseHelper.WriteObject(this.RequestContext, this.Response, response).ConfigureAwait(false);
         }
     }
 }
