@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
-using ServiceStack;
 
 namespace Emby.Server.Implementations.Services
 {
@@ -84,7 +83,7 @@ namespace Emby.Server.Implementations.Services
             }
 
             var expectedMethodName = actionName.Substring(0, 1) + actionName.Substring(1).ToLower();
-            throw new NotImplementedException(string.Format("Could not find method named {1}({0}) or Any({0}) on Service {2}", requestDto.GetType().GetOperationName(), expectedMethodName, serviceType.GetOperationName()));
+            throw new NotImplementedException(string.Format("Could not find method named {1}({0}) or Any({0}) on Service {2}", requestDto.GetType().GetMethodName(), expectedMethodName, serviceType.GetMethodName()));
         }
 
         public static List<ServiceMethod> Reset(Type serviceType)
@@ -99,7 +98,7 @@ namespace Emby.Server.Implementations.Services
                 var requestType = args[0].ParameterType;
                 var actionCtx = new ServiceMethod
                 {
-                    Id = ServiceMethod.Key(serviceType, actionName, requestType.GetOperationName())
+                    Id = ServiceMethod.Key(serviceType, actionName, requestType.GetMethodName())
                 };
 
                 try

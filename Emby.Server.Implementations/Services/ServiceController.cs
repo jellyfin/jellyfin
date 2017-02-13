@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Services;
-using ServiceStack;
 
 namespace Emby.Server.Implementations.Services
 {
@@ -108,7 +107,7 @@ namespace Emby.Server.Implementations.Services
 
                 if (!restPath.IsValid)
                     throw new NotSupportedException(string.Format(
-                        "RestPath '{0}' on Type '{1}' is not Valid", attr.Path, requestType.GetOperationName()));
+                        "RestPath '{0}' on Type '{1}' is not Valid", attr.Path, requestType.GetMethodName()));
 
                 RegisterRestPath(restPath);
             }
@@ -119,10 +118,10 @@ namespace Emby.Server.Implementations.Services
         public void RegisterRestPath(RestPath restPath)
         {
             if (!restPath.Path.StartsWith("/"))
-                throw new ArgumentException(string.Format("Route '{0}' on '{1}' must start with a '/'", restPath.Path, restPath.RequestType.GetOperationName()));
+                throw new ArgumentException(string.Format("Route '{0}' on '{1}' must start with a '/'", restPath.Path, restPath.RequestType.GetMethodName()));
             if (restPath.Path.IndexOfAny(InvalidRouteChars) != -1)
                 throw new ArgumentException(string.Format("Route '{0}' on '{1}' contains invalid chars. " +
-                                            "See https://github.com/ServiceStack/ServiceStack/wiki/Routing for info on valid routes.", restPath.Path, restPath.RequestType.GetOperationName()));
+                                            "See https://github.com/ServiceStack/ServiceStack/wiki/Routing for info on valid routes.", restPath.Path, restPath.RequestType.GetMethodName()));
 
             List<RestPath> pathsAtFirstMatch;
             if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out pathsAtFirstMatch))
@@ -210,7 +209,7 @@ namespace Emby.Server.Implementations.Services
                 req.Dto = requestDto;
 
             //Executes the service and returns the result
-            var response = await ServiceExecGeneral.Execute(serviceType, req, service, requestDto, requestType.GetOperationName()).ConfigureAwait(false);
+            var response = await ServiceExecGeneral.Execute(serviceType, req, service, requestDto, requestType.GetMethodName()).ConfigureAwait(false);
 
             return response;
         }

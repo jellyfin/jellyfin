@@ -5,9 +5,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using MediaBrowser.Model.Logging;
-using ServiceStack.Serialization;
 
-namespace ServiceStack
+namespace Emby.Server.Implementations.Services
 {
     public class RestPath
     {
@@ -494,7 +493,7 @@ namespace ServiceStack
                     }
 
                     throw new ArgumentException("Could not find property "
-                        + variableName + " on " + RequestType.GetOperationName());
+                        + variableName + " on " + RequestType.GetMethodName());
                 }
 
                 var value = requestComponents.Length > pathIx ? requestComponents[pathIx] : null; //wildcard has arg mismatch

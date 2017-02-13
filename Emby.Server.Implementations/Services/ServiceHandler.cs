@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Services;
-using ServiceStack;
 
 namespace Emby.Server.Implementations.Services
 {
