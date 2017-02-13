@@ -34,14 +34,19 @@ namespace ServiceStack.Serialization
             if (propertyType == typeof(string))
                 return s => s;
 
-            return ServiceStackHost.Instance.GetParseFn(propertyType);
+            return _GetParseFn(propertyType);
         }
 
-        public StringMapTypeDeserializer(Type type)
+        private readonly Func<Type, object> _CreateInstanceFn;
+        private readonly Func<Type, Func<string, object>> _GetParseFn;
+
+        public StringMapTypeDeserializer(Func<Type, object> createInstanceFn, Func<Type, Func<string, object>> getParseFn, Type type)
         {
+            _CreateInstanceFn = createInstanceFn;
+            _GetParseFn = getParseFn;
             this.type = type;
 
-            foreach (var propertyInfo in type.GetSerializableProperties())
+            foreach (var propertyInfo in RestPath.GetSerializableProperties(type))
             {
                 var propertySetFn = TypeAccessor.GetSetPropertyMethod(type, propertyInfo);
                 var propertyType = propertyInfo.PropertyType;
@@ -59,7 +64,7 @@ namespace ServiceStack.Serialization
             PropertySerializerEntry propertySerializerEntry = null;
 
             if (instance == null)
-                instance = ServiceStackHost.Instance.CreateInstance(type);
+                instance = _CreateInstanceFn(type);
 
             foreach (var pair in keyValuePairs.Where(x => !string.IsNullOrEmpty(x.Value)))
             {

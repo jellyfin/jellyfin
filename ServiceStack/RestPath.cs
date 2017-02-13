@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Serialization;
@@ -71,7 +73,7 @@ namespace ServiceStack
         public static string[] GetPathPartsForMatching(string pathInfo)
         {
             var parts = pathInfo.ToLower().Split(PathSeperatorChar)
-                .Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                .Where(x => !String.IsNullOrEmpty(x)).ToArray();
             return parts;
         }
 
@@ -107,14 +109,14 @@ namespace ServiceStack
             return list;
         }
 
-        public RestPath(Type requestType, string path, string verbs, string summary = null, string notes = null)
+        public RestPath(Func<Type, object> createInstanceFn, Func<Type, Func<string, object>> getParseFn, Type requestType, string path, string verbs, string summary = null, string notes = null)
         {
             this.RequestType = requestType;
             this.Summary = summary;
             this.Notes = notes;
             this.restPath = path;
 
-            this.allowsAllVerbs = verbs == null || string.Equals(verbs, WildCard, StringComparison.OrdinalIgnoreCase);
+            this.allowsAllVerbs = verbs == null || String.Equals(verbs, WildCard, StringComparison.OrdinalIgnoreCase);
             if (!this.allowsAllVerbs)
             {
                 this.allowedVerbs = verbs.ToUpper();
@@ -126,7 +128,7 @@ namespace ServiceStack
             var hasSeparators = new List<bool>();
             foreach (var component in this.restPath.Split(PathSeperatorChar))
             {
-                if (string.IsNullOrEmpty(component)) continue;
+                if (String.IsNullOrEmpty(component)) continue;
 
                 if (StringContains(component, VariablePrefix)
                     && component.IndexOf(ComponentSeperator) != -1)
@@ -199,18 +201,94 @@ namespace ServiceStack
             this.IsValid = sbHashKey.Length > 0;
             this.UniqueMatchHashKey = sbHashKey.ToString();
 
-            this.typeDeserializer = new StringMapTypeDeserializer(this.RequestType);
+            this.typeDeserializer = new StringMapTypeDeserializer(createInstanceFn, getParseFn, this.RequestType);
             RegisterCaseInsenstivePropertyNameMappings();
         }
 
         private void RegisterCaseInsenstivePropertyNameMappings()
         {
-            foreach (var propertyInfo in RequestType.GetSerializableProperties())
+            foreach (var propertyInfo in GetSerializableProperties(RequestType))
             {
                 var propertyName = propertyInfo.Name;
                 propertyNamesMap.Add(propertyName.ToLower(), propertyName);
             }
         }
+
+        internal static string[] IgnoreAttributesNamed = new[] {
+            "IgnoreDataMemberAttribute",
+            "JsonIgnoreAttribute"
+        };
+
+
+        private static List<Type> _excludeTypes = new List<Type> { typeof(Stream) };
+
+        internal static PropertyInfo[] GetSerializableProperties(Type type)
+        {
+            var properties = GetPublicProperties(type);
+            var readableProperties = properties.Where(x => x.GetMethod != null);
+
+            // else return those properties that are not decorated with IgnoreDataMember
+            return readableProperties
+                .Where(prop => prop.GetCustomAttributes(true)
+                    .All(attr =>
+                    {
+                        var name = attr.GetType().Name;
+                        return !IgnoreAttributesNamed.Contains(name);
+                    }))
+                .Where(prop => !_excludeTypes.Contains(prop.PropertyType))
+                .ToArray();
+        }
+
+        private static PropertyInfo[] GetPublicProperties(Type type)
+        {
+            if (type.GetTypeInfo().IsInterface)
+            {
+                var propertyInfos = new List<PropertyInfo>();
+
+                var considered = new List<Type>();
+                var queue = new Queue<Type>();
+                considered.Add(type);
+                queue.Enqueue(type);
+
+                while (queue.Count > 0)
+                {
+                    var subType = queue.Dequeue();
+                    foreach (var subInterface in subType.GetTypeInfo().ImplementedInterfaces)
+                    {
+                        if (considered.Contains(subInterface)) continue;
+
+                        considered.Add(subInterface);
+                        queue.Enqueue(subInterface);
+                    }
+
+                    var typeProperties = GetTypesPublicProperties(subType);
+
+                    var newPropertyInfos = typeProperties
+                        .Where(x => !propertyInfos.Contains(x));
+
+                    propertyInfos.InsertRange(0, newPropertyInfos);
+                }
+
+                return propertyInfos.ToArray();
+            }
+
+            return GetTypesPublicProperties(type)
+                .Where(t => t.GetIndexParameters().Length == 0) // ignore indexed properties
+                .ToArray();
+        }
+
+        private static PropertyInfo[] GetTypesPublicProperties(Type subType)
+        {
+            var pis = new List<PropertyInfo>();
+            foreach (var pi in subType.GetRuntimeProperties())
+            {
+                var mi = pi.GetMethod ?? pi.SetMethod;
+                if (mi != null && mi.IsStatic) continue;
+                pis.Add(pi);
+            }
+            return pis.ToArray();
+        }
+
 
         public bool IsValid { get; set; }
 
@@ -243,7 +321,7 @@ namespace ServiceStack
             score += Math.Max((10 - VariableArgsCount), 1) * 100;
 
             //Exact verb match is better than ANY
-            var exactVerb = string.Equals(httpMethod, AllowedVerbs, StringComparison.OrdinalIgnoreCase);
+            var exactVerb = String.Equals(httpMethod, AllowedVerbs, StringComparison.OrdinalIgnoreCase);
             score += exactVerb ? 10 : 1;
 
             return score;
@@ -339,7 +417,7 @@ namespace ServiceStack
         private bool LiteralsEqual(string str1, string str2)
         {
             // Most cases
-            if (string.Equals(str1, str2, StringComparison.OrdinalIgnoreCase))
+            if (String.Equals(str1, str2, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -349,7 +427,7 @@ namespace ServiceStack
             str2 = str2.ToUpperInvariant();
 
             // Invariant IgnoreCase would probably be better but it's not available in PCL
-            return string.Equals(str1, str2, StringComparison.CurrentCultureIgnoreCase);
+            return String.Equals(str1, str2, StringComparison.CurrentCultureIgnoreCase);
         }
 
         private bool ExplodeComponents(ref string[] withPathInfoParts)
@@ -358,7 +436,7 @@ namespace ServiceStack
             for (var i = 0; i < withPathInfoParts.Length; i++)
             {
                 var component = withPathInfoParts[i];
-                if (string.IsNullOrEmpty(component)) continue;
+                if (String.IsNullOrEmpty(component)) continue;
 
                 if (this.PathComponentsCount != this.TotalComponentsCount
                     && this.componentsWithSeparators[i])
@@ -380,7 +458,7 @@ namespace ServiceStack
         public object CreateRequest(string pathInfo, Dictionary<string, string> queryStringAndFormData, object fromInstance)
         {
             var requestComponents = pathInfo.Split(PathSeperatorChar)
-                .Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                .Where(x => !String.IsNullOrEmpty(x)).ToArray();
 
             ExplodeComponents(ref requestComponents);
 
@@ -390,7 +468,7 @@ namespace ServiceStack
                     && requestComponents.Length >= this.TotalComponentsCount - this.wildcardCount;
 
                 if (!isValidWildCardPath)
-                    throw new ArgumentException(string.Format(
+                    throw new ArgumentException(String.Format(
                         "Path Mismatch: Request Path '{0}' has invalid number of components compared to: '{1}'",
                         pathInfo, this.restPath));
             }
@@ -409,7 +487,7 @@ namespace ServiceStack
                 string propertyNameOnRequest;
                 if (!this.propertyNamesMap.TryGetValue(variableName.ToLower(), out propertyNameOnRequest))
                 {
-                    if (string.Equals("ignore", variableName, StringComparison.OrdinalIgnoreCase))
+                    if (String.Equals("ignore", variableName, StringComparison.OrdinalIgnoreCase))
                     {
                         pathIx++;
                         continue;
@@ -439,12 +517,12 @@ namespace ServiceStack
                         // hits a match for the next element in the definition (which must be a literal)
                         // It may consume 0 or more path parts
                         var stopLiteral = i == this.TotalComponentsCount - 1 ? null : this.literalsToMatch[i + 1];
-                        if (!string.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
+                        if (!String.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
                         {
                             var sb = new StringBuilder();
                             sb.Append(value);
                             pathIx++;
-                            while (!string.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
+                            while (!String.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
                             {
                                 sb.Append(PathSeperatorChar + requestComponents[pathIx++]);
                             }

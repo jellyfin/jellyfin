@@ -53,28 +53,58 @@ namespace Emby.Server.Implementations.Services
 
                 ServiceExecGeneral.CreateServiceRunnersFor(requestType, actions);
 
-                var returnMarker = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
+                var returnMarker = GetTypeWithGenericTypeDefinitionOf(requestType, typeof(IReturn<>));
                 var responseType = returnMarker != null ?
                       GetGenericArguments(returnMarker)[0]
                     : mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void) ?
                       mi.ReturnType
                     : Type.GetType(requestType.FullName + "Response");
 
-                RegisterRestPaths(requestType);
+                RegisterRestPaths(appHost, requestType);
 
                 appHost.AddServiceInfo(serviceType, requestType, responseType);
             }
         }
 
+        private static Type GetTypeWithGenericTypeDefinitionOf(Type type, Type genericTypeDefinition)
+        {
+            foreach (var t in type.GetTypeInfo().ImplementedInterfaces)
+            {
+                if (t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == genericTypeDefinition)
+                {
+                    return t;
+                }
+            }
+
+            var genericType = FirstGenericType(type);
+            if (genericType != null && genericType.GetGenericTypeDefinition() == genericTypeDefinition)
+            {
+                return genericType;
+            }
+
+            return null;
+        }
+
+        public static Type FirstGenericType(Type type)
+        {
+            while (type != null)
+            {
+                if (type.GetTypeInfo().IsGenericType)
+                    return type;
+
+                type = type.GetTypeInfo().BaseType;
+            }
+            return null;
+        }
+
         public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>(StringComparer.OrdinalIgnoreCase);
 
-        public void RegisterRestPaths(Type requestType)
+        public void RegisterRestPaths(HttpListenerHost appHost, Type requestType)
         {
-            var appHost = ServiceStackHost.Instance;
             var attrs = appHost.GetRouteAttributes(requestType);
-            foreach (MediaBrowser.Model.Services.RouteAttribute attr in attrs)
+            foreach (RouteAttribute attr in attrs)
             {
-                var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes);
+                var restPath = new RestPath(appHost.CreateInstance, appHost.GetParseFn, requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes);
 
                 if (!restPath.IsValid)
                     throw new NotSupportedException(string.Format(

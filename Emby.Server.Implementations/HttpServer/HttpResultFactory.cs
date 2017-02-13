@@ -204,7 +204,7 @@ namespace Emby.Server.Implementations.HttpServer
             using (var ms = new MemoryStream())
             {
                 var contentType = request.ResponseContentType;
-                var writerFn = RequestHelper.GetResponseWriter(contentType);
+                var writerFn = RequestHelper.GetResponseWriter(HttpListenerHost.Instance, contentType);
 
                 writerFn(dto, ms);
 

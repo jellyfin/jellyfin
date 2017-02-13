@@ -29,7 +29,7 @@ using SocketHttpListener.Primitives;
 
 namespace Emby.Server.Implementations.HttpServer
 {
-    public class HttpListenerHost : ServiceStackHost, IHttpServer
+    public class HttpListenerHost : IHttpServer, IDisposable
     {
         private string DefaultRedirectPath { get; set; }
 
@@ -62,7 +62,10 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly bool _enableDualModeSockets;
 
         public List<Action<IRequest, IResponse, object>> RequestFilters { get; set; }
-        private Dictionary<Type, Type> ServiceOperationsMap = new Dictionary<Type, Type>();
+        public List<Action<IRequest, IResponse, object>> ResponseFilters { get; set; }
+
+        private readonly Dictionary<Type, Type> ServiceOperationsMap = new Dictionary<Type, Type>();
+        public static HttpListenerHost Instance { get; protected set; }
 
         public HttpListenerHost(IServerApplicationHost applicationHost,
             ILogger logger,
@@ -71,6 +74,8 @@ namespace Emby.Server.Implementations.HttpServer
             string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer, IEnvironmentInfo environment, ICertificate certificate, IStreamFactory streamFactory, Func<Type, Func<string, object>> funcParseFn, bool enableDualModeSockets)
             : base()
         {
+            Instance = this;
+
             _appHost = applicationHost;
             DefaultRedirectPath = defaultRedirectPath;
             _networkManager = networkManager;
@@ -90,6 +95,7 @@ namespace Emby.Server.Implementations.HttpServer
             _logger = logger;
 
             RequestFilters = new List<Action<IRequest, IResponse, object>>();
+            ResponseFilters = new List<Action<IRequest, IResponse, object>>();
         }
 
         public string GlobalResponse { get; set; }
@@ -112,7 +118,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        public override object CreateInstance(Type type)
+        public object CreateInstance(Type type)
         {
             return _appHost.CreateInstance(type);
         }
@@ -168,12 +174,12 @@ namespace Emby.Server.Implementations.HttpServer
 
         private IHasRequestFilter[] GetRequestFilterAttributes(Type requestDtoType)
         {
-            var attributes = requestDtoType.AllAttributes().OfType<IHasRequestFilter>().ToList();
+            var attributes = requestDtoType.GetTypeInfo().GetCustomAttributes(true).OfType<IHasRequestFilter>().ToList();
 
             var serviceType = GetServiceTypeByRequest(requestDtoType);
             if (serviceType != null)
             {
-                attributes.AddRange(serviceType.AllAttributes().OfType<IHasRequestFilter>());
+                attributes.AddRange(serviceType.GetTypeInfo().GetCustomAttributes(true).OfType<IHasRequestFilter>());
             }
 
             attributes.Sort((x, y) => x.Priority - y.Priority);
@@ -611,7 +617,7 @@ namespace Emby.Server.Implementations.HttpServer
                 _logger.Error("Path parts empty for PathInfo: {0}, Url: {1}", pathInfo, httpReq.RawUrl);
                 return null;
             }
-            
+
             string contentType;
             var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, _logger, out contentType);
 
@@ -658,8 +664,6 @@ namespace Emby.Server.Implementations.HttpServer
 
             _logger.Info("Calling ServiceStack AppHost.Init");
 
-            Instance = this;
-
             ServiceController.Init(this);
 
             var requestFilters = _appHost.GetExports<IRequestFilter>().ToList();
@@ -668,12 +672,12 @@ namespace Emby.Server.Implementations.HttpServer
                 RequestFilters.Add(filter.Filter);
             }
 
-            GlobalResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
+            ResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
         }
 
-        public override RouteAttribute[] GetRouteAttributes(Type requestType)
+        public RouteAttribute[] GetRouteAttributes(Type requestType)
         {
-            var routes = requestType.AllAttributes<RouteAttribute>();
+            var routes = requestType.GetTypeInfo().GetCustomAttributes<RouteAttribute>(true).ToList();
             var clone = routes.ToList();
 
             foreach (var route in clone)
@@ -703,27 +707,27 @@ namespace Emby.Server.Implementations.HttpServer
             return routes.ToArray();
         }
 
-        public override Func<string, object> GetParseFn(Type propertyType)
+        public Func<string, object> GetParseFn(Type propertyType)
         {
             return _funcParseFn(propertyType);
         }
 
-        public override void SerializeToJson(object o, Stream stream)
+        public void SerializeToJson(object o, Stream stream)
         {
             _jsonSerializer.SerializeToStream(o, stream);
         }
 
-        public override void SerializeToXml(object o, Stream stream)
+        public void SerializeToXml(object o, Stream stream)
         {
             _xmlSerializer.SerializeToStream(o, stream);
         }
 
-        public override object DeserializeXml(Type type, Stream stream)
+        public object DeserializeXml(Type type, Stream stream)
         {
             return _xmlSerializer.DeserializeFromStream(type, stream);
         }
 
-        public override object DeserializeJson(Type type, Stream stream)
+        public object DeserializeJson(Type type, Stream stream)
         {
             return _jsonSerializer.DeserializeFromStream(stream, type);
         }
@@ -764,7 +768,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (_disposed) return;
 
-            base.Dispose();
+            Dispose();
 
             lock (_disposeLock)
             {
@@ -779,7 +783,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
