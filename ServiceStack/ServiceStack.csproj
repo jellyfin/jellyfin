@@ -69,24 +69,11 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="HttpUtils.cs" />
-    <Compile Include="Host\ContentTypes.cs" />
     <Compile Include="ReflectionExtensions.cs" />
     <Compile Include="StringMapTypeDeserializer.cs" />
-    <Compile Include="HttpResult.cs" />
     <Compile Include="ServiceStackHost.cs" />
-    <Compile Include="ServiceStackHost.Runtime.cs" />
-    <Compile Include="Host\ServiceExec.cs" />
     <Compile Include="UrlExtensions.cs" />
-    <Compile Include="Host\ActionContext.cs" />
-    <Compile Include="HttpRequestExtensions.cs" />
-    <Compile Include="Host\RestPath.cs" />
-    <Compile Include="Host\ServiceController.cs" />
-    <Compile Include="Host\ServiceMetadata.cs" />
-    <Compile Include="Host\RestHandler.cs" />
-    <Compile Include="HttpResponseExtensionsInternal.cs" />
-    <Compile Include="HttpHandlerFactory.cs" />
-    <Compile Include="FilterAttributeCache.cs" />
+    <Compile Include="RestPath.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,11 +1,8 @@
 ﻿using System;
 
-namespace ServiceStack.Host
+namespace Emby.Server.Implementations.Services
 {
-    /// <summary>
-    /// Context to capture IService action
-    /// </summary>
-    public class ActionContext
+    public class ServiceMethod
     {
         public const string AnyAction = "ANY";
 
