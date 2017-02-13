@@ -48,11 +48,6 @@ namespace ServiceStack.Serialization
                 var propertyParseStringFn = GetParseFn(propertyType);
                 var propertySerializer = new PropertySerializerEntry(propertySetFn, propertyParseStringFn) { PropertyType = propertyType };
 
-                var attr = propertyInfo.AllAttributes<DataMemberAttribute>().FirstOrDefault();
-                if (attr != null && attr.Name != null)
-                {
-                    propertySetterMap[attr.Name] = propertySerializer;
-                }
                 propertySetterMap[propertyInfo.Name] = propertySerializer;
             }
         }

@@ -1,21 +1,17 @@
-//Copyright (c) Service Stack LLC. All Rights Reserved.
-//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
-
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
-using ServiceStack.Host;
 
-namespace ServiceStack
+namespace Emby.Server.Implementations.Services
 {
-    public static class HttpResponseExtensionsInternal
+    public static class ResponseHelper
     {
-        public static async Task<bool> WriteToOutputStream(IResponse response, object result)
+        private static async Task<bool> WriteToOutputStream(IResponse response, object result)
         {
             var asyncStreamWriter = result as IAsyncStreamWriter;
             if (asyncStreamWriter != null)
@@ -54,24 +50,16 @@ namespace ServiceStack
             return false;
         }
 
-        /// <summary>
-        /// End a ServiceStack Request with no content
-        /// </summary>
-        public static void EndRequestWithNoContent(this IResponse httpRes)
-        {
-            if (httpRes.StatusCode == (int)HttpStatusCode.OK)
-            {
-                httpRes.StatusCode = (int)HttpStatusCode.NoContent;
-            }
-
-            httpRes.SetContentLength(0);
-        }
-
-        public static Task WriteToResponse(this IResponse httpRes, IRequest httpReq, object result)
+        public static Task WriteToResponse(IResponse httpRes, IRequest httpReq, object result)
         {
             if (result == null)
             {
-                httpRes.EndRequestWithNoContent();
+                if (httpRes.StatusCode == (int)HttpStatusCode.OK)
+                {
+                    httpRes.StatusCode = (int)HttpStatusCode.NoContent;
+                }
+
+                httpRes.SetContentLength(0);
                 return Task.FromResult(true);
             }
 
@@ -80,10 +68,10 @@ namespace ServiceStack
             {
                 httpResult.RequestContext = httpReq;
                 httpReq.ResponseContentType = httpResult.ContentType ?? httpReq.ResponseContentType;
-                return httpRes.WriteToResponseInternal(httpResult, httpReq);
+                return WriteToResponseInternal(httpRes, httpResult, httpReq);
             }
 
-            return httpRes.WriteToResponseInternal(result, httpReq);
+            return WriteToResponseInternal(httpRes, result, httpReq);
         }
 
         /// <summary>
@@ -94,7 +82,7 @@ namespace ServiceStack
         /// <param name="result">Whether or not it was implicity handled by ServiceStack's built-in handlers.</param>
         /// <param name="request">The serialization context.</param>
         /// <returns></returns>
-        private static async Task WriteToResponseInternal(this IResponse response, object result, IRequest request)
+        private static async Task WriteToResponseInternal(IResponse response, object result, IRequest request)
         {
             var defaultContentType = request.ResponseContentType;
 
@@ -173,7 +161,7 @@ namespace ServiceStack
         public static async Task WriteObject(IRequest request, object result, IResponse response)
         {
             var contentType = request.ResponseContentType;
-            var serializer = ContentTypes.GetStreamSerializer(contentType);
+            var serializer = RequestHelper.GetResponseWriter(contentType);
             
             using (var ms = new MemoryStream())
             {

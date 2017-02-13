@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Serialization;
 
-namespace ServiceStack.Host
+namespace ServiceStack
 {
     public class RestPath
     {
@@ -50,7 +49,7 @@ namespace ServiceStack.Host
             get
             {
                 return allowsAllVerbs
-                    ? new[] { ActionContext.AnyAction }
+                    ? new[] { "ANY" }
                     : AllowedVerbs.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
             }
         }

@@ -215,6 +215,13 @@
     <Compile Include="Security\RegRecord.cs" />
     <Compile Include="ServerManager\ServerManager.cs" />
     <Compile Include="ServerManager\WebSocketConnection.cs" />
+    <Compile Include="Services\ServiceMethod.cs" />
+    <Compile Include="Services\ResponseHelper.cs" />
+    <Compile Include="Services\HttpResult.cs" />
+    <Compile Include="Services\RequestHelper.cs" />
+    <Compile Include="Services\ServiceHandler.cs" />
+    <Compile Include="Services\ServiceController.cs" />
+    <Compile Include="Services\ServiceExec.cs" />
     <Compile Include="Session\HttpSessionController.cs" />
     <Compile Include="Session\SessionManager.cs" />
     <Compile Include="Session\SessionWebSocketListener.cs" />
