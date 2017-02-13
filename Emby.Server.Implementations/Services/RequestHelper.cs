@@ -1,40 +1,40 @@
 using System;
 using System.IO;
-using ServiceStack;
+using Emby.Server.Implementations.HttpServer;
 
 namespace Emby.Server.Implementations.Services
 {
     public class RequestHelper
     {
-        public static Func<Type, Stream, object> GetRequestReader(string contentType)
+        public static Func<Type, Stream, object> GetRequestReader(HttpListenerHost host, string contentType)
         {
             switch (GetContentTypeWithoutEncoding(contentType))
             {
                 case "application/xml":
                 case "text/xml":
                 case "text/xml; charset=utf-8": //"text/xml; charset=utf-8" also matches xml
-                    return ServiceStackHost.Instance.DeserializeXml;
+                    return host.DeserializeXml;
 
                 case "application/json":
                 case "text/json":
-                    return ServiceStackHost.Instance.DeserializeJson;
+                    return host.DeserializeJson;
             }
 
             return null;
         }
 
-        public static Action<object, Stream> GetResponseWriter(string contentType)
+        public static Action<object, Stream> GetResponseWriter(HttpListenerHost host, string contentType)
         {
             switch (GetContentTypeWithoutEncoding(contentType))
             {
                 case "application/xml":
                 case "text/xml":
                 case "text/xml; charset=utf-8": //"text/xml; charset=utf-8" also matches xml
-                    return (o, s) => ServiceStackHost.Instance.SerializeToXml(o, s);
+                    return host.SerializeToXml;
 
                 case "application/json":
                 case "text/json":
-                    return (o, s) => ServiceStackHost.Instance.SerializeToJson(o, s);
+                    return host.SerializeToJson;
             }
 
             return null;

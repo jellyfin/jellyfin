@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ServiceStack
+namespace Emby.Server.Implementations.Services
 {
     /// <summary>
     /// Donated by Ivan Korneliuk from his post:
@@ -10,7 +10,7 @@ namespace ServiceStack
     /// </summary>
     public static class UrlExtensions
     {
-        public static string GetOperationName(this Type type)
+        public static string GetMethodName(this Type type)
         {
             var typeName = type.FullName != null //can be null, e.g. generic types
                 ? LeftPart(type.FullName, "[[")   //Generic Fullname

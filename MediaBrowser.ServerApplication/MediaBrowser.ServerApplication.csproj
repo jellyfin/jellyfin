@@ -1155,10 +1155,6 @@
       <Project>{21002819-c39a-4d3e-be83-2a276a77fb1f}</Project>
       <Name>RSSDP</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
-      <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
-      <Name>ServiceStack</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SocketHttpListener.Portable\SocketHttpListener.Portable.csproj">
       <Project>{4f26d5d8-a7b0-42b3-ba42-7cb7d245934e}</Project>
       <Name>SocketHttpListener.Portable</Name>

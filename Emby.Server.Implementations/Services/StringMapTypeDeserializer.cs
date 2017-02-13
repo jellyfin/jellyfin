@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.Linq;
 using System.Reflection;
 
-namespace ServiceStack.Serialization
+namespace Emby.Server.Implementations.Services
 {
     /// <summary>
     /// Serializer cache of delegates required to create a type from a string map (e.g. for REST urls)
@@ -30,18 +29,22 @@ namespace ServiceStack.Serialization
 
         public Func<string, object> GetParseFn(Type propertyType)
         {
-            //Don't JSV-decode string values for string properties
             if (propertyType == typeof(string))
                 return s => s;
 
-            return ServiceStackHost.Instance.GetParseFn(propertyType);
+            return _GetParseFn(propertyType);
         }
 
-        public StringMapTypeDeserializer(Type type)
+        private readonly Func<Type, object> _CreateInstanceFn;
+        private readonly Func<Type, Func<string, object>> _GetParseFn;
+
+        public StringMapTypeDeserializer(Func<Type, object> createInstanceFn, Func<Type, Func<string, object>> getParseFn, Type type)
         {
+            _CreateInstanceFn = createInstanceFn;
+            _GetParseFn = getParseFn;
             this.type = type;
 
-            foreach (var propertyInfo in type.GetSerializableProperties())
+            foreach (var propertyInfo in RestPath.GetSerializableProperties(type))
             {
                 var propertySetFn = TypeAccessor.GetSetPropertyMethod(type, propertyInfo);
                 var propertyType = propertyInfo.PropertyType;
@@ -59,7 +62,7 @@ namespace ServiceStack.Serialization
             PropertySerializerEntry propertySerializerEntry = null;
 
             if (instance == null)
-                instance = ServiceStackHost.Instance.CreateInstance(type);
+                instance = _CreateInstanceFn(type);
 
             foreach (var pair in keyValuePairs.Where(x => !string.IsNullOrEmpty(x.Value)))
             {

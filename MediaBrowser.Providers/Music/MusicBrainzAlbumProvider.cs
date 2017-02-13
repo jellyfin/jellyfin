@@ -45,6 +45,7 @@ namespace MediaBrowser.Providers.Music
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(AlbumInfo searchInfo, CancellationToken cancellationToken)
         {
             var releaseId = searchInfo.GetReleaseId();
+            var releaseGroupId = searchInfo.GetReleaseGroupId();
 
             string url = null;
             var isNameSearch = false;
@@ -52,6 +53,10 @@ namespace MediaBrowser.Providers.Music
             if (!string.IsNullOrEmpty(releaseId))
             {
                 url = string.Format("/ws/2/release/?query=reid:{0}", releaseId);
+            }
+            else if (!string.IsNullOrEmpty(releaseGroupId))
+            {
+                url = string.Format("/ws/2/release?release-group={0}", releaseGroupId);
             }
             else
             {
@@ -131,7 +136,14 @@ namespace MediaBrowser.Providers.Music
                 Item = new MusicAlbum()
             };
 
-            if (string.IsNullOrEmpty(releaseId))
+            // If we have a release group Id but not a release Id...
+            if (string.IsNullOrWhiteSpace(releaseId) && !string.IsNullOrWhiteSpace(releaseGroupId))
+            {
+                releaseId = await GetReleaseIdFromReleaseGroupId(releaseGroupId, cancellationToken).ConfigureAwait(false);
+                result.HasMetadata = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(releaseId))
             {
                 var artistMusicBrainzId = id.GetMusicBrainzArtistId();
 
@@ -139,13 +151,13 @@ namespace MediaBrowser.Providers.Music
 
                 if (releaseResult != null)
                 {
-                    if (!string.IsNullOrEmpty(releaseResult.ReleaseId))
+                    if (!string.IsNullOrWhiteSpace(releaseResult.ReleaseId))
                     {
                         releaseId = releaseResult.ReleaseId;
                         result.HasMetadata = true;
                     }
 
-                    if (!string.IsNullOrEmpty(releaseResult.ReleaseGroupId))
+                    if (!string.IsNullOrWhiteSpace(releaseResult.ReleaseGroupId))
                     {
                         releaseGroupId = releaseResult.ReleaseGroupId;
                         result.HasMetadata = true;
@@ -157,13 +169,13 @@ namespace MediaBrowser.Providers.Music
             }
 
             // If we have a release Id but not a release group Id...
-            if (!string.IsNullOrEmpty(releaseId) && string.IsNullOrEmpty(releaseGroupId))
+            if (!string.IsNullOrWhiteSpace(releaseId) && string.IsNullOrWhiteSpace(releaseGroupId))
             {
-                releaseGroupId = await GetReleaseGroupId(releaseId, cancellationToken).ConfigureAwait(false);
+                releaseGroupId = await GetReleaseGroupFromReleaseId(releaseId, cancellationToken).ConfigureAwait(false);
                 result.HasMetadata = true;
             }
 
-            if (!string.IsNullOrEmpty(releaseId) || !string.IsNullOrEmpty(releaseGroupId))
+            if (!string.IsNullOrWhiteSpace(releaseId) || !string.IsNullOrWhiteSpace(releaseGroupId))
             {
                 result.HasMetadata = true;
             }
@@ -411,13 +423,42 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
+        private async Task<string> GetReleaseIdFromReleaseGroupId(string releaseGroupId, CancellationToken cancellationToken)
+        {
+            var url = string.Format("/ws/2/release?release-group={0}", releaseGroupId);
+
+            using (var stream = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+            {
+                using (var oReader = new StreamReader(stream, Encoding.UTF8))
+                {
+                    var settings = _xmlSettings.Create(false);
+
+                    settings.CheckCharacters = false;
+                    settings.IgnoreProcessingInstructions = true;
+                    settings.IgnoreComments = true;
+
+                    using (var reader = XmlReader.Create(oReader, settings))
+                    {
+                        var result = ReleaseResult.Parse(reader).FirstOrDefault();
+
+                        if (result != null)
+                        {
+                            return result.ReleaseId;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Gets the release group id internal.
         /// </summary>
         /// <param name="releaseEntryId">The release entry id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
-        private async Task<string> GetReleaseGroupId(string releaseEntryId, CancellationToken cancellationToken)
+        private async Task<string> GetReleaseGroupFromReleaseId(string releaseEntryId, CancellationToken cancellationToken)
         {
             var url = string.Format("/ws/2/release-group/?query=reid:{0}", releaseEntryId);
 
