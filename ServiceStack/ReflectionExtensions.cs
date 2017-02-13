@@ -3,26 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ServiceStack
 {
     public static class ReflectionExtensions
     {
-        public static bool IsInstanceOf(this Type type, Type thisOrBaseType)
-        {
-            while (type != null)
-            {
-                if (type == thisOrBaseType)
-                    return true;
-
-                type = type.BaseType();
-            }
-            return false;
-        }
-
         public static Type FirstGenericType(this Type type)
         {
             while (type != null)
@@ -52,44 +37,6 @@ namespace ServiceStack
             }
 
             return null;
-        }
-
-        public static PropertyInfo[] GetAllProperties(this Type type)
-        {
-            if (type.IsInterface())
-            {
-                var propertyInfos = new List<PropertyInfo>();
-
-                var considered = new List<Type>();
-                var queue = new Queue<Type>();
-                considered.Add(type);
-                queue.Enqueue(type);
-
-                while (queue.Count > 0)
-                {
-                    var subType = queue.Dequeue();
-                    foreach (var subInterface in subType.GetTypeInterfaces())
-                    {
-                        if (considered.Contains(subInterface)) continue;
-
-                        considered.Add(subInterface);
-                        queue.Enqueue(subInterface);
-                    }
-
-                    var typeProperties = subType.GetTypesProperties();
-
-                    var newPropertyInfos = typeProperties
-                        .Where(x => !propertyInfos.Contains(x));
-
-                    propertyInfos.InsertRange(0, newPropertyInfos);
-                }
-
-                return propertyInfos.ToArray();
-            }
-
-            return type.GetTypesProperties()
-                .Where(t => t.GetIndexParameters().Length == 0) // ignore indexed properties
-                .ToArray();
         }
 
         public static PropertyInfo[] GetPublicProperties(this Type type)
@@ -139,9 +86,7 @@ namespace ServiceStack
 
         public static PropertyInfo[] GetSerializableProperties(this Type type)
         {
-            var properties = type.IsDto()
-                ? type.GetAllProperties()
-                : type.GetPublicProperties();
+            var properties = type.GetPublicProperties();
             return properties.OnlySerializableProperties(type);
         }
 
@@ -150,14 +95,7 @@ namespace ServiceStack
 
         public static PropertyInfo[] OnlySerializableProperties(this PropertyInfo[] properties, Type type = null)
         {
-            var isDto = type.IsDto();
-            var readableProperties = properties.Where(x => x.PropertyGetMethod(nonPublic: isDto) != null);
-
-            if (isDto)
-            {
-                return readableProperties.Where(attr =>
-                    attr.HasAttribute<DataMemberAttribute>()).ToArray();
-            }
+            var readableProperties = properties.Where(x => x.PropertyGetMethod(nonPublic: false) != null);
 
             // else return those properties that are not decorated with IgnoreDataMember
             return readableProperties
@@ -206,36 +144,6 @@ namespace ServiceStack
             return pis.ToArray();
         }
 
-        internal static PropertyInfo[] GetTypesProperties(this Type subType)
-        {
-            var pis = new List<PropertyInfo>();
-            foreach (var pi in subType.GetRuntimeProperties())
-            {
-                var mi = pi.GetMethod ?? pi.SetMethod;
-                if (mi != null && mi.IsStatic) continue;
-                pis.Add(pi);
-            }
-            return pis.ToArray();
-        }
-
-        public static bool HasAttribute<T>(this Type type)
-        {
-            return type.AllAttributes().Any(x => x.GetType() == typeof(T));
-        }
-
-        public static bool HasAttribute<T>(this PropertyInfo pi)
-        {
-            return pi.AllAttributes().Any(x => x.GetType() == typeof(T));
-        }
-
-        public static bool IsDto(this Type type)
-        {
-            if (type == null)
-                return false;
-
-            return type.HasAttribute<DataContractAttribute>();
-        }
-
         public static MethodInfo PropertyGetMethod(this PropertyInfo pi, bool nonPublic = false)
         {
             return pi.GetMethod;
@@ -246,25 +154,15 @@ namespace ServiceStack
             return propertyInfo.GetCustomAttributes(true).ToArray();
         }
 
-        public static object[] AllAttributes(this PropertyInfo propertyInfo, Type attrType)
-        {
-            return propertyInfo.GetCustomAttributes(true).Where(x => attrType.IsInstanceOf(x.GetType())).ToArray();
-        }
-
         public static object[] AllAttributes(this Type type)
         {
             return type.GetTypeInfo().GetCustomAttributes(true).ToArray();
         }
 
-        public static TAttr[] AllAttributes<TAttr>(this PropertyInfo pi)
-        {
-            return pi.AllAttributes(typeof(TAttr)).Cast<TAttr>().ToArray();
-        }
-
-        public static TAttr[] AllAttributes<TAttr>(this Type type)
+        public static List<TAttr> AllAttributes<TAttr>(this Type type)
             where TAttr : Attribute
         {
-            return type.GetTypeInfo().GetCustomAttributes<TAttr>(true).ToArray();
+            return type.GetTypeInfo().GetCustomAttributes<TAttr>(true).ToList();
         }
     }
 }
