@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.Linq;
 using System.Reflection;
 
-namespace ServiceStack.Serialization
+namespace Emby.Server.Implementations.Services
 {
     /// <summary>
     /// Serializer cache of delegates required to create a type from a string map (e.g. for REST urls)
@@ -30,7 +29,6 @@ namespace ServiceStack.Serialization
 
         public Func<string, object> GetParseFn(Type propertyType)
         {
-            //Don't JSV-decode string values for string properties
             if (propertyType == typeof(string))
                 return s => s;
 

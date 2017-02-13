@@ -215,6 +215,7 @@
     <Compile Include="Security\RegRecord.cs" />
     <Compile Include="ServerManager\ServerManager.cs" />
     <Compile Include="ServerManager\WebSocketConnection.cs" />
+    <Compile Include="Services\ServicePath.cs" />
     <Compile Include="Services\ServiceMethod.cs" />
     <Compile Include="Services\ResponseHelper.cs" />
     <Compile Include="Services\HttpResult.cs" />
@@ -222,6 +223,8 @@
     <Compile Include="Services\ServiceHandler.cs" />
     <Compile Include="Services\ServiceController.cs" />
     <Compile Include="Services\ServiceExec.cs" />
+    <Compile Include="Services\StringMapTypeDeserializer.cs" />
+    <Compile Include="Services\UrlExtensions.cs" />
     <Compile Include="Session\HttpSessionController.cs" />
     <Compile Include="Session\SessionManager.cs" />
     <Compile Include="Session\SessionWebSocketListener.cs" />
@@ -307,10 +310,6 @@
     <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
       <Project>{2e781478-814d-4a48-9d80-bff206441a65}</Project>
       <Name>MediaBrowser.Server.Implementations</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
-      <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
-      <Name>ServiceStack</Name>
     </ProjectReference>
     <ProjectReference Include="..\SocketHttpListener.Portable\SocketHttpListener.Portable.csproj">
       <Project>{4f26d5d8-a7b0-42b3-ba42-7cb7d245934e}</Project>

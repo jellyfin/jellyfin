@@ -4,7 +4,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
-using ServiceStack;
 
 namespace Emby.Server.Implementations.Services
 {

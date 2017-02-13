@@ -16,7 +16,6 @@ using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.Services;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
-using ServiceStack;
 using IRequest = MediaBrowser.Model.Services.IRequest;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 using StreamWriter = Emby.Server.Implementations.HttpServer.StreamWriter;

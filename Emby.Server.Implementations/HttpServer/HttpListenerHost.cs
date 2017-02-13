@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.IO;
