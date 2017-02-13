@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.Services;
 
 namespace Emby.Server.Implementations.Services
@@ -161,7 +162,7 @@ namespace Emby.Server.Implementations.Services
         public static async Task WriteObject(IRequest request, object result, IResponse response)
         {
             var contentType = request.ResponseContentType;
-            var serializer = RequestHelper.GetResponseWriter(contentType);
+            var serializer = RequestHelper.GetResponseWriter(HttpListenerHost.Instance, contentType);
             
             using (var ms = new MemoryStream())
             {

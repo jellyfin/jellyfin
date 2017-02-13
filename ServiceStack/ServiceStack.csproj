@@ -69,9 +69,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ReflectionExtensions.cs" />
     <Compile Include="StringMapTypeDeserializer.cs" />
-    <Compile Include="ServiceStackHost.cs" />
     <Compile Include="UrlExtensions.cs" />
     <Compile Include="RestPath.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
