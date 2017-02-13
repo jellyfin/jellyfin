@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Services;
-using ServiceStack;
 
 namespace Emby.Server.Implementations.Services
 {
@@ -59,17 +58,17 @@ namespace Emby.Server.Implementations.Services
             }
         }
 
-        protected static object CreateContentTypeRequest(IRequest httpReq, Type requestType, string contentType)
+        protected static object CreateContentTypeRequest(HttpListenerHost host, IRequest httpReq, Type requestType, string contentType)
         {
             if (!string.IsNullOrEmpty(contentType) && httpReq.ContentLength > 0)
             {
-                var deserializer = RequestHelper.GetRequestReader(contentType);
+                var deserializer = RequestHelper.GetRequestReader(host, contentType);
                 if (deserializer != null)
                 {
                     return deserializer(requestType, httpReq.InputStream);
                 }
             }
-            return ServiceStackHost.Instance.CreateInstance(requestType); //Return an empty DTO, even for empty request bodies
+            return host.CreateInstance(requestType); 
         }
 
         public static RestPath FindMatchingRestPath(string httpMethod, string pathInfo, ILogger logger, out string contentType)
@@ -137,7 +136,7 @@ namespace Emby.Server.Implementations.Services
             if (ResponseContentType != null)
                 httpReq.ResponseContentType = ResponseContentType;
 
-            var request = httpReq.Dto = CreateRequest(httpReq, restPath, logger);
+            var request = httpReq.Dto = CreateRequest(appHost, httpReq, restPath, logger);
 
             appHost.ApplyRequestFilters(httpReq, httpRes, request);
 
@@ -146,7 +145,7 @@ namespace Emby.Server.Implementations.Services
             var response = await HandleResponseAsync(rawResponse).ConfigureAwait(false);
 
             // Apply response filters
-            foreach (var responseFilter in appHost.GlobalResponseFilters)
+            foreach (var responseFilter in appHost.ResponseFilters)
             {
                 responseFilter(httpReq, httpRes, response);
             }
@@ -154,18 +153,18 @@ namespace Emby.Server.Implementations.Services
             await ResponseHelper.WriteToResponse(httpRes, httpReq, response).ConfigureAwait(false);
         }
 
-        public static object CreateRequest(IRequest httpReq, RestPath restPath, ILogger logger)
+        public static object CreateRequest(HttpListenerHost host, IRequest httpReq, RestPath restPath, ILogger logger)
         {
             var requestType = restPath.RequestType;
 
             if (RequireqRequestStream(requestType))
             {
                 // Used by IRequiresRequestStream
-                return CreateRequiresRequestStreamRequest(httpReq, requestType);
+                return CreateRequiresRequestStreamRequest(host, httpReq, requestType);
             }
 
             var requestParams = GetFlattenedRequestParams(httpReq);
-            return CreateRequest(httpReq, restPath, requestParams);
+            return CreateRequest(host, httpReq, restPath, requestParams);
         }
 
         private static bool RequireqRequestStream(Type requestType)
@@ -175,19 +174,19 @@ namespace Emby.Server.Implementations.Services
             return requiresRequestStreamTypeInfo.IsAssignableFrom(requestType.GetTypeInfo());
         }
 
-        private static IRequiresRequestStream CreateRequiresRequestStreamRequest(IRequest req, Type requestType)
+        private static IRequiresRequestStream CreateRequiresRequestStreamRequest(HttpListenerHost host, IRequest req, Type requestType)
         {
             var restPath = GetRoute(req);
-            var request = ServiceHandler.CreateRequest(req, restPath, GetRequestParams(req), ServiceStackHost.Instance.CreateInstance(requestType));
+            var request = ServiceHandler.CreateRequest(req, restPath, GetRequestParams(req), host.CreateInstance(requestType));
 
             var rawReq = (IRequiresRequestStream)request;
             rawReq.RequestStream = req.InputStream;
             return rawReq;
         }
 
-        public static object CreateRequest(IRequest httpReq, RestPath restPath, Dictionary<string, string> requestParams)
+        public static object CreateRequest(HttpListenerHost host, IRequest httpReq, RestPath restPath, Dictionary<string, string> requestParams)
         {
-            var requestDto = CreateContentTypeRequest(httpReq, restPath.RequestType, httpReq.ContentType);
+            var requestDto = CreateContentTypeRequest(host, httpReq, restPath.RequestType, httpReq.ContentType);
 
             return CreateRequest(httpReq, restPath, requestParams, requestDto);
         }

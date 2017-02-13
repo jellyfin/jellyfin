@@ -272,6 +272,11 @@ namespace MediaBrowser.Providers.Omdb
             return false;
         }
 
+        public static async Task<string> GetOmdbBaseUrl(CancellationToken cancellationToken)
+        {
+            return "https://www.omdbapi.com";
+        }
+
         private async Task<string> EnsureItemInfo(string imdbId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(imdbId))
@@ -294,7 +299,8 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            var url = string.Format("https://www.omdbapi.com/?i={0}&plot=full&tomatoes=true&r=json", imdbParam);
+            var baseUrl = await GetOmdbBaseUrl(cancellationToken).ConfigureAwait(false);
+            var url = string.Format(baseUrl + "/?i={0}&plot=full&tomatoes=true&r=json", imdbParam);
 
             using (var stream = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
@@ -328,7 +334,8 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            var url = string.Format("https://www.omdbapi.com/?i={0}&season={1}&detail=full", imdbParam, seasonId);
+            var baseUrl = await GetOmdbBaseUrl(cancellationToken).ConfigureAwait(false);
+            var url = string.Format(baseUrl + "/?i={0}&season={1}&detail=full", imdbParam, seasonId);
 
             using (var stream = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {

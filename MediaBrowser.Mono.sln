@@ -47,8 +47,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.Drawing.ImageMagick", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.Drawing.Net", "Emby.Drawing.Net\Emby.Drawing.Net.csproj", "{C97A239E-A96C-4D64-A844-CCF8CC30AECB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack", "ServiceStack\ServiceStack.csproj", "{680A1709-25EB-4D52-A87F-EE03FFD94BAA}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketHttpListener.Portable", "SocketHttpListener.Portable\SocketHttpListener.Portable.csproj", "{4F26D5D8-A7B0-42B3-BA42-7CB7D245934E}"
 EndProject
 Global
@@ -386,22 +384,6 @@ Global
 		{C97A239E-A96C-4D64-A844-CCF8CC30AECB}.Signed|Any CPU.Build.0 = Release|Any CPU
 		{C97A239E-A96C-4D64-A844-CCF8CC30AECB}.Signed|x86.ActiveCfg = Release|Any CPU
 		{C97A239E-A96C-4D64-A844-CCF8CC30AECB}.Signed|x86.Build.0 = Release|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Debug|x86.Build.0 = Debug|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Release Mono|Any CPU.ActiveCfg = Release|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Release Mono|Any CPU.Build.0 = Release|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Release Mono|x86.ActiveCfg = Release|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Release Mono|x86.Build.0 = Release|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Release|x86.ActiveCfg = Release|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Release|x86.Build.0 = Release|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Signed|Any CPU.ActiveCfg = Signed|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Signed|Any CPU.Build.0 = Signed|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Signed|x86.ActiveCfg = Signed|Any CPU
-		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Signed|x86.Build.0 = Signed|Any CPU
 		{4F26D5D8-A7B0-42B3-BA42-7CB7D245934E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4F26D5D8-A7B0-42B3-BA42-7CB7D245934E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F26D5D8-A7B0-42B3-BA42-7CB7D245934E}.Debug|x86.ActiveCfg = Debug|Any CPU
