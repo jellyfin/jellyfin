@@ -317,7 +317,7 @@
     "LabelFanartApiKey": "Pers\u00f6nlicher API Schl\u00fcssel:",
     "LabelFanartApiKeyHelp": "Fanart Anfragen ohne einen pers\u00f6nlichen API Schl\u00fcssel liefert Bilder der letzten 7 Tage. Bei Verwendung eines pers\u00f6nlichen API Schl\u00fcssels werden Ergebnisse der letzten 48 Stunden, und als VIP Member, der letzten 10 Minuten geliefert.",
     "ExtractChapterImagesHelp": "Das Extrahieren von Kapitel-Bildern erm\u00f6glicht es Emby-Apps eine grafische Szenenauswahl anzubieten. Das Erstellen ist recht langsam, rechenintensiv und erfordert ggf. einige Gigabyte an freien Speicherplatz. Diese Aufgabe startet wenn neue Videos erkannt werden und ebenso als eine n\u00e4chtliche Aufgabe. Es wird nicht empfohlen diese Aufgabe in Zeiten hoher Server-Auslastung zu starten.",
-    "LabelMetadataDownloadLanguage": "Bevorzugte Sprache f\u00fcr Metadaten-Downloads:",
+    "LabelMetadataDownloadLanguage": "Bevorzugte Sprache f\u00fcr Metadaten:",
     "ButtonSignIn": "Einloggen",
     "TitleSignIn": "Einloggen",
     "HeaderPleaseSignIn": "Bitte einloggen",
@@ -1960,5 +1960,6 @@
     "ErrorAddingXmlTvFile": "Fehler beim Zugriff auf die XmlTV Datei. Stelle bitte sicher, dass die Datei existiert und versuche es nochmal.",
     "OptionAutomaticallyGroupSeries": "Vermische Serieninhalte, die in verschiedenen Ordnern abgelegt sind.",
     "OptionAutomaticallyGroupSeriesHelp": "Wenn aktiviert, werden Inhalte einer Serie in verschiedenen Ordnern innerhalb einer Bibliothek als eine Serie angezeigt.",
-    "ErrorReachingEmbyConnect": "Fehler bei der Verbindung zum Emby Connect Server. Stelle bitte sicher, dass du \u00fcber eine aktive Internetverbindung verf\u00fcgst und versuche es erneut."
+    "ErrorReachingEmbyConnect": "Fehler bei der Verbindung zum Emby Connect Server. Stelle bitte sicher, dass du \u00fcber eine aktive Internetverbindung verf\u00fcgst und versuche es erneut.",
+    "WhenDidYouPurchaseApp": "Wann hast du die App urspr\u00fcnglich bestellt?"
 }
