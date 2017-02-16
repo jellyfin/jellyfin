@@ -676,6 +676,7 @@ namespace MediaBrowser.ServerApplication
 
                 _appHostDisposed = true;
                 _appHost.Dispose();
+                _logger.Info("App host dispose complete");
             }
         }
 
