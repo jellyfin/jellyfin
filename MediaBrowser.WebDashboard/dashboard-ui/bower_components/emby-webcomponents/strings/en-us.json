@@ -385,5 +385,6 @@
   "EnableDisplayMirroring": "Enable display mirroring",
   "HeaderSelectPlayer": "Select Player",
   "Quality": "Quality",
-  "Auto": "Auto"
+  "Auto": "Auto",
+  "AndroidUnlockRestoreHelp": "To restore your previous purchase, please ensure you're signed into the device with the same Google (or Amazon) account that originally made the purchase. Make sure the app store is enabled and not restricted by any parental controls, and ensure you have an active internet connection. You'll only have to do this once to restore your previous purchase."
 }
