@@ -1477,12 +1477,7 @@ namespace Emby.Server.Implementations.LiveTv
         private DateTime _lastRecordingRefreshTime;
         private async Task RefreshRecordings(CancellationToken cancellationToken)
         {
-            const int cacheMinutes = 3;
-
-            if ((DateTime.UtcNow - _lastRecordingRefreshTime).TotalMinutes < cacheMinutes)
-            {
-                return;
-            }
+            const int cacheMinutes = 2;
 
             await _refreshRecordingsLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
