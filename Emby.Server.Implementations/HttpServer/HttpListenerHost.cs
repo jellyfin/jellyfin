@@ -767,8 +767,6 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (_disposed) return;
 
-            Dispose();
-
             lock (_disposeLock)
             {
                 if (_disposed) return;

@@ -56,9 +56,6 @@
         "Emby.Drawing": {
           "target": "project"
         },
-        "ServiceStack": {
-          "target": "project"
-        },
         "SocketHttpListener.Portable": {
           "target": "project"
         }
@@ -120,9 +117,6 @@
           "target": "project"
         },
         "SocketHttpListener.Portable": {
-          "target": "project"
-        },
-        "ServiceStack": {
           "target": "project"
         }
       }
