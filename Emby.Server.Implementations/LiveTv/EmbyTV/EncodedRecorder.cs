@@ -260,7 +260,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     _logger.Info("Calling recording process.WaitForExit for {0}", _targetPath);
 
-                    if (_process.WaitForExit(5000))
+                    if (_process.WaitForExit(10000))
                     {
                         return;
                     }

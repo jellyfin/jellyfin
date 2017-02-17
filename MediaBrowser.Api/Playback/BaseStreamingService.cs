@@ -126,13 +126,9 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the output file path.
         /// </summary>
-        /// <param name="state">The state.</param>
-        /// <returns>System.String.</returns>
-        private string GetOutputFilePath(StreamState state)
+        private string GetOutputFilePath(StreamState state, string outputFileExtension)
         {
             var folder = ServerConfigurationManager.ApplicationPaths.TranscodingTempPath;
-
-            var outputFileExtension = GetOutputFileExtension(state);
 
             var data = GetCommandLineArguments("dummy\\dummy", state, false);
 
@@ -802,7 +798,7 @@ namespace MediaBrowser.Api.Playback
             {
                 state.User = UserManager.GetUserById(auth.UserId);
             }
-            
+
             //if ((Request.UserAgent ?? string.Empty).IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
             //    (Request.UserAgent ?? string.Empty).IndexOf("ipad", StringComparison.OrdinalIgnoreCase) != -1 ||
             //    (Request.UserAgent ?? string.Empty).IndexOf("ipod", StringComparison.OrdinalIgnoreCase) != -1)
@@ -878,9 +874,14 @@ namespace MediaBrowser.Api.Playback
 
             if (string.IsNullOrEmpty(container))
             {
+                container = request.Container;
+            }
+
+            if (string.IsNullOrEmpty(container))
+            {
                 container = request.Static ?
                     state.InputContainer :
-                    (Path.GetExtension(GetOutputFilePath(state)) ?? string.Empty).TrimStart('.');
+                    GetOutputFileExtension(state);
             }
 
             state.OutputContainer = (container ?? string.Empty).TrimStart('.');
@@ -923,7 +924,10 @@ namespace MediaBrowser.Api.Playback
                 ApplyDeviceProfileSettings(state);
             }
 
-            state.OutputFilePath = GetOutputFilePath(state);
+            var ext = string.IsNullOrWhiteSpace(state.OutputContainer)
+                ? GetOutputFileExtension(state)
+                : ("." + state.OutputContainer);
+            state.OutputFilePath = GetOutputFilePath(state, ext);
 
             return state;
         }
