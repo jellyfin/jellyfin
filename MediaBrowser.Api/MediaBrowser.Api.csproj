@@ -59,6 +59,7 @@
     <Compile Include="IHasDtoOptions.cs" />
     <Compile Include="Playback\MediaInfoService.cs" />
     <Compile Include="Playback\TranscodingThrottler.cs" />
+    <Compile Include="Playback\UniversalAudioService.cs" />
     <Compile Include="PlaylistService.cs" />
     <Compile Include="Reports\Activities\ReportActivitiesBuilder.cs" />
     <Compile Include="Reports\Common\HeaderActivitiesMetadata.cs" />

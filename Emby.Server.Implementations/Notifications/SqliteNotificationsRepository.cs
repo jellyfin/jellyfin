@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Data;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Notifications;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
 using SQLitePCL.pretty;
@@ -16,8 +17,11 @@ namespace Emby.Server.Implementations.Notifications
 {
     public class SqliteNotificationsRepository : BaseSqliteRepository, INotificationsRepository
     {
-        public SqliteNotificationsRepository(ILogger logger, IServerApplicationPaths appPaths) : base(logger)
+        protected IFileSystem FileSystem { get; private set; }
+
+        public SqliteNotificationsRepository(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem) : base(logger)
         {
+            FileSystem = fileSystem;
             DbFilePath = Path.Combine(appPaths.DataPath, "notifications.db");
         }
 
@@ -26,6 +30,22 @@ namespace Emby.Server.Implementations.Notifications
         ////public event EventHandler<NotificationUpdateEventArgs> NotificationUpdated;
 
         public void Initialize()
+        {
+            try
+            {
+                InitializeInternal();
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error loading notifications database file. Will reset and retry.", ex);
+
+                FileSystem.DeleteFile(DbFilePath);
+
+                InitializeInternal();
+            }
+        }
+
+        private void InitializeInternal()
         {
             using (var connection = CreateConnection())
             {

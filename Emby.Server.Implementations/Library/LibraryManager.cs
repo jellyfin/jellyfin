@@ -818,30 +818,6 @@ namespace Emby.Server.Implementations.Library
             return _userRootFolder;
         }
 
-        public Guid? FindIdByPath(string path, bool? isFolder)
-        {
-            // If this returns multiple items it could be tricky figuring out which one is correct. 
-            // In most cases, the newest one will be and the others obsolete but not yet cleaned up
-
-            var query = new InternalItemsQuery
-            {
-                Path = path,
-                IsFolder = isFolder,
-                SortBy = new[] { ItemSortBy.DateCreated },
-                SortOrder = SortOrder.Descending,
-                Limit = 1
-            };
-
-            var id = GetItemIds(query);
-
-            if (id.Count == 0)
-            {
-                return null;
-            }
-
-            return id[0];
-        }
-
         public BaseItem FindByPath(string path, bool? isFolder)
         {
             // If this returns multiple items it could be tricky figuring out which one is correct. 
