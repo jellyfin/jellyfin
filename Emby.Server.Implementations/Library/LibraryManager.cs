@@ -409,17 +409,17 @@ namespace Emby.Server.Implementations.Library
 
             if (options.DeleteFileLocation && locationType != LocationType.Remote && locationType != LocationType.Virtual)
             {
-                foreach (var path in item.GetDeletePaths().ToList())
+                foreach (var fileSystemInfo in item.GetDeletePaths().ToList())
                 {
-                    if (_fileSystem.DirectoryExists(path))
+                    if (fileSystemInfo.IsDirectory)
                     {
-                        _logger.Debug("Deleting path {0}", path);
-                        _fileSystem.DeleteDirectory(path, true);
+                        _logger.Debug("Deleting path {0}", fileSystemInfo.FullName);
+                        _fileSystem.DeleteDirectory(fileSystemInfo.FullName, true);
                     }
-                    else if (_fileSystem.FileExists(path))
+                    else
                     {
-                        _logger.Debug("Deleting path {0}", path);
-                        _fileSystem.DeleteFile(path);
+                        _logger.Debug("Deleting path {0}", fileSystemInfo.FullName);
+                        _fileSystem.DeleteFile(fileSystemInfo.FullName);
                     }
                 }
 

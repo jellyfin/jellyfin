@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Services;
 
@@ -359,15 +360,30 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             // ExcludeArtistIds
-            if (!string.IsNullOrEmpty(request.ExcludeArtistIds))
+            if (!string.IsNullOrWhiteSpace(request.ExcludeArtistIds))
             {
                 query.ExcludeArtistIds = request.ExcludeArtistIds.Split('|');
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.AlbumIds))
+            {
+                query.AlbumIds = request.AlbumIds.Split('|');
             }
 
             // Albums
             if (!string.IsNullOrEmpty(request.Albums))
             {
-                query.AlbumNames = request.Albums.Split('|');
+                query.AlbumIds = request.Albums.Split('|').Select(i =>
+                {
+                    return _libraryManager.GetItemList(new InternalItemsQuery
+                    {
+                        IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+                        Name = i,
+                        Limit = 1
+
+                    }).Select(album => album.Id.ToString("N")).FirstOrDefault();
+
+                }).ToArray();
             }
 
             // Studios

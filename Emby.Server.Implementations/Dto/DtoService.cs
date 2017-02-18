@@ -492,7 +492,10 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            dto.PlayAccess = item.GetPlayAccess(user);
+            //if (!(item is LiveTvProgram))
+            {
+                dto.PlayAccess = item.GetPlayAccess(user);
+            }
 
             if (fields.Contains(ItemFields.BasicSyncInfo) || fields.Contains(ItemFields.SyncInfo))
             {
@@ -994,7 +997,12 @@ namespace Emby.Server.Implementations.Dto
             }
 
             dto.MediaType = item.MediaType;
-            dto.LocationType = item.LocationType;
+
+            if (!(item is LiveTvProgram))
+            {
+                dto.LocationType = item.LocationType;
+            }
+
             if (item.IsHD.HasValue && item.IsHD.Value)
             {
                 dto.IsHD = item.IsHD;
@@ -1102,7 +1110,10 @@ namespace Emby.Server.Implementations.Dto
             }
 
             dto.Type = item.GetClientTypeName();
-            dto.CommunityRating = item.CommunityRating;
+            if ((item.CommunityRating ?? 0) > 0)
+            {
+                dto.CommunityRating = item.CommunityRating;
+            }
 
             if (fields.Contains(ItemFields.VoteCount))
             {
@@ -1410,8 +1421,6 @@ namespace Emby.Server.Implementations.Dto
                 dto.AirDays = series.AirDays;
                 dto.AirTime = series.AirTime;
                 dto.SeriesStatus = series.Status;
-
-                dto.AnimeSeriesIndex = series.AnimeSeriesIndex;
             }
 
             // Add SeasonInfo
@@ -1473,9 +1482,12 @@ namespace Emby.Server.Implementations.Dto
                 SetBookProperties(dto, book);
             }
 
-            if (item.ProductionLocations.Count > 0 || item is Movie)
+            if (fields.Contains(ItemFields.ProductionLocations))
             {
-                dto.ProductionLocations = item.ProductionLocations.ToArray();
+                if (item.ProductionLocations.Count > 0 || item is Movie)
+                {
+                    dto.ProductionLocations = item.ProductionLocations.ToArray();
+                }
             }
 
             var photo = item as Photo;

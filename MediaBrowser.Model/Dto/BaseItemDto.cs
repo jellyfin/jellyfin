@@ -85,8 +85,6 @@ namespace MediaBrowser.Model.Dto
         public float? Metascore { get; set; }
         public bool? HasDynamicCategories { get; set; }
 
-        public int? AnimeSeriesIndex { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether [supports synchronize].
         /// </summary>
@@ -263,7 +261,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the play access.
         /// </summary>
         /// <value>The play access.</value>
-        public PlayAccess PlayAccess { get; set; }
+        public PlayAccess? PlayAccess { get; set; }
 
         /// <summary>
         /// Gets or sets the aspect ratio.
@@ -759,7 +757,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the type of the location.
         /// </summary>
         /// <value>The type of the location.</value>
-        public LocationType LocationType { get; set; }
+        public LocationType? LocationType { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the iso.

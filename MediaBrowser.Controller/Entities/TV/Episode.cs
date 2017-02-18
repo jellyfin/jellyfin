@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities.TV
@@ -319,9 +320,15 @@ namespace MediaBrowser.Controller.Entities.TV
             return list;
         }
 
-        public override IEnumerable<string> GetDeletePaths()
+        public override IEnumerable<FileSystemMetadata> GetDeletePaths()
         {
-            return new[] { Path };
+            return new[] {
+                new FileSystemMetadata
+                {
+                    FullName = Path,
+                    IsDirectory = IsFolder
+                }
+            }.Concat(GetLocalMetadataFilesToDelete());
         }
 
         public override UnratedItem GetBlockUnratedType()
@@ -338,7 +345,6 @@ namespace MediaBrowser.Controller.Entities.TV
             if (series != null)
             {
                 id.SeriesProviderIds = series.ProviderIds;
-                id.AnimeSeriesIndex = series.AnimeSeriesIndex;
             }
 
             id.IsMissingEpisode = IsMissingEpisode;
