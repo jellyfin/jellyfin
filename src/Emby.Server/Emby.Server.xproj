@@ -34,7 +34,6 @@
     <ProjectReference Include="..\..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
     <ProjectReference Include="..\..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj" />
     <ProjectReference Include="..\..\RSSDP\RSSDP.csproj" />
-    <ProjectReference Include="..\..\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\..\SocketHttpListener.Portable\SocketHttpListener.Portable.csproj" />
   </ItemGroup>
   <ItemGroup>
