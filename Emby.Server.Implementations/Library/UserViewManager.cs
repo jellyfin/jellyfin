@@ -248,6 +248,13 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
+            var isPlayed = request.IsPlayed;
+
+            if (parents.OfType<ICollectionFolder>().Any(i => string.Equals(i.CollectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase)))
+            {
+                isPlayed = null;
+            }
+
             if (parents.Count == 0)
             {
                 parents = user.RootFolder.GetChildren(user, true)
@@ -282,7 +289,7 @@ namespace Emby.Server.Implementations.Library
                 IsVirtualItem = false,
                 Limit = limit * 5,
                 SourceTypes = parents.Count == 0 ? new[] { SourceType.Library } : new SourceType[] { },
-                IsPlayed = request.IsPlayed
+                IsPlayed = isPlayed
 
             }, parents);
         }
