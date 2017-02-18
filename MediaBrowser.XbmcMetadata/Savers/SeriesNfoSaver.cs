@@ -83,11 +83,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 writer.WriteElementString("airs_dayofweek", series.AirDays[0].ToString());
             }
-
-            if (series.AnimeSeriesIndex.HasValue)
-            {
-                writer.WriteElementString("animeseriesindex", series.AnimeSeriesIndex.Value.ToString(CultureInfo.InvariantCulture));
-            }
         }
 
         protected override List<string> GetTagsUsed(IHasMetadata item)
@@ -101,8 +96,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 "episode",
                 "status",
                 "airs_time",
-                "airs_dayofweek",
-                "animeseriesindex"
+                "airs_dayofweek"
             });
             return list;
         }

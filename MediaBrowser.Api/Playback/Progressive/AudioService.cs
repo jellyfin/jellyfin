@@ -26,8 +26,6 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Audio/{Id}/stream", "HEAD", Summary = "Gets an audio stream")]
     public class GetAudioStream : StreamRequest
     {
-        [ApiMember(Name = "Container", Description = "Container", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Container { get; set; }
     }
 
     /// <summary>

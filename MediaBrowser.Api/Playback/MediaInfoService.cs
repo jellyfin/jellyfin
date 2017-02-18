@@ -146,7 +146,7 @@ namespace MediaBrowser.Api.Playback
             Task.WaitAll(task);
         }
 
-        public async Task<object> Post(GetPostedPlaybackInfo request)
+        public async Task<PlaybackInfoResponse> GetPlaybackInfo(GetPostedPlaybackInfo request)
         {
             var authInfo = _authContext.GetAuthorizationInfo(Request);
 
@@ -172,7 +172,14 @@ namespace MediaBrowser.Api.Playback
                 SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate ?? profile.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex, request.MaxAudioChannels, request.UserId);
             }
 
-            return ToOptimizedResult(info);
+            return info;
+        }
+
+        public async Task<object> Post(GetPostedPlaybackInfo request)
+        {
+            var result = await GetPlaybackInfo(request).ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
         }
 
         private T Clone<T>(T obj)

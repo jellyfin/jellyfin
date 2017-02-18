@@ -27,9 +27,6 @@ namespace MediaBrowser.Providers.TV
 {
     public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
-        private const string TvdbSeriesOffset = "TvdbSeriesOffset";
-        private const string TvdbSeriesOffsetFormat = "{0}-{1}";
-
         internal readonly SemaphoreSlim TvDbResourcePool = new SemaphoreSlim(2, 2);
         internal static TvdbSeriesProvider Current { get; private set; }
         private readonly IZipClient _zipClient;
@@ -121,23 +118,6 @@ namespace MediaBrowser.Providers.TV
             }
 
             return result;
-        }
-
-        internal static int? GetSeriesOffset(Dictionary<string, string> seriesProviderIds)
-        {
-            string idString;
-            if (!seriesProviderIds.TryGetValue(TvdbSeriesOffset, out idString))
-                return null;
-
-            var parts = idString.Split('-');
-            if (parts.Length < 2)
-                return null;
-
-            int offset;
-            if (int.TryParse(parts[1], out offset))
-                return offset;
-
-            return null;
         }
 
         /// <summary>

@@ -99,15 +99,6 @@ namespace MediaBrowser.Providers.TV
             return new RemoteImageInfo[] { };
         }
 
-        private int AdjustForSeriesOffset(Series series, int seasonNumber)
-        {
-            var offset = TvdbSeriesProvider.GetSeriesOffset(series.ProviderIds);
-            if (offset != null)
-                return (seasonNumber + offset.Value);
-
-            return seasonNumber;
-        }
-
         internal static IEnumerable<RemoteImageInfo> GetImages(string xmlPath, string preferredLanguage, int seasonNumber, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem, CancellationToken cancellationToken)
         {
             var settings = xmlReaderSettingsFactory.Create(false);

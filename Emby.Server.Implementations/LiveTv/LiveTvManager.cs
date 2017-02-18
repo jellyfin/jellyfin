@@ -607,6 +607,10 @@ namespace Emby.Server.Implementations.LiveTv
             item.Audio = info.Audio;
             item.ChannelId = channel.Id.ToString("N");
             item.CommunityRating = item.CommunityRating ?? info.CommunityRating;
+            if ((item.CommunityRating ?? 0).Equals(0))
+            {
+                item.CommunityRating = null;
+            }
 
             item.EpisodeTitle = info.EpisodeTitle;
             item.ExternalId = info.Id;
