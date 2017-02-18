@@ -606,9 +606,20 @@ namespace MediaBrowser.Model.Dlna
             return playlistItem;
         }
 
+        private int GetDefaultAudioBitrateIfUnknown(MediaStream audioStream)
+        {
+            if ((audioStream.Channels ?? 0) >= 6)
+            {
+                return 384000;
+            }
+
+            return 192000;
+        }
+
         private int GetAudioBitrate(string subProtocol, long? maxTotalBitrate, int? targetAudioChannels, string targetAudioCodec, MediaStream audioStream)
         {
-            int defaultBitrate = audioStream == null ? 192000 : audioStream.BitRate ?? 192000;
+            int defaultBitrate = audioStream == null ? 192000 : audioStream.BitRate ?? GetDefaultAudioBitrateIfUnknown(audioStream);
+
             // Reduce the bitrate if we're downmixing
             if (targetAudioChannels.HasValue && audioStream != null && audioStream.Channels.HasValue && targetAudioChannels.Value < audioStream.Channels.Value)
             {

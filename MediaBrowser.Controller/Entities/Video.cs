@@ -477,11 +477,17 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override IEnumerable<string> GetDeletePaths()
+        public override IEnumerable<FileSystemMetadata> GetDeletePaths()
         {
             if (!DetectIsInMixedFolder())
             {
-                return new[] { ContainingFolderPath };
+                return new[] {
+                    new FileSystemMetadata
+                    {
+                        FullName = System.IO.Path.GetDirectoryName(Path),
+                        IsDirectory = true
+                    }
+                };
             }
 
             return base.GetDeletePaths();

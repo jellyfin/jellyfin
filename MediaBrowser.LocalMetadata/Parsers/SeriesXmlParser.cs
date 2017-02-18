@@ -69,21 +69,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         break;
                     }
 
-                case "AnimeSeriesIndex":
-                    {
-                        var number = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(number))
-                        {
-                            int num;
-
-                            if (int.TryParse(number, out num))
-                            {
-                                item.AnimeSeriesIndex = num;
-                            }
-                        }
-                        break;
-                    }
                 case "Status":
                     {
                         var status = reader.ReadElementContentAsString();

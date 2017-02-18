@@ -65,22 +65,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                case "animeseriesindex":
-                    {
-                        var number = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(number))
-                        {
-                            int num;
-
-                            if (int.TryParse(number, out num))
-                            {
-                                item.AnimeSeriesIndex = num;
-                            }
-                        }
-                        break;
-                    }
-
                 case "status":
                     {
                         var status = reader.ReadElementContentAsString();
