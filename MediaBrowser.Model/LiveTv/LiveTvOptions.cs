@@ -48,15 +48,6 @@ namespace MediaBrowser.Model.LiveTv
         public bool ImportFavoritesOnly { get; set; }
         public bool AllowHWTranscoding { get; set; }
         public bool IsEnabled { get; set; }
-        public string M3UUrl { get; set; }
-        public string InfoUrl { get; set; }
-        public string FriendlyName { get; set; }
-        public int Tuners { get; set; }
-        public string DiseqC { get; set; }
-        public string SourceA { get; set; }
-        public string SourceB { get; set; }
-        public string SourceC { get; set; }
-        public string SourceD { get; set; }
         public bool EnableTvgId { get; set; }
 
         public TunerHostInfo()
@@ -85,6 +76,7 @@ namespace MediaBrowser.Model.LiveTv
         public string[] MovieCategories { get; set; }
         public NameValuePair[] ChannelMappings { get; set; }
         public string MoviePrefix { get; set; }
+        public bool EnableNewProgramIds { get; set; }
 
         public ListingsProviderInfo()
         {

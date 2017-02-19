@@ -13,7 +13,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using MediaBrowser.MediaEncoding.Encoder;
+using MediaBrowser.Controller.MediaEncoding;
 
 namespace MediaBrowser.Api.Playback
 {

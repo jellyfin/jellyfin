@@ -492,7 +492,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            //if (!(item is LiveTvProgram))
+            if (!(item is LiveTvProgram))
             {
                 dto.PlayAccess = item.GetPlayAccess(user);
             }
@@ -1420,7 +1420,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.AirDays = series.AirDays;
                 dto.AirTime = series.AirTime;
-                dto.SeriesStatus = series.Status;
+                dto.Status = series.Status.HasValue ? series.Status.Value.ToString() : null;
             }
 
             // Add SeasonInfo
