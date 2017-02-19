@@ -237,13 +237,6 @@ namespace MediaBrowser.Api
             item.Name = request.Name;
             item.ForcedSortName = request.ForcedSortName;
 
-            var hasBudget = item as IHasBudget;
-            if (hasBudget != null)
-            {
-                hasBudget.Budget = request.Budget;
-                hasBudget.Revenue = request.Revenue;
-            }
-
             item.OriginalTitle = string.IsNullOrWhiteSpace(request.OriginalTitle) ? null : request.OriginalTitle;
 
             item.CriticRating = request.CriticRating;

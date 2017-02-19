@@ -80,10 +80,8 @@ namespace MediaBrowser.Model.Dto
         public string PreferredMetadataCountryCode { get; set; }
 
         public string AwardSummary { get; set; }
-        public string ShareUrl { get; set; }
 
         public float? Metascore { get; set; }
-        public bool? HasDynamicCategories { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [supports synchronize].
@@ -319,12 +317,6 @@ namespace MediaBrowser.Model.Dto
         public List<MediaUrl> RemoteTrailers { get; set; }
 
         /// <summary>
-        /// Gets or sets the soundtrack ids.
-        /// </summary>
-        /// <value>The soundtrack ids.</value>
-        public string[] SoundtrackIds { get; set; }
-
-        /// <summary>
         /// Gets or sets the provider ids.
         /// </summary>
         /// <value>The provider ids.</value>
@@ -395,11 +387,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The user data.</value>
         public UserItemDataDto UserData { get; set; }
-        /// <summary>
-        /// Gets or sets the season user data.
-        /// </summary>
-        /// <value>The season user data.</value>
-        public UserItemDataDto SeasonUserData { get; set; }
 
         /// <summary>
         /// Gets or sets the recursive item count.
@@ -462,12 +449,6 @@ namespace MediaBrowser.Model.Dto
         public List<DayOfWeek> AirDays { get; set; }
 
         /// <summary>
-        /// Gets or sets the index options.
-        /// </summary>
-        /// <value>The index options.</value>
-        public string[] IndexOptions { get; set; }
-
-        /// <summary>
         /// Gets or sets the tags.
         /// </summary>
         /// <value>The tags.</value>
@@ -509,12 +490,6 @@ namespace MediaBrowser.Model.Dto
         /// <value>The type of the collection.</value>
         public string CollectionType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the type of the original collection.
-        /// </summary>
-        /// <value>The type of the original collection.</value>
-        public string OriginalCollectionType { get; set; }
-        
         /// <summary>
         /// Gets or sets the display order.
         /// </summary>
@@ -710,18 +685,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The home page URL.</value>
         public string HomePageUrl { get; set; }
-
-        /// <summary>
-        /// Gets or sets the budget.
-        /// </summary>
-        /// <value>The budget.</value>
-        public double? Budget { get; set; }
-
-        /// <summary>
-        /// Gets or sets the revenue.
-        /// </summary>
-        /// <value>The revenue.</value>
-        public double? Revenue { get; set; }
 
         /// <summary>
         /// Gets or sets the locked fields.
@@ -928,15 +891,6 @@ namespace MediaBrowser.Model.Dto
         public bool IsStudio
         {
             get { return StringHelper.EqualsIgnoreCase(Type, "Studio"); }
-        }
-
-        [IgnoreDataMember]
-        public bool SupportsSimilarItems
-        {
-            get
-            {
-                return IsType("Movie") || IsType("Series") || IsType("MusicAlbum") || IsType("MusicArtist") || IsType("Program") || IsType("Recording") || IsType("ChannelVideoItem") || IsType("Game");
-            }
         }
 
         /// <summary>
