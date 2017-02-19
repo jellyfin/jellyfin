@@ -173,10 +173,6 @@
       <Project>{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}</Project>
       <Name>MediaBrowser.Controller</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj">
-      <Project>{0bd82fa6-eb8a-4452-8af5-74f9c3849451}</Project>
-      <Name>MediaBrowser.MediaEncoding</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
       <Name>MediaBrowser.Model</Name>

@@ -26,63 +26,6 @@ namespace MediaBrowser.Server.Mono
             }
         }
 
-        public override bool CanSelfUpdate
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        protected override FFMpegInstallInfo GetFfmpegInstallInfo()
-        {
-            var info = new FFMpegInstallInfo();
-
-            // Windows builds: http://ffmpeg.zeranoe.com/builds/
-            // Linux builds: http://johnvansickle.com/ffmpeg/
-            // OS X builds: http://ffmpegmac.net/
-            // OS X x64: http://www.evermeet.cx/ffmpeg/
-
-            var environment = (MonoEnvironmentInfo) EnvironmentInfo;
-
-            if (environment.IsBsd)
-            {
-
-            }
-            else if (environment.OperatingSystem == Model.System.OperatingSystem.Linux)
-            {
-                info.FFMpegFilename = "ffmpeg";
-                info.FFProbeFilename = "ffprobe";
-                info.ArchiveType = "7z";
-                info.Version = "20160215";
-                info.DownloadUrls = GetDownloadUrls();
-            }
-
-            // No version available - user requirement
-            info.DownloadUrls = new string[] { };
-
-            return info;
-        }
-
-        private string[] GetDownloadUrls()
-        {
-            switch (EnvironmentInfo.SystemArchitecture)
-            {
-                case Architecture.X64:
-                    return new[]
-                    {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-64bit-static.7z"
-                    };
-                case Architecture.X86:
-                    return new[]
-                    {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-32bit-static.7z"
-                    };
-            }
-
-            return new string[] { };
-        }
-
         protected override void RestartInternal()
         {
             MainClass.Restart(StartupOptions);
@@ -136,41 +79,6 @@ namespace MediaBrowser.Server.Mono
             }
 
             return new Version(1, 0);
-        }
-
-        protected override void AuthorizeServer()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void ConfigureAutoRunInternal(bool autorun)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void EnableLoopbackInternal(string appName)
-        {
-        }
-
-        public override bool SupportsRunningAsService
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public override bool SupportsAutoRunAtStartup
-        {
-            get { return false; }
-        }
-
-        public override bool IsRunningAsService
-        {
-            get
-            {
-                return false;
-            }
         }
     }
 }

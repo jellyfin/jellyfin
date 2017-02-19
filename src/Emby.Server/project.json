@@ -113,9 +113,6 @@
         "RSSDP": {
           "target": "project"
         },
-        "ServiceStack": {
-          "target": "project"
-        },
         "SocketHttpListener.Portable": {
           "target": "project"
         }

@@ -873,7 +873,13 @@ return null;
         /// Gets or sets a value indicating whether this instance can self update.
         /// </summary>
         /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
-        public abstract bool CanSelfUpdate { get; }
+        public virtual bool CanSelfUpdate
+        {
+            get
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Checks for update.

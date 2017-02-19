@@ -168,7 +168,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 EpisodeNumber = p.Episode == null ? null : p.Episode.Episode,
                 EpisodeTitle = episodeTitle,
                 Genres = p.Categories,
-                Id = String.Format("{0}_{1:O}", p.ChannelId, p.StartDate), // Construct an id from the channel and start date,
                 StartDate = GetDate(p.StartDate),
                 Name = p.Title,
                 Overview = p.Description,
@@ -207,6 +206,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                 programInfo.ShowId = uniqueString.GetMD5().ToString("N");
             }
+
+            // Construct an id from the channel and start date
+            programInfo.Id = String.Format("{0}_{1:O}", p.ChannelId, p.StartDate);
 
             if (programInfo.IsMovie)
             {

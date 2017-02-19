@@ -986,6 +986,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 foreach (var program in programs)
                 {
                     program.ChannelId = channelId;
+
+                    if (provider.Item2.EnableNewProgramIds)
+                    {
+                        program.Id += "_" + channelId;
+                    }
                 }
 
                 if (programs.Count > 0)

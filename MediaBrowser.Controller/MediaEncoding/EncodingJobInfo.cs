@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -13,7 +9,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 
-namespace MediaBrowser.MediaEncoding.Encoder
+namespace MediaBrowser.Controller.MediaEncoding
 {
     // For now, a common base class until the API and MediaEncoding classes are unified
     public class EncodingJobInfo
