@@ -401,10 +401,21 @@ namespace MediaBrowser.Api
             var series = item as Series;
             if (series != null)
             {
-                series.Status = request.SeriesStatus;
+                series.Status = GetSeriesStatus(request);
                 series.AirDays = request.AirDays;
                 series.AirTime = request.AirTime;
             }
+        }
+
+        private SeriesStatus? GetSeriesStatus(BaseItemDto item)
+        {
+            if (string.IsNullOrEmpty(item.Status))
+            {
+                return null;
+            }
+
+            return (SeriesStatus)Enum.Parse(typeof(SeriesStatus), item.Status, true);
+
         }
     }
 }

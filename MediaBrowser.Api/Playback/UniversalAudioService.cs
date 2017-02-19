@@ -199,9 +199,9 @@ namespace MediaBrowser.Api.Playback
 
                 if (isHeadRequest)
                 {
-                    return service.Head(newRequest);
+                    return await service.Head(newRequest).ConfigureAwait(false);
                 }
-                return service.Get(newRequest);
+                return await service.Get(newRequest).ConfigureAwait(false);
             }
             else
             {
@@ -239,9 +239,9 @@ namespace MediaBrowser.Api.Playback
 
                 if (isHeadRequest)
                 {
-                    return service.Head(newRequest);
+                    return await service.Head(newRequest).ConfigureAwait(false);
                 }
-                return service.Get(newRequest);
+                return await service.Get(newRequest).ConfigureAwait(false);
             }
         }
     }
