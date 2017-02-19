@@ -22,7 +22,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Diagnostics;
 
 namespace MediaBrowser.Api.Playback

@@ -9,17 +9,14 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Net;
@@ -66,7 +63,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return id;
         }
 
-        private async Task<IEnumerable<Channels>> GetLineup(TunerHostInfo info, CancellationToken cancellationToken)
+        private async Task<List<Channels>> GetLineup(TunerHostInfo info, CancellationToken cancellationToken)
         {
             var options = new HttpRequestOptions
             {
@@ -74,7 +71,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 CancellationToken = cancellationToken,
                 BufferContent = false
             };
-            using (var stream = await _httpClient.Get(options))
+            using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
                 var lineup = JsonSerializer.DeserializeFromStream<List<Channels>>(stream) ?? new List<Channels>();
 
@@ -127,7 +124,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     CacheMode = CacheMode.Unconditional,
                     TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds),
                     BufferContent = false
-                }))
+
+                }).ConfigureAwait(false))
                 {
                     var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
 
@@ -169,7 +167,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 CancellationToken = cancellationToken,
                 TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds),
                 BufferContent = false
-            }))
+
+            }).ConfigureAwait(false))
             {
                 var tuners = new List<LiveTvTunerInfo>();
                 using (var sr = new StreamReader(stream, System.Text.Encoding.UTF8))
@@ -536,7 +535,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     Url = string.Format("{0}/discover.json", GetApiUrl(info, false)),
                     CancellationToken = CancellationToken.None,
                     BufferContent = false
-                }))
+
+                }).ConfigureAwait(false))
                 {
                     var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
 

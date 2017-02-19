@@ -312,7 +312,13 @@ namespace Emby.Server.Core
             }
         }
 
-        public abstract bool SupportsRunningAsService { get; }
+        public virtual bool SupportsRunningAsService
+        {
+            get
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Gets the name.
@@ -326,14 +332,26 @@ namespace Emby.Server.Core
             }
         }
 
-        public abstract bool IsRunningAsService { get; }
+        public virtual bool IsRunningAsService
+        {
+            get
+            {
+                return false;
+            }
+        }
 
         private Assembly GetAssembly(Type type)
         {
             return type.GetTypeInfo().Assembly;
         }
 
-        public abstract bool SupportsAutoRunAtStartup { get; }
+        public virtual bool SupportsAutoRunAtStartup
+        {
+            get
+            {
+                return EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows;
+            }
+        }
 
         private void SetBaseExceptionMessage()
         {
@@ -716,7 +734,13 @@ namespace Emby.Server.Core
             await ((UserManager)UserManager).Initialize().ConfigureAwait(false);
         }
 
-        protected abstract bool SupportsDualModeSockets { get; }
+        protected virtual bool SupportsDualModeSockets
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         private ICertificate GetCertificate(string certificateLocation)
         {
@@ -761,7 +785,75 @@ namespace Emby.Server.Core
             return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, ImageEncoder, maxConcurrentImageProcesses, () => LibraryManager, TimerFactory);
         }
 
-        protected abstract FFMpegInstallInfo GetFfmpegInstallInfo();
+        protected virtual FFMpegInstallInfo GetFfmpegInstallInfo()
+        {
+            var info = new FFMpegInstallInfo();
+
+            // Windows builds: http://ffmpeg.zeranoe.com/builds/
+            // Linux builds: http://johnvansickle.com/ffmpeg/
+            // OS X builds: http://ffmpegmac.net/
+            // OS X x64: http://www.evermeet.cx/ffmpeg/
+
+            if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Linux)
+            {
+                info.FFMpegFilename = "ffmpeg";
+                info.FFProbeFilename = "ffprobe";
+                info.ArchiveType = "7z";
+                info.Version = "20160215";
+                info.DownloadUrls = GetLinuxDownloadUrls();
+            }
+            else if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
+            {
+                info.FFMpegFilename = "ffmpeg.exe";
+                info.FFProbeFilename = "ffprobe.exe";
+                info.Version = "20160410";
+                info.ArchiveType = "7z";
+                info.DownloadUrls = GetWindowsDownloadUrls();
+            }
+
+            // No version available - user requirement
+            info.DownloadUrls = new string[] { };
+
+            return info;
+        }
+
+        private string[] GetWindowsDownloadUrls()
+        {
+            switch (EnvironmentInfo.SystemArchitecture)
+            {
+                case Architecture.X64:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160410-win64.7z"
+                    };
+                case Architecture.X86:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160410-win32.7z"
+                    };
+            }
+
+            return new string[] { };
+        }
+
+        private string[] GetLinuxDownloadUrls()
+        {
+            switch (EnvironmentInfo.SystemArchitecture)
+            {
+                case Architecture.X64:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-64bit-static.7z"
+                    };
+                case Architecture.X86:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-32bit-static.7z"
+                    };
+            }
+
+            return new string[] { };
+        }
 
         /// <summary>
         /// Registers the media encoder.
@@ -1489,7 +1581,10 @@ namespace Emby.Server.Core
             }
         }
 
-        protected abstract void AuthorizeServer();
+        protected virtual void AuthorizeServer()
+        {
+            throw new NotImplementedException();
+        }
 
         public event EventHandler HasUpdateAvailableChanged;
 
@@ -1565,7 +1660,10 @@ namespace Emby.Server.Core
             }
         }
 
-        protected abstract void ConfigureAutoRunInternal(bool autorun);
+        protected virtual void ConfigureAutoRunInternal(bool autorun)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// This returns localhost in the case of no external dns, and the hostname if the 
@@ -1631,7 +1729,10 @@ namespace Emby.Server.Core
             EnableLoopbackInternal(appName);
         }
 
-        protected abstract void EnableLoopbackInternal(string appName);
+        protected virtual void EnableLoopbackInternal(string appName)
+        {
+            
+        }
 
         private void RegisterModules()
         {

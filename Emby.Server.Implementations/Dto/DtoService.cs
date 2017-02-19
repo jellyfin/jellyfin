@@ -360,7 +360,6 @@ namespace Emby.Server.Implementations.Dto
             var collectionFolder = item as ICollectionFolder;
             if (collectionFolder != null)
             {
-                dto.OriginalCollectionType = collectionFolder.CollectionType;
                 dto.CollectionType = collectionFolder.CollectionType;
             }
 
@@ -504,33 +503,6 @@ namespace Emby.Server.Implementations.Dto
                 {
                     dto.SupportsSync = true;
                 }
-            }
-
-            if (fields.Contains(ItemFields.SeasonUserData))
-            {
-                var episode = item as Episode;
-
-                if (episode != null)
-                {
-                    var season = episode.Season;
-
-                    if (season != null)
-                    {
-                        dto.SeasonUserData = await _userDataRepository.GetUserDataDto(season, user).ConfigureAwait(false);
-                    }
-                }
-            }
-
-            var userView = item as UserView;
-            if (userView != null)
-            {
-                dto.HasDynamicCategories = userView.ContainsDynamicCategories(user);
-            }
-
-            var collectionFolder = item as ICollectionFolder;
-            if (collectionFolder != null)
-            {
-                dto.HasDynamicCategories = false;
             }
         }
 
@@ -881,20 +853,6 @@ namespace Emby.Server.Implementations.Dto
                 dto.ForcedSortName = item.ForcedSortName;
             }
             dto.Container = item.Container;
-
-            var hasBudget = item as IHasBudget;
-            if (hasBudget != null)
-            {
-                if (fields.Contains(ItemFields.Budget))
-                {
-                    dto.Budget = hasBudget.Budget;
-                }
-
-                if (fields.Contains(ItemFields.Revenue))
-                {
-                    dto.Revenue = hasBudget.Revenue;
-                }
-            }
 
             dto.EndDate = item.EndDate;
 
@@ -1420,7 +1378,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.AirDays = series.AirDays;
                 dto.AirTime = series.AirTime;
-                dto.SeriesStatus = series.Status;
+                dto.Status = series.Status.HasValue ? series.Status.Value.ToString() : null;
             }
 
             // Add SeasonInfo
