@@ -147,7 +147,7 @@ namespace Emby.Common.Implementations
         /// <value>The configuration manager.</value>
         protected IConfigurationManager ConfigurationManager { get; private set; }
 
-        protected IFileSystem FileSystemManager { get; private set; }
+        public IFileSystem FileSystemManager { get; private set; }
 
         protected IIsoManager IsoManager { get; private set; }
 

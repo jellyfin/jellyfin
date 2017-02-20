@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Emby.Common.Implementations.Configuration;
+using Emby.Server.Implementations.AppBase;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Controller;
@@ -17,7 +17,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 
-namespace Emby.Server.Core.Configuration
+namespace Emby.Server.Implementations.Configuration
 {
     /// <summary>
     /// Class ServerConfigurationManager
@@ -187,7 +187,7 @@ namespace Emby.Server.Core.Configuration
                 // Validate
                 if (!FileSystem.DirectoryExists(newPath))
                 {
-                    throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
+                    throw new FileNotFoundException(string.Format("{0} does not exist.", newPath));
                 }
 
                 EnsureWriteAccess(newPath);
