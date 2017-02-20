@@ -23,5 +23,16 @@ namespace MediaBrowser.Model.MediaInfo
         public string LiveStreamId { get; set; }
         
         public DeviceProfile DeviceProfile { get; set; }
+
+        public bool EnableDirectPlay { get; set; }
+        public bool EnableDirectStream { get; set; }
+        public bool EnableTranscoding { get; set; }
+
+        public PlaybackInfoRequest()
+        {
+            EnableDirectPlay = true;
+            EnableDirectStream = true;
+            EnableTranscoding = true;
+        }
     }
 }

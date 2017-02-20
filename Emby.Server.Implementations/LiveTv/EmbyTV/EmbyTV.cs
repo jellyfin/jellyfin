@@ -635,6 +635,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     existingTimer.Status == RecordingStatus.Completed)
                 {
                     existingTimer.Status = RecordingStatus.New;
+                    existingTimer.IsManual = true;
                     _timerProvider.Update(existingTimer);
                     return Task.FromResult(existingTimer.Id);
                 }
@@ -663,6 +664,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 RecordingHelper.CopyProgramInfoToTimerInfo(programInfo, timer);
             }
 
+            timer.IsManual = true;
             _timerProvider.Add(timer);
             return Task.FromResult(timer.Id);
         }
@@ -758,6 +760,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 existingTimer.PostPaddingSeconds = updatedTimer.PostPaddingSeconds;
                 existingTimer.IsPostPaddingRequired = updatedTimer.IsPostPaddingRequired;
                 existingTimer.IsPrePaddingRequired = updatedTimer.IsPrePaddingRequired;
+
+                _timerProvider.Update(existingTimer);
             }
 
             return Task.FromResult(true);
@@ -2203,6 +2207,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private bool ShouldCancelTimerForSeriesTimer(SeriesTimerInfo seriesTimer, TimerInfo timer)
         {
+            if (timer.IsManual)
+            {
+                return false;
+            }
+
             if (!seriesTimer.RecordAnyTime)
             {
                 if (Math.Abs(seriesTimer.StartDate.TimeOfDay.Ticks - timer.StartDate.TimeOfDay.Ticks) >= TimeSpan.FromMinutes(5).Ticks)
