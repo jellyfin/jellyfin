@@ -1,7 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using MediaBrowser.Common.Configuration;
 
-namespace Emby.Common.Implementations
+namespace Emby.Server.Implementations.AppBase
 {
     /// <summary>
     /// Provides a base class to hold common application paths used by both the Ui and Server.
@@ -12,11 +13,14 @@ namespace Emby.Common.Implementations
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths"/> class.
         /// </summary>
-        protected BaseApplicationPaths(string programDataPath, string appFolderPath)
+        protected BaseApplicationPaths(string programDataPath, string appFolderPath, Action<string> createDirectoryFn)
         {
             ProgramDataPath = programDataPath;
             ProgramSystemPath = appFolderPath;
+            CreateDirectoryFn = createDirectoryFn;
         }
+
+        protected Action<string> CreateDirectoryFn;
 
         public string ProgramDataPath { get; private set; }
 
@@ -41,7 +45,7 @@ namespace Emby.Common.Implementations
                 {
                     _dataDirectory = Path.Combine(ProgramDataPath, "data");
 
-                    Directory.CreateDirectory(_dataDirectory);
+                    CreateDirectoryFn(_dataDirectory);
                 }
 
                 return _dataDirectory;
@@ -148,7 +152,7 @@ namespace Emby.Common.Implementations
                 {
                     _cachePath = Path.Combine(ProgramDataPath, "cache");
 
-                    Directory.CreateDirectory(_cachePath);
+                    CreateDirectoryFn(_cachePath);
                 }
 
                 return _cachePath;
