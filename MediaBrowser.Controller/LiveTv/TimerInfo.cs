@@ -88,6 +88,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value><c>true</c> if this instance is post padding required; otherwise, <c>false</c>.</value>
         public bool IsPostPaddingRequired { get; set; }
 
+        public bool IsManual { get; set; }
+
         /// <summary>
         /// Gets or sets the priority.
         /// </summary>
