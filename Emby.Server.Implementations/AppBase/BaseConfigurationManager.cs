@@ -7,13 +7,12 @@ using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
-using Emby.Common.Implementations;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 
-namespace Emby.Common.Implementations.Configuration
+namespace Emby.Server.Implementations.AppBase
 {
     /// <summary>
     /// Class BaseConfigurationManager
