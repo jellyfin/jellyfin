@@ -1253,7 +1253,7 @@ namespace Emby.Server.Core
             list.Add(GetAssembly(typeof(InstallationManager)));
 
             // Emby.Server.Core
-            list.Add(GetAssembly(typeof(ServerApplicationPaths)));
+            list.Add(GetAssembly(typeof(ApplicationHost)));
 
             // MediaEncoding
             list.Add(GetAssembly(typeof(MediaEncoder)));
