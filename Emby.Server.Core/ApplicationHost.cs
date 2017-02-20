@@ -811,9 +811,11 @@ namespace Emby.Server.Core
                 info.ArchiveType = "7z";
                 info.DownloadUrls = GetWindowsDownloadUrls();
             }
-
-            // No version available - user requirement
-            info.DownloadUrls = new string[] { };
+            else
+            {
+                // No version available - user requirement
+                info.DownloadUrls = new string[] { };
+            }
 
             return info;
         }
