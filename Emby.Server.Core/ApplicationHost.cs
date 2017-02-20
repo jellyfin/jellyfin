@@ -83,7 +83,6 @@ using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Ssdp;
 using Emby.Server.Core;
 using Emby.Server.Implementations.Activity;
-using Emby.Server.Core.Configuration;
 using Emby.Server.Implementations.Devices;
 using Emby.Server.Implementations.FFMpeg;
 using Emby.Server.Core.IO;
@@ -94,7 +93,6 @@ using Emby.Server.Implementations.Social;
 using Emby.Server.Implementations.Sync;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
-using Emby.Server.Implementations.Connect;
 using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.EntryPoints;
 using Emby.Server.Implementations.FileOrganization;
@@ -134,6 +132,7 @@ using Emby.Drawing;
 using Emby.Server.Implementations.Migrations;
 using MediaBrowser.Model.Diagnostics;
 using Emby.Common.Implementations.Diagnostics;
+using Emby.Server.Implementations.Configuration;
 
 namespace Emby.Server.Core
 {
@@ -526,6 +525,8 @@ namespace Emby.Server.Core
             }
         }
 
+        protected abstract IConnectManager CreateConnectManager();
+
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
@@ -635,7 +636,7 @@ namespace Emby.Server.Core
             var encryptionManager = new EncryptionManager();
             RegisterSingleInstance<IEncryptionManager>(encryptionManager);
 
-            ConnectManager = new ConnectManager(LogManager.GetLogger("ConnectManager"), ApplicationPaths, JsonSerializer, encryptionManager, HttpClient, this, ServerConfigurationManager, UserManager, ProviderManager, SecurityManager, FileSystemManager);
+            ConnectManager = CreateConnectManager();
             RegisterSingleInstance(ConnectManager);
 
             DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, LogManager.GetLogger("DeviceManager"), FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager, LogManager.GetLogger("DeviceManager"), NetworkManager);

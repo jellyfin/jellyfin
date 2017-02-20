@@ -4,7 +4,7 @@ using System.Linq;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
-namespace Emby.Common.Implementations.Configuration
+namespace Emby.Server.Implementations.AppBase
 {
     /// <summary>
     /// Class ConfigurationHelper

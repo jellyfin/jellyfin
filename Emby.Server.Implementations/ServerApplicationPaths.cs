@@ -1,8 +1,9 @@
-﻿using System.IO;
-using Emby.Common.Implementations;
+﻿using System;
+using System.IO;
+using Emby.Server.Implementations.AppBase;
 using MediaBrowser.Controller;
 
-namespace Emby.Server.Core
+namespace Emby.Server.Implementations
 {
     /// <summary>
     /// Extends BaseApplicationPaths to add paths that are only applicable on the server
@@ -12,8 +13,8 @@ namespace Emby.Server.Core
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths" /> class.
         /// </summary>
-        public ServerApplicationPaths(string programDataPath, string appFolderPath, string applicationResourcesPath)
-            : base(programDataPath, appFolderPath)
+        public ServerApplicationPaths(string programDataPath, string appFolderPath, string applicationResourcesPath, Action<string> createDirectoryFn)
+            : base(programDataPath, appFolderPath, createDirectoryFn)
         {
             ApplicationResourcesPath = applicationResourcesPath;
         }
