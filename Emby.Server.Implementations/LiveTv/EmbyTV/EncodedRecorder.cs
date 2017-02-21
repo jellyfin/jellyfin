@@ -65,6 +65,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
+        private bool CopySubtitles
+        {
+            get { return string.Equals(OutputFormat, "mkv", StringComparison.OrdinalIgnoreCase); }
+        }
+
         public string GetOutputPath(MediaSourceInfo mediaSource, string targetFile)
         {
             return Path.ChangeExtension(targetFile, "." + OutputFormat);
@@ -154,8 +159,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var durationParam = " -t " + _mediaEncoder.GetTimeParameter(duration.Ticks);
             var inputModifiers = "-fflags +genpts -async 1 -vsync -1";
-            var mapArgs = string.Equals(OutputFormat, "mkv", StringComparison.OrdinalIgnoreCase) ? "-map 0" : "-sn";
-            var commandLineArgs = "-i \"{0}\"{4} " + mapArgs + " {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
+            var mapArgs = "-map 0 -ignore_unknown";
+            var commandLineArgs = "-i \"{0}\"{5} " + mapArgs + " {2} -map_metadata -1 -threads 0 {3}{4} -y \"{1}\"";
 
             long startTimeTicks = 0;
             //if (mediaSource.DateLiveStreamOpened.HasValue)
@@ -183,7 +188,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                   (analyzeDurationSeconds * 1000000).ToString(CultureInfo.InvariantCulture);
             inputModifiers += analyzeDuration;
 
-            commandLineArgs = string.Format(commandLineArgs, inputTempFile, targetFile, videoArgs, GetAudioArgs(mediaSource), durationParam);
+            var subtitleArgs = CopySubtitles ? " -codec:s copy" : " -sn";
+
+            commandLineArgs = string.Format(commandLineArgs, inputTempFile, targetFile, videoArgs, GetAudioArgs(mediaSource), subtitleArgs, durationParam);
 
             return inputModifiers + " " + commandLineArgs;
         }
@@ -196,7 +203,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             // do not copy aac because many players have difficulty with aac_latm
             if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings && !string.Equals(inputAudioCodec, "aac", StringComparison.OrdinalIgnoreCase))
             {
-                return "-codec:a:0 copy";
+                return "-codec:a copy";
             }
 
             var audioChannels = 2;
@@ -205,7 +212,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 audioChannels = audioStream.Channels ?? audioChannels;
             }
-            return "-codec:a:0 aac -strict experimental -ab 320000";
+            return "-codec:a aac -strict experimental -ab 320000";
         }
 
         private bool EncodeVideo(MediaSourceInfo mediaSource)
