@@ -195,8 +195,9 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             await AddExternalSubtitles(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+            var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
-            FetchEmbeddedInfo(video, mediaInfo, options);
+            FetchEmbeddedInfo(video, mediaInfo, options, libraryOptions);
             await FetchPeople(video, mediaInfo, options).ConfigureAwait(false);
 
             video.IsHD = mediaStreams.Any(i => i.Type == MediaStreamType.Video && i.Width.HasValue && i.Width.Value >= 1260);
@@ -222,7 +223,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 NormalizeChapterNames(chapters);
 
-                var libraryOptions = _libraryManager.GetLibraryOptions(video);
                 var extractDuringScan = false;
                 if (libraryOptions != null)
                 {
@@ -344,9 +344,9 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions options)
+        private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions refreshOptions, LibraryOptions libraryOptions)
         {
-            var isFullRefresh = options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
+            var isFullRefresh = refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.OfficialRating))
             {
@@ -418,15 +418,12 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Name))
             {
-                if (!string.IsNullOrWhiteSpace(data.Name))
+                if (!string.IsNullOrWhiteSpace(data.Name) && libraryOptions.EnableEmbeddedTitles)
                 {
-                    if (string.IsNullOrWhiteSpace(video.Name) || (string.Equals(video.Name, Path.GetFileNameWithoutExtension(video.Path), StringComparison.OrdinalIgnoreCase) && !video.ProviderIds.Any()))
+                    // Don't use the embedded name for extras because it will often be the same name as the movie
+                    if (!video.ExtraType.HasValue && !video.IsOwnedItem)
                     {
-                        // Don't use the embedded name for extras because it will often be the same name as the movie
-                        if (!video.ExtraType.HasValue && !video.IsOwnedItem)
-                        {
-                            video.Name = data.Name;
-                        }
+                        video.Name = data.Name;
                     }
                 }
             }
@@ -481,7 +478,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="video">The video.</param>
         /// <param name="currentStreams">The current streams.</param>
-        /// <param name="options">The options.</param>
+        /// <param name="options">The refreshOptions.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         private async Task AddExternalSubtitles(Video video,
