@@ -348,7 +348,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var isFullRefresh = options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
 
-            if (!video.LockedFields.Contains(MetadataFields.OfficialRating))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.OfficialRating))
             {
                 if (!string.IsNullOrWhiteSpace(data.OfficialRating) || isFullRefresh)
                 {
@@ -361,7 +361,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 video.OfficialRatingDescription = data.OfficialRatingDescription;
             }
 
-            if (!video.LockedFields.Contains(MetadataFields.Genres))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Genres))
             {
                 if (video.Genres.Count == 0 || isFullRefresh)
                 {
@@ -374,7 +374,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!video.LockedFields.Contains(MetadataFields.Studios))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Studios))
             {
                 if (video.Studios.Count == 0 || isFullRefresh)
                 {
@@ -415,14 +415,18 @@ namespace MediaBrowser.Providers.MediaInfo
                     video.ParentIndexNumber = data.ParentIndexNumber;
                 }
             }
-            if (!string.IsNullOrWhiteSpace(data.Name))
+
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Name))
             {
-                if (string.IsNullOrWhiteSpace(video.Name) || (string.Equals(video.Name, Path.GetFileNameWithoutExtension(video.Path), StringComparison.OrdinalIgnoreCase) && !video.ProviderIds.Any()))
+                if (!string.IsNullOrWhiteSpace(data.Name))
                 {
-                    // Don't use the embedded name for extras because it will often be the same name as the movie
-                    if (!video.ExtraType.HasValue && !video.IsOwnedItem)
+                    if (string.IsNullOrWhiteSpace(video.Name) || (string.Equals(video.Name, Path.GetFileNameWithoutExtension(video.Path), StringComparison.OrdinalIgnoreCase) && !video.ProviderIds.Any()))
                     {
-                        video.Name = data.Name;
+                        // Don't use the embedded name for extras because it will often be the same name as the movie
+                        if (!video.ExtraType.HasValue && !video.IsOwnedItem)
+                        {
+                            video.Name = data.Name;
+                        }
                     }
                 }
             }
@@ -433,7 +437,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 video.ProductionYear = video.PremiereDate.Value.ToLocalTime().Year;
             }
 
-            if (!video.LockedFields.Contains(MetadataFields.Overview))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Overview))
             {
                 if (string.IsNullOrWhiteSpace(video.Overview) || isFullRefresh)
                 {
@@ -446,7 +450,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var isFullRefresh = options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
 
-            if (!video.LockedFields.Contains(MetadataFields.Cast))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Cast))
             {
                 if (isFullRefresh || _libraryManager.GetPeople(video).Count == 0)
                 {
