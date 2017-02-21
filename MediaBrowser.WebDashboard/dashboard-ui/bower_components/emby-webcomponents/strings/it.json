@@ -380,11 +380,11 @@
     "HeaderMyDevice": "Il Mio Dispositivo",
     "Continue": "Continua",
     "ContinueInSecondsValue": "Continua tra {0} secondi.",
-    "HeaderRemoteControl": "Remote Control",
+    "HeaderRemoteControl": "Telecomando",
     "Disconnect": "Disconnetti",
     "EnableDisplayMirroring": "Abilita visualizzazione remota",
     "HeaderSelectPlayer": "Seleziona Riproduttore",
-    "Quality": "Quality",
+    "Quality": "Qualit\u00e0",
     "Auto": "Auto",
-    "AndroidUnlockRestoreHelp": "To restore your previous purchase, please ensure you're signed into the device with the same Google (or Amazon) account that originally made the purchase. Make sure the app store is enabled and not restricted by any parental controls, and ensure you have an active internet connection. You'll only have to do this once to restore your previous purchase."
+    "AndroidUnlockRestoreHelp": "Per ripristinare il tuo acquisto precedente, per favore assicurati di essere loggato sul dispositivo con lo stesso account Google (or Amazon) dell'acquisto originale. Assicurati che l'App Store sia abilitato e non limitato da controlli parentali ed assicurati di avere una connessione ad Internet. Dovrai effettuare questa procedura una sola volta per ripristinare il tuo acquisto precendente."
 }
