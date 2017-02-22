@@ -298,15 +298,20 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private string GetTunerChannelId(Dictionary<string, string> attributes)
         {
-            string result;
-            attributes.TryGetValue("tvg-id", out result);
+            var values = new List<string>();
 
-            if (string.IsNullOrWhiteSpace(result))
+            string result;
+            if (attributes.TryGetValue("tvg-id", out result))
             {
-                attributes.TryGetValue("channel-id", out result);
+                values.Add(result);
             }
 
-            return result;
+            if (attributes.TryGetValue("channel-id", out result))
+            {
+                values.Add(result);
+            }
+
+            return values.Count == 0 ? null : string.Join("-", values.ToArray());
         }
 
         private Dictionary<string, string> ParseExtInf(string line, out string remaining)
