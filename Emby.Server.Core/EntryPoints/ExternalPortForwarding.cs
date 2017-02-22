@@ -187,7 +187,10 @@ namespace Emby.Server.Core.EntryPoints
 
         private void ClearCreatedRules(object state)
         {
-            _createdRules = new List<string>();
+            lock (_createdRules)
+            {
+                _createdRules.Clear();
+            }
             lock (_usnsHandled)
             {
                 _usnsHandled.Clear();
@@ -236,16 +239,23 @@ namespace Emby.Server.Core.EntryPoints
 
             var address = device.LocalAddress.ToString();
 
-            if (!_createdRules.Contains(address))
+            lock (_createdRules)
             {
-                _createdRules.Add(address);
-
-                var success = await CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort).ConfigureAwait(false);
-
-                if (success)
+                if (!_createdRules.Contains(address))
                 {
-                    await CreatePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort).ConfigureAwait(false);
+                    _createdRules.Add(address);
                 }
+                else
+                {
+                    return;
+                }
+            }
+
+            var success = await CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort).ConfigureAwait(false);
+
+            if (success)
+            {
+                await CreatePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort).ConfigureAwait(false);
             }
         }
 
