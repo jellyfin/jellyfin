@@ -67,7 +67,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private bool CopySubtitles
         {
-            get { return string.Equals(OutputFormat, "mkv", StringComparison.OrdinalIgnoreCase); }
+            get
+            {
+                return false;
+                //return string.Equals(OutputFormat, "mkv", StringComparison.OrdinalIgnoreCase);
+            }
         }
 
         public string GetOutputPath(MediaSourceInfo mediaSource, string targetFile)
