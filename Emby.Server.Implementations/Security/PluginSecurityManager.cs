@@ -277,8 +277,7 @@ namespace Emby.Server.Implementations.Security
                     { "systemid", _appHost.SystemId }, 
                     { "mb2equiv", mb2Equivalent }, 
                     { "ver", version }, 
-                    { "platform", _appHost.OperatingSystemDisplayName }, 
-                    { "isservice", _appHost.IsRunningAsService.ToString().ToLower() }
+                    { "platform", _appHost.OperatingSystemDisplayName }
                 };
 
                 try

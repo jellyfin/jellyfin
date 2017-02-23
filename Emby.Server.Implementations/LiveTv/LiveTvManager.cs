@@ -2926,17 +2926,12 @@ namespace Emby.Server.Implementations.LiveTv
             var result = new TunerChannelMapping
             {
                 Name = tunerChannel.Name,
-                Id = tunerChannel.TunerChannelId
+                Id = tunerChannel.Id
             };
 
             if (!string.IsNullOrWhiteSpace(tunerChannel.Number))
             {
                 result.Name = tunerChannel.Number + " " + result.Name;
-            }
-
-            if (string.IsNullOrWhiteSpace(result.Id))
-            {
-                result.Id = tunerChannel.Id;
             }
 
             var providerChannel = EmbyTV.EmbyTV.Current.GetEpgChannelFromTunerChannel(mappings, tunerChannel, epgChannels);
