@@ -90,7 +90,6 @@ using Emby.Server.Core.Localization;
 using Emby.Server.Implementations.Migrations;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Social;
-using Emby.Server.Implementations.Sync;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
 using Emby.Server.Implementations.Dto;
@@ -109,7 +108,6 @@ using Emby.Server.Implementations;
 using Emby.Server.Implementations.ServerManager;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.Social;
-using Emby.Server.Implementations.Sync;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using MediaBrowser.Model.Activity;
@@ -526,6 +524,7 @@ namespace Emby.Server.Core
         }
 
         protected abstract IConnectManager CreateConnectManager();
+        protected abstract ISyncManager CreateSyncManager();
 
         /// <summary>
         /// Registers resources that classes will depend on
@@ -587,9 +586,6 @@ namespace Emby.Server.Core
             AuthenticationRepository = await GetAuthenticationRepository().ConfigureAwait(false);
             RegisterSingleInstance(AuthenticationRepository);
 
-            SyncRepository = GetSyncRepository();
-            RegisterSingleInstance(SyncRepository);
-
             UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this, JsonSerializer, FileSystemManager, CryptographyProvider, _defaultUserNameFactory());
             RegisterSingleInstance(UserManager);
 
@@ -627,7 +623,7 @@ namespace Emby.Server.Core
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager, ServerConfigurationManager);
             RegisterSingleInstance(TVSeriesManager);
 
-            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager, () => MediaSourceManager, JsonSerializer, TaskManager, MemoryStreamFactory);
+            SyncManager = CreateSyncManager();
             RegisterSingleInstance(SyncManager);
 
             DtoService = new DtoService(LogManager.GetLogger("DtoService"), LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager, () => MediaSourceManager, () => LiveTvManager);
@@ -938,15 +934,6 @@ namespace Emby.Server.Core
         private IActivityRepository GetActivityLogRepository()
         {
             var repo = new ActivityRepository(LogManager.GetLogger("ActivityRepository"), ServerConfigurationManager.ApplicationPaths);
-
-            repo.Initialize();
-
-            return repo;
-        }
-
-        private ISyncRepository GetSyncRepository()
-        {
-            var repo = new SyncRepository(LogManager.GetLogger("SyncRepository"), JsonSerializer, ServerConfigurationManager.ApplicationPaths);
 
             repo.Initialize();
 

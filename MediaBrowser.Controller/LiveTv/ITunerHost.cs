@@ -1,5 +1,4 @@
-﻿using System;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
 using System.Collections.Generic;
 using System.Threading;
@@ -23,7 +22,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets the channels.
         /// </summary>
         /// <returns>Task&lt;IEnumerable&lt;ChannelInfo&gt;&gt;.</returns>
-        Task<IEnumerable<ChannelInfo>> GetChannels(bool enableCache, CancellationToken cancellationToken);
+        Task<List<ChannelInfo>> GetChannels(bool enableCache, CancellationToken cancellationToken);
         /// <summary>
         /// Gets the tuner infos.
         /// </summary>
