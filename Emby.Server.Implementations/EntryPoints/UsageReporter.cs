@@ -40,8 +40,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 { "serverid", _applicationHost.SystemId }, 
                 { "deviceid", _applicationHost.SystemId }, 
                 { "ver", _applicationHost.ApplicationVersion.ToString() }, 
-                { "platform", _applicationHost.OperatingSystemDisplayName }, 
-                { "isservice", _applicationHost.IsRunningAsService.ToString().ToLower()}
+                { "platform", _applicationHost.OperatingSystemDisplayName }
             };
 
             var users = _userManager.Users.ToList();
