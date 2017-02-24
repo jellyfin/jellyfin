@@ -1486,7 +1486,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                 }
 
-                if (state.RunTimeTicks.HasValue)
+                if (state.RunTimeTicks.HasValue && string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
                 {
                     foreach (var stream in state.MediaSource.MediaStreams)
                     {
