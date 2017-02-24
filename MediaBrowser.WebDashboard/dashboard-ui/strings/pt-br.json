@@ -793,7 +793,7 @@
     "LabelProtocolInfo": "Informa\u00e7\u00e3o do protocolo:",
     "LabelProtocolInfoHelp": "O valor que ser\u00e1 usado ao responder os pedidos GetProtocolInfo do dispositivo.",
     "TabNfoSettings": "Ajustes para Nfo",
-    "HeaderKodiMetadataHelp": "Emby inclui suporte nativo para arquivos de metadados Nfo. Para ativar ou desativar metadados Nfo, use a aba Servi\u00e7os para configurar as op\u00e7\u00f5es para seus tipos de m\u00eddia.",
+    "HeaderKodiMetadataHelp": "Emby inclui suporte nativo para arquivos de metadados Nfo. Para ativar ou desativar metadados Nfo, use a aba Metadados para configurar as op\u00e7\u00f5es para seus tipos de m\u00eddia.",
     "LabelKodiMetadataUser": "Sincronizar informa\u00e7\u00f5es do que o usu\u00e1rio assiste aos nfo's para:",
     "LabelKodiMetadataUserHelp": "Ative esta op\u00e7\u00e3o para manter os dados sincronizados entre o Servidor Emby e os arquivos Nfo.",
     "LabelKodiMetadataDateFormat": "Formato da data de lan\u00e7amento:",
@@ -1961,5 +1961,7 @@
     "OptionAutomaticallyGroupSeries": "Reunir automaticamente s\u00e9ries que estejam espalhadas por m\u00faltiplas pastas",
     "OptionAutomaticallyGroupSeriesHelp": "Se ativado, s\u00e9ries que estiverem espalhadas por m\u00faltiplas pastas dentro desta biblioteca ser\u00e3o automaticamente reunidas em uma mesma s\u00e9rie.",
     "ErrorReachingEmbyConnect": "Ocorreu um erro ao buscar o servidor Emby Connect. Por favor, verifique que tenha uma conex\u00e3o de internet ativa e tente novamente.",
-    "WhenDidYouPurchaseApp": "Quando originalmente voc\u00ea comprou este app?"
+    "WhenDidYouPurchaseApp": "Quando originalmente voc\u00ea comprou este app?",
+    "PreferEmbeddedTitlesOverFileNames": "Prefer embedded titles over filenames",
+    "PreferEmbeddedTitlesOverFileNamesHelp": "This determines the default display title when no internet metadata or local metadata is available."
 }

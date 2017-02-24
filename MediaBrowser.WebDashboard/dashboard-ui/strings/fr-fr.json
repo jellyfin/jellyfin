@@ -1961,5 +1961,7 @@
     "OptionAutomaticallyGroupSeries": "Fusionner automatiquement les s\u00e9ries pr\u00e9sentes dans des dossiers diff\u00e9rents",
     "OptionAutomaticallyGroupSeriesHelp": "Si appliqu\u00e9e, cete option fusionnera les s\u00e9ries pr\u00e9sentes dans diff\u00e9rents dossiers de cette m\u00e9diath\u00e8que en une seule s\u00e9rie.",
     "ErrorReachingEmbyConnect": "Il y eu une erreur lors de la connexion avec le serveur Emby Connect. Veuillez vous assurer du status de votre connexion internet et recommencez.",
-    "WhenDidYouPurchaseApp": "When did you originally purchase this app?"
+    "WhenDidYouPurchaseApp": "When did you originally purchase this app?",
+    "PreferEmbeddedTitlesOverFileNames": "Prefer embedded titles over filenames",
+    "PreferEmbeddedTitlesOverFileNamesHelp": "This determines the default display title when no internet metadata or local metadata is available."
 }

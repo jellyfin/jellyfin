@@ -317,7 +317,7 @@
     "LabelFanartApiKey": "Personal api key:",
     "LabelFanartApiKeyHelp": "Requests to fanart without a personal API key return images that were approved over 7 days ago. With a personal API key that drops to 48 hours and if you are also a fanart VIP member that will further drop to around 10 minutes.",
     "ExtractChapterImagesHelp": "Extracting chapter images will allow Emby apps to display graphical scene selection menus. The process can be slow, cpu-intensive and may require several gigabytes of space. It runs when videos are discovered, and also as a nightly scheduled task. The schedule is configurable in the scheduled tasks area. It is not recommended to run this task during peak usage hours.",
-    "LabelMetadataDownloadLanguage": "Prefer\u00e1lt let\u00f6ltend\u0151 metaadat nyelv:",
+    "LabelMetadataDownloadLanguage": "Prefer\u00e1lt metaadat nyelv:",
     "ButtonSignIn": "Bejelentkez\u00e9s",
     "TitleSignIn": "Bejelentkez\u00e9s",
     "HeaderPleaseSignIn": "K\u00e9rlek jelentkezz be",
@@ -793,7 +793,7 @@
     "LabelProtocolInfo": "Protocol info:",
     "LabelProtocolInfoHelp": "The value that will be used when responding to GetProtocolInfo requests from the device.",
     "TabNfoSettings": "Nfo Settings",
-    "HeaderKodiMetadataHelp": "Emby includes native support for Nfo metadata files. To enable or disable Nfo metadata, use the Services tab to configure options for your media types.",
+    "HeaderKodiMetadataHelp": "Emby includes native support for Nfo metadata files. To enable or disable Nfo metadata, use the Metadata tab to configure options for your media types.",
     "LabelKodiMetadataUser": "Sync user watch data to nfo's for:",
     "LabelKodiMetadataUserHelp": "Enable this to keep watch data in sync between Emby Server and Nfo files.",
     "LabelKodiMetadataDateFormat": "Megjelen\u00e9si d\u00e1tum form\u00e1tuma:",
@@ -1961,5 +1961,7 @@
     "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
     "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again.",
-    "WhenDidYouPurchaseApp": "When did you originally purchase this app?"
+    "WhenDidYouPurchaseApp": "When did you originally purchase this app?",
+    "PreferEmbeddedTitlesOverFileNames": "Prefer embedded titles over filenames",
+    "PreferEmbeddedTitlesOverFileNamesHelp": "This determines the default display title when no internet metadata or local metadata is available."
 }

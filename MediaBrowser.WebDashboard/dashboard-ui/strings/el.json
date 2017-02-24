@@ -793,7 +793,7 @@
     "LabelProtocolInfo": "Protocol info:",
     "LabelProtocolInfoHelp": "The value that will be used when responding to GetProtocolInfo requests from the device.",
     "TabNfoSettings": "Nfo Settings",
-    "HeaderKodiMetadataHelp": "Emby includes native support for Nfo metadata files. To enable or disable Nfo metadata, use the Services tab to configure options for your media types.",
+    "HeaderKodiMetadataHelp": "Emby includes native support for Nfo metadata files. To enable or disable Nfo metadata, use the Metadata tab to configure options for your media types.",
     "LabelKodiMetadataUser": "Sync user watch data to nfo's for:",
     "LabelKodiMetadataUserHelp": "Enable this to keep watch data in sync between Emby Server and Nfo files.",
     "LabelKodiMetadataDateFormat": "Release date format:",
@@ -1961,5 +1961,7 @@
     "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
     "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again.",
-    "WhenDidYouPurchaseApp": "When did you originally purchase this app?"
+    "WhenDidYouPurchaseApp": "When did you originally purchase this app?",
+    "PreferEmbeddedTitlesOverFileNames": "Prefer embedded titles over filenames",
+    "PreferEmbeddedTitlesOverFileNamesHelp": "This determines the default display title when no internet metadata or local metadata is available."
 }
