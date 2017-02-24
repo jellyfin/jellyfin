@@ -793,7 +793,7 @@
     "LabelProtocolInfo": "\u534f\u8bae\u4fe1\u606f\uff1a",
     "LabelProtocolInfoHelp": "\u5f53\u54cd\u5e94\u6765\u81ea\u8bbe\u5907\u7684 GetProtocolInfo\uff08\u83b7\u53d6\u534f\u8bae\u4fe1\u606f\uff09\u8bf7\u6c42\u65f6\uff0c\u8be5\u503c\u5c06\u88ab\u4f7f\u7528\u3002",
     "TabNfoSettings": "Nfo \u8bbe\u5b9a",
-    "HeaderKodiMetadataHelp": "Emby includes native support for Nfo metadata files. To enable or disable Nfo metadata, use the Services tab to configure options for your media types.",
+    "HeaderKodiMetadataHelp": "Emby includes native support for Nfo metadata files. To enable or disable Nfo metadata, use the Metadata tab to configure options for your media types.",
     "LabelKodiMetadataUser": "\u540c\u6b65\u7528\u6237\u7684\u89c2\u770b\u65e5\u671f\u5230nfo\u6587\u4ef6:",
     "LabelKodiMetadataUserHelp": "Enable this to keep watch data in sync between Emby Server and Nfo files.",
     "LabelKodiMetadataDateFormat": "\u53d1\u884c\u65e5\u671f\u683c\u5f0f\uff1a",
@@ -1961,5 +1961,7 @@
     "OptionAutomaticallyGroupSeries": "\u81ea\u52a8\u5408\u5e76\u5206\u5e03\u5728\u4e0d\u540c\u6587\u4ef6\u5939\u7684\u7cfb\u5217",
     "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
     "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again.",
-    "WhenDidYouPurchaseApp": "When did you originally purchase this app?"
+    "WhenDidYouPurchaseApp": "When did you originally purchase this app?",
+    "PreferEmbeddedTitlesOverFileNames": "Prefer embedded titles over filenames",
+    "PreferEmbeddedTitlesOverFileNamesHelp": "This determines the default display title when no internet metadata or local metadata is available."
 }

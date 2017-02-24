@@ -83,7 +83,7 @@
     "TabAccess": "Zugang",
     "TabImage": "Bild",
     "TabProfile": "Profil",
-    "TabMetadata": "Metadata",
+    "TabMetadata": "Metadaten",
     "TabImages": "Bilder",
     "TabNotifications": "Benachrichtigungen",
     "TabCollectionTitles": "Titel",
@@ -793,7 +793,7 @@
     "LabelProtocolInfo": "Protokoll Information:",
     "LabelProtocolInfoHelp": "Der Wert, der f\u00fcr die Beantwortung von GetProtocolInfo Anfragen durch die Endger\u00e4te benutzt wird.",
     "TabNfoSettings": "Nfo Einstellungen",
-    "HeaderKodiMetadataHelp": "Emby bietet native Unterst\u00fctzung von Nfo Metadaten Dateien. Um diese zu konfigurieren, aktivieren oder deaktivieren verwende bitte die entsprechende Einstellungen im Tab \"Dienste\".",
+    "HeaderKodiMetadataHelp": "Emby bietet native Unterst\u00fctzung von Nfo Metadatendateien. Um Nfo Metadaten zu aktivieren oder deaktivieren, verwende den \"Metadaten\" Tab um die Optionen f\u00fcr deinen Medientypen zu konfigurieren.",
     "LabelKodiMetadataUser": "Synchronisiere den \"Gesehen\" Status von Benutzern in NFO's f\u00fcr:",
     "LabelKodiMetadataUserHelp": "Aktivieren Sie dies, um den \"Gesehen\" Status zwischen Emby Server und Nfo Dateien synchron zu halten.",
     "LabelKodiMetadataDateFormat": "Ver\u00f6ffentlichungsdatum Format:",
@@ -1961,5 +1961,7 @@
     "OptionAutomaticallyGroupSeries": "Vermische Serieninhalte, die in verschiedenen Ordnern abgelegt sind.",
     "OptionAutomaticallyGroupSeriesHelp": "Wenn aktiviert, werden Inhalte einer Serie in verschiedenen Ordnern innerhalb einer Bibliothek als eine Serie angezeigt.",
     "ErrorReachingEmbyConnect": "Fehler bei der Verbindung zum Emby Connect Server. Stelle bitte sicher, dass du \u00fcber eine aktive Internetverbindung verf\u00fcgst und versuche es erneut.",
-    "WhenDidYouPurchaseApp": "Wann hast du die App urspr\u00fcnglich bestellt?"
+    "WhenDidYouPurchaseApp": "Wann hast du die App urspr\u00fcnglich bestellt?",
+    "PreferEmbeddedTitlesOverFileNames": "Bevorzuge eingebettete Titel vor Dateinamen",
+    "PreferEmbeddedTitlesOverFileNamesHelp": "Das bestimmt den Standard Displaytitel wenn keine lokale oder Internetmetadaten verf\u00fcgbar sind."
 }

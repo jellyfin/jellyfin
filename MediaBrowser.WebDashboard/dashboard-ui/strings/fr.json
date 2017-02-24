@@ -793,7 +793,7 @@
     "LabelProtocolInfo": "Informations sur le protocole\u00a0:",
     "LabelProtocolInfoHelp": "La valeur qui sera utilis\u00e9e pour r\u00e9pondre aux requ\u00eates GetProtocolInfo de l'appareil.",
     "TabNfoSettings": "Param\u00e8tres NFO",
-    "HeaderKodiMetadataHelp": "Emby offre un support natif pour les fichiers de m\u00e9tadonn\u00e9es NFO. Pour activer ou d\u00e9sactiver les m\u00e9tadonn\u00e9es NFO, utilisez l'onglet Services pour configurer les options pour vos types de m\u00e9dias.",
+    "HeaderKodiMetadataHelp": "Emby offre un support natif pour les fichiers de m\u00e9tadonn\u00e9es NFO. Pour activer ou d\u00e9sactiver les m\u00e9tadonn\u00e9es NFO, utilisez l'onglet M\u00e9tadonn\u00e9es pour configurer les options pour vos types de m\u00e9dias.",
     "LabelKodiMetadataUser": "Synchroniser les donn\u00e9es de visionnage utilisateur dans les NFO pour :",
     "LabelKodiMetadataUserHelp": "Activez cette option pour synchroniser les donn\u00e9es de lecture entre le serveur Emby et les fichiers NFO.",
     "LabelKodiMetadataDateFormat": "Format de la date de sortie :",
@@ -1961,5 +1961,7 @@
     "OptionAutomaticallyGroupSeries": "Fusionner automatiquement les s\u00e9ries qui sont r\u00e9parties en plusieurs dossiers",
     "OptionAutomaticallyGroupSeriesHelp": "Les s\u00e9ries qui sont r\u00e9parties en plusieurs dossiers dans la m\u00e9diath\u00e8que seront automatiquement fusionn\u00e9es en une seule s\u00e9rie.",
     "ErrorReachingEmbyConnect": "Une erreur est survenue pendant la connexion au serveur Emby Connect. Veuillez vous assurer que vous avez une connexion internet active puis r\u00e9essayez.",
-    "WhenDidYouPurchaseApp": "Quand avez-vous achet\u00e9 cette application initialement\u00a0?"
+    "WhenDidYouPurchaseApp": "Quand avez-vous achet\u00e9 cette application initialement\u00a0?",
+    "PreferEmbeddedTitlesOverFileNames": "Pr\u00e9f\u00e9rer les titres int\u00e9gr\u00e9s aux m\u00e9dias aux noms des fichiers",
+    "PreferEmbeddedTitlesOverFileNamesHelp": "Cela d\u00e9termine le titre affich\u00e9 par d\u00e9faut quand il n'y a pas de m\u00e9tadonn\u00e9es en ligne ou locales disponibles."
 }

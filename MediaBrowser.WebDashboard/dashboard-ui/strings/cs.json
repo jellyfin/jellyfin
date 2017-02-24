@@ -1961,5 +1961,7 @@
     "OptionAutomaticallyGroupSeries": "Automatick\u00e9 slou\u010den\u00ed k seri\u00e1lu, kter\u00e9 jsou ve v\u00edce slo\u017ek\u00e1ch",
     "OptionAutomaticallyGroupSeriesHelp": "Pokud je povoleno, budou d\u00edly seri\u00e1lu ulo\u017een\u00e9 ve v\u00edce adres\u00e1\u0159\u00edch v t\u00e9to knihovn\u011b, automaticky slou\u010deny k jednomu seri\u00e1lu.",
     "ErrorReachingEmbyConnect": "Do\u0161lo k chyb\u011b p\u0159i nav\u00e1z\u00e1n\u00ed spojen\u00ed k serveru Emby Connect. Ujist\u011bte se, zda je funk\u010dn\u00ed p\u0159ipojen\u00ed k internetu a zkuste to znovu.",
-    "WhenDidYouPurchaseApp": "When did you originally purchase this app?"
+    "WhenDidYouPurchaseApp": "When did you originally purchase this app?",
+    "PreferEmbeddedTitlesOverFileNames": "Prefer embedded titles over filenames",
+    "PreferEmbeddedTitlesOverFileNamesHelp": "This determines the default display title when no internet metadata or local metadata is available."
 }
