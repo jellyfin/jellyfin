@@ -12,7 +12,7 @@
                 <div class="emby-button-foreground">${TabUpcoming}</div>
             </button>
             <button is="emby-button" class="emby-tab-button" data-index="3">
-                <div class="emby-button-foreground">${TabShows}</div>
+                <div class="emby-button-foreground">${TabSeries}</div>
             </button>
             <button is="emby-button" class="emby-tab-button" data-index="4">
                 <div class="emby-button-foreground">${TabGenres}</div>
@@ -81,8 +81,11 @@
             <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
         </div>
 
-        <div is="emby-itemscontainer" class="itemsContainer">
+        <div is="emby-itemscontainer" class="itemsContainer itemsContainerWithAlphaPicker">
         </div>
+        <div class="alphaPicker alphabetPicker alphaPicker-vertical">
+        </div>
+
         <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
             <div class="paging"></div>
         </div>

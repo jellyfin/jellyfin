@@ -742,7 +742,7 @@ namespace MediaBrowser.Providers.TV
                                     {
                                         if (!item.LockedFields.Contains(MetadataFields.Cast))
                                         {
-                                            AddPeople(result, val, PersonType.Writer);
+                                            //AddPeople(result, val, PersonType.Writer);
                                         }
                                     }
 
@@ -894,7 +894,7 @@ namespace MediaBrowser.Providers.TV
                                     {
                                         if (!item.LockedFields.Contains(MetadataFields.Cast))
                                         {
-                                            AddPeople(result, val, PersonType.Writer);
+                                            //AddPeople(result, val, PersonType.Writer);
                                         }
                                     }
 

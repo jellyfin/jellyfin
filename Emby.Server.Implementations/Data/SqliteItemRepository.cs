@@ -2872,7 +2872,8 @@ namespace Emby.Server.Implementations.Data
             }
             if (string.Equals(name, ItemSortBy.IsFavoriteOrLiked, StringComparison.OrdinalIgnoreCase))
             {
-                return new Tuple<string, bool>("IsFavorite", true);
+                // (Select Case When Abs(COALESCE(ProductionYear, 0) - @ItemProductionYear) < 10 Then 2 Else 0 End )
+                return new Tuple<string, bool>("(Select Case When IsFavorite is null Then 0 Else IsFavorite End )", true);
             }
             if (string.Equals(name, ItemSortBy.IsFolder, StringComparison.OrdinalIgnoreCase))
             {
@@ -3874,6 +3875,25 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add(clause);
             }
 
+            if (query.AlbumIds.Length > 0)
+            {
+                var clauses = new List<string>();
+                var index = 0;
+                foreach (var albumId in query.AlbumIds)
+                {
+                    var paramName = "@AlbumIds" + index;
+
+                    clauses.Add("Album in (select Name from typedbaseitems where guid=" + paramName + ")");
+                    if (statement != null)
+                    {
+                        statement.TryBind(paramName, albumId.ToGuidParamValue());
+                    }
+                    index++;
+                }
+                var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
+                whereClauses.Add(clause);
+            }
+
             if (query.ExcludeArtistIds.Length > 0)
             {
                 var clauses = new List<string>();
@@ -4226,30 +4246,6 @@ namespace Emby.Server.Implementations.Data
             if (query.HasTvdbId.HasValue)
             {
                 whereClauses.Add("ProviderIds like '%tvdb=%'");
-            }
-
-            if (query.AlbumNames.Length > 0)
-            {
-                var clause = "(";
-
-                var index = 0;
-                foreach (var name in query.AlbumNames)
-                {
-                    if (index > 0)
-                    {
-                        clause += " OR ";
-                    }
-                    clause += "Album=@AlbumName" + index;
-
-                    if (statement != null)
-                    {
-                        statement.TryBind("@AlbumName" + index, name);
-                    }
-                    index++;
-                }
-
-                clause += ")";
-                whereClauses.Add(clause);
             }
             if (query.HasThemeSong.HasValue)
             {

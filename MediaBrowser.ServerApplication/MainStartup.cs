@@ -23,11 +23,14 @@ using Emby.Common.Implementations.Logging;
 using Emby.Common.Implementations.Networking;
 using Emby.Common.Implementations.Security;
 using Emby.Server.Core;
+using Emby.Server.Core.Logging;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Browser;
 using Emby.Server.Implementations.IO;
+using Emby.Server.Implementations.Logging;
 using ImageMagickSharp;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Server.Startup.Common.IO;
 
 namespace MediaBrowser.ServerApplication
@@ -46,6 +49,8 @@ namespace MediaBrowser.ServerApplication
         static extern bool SetDllDirectory(string lpPathName);
 
         public static string ApplicationPath;
+
+        private static IFileSystem FileSystem;
 
         public static bool TryGetLocalFromUncDirectory(string local, out string unc)
         {
@@ -259,16 +264,18 @@ namespace MediaBrowser.ServerApplication
 
             var resourcesPath = Path.GetDirectoryName(applicationPath);
 
+            Action<string> createDirectoryFn = s => Directory.CreateDirectory(s);
+
             if (runAsService)
             {
                 var systemPath = Path.GetDirectoryName(applicationPath);
 
                 var programDataPath = Path.GetDirectoryName(systemPath);
 
-                return new ServerApplicationPaths(programDataPath, appFolderPath, resourcesPath);
+                return new ServerApplicationPaths(programDataPath, appFolderPath, resourcesPath, createDirectoryFn);
             }
 
-            return new ServerApplicationPaths(ApplicationPathHelper.GetProgramDataPath(applicationPath), appFolderPath, resourcesPath);
+            return new ServerApplicationPaths(ApplicationPathHelper.GetProgramDataPath(applicationPath), appFolderPath, resourcesPath, createDirectoryFn);
         }
 
         /// <summary>
@@ -324,11 +331,13 @@ namespace MediaBrowser.ServerApplication
         /// <param name="options">The options.</param>
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, bool runService, StartupOptions options)
         {
-            var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), true, true, true, appPaths.TempDirectory);
+            var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), true, true, false, appPaths.TempDirectory);
             fileSystem.AddShortcutHandler(new LnkShortcutHandler());
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
             var imageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => _appHost.HttpClient, appPaths);
+
+            FileSystem = fileSystem;
 
             _appHost = new WindowsAppHost(appPaths,
                 logManager,
@@ -580,7 +589,7 @@ namespace MediaBrowser.ServerApplication
         {
             var exception = (Exception)e.ExceptionObject;
 
-            new UnhandledExceptionWriter(_appHost.ServerConfigurationManager.ApplicationPaths, _logger, _appHost.LogManager).Log(exception);
+            new UnhandledExceptionWriter(_appHost.ServerConfigurationManager.ApplicationPaths, _logger, _appHost.LogManager, FileSystem, new ConsoleLogger()).Log(exception);
 
             if (!IsRunningAsService)
             {
@@ -676,6 +685,7 @@ namespace MediaBrowser.ServerApplication
 
                 _appHostDisposed = true;
                 _appHost.Dispose();
+                _logger.Info("App host dispose complete");
             }
         }
 

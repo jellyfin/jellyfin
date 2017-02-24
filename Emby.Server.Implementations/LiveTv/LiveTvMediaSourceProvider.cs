@@ -126,14 +126,12 @@ namespace Emby.Server.Implementations.LiveTv
             var keys = openToken.Split(new[] { StreamIdDelimeter }, 3);
             var mediaSourceId = keys.Length >= 3 ? keys[2] : null;
             IDirectStreamProvider directStreamProvider = null;
-            var assumeInterlaced = false;
 
             if (string.Equals(keys[0], typeof(LiveTvChannel).Name, StringComparison.OrdinalIgnoreCase))
             {
                 var info = await _liveTvManager.GetChannelStream(keys[1], mediaSourceId, cancellationToken).ConfigureAwait(false);
                 stream = info.Item1;
                 directStreamProvider = info.Item2;
-                assumeInterlaced = info.Item3;
             }
             else
             {
@@ -148,7 +146,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
                 else
                 {
-                    await new LiveStreamHelper(_mediaEncoder, _logger).AddMediaInfoWithProbe(stream, isAudio, assumeInterlaced, cancellationToken).ConfigureAwait(false);
+                    await new LiveStreamHelper(_mediaEncoder, _logger).AddMediaInfoWithProbe(stream, isAudio, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

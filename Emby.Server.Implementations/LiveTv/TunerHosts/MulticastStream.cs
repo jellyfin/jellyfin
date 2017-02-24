@@ -74,10 +74,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 OnFinished = OnFinished
             };
 
-            var initial = _sharedBuffer.ToList();
             var list = new List<byte>();
-
-            foreach (var bytes in initial)
+            foreach (var bytes in _sharedBuffer)
             {
                 list.AddRange(bytes);
             }

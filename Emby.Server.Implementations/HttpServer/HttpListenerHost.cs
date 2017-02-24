@@ -2,8 +2,6 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
-using ServiceStack;
-using ServiceStack.Host;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.SocketSharp;
+using Emby.Server.Implementations.Services;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Controller;
@@ -29,7 +28,7 @@ using SocketHttpListener.Primitives;
 
 namespace Emby.Server.Implementations.HttpServer
 {
-    public class HttpListenerHost : ServiceStackHost, IHttpServer
+    public class HttpListenerHost : IHttpServer, IDisposable
     {
         private string DefaultRedirectPath { get; set; }
 
@@ -61,13 +60,21 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly Func<Type, Func<string, object>> _funcParseFn;
         private readonly bool _enableDualModeSockets;
 
+        public List<Action<IRequest, IResponse, object>> RequestFilters { get; set; }
+        public List<Action<IRequest, IResponse, object>> ResponseFilters { get; set; }
+
+        private readonly Dictionary<Type, Type> ServiceOperationsMap = new Dictionary<Type, Type>();
+        public static HttpListenerHost Instance { get; protected set; }
+
         public HttpListenerHost(IServerApplicationHost applicationHost,
             ILogger logger,
             IServerConfigurationManager config,
             string serviceName,
             string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer, IEnvironmentInfo environment, ICertificate certificate, IStreamFactory streamFactory, Func<Type, Func<string, object>> funcParseFn, bool enableDualModeSockets)
-            : base(serviceName)
+            : base()
         {
+            Instance = this;
+
             _appHost = applicationHost;
             DefaultRedirectPath = defaultRedirectPath;
             _networkManager = networkManager;
@@ -85,6 +92,9 @@ namespace Emby.Server.Implementations.HttpServer
             _config = config;
 
             _logger = logger;
+
+            RequestFilters = new List<Action<IRequest, IResponse, object>>();
+            ResponseFilters = new List<Action<IRequest, IResponse, object>>();
         }
 
         public string GlobalResponse { get; set; }
@@ -99,18 +109,7 @@ namespace Emby.Server.Implementations.HttpServer
                 {typeof (ArgumentException), 400}
             };
 
-        public override void Configure()
-        {
-            var requestFilters = _appHost.GetExports<IRequestFilter>().ToList();
-            foreach (var filter in requestFilters)
-            {
-                GlobalRequestFilters.Add(filter.Filter);
-            }
-
-            GlobalResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
-        }
-
-        protected override ILogger Logger
+        protected ILogger Logger
         {
             get
             {
@@ -118,32 +117,73 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        public override T Resolve<T>()
-        {
-            return _appHost.Resolve<T>();
-        }
-
-        public override T TryResolve<T>()
-        {
-            return _appHost.TryResolve<T>();
-        }
-
-        public override object CreateInstance(Type type)
+        public object CreateInstance(Type type)
         {
             return _appHost.CreateInstance(type);
         }
 
-        protected override ServiceController CreateServiceController()
+        private ServiceController CreateServiceController()
         {
             var types = _restServices.Select(r => r.GetType()).ToArray();
 
             return new ServiceController(() => types);
         }
 
-        public override ServiceStackHost Start(string listeningAtUrlBase)
+        /// <summary>
+        /// Applies the request filters. Returns whether or not the request has been handled 
+        /// and no more processing should be done.
+        /// </summary>
+        /// <returns></returns>
+        public void ApplyRequestFilters(IRequest req, IResponse res, object requestDto)
         {
-            StartListener();
-            return this;
+            //Exec all RequestFilter attributes with Priority < 0
+            var attributes = GetRequestFilterAttributes(requestDto.GetType());
+            var i = 0;
+            for (; i < attributes.Length && attributes[i].Priority < 0; i++)
+            {
+                var attribute = attributes[i];
+                attribute.RequestFilter(req, res, requestDto);
+            }
+
+            //Exec global filters
+            foreach (var requestFilter in RequestFilters)
+            {
+                requestFilter(req, res, requestDto);
+            }
+
+            //Exec remaining RequestFilter attributes with Priority >= 0
+            for (; i < attributes.Length && attributes[i].Priority >= 0; i++)
+            {
+                var attribute = attributes[i];
+                attribute.RequestFilter(req, res, requestDto);
+            }
+        }
+
+        public Type GetServiceTypeByRequest(Type requestType)
+        {
+            Type serviceType;
+            ServiceOperationsMap.TryGetValue(requestType, out serviceType);
+            return serviceType;
+        }
+
+        public void AddServiceInfo(Type serviceType, Type requestType, Type responseType)
+        {
+            ServiceOperationsMap[requestType] = serviceType;
+        }
+
+        private IHasRequestFilter[] GetRequestFilterAttributes(Type requestDtoType)
+        {
+            var attributes = requestDtoType.GetTypeInfo().GetCustomAttributes(true).OfType<IHasRequestFilter>().ToList();
+
+            var serviceType = GetServiceTypeByRequest(requestDtoType);
+            if (serviceType != null)
+            {
+                attributes.AddRange(serviceType.GetTypeInfo().GetCustomAttributes(true).OfType<IHasRequestFilter>());
+            }
+
+            attributes.Sort((x, y) => x.Priority - y.Priority);
+
+            return attributes.ToArray();
         }
 
         /// <summary>
@@ -531,11 +571,11 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                var handler = HttpHandlerFactory.GetHandler(httpReq, _logger);
+                var handler = GetServiceHandler(httpReq);
 
                 if (handler != null)
                 {
-                    await handler.ProcessRequestAsync(httpReq, httpRes, operationName).ConfigureAwait(false);
+                    await handler.ProcessRequestAsync(this, httpReq, httpRes, Logger, operationName).ConfigureAwait(false);
                 }
                 else
                 {
@@ -565,6 +605,35 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
+        // Entry point for HttpListener
+        public ServiceHandler GetServiceHandler(IHttpRequest httpReq)
+        {
+            var pathInfo = httpReq.PathInfo;
+
+            var pathParts = pathInfo.TrimStart('/').Split('/');
+            if (pathParts.Length == 0)
+            {
+                _logger.Error("Path parts empty for PathInfo: {0}, Url: {1}", pathInfo, httpReq.RawUrl);
+                return null;
+            }
+
+            string contentType;
+            var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, _logger, out contentType);
+
+            if (restPath != null)
+            {
+                return new ServiceHandler
+                {
+                    RestPath = restPath,
+                    ResponseContentType = contentType
+                };
+            }
+
+            _logger.Error("Could not find handler for {0}", pathInfo);
+            return null;
+        }
+
+
         private void Write(IResponse response, string text)
         {
             var bOutput = Encoding.UTF8.GetBytes(text);
@@ -580,6 +649,7 @@ namespace Emby.Server.Implementations.HttpServer
             httpRes.AddHeader("Location", url);
         }
 
+        public ServiceController ServiceController { get; private set; }
 
         /// <summary>
         /// Adds the rest handlers.
@@ -593,12 +663,20 @@ namespace Emby.Server.Implementations.HttpServer
 
             _logger.Info("Calling ServiceStack AppHost.Init");
 
-            base.Init();
+            ServiceController.Init(this);
+
+            var requestFilters = _appHost.GetExports<IRequestFilter>().ToList();
+            foreach (var filter in requestFilters)
+            {
+                RequestFilters.Add(filter.Filter);
+            }
+
+            ResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
         }
 
-        public override RouteAttribute[] GetRouteAttributes(Type requestType)
+        public RouteAttribute[] GetRouteAttributes(Type requestType)
         {
-            var routes = base.GetRouteAttributes(requestType).ToList();
+            var routes = requestType.GetTypeInfo().GetCustomAttributes<RouteAttribute>(true).ToList();
             var clone = routes.ToList();
 
             foreach (var route in clone)
@@ -628,54 +706,27 @@ namespace Emby.Server.Implementations.HttpServer
             return routes.ToArray();
         }
 
-        public override object GetTaskResult(Task task, string requestName)
-        {
-            try
-            {
-                var taskObject = task as Task<object>;
-                if (taskObject != null)
-                {
-                    return taskObject.Result;
-                }
-
-                task.Wait();
-
-                var type = task.GetType().GetTypeInfo();
-                if (!type.IsGenericType)
-                {
-                    return null;
-                }
-
-                Logger.Warn("Getting task result from " + requestName + " using reflection. For better performance have your api return Task<object>");
-                return type.GetDeclaredProperty("Result").GetValue(task);
-            }
-            catch (TypeAccessException)
-            {
-                return null; //return null for void Task's
-            }
-        }
-
-        public override Func<string, object> GetParseFn(Type propertyType)
+        public Func<string, object> GetParseFn(Type propertyType)
         {
             return _funcParseFn(propertyType);
         }
 
-        public override void SerializeToJson(object o, Stream stream)
+        public void SerializeToJson(object o, Stream stream)
         {
             _jsonSerializer.SerializeToStream(o, stream);
         }
 
-        public override void SerializeToXml(object o, Stream stream)
+        public void SerializeToXml(object o, Stream stream)
         {
             _xmlSerializer.SerializeToStream(o, stream);
         }
 
-        public override object DeserializeXml(Type type, Stream stream)
+        public object DeserializeXml(Type type, Stream stream)
         {
             return _xmlSerializer.DeserializeFromStream(type, stream);
         }
 
-        public override object DeserializeJson(Type type, Stream stream)
+        public object DeserializeJson(Type type, Stream stream)
         {
             return _jsonSerializer.DeserializeFromStream(stream, type);
         }
@@ -716,8 +767,6 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (_disposed) return;
 
-            base.Dispose();
-
             lock (_disposeLock)
             {
                 if (_disposed) return;
@@ -731,7 +780,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -740,7 +789,7 @@ namespace Emby.Server.Implementations.HttpServer
         public void StartServer(IEnumerable<string> urlPrefixes)
         {
             UrlPrefixes = urlPrefixes.ToList();
-            Start(UrlPrefixes.First());
+            StartListener();
         }
     }
 }

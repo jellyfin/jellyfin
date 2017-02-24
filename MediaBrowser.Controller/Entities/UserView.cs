@@ -20,11 +20,6 @@ namespace MediaBrowser.Controller.Entities
         public static ITVSeriesManager TVSeriesManager;
         public static IPlaylistManager PlaylistManager;
 
-        public bool ContainsDynamicCategories(User user)
-        {
-            return true;
-        }
-
         public override IEnumerable<Guid> GetIdsForAncestorQuery()
         {
             var list = new List<Guid>();

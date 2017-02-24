@@ -59,7 +59,6 @@ namespace MediaBrowser.Providers.TV
             {
                 // Process images
                 var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, series.ProviderIds);
-                var indexOffset = TvdbSeriesProvider.GetSeriesOffset(series.ProviderIds) ?? 0;
 
 				var nodes = TvdbEpisodeProvider.Current.GetEpisodeXmlNodes(seriesDataPath, episode.GetLookupInfo());
 

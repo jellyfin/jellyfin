@@ -19,11 +19,6 @@ namespace Emby.Server
         {
         }
 
-        public override bool IsRunningAsService
-        {
-            get { return false; }
-        }
-
         protected override void RestartInternal()
         {
             Program.Restart();
@@ -32,41 +27,6 @@ namespace Emby.Server
         protected override void ShutdownInternal()
         {
             Program.Shutdown();
-        }
-
-        protected override FFMpegInstallInfo GetFfmpegInstallInfo()
-        {
-            var info = new FFMpegInstallInfo();
-
-            if (EnvironmentInfo.OperatingSystem == OperatingSystem.Windows)
-            {
-                info.FFMpegFilename = "ffmpeg.exe";
-                info.FFProbeFilename = "ffprobe.exe";
-                info.Version = "20160410";
-                info.ArchiveType = "7z";
-                info.DownloadUrls = GetDownloadUrls();
-            }
-
-            return info;
-        }
-
-        private string[] GetDownloadUrls()
-        {
-            switch (EnvironmentInfo.SystemArchitecture)
-            {
-                case Architecture.X64:
-                    return new[]
-                    {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160410-win64.7z"
-                    };
-                case Architecture.X86:
-                    return new[]
-                    {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160410-win32.7z"
-                    };
-            }
-
-            return new string[] { };
         }
 
         protected override List<Assembly> GetAssembliesWithPartsInternal()
@@ -78,26 +38,6 @@ namespace Emby.Server
             return list;
         }
 
-        protected override void AuthorizeServer()
-        {
-        }
-
-        protected override void ConfigureAutoRunInternal(bool autorun)
-        {
-        }
-
-        protected override void EnableLoopbackInternal(string appName)
-        {
-        }
-
-        public override bool SupportsRunningAsService
-        {
-            get
-            {
-                return true;
-            }
-        }
-
         public override bool CanSelfRestart
         {
             get
@@ -106,27 +46,11 @@ namespace Emby.Server
             }
         }
 
-        public override bool SupportsAutoRunAtStartup
-        {
-            get
-            {
-                return true;
-            }
-        }
-
         public override bool CanSelfUpdate
         {
             get
             {
                 return Program.CanSelfUpdate;
-            }
-        }
-
-        protected override bool SupportsDualModeSockets
-        {
-            get
-            {
-                return true;
             }
         }
     }

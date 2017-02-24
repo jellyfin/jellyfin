@@ -91,6 +91,11 @@ namespace MediaBrowser.Controller.LiveTv
             }
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            return null;
+        }
+
         public override string GetClientTypeName()
         {
             return "Recording";
