@@ -9,6 +9,10 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
 using Emby.Server.Mac.Native;
 using System.Diagnostics;
+using MediaBrowser.Controller.Connect;
+using Emby.Server.Connect;
+using Emby.Server.Sync;
+using MediaBrowser.Controller.Sync;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -40,6 +44,16 @@ namespace MediaBrowser.Server.Mac
 			{
 				return true;
 			}
+		}
+
+		protected override IConnectManager CreateConnectManager()
+		{
+			return new ConnectManager();
+		}
+
+		protected override ISyncManager CreateSyncManager()
+		{
+			return new SyncManager();
 		}
 
         protected override FFMpegInstallInfo GetFfmpegInstallInfo()
@@ -88,6 +102,8 @@ namespace MediaBrowser.Server.Mac
             var list = new List<Assembly>();
 
             list.Add(GetType().Assembly);
+			list.Add(typeof(ConnectManager).Assembly);
+			list.Add(typeof(SyncManager).Assembly);
 
             return list;
         }

@@ -954,8 +954,11 @@ namespace Emby.Server.Implementations.Session
         {
             var session = GetSessionToRemoteControl(sessionId);
 
-            var controllingSession = GetSession(controllingSessionId);
-            AssertCanControl(session, controllingSession);
+            if (!string.IsNullOrWhiteSpace(controllingSessionId))
+            {
+                var controllingSession = GetSession(controllingSessionId);
+                AssertCanControl(session, controllingSession);
+            }
 
             return session.SessionController.SendGeneralCommand(command, cancellationToken);
         }
@@ -1042,11 +1045,14 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            var controllingSession = GetSession(controllingSessionId);
-            AssertCanControl(session, controllingSession);
-            if (controllingSession.UserId.HasValue)
+            if (!string.IsNullOrWhiteSpace(controllingSessionId))
             {
-                command.ControllingUserId = controllingSession.UserId.Value.ToString("N");
+                var controllingSession = GetSession(controllingSessionId);
+                AssertCanControl(session, controllingSession);
+                if (controllingSession.UserId.HasValue)
+                {
+                    command.ControllingUserId = controllingSession.UserId.Value.ToString("N");
+                }
             }
 
             await session.SessionController.SendPlayCommand(command, cancellationToken).ConfigureAwait(false);
@@ -1136,11 +1142,14 @@ namespace Emby.Server.Implementations.Session
         {
             var session = GetSessionToRemoteControl(sessionId);
 
-            var controllingSession = GetSession(controllingSessionId);
-            AssertCanControl(session, controllingSession);
-            if (controllingSession.UserId.HasValue)
+            if (!string.IsNullOrWhiteSpace(controllingSessionId))
             {
-                command.ControllingUserId = controllingSession.UserId.Value.ToString("N");
+                var controllingSession = GetSession(controllingSessionId);
+                AssertCanControl(session, controllingSession);
+                if (controllingSession.UserId.HasValue)
+                {
+                    command.ControllingUserId = controllingSession.UserId.Value.ToString("N");
+                }
             }
 
             return session.SessionController.SendPlaystateCommand(command, cancellationToken);

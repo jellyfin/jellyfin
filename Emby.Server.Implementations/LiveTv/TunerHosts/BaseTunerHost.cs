@@ -35,10 +35,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             MediaEncoder = mediaEncoder;
         }
 
-        protected abstract Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken);
+        protected abstract Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken);
         public abstract string Type { get; }
 
-        public async Task<IEnumerable<ChannelInfo>> GetChannels(TunerHostInfo tuner, bool enableCache, CancellationToken cancellationToken)
+        public async Task<List<ChannelInfo>> GetChannels(TunerHostInfo tuner, bool enableCache, CancellationToken cancellationToken)
         {
             ChannelCache cache = null;
             var key = tuner.Id;
@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 .ToList();
         }
 
-        public async Task<IEnumerable<ChannelInfo>> GetChannels(bool enableCache, CancellationToken cancellationToken)
+        public async Task<List<ChannelInfo>> GetChannels(bool enableCache, CancellationToken cancellationToken)
         {
             var list = new List<ChannelInfo>();
 

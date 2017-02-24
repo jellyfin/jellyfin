@@ -35,6 +35,9 @@
     <Compile Include="Activity\ActivityLogEntryPoint.cs" />
     <Compile Include="Activity\ActivityManager.cs" />
     <Compile Include="Activity\ActivityRepository.cs" />
+    <Compile Include="AppBase\BaseApplicationPaths.cs" />
+    <Compile Include="AppBase\BaseConfigurationManager.cs" />
+    <Compile Include="AppBase\ConfigurationHelper.cs" />
     <Compile Include="Branding\BrandingConfigurationFactory.cs" />
     <Compile Include="Browser\BrowserLauncher.cs" />
     <Compile Include="Channels\ChannelConfigurations.cs" />
@@ -46,11 +49,7 @@
     <Compile Include="Collections\CollectionImageProvider.cs" />
     <Compile Include="Collections\CollectionManager.cs" />
     <Compile Include="Collections\CollectionsDynamicFolder.cs" />
-    <Compile Include="Connect\ConnectData.cs" />
-    <Compile Include="Connect\ConnectEntryPoint.cs" />
-    <Compile Include="Connect\ConnectManager.cs" />
-    <Compile Include="Connect\Responses.cs" />
-    <Compile Include="Connect\Validator.cs" />
+    <Compile Include="Configuration\ServerConfigurationManager.cs" />
     <Compile Include="Data\ManagedConnection.cs" />
     <Compile Include="Data\SqliteDisplayPreferencesRepository.cs" />
     <Compile Include="Data\SqliteFileOrganizationRepository.cs" />
@@ -179,6 +178,7 @@
     <Compile Include="LiveTv\TunerHosts\MulticastStream.cs" />
     <Compile Include="LiveTv\TunerHosts\QueueStream.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
+    <Compile Include="Logging\UnhandledExceptionWriter.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
     <Compile Include="Migrations\IVersionMigration.cs" />
     <Compile Include="Migrations\LibraryScanMigration.cs" />
@@ -213,8 +213,19 @@
     <Compile Include="Security\MBLicenseFile.cs" />
     <Compile Include="Security\PluginSecurityManager.cs" />
     <Compile Include="Security\RegRecord.cs" />
+    <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="ServerManager\ServerManager.cs" />
     <Compile Include="ServerManager\WebSocketConnection.cs" />
+    <Compile Include="Services\ServicePath.cs" />
+    <Compile Include="Services\ServiceMethod.cs" />
+    <Compile Include="Services\ResponseHelper.cs" />
+    <Compile Include="Services\HttpResult.cs" />
+    <Compile Include="Services\RequestHelper.cs" />
+    <Compile Include="Services\ServiceHandler.cs" />
+    <Compile Include="Services\ServiceController.cs" />
+    <Compile Include="Services\ServiceExec.cs" />
+    <Compile Include="Services\StringMapTypeDeserializer.cs" />
+    <Compile Include="Services\UrlExtensions.cs" />
     <Compile Include="Session\HttpSessionController.cs" />
     <Compile Include="Session\SessionManager.cs" />
     <Compile Include="Session\SessionWebSocketListener.cs" />
@@ -253,23 +264,6 @@
     <Compile Include="Sorting\StartDateComparer.cs" />
     <Compile Include="Sorting\StudioComparer.cs" />
     <Compile Include="StartupOptions.cs" />
-    <Compile Include="Sync\AppSyncProvider.cs" />
-    <Compile Include="Sync\CloudSyncProfile.cs" />
-    <Compile Include="Sync\IHasSyncQuality.cs" />
-    <Compile Include="Sync\MediaSync.cs" />
-    <Compile Include="Sync\MultiProviderSync.cs" />
-    <Compile Include="Sync\ServerSyncScheduledTask.cs" />
-    <Compile Include="Sync\SyncConfig.cs" />
-    <Compile Include="Sync\SyncConvertScheduledTask.cs" />
-    <Compile Include="Sync\SyncedMediaSourceProvider.cs" />
-    <Compile Include="Sync\SyncHelper.cs" />
-    <Compile Include="Sync\SyncJobOptions.cs" />
-    <Compile Include="Sync\SyncJobProcessor.cs" />
-    <Compile Include="Sync\SyncManager.cs" />
-    <Compile Include="Sync\SyncNotificationEntryPoint.cs" />
-    <Compile Include="Sync\SyncRegistrationInfo.cs" />
-    <Compile Include="Sync\SyncRepository.cs" />
-    <Compile Include="Sync\TargetDataProvider.cs" />
     <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="TV\TVSeriesManager.cs" />
     <Compile Include="Udp\UdpServer.cs" />
@@ -301,16 +295,12 @@
       <Project>{2e781478-814d-4a48-9d80-bff206441a65}</Project>
       <Name>MediaBrowser.Server.Implementations</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
-      <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
-      <Name>ServiceStack</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SocketHttpListener.Portable\SocketHttpListener.Portable.csproj">
       <Project>{4f26d5d8-a7b0-42b3-ba42-7cb7d245934e}</Project>
       <Name>SocketHttpListener.Portable</Name>
     </ProjectReference>
-    <Reference Include="Emby.XmlTv, Version=1.0.6249.32870, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Emby.XmlTv.1.0.6\lib\portable-net45+win8\Emby.XmlTv.dll</HintPath>
+    <Reference Include="Emby.XmlTv, Version=1.0.6251.29080, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Emby.XmlTv.1.0.7\lib\portable-net45+win8\Emby.XmlTv.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="MediaBrowser.Naming, Version=1.0.6201.24431, Culture=neutral, processorArchitecture=MSIL">
@@ -322,7 +312,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="SQLitePCLRaw.core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.core.1.1.1\lib\portable-net45+netcore45+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\SQLitePCLRaw.core.dll</HintPath>
+      <HintPath>..\packages\SQLitePCLRaw.core.1.1.2\lib\portable-net45+netcore45+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\SQLitePCLRaw.core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="UniversalDetector, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">

@@ -360,7 +360,8 @@ namespace MediaBrowser.Api.UserLibrary
                 var currentUser = user;
 
                 var dtos = series
-                    .GetRecursiveChildren(i => i is Episode && i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
+                    .GetEpisodes(user)
+                    .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
                     .OrderBy(i =>
                     {
                         if (i.PremiereDate.HasValue)

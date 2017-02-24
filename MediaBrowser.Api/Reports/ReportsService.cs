@@ -317,12 +317,6 @@ namespace MediaBrowser.Api.Reports
                 query.MaxParentalRating = _localization.GetRatingLevel(request.MaxOfficialRating);
             }
 
-            // Albums
-            if (!string.IsNullOrEmpty(request.Albums))
-            {
-                query.AlbumNames = request.Albums.Split('|');
-            }
-
             return query;
         }
 

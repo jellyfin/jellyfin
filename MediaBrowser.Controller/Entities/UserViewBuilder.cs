@@ -1719,53 +1719,6 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            // Artists
-            if (query.ArtistIds.Length > 0)
-            {
-                var audio = item as IHasArtist;
-
-                //if (!(audio != null && query.ArtistNames.Any(audio.HasAnyArtist)))
-                //{
-                //    return false;
-                //}
-            }
-
-            // Albums
-            if (query.AlbumNames.Length > 0)
-            {
-                var audio = item as Audio.Audio;
-
-                if (audio != null)
-                {
-                    if (!query.AlbumNames.Any(a => string.Equals(a, audio.Album, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-
-                var album = item as MusicAlbum;
-
-                if (album != null)
-                {
-                    if (!query.AlbumNames.Any(a => string.Equals(a, album.Name, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-
-                var musicVideo = item as MusicVideo;
-
-                if (musicVideo != null)
-                {
-                    if (!query.AlbumNames.Any(a => string.Equals(a, musicVideo.Album, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-
-                return false;
-            }
-
             return true;
         }
 

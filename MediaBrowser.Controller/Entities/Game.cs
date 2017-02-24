@@ -4,6 +4,7 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
@@ -97,11 +98,17 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        public override IEnumerable<string> GetDeletePaths()
+        public override IEnumerable<FileSystemMetadata> GetDeletePaths()
         {
             if (!DetectIsInMixedFolder())
             {
-                return new[] { System.IO.Path.GetDirectoryName(Path) };
+                return new[] {
+                    new FileSystemMetadata
+                    {
+                        FullName = System.IO.Path.GetDirectoryName(Path),
+                        IsDirectory = true
+                    }
+                };
             }
 
             return base.GetDeletePaths();

@@ -83,7 +83,6 @@ using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Ssdp;
 using Emby.Server.Core;
 using Emby.Server.Implementations.Activity;
-using Emby.Server.Core.Configuration;
 using Emby.Server.Implementations.Devices;
 using Emby.Server.Implementations.FFMpeg;
 using Emby.Server.Core.IO;
@@ -91,10 +90,8 @@ using Emby.Server.Core.Localization;
 using Emby.Server.Implementations.Migrations;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Social;
-using Emby.Server.Implementations.Sync;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
-using Emby.Server.Implementations.Connect;
 using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.EntryPoints;
 using Emby.Server.Implementations.FileOrganization;
@@ -111,7 +108,6 @@ using Emby.Server.Implementations;
 using Emby.Server.Implementations.ServerManager;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.Social;
-using Emby.Server.Implementations.Sync;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using MediaBrowser.Model.Activity;
@@ -134,6 +130,7 @@ using Emby.Drawing;
 using Emby.Server.Implementations.Migrations;
 using MediaBrowser.Model.Diagnostics;
 using Emby.Common.Implementations.Diagnostics;
+using Emby.Server.Implementations.Configuration;
 
 namespace Emby.Server.Core
 {
@@ -312,7 +309,13 @@ namespace Emby.Server.Core
             }
         }
 
-        public abstract bool SupportsRunningAsService { get; }
+        public virtual bool SupportsRunningAsService
+        {
+            get
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Gets the name.
@@ -326,14 +329,26 @@ namespace Emby.Server.Core
             }
         }
 
-        public abstract bool IsRunningAsService { get; }
+        public virtual bool IsRunningAsService
+        {
+            get
+            {
+                return false;
+            }
+        }
 
         private Assembly GetAssembly(Type type)
         {
             return type.GetTypeInfo().Assembly;
         }
 
-        public abstract bool SupportsAutoRunAtStartup { get; }
+        public virtual bool SupportsAutoRunAtStartup
+        {
+            get
+            {
+                return EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows;
+            }
+        }
 
         private void SetBaseExceptionMessage()
         {
@@ -508,6 +523,9 @@ namespace Emby.Server.Core
             }
         }
 
+        protected abstract IConnectManager CreateConnectManager();
+        protected abstract ISyncManager CreateSyncManager();
+
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
@@ -568,9 +586,6 @@ namespace Emby.Server.Core
             AuthenticationRepository = await GetAuthenticationRepository().ConfigureAwait(false);
             RegisterSingleInstance(AuthenticationRepository);
 
-            SyncRepository = GetSyncRepository();
-            RegisterSingleInstance(SyncRepository);
-
             UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this, JsonSerializer, FileSystemManager, CryptographyProvider, _defaultUserNameFactory());
             RegisterSingleInstance(UserManager);
 
@@ -608,7 +623,7 @@ namespace Emby.Server.Core
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager, ServerConfigurationManager);
             RegisterSingleInstance(TVSeriesManager);
 
-            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager, () => MediaSourceManager, JsonSerializer, TaskManager, MemoryStreamFactory);
+            SyncManager = CreateSyncManager();
             RegisterSingleInstance(SyncManager);
 
             DtoService = new DtoService(LogManager.GetLogger("DtoService"), LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager, () => MediaSourceManager, () => LiveTvManager);
@@ -617,7 +632,7 @@ namespace Emby.Server.Core
             var encryptionManager = new EncryptionManager();
             RegisterSingleInstance<IEncryptionManager>(encryptionManager);
 
-            ConnectManager = new ConnectManager(LogManager.GetLogger("ConnectManager"), ApplicationPaths, JsonSerializer, encryptionManager, HttpClient, this, ServerConfigurationManager, UserManager, ProviderManager, SecurityManager, FileSystemManager);
+            ConnectManager = CreateConnectManager();
             RegisterSingleInstance(ConnectManager);
 
             DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, LogManager.GetLogger("DeviceManager"), FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager, LogManager.GetLogger("DeviceManager"), NetworkManager);
@@ -716,7 +731,13 @@ namespace Emby.Server.Core
             await ((UserManager)UserManager).Initialize().ConfigureAwait(false);
         }
 
-        protected abstract bool SupportsDualModeSockets { get; }
+        protected virtual bool SupportsDualModeSockets
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         private ICertificate GetCertificate(string certificateLocation)
         {
@@ -761,7 +782,77 @@ namespace Emby.Server.Core
             return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, ImageEncoder, maxConcurrentImageProcesses, () => LibraryManager, TimerFactory);
         }
 
-        protected abstract FFMpegInstallInfo GetFfmpegInstallInfo();
+        protected virtual FFMpegInstallInfo GetFfmpegInstallInfo()
+        {
+            var info = new FFMpegInstallInfo();
+
+            // Windows builds: http://ffmpeg.zeranoe.com/builds/
+            // Linux builds: http://johnvansickle.com/ffmpeg/
+            // OS X builds: http://ffmpegmac.net/
+            // OS X x64: http://www.evermeet.cx/ffmpeg/
+
+            if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Linux)
+            {
+                info.FFMpegFilename = "ffmpeg";
+                info.FFProbeFilename = "ffprobe";
+                info.ArchiveType = "7z";
+                info.Version = "20160215";
+                info.DownloadUrls = GetLinuxDownloadUrls();
+            }
+            else if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
+            {
+                info.FFMpegFilename = "ffmpeg.exe";
+                info.FFProbeFilename = "ffprobe.exe";
+                info.Version = "20160410";
+                info.ArchiveType = "7z";
+                info.DownloadUrls = GetWindowsDownloadUrls();
+            }
+            else
+            {
+                // No version available - user requirement
+                info.DownloadUrls = new string[] { };
+            }
+
+            return info;
+        }
+
+        private string[] GetWindowsDownloadUrls()
+        {
+            switch (EnvironmentInfo.SystemArchitecture)
+            {
+                case Architecture.X64:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160410-win64.7z"
+                    };
+                case Architecture.X86:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160410-win32.7z"
+                    };
+            }
+
+            return new string[] { };
+        }
+
+        private string[] GetLinuxDownloadUrls()
+        {
+            switch (EnvironmentInfo.SystemArchitecture)
+            {
+                case Architecture.X64:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-64bit-static.7z"
+                    };
+                case Architecture.X86:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-32bit-static.7z"
+                    };
+            }
+
+            return new string[] { };
+        }
 
         /// <summary>
         /// Registers the media encoder.
@@ -849,21 +940,12 @@ namespace Emby.Server.Core
             return repo;
         }
 
-        private ISyncRepository GetSyncRepository()
-        {
-            var repo = new SyncRepository(LogManager.GetLogger("SyncRepository"), JsonSerializer, ServerConfigurationManager.ApplicationPaths);
-
-            repo.Initialize();
-
-            return repo;
-        }
-
         /// <summary>
         /// Configures the repositories.
         /// </summary>
         private void ConfigureNotificationsRepository()
         {
-            var repo = new SqliteNotificationsRepository(LogManager.GetLogger("SqliteNotificationsRepository"), ServerConfigurationManager.ApplicationPaths);
+            var repo = new SqliteNotificationsRepository(LogManager.GetLogger("SqliteNotificationsRepository"), ServerConfigurationManager.ApplicationPaths, FileSystemManager);
 
             repo.Initialize();
 
@@ -1158,7 +1240,7 @@ namespace Emby.Server.Core
             list.Add(GetAssembly(typeof(InstallationManager)));
 
             // Emby.Server.Core
-            list.Add(GetAssembly(typeof(ServerApplicationPaths)));
+            list.Add(GetAssembly(typeof(ApplicationHost)));
 
             // MediaEncoding
             list.Add(GetAssembly(typeof(MediaEncoder)));
@@ -1489,7 +1571,10 @@ namespace Emby.Server.Core
             }
         }
 
-        protected abstract void AuthorizeServer();
+        protected virtual void AuthorizeServer()
+        {
+            throw new NotImplementedException();
+        }
 
         public event EventHandler HasUpdateAvailableChanged;
 
@@ -1565,7 +1650,10 @@ namespace Emby.Server.Core
             }
         }
 
-        protected abstract void ConfigureAutoRunInternal(bool autorun);
+        protected virtual void ConfigureAutoRunInternal(bool autorun)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// This returns localhost in the case of no external dns, and the hostname if the 
@@ -1631,7 +1719,10 @@ namespace Emby.Server.Core
             EnableLoopbackInternal(appName);
         }
 
-        protected abstract void EnableLoopbackInternal(string appName);
+        protected virtual void EnableLoopbackInternal(string appName)
+        {
+            
+        }
 
         private void RegisterModules()
         {

@@ -245,25 +245,15 @@ namespace MediaBrowser.Api.UserLibrary
 
             User user = null;
             BaseItem parentItem;
-            List<BaseItem> libraryItems = null;
 
             if (!string.IsNullOrWhiteSpace(request.UserId))
             {
                 user = UserManager.GetUserById(request.UserId);
                 parentItem = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : LibraryManager.GetItemById(request.ParentId);
-
-                if (RequiresLibraryItems(request, dtoOptions))
-                {
-                    libraryItems = user.RootFolder.GetRecursiveChildren(user).ToList();
-                }
             }
             else
             {
                 parentItem = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.RootFolder : LibraryManager.GetItemById(request.ParentId);
-                if (RequiresLibraryItems(request, dtoOptions))
-                {
-                    libraryItems = LibraryManager.RootFolder.GetRecursiveChildren().ToList();
-                }
             }
 
             IEnumerable<BaseItem> items;
@@ -307,8 +297,6 @@ namespace MediaBrowser.Api.UserLibrary
 
             var filteredItems = FilterItems(request, extractedItems, user);
 
-            filteredItems = FilterByLibraryItems(request, filteredItems.Cast<IItemByName>(), user, libraryItems).Cast<BaseItem>();
-
             filteredItems = LibraryManager.Sort(filteredItems, user, request.GetOrderBy(), request.SortOrder ?? SortOrder.Ascending);
 
             var ibnItemsArray = filteredItems.ToList();
@@ -334,15 +322,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             }
 
-            IEnumerable<Tuple<BaseItem, List<BaseItem>>> tuples;
-            if (dtoOptions.Fields.Contains(ItemFields.ItemCounts))
-            {
-                tuples = ibnItems.Select(i => new Tuple<BaseItem, List<BaseItem>>(i, ((IItemByName)i).GetTaggedItems(libraryItems).ToList()));
-            }
-            else
-            {
-                tuples = ibnItems.Select(i => new Tuple<BaseItem, List<BaseItem>>(i, new List<BaseItem>()));
-            }
+            var tuples = ibnItems.Select(i => new Tuple<BaseItem, List<BaseItem>>(i, new List<BaseItem>()));
 
             var syncProgess = DtoService.GetSyncedItemProgress(dtoOptions);
             var dtos = tuples.Select(i => DtoService.GetItemByNameDto(i.Item1, dtoOptions, i.Item2, syncProgess, user));
@@ -350,52 +330,6 @@ namespace MediaBrowser.Api.UserLibrary
             result.Items = dtos.Where(i => i != null).ToArray();
 
             return result;
-        }
-
-        private bool RequiresLibraryItems(GetItemsByName request, DtoOptions options)
-        {
-            var filters = request.GetFilters().ToList();
-
-            if (filters.Contains(ItemFilter.IsPlayed))
-            {
-                return true;
-            }
-
-            if (filters.Contains(ItemFilter.IsUnplayed))
-            {
-                return true;
-            }
-
-            if (request.IsPlayed.HasValue)
-            {
-                return true;
-            }
-
-            return options.Fields.Contains(ItemFields.ItemCounts);
-        }
-
-        private IEnumerable<IItemByName> FilterByLibraryItems(GetItemsByName request, IEnumerable<IItemByName> items, User user, IEnumerable<BaseItem> libraryItems)
-        {
-            var filters = request.GetFilters().ToList();
-
-            if (filters.Contains(ItemFilter.IsPlayed))
-            {
-                items = items.Where(i => i.GetTaggedItems(libraryItems).All(l => l.IsPlayed(user)));
-            }
-
-            if (filters.Contains(ItemFilter.IsUnplayed))
-            {
-                items = items.Where(i => i.GetTaggedItems(libraryItems).All(l => l.IsUnplayed(user)));
-            }
-
-            if (request.IsPlayed.HasValue)
-            {
-                var val = request.IsPlayed.Value;
-
-                items = items.Where(i => i.GetTaggedItems(libraryItems).All(l => l.IsPlayed(user)) == val);
-            }
-
-            return items;
         }
 
         /// <summary>

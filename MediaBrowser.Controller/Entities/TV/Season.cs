@@ -54,6 +54,14 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public string SeriesSortName { get; set; }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            double value = 2;
+            value /= 3;
+
+            return value;
+        }
+
         public string FindSeriesSortName()
         {
             var series = Series;
@@ -243,7 +251,6 @@ namespace MediaBrowser.Controller.Entities.TV
             if (series != null)
             {
                 id.SeriesProviderIds = series.ProviderIds;
-                id.AnimeSeriesIndex = series.AnimeSeriesIndex;
             }
 
             return id;

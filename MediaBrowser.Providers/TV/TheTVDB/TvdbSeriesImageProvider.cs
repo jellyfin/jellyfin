@@ -76,10 +76,6 @@ namespace MediaBrowser.Providers.TV
 
                 try
                 {
-                    var seriesOffset = TvdbSeriesProvider.GetSeriesOffset(item.ProviderIds);
-                    if (seriesOffset != null && seriesOffset.Value != 0)
-                        return TvdbSeasonImageProvider.GetImages(path, language, seriesOffset.Value + 1, _xmlReaderSettingsFactory, _fileSystem, cancellationToken);
-                    
                     return GetImages(path, language, cancellationToken);
                 }
                 catch (FileNotFoundException)

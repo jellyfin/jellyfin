@@ -127,7 +127,7 @@ namespace MediaBrowser.Api.Playback
 
                 SetDeviceSpecificData(item, result.MediaSource, profile, authInfo, request.MaxStreamingBitrate,
                     request.StartTimeTicks ?? 0, result.MediaSource.Id, request.AudioStreamIndex,
-                    request.SubtitleStreamIndex, request.MaxAudioChannels, request.PlaySessionId, request.UserId);
+                    request.SubtitleStreamIndex, request.MaxAudioChannels, request.PlaySessionId, request.UserId, true, true, true);
             }
             else
             {
@@ -146,7 +146,7 @@ namespace MediaBrowser.Api.Playback
             Task.WaitAll(task);
         }
 
-        public async Task<object> Post(GetPostedPlaybackInfo request)
+        public async Task<PlaybackInfoResponse> GetPlaybackInfo(GetPostedPlaybackInfo request)
         {
             var authInfo = _authContext.GetAuthorizationInfo(Request);
 
@@ -169,10 +169,17 @@ namespace MediaBrowser.Api.Playback
             {
                 var mediaSourceId = request.MediaSourceId;
 
-                SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate ?? profile.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex, request.MaxAudioChannels, request.UserId);
+                SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate ?? profile.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex, request.MaxAudioChannels, request.UserId, request.EnableDirectPlay, request.EnableDirectStream, request.EnableTranscoding);
             }
 
-            return ToOptimizedResult(info);
+            return info;
+        }
+
+        public async Task<object> Post(GetPostedPlaybackInfo request)
+        {
+            var result = await GetPlaybackInfo(request).ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
         }
 
         private T Clone<T>(T obj)
@@ -244,13 +251,16 @@ namespace MediaBrowser.Api.Playback
             int? audioStreamIndex,
             int? subtitleStreamIndex,
             int? maxAudioChannels,
-            string userId)
+            string userId,
+            bool enableDirectPlay,
+            bool enableDirectStream,
+            bool enableTranscoding)
         {
             var item = _libraryManager.GetItemById(itemId);
 
             foreach (var mediaSource in result.MediaSources)
             {
-                SetDeviceSpecificData(item, mediaSource, profile, auth, maxBitrate, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex, maxAudioChannels, result.PlaySessionId, userId);
+                SetDeviceSpecificData(item, mediaSource, profile, auth, maxBitrate, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex, maxAudioChannels, result.PlaySessionId, userId, enableDirectPlay, enableDirectStream, enableTranscoding);
             }
 
             SortMediaSources(result, maxBitrate);
@@ -267,7 +277,10 @@ namespace MediaBrowser.Api.Playback
             int? subtitleStreamIndex,
             int? maxAudioChannels,
             string playSessionId,
-            string userId)
+            string userId,
+            bool enableDirectPlay,
+            bool enableDirectStream,
+            bool enableTranscoding)
         {
             var streamBuilder = new StreamBuilder(_mediaEncoder, Logger);
 
@@ -289,6 +302,19 @@ namespace MediaBrowser.Api.Playback
             }
 
             var user = _userManager.GetUserById(userId);
+
+            if (!enableDirectPlay)
+            {
+                mediaSource.SupportsDirectPlay = false;
+            }
+            if (!enableDirectStream)
+            {
+                mediaSource.SupportsDirectStream = false;
+            }
+            if (!enableTranscoding)
+            {
+                mediaSource.SupportsTranscoding = false;
+            }
 
             if (mediaSource.SupportsDirectPlay)
             {

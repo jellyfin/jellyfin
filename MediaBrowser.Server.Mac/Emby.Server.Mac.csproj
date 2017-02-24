@@ -122,10 +122,16 @@
       <HintPath>..\ThirdParty\taglib\TagLib.Portable.dll</HintPath>
     </Reference>
     <Reference Include="SQLitePCLRaw.core">
-      <HintPath>..\packages\SQLitePCLRaw.core.1.1.1\lib\net45\SQLitePCLRaw.core.dll</HintPath>
+      <HintPath>..\packages\SQLitePCLRaw.core.1.1.2\lib\net45\SQLitePCLRaw.core.dll</HintPath>
     </Reference>
     <Reference Include="SQLitePCLRaw.provider.sqlite3">
-      <HintPath>..\packages\SQLitePCLRaw.provider.sqlite3.net45.1.1.1\lib\net45\SQLitePCLRaw.provider.sqlite3.dll</HintPath>
+      <HintPath>..\packages\SQLitePCLRaw.provider.sqlite3.net45.1.1.2\lib\net45\SQLitePCLRaw.provider.sqlite3.dll</HintPath>
+    </Reference>
+    <Reference Include="Emby.Server.Connect">
+      <HintPath>..\ThirdParty\emby\Emby.Server.Connect.dll</HintPath>
+    </Reference>
+    <Reference Include="Emby.Server.Sync">
+      <HintPath>..\ThirdParty\emby\Emby.Server.Sync.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -245,10 +251,6 @@
     <ProjectReference Include="..\SocketHttpListener.Portable\SocketHttpListener.Portable.csproj">
       <Project>{4F26D5D8-A7B0-42B3-BA42-7CB7D245934E}</Project>
       <Name>SocketHttpListener.Portable</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
-      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
-      <Name>ServiceStack</Name>
     </ProjectReference>
     <ProjectReference Include="..\RSSDP\RSSDP.csproj">
       <Project>{21002819-C39A-4D3E-BE83-2A276A77FB1F}</Project>
@@ -813,6 +815,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\thememediaplayer.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\thememediaplayer.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\touchhelper.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\touchhelper.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\visibleinviewport.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\visibleinviewport.js</Link>
     </BundleResource>
@@ -917,6 +922,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-radio\emby-radio.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-radio\emby-radio.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-scroller\emby-scroller.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-scroller\emby-scroller.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-select\emby-select.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-select\emby-select.css</Link>
@@ -1092,6 +1100,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\images\persistentimagefetcher.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\images\persistentimagefetcher.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\images\style.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\images\style.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\indicators\indicators.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\indicators\indicators.css</Link>
     </BundleResource>
@@ -1194,6 +1205,12 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\autoplaydetect.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\autoplaydetect.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\iconosd.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\iconosd.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\mediasession.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\mediasession.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\nowplayinghelper.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\nowplayinghelper.js</Link>
     </BundleResource>
@@ -1211,6 +1228,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\remotecontrolautoplay.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\remotecontrolautoplay.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\volumeosd.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\volumeosd.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playlisteditor\playlisteditor.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playlisteditor\playlisteditor.js</Link>
@@ -1698,21 +1718,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\vibrant\dist\vibrant.min.js">
       <Link>Resources\dashboard-ui\bower_components\vibrant\dist\vibrant.min.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\web-animations-js\COPYING">
-      <Link>Resources\dashboard-ui\bower_components\web-animations-js\COPYING</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\web-animations-js\web-animations-next-lite.min.js">
-      <Link>Resources\dashboard-ui\bower_components\web-animations-js\web-animations-next-lite.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\web-animations-js\web-animations-next.min.js">
-      <Link>Resources\dashboard-ui\bower_components\web-animations-js\web-animations-next.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\web-animations-js\web-animations.html">
-      <Link>Resources\dashboard-ui\bower_components\web-animations-js\web-animations.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\web-animations-js\web-animations.min.js">
-      <Link>Resources\dashboard-ui\bower_components\web-animations-js\web-animations.min.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\webcomponentsjs\webcomponents-lite.min.js">
       <Link>Resources\dashboard-ui\bower_components\webcomponentsjs\webcomponents-lite.min.js</Link>
     </BundleResource>
@@ -2151,9 +2156,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\dashboard\wizardfinishpage.js">
       <Link>Resources\dashboard-ui\dashboard\wizardfinishpage.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\android\android.css">
-      <Link>Resources\dashboard-ui\devices\android\android.css</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\ios\ios.css">
       <Link>Resources\dashboard-ui\devices\ios\ios.css</Link>
     </BundleResource>
@@ -2252,9 +2254,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\homefavorites.js">
       <Link>Resources\dashboard-ui\scripts\homefavorites.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\homenextup.js">
-      <Link>Resources\dashboard-ui\scripts\homenextup.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\homeupcoming.js">
       <Link>Resources\dashboard-ui\scripts\homeupcoming.js</Link>

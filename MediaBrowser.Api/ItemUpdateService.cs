@@ -237,13 +237,6 @@ namespace MediaBrowser.Api
             item.Name = request.Name;
             item.ForcedSortName = request.ForcedSortName;
 
-            var hasBudget = item as IHasBudget;
-            if (hasBudget != null)
-            {
-                hasBudget.Budget = request.Budget;
-                hasBudget.Revenue = request.Revenue;
-            }
-
             item.OriginalTitle = string.IsNullOrWhiteSpace(request.OriginalTitle) ? null : request.OriginalTitle;
 
             item.CriticRating = request.CriticRating;
@@ -401,10 +394,21 @@ namespace MediaBrowser.Api
             var series = item as Series;
             if (series != null)
             {
-                series.Status = request.SeriesStatus;
+                series.Status = GetSeriesStatus(request);
                 series.AirDays = request.AirDays;
                 series.AirTime = request.AirTime;
             }
+        }
+
+        private SeriesStatus? GetSeriesStatus(BaseItemDto item)
+        {
+            if (string.IsNullOrEmpty(item.Status))
+            {
+                return null;
+            }
+
+            return (SeriesStatus)Enum.Parse(typeof(SeriesStatus), item.Status, true);
+
         }
     }
 }
