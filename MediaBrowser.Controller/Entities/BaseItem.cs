@@ -156,7 +156,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (SupportsIsInMixedFolderDetection)
             {
-                    
+
             }
 
             return IsInMixedFolder;
@@ -1260,6 +1260,11 @@ namespace MediaBrowser.Controller.Entities
             get { return null; }
         }
 
+        public virtual double? GetDefaultPrimaryImageAspectRatio()
+        {
+            return null;
+        }
+
         public virtual string CreatePresentationUniqueKey()
         {
             return Id.ToString("N");
@@ -2073,9 +2078,31 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the file system path to delete when the item is to be deleted
         /// </summary>
         /// <returns></returns>
-        public virtual IEnumerable<string> GetDeletePaths()
+        public virtual IEnumerable<FileSystemMetadata> GetDeletePaths()
         {
-            return new[] { Path };
+            return new[] {
+                new FileSystemMetadata
+                {
+                    FullName = Path,
+                    IsDirectory = IsFolder
+                }
+            }.Concat(GetLocalMetadataFilesToDelete());
+        }
+
+        protected List<FileSystemMetadata> GetLocalMetadataFilesToDelete()
+        {
+            if (IsFolder || !IsInMixedFolder)
+            {
+                return new List<FileSystemMetadata>();
+            }
+
+            var filename = System.IO.Path.GetFileNameWithoutExtension(Path);
+            var extensions = new[] { ".nfo", ".xml", ".srt" }.ToList();
+            extensions.AddRange(SupportedImageExtensionsList);
+
+            return FileSystem.GetFiles(System.IO.Path.GetDirectoryName(Path))
+                .Where(i => extensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase) && System.IO.Path.GetFileNameWithoutExtension(i.FullName).StartsWith(filename, StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
 
         public bool AllowsMultipleImages(ImageType type)

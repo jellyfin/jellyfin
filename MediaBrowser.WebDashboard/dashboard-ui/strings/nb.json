@@ -1960,5 +1960,8 @@
     "ErrorAddingXmlTvFile": "Det oppstod en feil tilgang til XmlTV filen. S\u00f8rg for at filen finnes og pr\u00f8v igjen.",
     "OptionAutomaticallyGroupSeries": "Fusjoner automatisk serier som er spredt ut over flere mapper",
     "OptionAutomaticallyGroupSeriesHelp": "Hvis aktivert, vil serien som er spredt over flere mapper innenfor dette biblioteket sp\u00f8r automatisk sl\u00e5tt sammen til en enkelt serie.",
-    "ErrorReachingEmbyConnect": "Det oppstod en feil n\u00e5 Emby Connect-tjeneren. Kontroller at du har en aktiv Internett-tilkobling og pr\u00f8v igjen."
+    "ErrorReachingEmbyConnect": "Det oppstod en feil n\u00e5 Emby Connect-tjeneren. Kontroller at du har en aktiv Internett-tilkobling og pr\u00f8v igjen.",
+    "WhenDidYouPurchaseApp": "When did you originally purchase this app?",
+    "PreferEmbeddedTitlesOverFileNames": "Prefer embedded titles over filenames",
+    "PreferEmbeddedTitlesOverFileNamesHelp": "This determines the default display title when no internet metadata or local metadata is available."
 }

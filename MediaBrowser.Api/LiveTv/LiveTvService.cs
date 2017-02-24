@@ -791,7 +791,7 @@ namespace MediaBrowser.Api.LiveTv
                 ProviderChannels = providerChannels.Select(i => new NameIdPair
                 {
                     Name = i.Name,
-                    Id = string.IsNullOrWhiteSpace(i.TunerChannelId) ? i.Id : i.TunerChannelId
+                    Id = i.Id
 
                 }).ToList(),
 

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -26,13 +27,15 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
+        private readonly IZipClient _zipClient;
 
-        public XmlTvListingsProvider(IServerConfigurationManager config, IHttpClient httpClient, ILogger logger, IFileSystem fileSystem)
+        public XmlTvListingsProvider(IServerConfigurationManager config, IHttpClient httpClient, ILogger logger, IFileSystem fileSystem, IZipClient zipClient)
         {
             _config = config;
             _httpClient = httpClient;
             _logger = logger;
             _fileSystem = fileSystem;
+            _zipClient = zipClient;
         }
 
         public string Name
@@ -63,7 +66,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             var cacheFile = Path.Combine(_config.ApplicationPaths.CachePath, "xmltv", cacheFilename);
             if (_fileSystem.FileExists(cacheFile))
             {
-                return cacheFile;
+                return UnzipIfNeeded(path, cacheFile);
             }
 
             _logger.Info("Downloading xmltv listings from {0}", path);
@@ -103,7 +106,30 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
 
             _logger.Debug("Returning xmltv path {0}", cacheFile);
-            return cacheFile;
+            return UnzipIfNeeded(path, cacheFile);
+        }
+
+        private string UnzipIfNeeded(string originalUrl, string file)
+        {
+            //var ext = Path.GetExtension(originalUrl);
+
+            //if (string.Equals(ext, ".gz", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    using (var stream = _fileSystem.OpenRead(file))
+            //    {
+            //        var tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
+            //        _fileSystem.CreateDirectory(tempFolder);
+
+            //        _zipClient.ExtractAllFromZip(stream, tempFolder, true);
+
+            //        return _fileSystem.GetFiles(tempFolder, true)
+            //            .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
+            //            .Select(i => i.FullName)
+            //            .FirstOrDefault();
+            //    }
+            //}
+
+            return file;
         }
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
@@ -121,6 +147,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     endDateUtc = startDateUtc.AddDays(1);
                 }
             }
+
+            _logger.Debug("Getting xmltv programs for channel {0}", channelId);
 
             var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
             var reader = new XmlTvReader(path, GetLanguage());
@@ -140,7 +168,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 EpisodeNumber = p.Episode == null ? null : p.Episode.Episode,
                 EpisodeTitle = episodeTitle,
                 Genres = p.Categories,
-                Id = String.Format("{0}_{1:O}", p.ChannelId, p.StartDate), // Construct an id from the channel and start date,
                 StartDate = GetDate(p.StartDate),
                 Name = p.Title,
                 Overview = p.Description,
@@ -179,6 +206,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                 programInfo.ShowId = uniqueString.GetMD5().ToString("N");
             }
+
+            // Construct an id from the channel and start date
+            programInfo.Id = String.Format("{0}_{1:O}", p.ChannelId, p.StartDate);
 
             if (programInfo.IsMovie)
             {

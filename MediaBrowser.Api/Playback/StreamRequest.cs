@@ -22,6 +22,9 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "DeviceId", Description = "The device id of the client requesting. Used to stop encoding processes when needed.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string DeviceId { get; set; }
 
+        [ApiMember(Name = "Container", Description = "Container", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Container { get; set; }
+
         /// <summary>
         /// Gets or sets the audio codec.
         /// </summary>

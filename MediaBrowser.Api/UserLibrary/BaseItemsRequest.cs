@@ -277,6 +277,8 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Albums", Description = "Optional. If specified, results will be filtered based on album. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Albums { get; set; }
 
+        public string AlbumIds { get; set; }
+
         /// <summary>
         /// Gets or sets the item ids.
         /// </summary>

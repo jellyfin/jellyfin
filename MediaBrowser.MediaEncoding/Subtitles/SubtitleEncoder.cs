@@ -19,6 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Diagnostics;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Text;
 using UniversalDetector;
 
@@ -137,18 +138,29 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException("mediaSourceId");
             }
 
-            var subtitle = await GetSubtitleStream(itemId, mediaSourceId, subtitleStreamIndex, cancellationToken)
+            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(itemId, null, false, new[] { MediaType.Audio, MediaType.Video }, cancellationToken).ConfigureAwait(false);
+
+            var mediaSource = mediaSources
+                .First(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
+
+            var subtitleStream = mediaSource.MediaStreams
+               .First(i => i.Type == MediaStreamType.Subtitle && i.Index == subtitleStreamIndex);
+
+            var subtitle = await GetSubtitleStream(mediaSource, subtitleStream, cancellationToken)
                         .ConfigureAwait(false);
 
             var inputFormat = subtitle.Item2;
             var writer = TryGetWriter(outputFormat);
 
-            if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase) && writer == null)
+            // Return the original if we don't have any way of converting it
+            if (writer == null)
             {
                 return subtitle.Item1;
             }
 
-            if (writer == null)
+            // Return the original if the same format is being requested
+            // Character encoding was already handled in GetSubtitleStream
+            if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
             {
                 return subtitle.Item1;
             }
@@ -159,36 +171,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
-        private async Task<Tuple<Stream, string>> GetSubtitleStream(string itemId,
-            string mediaSourceId,
-            int subtitleStreamIndex,
+        private async Task<Tuple<Stream, string>> GetSubtitleStream(MediaSourceInfo mediaSource,
+            MediaStream subtitleStream,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(itemId))
-            {
-                throw new ArgumentNullException("itemId");
-            }
-            if (string.IsNullOrWhiteSpace(mediaSourceId))
-            {
-                throw new ArgumentNullException("mediaSourceId");
-            }
-
-            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(itemId, null, false, new[] { MediaType.Audio, MediaType.Video }, cancellationToken).ConfigureAwait(false);
-
-            var mediaSource = mediaSources
-                .First(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
-
-            var subtitleStream = mediaSource.MediaStreams
-                .First(i => i.Type == MediaStreamType.Subtitle && i.Index == subtitleStreamIndex);
-
             var inputFiles = new[] { mediaSource.Path };
 
             if (mediaSource.VideoType.HasValue)
             {
-                if (mediaSource.VideoType.Value == VideoType.BluRay ||
-                    mediaSource.VideoType.Value == VideoType.Dvd)
+                if (mediaSource.VideoType.Value == VideoType.BluRay || mediaSource.VideoType.Value == VideoType.Dvd)
                 {
-                    var mediaSourceItem = (Video)_libraryManager.GetItemById(new Guid(mediaSourceId));
+                    var mediaSourceItem = (Video)_libraryManager.GetItemById(new Guid(mediaSource.Id));
                     inputFiles = mediaSourceItem.GetPlayableStreamFiles().ToArray();
                 }
             }

@@ -70,6 +70,14 @@ namespace MediaBrowser.Controller.Entities.Movies
             set { TmdbCollectionName = value; }
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            double value = 2;
+            value /= 3;
+
+            return value;
+        }
+
         [IgnoreDataMember]
         protected override bool SupportsIsInMixedFolderDetection
         {

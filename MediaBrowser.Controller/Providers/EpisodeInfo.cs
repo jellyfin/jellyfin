@@ -8,7 +8,6 @@ namespace MediaBrowser.Controller.Providers
         public Dictionary<string, string> SeriesProviderIds { get; set; }
 
         public int? IndexNumberEnd { get; set; }
-        public int? AnimeSeriesIndex { get; set; }
 
         public bool IsMissingEpisode { get; set; }
         public bool IsVirtualUnaired { get; set; }
