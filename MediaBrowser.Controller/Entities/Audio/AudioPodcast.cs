@@ -12,5 +12,10 @@ namespace MediaBrowser.Controller.Entities.Audio
                 return true;
             }
         }
+
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            return null;
+        }
     }
 }

@@ -193,7 +193,7 @@ namespace Emby.Server
         /// <param name="options">The options.</param>
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options, EnvironmentInfo environmentInfo)
         {
-            var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), true, true, true, appPaths.TempDirectory);
+            var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), true, true, false, appPaths.TempDirectory);
 
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 

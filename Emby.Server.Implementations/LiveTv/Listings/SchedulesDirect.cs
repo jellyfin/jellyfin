@@ -81,12 +81,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return programsInfo;
             }
 
-            if (string.IsNullOrWhiteSpace(info.ListingsId))
-            {
-                _logger.Warn("ListingsId is null, returning empty program list");
-                return programsInfo;
-            }
-
             var dates = GetScheduleRequestDates(startDateUtc, endDateUtc);
 
             string stationID = channelId;
@@ -156,7 +150,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                         programDetails.Where(p => p.hasImageArtwork).Select(p => p.programID)
                         .ToList();
 
-                    var images = await GetImageForPrograms(info, programIdsWithImages, cancellationToken);
+                    var images = await GetImageForPrograms(info, programIdsWithImages, cancellationToken).ConfigureAwait(false);
 
                     var schedules = dailySchedules.SelectMany(d => d.programs);
                     foreach (ScheduleDirect.Program schedule in schedules)

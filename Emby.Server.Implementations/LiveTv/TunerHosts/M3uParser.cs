@@ -136,11 +136,26 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             channel.Name = GetChannelName(extInf, attributes);
             channel.Number = GetChannelNumber(extInf, attributes, mediaUrl);
 
-            var channelId = GetTunerChannelId(attributes);
+            string tvgId;
+            attributes.TryGetValue("tvg-id", out tvgId);
+
+            string channelId;
+            attributes.TryGetValue("channel-id", out channelId);
+
+            channel.TunerChannelId = string.IsNullOrWhiteSpace(tvgId) ? channelId : tvgId;
+
+            var channelIdValues = new List<string>();
             if (!string.IsNullOrWhiteSpace(channelId))
             {
-                channel.Id = channelId;
-                channel.TunerChannelId = channelId;
+                channelIdValues.Add(channelId);
+            }
+            if (!string.IsNullOrWhiteSpace(tvgId))
+            {
+                channelIdValues.Add(tvgId);
+            }
+            if (channelIdValues.Count > 0)
+            {
+                channel.Id = string.Join("_", channelIdValues.ToArray());
             }
 
             return channel;
@@ -294,19 +309,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
 
             return name;
-        }
-
-        private string GetTunerChannelId(Dictionary<string, string> attributes)
-        {
-            string result;
-            attributes.TryGetValue("tvg-id", out result);
-
-            if (string.IsNullOrWhiteSpace(result))
-            {
-                attributes.TryGetValue("channel-id", out result);
-            }
-
-            return result;
         }
 
         private Dictionary<string, string> ParseExtInf(string line, out string remaining)

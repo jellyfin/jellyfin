@@ -278,6 +278,13 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 var program = _libraryManager.GetItemList(new InternalItemsQuery
                 {
+                    IncludeItemTypes = new string[] { typeof(Series).Name },
+                    Name = seriesName,
+                    Limit = 1,
+                    ImageTypes = new ImageType[] { ImageType.Primary }
+
+                }).FirstOrDefault() ?? _libraryManager.GetItemList(new InternalItemsQuery
+                {
                     IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
                     ExternalSeriesId = programSeriesId,
                     Limit = 1,

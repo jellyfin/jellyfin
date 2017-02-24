@@ -58,6 +58,11 @@ namespace MediaBrowser.Controller.Playlists
             }
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            return 1;
+        }
+
         public override bool IsAuthorizedToDelete(User user)
         {
             return true;

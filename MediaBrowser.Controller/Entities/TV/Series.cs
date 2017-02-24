@@ -19,8 +19,6 @@ namespace MediaBrowser.Controller.Entities.TV
     /// </summary>
     public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer
     {
-        public int? AnimeSeriesIndex { get; set; }
-
         public Series()
         {
             AirDays = new List<DayOfWeek>();
@@ -91,6 +89,14 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 return DateLastMediaAdded ?? DateTime.MinValue;
             }
+        }
+
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            double value = 2;
+            value /= 3;
+
+            return value;
         }
 
         public override string CreatePresentationUniqueKey()
@@ -545,8 +551,6 @@ namespace MediaBrowser.Controller.Entities.TV
         public SeriesInfo GetLookupInfo()
         {
             var info = GetItemLookupInfo<SeriesInfo>();
-
-            info.AnimeSeriesIndex = AnimeSeriesIndex;
 
             return info;
         }

@@ -51,7 +51,6 @@
     <Compile Include="BasePeriodicWebSocketListener.cs" />
     <Compile Include="BrandingService.cs" />
     <Compile Include="ChannelService.cs" />
-    <Compile Include="ConnectService.cs" />
     <Compile Include="Devices\DeviceService.cs" />
     <Compile Include="Dlna\DlnaServerService.cs" />
     <Compile Include="Dlna\DlnaService.cs" />
@@ -59,6 +58,7 @@
     <Compile Include="IHasDtoOptions.cs" />
     <Compile Include="Playback\MediaInfoService.cs" />
     <Compile Include="Playback\TranscodingThrottler.cs" />
+    <Compile Include="Playback\UniversalAudioService.cs" />
     <Compile Include="PlaylistService.cs" />
     <Compile Include="Reports\Activities\ReportActivitiesBuilder.cs" />
     <Compile Include="Reports\Common\HeaderActivitiesMetadata.cs" />
@@ -171,10 +171,6 @@
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
       <Project>{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}</Project>
       <Name>MediaBrowser.Controller</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj">
-      <Project>{0bd82fa6-eb8a-4452-8af5-74f9c3849451}</Project>
-      <Name>MediaBrowser.MediaEncoding</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>

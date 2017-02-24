@@ -63,6 +63,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            return 1;
+        }
+
         public override bool CanDelete()
         {
             return false;

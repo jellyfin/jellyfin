@@ -13,10 +13,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Emby.Server.Implementations.HttpServer;
+using Emby.Server.Implementations.Services;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
-using ServiceStack;
-using ServiceStack.Host;
 using IRequest = MediaBrowser.Model.Services.IRequest;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 using StreamWriter = Emby.Server.Implementations.HttpServer.StreamWriter;
@@ -203,7 +202,11 @@ namespace Emby.Server.Implementations.HttpServer
             // Do not use the memoryStreamFactory here, they don't place nice with compression
             using (var ms = new MemoryStream())
             {
-                ContentTypes.Instance.SerializeToStream(request, dto, ms);
+                var contentType = request.ResponseContentType;
+                var writerFn = RequestHelper.GetResponseWriter(HttpListenerHost.Instance, contentType);
+
+                writerFn(dto, ms);
+
                 ms.Position = 0;
 
                 var responseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

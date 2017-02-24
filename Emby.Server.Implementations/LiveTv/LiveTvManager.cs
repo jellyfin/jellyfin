@@ -598,15 +598,15 @@ namespace Emby.Server.Implementations.LiveTv
             item.ParentId = channel.Id;
 
             //item.ChannelType = channelType;
-            if (!string.Equals(item.ServiceName, serviceName, StringComparison.Ordinal))
-            {
-                forceUpdate = true;
-            }
             item.ServiceName = serviceName;
 
             item.Audio = info.Audio;
             item.ChannelId = channel.Id.ToString("N");
             item.CommunityRating = item.CommunityRating ?? info.CommunityRating;
+            if ((item.CommunityRating ?? 0).Equals(0))
+            {
+                item.CommunityRating = null;
+            }
 
             item.EpisodeTitle = info.EpisodeTitle;
             item.ExternalId = info.Id;
@@ -1307,7 +1307,7 @@ namespace Emby.Server.Implementations.LiveTv
                     var isKids = false;
                     var iSSeries = false;
 
-                    var channelPrograms = await service.GetProgramsAsync(GetItemExternalId(currentChannel), start, end, cancellationToken).ConfigureAwait(false);
+                    var channelPrograms = (await service.GetProgramsAsync(GetItemExternalId(currentChannel), start, end, cancellationToken).ConfigureAwait(false)).ToList();
 
                     var existingPrograms = _libraryManager.GetItemList(new InternalItemsQuery
                     {
@@ -1405,7 +1405,7 @@ namespace Emby.Server.Implementations.LiveTv
                 double percent = numComplete;
                 percent /= allChannelsList.Count;
 
-                progress.Report(80 * percent + 10);
+                progress.Report(85 * percent + 15);
             }
             progress.Report(100);
 
@@ -1477,12 +1477,7 @@ namespace Emby.Server.Implementations.LiveTv
         private DateTime _lastRecordingRefreshTime;
         private async Task RefreshRecordings(CancellationToken cancellationToken)
         {
-            const int cacheMinutes = 3;
-
-            if ((DateTime.UtcNow - _lastRecordingRefreshTime).TotalMinutes < cacheMinutes)
-            {
-                return;
-            }
+            const int cacheMinutes = 2;
 
             await _refreshRecordingsLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -1885,7 +1880,7 @@ namespace Emby.Server.Implementations.LiveTv
                 : _tvDtoService.GetInternalTimerId(service.Name, info.TimerId).ToString("N");
 
             dto.StartDate = info.StartDate;
-            dto.RecordingStatus = info.Status;
+            dto.Status = info.Status.ToString();
             dto.IsRepeat = info.IsRepeat;
             dto.EpisodeTitle = info.EpisodeTitle;
             dto.IsMovie = info.IsMovie;
@@ -2866,6 +2861,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 info.Id = Guid.NewGuid().ToString("N");
                 config.ListingProviders.Add(info);
+                info.EnableNewProgramIds = true;
             }
             else
             {
@@ -2930,17 +2926,12 @@ namespace Emby.Server.Implementations.LiveTv
             var result = new TunerChannelMapping
             {
                 Name = tunerChannel.Name,
-                Id = tunerChannel.TunerChannelId
+                Id = tunerChannel.Id
             };
 
             if (!string.IsNullOrWhiteSpace(tunerChannel.Number))
             {
                 result.Name = tunerChannel.Number + " " + result.Name;
-            }
-
-            if (string.IsNullOrWhiteSpace(result.Id))
-            {
-                result.Id = tunerChannel.Id;
             }
 
             var providerChannel = EmbyTV.EmbyTV.Current.GetEpgChannelFromTunerChannel(mappings, tunerChannel, epgChannels);
