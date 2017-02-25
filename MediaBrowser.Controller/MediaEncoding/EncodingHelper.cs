@@ -154,6 +154,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return "mpegts";
             }
+            if (string.Equals(container, "m2ts", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
 
             return container;
         }
