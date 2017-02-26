@@ -37,7 +37,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                     "AudioDbArtistId",
                     "AwardSummary",
                     "BirthDate",
-                    "Budget",
                     
                     // Deprecated. No longer saving in this field.
                     "certification",
@@ -90,7 +89,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                     "PremiereDate",
                     "ProductionYear",
                     "Rating",
-                    "Revenue",
                     "RottenTomatoesId",
                     "RunningTime",
                     
@@ -433,20 +431,6 @@ namespace MediaBrowser.LocalMetadata.Savers
             if (hasAwards != null && !string.IsNullOrEmpty(hasAwards.AwardSummary))
             {
                 writer.WriteElementString("AwardSummary", hasAwards.AwardSummary);
-            }
-
-            var hasBudget = item as IHasBudget;
-            if (hasBudget != null)
-            {
-                if (hasBudget.Budget.HasValue)
-                {
-                    writer.WriteElementString("Budget", hasBudget.Budget.Value.ToString(UsCulture));
-                }
-
-                if (hasBudget.Revenue.HasValue)
-                {
-                    writer.WriteElementString("Revenue", hasBudget.Revenue.Value.ToString(UsCulture));
-                }
             }
 
             if (item.CommunityRating.HasValue)

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
+using Emby.Server.CinemaMode;
 using Emby.Server.Connect;
 using Emby.Server.Core;
 using Emby.Server.Implementations;
@@ -55,6 +56,7 @@ namespace MediaBrowser.ServerApplication
                 //list.Add(typeof(PismoIsoManager).Assembly);
             }
 
+            list.Add(typeof(DefaultIntroProvider).Assembly);
             list.Add(typeof(ConnectManager).Assembly);
             list.Add(typeof(SyncManager).Assembly);
             list.Add(GetType().Assembly);

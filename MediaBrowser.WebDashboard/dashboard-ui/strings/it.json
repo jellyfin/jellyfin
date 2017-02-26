@@ -1963,5 +1963,6 @@
     "ErrorReachingEmbyConnect": "Si \u00e8 verificato un errore durante la connessione al server Emby Connect. Per favore verifica la tua connessione ad Internet e riprova.",
     "WhenDidYouPurchaseApp": "Quando hai acquistato questa app originariamente?",
     "PreferEmbeddedTitlesOverFileNames": "Prefer embedded titles over filenames",
-    "PreferEmbeddedTitlesOverFileNamesHelp": "This determines the default display title when no internet metadata or local metadata is available."
+    "PreferEmbeddedTitlesOverFileNamesHelp": "This determines the default display title when no internet metadata or local metadata is available.",
+    "HeaderUpcomingEpisodes": "Upcoming Episodes"
 }

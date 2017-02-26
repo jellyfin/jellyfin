@@ -3388,10 +3388,10 @@ namespace Emby.Server.Implementations.Data
             var includeTypes = query.IncludeItemTypes.SelectMany(MapIncludeItemTypes).ToArray();
             if (includeTypes.Length == 1)
             {
-                whereClauses.Add("type=@type" + paramSuffix);
+                whereClauses.Add("type=@type");
                 if (statement != null)
                 {
-                    statement.TryBind("@type" + paramSuffix, includeTypes[0]);
+                    statement.TryBind("@type", includeTypes[0]);
                 }
             }
             else if (includeTypes.Length > 1)
@@ -4936,7 +4936,7 @@ namespace Emby.Server.Implementations.Data
                     ParentId = query.ParentId,
                     IsPlayed = query.IsPlayed
                 };
-                var whereClauses = GetWhereClauses(typeSubQuery, null, "itemTypes");
+                var whereClauses = GetWhereClauses(typeSubQuery, null);
 
                 whereClauses.Add("guid in (select ItemId from ItemValues where ItemValues.CleanValue=A.CleanName AND " + typeClause + ")");
 
@@ -5072,7 +5072,7 @@ namespace Emby.Server.Implementations.Data
 
                                 if (typeSubQuery != null)
                                 {
-                                    GetWhereClauses(typeSubQuery, null, "itemTypes");
+                                    GetWhereClauses(typeSubQuery, null);
                                 }
                                 BindSimilarParams(query, statement);
                                 GetWhereClauses(innerQuery, statement);
@@ -5110,7 +5110,7 @@ namespace Emby.Server.Implementations.Data
 
                                 if (typeSubQuery != null)
                                 {
-                                    GetWhereClauses(typeSubQuery, null, "itemTypes");
+                                    GetWhereClauses(typeSubQuery, null);
                                 }
                                 BindSimilarParams(query, statement);
                                 GetWhereClauses(innerQuery, statement);

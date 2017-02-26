@@ -317,7 +317,7 @@
     "LabelFanartApiKey": "Clave api personal:",
     "LabelFanartApiKeyHelp": "Solicitar fanart sin una clave API personal muestra los imagenes que fueron aprobadas hace 7 d\u00edas. Con una clave API personal se reduce a 48 horas y si eres miembro VIP de fanart ser\u00e1 alrededor de 10 minutos.",
     "ExtractChapterImagesHelp": "Extraer las im\u00e1genes de los cap\u00edtulos permitir\u00e1 a las aplicaciones Emby mostrar una men\u00fa de selecci\u00f3n de escenas grafico. El proceso puede ser lento, hacer uso intensivo del cpu y requerir el uso de varios gigabytes de espacio. Se ejecuta como una tarea nocturna programada, aunque puede configurarse en el \u00e1rea de tareas programadas. No se recomienda ejecutarlo durante un horario de uso intensivo.",
-    "LabelMetadataDownloadLanguage": "Lenguaje preferido para descarga de metadatos:",
+    "LabelMetadataDownloadLanguage": "Lenguaje preferido para metadatos:",
     "ButtonSignIn": "Iniciar Sesi\u00f3n",
     "TitleSignIn": "Iniciar Sesi\u00f3n",
     "HeaderPleaseSignIn": "Por favor inicie sesi\u00f3n",
@@ -793,7 +793,7 @@
     "LabelProtocolInfo": "Informaci\u00f3n del protocolo:",
     "LabelProtocolInfoHelp": "El valor que ser\u00e1 utilizado cuando se responde a solicitudes GetProtocolInfo desde el dispositivo.",
     "TabNfoSettings": "Configuraci\u00f3n Nfo",
-    "HeaderKodiMetadataHelp": "Emby incluye soporte nativo para archivos de metadatos Nfo. Para habilitar o deshabilitar los metadatos Nfo, utilice la pesta\u00f1a de servicios para configurar las opciones para sus tipos de medios.",
+    "HeaderKodiMetadataHelp": "Emby incluye soporte nativo para archivos de metadatos Nfo. Para habilitar o deshabilitar los metadatos Nfo, utilice la pesta\u00f1a de metadatos para configurar las opciones para sus tipos de medios.",
     "LabelKodiMetadataUser": "Sincronizar informaci\u00f3n de vistos a nfo's para:",
     "LabelKodiMetadataUserHelp": "Habilitar esto para mantener los datos monitoreados en sincron\u00eda entre el Servidor Emby y los archivos Nfo .",
     "LabelKodiMetadataDateFormat": "Formato de fecha de estreno:",
@@ -1961,7 +1961,8 @@
     "OptionAutomaticallyGroupSeries": "Fusionar autom\u00e1ticamente series esparcidas a trav\u00e9s de m\u00faltiples carpetas.",
     "OptionAutomaticallyGroupSeriesHelp": "Si se habilita, las series que se reparten a trav\u00e9s de m\u00faltiples carpetas dentro de esta biblioteca ser\u00e1n fusionadas en una sola serie.",
     "ErrorReachingEmbyConnect": "Hubo un error al tratar de contactar el servidor de Emby Connect. Por favor aseg\u00farese de que tiene una conexi\u00f3n activa de internet e intente de nuevo.",
-    "WhenDidYouPurchaseApp": "When did you originally purchase this app?",
-    "PreferEmbeddedTitlesOverFileNames": "Prefer embedded titles over filenames",
-    "PreferEmbeddedTitlesOverFileNamesHelp": "This determines the default display title when no internet metadata or local metadata is available."
+    "WhenDidYouPurchaseApp": "\u00bfCuando compro originalmente esta app?",
+    "PreferEmbeddedTitlesOverFileNames": "Prefererir titulos embebidos por encima de los nombres de archivo",
+    "PreferEmbeddedTitlesOverFileNamesHelp": "Esto determina el titulo mostrado por defecto cuando no hay disponibles metadatos en internet o localmente.",
+    "HeaderUpcomingEpisodes": "Upcoming Episodes"
 }

@@ -109,7 +109,6 @@
     <Compile Include="Entities\GameGenre.cs" />
     <Compile Include="Entities\GameSystem.cs" />
     <Compile Include="Entities\IHasAspectRatio.cs" />
-    <Compile Include="Entities\IHasBudget.cs" />
     <Compile Include="Entities\IHasDisplayOrder.cs" />
     <Compile Include="Entities\IHasId.cs" />
     <Compile Include="Entities\IHasImages.cs" />
