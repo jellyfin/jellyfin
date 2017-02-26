@@ -104,7 +104,6 @@
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
     <Compile Include="Images\BaseDynamicImageProvider.cs" />
-    <Compile Include="Intros\DefaultIntroProvider.cs" />
     <Compile Include="IO\FileRefresher.cs" />
     <Compile Include="IO\MbLinkShortcutHandler.cs" />
     <Compile Include="IO\ThrottledStream.cs" />
@@ -238,7 +237,6 @@
     <Compile Include="Sorting\AlbumComparer.cs" />
     <Compile Include="Sorting\AlphanumComparator.cs" />
     <Compile Include="Sorting\ArtistComparer.cs" />
-    <Compile Include="Sorting\BudgetComparer.cs" />
     <Compile Include="Sorting\CommunityRatingComparer.cs" />
     <Compile Include="Sorting\CriticRatingComparer.cs" />
     <Compile Include="Sorting\DateCreatedComparer.cs" />
@@ -257,7 +255,6 @@
     <Compile Include="Sorting\PremiereDateComparer.cs" />
     <Compile Include="Sorting\ProductionYearComparer.cs" />
     <Compile Include="Sorting\RandomComparer.cs" />
-    <Compile Include="Sorting\RevenueComparer.cs" />
     <Compile Include="Sorting\RuntimeComparer.cs" />
     <Compile Include="Sorting\SeriesSortNameComparer.cs" />
     <Compile Include="Sorting\SortNameComparer.cs" />

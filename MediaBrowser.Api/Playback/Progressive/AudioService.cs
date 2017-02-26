@@ -31,6 +31,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// <summary>
     /// Class AudioService
     /// </summary>
+    [Authenticated]
     public class AudioService : BaseProgressiveStreamingService
     {
         /// <summary>

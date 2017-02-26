@@ -21,11 +21,6 @@
         AwardSummary,
 
         /// <summary>
-        /// The budget
-        /// </summary>
-        Budget,
-
-        /// <summary>
         /// The can delete
         /// </summary>
         CanDelete,
@@ -172,11 +167,6 @@
         PrimaryImageAspectRatio,
 
         RecursiveItemCount,
-
-        /// <summary>
-        /// The revenue
-        /// </summary>
-        Revenue,
 
         /// <summary>
         /// The season name

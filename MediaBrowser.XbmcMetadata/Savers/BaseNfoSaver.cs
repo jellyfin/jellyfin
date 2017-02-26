@@ -50,8 +50,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "rottentomatoesid",
                     "language",
                     "tvcomid",
-                    "budget",
-                    "revenue",
                     "tagline",
                     "studio",
                     "genre",
@@ -683,20 +681,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (item.VoteCount.HasValue)
             {
                 writer.WriteElementString("votes", item.VoteCount.Value.ToString(UsCulture));
-            }
-
-            var hasBudget = item as IHasBudget;
-            if (hasBudget != null)
-            {
-                if (hasBudget.Budget.HasValue)
-                {
-                    writer.WriteElementString("budget", hasBudget.Budget.Value.ToString(UsCulture));
-                }
-
-                if (hasBudget.Revenue.HasValue)
-                {
-                    writer.WriteElementString("revenue", hasBudget.Revenue.Value.ToString(UsCulture));
-                }
             }
 
             var hasMetascore = item as IHasMetascore;

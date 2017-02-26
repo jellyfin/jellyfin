@@ -136,13 +136,6 @@ namespace MediaBrowser.Providers.Movies
 
             movie.HomePageUrl = movieData.homepage;
 
-            var hasBudget = movie as IHasBudget;
-            if (hasBudget != null)
-            {
-                hasBudget.Budget = movieData.budget;
-                hasBudget.Revenue = movieData.revenue;
-            }
-
             if (!string.IsNullOrEmpty(movieData.tagline))
             {
                 movie.Tagline = movieData.tagline;
