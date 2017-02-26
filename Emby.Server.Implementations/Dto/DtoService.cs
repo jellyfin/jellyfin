@@ -491,7 +491,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            //if (!(item is LiveTvProgram))
+            if (!(item is LiveTvProgram))
             {
                 dto.PlayAccess = item.GetPlayAccess(user);
             }

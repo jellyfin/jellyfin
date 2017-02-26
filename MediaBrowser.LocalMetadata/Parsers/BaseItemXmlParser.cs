@@ -207,38 +207,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         break;
                     }
 
-                case "Budget":
-                    {
-                        var text = reader.ReadElementContentAsString();
-                        var hasBudget = item as IHasBudget;
-                        if (hasBudget != null)
-                        {
-                            double value;
-                            if (double.TryParse(text, NumberStyles.Any, _usCulture, out value))
-                            {
-                                hasBudget.Budget = value;
-                            }
-                        }
-
-                        break;
-                    }
-
-                case "Revenue":
-                    {
-                        var text = reader.ReadElementContentAsString();
-                        var hasBudget = item as IHasBudget;
-                        if (hasBudget != null)
-                        {
-                            double value;
-                            if (double.TryParse(text, NumberStyles.Any, _usCulture, out value))
-                            {
-                                hasBudget.Revenue = value;
-                            }
-                        }
-
-                        break;
-                    }
-
                 case "Metascore":
                     {
                         var text = reader.ReadElementContentAsString();

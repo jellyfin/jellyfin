@@ -41,6 +41,13 @@
             </div>
             <div is="emby-itemscontainer" class="activeProgramItems itemsContainer"></div>
         </div>
+        <div id="upcomingEpisodes" class="homePageSection">
+            <div>
+                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingEpisodes}</h1>
+                <a href="livetvitems.html?type=Programs&IsSeries=true&IsMovie=false&IsNews=false" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><button is="emby-button" type="button" class="raised more mini noIcon">${ButtonMoreItems}</button></a>
+            </div>
+            <div is="emby-itemscontainer" class="upcomingEpisodeItems itemsContainer"></div>
+        </div>
         <div id="upcomingTvMovies" class="homePageSection">
             <div>
                 <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingMovies}</h1>
@@ -65,7 +72,7 @@
         <div id="upcomingPrograms" class="homePageSection">
             <div>
                 <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingPrograms}</h1>
-                <a href="livetvitems.html?type=Programs&IsKids=false&IsMovie=false&IsSports=false" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><button is="emby-button" type="button" class="raised more mini noIcon">${ButtonMoreItems}</button></a>
+                <a href="livetvitems.html?type=Programs&IsKids=false&IsMovie=false&IsSports=false&IsSeries=false" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><button is="emby-button" type="button" class="raised more mini noIcon">${ButtonMoreItems}</button></a>
             </div>
             <div is="emby-itemscontainer" class="upcomingProgramItems itemsContainer"></div>
         </div>
