@@ -134,10 +134,6 @@
     <Compile Include="SearchService.cs" />
     <Compile Include="Session\SessionsService.cs" />
     <Compile Include="SimilarItemsHelper.cs" />
-    <Compile Include="Sync\SyncHelper.cs" />
-    <Compile Include="Sync\SyncJobWebSocketListener.cs" />
-    <Compile Include="Sync\SyncJobsWebSocketListener.cs" />
-    <Compile Include="Sync\SyncService.cs" />
     <Compile Include="System\ActivityLogService.cs" />
     <Compile Include="System\ActivityLogWebSocketListener.cs" />
     <Compile Include="System\SystemService.cs" />
