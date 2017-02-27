@@ -154,7 +154,24 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return "mpegts";
             }
+            // For these need to find out the ffmpeg names
             if (string.Equals(container, "m2ts", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+            if (string.Equals(container, "wmv", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+            if (string.Equals(container, "vob", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+            if (string.Equals(container, "mpg", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+            if (string.Equals(container, "mpeg", StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
@@ -1481,7 +1498,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     //inputModifier += " -noaccurate_seek";
                 }
 
-                if (!string.IsNullOrWhiteSpace(state.InputContainer))
+                if (!string.IsNullOrWhiteSpace(state.InputContainer) && state.VideoType == VideoType.VideoFile)
                 {
                     var inputFormat = GetInputFormat(state.InputContainer);
                     if (!string.IsNullOrWhiteSpace(inputFormat))
@@ -1490,7 +1507,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                 }
 
-                if (state.RunTimeTicks.HasValue && string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
+                // Only do this for video files due to sometimes unpredictable codec names coming from BDInfo
+                if (state.RunTimeTicks.HasValue && string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType) && state.VideoType == VideoType.VideoFile)
                 {
                     foreach (var stream in state.MediaSource.MediaStreams)
                     {
