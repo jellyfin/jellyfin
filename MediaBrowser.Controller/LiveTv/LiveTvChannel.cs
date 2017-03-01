@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.LiveTv
 
                 if (double.TryParse(Number, NumberStyles.Any, CultureInfo.InvariantCulture, out number))
                 {
-                    return number.ToString("00000-") + (Name ?? string.Empty);
+                    return (number * 10).ToString("00000-") + (Name ?? string.Empty);
                 }
             }
 
