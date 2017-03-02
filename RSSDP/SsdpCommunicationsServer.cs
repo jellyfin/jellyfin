@@ -38,10 +38,10 @@ namespace Rssdp.Infrastructure
 		*/
 
         private object _BroadcastListenSocketSynchroniser = new object();
-        private IUdpSocket _BroadcastListenSocket;
+        private ISocket _BroadcastListenSocket;
 
         private object _SendSocketSynchroniser = new object();
-        private List<IUdpSocket> _sendSockets;
+        private List<ISocket> _sendSockets;
 
         private HttpRequestParser _RequestParser;
         private HttpResponseParser _ResponseParser;
@@ -173,7 +173,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private async Task SendFromSocket(IUdpSocket socket, byte[] messageData, IpEndPointInfo destination, CancellationToken cancellationToken)
+        private async Task SendFromSocket(ISocket socket, byte[] messageData, IpEndPointInfo destination, CancellationToken cancellationToken)
         {
             try
             {
@@ -189,7 +189,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private List<IUdpSocket> GetSendSockets(IpAddressInfo fromLocalIpAddress, IpEndPointInfo destination)
+        private List<ISocket> GetSendSockets(IpAddressInfo fromLocalIpAddress, IpEndPointInfo destination)
         {
             EnsureSendSocketCreated();
 
@@ -348,7 +348,7 @@ namespace Rssdp.Infrastructure
             ThrowIfDisposed();
         }
 
-        private IUdpSocket ListenForBroadcastsAsync()
+        private ISocket ListenForBroadcastsAsync()
         {
             var socket = _SocketFactory.CreateUdpMulticastSocket(SsdpConstants.MulticastLocalAdminAddress, _MulticastTtl, SsdpConstants.MulticastPort);
 
@@ -357,9 +357,9 @@ namespace Rssdp.Infrastructure
             return socket;
         }
 
-        private List<IUdpSocket> CreateSocketAndListenForResponsesAsync()
+        private List<ISocket> CreateSocketAndListenForResponsesAsync()
         {
-            var sockets = new List<IUdpSocket>();
+            var sockets = new List<ISocket>();
 
             sockets.Add(_SocketFactory.CreateSsdpUdpSocket(IpAddressInfo.Any, _LocalPort));
 
@@ -387,7 +387,7 @@ namespace Rssdp.Infrastructure
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "t", Justification = "Capturing task to local variable removes compiler warning, task is not otherwise required.")]
-        private void ListenToSocket(IUdpSocket socket)
+        private void ListenToSocket(ISocket socket)
         {
             // Tasks are captured to local variables even if we don't use them just to avoid compiler warnings.
             var t = Task.Run(async () =>
@@ -397,7 +397,7 @@ namespace Rssdp.Infrastructure
                 {
                     try
                     {
-                        var result = await socket.ReceiveAsync().ConfigureAwait(false);
+                        var result = await socket.ReceiveAsync(CancellationToken.None).ConfigureAwait(false);
 
                         if (result.ReceivedBytes > 0)
                         {

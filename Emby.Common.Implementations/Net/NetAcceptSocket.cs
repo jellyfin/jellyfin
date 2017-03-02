@@ -8,14 +8,14 @@ using MediaBrowser.Model.Logging;
 
 namespace Emby.Common.Implementations.Net
 {
-    public class NetSocket : ISocket
+    public class NetAcceptSocket : IAcceptSocket
     {
         public Socket Socket { get; private set; }
         private readonly ILogger _logger;
 
         public bool DualMode { get; private set; }
 
-        public NetSocket(Socket socket, ILogger logger, bool isDualMode)
+        public NetAcceptSocket(Socket socket, ILogger logger, bool isDualMode)
         {
             if (socket == null)
             {
@@ -82,7 +82,7 @@ namespace Emby.Common.Implementations.Net
         }
 
         private SocketAcceptor _acceptor;
-        public void StartAccept(Action<ISocket> onAccept, Func<bool> isClosed)
+        public void StartAccept(Action<IAcceptSocket> onAccept, Func<bool> isClosed)
         {
             _acceptor = new SocketAcceptor(_logger, Socket, onAccept, isClosed, DualMode);
 
