@@ -38,15 +38,23 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task<bool> CheckTunerAvailability(IpAddressInfo remoteIp, int tuner, CancellationToken cancellationToken)
         {
+            using (var socket = _socketFactory.CreateTcpSocket(remoteIp, HdHomeRunPort))
+            {
+                return await CheckTunerAvailability(socket, remoteIp, tuner, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private async Task<bool> CheckTunerAvailability(ISocket socket, IpAddressInfo remoteIp, int tuner, CancellationToken cancellationToken)
+        {
             var ipEndPoint = new IpEndPointInfo(remoteIp, HdHomeRunPort);
-            var tcpClient = _socketFactory.CreateTcpSocket(remoteIp, HdHomeRunPort);
+
             var lockkeyMsg = CreateGetMessage(tuner, "lockkey");
-            await tcpClient.SendAsync(lockkeyMsg, lockkeyMsg.Length, ipEndPoint, cancellationToken);
-            var response = await tcpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+            await socket.SendAsync(lockkeyMsg, lockkeyMsg.Length, ipEndPoint, cancellationToken);
+            var response = await socket.ReceiveAsync(cancellationToken).ConfigureAwait(false);
             string returnVal;
             ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal);
 
-            return (returnVal == "none");
+            return string.Equals(returnVal, "none", StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task StartStreaming(IpAddressInfo remoteIp, IpAddressInfo localIp, int localPort, string url, int numTuners, CancellationToken cancellationToken)
@@ -71,7 +79,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             for (int i = 0; i < numTuners; ++i)
             {
-                if (!await CheckTunerAvailability(_remoteIp, i, cancellationToken).ConfigureAwait(false))
+                if (!await CheckTunerAvailability(tcpClient, _remoteIp, i, cancellationToken).ConfigureAwait(false))
                     continue;
 
                 _activeTuner = i;
