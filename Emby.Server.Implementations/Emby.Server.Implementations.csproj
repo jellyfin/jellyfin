@@ -173,6 +173,7 @@
     <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunDiscovery.cs" />
     <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunHost.cs" />
     <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunLiveStream.cs" />
+    <Compile Include="LiveTv\TunerHosts\HdHomerun\LegacyHdHomerunLiveStream.cs" />
     <Compile Include="LiveTv\TunerHosts\M3uParser.cs" />
     <Compile Include="LiveTv\TunerHosts\M3UTunerHost.cs" />
     <Compile Include="LiveTv\TunerHosts\MulticastStream.cs" />
