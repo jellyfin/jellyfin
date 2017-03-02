@@ -67,45 +67,33 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 return;
             }
 
-            var tcpClient = _socketFactory.CreateTcpSocket(_remoteIp, HdHomeRunPort);
-
-            if (!_lockkey.HasValue)
+            using (var tcpClient = _socketFactory.CreateTcpSocket(_remoteIp, HdHomeRunPort))
             {
-                var rand = new Random();
-                _lockkey = (uint)rand.Next();
-            }
-
-            var ipEndPoint = new IpEndPointInfo(_remoteIp, HdHomeRunPort);
-
-            for (int i = 0; i < numTuners; ++i)
-            {
-                if (!await CheckTunerAvailability(tcpClient, _remoteIp, i, cancellationToken).ConfigureAwait(false))
-                    continue;
-
-                _activeTuner = i;
-                var lockKeyString = String.Format("{0:d}", _lockkey.Value);
-                var lockkeyMsg = CreateSetMessage(i, "lockkey", lockKeyString, null);
-                await tcpClient.SendAsync(lockkeyMsg, lockkeyMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
-                var response = await tcpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-                string returnVal;
-                // parse response to make sure it worked
-                if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
-                    continue;
-
-                var channelMsg = CreateSetMessage(i, "channel", frequency, _lockkey.Value);
-                await tcpClient.SendAsync(channelMsg, channelMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
-                await tcpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-                // parse response to make sure it worked
-                if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
+                if (!_lockkey.HasValue)
                 {
-                    await ReleaseLockkey(tcpClient).ConfigureAwait(false);
-                    continue;
+                    var rand = new Random();
+                    _lockkey = (uint)rand.Next();
                 }
 
-                if (program != String.Empty)
+                var ipEndPoint = new IpEndPointInfo(_remoteIp, HdHomeRunPort);
+
+                for (int i = 0; i < numTuners; ++i)
                 {
-                    var programMsg = CreateSetMessage(i, "program", program, _lockkey.Value);
-                    await tcpClient.SendAsync(programMsg, programMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
+                    if (!await CheckTunerAvailability(tcpClient, _remoteIp, i, cancellationToken).ConfigureAwait(false))
+                        continue;
+
+                    _activeTuner = i;
+                    var lockKeyString = String.Format("{0:d}", _lockkey.Value);
+                    var lockkeyMsg = CreateSetMessage(i, "lockkey", lockKeyString, null);
+                    await tcpClient.SendAsync(lockkeyMsg, lockkeyMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
+                    var response = await tcpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                    string returnVal;
+                    // parse response to make sure it worked
+                    if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
+                        continue;
+
+                    var channelMsg = CreateSetMessage(i, "channel", frequency, _lockkey.Value);
+                    await tcpClient.SendAsync(channelMsg, channelMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
                     await tcpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
                     // parse response to make sure it worked
                     if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
@@ -113,21 +101,34 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         await ReleaseLockkey(tcpClient).ConfigureAwait(false);
                         continue;
                     }
+
+                    if (program != String.Empty)
+                    {
+                        var programMsg = CreateSetMessage(i, "program", program, _lockkey.Value);
+                        await tcpClient.SendAsync(programMsg, programMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
+                        await tcpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                        // parse response to make sure it worked
+                        if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
+                        {
+                            await ReleaseLockkey(tcpClient).ConfigureAwait(false);
+                            continue;
+                        }
+                    }
+
+                    var targetValue = String.Format("rtp://{0}:{1}", localIp, localPort);
+                    var targetMsg = CreateSetMessage(i, "target", targetValue, _lockkey.Value);
+
+                    await tcpClient.SendAsync(targetMsg, targetMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
+                    response = await tcpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                    // parse response to make sure it worked
+                    if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
+                    {
+                        await ReleaseLockkey(tcpClient).ConfigureAwait(false);
+                        continue;
+                    }
+
+                    break;
                 }
-
-                var targetValue = String.Format("rtp://{0}:{1}", localIp, localPort);
-                var targetMsg = CreateSetMessage(i, "target", targetValue, _lockkey.Value);
-
-                await tcpClient.SendAsync(targetMsg, targetMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
-                response = await tcpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-                // parse response to make sure it worked
-                if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
-                {
-                    await ReleaseLockkey(tcpClient).ConfigureAwait(false);
-                    continue;
-                }
-
-                break;
             }
         }
 
