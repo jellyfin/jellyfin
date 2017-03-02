@@ -167,10 +167,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var tuners = new List<LiveTvTunerInfo>();
 
+            var uri = new Uri(info.Url);
+
             using (var manager = new HdHomerunManager(_socketFactory))
             {
                 // Legacy HdHomeruns are IPv4 only
-                var ipInfo = new IpAddressInfo(info.Url, IpAddressFamily.InterNetwork);
+                var ipInfo = new IpAddressInfo(uri.Host, IpAddressFamily.InterNetwork);
 
                 for (int i = 0; i < model.TunerCount; ++i)
                 {
