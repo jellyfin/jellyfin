@@ -86,11 +86,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
         }
 
+        private class HdHomerunChannelInfo : ChannelInfo
+        {
+            public string Url { get; set; }
+        }
+
         protected override async Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
         {
             var lineup = await GetLineup(info, cancellationToken).ConfigureAwait(false);
 
-            return lineup.Select(i => new ChannelInfo
+            return lineup.Select(i => new HdHomerunChannelInfo
             {
                 Name = i.GuideName,
                 Number = i.GuideNumber,
@@ -100,9 +105,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 IsHD = i.HD == 1,
                 AudioCodec = i.AudioCodec,
                 VideoCodec = i.VideoCodec,
-                ChannelType = ChannelType.TV
+                ChannelType = ChannelType.TV,
+                Url = info.Url
 
-            }).ToList();
+            }).Cast<ChannelInfo>().ToList();
         }
 
         private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
@@ -250,13 +256,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             public int HD { get; set; }
         }
 
-        private async Task<MediaSourceInfo> GetMediaSource(TunerHostInfo info, string channelId, string profile)
+        private MediaSourceInfo GetMediaSource(TunerHostInfo info, string channelId, ChannelInfo channelInfo, string profile)
         {
             int? width = null;
             int? height = null;
             bool isInterlaced = true;
             string videoCodec = null;
-            string audioCodec = "ac3";
+            string audioCodec = null;
 
             int? videoBitrate = null;
             int? audioBitrate = null;
@@ -310,21 +316,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 videoBitrate = 1000000;
             }
 
-            var channels = await GetChannels(info, true, CancellationToken.None).ConfigureAwait(false);
-            var channel = channels.FirstOrDefault(i => string.Equals(i.Number, channelId, StringComparison.OrdinalIgnoreCase));
-            if (channel != null)
+            if (channelInfo != null)
             {
                 if (string.IsNullOrWhiteSpace(videoCodec))
                 {
-                    videoCodec = channel.VideoCodec;
+                    videoCodec = channelInfo.VideoCodec;
                 }
-                audioCodec = channel.AudioCodec;
+                audioCodec = channelInfo.AudioCodec;
 
                 if (!videoBitrate.HasValue)
                 {
-                    videoBitrate = (channel.IsHD ?? true) ? 15000000 : 2000000;
+                    videoBitrate = (channelInfo.IsHD ?? true) ? 15000000 : 2000000;
                 }
-                audioBitrate = (channel.IsHD ?? true) ? 448000 : 192000;
+                audioBitrate = (channelInfo.IsHD ?? true) ? 448000 : 192000;
             }
 
             // normalize
@@ -409,6 +413,82 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return channelId.Split('_')[1];
         }
 
+        private MediaSourceInfo GetLegacyMediaSource(TunerHostInfo info, string channelId, ChannelInfo channel)
+        {
+            int? width = null;
+            int? height = null;
+            bool isInterlaced = true;
+            string videoCodec = null;
+            string audioCodec = null;
+
+            int? videoBitrate = null;
+            int? audioBitrate = null;
+
+            if (channel != null)
+            {
+                if (string.IsNullOrWhiteSpace(videoCodec))
+                {
+                    videoCodec = channel.VideoCodec;
+                }
+                audioCodec = channel.AudioCodec;
+            }
+
+            // normalize
+            if (string.Equals(videoCodec, "mpeg2", StringComparison.OrdinalIgnoreCase))
+            {
+                videoCodec = "mpeg2video";
+            }
+
+            string nal = null;
+
+            var url = info.Url;
+            var id = channelId;
+            id += "_" + url.GetMD5().ToString("N");
+
+            var mediaSource = new MediaSourceInfo
+            {
+                Path = url,
+                Protocol = MediaProtocol.Udp,
+                MediaStreams = new List<MediaStream>
+                        {
+                            new MediaStream
+                            {
+                                Type = MediaStreamType.Video,
+                                // Set the index to -1 because we don't know the exact index of the video stream within the container
+                                Index = -1,
+                                IsInterlaced = isInterlaced,
+                                Codec = videoCodec,
+                                Width = width,
+                                Height = height,
+                                BitRate = videoBitrate,
+                                NalLengthSize = nal
+
+                            },
+                            new MediaStream
+                            {
+                                Type = MediaStreamType.Audio,
+                                // Set the index to -1 because we don't know the exact index of the audio stream within the container
+                                Index = -1,
+                                Codec = audioCodec,
+                                BitRate = audioBitrate
+                            }
+                        },
+                RequiresOpening = true,
+                RequiresClosing = true,
+                BufferMs = 0,
+                Container = "ts",
+                Id = id,
+                SupportsDirectPlay = false,
+                SupportsDirectStream = true,
+                SupportsTranscoding = true,
+                IsInfiniteStream = true
+            };
+
+            mediaSource.InferTotalBitrate();
+
+            return mediaSource;
+        }
+
         protected override async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, string channelId, CancellationToken cancellationToken)
         {
             var list = new List<MediaSourceInfo>();
@@ -419,35 +499,49 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             var hdhrId = GetHdHrIdFromChannelId(channelId);
 
-            try
+            var channels = await GetChannels(info, true, CancellationToken.None).ConfigureAwait(false);
+            var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Number, channelId, StringComparison.OrdinalIgnoreCase));
+
+            var hdHomerunChannelInfo = channelInfo as HdHomerunChannelInfo;
+
+            var isLegacyTuner = hdHomerunChannelInfo != null && hdHomerunChannelInfo.Url.StartsWith("hdhomerun:", StringComparison.OrdinalIgnoreCase);
+
+            if (isLegacyTuner)
             {
-                var modelInfo = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
-                var model = modelInfo == null ? string.Empty : (modelInfo.ModelNumber ?? string.Empty);
-
-                if ((model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1))
+                list.Add(GetLegacyMediaSource(info, hdhrId, channelInfo));
+            }
+            else
+            {
+                try
                 {
-                    list.Add(await GetMediaSource(info, hdhrId, "native").ConfigureAwait(false));
+                    var modelInfo = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
+                    var model = modelInfo == null ? string.Empty : (modelInfo.ModelNumber ?? string.Empty);
 
-                    if (info.AllowHWTranscoding)
+                    if ((model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1))
                     {
-                        list.Add(await GetMediaSource(info, hdhrId, "heavy").ConfigureAwait(false));
+                        list.Add(GetMediaSource(info, hdhrId, channelInfo, "native"));
 
-                        list.Add(await GetMediaSource(info, hdhrId, "internet540").ConfigureAwait(false));
-                        list.Add(await GetMediaSource(info, hdhrId, "internet480").ConfigureAwait(false));
-                        list.Add(await GetMediaSource(info, hdhrId, "internet360").ConfigureAwait(false));
-                        list.Add(await GetMediaSource(info, hdhrId, "internet240").ConfigureAwait(false));
-                        list.Add(await GetMediaSource(info, hdhrId, "mobile").ConfigureAwait(false));
+                        if (info.AllowHWTranscoding)
+                        {
+                            list.Add(GetMediaSource(info, hdhrId, channelInfo, "heavy"));
+
+                            list.Add(GetMediaSource(info, hdhrId, channelInfo, "internet540"));
+                            list.Add(GetMediaSource(info, hdhrId, channelInfo, "internet480"));
+                            list.Add(GetMediaSource(info, hdhrId, channelInfo, "internet360"));
+                            list.Add(GetMediaSource(info, hdhrId, channelInfo, "internet240"));
+                            list.Add(GetMediaSource(info, hdhrId, channelInfo, "mobile"));
+                        }
                     }
                 }
-            }
-            catch
-            {
+                catch
+                {
 
-            }
+                }
 
-            if (list.Count == 0)
-            {
-                list.Add(await GetMediaSource(info, hdhrId, "native").ConfigureAwait(false));
+                if (list.Count == 0)
+                {
+                    list.Add(GetMediaSource(info, hdhrId, channelInfo, "native"));
+                }
             }
 
             return list;
@@ -475,7 +569,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             var hdhrId = GetHdHrIdFromChannelId(channelId);
 
-            var mediaSource = await GetMediaSource(info, hdhrId, profile).ConfigureAwait(false);
+            var channels = await GetChannels(info, true, CancellationToken.None).ConfigureAwait(false);
+            var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Number, channelId, StringComparison.OrdinalIgnoreCase));
+
+            var mediaSource = GetMediaSource(info, hdhrId, channelInfo, profile);
 
             var liveStream = new HdHomerunLiveStream(mediaSource, streamId, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
             liveStream.EnableStreamSharing = true;
