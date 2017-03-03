@@ -175,6 +175,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return null;
             }
+            if (string.Equals(container, "rec", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
 
             return container;
         }
