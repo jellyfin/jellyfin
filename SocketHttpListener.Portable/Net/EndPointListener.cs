@@ -17,7 +17,7 @@ namespace SocketHttpListener.Net
     {
         HttpListener listener;
         IpEndPointInfo endpoint;
-        ISocket sock;
+        IAcceptSocket sock;
         Dictionary<ListenerPrefix,HttpListener> prefixes;  // Dictionary <ListenerPrefix, HttpListener>
         List<ListenerPrefix> unhandled; // List<ListenerPrefix> unhandled; host = '*'
         List<ListenerPrefix> all;       // List<ListenerPrefix> all;  host = '+'
@@ -95,7 +95,7 @@ namespace SocketHttpListener.Net
             _closed = false;
         }
 
-        private async void ProcessAccept(ISocket accepted)
+        private async void ProcessAccept(IAcceptSocket accepted)
         {
             try
             {

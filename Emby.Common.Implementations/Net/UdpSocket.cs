@@ -14,7 +14,7 @@ namespace Emby.Common.Implementations.Net
     // THIS IS A LINKED FILE - SHARED AMONGST MULTIPLE PLATFORMS	
     // Be careful to check any changes compile and work for all platform projects it is shared in.
 
-    internal sealed class UdpSocket : DisposableManagedObjectBase, IUdpSocket
+    internal sealed class UdpSocket : DisposableManagedObjectBase, ISocket
     {
 
         #region Fields
@@ -22,8 +22,6 @@ namespace Emby.Common.Implementations.Net
         private Socket _Socket;
         private int _LocalPort;
         #endregion
-
-        #region Constructors
 
         public UdpSocket(Socket socket, int localPort, IPAddress ip)
         {
@@ -36,7 +34,13 @@ namespace Emby.Common.Implementations.Net
             _Socket.Bind(new IPEndPoint(ip, _LocalPort));
         }
 
-        #endregion
+        public UdpSocket(Socket socket, IpEndPointInfo endPoint)
+        {
+            if (socket == null) throw new ArgumentNullException("socket");
+
+            _Socket = socket;
+            _Socket.Connect(NetworkManager.ToIPEndPoint(endPoint));
+        }
 
         public IpAddressInfo LocalIPAddress
         {
@@ -44,9 +48,9 @@ namespace Emby.Common.Implementations.Net
             private set;
         }
 
-        #region IUdpSocket Members
+        #region ISocket Members
 
-        public Task<SocketReceiveResult> ReceiveAsync()
+        public Task<SocketReceiveResult> ReceiveAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
