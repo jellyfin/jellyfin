@@ -31,7 +31,7 @@ namespace Emby.Common.Implementations.Net
             _logger = logger;
         }
 
-        public IAcceptSocket CreateAcceptSocket(IpAddressFamily family, MediaBrowser.Model.Net.SocketType socketType, MediaBrowser.Model.Net.ProtocolType protocolType, bool dualMode)
+        public IAcceptSocket CreateSocket(IpAddressFamily family, MediaBrowser.Model.Net.SocketType socketType, MediaBrowser.Model.Net.ProtocolType protocolType, bool dualMode)
         {
             try
             {

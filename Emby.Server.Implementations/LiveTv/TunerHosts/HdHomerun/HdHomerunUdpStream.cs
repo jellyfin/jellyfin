@@ -17,7 +17,7 @@ using MediaBrowser.Model.Net;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
-    public class LegacyHdHomerunLiveStream : LiveStream, IDirectStreamProvider
+    public class HdHomerunUdpStream : LiveStream, IDirectStreamProvider
     {
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
@@ -33,7 +33,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly int _numTuners;
         private readonly INetworkManager _networkManager;
 
-        public LegacyHdHomerunLiveStream(MediaSourceInfo mediaSource, string originalStreamId, string channelUrl, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager)
+        public HdHomerunUdpStream(MediaSourceInfo mediaSource, string originalStreamId, string channelUrl, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager)
             : base(mediaSource)
         {
             _fileSystem = fileSystem;
@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var uri = new Uri(mediaSource.Path);
             var localPort = _networkManager.GetRandomUnusedUdpPort();
 
-            _logger.Info("Opening Legacy HDHR Live stream from {0}", uri.Host);
+            _logger.Info("Opening HDHR UDP Live stream from {0}", uri.Host);
 
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public override Task Close()
         {
-            _logger.Info("Closing Legacy HDHR live stream");
+            _logger.Info("Closing HDHR UDP live stream");
             _liveStreamCancellationTokenSource.Cancel();
 
             return _liveStreamTaskCompletionSource.Task;
@@ -89,74 +89,78 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private async Task StartStreaming(string remoteIp, int localPort, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
-            //await Task.Run(async () =>
-            //{
-            //    var isFirstAttempt = true;
-            //    var udpClient = _socketFactory.CreateUdpSocket(localPort);
-            //    using (var legCommand = new HdHomerunManager(_socketFactory))
-            //    {
-            //        var remoteAddress = new IpAddressInfo(remoteIp, IpAddressFamily.InterNetwork);
-            //        IpAddressInfo localAddress = null;
-            //        var tcpSocket = _socketFactory.CreateSocket(IpAddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp, false);
-            //        try
-            //        {
-            //            tcpSocket.Connect(new IpEndPointInfo(remoteAddress, LegacyHdHomerunCommand.HdHomeRunPort));
-            //            localAddress = tcpSocket.LocalEndPoint.IpAddress;
-            //            tcpSocket.Close();
-            //        }
-            //        catch (Exception)
-            //        {
-            //            _logger.Error("Unable to determine local ip address for Legacy HDHomerun stream.");
-            //            return;
-            //        }
+            await Task.Run(async () =>
+            {
+                var isFirstAttempt = true;
+                using (var udpClient = _socketFactory.CreateUdpSocket(localPort))
+                {
+                    using (var hdHomerunManager = new HdHomerunManager(_socketFactory))
+                    {
+                        var remoteAddress = new IpAddressInfo(remoteIp, IpAddressFamily.InterNetwork);
+                        IpAddressInfo localAddress = null;
+                        using (var tcpSocket = _socketFactory.CreateSocket(IpAddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp, false))
+                        {
+                            try
+                            {
+                                tcpSocket.Connect(new IpEndPointInfo(remoteAddress, HdHomerunManager.HdHomeRunPort));
+                                localAddress = tcpSocket.LocalEndPoint.IpAddress;
+                                tcpSocket.Close();
+                            }
+                            catch (Exception)
+                            {
+                                _logger.Error("Unable to determine local ip address for Legacy HDHomerun stream.");
+                                return;
+                            }
+                        }
 
-            //        while (!cancellationToken.IsCancellationRequested)
-            //        {
-            //            try
-            //            {
-            //                // send url to start streaming
-            //                await legCommand.StartStreaming(remoteAddress, localAddress, localPort, _channelUrl, _numTuners, cancellationToken).ConfigureAwait(false);
+                        while (!cancellationToken.IsCancellationRequested)
+                        {
+                            try
+                            {
+                                // send url to start streaming
+                                await hdHomerunManager.StartStreaming(remoteAddress, localAddress, localPort, _channelUrl, _numTuners, cancellationToken).ConfigureAwait(false);
 
-            //                var response = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-            //                _logger.Info("Opened Legacy HDHR stream from {0}", _channelUrl);
+                                var response = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                                _logger.Info("Opened HDHR UDP stream from {0}", _channelUrl);
 
-            //                if (!cancellationToken.IsCancellationRequested)
-            //                {
-            //                    Action onStarted = null;
-            //                    if (isFirstAttempt)
-            //                    {
-            //                        onStarted = () => openTaskCompletionSource.TrySetResult(true);
-            //                    }
+                                if (!cancellationToken.IsCancellationRequested)
+                                {
+                                    Action onStarted = null;
+                                    if (isFirstAttempt)
+                                    {
+                                        onStarted = () => openTaskCompletionSource.TrySetResult(true);
+                                    }
 
-            //                    var stream = new UdpClientStream(udpClient);
-            //                    await _multicastStream.CopyUntilCancelled(stream, onStarted, cancellationToken).ConfigureAwait(false);
-            //                }
-            //            }
-            //            catch (OperationCanceledException)
-            //            {
-            //                break;
-            //            }
-            //            catch (Exception ex)
-            //            {
-            //                if (isFirstAttempt)
-            //                {
-            //                    _logger.ErrorException("Error opening live stream:", ex);
-            //                    openTaskCompletionSource.TrySetException(ex);
-            //                    break;
-            //                }
+                                    var stream = new UdpClientStream(udpClient);
+                                    await _multicastStream.CopyUntilCancelled(stream, onStarted, cancellationToken).ConfigureAwait(false);
+                                }
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                break;
+                            }
+                            catch (Exception ex)
+                            {
+                                if (isFirstAttempt)
+                                {
+                                    _logger.ErrorException("Error opening live stream:", ex);
+                                    openTaskCompletionSource.TrySetException(ex);
+                                    break;
+                                }
 
-            //                _logger.ErrorException("Error copying live stream, will reopen", ex);
-            //            }
+                                _logger.ErrorException("Error copying live stream, will reopen", ex);
+                            }
 
-            //            isFirstAttempt = false;
-            //        }
+                            isFirstAttempt = false;
+                        }
 
-            //        await legCommand.StopStreaming().ConfigureAwait(false);
-            //        udpClient.Dispose();
-            //        _liveStreamTaskCompletionSource.TrySetResult(true);
-            //    }
+                        await hdHomerunManager.StopStreaming().ConfigureAwait(false);
+                        udpClient.Dispose();
+                        _liveStreamTaskCompletionSource.TrySetResult(true);
+                    }
+                }
 
-            //}).ConfigureAwait(false);
+            }).ConfigureAwait(false);
         }
 
         public Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
