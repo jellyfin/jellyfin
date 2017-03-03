@@ -169,9 +169,11 @@
     <Compile Include="LiveTv\RecordingImageProvider.cs" />
     <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
     <Compile Include="LiveTv\TunerHosts\BaseTunerHost.cs" />
+    <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunManager.cs" />
     <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunDiscovery.cs" />
     <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunHost.cs" />
-    <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunLiveStream.cs" />
+    <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunHttpStream.cs" />
+    <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunUdpStream.cs" />
     <Compile Include="LiveTv\TunerHosts\M3uParser.cs" />
     <Compile Include="LiveTv\TunerHosts\M3UTunerHost.cs" />
     <Compile Include="LiveTv\TunerHosts\MulticastStream.cs" />

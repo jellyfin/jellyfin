@@ -1,28 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Model.Net
 {
+    /// <summary>
+    /// Provides a common interface across platforms for UDP sockets used by this SSDP implementation.
+    /// </summary>
     public interface ISocket : IDisposable
     {
-        bool DualMode { get; }
-        IpEndPointInfo LocalEndPoint { get; }
-        IpEndPointInfo RemoteEndPoint { get; }
-        void Close();
-        void Shutdown(bool both);
-        void Listen(int backlog);
-        void Bind(IpEndPointInfo endpoint);
+        IpAddressInfo LocalIPAddress { get; }
 
-        void StartAccept(Action<ISocket> onAccept, Func<bool> isClosed);
-    }
+        /// <summary>
+        /// Waits for and returns the next UDP message sent to this socket (uni or multicast).
+        /// </summary>
+        /// <returns></returns>
+        Task<SocketReceiveResult> ReceiveAsync(CancellationToken cancellationToken);
 
-    public class SocketCreateException : Exception
-    {
-        public SocketCreateException(string errorCode, Exception originalException)
-            : base(errorCode, originalException)
-        {
-            ErrorCode = errorCode;
-        }
-
-        public string ErrorCode { get; private set; }
+        /// <summary>
+        /// Sends a UDP message to a particular end point (uni or multicast).
+        /// </summary>
+        Task SendAsync(byte[] buffer, int bytes, IpEndPointInfo endPoint, CancellationToken cancellationToken);
     }
 }
