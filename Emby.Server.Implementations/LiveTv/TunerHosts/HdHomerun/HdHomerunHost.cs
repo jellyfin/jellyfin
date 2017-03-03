@@ -142,9 +142,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
 
-                    lock (_modelCache)
+                    if (!string.IsNullOrWhiteSpace(info.Id))
                     {
-                        _modelCache[info.Id] = response;
+                        lock (_modelCache)
+                        {
+                            _modelCache[info.Id] = response;
+                        }
                     }
 
                     return response;
@@ -159,10 +162,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     {
                         ModelNumber = defaultValue
                     };
-                    // HDHR4 doesn't have this api
-                    lock (_modelCache)
+                    if (!string.IsNullOrWhiteSpace(info.Id))
                     {
-                        _modelCache[info.Id] = response;
+                        // HDHR4 doesn't have this api
+                        lock (_modelCache)
+                        {
+                            _modelCache[info.Id] = response;
+                        }
                     }
                     return response;
                 }
