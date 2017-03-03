@@ -31,8 +31,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly MulticastStream _multicastStream;
         private readonly string _channelUrl;
         private readonly int _numTuners;
+        private readonly INetworkManager _networkManager;
 
-        public LegacyHdHomerunLiveStream(MediaSourceInfo mediaSource, string originalStreamId, string channelUrl, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, ISocketFactory socketFactory)
+        public LegacyHdHomerunLiveStream(MediaSourceInfo mediaSource, string originalStreamId, string channelUrl, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager)
             : base(mediaSource)
         {
             _fileSystem = fileSystem;
@@ -41,6 +42,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _appPaths = appPaths;
             _appHost = appHost;
             _socketFactory = socketFactory;
+            _networkManager = networkManager;
             OriginalStreamId = originalStreamId;
             _multicastStream = new MulticastStream(_logger);
             _channelUrl = channelUrl;
@@ -53,15 +55,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var mediaSource = OriginalMediaSource;
 
-            var splitString = mediaSource.Path.Split('_');
-            var remoteIp = splitString[0];
-            var localPort = Convert.ToInt32(splitString[1]);
+            var uri = new Uri(mediaSource.Path);
+            var localPort = _networkManager.GetRandomUnusedUdpPort();
 
-            _logger.Info("Opening Legacy HDHR Live stream from {0}", remoteIp);
+            _logger.Info("Opening Legacy HDHR Live stream from {0}", uri.Host);
 
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
-            StartStreaming(remoteIp, localPort, taskCompletionSource, _liveStreamCancellationTokenSource.Token);
+            StartStreaming(uri.Host, localPort, taskCompletionSource, _liveStreamCancellationTokenSource.Token);
 
             //OpenedMediaSource.Protocol = MediaProtocol.File;
             //OpenedMediaSource.Path = tempFile;
