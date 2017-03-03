@@ -29,14 +29,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationHost _appHost;
         private readonly ISocketFactory _socketFactory;
+        private readonly INetworkManager _networkManager;
 
-        public HdHomerunHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IHttpClient httpClient, IFileSystem fileSystem, IServerApplicationHost appHost, ISocketFactory socketFactory)
+        public HdHomerunHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IHttpClient httpClient, IFileSystem fileSystem, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager)
             : base(config, logger, jsonSerializer, mediaEncoder)
         {
             _httpClient = httpClient;
             _fileSystem = fileSystem;
             _appHost = appHost;
             _socketFactory = socketFactory;
+            _networkManager = networkManager;
         }
 
         public string Name
@@ -89,6 +91,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private class HdHomerunChannelInfo : ChannelInfo
         {
             public bool IsLegacyTuner { get; set; }
+            public string Url { get; set; }
         }
 
         protected override async Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
@@ -106,7 +109,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 AudioCodec = i.AudioCodec,
                 VideoCodec = i.VideoCodec,
                 ChannelType = ChannelType.TV,
-                IsLegacyTuner = (i.URL ?? string.Empty).StartsWith("hdhomerun", StringComparison.OrdinalIgnoreCase)
+                IsLegacyTuner = (i.URL ?? string.Empty).StartsWith("hdhomerun", StringComparison.OrdinalIgnoreCase),
+                Url = i.URL
 
             }).Cast<ChannelInfo>().ToList();
         }
@@ -500,7 +504,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var hdhrId = GetHdHrIdFromChannelId(channelId);
 
             var channels = await GetChannels(info, true, CancellationToken.None).ConfigureAwait(false);
-            var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Number, channelId, StringComparison.OrdinalIgnoreCase));
+            var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
 
             var hdHomerunChannelInfo = channelInfo as HdHomerunChannelInfo;
 
@@ -570,24 +574,23 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var hdhrId = GetHdHrIdFromChannelId(channelId);
 
             var channels = await GetChannels(info, true, CancellationToken.None).ConfigureAwait(false);
-            var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Number, channelId, StringComparison.OrdinalIgnoreCase));
+            var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
 
             var hdhomerunChannel = channelInfo as HdHomerunChannelInfo;
 
             if (hdhomerunChannel != null && hdhomerunChannel.IsLegacyTuner)
             {
+                var modelInfo = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
                 var mediaSource = GetLegacyMediaSource(info, hdhrId, channelInfo);
 
-                var liveStream = new HdHomerunLiveStream(mediaSource, streamId, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
-                liveStream.EnableStreamSharing = true;
+                var liveStream = new HdHomerunUdpStream(mediaSource, streamId, hdhomerunChannel.Url, modelInfo.TunerCount, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager);
                 return liveStream;
             }
             else
             {
                 var mediaSource = GetMediaSource(info, hdhrId, channelInfo, profile);
 
-                var liveStream = new HdHomerunLiveStream(mediaSource, streamId, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
-                liveStream.EnableStreamSharing = true;
+                var liveStream = new HdHomerunHttpStream(mediaSource, streamId, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
                 return liveStream;
             }
         }

@@ -67,7 +67,7 @@ namespace SocketHttpListener.Net
         {
             try
             {
-                sock = _socketFactory.CreateAcceptSocket(endpoint.IpAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp, _enableDualMode);
+                sock = _socketFactory.CreateSocket(endpoint.IpAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp, _enableDualMode);
             }
             catch (SocketCreateException ex)
             {
@@ -78,7 +78,7 @@ namespace SocketHttpListener.Net
                 {
                     endpoint = new IpEndPointInfo(IpAddressInfo.Any, endpoint.Port);
                     _enableDualMode = false;
-                    sock = _socketFactory.CreateAcceptSocket(endpoint.IpAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp, _enableDualMode);
+                    sock = _socketFactory.CreateSocket(endpoint.IpAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp, _enableDualMode);
                 }
                 else
                 {

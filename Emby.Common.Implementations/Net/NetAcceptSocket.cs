@@ -47,6 +47,13 @@ namespace Emby.Common.Implementations.Net
             }
         }
 
+        public void Connect(IpEndPointInfo endPoint)
+        {
+            var nativeEndpoint = NetworkManager.ToIPEndPoint(endPoint);
+
+            Socket.Connect(nativeEndpoint);
+        }
+
         public void Close()
         {
 #if NET46

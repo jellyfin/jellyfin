@@ -13,7 +13,7 @@ using MediaBrowser.Model.MediaInfo;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
-    public class HdHomerunLiveStream : LiveStream, IDirectStreamProvider
+    public class HdHomerunHttpStream : LiveStream, IDirectStreamProvider
     {
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly TaskCompletionSource<bool> _liveStreamTaskCompletionSource = new TaskCompletionSource<bool>();
         private readonly MulticastStream _multicastStream;
 
-        public HdHomerunLiveStream(MediaSourceInfo mediaSource, string originalStreamId, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost)
+        public HdHomerunHttpStream(MediaSourceInfo mediaSource, string originalStreamId, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost)
             : base(mediaSource)
         {
             _fileSystem = fileSystem;
