@@ -177,7 +177,7 @@ namespace MediaBrowser.LocalMetadata.Images
                 "default"
             };
 
-            if (item is MusicAlbum || item is MusicArtist || item is PhotoAlbum)
+            if (item is MusicAlbum || item is MusicArtist || item is PhotoAlbum || item is Person)
             {
                 // these prefer folder
                 names.Insert(0, "poster");
