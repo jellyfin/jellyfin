@@ -50,7 +50,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (string.Equals(hwType, "nvenc", StringComparison.OrdinalIgnoreCase))
                 {
-                    return GetAvailableEncoder("h264_nvenc", defaultEncoder);
+                    return GetAvailableEncoder("nvenc_h264", defaultEncoder);
                 }
                 if (string.Equals(hwType, "h264_omx", StringComparison.OrdinalIgnoreCase))
                 {
@@ -591,8 +591,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             }
 
-            // h264 (h264_nvenc)
-            else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
+            // h264 (nvenc_h264)
+            else if (string.Equals(videoEncoder, "nvenc_h264", StringComparison.OrdinalIgnoreCase))
             {
                 param += "-preset default";
             }
@@ -670,10 +670,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 var level = NormalizeTranscodingLevel(state.OutputVideoCodec, request.Level);
 
-                // h264_qsv and h264_nvenc expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
+                // h264_qsv and nvenc_h264 expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
                 // also needed for libx264 due to https://trac.ffmpeg.org/ticket/3307
                 if (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(videoEncoder, "nvenc_h264", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (level)

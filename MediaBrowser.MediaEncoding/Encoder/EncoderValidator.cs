@@ -133,7 +133,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "libopus",
                 "libvorbis",
                 "srt",
-                "h264_nvenc",
+                "nvenc_h264",
                 "h264_qsv",
                 "h264_omx",
                 "h264_vaapi",
