@@ -40,7 +40,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                     _sharedBuffer.Enqueue(copy);
 
-                    while (_sharedBuffer.Count > 3000)
+                    while (_sharedBuffer.Count > 10000)
                     {
                         byte[] bytes;
                         _sharedBuffer.TryDequeue(out bytes);

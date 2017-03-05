@@ -464,21 +464,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Gets the probe size argument.
-        /// </summary>
-        /// <param name="state">The state.</param>
-        /// <returns>System.String.</returns>
-        public string GetProbeSizeArgument(EncodingJobInfo state)
-        {
-            if (state.PlayableStreamFileNames.Count > 0)
-            {
-                return _mediaEncoder.GetProbeSizeAndAnalyzeDurationArgument(state.PlayableStreamFileNames.ToArray(), state.InputProtocol);
-            }
-            
-            return _mediaEncoder.GetProbeSizeAndAnalyzeDurationArgument(new[] { state.MediaPath }, state.InputProtocol);
-        }
-
-        /// <summary>
         /// Gets the text subtitle param.
         /// </summary>
         /// <param name="state">The state.</param>
@@ -1452,12 +1437,43 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
+        public static string GetProbeSizeArgument(int numInputFiles)
+        {
+            return numInputFiles > 1 ? "-probesize 1G" : "";
+        }
+
+        public static string GetAnalyzeDurationArgument(int numInputFiles)
+        {
+            return numInputFiles > 1 ? "-analyzeduration 200M" : "";
+        }
+
         public string GetInputModifier(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
             var inputModifier = string.Empty;
 
-            var probeSize = GetProbeSizeArgument(state);
-            inputModifier += " " + probeSize;
+            var numInputFiles = state.PlayableStreamFileNames.Count > 0 ? state.PlayableStreamFileNames.Count : 1;
+            var probeSizeArgument = GetProbeSizeArgument(numInputFiles);
+
+            string analyzeDurationArgument;
+            if (state.MediaSource.AnalyzeDurationMs.HasValue)
+            {
+                analyzeDurationArgument = "-analyzeduration " + (state.MediaSource.AnalyzeDurationMs.Value * 1000).ToString(CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                analyzeDurationArgument = GetAnalyzeDurationArgument(numInputFiles);
+            }
+
+            if (!string.IsNullOrWhiteSpace(probeSizeArgument))
+            {
+                inputModifier += " " + probeSizeArgument;
+            }
+
+            if (!string.IsNullOrWhiteSpace(analyzeDurationArgument))
+            {
+                inputModifier += " " + analyzeDurationArgument;
+            }
+
             inputModifier = inputModifier.Trim();
 
             var userAgentParam = GetUserAgentParam(state);
