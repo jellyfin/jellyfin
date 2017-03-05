@@ -523,17 +523,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var inputFiles = MediaEncoderHelpers.GetInputArgument(FileSystem, request.InputPath, request.Protocol, request.MountedIso, request.PlayableStreamFileNames);
 
-            var probeSize = EncodingUtils.GetProbeSizeArgument(inputFiles.Length);
+            var probeSize = EncodingHelper.GetProbeSizeArgument(inputFiles.Length);
             string analyzeDuration;
 
-            if (request.AnalyzeDurationSections > 0)
+            if (request.AnalyzeDurationMs > 0)
             {
                 analyzeDuration = "-analyzeduration " +
-                                  (request.AnalyzeDurationSections * 1000000).ToString(CultureInfo.InvariantCulture);
+                                  (request.AnalyzeDurationMs * 1000).ToString(CultureInfo.InvariantCulture);
             }
             else
             {
-                analyzeDuration = EncodingUtils.GetAnalyzeDurationArgument(inputFiles.Length);
+                analyzeDuration = EncodingHelper.GetAnalyzeDurationArgument(inputFiles.Length);
             }
 
             probeSize = probeSize + " " + analyzeDuration;
@@ -555,31 +555,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public string GetInputArgument(string[] inputFiles, MediaProtocol protocol)
         {
             return EncodingUtils.GetInputArgument(inputFiles.ToList(), protocol);
-        }
-
-        /// <summary>
-        /// Gets the probe size argument.
-        /// </summary>
-        /// <param name="inputFiles">The input files.</param>
-        /// <param name="protocol">The protocol.</param>
-        /// <returns>System.String.</returns>
-        public string GetProbeSizeAndAnalyzeDurationArgument(string[] inputFiles, MediaProtocol protocol)
-        {
-            var results = new List<string>();
-
-            var probeSize = EncodingUtils.GetProbeSizeArgument(inputFiles.Length);
-            var analyzeDuration = EncodingUtils.GetAnalyzeDurationArgument(inputFiles.Length);
-
-            if (!string.IsNullOrWhiteSpace(probeSize))
-            {
-                results.Add(probeSize);
-            }
-
-            if (!string.IsNullOrWhiteSpace(analyzeDuration))
-            {
-                results.Add(analyzeDuration);
-            }
-            return string.Join(" ", results.ToArray());
         }
 
         /// <summary>
@@ -984,11 +959,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var args = useIFrame ? string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}{4}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, thumbnail) :
                 string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg);
 
-            var probeSize = GetProbeSizeAndAnalyzeDurationArgument(new[] { inputPath }, protocol);
+            var probeSizeArgument = EncodingHelper.GetProbeSizeArgument(1);
+            var analyzeDurationArgument = EncodingHelper.GetAnalyzeDurationArgument(1);
 
-            if (!string.IsNullOrEmpty(probeSize))
+            if (!string.IsNullOrWhiteSpace(probeSizeArgument))
             {
-                args = probeSize + " " + args;
+                args = probeSizeArgument + " " + args;
+            }
+
+            if (!string.IsNullOrWhiteSpace(analyzeDurationArgument))
+            {
+                args = analyzeDurationArgument + " " + args;
             }
 
             if (offset.HasValue)
@@ -1092,11 +1073,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var args = string.Format("-i {0} -threads 0 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);
 
-            var probeSize = GetProbeSizeAndAnalyzeDurationArgument(new[] { inputArgument }, protocol);
+            var probeSizeArgument = EncodingHelper.GetProbeSizeArgument(1);
+            var analyzeDurationArgument = EncodingHelper.GetAnalyzeDurationArgument(1);
 
-            if (!string.IsNullOrEmpty(probeSize))
+            if (!string.IsNullOrWhiteSpace(probeSizeArgument))
             {
-                args = probeSize + " " + args;
+                args = probeSizeArgument + " " + args;
+            }
+
+            if (!string.IsNullOrWhiteSpace(analyzeDurationArgument))
+            {
+                args = analyzeDurationArgument + " " + args;
             }
 
             var process = _processFactory.Create(new ProcessOptions
