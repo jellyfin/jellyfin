@@ -425,8 +425,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (parent != null)
                 {
-                    await parent.ValidateChildren(new Progress<double>(), CancellationToken.None)
-                              .ConfigureAwait(false);
+                    await parent.ValidateChildren(new Progress<double>(), CancellationToken.None, new MetadataRefreshOptions(_fileSystem), false) .ConfigureAwait(false);
                 }
             }
             else if (parent != null)

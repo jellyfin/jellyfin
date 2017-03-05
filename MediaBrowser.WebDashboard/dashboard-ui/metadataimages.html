@@ -4,105 +4,102 @@
 
         <div class="content-primary">
 
-            <div class="tabContent">
-                <form class="metadataImagesConfigurationForm">
-                    <h1 style="margin-top:0;">${HeaderPreferredMetadataLanguage}</h1>
+            <form class="metadataImagesConfigurationForm">
+                <h1 style="margin-top:0;">${HeaderPreferredMetadataLanguage}</h1>
 
-                    <p style="margin:1.5em 0;">${DefaultMetadataLangaugeDescription}</p>
+                <p style="margin:1.5em 0;">${DefaultMetadataLangaugeDescription}</p>
 
-                    <div class="selectContainer">
-                        <select is="emby-select" id="selectLanguage" required="required" label="${LabelLanguage}"></select>
-                    </div>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectLanguage" required="required" label="${LabelLanguage}"></select>
+                </div>
 
-                    <div class="selectContainer">
-                        <select is="emby-select" id="selectCountry" required="required" label="${LabelCountry}"></select>
-                    </div>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectCountry" required="required" label="${LabelCountry}"></select>
+                </div>
 
-                    <div class="selectContainer">
-                        <select is="emby-select" id="selectItemType" data-mini="true" label="${LabelCustomizeOptionsPerMediaType}"></select>
-                    </div>
-                    <br />
-                    <div class="metadataReaders" style="margin-bottom: 2em;">
-                    </div>
-                    <div class="metadataSavers" style="margin-bottom: 2em;">
-                    </div>
-                    <div class="metadataFetchers" style="margin-bottom: 2em;">
-                    </div>
-                    <div class="imageFetchers" style="margin-bottom: 2em;">
-                    </div>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectItemType" data-mini="true" label="${LabelCustomizeOptionsPerMediaType}"></select>
+                </div>
+                <br />
+                <div class="metadataReaders" style="margin-bottom: 2em;">
+                </div>
+                <div class="metadataSavers" style="margin-bottom: 2em;">
+                </div>
+                <div class="metadataFetchers" style="margin-bottom: 2em;">
+                </div>
+                <div class="imageFetchers" style="margin-bottom: 2em;">
+                </div>
 
-                    <div is="emby-collapse" title="${HeaderImageSettings}">
-                        <div class="collapseContent">
-                            <div class="backdropFields" style="margin-bottom: 2em; display: none;">
-                                <div class="inputContainer">
-                                    <input is="emby-input" type="number" id="txtMaxBackdrops" pattern="[0-9]*" required="required" min="0" label="${LabelMaxBackdropsPerItem}" />
-                                </div>
-                                <div class="inputContainer">
-                                    <input is="emby-input" type="number" id="txtMinBackdropDownloadWidth" pattern="[0-9]*" required="required" min="0" label="${LabelMinBackdropDownloadWidth}" />
-                                </div>
+                <div is="emby-collapse" title="${HeaderImageSettings}">
+                    <div class="collapseContent">
+                        <div class="backdropFields" style="margin-bottom: 2em; display: none;">
+                            <div class="inputContainer">
+                                <input is="emby-input" type="number" id="txtMaxBackdrops" pattern="[0-9]*" required="required" min="0" label="${LabelMaxBackdropsPerItem}" />
                             </div>
-
-                            <div class="screenshotFields" style="margin-bottom: 2em; display: none;">
-                                <div class="inputContainer">
-                                    <input is="emby-input" type="number" id="txtMaxScreenshots" pattern="[0-9]*" required="required" min="0" label="${LabelMaxScreenshotsPerItem}" />
-                                </div>
-
-                                <div class="inputContainer">
-                                    <input is="emby-input" type="number" id="txtMinScreenshotDownloadWidth" pattern="[0-9]*" required="required" min="0" label="${LabelMinScreenshotDownloadWidth}" />
-                                </div>
-                            </div>
-
-                            <h3 class="checkboxListLabel">${HeaderFetchImages}</h3>
-                            <div class="imageSelections checkboxList">
-
-                                <label class="hide">
-                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Primary" />
-                                    <span>${OptionDownloadPrimaryImage}</span>
-                                </label>
-
-                                <label class="hide">
-                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Art" />
-                                    <span>${OptionDownloadArtImage}</span>
-                                </label>
-                                <label class="hide">
-                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="BoxRear" />
-                                    <span>${OptionDownloadBackImage}</span>
-                                </label>
-                                <label class="hide">
-                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Banner" />
-                                    <span>${OptionDownloadBannerImage}</span>
-                                </label>
-                                <label class="hide">
-                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Box" />
-                                    <span>${OptionDownloadBoxImage}</span>
-                                </label>
-
-                                <label class="hide">
-                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Disc" />
-                                    <span>${OptionDownloadDiscImage}</span>
-                                </label>
-                                <label class="hide">
-                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Logo" />
-                                    <span>${OptionDownloadLogoImage}</span>
-                                </label>
-                                <label class="hide">
-                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Menu" />
-                                    <span>${OptionDownloadMenuImage}</span>
-                                </label>
-                                <label class="hide">
-                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Thumb" />
-                                    <span>${OptionDownloadThumbImage}</span>
-                                </label>
+                            <div class="inputContainer">
+                                <input is="emby-input" type="number" id="txtMinBackdropDownloadWidth" pattern="[0-9]*" required="required" min="0" label="${LabelMinBackdropDownloadWidth}" />
                             </div>
                         </div>
+
+                        <div class="screenshotFields" style="margin-bottom: 2em; display: none;">
+                            <div class="inputContainer">
+                                <input is="emby-input" type="number" id="txtMaxScreenshots" pattern="[0-9]*" required="required" min="0" label="${LabelMaxScreenshotsPerItem}" />
+                            </div>
+
+                            <div class="inputContainer">
+                                <input is="emby-input" type="number" id="txtMinScreenshotDownloadWidth" pattern="[0-9]*" required="required" min="0" label="${LabelMinScreenshotDownloadWidth}" />
+                            </div>
+                        </div>
+
+                        <h3 class="checkboxListLabel">${HeaderFetchImages}</h3>
+                        <div class="imageSelections checkboxList">
+
+                            <label class="hide">
+                                <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Primary" />
+                                <span>${OptionDownloadPrimaryImage}</span>
+                            </label>
+
+                            <label class="hide">
+                                <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Art" />
+                                <span>${OptionDownloadArtImage}</span>
+                            </label>
+                            <label class="hide">
+                                <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="BoxRear" />
+                                <span>${OptionDownloadBackImage}</span>
+                            </label>
+                            <label class="hide">
+                                <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Banner" />
+                                <span>${OptionDownloadBannerImage}</span>
+                            </label>
+                            <label class="hide">
+                                <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Box" />
+                                <span>${OptionDownloadBoxImage}</span>
+                            </label>
+
+                            <label class="hide">
+                                <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Disc" />
+                                <span>${OptionDownloadDiscImage}</span>
+                            </label>
+                            <label class="hide">
+                                <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Logo" />
+                                <span>${OptionDownloadLogoImage}</span>
+                            </label>
+                            <label class="hide">
+                                <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Menu" />
+                                <span>${OptionDownloadMenuImage}</span>
+                            </label>
+                            <label class="hide">
+                                <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Thumb" />
+                                <span>${OptionDownloadThumbImage}</span>
+                            </label>
+                        </div>
                     </div>
+                </div>
 
-                    <br />
-                    <br />
-                    <div><button is="emby-button" type="submit" class="raised button-submit block"><span>${ButtonSave}</span></button></div>
-                </form>
-            </div>
-
+                <br />
+                <br />
+                <div><button is="emby-button" type="submit" class="raised button-submit block"><span>${ButtonSave}</span></button></div>
+            </form>
         </div>
 
     </div>
