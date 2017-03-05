@@ -151,6 +151,8 @@
         /// </summary>
         People,
 
+        PlayAccess,
+
         /// <summary>
         /// The production locations
         /// </summary>

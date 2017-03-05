@@ -61,15 +61,5 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Quotes are valid path characters in linux and they need to be escaped here with a leading \
             return path.Replace("\"", "\\\"");
         }
-
-        public static string GetProbeSizeArgument(int numInputFiles)
-        {
-            return numInputFiles > 1 ? "-probesize 1G" : "";
-        }
-
-        public static string GetAnalyzeDurationArgument(int numInputFiles)
-        {
-            return numInputFiles > 1 ? "-analyzeduration 200M" : "";
-        }
     }
 }

@@ -96,9 +96,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     using (var hdHomerunManager = new HdHomerunManager(_socketFactory))
                     {
-                        var remoteAddress = new IpAddressInfo(remoteIp, IpAddressFamily.InterNetwork);
+                        var remoteAddress = _networkManager.ParseIpAddress(remoteIp);
                         IpAddressInfo localAddress = null;
-                        using (var tcpSocket = _socketFactory.CreateSocket(IpAddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp, false))
+                        using (var tcpSocket = _socketFactory.CreateSocket(remoteAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp, false))
                         {
                             try
                             {
