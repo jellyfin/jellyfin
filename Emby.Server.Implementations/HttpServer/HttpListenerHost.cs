@@ -579,7 +579,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 else
                 {
-                    ErrorHandler(new FileNotFoundException(), httpReq);
+                    ErrorHandler(new FileNotFoundException(), httpReq, false);
                 }
             }
             catch (OperationCanceledException ex)
@@ -632,7 +632,6 @@ namespace Emby.Server.Implementations.HttpServer
             _logger.Error("Could not find handler for {0}", pathInfo);
             return null;
         }
-
 
         private void Write(IResponse response, string text)
         {
