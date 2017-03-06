@@ -29,11 +29,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly CancellationTokenSource _liveStreamCancellationTokenSource = new CancellationTokenSource();
         private readonly TaskCompletionSource<bool> _liveStreamTaskCompletionSource = new TaskCompletionSource<bool>();
         private readonly MulticastStream _multicastStream;
-        private readonly string _channelUrl;
+        private readonly IHdHomerunChannelCommands _channelCommands;
         private readonly int _numTuners;
         private readonly INetworkManager _networkManager;
 
-        public HdHomerunUdpStream(MediaSourceInfo mediaSource, string originalStreamId, string channelUrl, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager)
+        public HdHomerunUdpStream(MediaSourceInfo mediaSource, string originalStreamId, IHdHomerunChannelCommands channelCommands, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager)
             : base(mediaSource)
         {
             _fileSystem = fileSystem;
@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _networkManager = networkManager;
             OriginalStreamId = originalStreamId;
             _multicastStream = new MulticastStream(_logger);
-            _channelUrl = channelUrl;
+            _channelCommands = channelCommands;
             _numTuners = numTuners;
         }
 
@@ -118,10 +118,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                             try
                             {
                                 // send url to start streaming
-                                await hdHomerunManager.StartStreaming(remoteAddress, localAddress, localPort, _channelUrl, _numTuners, cancellationToken).ConfigureAwait(false);
+                                await hdHomerunManager.StartStreaming(remoteAddress, localAddress, localPort, _channelCommands, _numTuners, cancellationToken).ConfigureAwait(false);
 
                                 var response = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-                                _logger.Info("Opened HDHR UDP stream from {0}", _channelUrl);
+                                _logger.Info("Opened HDHR UDP stream from {0}", remoteAddress);
 
                                 if (!cancellationToken.IsCancellationRequested)
                                 {

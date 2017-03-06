@@ -9,6 +9,60 @@ using MediaBrowser.Model.Net;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
+    public interface IHdHomerunChannelCommands
+    {
+        IEnumerable<Tuple<string, string>> GetCommands();
+    }
+
+    public class LegacyHdHomerunChannelCommands : IHdHomerunChannelCommands
+    {
+        private string _channel;
+        private string _program;
+        public LegacyHdHomerunChannelCommands(string url)
+        {
+            // parse url for channel and program
+            var regExp = new Regex(@"\/ch(\d+)-?(\d*)");
+            var match = regExp.Match(url);
+            if (match.Success)
+            {
+                _channel = match.Groups[1].Value;
+                _program = match.Groups[2].Value;
+            }
+        }
+
+        public IEnumerable<Tuple<string, string>> GetCommands()
+        {
+            var commands = new List<Tuple<string, string>>();
+
+            if (!String.IsNullOrEmpty(_channel))
+                commands.Add(Tuple.Create("channel", _channel));
+
+            if (!String.IsNullOrEmpty(_program))
+                commands.Add(Tuple.Create("program", _program));
+            return commands;
+        }
+    }
+
+    public class HdHomerunChannelCommands : IHdHomerunChannelCommands
+    {
+        private string _channel;
+
+        public HdHomerunChannelCommands(string channel)
+        {
+            _channel = channel;
+        }
+
+        public IEnumerable<Tuple<string, string>> GetCommands()
+        {
+            var commands = new List<Tuple<string, string>>();
+
+            if (!String.IsNullOrEmpty(_channel))
+                commands.Add(Tuple.Create("vchannel", _channel));
+
+            return commands;
+        }
+    }
+
     public class HdHomerunManager : IDisposable
     {
         public static int HdHomeRunPort = 65001;
@@ -57,16 +111,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return string.Equals(returnVal, "none", StringComparison.OrdinalIgnoreCase);
         }
 
-        public async Task StartStreaming(IpAddressInfo remoteIp, IpAddressInfo localIp, int localPort, string url, int numTuners, CancellationToken cancellationToken)
+        public async Task StartStreaming(IpAddressInfo remoteIp, IpAddressInfo localIp, int localPort, IHdHomerunChannelCommands commands, int numTuners, CancellationToken cancellationToken)
         {
             _remoteIp = remoteIp;
-            // parse url for channel and program
-            string frequency, program;
-            if (!ParseUrl(url, out frequency, out program))
-            {
-                return;
-            }
-
+            
             using (var tcpClient = _socketFactory.CreateTcpSocket(_remoteIp, HdHomeRunPort))
             {
                 if (!_lockkey.HasValue)
@@ -92,20 +140,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
                         continue;
 
-                    var channelMsg = CreateSetMessage(i, "channel", frequency, _lockkey.Value);
-                    await tcpClient.SendAsync(channelMsg, channelMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
-                    await tcpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-                    // parse response to make sure it worked
-                    if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
+                    var commandList = commands.GetCommands();
+                    foreach(Tuple<string,string> command in commandList)
                     {
-                        await ReleaseLockkey(tcpClient).ConfigureAwait(false);
-                        continue;
-                    }
-
-                    if (program != String.Empty)
-                    {
-                        var programMsg = CreateSetMessage(i, "program", program, _lockkey.Value);
-                        await tcpClient.SendAsync(programMsg, programMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
+                        var channelMsg = CreateSetMessage(i, command.Item1, command.Item2, _lockkey.Value);
+                        await tcpClient.SendAsync(channelMsg, channelMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
                         await tcpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
                         // parse response to make sure it worked
                         if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
@@ -113,8 +152,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                             await ReleaseLockkey(tcpClient).ConfigureAwait(false);
                             continue;
                         }
-                    }
 
+                    }
+                    
                     var targetValue = String.Format("rtp://{0}:{1}", localIp, localPort);
                     var targetMsg = CreateSetMessage(i, "target", targetValue, _lockkey.Value);
 
@@ -152,22 +192,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _lockkey = null;
             await tcpClient.SendAsync(releaseKeyMsg, releaseKeyMsg.Length, new IpEndPointInfo(_remoteIp, HdHomeRunPort), CancellationToken.None).ConfigureAwait(false);
             await tcpClient.ReceiveAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-
-        private static bool ParseUrl(string url, out string frequency, out string program)
-        {
-            frequency = String.Empty;
-            program = String.Empty;
-            var regExp = new Regex(@"\/ch(\d+)-?(\d*)");
-            var match = regExp.Match(url);
-            if (match.Success)
-            {
-                frequency = match.Groups[1].Value;
-                program = match.Groups[2].Value;
-                return true;
-            }
-
-            return false;
         }
 
         private static byte[] CreateGetMessage(int tuner, string name)
