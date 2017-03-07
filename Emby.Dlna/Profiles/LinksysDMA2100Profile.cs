@@ -40,6 +40,15 @@ namespace Emby.Dlna.Profiles
                     MimeType = "video/mp4"
                 }
             };
+
+            SubtitleProfiles = new[]
+            {
+                new SubtitleProfile
+                {
+                    Format = "srt",
+                    Method = SubtitleDeliveryMethod.Embed
+                }
+            };
         }
     }
 }
