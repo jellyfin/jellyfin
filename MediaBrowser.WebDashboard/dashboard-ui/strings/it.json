@@ -1964,5 +1964,6 @@
     "WhenDidYouPurchaseApp": "Quando hai acquistato questa app originariamente?",
     "PreferEmbeddedTitlesOverFileNames": "Preferisci titoli integrati ai nomi dei file",
     "PreferEmbeddedTitlesOverFileNamesHelp": "This determines the default display title when no internet metadata or local metadata is available.",
-    "HeaderUpcomingEpisodes": "Episodi in Arrivo"
+    "HeaderUpcomingEpisodes": "Episodi in Arrivo",
+    "HeaderFavoriteVideos": "Favorite Videos"
 }

@@ -1964,5 +1964,6 @@
     "WhenDidYouPurchaseApp": "Wanneer heb je deze app oorspronkelijk gekocht?",
     "PreferEmbeddedTitlesOverFileNames": "Prevereer ingesloten titels boven bestandsnamen",
     "PreferEmbeddedTitlesOverFileNamesHelp": "Dit bepaalt de standaard weergavetitel wanneer er geen internet metagegevens of lokale metadata beschikbaar is.",
-    "HeaderUpcomingEpisodes": "Komende afleveringen"
+    "HeaderUpcomingEpisodes": "Komende afleveringen",
+    "HeaderFavoriteVideos": "Favorite Videos"
 }

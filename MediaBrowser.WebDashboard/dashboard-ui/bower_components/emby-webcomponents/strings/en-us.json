@@ -388,5 +388,6 @@
   "AspectRatio": "Aspect ratio",
   "Original": "Original",
   "Fill": "Fill",
-  "BestFit": "Best fit"
+  "BestFit": "Best fit",
+  "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information."
 }

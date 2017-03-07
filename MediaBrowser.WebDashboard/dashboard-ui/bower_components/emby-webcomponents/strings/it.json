@@ -387,5 +387,7 @@
     "AndroidUnlockRestoreHelp": "Per ripristinare il tuo acquisto precedente, per favore assicurati di essere loggato sul dispositivo con lo stesso account Google (or Amazon) dell'acquisto originale. Assicurati che l'App Store sia abilitato e non limitato da controlli parentali ed assicurati di avere una connessione ad Internet. Dovrai effettuare questa procedura una sola volta per ripristinare il tuo acquisto precendente.",
     "AspectRatio": "Rapporto d'aspetto",
     "Original": "Originale",
-    "Fill": "Riempi"
+    "Fill": "Riempi",
+    "BestFit": "Best fit",
+    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information."
 }

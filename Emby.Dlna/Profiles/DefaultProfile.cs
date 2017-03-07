@@ -83,6 +83,12 @@ namespace Emby.Dlna.Profiles
                 {
                     Format = "srt",
                     Method = SubtitleDeliveryMethod.Embed
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "srt",
+                    Method = SubtitleDeliveryMethod.External,
                 }
             };
 
