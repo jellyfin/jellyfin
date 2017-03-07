@@ -1190,11 +1190,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            if (type == MediaStreamType.Video)
-            {
-                streams = streams.Where(i => !string.Equals(i.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)).ToList();
-            }
-
             if (returnFirstIfNoIndex && type == MediaStreamType.Audio)
             {
                 return streams.FirstOrDefault(i => i.Channels.HasValue && i.Channels.Value > 0) ??

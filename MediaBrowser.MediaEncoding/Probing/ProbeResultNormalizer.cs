@@ -558,12 +558,35 @@ namespace MediaBrowser.MediaEncoding.Probing
                     ? MediaStreamType.EmbeddedImage
                     : MediaStreamType.Video;
 
+                stream.AverageFrameRate = GetFrameRate(streamInfo.avg_frame_rate);
+                stream.RealFrameRate = GetFrameRate(streamInfo.r_frame_rate);
+
+                if (isAudio || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase))
+                {
+                    stream.Type = MediaStreamType.EmbeddedImage;
+                }
+                else if (string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
+                {
+                    // How to differentiate between video and embedded image?
+                    // The only difference I've seen thus far is presence of codec tag, also embedded images have high (unusual) framerates 
+                    if (!string.IsNullOrWhiteSpace(stream.CodecTag))
+                    {
+                        stream.Type = MediaStreamType.Video;
+                    }
+                    else
+                    {
+                        stream.Type = MediaStreamType.EmbeddedImage;
+                    }
+                }
+                else
+                {
+                    stream.Type = MediaStreamType.Video;
+                }
+
                 stream.Width = streamInfo.width;
                 stream.Height = streamInfo.height;
                 stream.AspectRatio = GetAspectRatio(streamInfo);
-
-                stream.AverageFrameRate = GetFrameRate(streamInfo.avg_frame_rate);
-                stream.RealFrameRate = GetFrameRate(streamInfo.r_frame_rate);
 
                 if (streamInfo.bits_per_sample > 0)
                 {
