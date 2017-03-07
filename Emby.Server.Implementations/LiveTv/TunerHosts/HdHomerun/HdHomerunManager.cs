@@ -145,7 +145,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     {
                         var channelMsg = CreateSetMessage(i, command.Item1, command.Item2, _lockkey.Value);
                         await tcpClient.SendAsync(channelMsg, channelMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
-                        await tcpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                        response = await tcpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
                         // parse response to make sure it worked
                         if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
                         {
@@ -168,6 +168,29 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     }
 
                     break;
+                }
+            }
+        }
+
+        public async Task ChangeChannel(IHdHomerunChannelCommands commands, CancellationToken cancellationToken)
+        {
+            if (!_lockkey.HasValue)
+                return;
+
+            using (var tcpClient = _socketFactory.CreateTcpSocket(_remoteIp, HdHomeRunPort))
+            {
+                var commandList = commands.GetCommands();
+                foreach (Tuple<string, string> command in commandList)
+                {
+                    var channelMsg = CreateSetMessage(_activeTuner, command.Item1, command.Item2, _lockkey.Value);
+                    await tcpClient.SendAsync(channelMsg, channelMsg.Length, new IpEndPointInfo(_remoteIp, HdHomeRunPort), cancellationToken).ConfigureAwait(false);
+                    var response = await tcpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                    // parse response to make sure it worked
+                    string returnVal;
+                    if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
+                    {
+                        return;
+                    }
                 }
             }
         }

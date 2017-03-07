@@ -312,6 +312,15 @@ namespace Emby.Dlna.Profiles
                     }
                 }
             };
+
+            SubtitleProfiles = new[]
+            {
+                new SubtitleProfile
+                {
+                    Format = "srt",
+                    Method = SubtitleDeliveryMethod.Embed
+                }
+            };
         }
     }
 }

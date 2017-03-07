@@ -385,7 +385,9 @@
     "Quality": "Qualidade",
     "Auto": "Auto",
     "AndroidUnlockRestoreHelp": "Para restaurar sua compra anterior, por favor certifique-se que est\u00e1 com a sess\u00e3o aberta com a mesma conta Google (ou Amazon) que fez a compra originalmente. Certifique-se que a app store est\u00e1 ativada e que n\u00e3o est\u00e1 restringida por nenhum controle parental e tamb\u00e9m verifique que possui uma conex\u00e3o de internet ativa. Voc\u00ea s\u00f3 ter\u00e1 que fazer isto uma vez para restaurar sua compra anterior.",
-    "AspectRatio": "Aspect ratio",
+    "AspectRatio": "Propor\u00e7\u00e3o da imagem",
     "Original": "Original",
-    "Fill": "Fill"
+    "Fill": "Preencher",
+    "BestFit": "Mais prov\u00e1vel",
+    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information."
 }

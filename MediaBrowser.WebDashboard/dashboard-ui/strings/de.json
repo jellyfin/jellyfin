@@ -1964,5 +1964,6 @@
     "WhenDidYouPurchaseApp": "Wann hast du die App urspr\u00fcnglich bestellt?",
     "PreferEmbeddedTitlesOverFileNames": "Bevorzuge eingebettete Titel vor Dateinamen",
     "PreferEmbeddedTitlesOverFileNamesHelp": "Das bestimmt den Standard Displaytitel wenn keine lokale oder Internetmetadaten verf\u00fcgbar sind.",
-    "HeaderUpcomingEpisodes": "Bevorstehende Episoden"
+    "HeaderUpcomingEpisodes": "Bevorstehende Episoden",
+    "HeaderFavoriteVideos": "Favorite Videos"
 }

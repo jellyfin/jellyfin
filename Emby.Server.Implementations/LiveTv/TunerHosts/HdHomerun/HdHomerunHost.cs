@@ -596,6 +596,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             else
             {
                 var mediaSource = GetMediaSource(info, hdhrId, channelInfo, profile);
+                //var modelInfo = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
 
                 return new HdHomerunHttpStream(mediaSource, streamId, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
                 //return new HdHomerunUdpStream(mediaSource, streamId, new HdHomerunChannelCommands(hdhomerunChannel.Number), modelInfo.TunerCount, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager);
