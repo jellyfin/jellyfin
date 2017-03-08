@@ -175,17 +175,31 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return null;
             }
+            if (string.Equals(container, "rec", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+            // Seeing reported failures here, not sure yet if this is related to specfying input format
+            if (string.Equals(container, "m4v", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
 
             return container;
         }
 
         public string GetDecoderFromCodec(string codec)
         {
+            // For these need to find out the ffmpeg names
             if (string.Equals(codec, "mp2", StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
             if (string.Equals(codec, "aac_latm", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+            if (string.Equals(codec, "eac3", StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
@@ -452,21 +466,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return level;
-        }
-
-        /// <summary>
-        /// Gets the probe size argument.
-        /// </summary>
-        /// <param name="state">The state.</param>
-        /// <returns>System.String.</returns>
-        public string GetProbeSizeArgument(EncodingJobInfo state)
-        {
-            if (state.PlayableStreamFileNames.Count > 0)
-            {
-                return _mediaEncoder.GetProbeSizeAndAnalyzeDurationArgument(state.PlayableStreamFileNames.ToArray(), state.InputProtocol);
-            }
-            
-            return _mediaEncoder.GetProbeSizeAndAnalyzeDurationArgument(new[] { state.MediaPath }, state.InputProtocol);
         }
 
         /// <summary>
@@ -1191,11 +1190,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            if (type == MediaStreamType.Video)
-            {
-                streams = streams.Where(i => !string.Equals(i.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)).ToList();
-            }
-
             if (returnFirstIfNoIndex && type == MediaStreamType.Audio)
             {
                 return streams.FirstOrDefault(i => i.Channels.HasValue && i.Channels.Value > 0) ??
@@ -1443,12 +1437,43 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
+        public static string GetProbeSizeArgument(int numInputFiles)
+        {
+            return numInputFiles > 1 ? "-probesize 1G" : "";
+        }
+
+        public static string GetAnalyzeDurationArgument(int numInputFiles)
+        {
+            return numInputFiles > 1 ? "-analyzeduration 200M" : "";
+        }
+
         public string GetInputModifier(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
             var inputModifier = string.Empty;
 
-            var probeSize = GetProbeSizeArgument(state);
-            inputModifier += " " + probeSize;
+            var numInputFiles = state.PlayableStreamFileNames.Count > 0 ? state.PlayableStreamFileNames.Count : 1;
+            var probeSizeArgument = GetProbeSizeArgument(numInputFiles);
+
+            string analyzeDurationArgument;
+            if (state.MediaSource.AnalyzeDurationMs.HasValue)
+            {
+                analyzeDurationArgument = "-analyzeduration " + (state.MediaSource.AnalyzeDurationMs.Value * 1000).ToString(CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                analyzeDurationArgument = GetAnalyzeDurationArgument(numInputFiles);
+            }
+
+            if (!string.IsNullOrWhiteSpace(probeSizeArgument))
+            {
+                inputModifier += " " + probeSizeArgument;
+            }
+
+            if (!string.IsNullOrWhiteSpace(analyzeDurationArgument))
+            {
+                inputModifier += " " + analyzeDurationArgument;
+            }
+
             inputModifier = inputModifier.Trim();
 
             var userAgentParam = GetUserAgentParam(state);
@@ -1498,7 +1523,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     //inputModifier += " -noaccurate_seek";
                 }
 
-                if (!string.IsNullOrWhiteSpace(state.InputContainer) && state.VideoType == VideoType.VideoFile)
+                if (!string.IsNullOrWhiteSpace(state.InputContainer) && state.VideoType == VideoType.VideoFile && string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
                 {
                     var inputFormat = GetInputFormat(state.InputContainer);
                     if (!string.IsNullOrWhiteSpace(inputFormat))
@@ -1508,7 +1533,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 // Only do this for video files due to sometimes unpredictable codec names coming from BDInfo
-                if (state.RunTimeTicks.HasValue && string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType) && state.VideoType == VideoType.VideoFile)
+                if (state.RunTimeTicks.HasValue && state.VideoType == VideoType.VideoFile && string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
                 {
                     foreach (var stream in state.MediaSource.MediaStreams)
                     {
