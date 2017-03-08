@@ -39,7 +39,15 @@ namespace Emby.Server.Core.Localization
                 }
             }
 
-            return text.Normalize(form);
+            try
+            {
+                return text.Normalize(form);
+            }
+            catch (ArgumentException)
+            {
+                // if it still fails, return the original text
+                return text;
+            }
         }
 
         private static string StripInvalidUnicodeCharacters(string str)

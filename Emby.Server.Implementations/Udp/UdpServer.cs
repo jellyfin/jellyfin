@@ -128,7 +128,7 @@ namespace Emby.Server.Implementations.Udp
         /// <summary>
         /// The _udp client
         /// </summary>
-        private IUdpSocket _udpClient;
+        private ISocket _udpClient;
         private readonly ISocketFactory _socketFactory;
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace Emby.Server.Implementations.Udp
             {
                 try
                 {
-                    var result = await _udpClient.ReceiveAsync().ConfigureAwait(false);
+                    var result = await _udpClient.ReceiveAsync(CancellationToken.None).ConfigureAwait(false);
 
                     OnMessageReceived(result);
                 }

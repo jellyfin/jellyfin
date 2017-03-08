@@ -171,8 +171,6 @@
     "LabelRuntimeMinutes": "Dur\u00e9e (minutes)",
     "LabelParentalRating": "Classification parentale",
     "LabelCustomRating": "Classification personnalis\u00e9e",
-    "LabelBudget": "Budget",
-    "LabelRevenue": "Box-office ($)",
     "LabelOriginalAspectRatio": "Ratio d'aspect original",
     "LabelPlayers": "Lecteurs :",
     "Label3DFormat": "Format 3D",
@@ -386,5 +384,10 @@
     "HeaderSelectPlayer": "S\u00e9lectionner le lecteur",
     "Quality": "Qualit\u00e9",
     "Auto": "Auto",
-    "AndroidUnlockRestoreHelp": "To restore your previous purchase, please ensure you're signed into the device with the same Google (or Amazon) account that originally made the purchase. Make sure the app store is enabled and not restricted by any parental controls, and ensure you have an active internet connection. You'll only have to do this once to restore your previous purchase."
+    "AndroidUnlockRestoreHelp": "To restore your previous purchase, please ensure you're signed into the device with the same Google (or Amazon) account that originally made the purchase. Make sure the app store is enabled and not restricted by any parental controls, and ensure you have an active internet connection. You'll only have to do this once to restore your previous purchase.",
+    "AspectRatio": "Aspect ratio",
+    "Original": "Original",
+    "Fill": "Fill",
+    "BestFit": "Best fit",
+    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information."
 }

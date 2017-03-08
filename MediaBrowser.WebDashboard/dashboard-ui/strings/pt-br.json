@@ -1962,6 +1962,8 @@
     "OptionAutomaticallyGroupSeriesHelp": "Se ativado, s\u00e9ries que estiverem espalhadas por m\u00faltiplas pastas dentro desta biblioteca ser\u00e3o automaticamente reunidas em uma mesma s\u00e9rie.",
     "ErrorReachingEmbyConnect": "Ocorreu um erro ao buscar o servidor Emby Connect. Por favor, verifique que tenha uma conex\u00e3o de internet ativa e tente novamente.",
     "WhenDidYouPurchaseApp": "Quando originalmente voc\u00ea comprou este app?",
-    "PreferEmbeddedTitlesOverFileNames": "Prefer embedded titles over filenames",
-    "PreferEmbeddedTitlesOverFileNamesHelp": "This determines the default display title when no internet metadata or local metadata is available."
+    "PreferEmbeddedTitlesOverFileNames": "Preferir t\u00edtulos embutidos ao inv\u00e9s de nomes de arquivos",
+    "PreferEmbeddedTitlesOverFileNamesHelp": "Isto determina a exibi\u00e7\u00e3o padr\u00e3o do t\u00edtulo quando n\u00e3o houverem metadados da internet ou locais dispon\u00edveis.",
+    "HeaderUpcomingEpisodes": "Pr\u00f3ximos Epis\u00f3dios",
+    "HeaderFavoriteVideos": "Favorite Videos"
 }

@@ -1963,5 +1963,7 @@
     "ErrorReachingEmbyConnect": "Une erreur est survenue pendant la connexion au serveur Emby Connect. Veuillez vous assurer que vous avez une connexion internet active puis r\u00e9essayez.",
     "WhenDidYouPurchaseApp": "Quand avez-vous achet\u00e9 cette application initialement\u00a0?",
     "PreferEmbeddedTitlesOverFileNames": "Pr\u00e9f\u00e9rer les titres int\u00e9gr\u00e9s aux m\u00e9dias aux noms des fichiers",
-    "PreferEmbeddedTitlesOverFileNamesHelp": "Cela d\u00e9termine le titre affich\u00e9 par d\u00e9faut quand il n'y a pas de m\u00e9tadonn\u00e9es en ligne ou locales disponibles."
+    "PreferEmbeddedTitlesOverFileNamesHelp": "Cela d\u00e9termine le titre affich\u00e9 par d\u00e9faut quand il n'y a pas de m\u00e9tadonn\u00e9es en ligne ou locales disponibles.",
+    "HeaderUpcomingEpisodes": "\u00c9pisodes \u00e0 venir",
+    "HeaderFavoriteVideos": "Vid\u00e9os favorites"
 }

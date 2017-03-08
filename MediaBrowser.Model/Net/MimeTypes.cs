@@ -322,6 +322,9 @@ namespace MediaBrowser.Model.Net
                 throw new ArgumentNullException("mimeType");
             }
 
+            // handle text/html; charset=UTF-8
+            mimeType = mimeType.Split(';')[0];
+
             string result;
             if (ExtensionLookup.TryGetValue(mimeType, out result))
             {

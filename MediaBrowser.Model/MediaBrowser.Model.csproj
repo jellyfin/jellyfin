@@ -137,9 +137,9 @@
     <Compile Include="Dto\NameValuePair.cs" />
     <Compile Include="Logging\IConsoleLogger.cs" />
     <Compile Include="Net\IpEndPointInfo.cs" />
-    <Compile Include="Net\ISocket.cs" />
+    <Compile Include="Net\IAcceptSocket.cs" />
     <Compile Include="Net\ISocketFactory.cs" />
-    <Compile Include="Net\IUdpSocket.cs" />
+    <Compile Include="Net\ISocket.cs" />
     <Compile Include="Net\SocketReceiveResult.cs" />
     <Compile Include="Services\IHttpResult.cs" />
     <Compile Include="Social\ISharingRepository.cs" />

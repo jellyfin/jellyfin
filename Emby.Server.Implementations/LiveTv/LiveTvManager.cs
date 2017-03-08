@@ -1596,6 +1596,7 @@ namespace Emby.Server.Implementations.LiveTv
                 IsFolder = false,
                 IsVirtualItem = false,
                 Limit = query.Limit,
+                StartIndex = query.StartIndex,
                 SortBy = new[] { ItemSortBy.DateCreated },
                 SortOrder = SortOrder.Descending,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,

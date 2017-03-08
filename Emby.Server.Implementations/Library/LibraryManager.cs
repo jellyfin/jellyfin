@@ -409,24 +409,46 @@ namespace Emby.Server.Implementations.Library
 
             if (options.DeleteFileLocation && locationType != LocationType.Remote && locationType != LocationType.Virtual)
             {
+                // Assume only the first is required
+                // Add this flag to GetDeletePaths if required in the future
+                var isRequiredForDelete = true;
+
                 foreach (var fileSystemInfo in item.GetDeletePaths().ToList())
                 {
-                    if (fileSystemInfo.IsDirectory)
+                    try
                     {
-                        _logger.Debug("Deleting path {0}", fileSystemInfo.FullName);
-                        _fileSystem.DeleteDirectory(fileSystemInfo.FullName, true);
+                        if (fileSystemInfo.IsDirectory)
+                        {
+                            _logger.Debug("Deleting path {0}", fileSystemInfo.FullName);
+                            _fileSystem.DeleteDirectory(fileSystemInfo.FullName, true);
+                        }
+                        else
+                        {
+                            _logger.Debug("Deleting path {0}", fileSystemInfo.FullName);
+                            _fileSystem.DeleteFile(fileSystemInfo.FullName);
+                        }
                     }
-                    else
+                    catch (IOException)
                     {
-                        _logger.Debug("Deleting path {0}", fileSystemInfo.FullName);
-                        _fileSystem.DeleteFile(fileSystemInfo.FullName);
+                        if (isRequiredForDelete)
+                        {
+                            throw;
+                        }
                     }
+                    catch (UnauthorizedAccessException)
+                    {
+                        if (isRequiredForDelete)
+                        {
+                            throw;
+                        }
+                    }
+
+                    isRequiredForDelete = false;
                 }
 
                 if (parent != null)
                 {
-                    await parent.ValidateChildren(new Progress<double>(), CancellationToken.None)
-                              .ConfigureAwait(false);
+                    await parent.ValidateChildren(new Progress<double>(), CancellationToken.None, new MetadataRefreshOptions(_fileSystem), false) .ConfigureAwait(false);
                 }
             }
             else if (parent != null)

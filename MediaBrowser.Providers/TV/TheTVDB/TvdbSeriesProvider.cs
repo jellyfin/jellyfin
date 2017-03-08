@@ -170,11 +170,6 @@ namespace MediaBrowser.Providers.TV
         /// <exception cref="System.ArgumentNullException">seriesId</exception>
         internal async Task DownloadSeriesZip(string seriesId, string idType, string seriesDataPath, long? lastTvDbUpdateTime, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(seriesId))
-            {
-                throw new ArgumentNullException("seriesId");
-            }
-
             try
             {
                 await DownloadSeriesZip(seriesId, idType, seriesDataPath, lastTvDbUpdateTime, preferredMetadataLanguage, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
