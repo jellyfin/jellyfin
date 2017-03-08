@@ -160,10 +160,10 @@ namespace Emby.Server.Implementations.IO
                 .DistinctBy(i => i.Id)
                 .ToList();
 
-            foreach (var p in paths)
-            {
-                Logger.Info(p + " reports change.");
-            }
+            //foreach (var p in paths)
+            //{
+            //    Logger.Info(p + " reports change.");
+            //}
 
             // If the root folder changed, run the library task so the user can see it
             if (itemsToRefresh.Any(i => i is AggregateFolder))
