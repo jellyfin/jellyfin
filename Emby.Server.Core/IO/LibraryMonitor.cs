@@ -417,7 +417,7 @@ namespace Emby.Server.Core.IO
         {
             try
             {
-                Logger.Debug("Changed detected of type " + e.ChangeType + " to " + e.FullPath);
+                //Logger.Debug("Changed detected of type " + e.ChangeType + " to " + e.FullPath);
 
                 var path = e.FullPath;
 
