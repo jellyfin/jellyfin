@@ -73,6 +73,10 @@ namespace MediaBrowser.Model.Session
         /// <value>The volume level.</value>
         public int? VolumeLevel { get; set; }
 
+        public int? Brightness { get; set; }
+
+        public string AspectRatio { get; set; }
+
         /// <summary>
         /// Gets or sets the play method.
         /// </summary>

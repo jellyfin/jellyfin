@@ -44,7 +44,9 @@ namespace Emby.Drawing.ImageMagick
                     "cr2", 
                     "crw", 
                     "dng", 
-                    "nef", 
+
+                    // Remove until supported
+                    //"nef", 
                     "orf", 
                     "pef", 
                     "arw", 

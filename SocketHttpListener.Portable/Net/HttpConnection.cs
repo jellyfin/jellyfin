@@ -14,7 +14,7 @@ namespace SocketHttpListener.Net
     sealed class HttpConnection
     {
         const int BufferSize = 8192;
-        ISocket sock;
+        IAcceptSocket sock;
         Stream stream;
         EndPointListener epl;
         MemoryStream ms;
@@ -41,7 +41,7 @@ namespace SocketHttpListener.Net
         private readonly ITextEncoding _textEncoding;
         private readonly IStreamFactory _streamFactory;
 
-        private HttpConnection(ILogger logger, ISocket sock, EndPointListener epl, bool secure, ICertificate cert, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding)
+        private HttpConnection(ILogger logger, IAcceptSocket sock, EndPointListener epl, bool secure, ICertificate cert, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding)
         {
             _logger = logger;
             this.sock = sock;
@@ -82,7 +82,7 @@ namespace SocketHttpListener.Net
             Init();
         }
 
-        public static async Task<HttpConnection> Create(ILogger logger, ISocket sock, EndPointListener epl, bool secure, ICertificate cert, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding)
+        public static async Task<HttpConnection> Create(ILogger logger, IAcceptSocket sock, EndPointListener epl, bool secure, ICertificate cert, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding)
         {
             var connection = new HttpConnection(logger, sock, epl, secure, cert, cryptoProvider, streamFactory, memoryStreamFactory, textEncoding);
 
@@ -527,7 +527,7 @@ namespace SocketHttpListener.Net
                     return;
                 }
 
-                ISocket s = sock;
+                IAcceptSocket s = sock;
                 sock = null;
                 try
                 {
