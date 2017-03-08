@@ -67,6 +67,9 @@
     <Reference Include="Emby.Common.Implementations">
       <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
     </Reference>
+    <Reference Include="Emby.Server.CinemaMode">
+      <HintPath>..\ThirdParty\emby\Emby.Server.CinemaMode.dll</HintPath>
+    </Reference>
     <Reference Include="Emby.Server.Connect">
       <HintPath>..\ThirdParty\emby\Emby.Server.Connect.dll</HintPath>
     </Reference>

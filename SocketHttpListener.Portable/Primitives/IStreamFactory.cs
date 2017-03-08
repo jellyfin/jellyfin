@@ -10,7 +10,7 @@ namespace SocketHttpListener.Primitives
 {
     public interface IStreamFactory
     {
-        Stream CreateNetworkStream(ISocket socket, bool ownsSocket);
+        Stream CreateNetworkStream(IAcceptSocket acceptSocket, bool ownsSocket);
         Stream CreateSslStream(Stream innerStream, bool leaveInnerStreamOpen);
 
         Task AuthenticateSslStreamAsServer(Stream stream, ICertificate certificate);

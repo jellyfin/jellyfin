@@ -162,15 +162,15 @@ namespace Emby.Server.Implementations.Updates
             string packageType = null,
             Version applicationVersion = null)
         {
-            var data = new Dictionary<string, string>
-            {
-                { "key", _securityManager.SupporterKey },
-                { "mac", _applicationHost.SystemId },
-                { "systemid", _applicationHost.SystemId }
-            };
-
             if (withRegistration)
             {
+                var data = new Dictionary<string, string>
+                {
+                    { "key", _securityManager.SupporterKey },
+                    { "mac", _applicationHost.SystemId },
+                    { "systemid", _applicationHost.SystemId }
+                };
+
                 using (var json = await _httpClient.Post("https://www.mb3admin.com/admin/service/package/retrieveall", data, cancellationToken).ConfigureAwait(false))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -353,7 +353,7 @@ namespace Emby.Server.Implementations.Updates
         /// <returns>Task{PackageVersionInfo}.</returns>
         public async Task<PackageVersionInfo> GetPackage(string name, string guid, PackageVersionClass classification, Version version)
         {
-            var packages = await GetAvailablePackages(CancellationToken.None).ConfigureAwait(false);
+            var packages = await GetAvailablePackages(CancellationToken.None, false).ConfigureAwait(false);
 
             var package = packages.FirstOrDefault(p => string.Equals(p.guid, guid ?? "none", StringComparison.OrdinalIgnoreCase))
                             ?? packages.FirstOrDefault(p => p.name.Equals(name, StringComparison.OrdinalIgnoreCase));
@@ -376,7 +376,7 @@ namespace Emby.Server.Implementations.Updates
         /// <returns>Task{PackageVersionInfo}.</returns>
         public async Task<PackageVersionInfo> GetLatestCompatibleVersion(string name, string guid, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release)
         {
-            var packages = await GetAvailablePackages(CancellationToken.None).ConfigureAwait(false);
+            var packages = await GetAvailablePackages(CancellationToken.None, false).ConfigureAwait(false);
 
             return GetLatestCompatibleVersion(packages, name, guid, currentServerVersion, classification);
         }

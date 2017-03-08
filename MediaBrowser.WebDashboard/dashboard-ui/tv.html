@@ -9,10 +9,10 @@
                 <div class="emby-button-foreground">${TabLatest}</div>
             </button>
             <button is="emby-button" class="emby-tab-button" data-index="2">
-                <div class="emby-button-foreground">${TabUpcoming}</div>
+                <div class="emby-button-foreground">${TabSeries}</div>
             </button>
             <button is="emby-button" class="emby-tab-button" data-index="3">
-                <div class="emby-button-foreground">${TabSeries}</div>
+                <div class="emby-button-foreground">${TabUpcoming}</div>
             </button>
             <button is="emby-button" class="emby-tab-button" data-index="4">
                 <div class="emby-button-foreground">${TabGenres}</div>
@@ -63,17 +63,7 @@
             </div>
         </div>
     </div>
-    <div class="pageTabContent ehsContent fullWidth" id="upcomingTab" data-index="2">
-        <div id="upcomingItems">
-        </div>
-        <div class="noItemsMessage" style="display: none;">
-            <p>${MessageNothingHere}</p>
-            <p>
-                <a href="metadata.html">${MessagePleaseEnsureInternetMetadata}</a>
-            </p>
-        </div>
-    </div>
-    <div class="pageTabContent ehsContent" id="seriesTab" data-index="3">
+    <div class="pageTabContent ehsContent" id="seriesTab" data-index="2">
         <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em 1em;">
             <div class="paging"></div>
             <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
@@ -88,6 +78,16 @@
 
         <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
             <div class="paging"></div>
+        </div>
+    </div>
+    <div class="pageTabContent ehsContent fullWidth" id="upcomingTab" data-index="3">
+        <div id="upcomingItems">
+        </div>
+        <div class="noItemsMessage" style="display: none;">
+            <p>${MessageNothingHere}</p>
+            <p>
+                <a href="metadata.html">${MessagePleaseEnsureInternetMetadata}</a>
+            </p>
         </div>
     </div>
     <div class="pageTabContent ehsContent fullWidth" id="genresTab" data-index="4">

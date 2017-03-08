@@ -89,7 +89,9 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value><c>true</c> if this instance has configured easy password; otherwise, <c>false</c>.</value>
         public bool HasConfiguredEasyPassword { get; set; }
-        
+
+        public bool? EnableAutoLogin { get; set; }
+
         /// <summary>
         /// Gets or sets the last login date.
         /// </summary>

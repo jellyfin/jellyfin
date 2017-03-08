@@ -76,9 +76,9 @@ namespace Emby.Server.Core
 
     public class StreamFactory : IStreamFactory
     {
-        public Stream CreateNetworkStream(ISocket socket, bool ownsSocket)
+        public Stream CreateNetworkStream(IAcceptSocket acceptSocket, bool ownsSocket)
         {
-            var netSocket = (NetSocket)socket;
+            var netSocket = (NetAcceptSocket)acceptSocket;
 
             return new NetworkStream(netSocket.Socket, ownsSocket);
         }

@@ -410,6 +410,7 @@ namespace MediaBrowser.Providers.Manager
             var folderName = item is MusicAlbum ||
                 item is MusicArtist ||
                 item is PhotoAlbum ||
+                item is Person ||
                 (saveLocally && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy) ?
                 "folder" :
                 "poster";

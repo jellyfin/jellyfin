@@ -434,6 +434,11 @@ namespace Emby.Server.Implementations.Library
                 Policy = user.Policy
             };
 
+            if (!hasPassword && Users.Count() == 1)
+            {
+                dto.EnableAutoLogin = true;
+            }
+
             var image = user.GetImageInfo(ImageType.Primary, 0);
 
             if (image != null)

@@ -171,8 +171,6 @@
     "LabelRuntimeMinutes": "Laufzeit (Minuten):",
     "LabelParentalRating": "Altersfreigabe:",
     "LabelCustomRating": "Eigene Bewertung:",
-    "LabelBudget": "Budget",
-    "LabelRevenue": "Einnahmen ($):",
     "LabelOriginalAspectRatio": "Original Seitenverh\u00e4ltnis:",
     "LabelPlayers": "Spieler:",
     "Label3DFormat": "3D Format:",
@@ -386,5 +384,10 @@
     "HeaderSelectPlayer": "W\u00e4hle Videoplayer",
     "Quality": "Qualit\u00e4t",
     "Auto": "Auto",
-    "AndroidUnlockRestoreHelp": "To restore your previous purchase, please ensure you're signed into the device with the same Google (or Amazon) account that originally made the purchase. Make sure the app store is enabled and not restricted by any parental controls, and ensure you have an active internet connection. You'll only have to do this once to restore your previous purchase."
+    "AndroidUnlockRestoreHelp": "Um ihren voherigen Kauf wiederherzustellen, versichern Sie sich bitte, dass Sie auf dem Ger\u00e4t mit dem selben Google (oder Amazon) Account angemeldet sind, mit dem Sie die Kauf urspr\u00fcnglich get\u00e4tigt haben. Stellen Sie sicher, dass der Appstore aktiviert und nicht durch eine Kindersicherung eingeschr\u00e4nkt ist und vergewissern Sie sich, dass sie \u00fcber eine aktive Internetverbindung verf\u00fcgen. Sie m\u00fcssen dies nur einmal tun, um ihren vorherigen Kauf wiederherzustellen.",
+    "AspectRatio": "Seitenverh\u00e4ltnis",
+    "Original": "Original",
+    "Fill": "Ausf\u00fcllen",
+    "BestFit": "Beste \u00dcbereinstimmung",
+    "MessagePlayAccessRestricted": "Das Abspielen dieses Inhaltes ist derzeit eingeschr\u00e4nkt. Bitte kontaktiere deinen Emby Server-Administrator f\u00fcr weitere Informationen."
 }

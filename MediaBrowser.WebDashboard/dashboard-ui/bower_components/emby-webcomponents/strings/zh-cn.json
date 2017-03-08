@@ -171,8 +171,6 @@
     "LabelRuntimeMinutes": "\u64ad\u653e\u65f6\u957f\uff08\u5206\u949f\uff09\uff1a",
     "LabelParentalRating": "\u5bb6\u957f\u5206\u7ea7\uff1a",
     "LabelCustomRating": "\u81ea\u5b9a\u4e49\u5206\u7ea7\uff1a",
-    "LabelBudget": "\u6295\u8d44\u989d\uff1a",
-    "LabelRevenue": "\u7968\u623f\u6536\u5165\uff1a",
     "LabelOriginalAspectRatio": "\u539f\u59cb\u957f\u5bbd\u6bd4\uff1a",
     "LabelPlayers": "Players:",
     "Label3DFormat": "3D\u683c\u5f0f\uff1a",
@@ -386,5 +384,10 @@
     "HeaderSelectPlayer": "Select Player",
     "Quality": "Quality",
     "Auto": "Auto",
-    "AndroidUnlockRestoreHelp": "To restore your previous purchase, please ensure you're signed into the device with the same Google (or Amazon) account that originally made the purchase. Make sure the app store is enabled and not restricted by any parental controls, and ensure you have an active internet connection. You'll only have to do this once to restore your previous purchase."
+    "AndroidUnlockRestoreHelp": "To restore your previous purchase, please ensure you're signed into the device with the same Google (or Amazon) account that originally made the purchase. Make sure the app store is enabled and not restricted by any parental controls, and ensure you have an active internet connection. You'll only have to do this once to restore your previous purchase.",
+    "AspectRatio": "Aspect ratio",
+    "Original": "Original",
+    "Fill": "Fill",
+    "BestFit": "Best fit",
+    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information."
 }

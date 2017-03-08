@@ -10,10 +10,10 @@ namespace Emby.Common.Implementations.Net
         private readonly ILogger _logger;
         private readonly Socket _originalSocket;
         private readonly Func<bool> _isClosed;
-        private readonly Action<ISocket> _onAccept;
+        private readonly Action<IAcceptSocket> _onAccept;
         private readonly bool _isDualMode;
 
-        public SocketAcceptor(ILogger logger, Socket originalSocket, Action<ISocket> onAccept, Func<bool> isClosed, bool isDualMode)
+        public SocketAcceptor(ILogger logger, Socket originalSocket, Action<IAcceptSocket> onAccept, Func<bool> isClosed, bool isDualMode)
         {
             if (logger == null)
             {
@@ -54,7 +54,7 @@ namespace Emby.Common.Implementations.Net
             }
             else
             {
-                // socket must be cleared since the context object is being reused
+                // acceptSocket must be cleared since the context object is being reused
                 acceptEventArg.AcceptSocket = null;
             }
 
@@ -102,7 +102,7 @@ namespace Emby.Common.Implementations.Net
                 return;
             }
 
-            // http://msdn.microsoft.com/en-us/library/system.net.sockets.socket.acceptasync%28v=vs.110%29.aspx
+            // http://msdn.microsoft.com/en-us/library/system.net.sockets.acceptSocket.acceptasync%28v=vs.110%29.aspx
             // Under certain conditions ConnectionReset can occur
             // Need to attept to re-accept
             if (e.SocketError == SocketError.ConnectionReset)
@@ -117,7 +117,7 @@ namespace Emby.Common.Implementations.Net
             if (acceptSocket != null)
             {
                 //ProcessAccept(acceptSocket);
-                _onAccept(new NetSocket(acceptSocket, _logger, _isDualMode));
+                _onAccept(new NetAcceptSocket(acceptSocket, _logger, _isDualMode));
             }
 
             // Accept the next connection request

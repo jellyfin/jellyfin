@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public IIsoMount MountedIso { get; set; }
         public VideoType VideoType { get; set; }
         public List<string> PlayableStreamFileNames { get; set; }
-        public int AnalyzeDurationSections { get; set; }
+        public int AnalyzeDurationMs { get; set; }
 
         public MediaInfoRequest()
         {

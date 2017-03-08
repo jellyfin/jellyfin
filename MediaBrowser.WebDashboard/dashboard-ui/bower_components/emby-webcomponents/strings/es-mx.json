@@ -171,8 +171,6 @@
     "LabelRuntimeMinutes": "Duraci\u00f3n (minutos):",
     "LabelParentalRating": "Clasificaci\u00f3n parental:",
     "LabelCustomRating": "Calificaci\u00f3n personalizada:",
-    "LabelBudget": "Presupuesto",
-    "LabelRevenue": "Ingresos ($):",
     "LabelOriginalAspectRatio": "Relaci\u00f3n de aspecto original:",
     "LabelPlayers": "Reproductores:",
     "Label3DFormat": "Formato 3D:",
@@ -386,5 +384,10 @@
     "HeaderSelectPlayer": "Seleccionar Reproductor",
     "Quality": "Calidad",
     "Auto": "Auto",
-    "AndroidUnlockRestoreHelp": "To restore your previous purchase, please ensure you're signed into the device with the same Google (or Amazon) account that originally made the purchase. Make sure the app store is enabled and not restricted by any parental controls, and ensure you have an active internet connection. You'll only have to do this once to restore your previous purchase."
+    "AndroidUnlockRestoreHelp": "Para restaurar su compra previa, por favor aseg\u00farese de que se encuentra registrado en el dispositivo con la misma cuenta de Google (o Amazon) con que hizo la compra. Aseg\u00farese que la tienda de aplicaciones esta habilitada, no esta restringida por cualquier control parental y que tiene una conexi\u00f3n de internet activa. Esto se tiene que hacer solo una vez para restaurar su compra previa.",
+    "AspectRatio": "Relaci\u00f3n de aspecto",
+    "Original": "Original",
+    "Fill": "Llenar",
+    "BestFit": "Mejor ajuste",
+    "MessagePlayAccessRestricted": "La reproducci\u00f3n de este contenido se encuentra restringida actualmente. Por favor contacte a su administrador para mas informaci\u00f3n."
 }

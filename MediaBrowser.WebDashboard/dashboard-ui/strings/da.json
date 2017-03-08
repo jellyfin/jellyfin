@@ -1963,5 +1963,7 @@
     "ErrorReachingEmbyConnect": "Der opstod en fejl i at n\u00e5 frem til Emby Connect-serveren. Kontroller venligst at du har en aktiv internetforbindelse og pr\u00f8v igen.",
     "WhenDidYouPurchaseApp": "When did you originally purchase this app?",
     "PreferEmbeddedTitlesOverFileNames": "Prefer embedded titles over filenames",
-    "PreferEmbeddedTitlesOverFileNamesHelp": "This determines the default display title when no internet metadata or local metadata is available."
+    "PreferEmbeddedTitlesOverFileNamesHelp": "This determines the default display title when no internet metadata or local metadata is available.",
+    "HeaderUpcomingEpisodes": "Upcoming Episodes",
+    "HeaderFavoriteVideos": "Favorite Videos"
 }

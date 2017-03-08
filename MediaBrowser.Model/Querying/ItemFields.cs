@@ -21,11 +21,6 @@
         AwardSummary,
 
         /// <summary>
-        /// The budget
-        /// </summary>
-        Budget,
-
-        /// <summary>
         /// The can delete
         /// </summary>
         CanDelete,
@@ -156,6 +151,8 @@
         /// </summary>
         People,
 
+        PlayAccess,
+
         /// <summary>
         /// The production locations
         /// </summary>
@@ -172,11 +169,6 @@
         PrimaryImageAspectRatio,
 
         RecursiveItemCount,
-
-        /// <summary>
-        /// The revenue
-        /// </summary>
-        Revenue,
 
         /// <summary>
         /// The season name

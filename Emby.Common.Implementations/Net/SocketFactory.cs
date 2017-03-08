@@ -31,7 +31,7 @@ namespace Emby.Common.Implementations.Net
             _logger = logger;
         }
 
-        public ISocket CreateSocket(IpAddressFamily family, MediaBrowser.Model.Net.SocketType socketType, MediaBrowser.Model.Net.ProtocolType protocolType, bool dualMode)
+        public IAcceptSocket CreateSocket(IpAddressFamily family, MediaBrowser.Model.Net.SocketType socketType, MediaBrowser.Model.Net.ProtocolType protocolType, bool dualMode)
         {
             try
             {
@@ -46,7 +46,7 @@ namespace Emby.Common.Implementations.Net
                     socket.DualMode = true;
                 }
 
-                return new NetSocket(socket, _logger, dualMode);
+                return new NetAcceptSocket(socket, _logger, dualMode);
             }
             catch (SocketException ex)
             {
@@ -54,13 +54,30 @@ namespace Emby.Common.Implementations.Net
             }
         }
 
-        #region ISocketFactory Members
+        public ISocket CreateTcpSocket(IpAddressInfo remoteAddress, int remotePort)
+        {
+            if (remotePort < 0) throw new ArgumentException("remotePort cannot be less than zero.", "remotePort");
+
+            var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
+            try
+            {
+                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                return new UdpSocket(retVal, new IpEndPointInfo(remoteAddress, remotePort));
+            }
+            catch
+            {
+                if (retVal != null)
+                    retVal.Dispose();
+
+                throw;
+            }
+        }
 
         /// <summary>
-        /// Creates a new UDP socket and binds it to the specified local port.
+        /// Creates a new UDP acceptSocket and binds it to the specified local port.
         /// </summary>
-        /// <param name="localPort">An integer specifying the local port to bind the socket to.</param>
-        public IUdpSocket CreateUdpSocket(int localPort)
+        /// <param name="localPort">An integer specifying the local port to bind the acceptSocket to.</param>
+        public ISocket CreateUdpSocket(int localPort)
         {
             if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");
 
@@ -80,10 +97,10 @@ namespace Emby.Common.Implementations.Net
         }
 
         /// <summary>
-        /// Creates a new UDP socket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
+        /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
         /// </summary>
-        /// <returns>An implementation of the <see cref="IUdpSocket"/> interface used by RSSDP components to perform socket operations.</returns>
-        public IUdpSocket CreateSsdpUdpSocket(IpAddressInfo localIpAddress, int localPort)
+        /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
+        public ISocket CreateSsdpUdpSocket(IpAddressInfo localIpAddress, int localPort)
         {
             if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");
 
@@ -108,13 +125,13 @@ namespace Emby.Common.Implementations.Net
         }
 
         /// <summary>
-        /// Creates a new UDP socket that is a member of the specified multicast IP address, and binds it to the specified local port.
+        /// Creates a new UDP acceptSocket that is a member of the specified multicast IP address, and binds it to the specified local port.
         /// </summary>
-        /// <param name="ipAddress">The multicast IP address to make the socket a member of.</param>
-        /// <param name="multicastTimeToLive">The multicast time to live value for the socket.</param>
+        /// <param name="ipAddress">The multicast IP address to make the acceptSocket a member of.</param>
+        /// <param name="multicastTimeToLive">The multicast time to live value for the acceptSocket.</param>
         /// <param name="localPort">The number of the local port to bind to.</param>
         /// <returns></returns>
-        public IUdpSocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort)
+        public ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort)
         {
             if (ipAddress == null) throw new ArgumentNullException("ipAddress");
             if (ipAddress.Length == 0) throw new ArgumentException("ipAddress cannot be an empty string.", "ipAddress");
@@ -128,7 +145,7 @@ namespace Emby.Common.Implementations.Net
 #if NET46
 				retVal.ExclusiveAddressUse = false;
 #else
-                // The ExclusiveAddressUse socket option is a Windows-specific option that, when set to "true," tells Windows not to allow another socket to use the same local address as this socket
+                // The ExclusiveAddressUse acceptSocket option is a Windows-specific option that, when set to "true," tells Windows not to allow another acceptSocket to use the same local address as this acceptSocket
                 // See https://github.com/dotnet/corefx/pull/11509 for more details
                 if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
 				{
@@ -154,7 +171,5 @@ namespace Emby.Common.Implementations.Net
                 throw;
             }
         }
-
-        #endregion
     }
 }

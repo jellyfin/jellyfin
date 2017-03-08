@@ -282,6 +282,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             var showId = programInfo.programID ?? string.Empty;
 
+            if (!info.IsSeries)
+            {
+                // It's also a series if it starts with SH
+                info.IsSeries = showId.StartsWith("SH", StringComparison.OrdinalIgnoreCase) && showId.Length >= 14;
+            }
+
             // According to SchedulesDirect, these are generic, unidentified episodes
             // SH005316560000
             var hasUniqueShowId = !showId.StartsWith("SH", StringComparison.OrdinalIgnoreCase) ||
@@ -331,7 +337,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 {
                     var gracenote = details.metadata.Find(x => x.Gracenote != null).Gracenote;
                     info.SeasonNumber = gracenote.season;
-                    info.EpisodeNumber = gracenote.episode;
+
+                    if (gracenote.episode > 0)
+                    {
+                        info.EpisodeNumber = gracenote.episode;
+                    }
                 }
             }
 
