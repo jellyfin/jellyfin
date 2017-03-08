@@ -329,9 +329,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\favicon.ico">
       <Link>Resources\dashboard-ui\favicon.ico</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\favorites.html">
-      <Link>Resources\dashboard-ui\favorites.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\forgotpassword.html">
       <Link>Resources\dashboard-ui\forgotpassword.html</Link>
     </BundleResource>
@@ -665,9 +662,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\localassetmanager.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\localassetmanager.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\nullassetmanager.js">
-      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\nullassetmanager.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\serverdiscovery-chrome.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\serverdiscovery-chrome.js</Link>
     </BundleResource>
@@ -698,9 +692,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\multiserversync.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\multiserversync.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\offlineusersync.js">
-      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\offlineusersync.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\serversync.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\serversync.js</Link>
     </BundleResource>
@@ -709,9 +700,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\useractionrepository.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\useractionrepository.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\userrepository.js">
-      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\userrepository.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\appsettings.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\appsettings.js</Link>
@@ -1205,6 +1193,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\autoplaydetect.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\autoplaydetect.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\brightnessosd.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\brightnessosd.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\iconosd.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\iconosd.css</Link>
     </BundleResource>
@@ -1213,6 +1204,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\nowplayinghelper.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\nowplayinghelper.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\playaccessvalidation.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\playaccessvalidation.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\playbackmanager.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\playbackmanager.js</Link>
@@ -1886,6 +1880,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\site.css">
       <Link>Resources\dashboard-ui\css\site.css</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\videoosd.css">
+      <Link>Resources\dashboard-ui\css\videoosd.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\ani_equalizer_black.gif">
       <Link>Resources\dashboard-ui\css\images\ani_equalizer_black.gif</Link>
     </BundleResource>
@@ -2227,9 +2224,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\episodes.js">
       <Link>Resources\dashboard-ui\scripts\episodes.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\favorites.js">
-      <Link>Resources\dashboard-ui\scripts\favorites.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\forgotpassword.js">
       <Link>Resources\dashboard-ui\scripts\forgotpassword.js</Link>

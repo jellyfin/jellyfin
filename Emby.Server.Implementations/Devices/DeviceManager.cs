@@ -195,12 +195,11 @@ namespace Emby.Server.Implementations.Devices
             }
 
             var config = _config.GetUploadOptions();
-            if (!string.IsNullOrWhiteSpace(config.CameraUploadPath))
+            var path = config.CameraUploadPath;
+            if (string.IsNullOrWhiteSpace(path))
             {
-                return config.CameraUploadPath;
+                path = DefaultCameraUploadsPath;
             }
-
-            var path = DefaultCameraUploadsPath;
 
             if (config.EnableCameraUploadSubfolders)
             {

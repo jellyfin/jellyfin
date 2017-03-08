@@ -195,7 +195,6 @@ namespace MediaBrowser.Providers.Manager
             }
 
             MergeAlbumArtist(source, target, lockedFields, replaceData);
-            MergeBudget(source, target, lockedFields, replaceData);
             MergeMetascore(source, target, lockedFields, replaceData);
             MergeCriticRating(source, target, lockedFields, replaceData);
             MergeAwards(source, target, lockedFields, replaceData);
@@ -243,25 +242,6 @@ namespace MediaBrowser.Providers.Manager
                 if (replaceData || targetHasAlbumArtist.AlbumArtists.Count == 0)
                 {
                     targetHasAlbumArtist.AlbumArtists = sourceHasAlbumArtist.AlbumArtists;
-                }
-            }
-        }
-
-        private static void MergeBudget(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
-        {
-            var sourceHasBudget = source as IHasBudget;
-            var targetHasBudget = target as IHasBudget;
-
-            if (sourceHasBudget != null && targetHasBudget != null)
-            {
-                if (replaceData || !targetHasBudget.Budget.HasValue)
-                {
-                    targetHasBudget.Budget = sourceHasBudget.Budget;
-                }
-
-                if (replaceData || !targetHasBudget.Revenue.HasValue)
-                {
-                    targetHasBudget.Revenue = sourceHasBudget.Revenue;
                 }
             }
         }

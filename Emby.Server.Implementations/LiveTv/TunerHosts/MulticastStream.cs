@@ -16,7 +16,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         private const int BufferSize = 81920;
         private CancellationToken _cancellationToken;
         private readonly ILogger _logger;
-        private readonly ConcurrentQueue<byte[]> _sharedBuffer = new ConcurrentQueue<byte[]>();
 
         public MulticastStream(ILogger logger)
         {
@@ -37,14 +36,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     byte[] copy = new byte[bytesRead];
                     Buffer.BlockCopy(buffer, 0, copy, 0, bytesRead);
-
-                    _sharedBuffer.Enqueue(copy);
-
-                    while (_sharedBuffer.Count > 3000)
-                    {
-                        byte[] bytes;
-                        _sharedBuffer.TryDequeue(out bytes);
-                    }
 
                     var allStreams = _outputStreams.ToList();
                     foreach (var stream in allStreams)
@@ -73,16 +64,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             {
                 OnFinished = OnFinished
             };
-
-            var list = new List<byte>();
-            foreach (var bytes in _sharedBuffer)
-            {
-                list.AddRange(bytes);
-            }
-
-            _logger.Info("QueueStream started with {0} initial bytes", list.Count);
-
-            result.Queue(list.ToArray());
 
             _outputStreams.TryAdd(result.Id, result);
 

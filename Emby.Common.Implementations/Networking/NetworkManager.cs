@@ -234,7 +234,7 @@ namespace Emby.Common.Implementations.Networking
                     // Try to exclude virtual adapters
                     // http://stackoverflow.com/questions/8089685/c-sharp-finding-my-machines-local-ip-address-and-not-the-vms
                     var addr = ipProperties.GatewayAddresses.FirstOrDefault();
-                    if (addr == null|| string.Equals(addr.Address.ToString(), "0.0.0.0", StringComparison.OrdinalIgnoreCase))
+                    if (addr == null || string.Equals(addr.Address.ToString(), "0.0.0.0", StringComparison.OrdinalIgnoreCase))
                     {
                         return new List<IPAddress>();
                     }
@@ -275,13 +275,23 @@ namespace Emby.Common.Implementations.Networking
         /// Gets a random port number that is currently available
         /// </summary>
         /// <returns>System.Int32.</returns>
-        public int GetRandomUnusedPort()
+        public int GetRandomUnusedTcpPort()
         {
             var listener = new TcpListener(IPAddress.Any, 0);
             listener.Start();
             var port = ((IPEndPoint)listener.LocalEndpoint).Port;
             listener.Stop();
             return port;
+        }
+
+        public int GetRandomUnusedUdpPort()
+        {
+            IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            using (var udpClient = new UdpClient(localEndPoint))
+            {
+                var port = ((IPEndPoint)(udpClient.Client.LocalEndPoint)).Port;
+                return port;
+            }
         }
 
         /// <summary>

@@ -12,7 +12,9 @@ namespace MediaBrowser.Common.Net
         /// Gets a random port number that is currently available
         /// </summary>
         /// <returns>System.Int32.</returns>
-        int GetRandomUnusedPort();
+        int GetRandomUnusedTcpPort();
+
+        int GetRandomUnusedUdpPort();
 
         /// <summary>
         /// Returns MAC Address from first Network Card in Computer
