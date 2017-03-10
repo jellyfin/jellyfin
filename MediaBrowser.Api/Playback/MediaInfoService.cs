@@ -127,7 +127,7 @@ namespace MediaBrowser.Api.Playback
 
                 SetDeviceSpecificData(item, result.MediaSource, profile, authInfo, request.MaxStreamingBitrate,
                     request.StartTimeTicks ?? 0, result.MediaSource.Id, request.AudioStreamIndex,
-                    request.SubtitleStreamIndex, request.MaxAudioChannels, request.PlaySessionId, request.UserId, true, true, true);
+                    request.SubtitleStreamIndex, request.MaxAudioChannels, request.PlaySessionId, request.UserId, true, true, true, true);
             }
             else
             {
@@ -169,7 +169,7 @@ namespace MediaBrowser.Api.Playback
             {
                 var mediaSourceId = request.MediaSourceId;
 
-                SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate ?? profile.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex, request.MaxAudioChannels, request.UserId, request.EnableDirectPlay, request.EnableDirectStream, request.EnableTranscoding);
+                SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate ?? profile.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex, request.MaxAudioChannels, request.UserId, request.EnableDirectPlay, request.ForceDirectPlayRemoteMediaSource, request.EnableDirectStream, request.EnableTranscoding);
             }
 
             return info;
@@ -253,6 +253,7 @@ namespace MediaBrowser.Api.Playback
             int? maxAudioChannels,
             string userId,
             bool enableDirectPlay,
+            bool forceDirectPlayRemoteMediaSource,
             bool enableDirectStream,
             bool enableTranscoding)
         {
@@ -260,7 +261,7 @@ namespace MediaBrowser.Api.Playback
 
             foreach (var mediaSource in result.MediaSources)
             {
-                SetDeviceSpecificData(item, mediaSource, profile, auth, maxBitrate, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex, maxAudioChannels, result.PlaySessionId, userId, enableDirectPlay, enableDirectStream, enableTranscoding);
+                SetDeviceSpecificData(item, mediaSource, profile, auth, maxBitrate, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex, maxAudioChannels, result.PlaySessionId, userId, enableDirectPlay, forceDirectPlayRemoteMediaSource, enableDirectStream, enableTranscoding);
             }
 
             SortMediaSources(result, maxBitrate);
@@ -279,6 +280,7 @@ namespace MediaBrowser.Api.Playback
             string playSessionId,
             string userId,
             bool enableDirectPlay,
+            bool forceDirectPlayRemoteMediaSource,
             bool enableDirectStream,
             bool enableTranscoding)
         {
@@ -318,43 +320,49 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsDirectPlay)
             {
-                var supportsDirectStream = mediaSource.SupportsDirectStream;
-
-                // Dummy this up to fool StreamBuilder
-                mediaSource.SupportsDirectStream = true;
-                options.MaxBitrate = maxBitrate;
-
-                if (item is Audio)
+                if (mediaSource.IsRemote && forceDirectPlayRemoteMediaSource)
                 {
-                    if (!user.Policy.EnableAudioPlaybackTranscoding)
+                }
+                else
+                {
+                    var supportsDirectStream = mediaSource.SupportsDirectStream;
+
+                    // Dummy this up to fool StreamBuilder
+                    mediaSource.SupportsDirectStream = true;
+                    options.MaxBitrate = maxBitrate;
+
+                    if (item is Audio)
                     {
-                        options.ForceDirectPlay = true;
+                        if (!user.Policy.EnableAudioPlaybackTranscoding)
+                        {
+                            options.ForceDirectPlay = true;
+                        }
                     }
-                }
-                else if (item is Video)
-                {
-                    if (!user.Policy.EnableAudioPlaybackTranscoding && !user.Policy.EnableVideoPlaybackTranscoding && !user.Policy.EnablePlaybackRemuxing)
+                    else if (item is Video)
                     {
-                        options.ForceDirectPlay = true;
+                        if (!user.Policy.EnableAudioPlaybackTranscoding && !user.Policy.EnableVideoPlaybackTranscoding && !user.Policy.EnablePlaybackRemuxing)
+                        {
+                            options.ForceDirectPlay = true;
+                        }
                     }
-                }
 
-                // The MediaSource supports direct stream, now test to see if the client supports it
-                var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
-                    streamBuilder.BuildAudioItem(options) :
-                    streamBuilder.BuildVideoItem(options);
+                    // The MediaSource supports direct stream, now test to see if the client supports it
+                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
+                        streamBuilder.BuildAudioItem(options) :
+                        streamBuilder.BuildVideoItem(options);
 
-                if (streamInfo == null || !streamInfo.IsDirectStream)
-                {
-                    mediaSource.SupportsDirectPlay = false;
-                }
+                    if (streamInfo == null || !streamInfo.IsDirectStream)
+                    {
+                        mediaSource.SupportsDirectPlay = false;
+                    }
 
-                // Set this back to what it was
-                mediaSource.SupportsDirectStream = supportsDirectStream;
+                    // Set this back to what it was
+                    mediaSource.SupportsDirectStream = supportsDirectStream;
 
-                if (streamInfo != null)
-                {
-                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                    if (streamInfo != null)
+                    {
+                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                    }
                 }
             }
 

@@ -258,7 +258,7 @@ namespace Emby.Server.Implementations.Images
                 {
                     return await CreateSquareCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
                 }
-                if (item is Playlist || item is MusicGenre)
+                if (item is Playlist || item is MusicGenre || item is Genre || item is GameGenre)
                 {
                     return await CreateSquareCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
                 }
