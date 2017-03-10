@@ -10,6 +10,7 @@ using Emby.Server.Core;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.EntryPoints;
 using Emby.Server.Implementations.FFMpeg;
+using Emby.Server.Implementations.Windows;
 using Emby.Server.Sync;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Sync;
@@ -105,11 +106,6 @@ namespace MediaBrowser.ServerApplication
                 //Remove our shortcut from the startup folder for this user
                 FileSystemManager.DeleteFile(Path.Combine(startupPath, "Emby Server.lnk"));
             }
-        }
-
-        protected override void EnableLoopbackInternal(string appName)
-        {
-            LoopUtil.Run(appName);
         }
 
         public override bool SupportsRunningAsService

@@ -1670,6 +1670,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                         case "h264":
                             if (_mediaEncoder.SupportsDecoder("h264_qsv"))
                             {
+                                // qsv decoder does not support 10-bit input
+                                if ((state.VideoStream.BitDepth ?? 8) > 8)
+                                {
+                                    return null;
+                                }
                                 return "-c:v h264_qsv ";
                             }
                             break;
