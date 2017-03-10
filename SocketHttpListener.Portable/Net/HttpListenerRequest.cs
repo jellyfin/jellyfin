@@ -456,7 +456,7 @@ namespace SocketHttpListener.Net
 
         public long ContentLength64
         {
-            get { return content_length; }
+            get { return is_chunked ? -1 : content_length; }
         }
 
         public string ContentType
