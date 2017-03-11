@@ -1,51 +1,35 @@
-﻿<div id="selectServerPage" data-role="page" class="page noSecondaryNavPage standalonePage" data-theme="b">
+﻿<div id="selectServerPage" data-role="page" class="page noSecondaryNavPage standalonePage pageContainer fullWidth vertical flex flex-direction-column" data-theme="b">
 
-    <div data-role="content">
-
-        <div class="readOnlyContent" style="margin: 0 auto;">
-
-            <div style="margin:1em 0 .5em;padding-left:5px;">
-                <h1 style="display:inline-block;vertical-align:middle;margin: 0;">${HeaderSelectServer}</h1>
-                <a href="https://github.com/MediaBrowser/Wiki/wiki/Emby%20Connect" target="_blank" class="clearLink" style="margin-top: 0; display: inline-block; vertical-align: middle; margin-left: 1em;">
-                    <button is="emby-button" type="button" class="raised button-accent mini">
-                        <i class="md-icon">info</i>
-                        <span>${ButtonHelp}</span>
-                    </button>
-                </a>
-            </div>
-
-            <div class="serverList paperList"></div>
-            <br />
-            <div class="noServersMessage hide" style="padding-left:5px;">
-                ${MessageNoServersAvailableToConnect}
-                <br /><br />
-            </div>
-
-            <div class="addServer" style="margin:0 0 1em;">
-                <a href="connectlogin.html?mode=manualserver" class="clearLink">
-                    <button is="emby-button" type="button" class="raised cancel block">
-                        <span>${ButtonAddServer}</span>
-                    </button>
-                </a>
-            </div>
-
-            <div class="connectLogin hide" style="margin:1em 0;">
-                <a href="connectlogin.html?mode=connect" class="clearLink">
-                    <button is="emby-button" type="button" class="raised button-accent block">
-                        <span>${ButtonSignInWithConnect}</span>
-                    </button>
-                </a>
-            </div>
-
-            <div class="invitationSection hide">
-                <br />
-                <h1 style="margin-bottom:.5em;padding-left:5px;">${HeaderInvitations}</h1>
-
-                <div class="invitationList paperList">
-
-                </div>
-            </div>
+    <div class="verticalSection flex-shrink-zero flex flex-direction-column" style="margin-bottom:1em;">
+        <div class="padded-left padded-right flex align-items-center justify-content-center" style="margin-bottom:2em;">
+            <h1 class="sectionTitle sectionTitle-cards" style="margin:0;">${HeaderSelectServer}</h1>
+            <button is="emby-button" type="button" class="raised raised-mini button-raised-accent hide noautofocus" style="margin-left:2em;" data-target="https://github.com/MediaBrowser/Wiki/wiki/Emby%20Connect" data-autohide="true">
+                <span>${Help}</span>
+            </button>
         </div>
+        <div is="emby-scroller" class="padded-top padded-bottom-focusscale flex-grow flex" data-mousewheel="false" data-horizontal="true" data-centerfocus="card">
+            <div is="emby-itemscontainer" class="scrollSlider focuscontainer-x padded-left padded-right servers flex-grow" style="display: block; text-align: center;" data-hovermenu="false" data-multiselect="false"></div>
+        </div>
+    </div>
 
+    <div class="padded-top padded-left padded-right flex flex-shrink-zero justify-content-center verticalSection flex-wrap-wrap" style="margin-left:auto;margin-right:auto;">
+        <button is="emby-button" type="button" class="raised block cancel btnAddServer flex-shrink-zero" style="margin: .25em;">
+            <span>${ButtonAddServer}</span>
+        </button>
+        <button is="emby-button" type="button" class="raised block cancel btnConnect flex-shrink-zero" style="margin: .25em;">
+            <span>${HeaderSignInWithConnect}</span>
+        </button>
+        <button is="emby-button" type="button" class="raised block cancel btnOffline hide flex-shrink-zero" style="margin: .25em;">
+            <span class="btnOfflineText"></span>
+        </button>
+    </div>
+
+    <div class="verticalSection invitationSection hide flex-shrink-zero flex flex-direction-column" style="margin-bottom:200px;">
+        <div>
+            <h1 class="sectionTitle sectionTitle-cards padded-left padded-right" style="text-align: center;">${Invitations}</h1>
+        </div>
+        <div is="emby-scroller" class="padded-top padded-bottom-focusscale flex-grow flex" data-mousewheel="false" data-horizontal="true" data-centerfocus="card">
+            <div is="emby-itemscontainer" class="scrollSlider focuscontainer-x padded-left padded-right invitations flex-grow" style="display:block;text-align:center;" data-hovermenu="false" data-multiselect="false"></div>
+        </div>
     </div>
 </div>

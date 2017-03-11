@@ -1,4 +1,8 @@
 {
+    "Connect": "Verbinde",
+    "MessageNoServersAvailableToConnect": "Es steht kein verbindungsbereiter Server zur Verf\u00fcgung. Wenn du eingeladen wurdest, vergewissere dich, dass du die Einladung weiter unten akzeptierst oder den Link in der E-Mail angeklickt hast.",
+    "Accept": "Akzeptieren",
+    "Reject": "Ablehnen",
     "MessageUnlockAppWithPurchaseOrSupporter": "Schalte diese Funktion mit einer kleinen einmaligen Geb\u00fchr oder einem aktiven Emby Premium Abo frei.",
     "MessageUnlockAppWithSupporter": "Schalte diese Funktion mit einem aktiven Emby Premium Abo frei.",
     "MessageToValidateSupporter": "Wenn du eine aktive Emby Premiere Mitgliedschaft hast, stelle bitte sicher, dass du diese \u00fcber das Emby Server Dashboard eingerichtet hast (Hauptmenu -> Emby Premiere).",
@@ -44,6 +48,8 @@
     "RecordSeries": "Serie aufnehmen",
     "HeaderCinemaMode": "Kinomodus",
     "HeaderCloudSync": "Cloud Synchronisation",
+    "HeaderDownloadedMedia": "Heruntergeladene Medien",
+    "Downloads": "Downloads",
     "HeaderOfflineDownloads": "Offline Medien",
     "HeaderOfflineDownloadsDescription": "Lade Medien auf deine Ger\u00e4te herunter um sie einfach offline zu nutzen.",
     "CloudSyncFeatureDescription": "Synchronisiere deine Medien in die Cloud f\u00fcr ein Backup, eine Archivierung und Konvertierung.",

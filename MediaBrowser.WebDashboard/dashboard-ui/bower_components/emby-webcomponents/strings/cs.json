@@ -1,4 +1,8 @@
 {
+    "Connect": "P\u0159ipojit",
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
+    "Accept": "Accept",
+    "Reject": "Reject",
     "MessageUnlockAppWithPurchaseOrSupporter": "Odemknout tuto funkci pomoc\u00ed jednor\u00e1zov\u00e9 platby, nebo pomoc\u00ed aktivace p\u0159edplatn\u00e9ho Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Odemknout tuto funkci pomoc\u00ed aktivn\u00edho p\u0159edplatn\u00e9ho Emby Premiere.",
     "MessageToValidateSupporter": "Pokud m\u00e1te aktivn\u00ed p\u0159edplatn\u00e9 Emby Premiere, ujist\u011bte se, \u017ee m\u00e1te nastaven Emby Premiere v panelu Nastaven\u00ed pod N\u00e1pov\u011bda -> Emby Premiere.",
@@ -44,6 +48,8 @@
     "RecordSeries": "Nahr\u00e1t s\u00e9rie",
     "HeaderCinemaMode": "Cinema M\u00f3d",
     "HeaderCloudSync": "Synchronizace s Cloudem",
+    "HeaderDownloadedMedia": "Downloaded Media",
+    "Downloads": "Downloads",
     "HeaderOfflineDownloads": "Offline m\u00e9dia",
     "HeaderOfflineDownloadsDescription": "St\u00e1hnout m\u00e9dia do va\u0161eho za\u0159\u00edzen\u00ed pro snadn\u00e9 pou\u017eit\u00ed offline.",
     "CloudSyncFeatureDescription": "Synchronizujte va\u0161e m\u00e9dia na cloud pro jednodu\u0161\u0161\u00ed z\u00e1lohov\u00e1n\u00ed, archivaci a konverzi.",
