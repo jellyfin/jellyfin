@@ -8,4 +8,9 @@ namespace MediaBrowser.Model.Services
     {
         Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken);
     }
+
+    public interface IFileWriter
+    {
+        Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken);
+    }
 }

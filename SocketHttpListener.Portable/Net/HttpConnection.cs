@@ -35,13 +35,14 @@ namespace SocketHttpListener.Net
         ICertificate cert;
         Stream ssl_stream;
 
-        private ILogger _logger;
+        private readonly ILogger _logger;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly IMemoryStreamFactory _memoryStreamFactory;
         private readonly ITextEncoding _textEncoding;
         private readonly IStreamFactory _streamFactory;
+        private readonly IFileSystem _fileSystem;
 
-        private HttpConnection(ILogger logger, IAcceptSocket sock, EndPointListener epl, bool secure, ICertificate cert, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding)
+        private HttpConnection(ILogger logger, IAcceptSocket sock, EndPointListener epl, bool secure, ICertificate cert, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem)
         {
             _logger = logger;
             this.sock = sock;
@@ -51,6 +52,7 @@ namespace SocketHttpListener.Net
             _cryptoProvider = cryptoProvider;
             _memoryStreamFactory = memoryStreamFactory;
             _textEncoding = textEncoding;
+            _fileSystem = fileSystem;
             _streamFactory = streamFactory;
         }
 
@@ -82,9 +84,9 @@ namespace SocketHttpListener.Net
             Init();
         }
 
-        public static async Task<HttpConnection> Create(ILogger logger, IAcceptSocket sock, EndPointListener epl, bool secure, ICertificate cert, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding)
+        public static async Task<HttpConnection> Create(ILogger logger, IAcceptSocket sock, EndPointListener epl, bool secure, ICertificate cert, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem)
         {
-            var connection = new HttpConnection(logger, sock, epl, secure, cert, cryptoProvider, streamFactory, memoryStreamFactory, textEncoding);
+            var connection = new HttpConnection(logger, sock, epl, secure, cert, cryptoProvider, streamFactory, memoryStreamFactory, textEncoding, fileSystem);
 
             await connection.InitStream().ConfigureAwait(false);
 
@@ -121,7 +123,7 @@ namespace SocketHttpListener.Net
             position = 0;
             input_state = InputState.RequestLine;
             line_state = LineState.None;
-            context = new HttpListenerContext(this, _logger, _cryptoProvider, _memoryStreamFactory, _textEncoding);
+            context = new HttpListenerContext(this, _logger, _cryptoProvider, _memoryStreamFactory, _textEncoding, _fileSystem);
         }
 
         public bool IsClosed
@@ -213,7 +215,9 @@ namespace SocketHttpListener.Net
 
                 if (context.Response.SendChunked || isExpect100Continue || context.Request.IsWebSocketRequest || true)
                 {
-                    o_stream = new ResponseStream(stream, context.Response, _memoryStreamFactory, _textEncoding);
+                    var supportsDirectSocketAccess = !context.Response.SendChunked && !isExpect100Continue && !secure;
+
+                    o_stream = new ResponseStream(stream, context.Response, _memoryStreamFactory, _textEncoding, _fileSystem, sock, supportsDirectSocketAccess);
                 }
                 else
                 {
