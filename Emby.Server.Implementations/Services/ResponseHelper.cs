@@ -12,45 +12,6 @@ namespace Emby.Server.Implementations.Services
 {
     public static class ResponseHelper
     {
-        private static async Task<bool> WriteToOutputStream(IResponse response, object result)
-        {
-            var asyncStreamWriter = result as IAsyncStreamWriter;
-            if (asyncStreamWriter != null)
-            {
-                await asyncStreamWriter.WriteToAsync(response.OutputStream, CancellationToken.None).ConfigureAwait(false);
-                return true;
-            }
-
-            var streamWriter = result as IStreamWriter;
-            if (streamWriter != null)
-            {
-                streamWriter.WriteTo(response.OutputStream);
-                return true;
-            }
-
-            var stream = result as Stream;
-            if (stream != null)
-            {
-                using (stream)
-                {
-                    await stream.CopyToAsync(response.OutputStream).ConfigureAwait(false);
-                    return true;
-                }
-            }
-
-            var bytes = result as byte[];
-            if (bytes != null)
-            {
-                response.ContentType = "application/octet-stream";
-                response.SetContentLength(bytes.Length);
-
-                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-                return true;
-            }
-
-            return false;
-        }
-
         public static Task WriteToResponse(IResponse httpRes, IRequest httpReq, object result)
         {
             if (result == null)
@@ -152,6 +113,13 @@ namespace Emby.Server.Implementations.Services
             if (streamWriter != null)
             {
                 streamWriter.WriteTo(response.OutputStream);
+                return;
+            }
+
+            var fileWriter = result as FileWriter;
+            if (fileWriter != null)
+            {
+                await fileWriter.WriteToAsync(response, CancellationToken.None).ConfigureAwait(false);
                 return;
             }
 
