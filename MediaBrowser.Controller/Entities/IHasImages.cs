@@ -206,6 +206,8 @@ namespace MediaBrowser.Controller.Entities
         void SetImage(ItemImageInfo image, int index);
 
         double? GetDefaultPrimaryImageAspectRatio();
+
+        int? ProductionYear { get; set; }
     }
 
     public static class HasImagesExtensions

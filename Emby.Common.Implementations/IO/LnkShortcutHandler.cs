@@ -6,7 +6,7 @@ using System.Security;
 using System.Text;
 using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.ServerApplication.Native
+namespace Emby.Common.Implementations.IO
 {
     public class LnkShortcutHandler :IShortcutHandler
     {
@@ -35,7 +35,6 @@ namespace MediaBrowser.ServerApplication.Native
     /// <summary>
     /// Class NativeMethods
     /// </summary>
-    [SuppressUnmanagedCodeSecurity]
     public static class NativeMethods
     {
         /// <summary>

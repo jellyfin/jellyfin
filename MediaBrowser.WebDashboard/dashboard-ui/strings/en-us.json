@@ -1075,6 +1075,7 @@
   "HeaderShareMediaFolders": "Share Media Folders",
   "MessageGuestSharingPermissionsHelp": "Most features are initially unavailable to guests but can be enabled as needed.",
   "HeaderInvitations": "Invitations",
+  "Invitations": "Invitations",
   "LabelForgotPasswordUsernameHelp": "Enter your username, if you remember it.",
   "HeaderForgotPassword": "Forgot Password",
   "TitlePasswordReset": "Password Reset",

@@ -59,6 +59,7 @@ namespace Emby.Common.Implementations.Net
             if (remotePort < 0) throw new ArgumentException("remotePort cannot be less than zero.", "remotePort");
 
             var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
+            
             try
             {
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);

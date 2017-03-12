@@ -1,4 +1,8 @@
 {
+    "Connect": "Connect",
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
+    "Accept": "Accept",
+    "Reject": "Reject",
     "MessageUnlockAppWithPurchaseOrSupporter": "D\u00e9verrouillez cette fonctionnalit\u00e9 avec un petit achat unique ou avec un abonnement Emby Premiere actif.",
     "MessageUnlockAppWithSupporter": "D\u00e9verrouillez cette fonctionnalit\u00e9 avec un abonnement Emby Premi\u00e8re actif.",
     "MessageToValidateSupporter": "Si vous avez un abonnement Emby Premi\u00e8re actif, assurez-vous d'avoir install\u00e9 Emby Premi\u00e8re sur le tableau de bord de votre serveur Emby, auquel vous pouvez acc\u00e9der en cliquant sur Emby Premi\u00e8re dans le menu principal.",
@@ -44,6 +48,8 @@
     "RecordSeries": "Record series",
     "HeaderCinemaMode": "Mode Cin\u00e9ma",
     "HeaderCloudSync": "Synchronisation Cloud",
+    "HeaderDownloadedMedia": "Downloaded Media",
+    "Downloads": "Downloads",
     "HeaderOfflineDownloads": "M\u00e9dia hors ligne",
     "HeaderOfflineDownloadsDescription": "T\u00e9l\u00e9chargez le m\u00e9dia sur vos appareils pour une utilisation hors ligne facile.",
     "CloudSyncFeatureDescription": "Synchronisez vos m\u00e9dias avec le Cloud pour faciliter la sauvegarde, l'archivage et la conversion.",

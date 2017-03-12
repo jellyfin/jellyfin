@@ -1276,6 +1276,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     return;
                 }
 
+                var registration = await _liveTvManager.GetRegistrationInfo("dvr").ConfigureAwait(false);
+                if (!registration.IsValid)
+                {
+                    _logger.Warn("Emby Premiere required to use Emby DVR.");
+                    OnTimerOutOfDate(timer);
+                    return;
+                }
+
                 var activeRecordingInfo = new ActiveRecordingInfo
                 {
                     CancellationTokenSource = new CancellationTokenSource(),
@@ -2318,6 +2326,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         if (!_activeRecordings.TryGetValue(timer.Id, out activeRecordingInfo))
                         {
                             UpdateExistingTimerWithNewMetadata(existingTimer, timer);
+
+                            // Needed by ShouldCancelTimerForSeriesTimer
+                            timer.IsManual = existingTimer.IsManual;
 
                             if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
                             {

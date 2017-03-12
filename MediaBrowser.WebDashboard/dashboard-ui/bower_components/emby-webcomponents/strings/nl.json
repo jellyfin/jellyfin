@@ -1,4 +1,8 @@
 {
+    "Connect": "Verbind",
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
+    "Accept": "Accept",
+    "Reject": "Reject",
     "MessageUnlockAppWithPurchaseOrSupporter": "Ontgrendel deze functie met een kleine eenmalige aankoop, of met een actief Emby Premiere abonnement.",
     "MessageUnlockAppWithSupporter": "Ontgrendel deze functie met een actief Emby Premiere abonnement.",
     "MessageToValidateSupporter": "Als u een actieve Emby Premiere abonnement heeft , zorg er dan voor dat u deze activeert in uw Emby Server Dashboard door te klikken op Emby Premiere in het hoofdmenu.",
@@ -44,6 +48,8 @@
     "RecordSeries": "Series Opnemen",
     "HeaderCinemaMode": "Bioscoop mode",
     "HeaderCloudSync": "Cloud Synchronisatie",
+    "HeaderDownloadedMedia": "Downloaded Media",
+    "Downloads": "Downloads",
     "HeaderOfflineDownloads": "Offline Media",
     "HeaderOfflineDownloadsDescription": "Download media naar je apparaten voor gemakkelijk offlineebruik.",
     "CloudSyncFeatureDescription": "Synchroniseer uw media naar de cloud voor eenvoudige backup, archivering en conversie.",
