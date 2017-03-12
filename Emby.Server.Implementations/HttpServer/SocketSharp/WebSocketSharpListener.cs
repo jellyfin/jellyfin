@@ -27,10 +27,11 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         private readonly ISocketFactory _socketFactory;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly IStreamFactory _streamFactory;
+        private readonly IFileSystem _fileSystem;
         private readonly Func<HttpListenerContext, IHttpRequest> _httpRequestFactory;
         private readonly bool _enableDualMode;
 
-        public WebSocketSharpListener(ILogger logger, ICertificate certificate, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, INetworkManager networkManager, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, bool enableDualMode, Func<HttpListenerContext, IHttpRequest> httpRequestFactory)
+        public WebSocketSharpListener(ILogger logger, ICertificate certificate, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, INetworkManager networkManager, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, bool enableDualMode, Func<HttpListenerContext, IHttpRequest> httpRequestFactory, IFileSystem fileSystem)
         {
             _logger = logger;
             _certificate = certificate;
@@ -42,6 +43,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             _streamFactory = streamFactory;
             _enableDualMode = enableDualMode;
             _httpRequestFactory = httpRequestFactory;
+            _fileSystem = fileSystem;
         }
 
         public Action<Exception, IRequest, bool> ErrorHandler { get; set; }
@@ -54,7 +56,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         public void Start(IEnumerable<string> urlPrefixes)
         {
             if (_listener == null)
-                _listener = new HttpListener(_logger, _cryptoProvider, _streamFactory, _socketFactory, _networkManager, _textEncoding, _memoryStreamProvider);
+                _listener = new HttpListener(_logger, _cryptoProvider, _streamFactory, _socketFactory, _networkManager, _textEncoding, _memoryStreamProvider, _fileSystem);
 
             _listener.EnableDualMode = _enableDualMode;
 

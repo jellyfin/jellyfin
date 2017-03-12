@@ -61,7 +61,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Common.Implementations;
 using Emby.Common.Implementations.Archiving;
-using Emby.Common.Implementations.Networking;
+using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.Reflection;
 using Emby.Common.Implementations.Serialization;
 using Emby.Common.Implementations.TextEncoding;
@@ -93,7 +93,7 @@ using Emby.Server.Implementations.Social;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
 using Emby.Server.Implementations.Dto;
-using Emby.Server.Implementations.EntryPoints;
+using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.FileOrganization;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.Security;
@@ -294,6 +294,13 @@ namespace Emby.Server.Core
             ImageEncoder = imageEncoder;
 
             SetBaseExceptionMessage();
+
+            if (environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
+            {
+                fileSystem.AddShortcutHandler(new LnkShortcutHandler());
+            }
+
+            fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
         }
 
         private Version _version;
@@ -606,7 +613,7 @@ namespace Emby.Server.Core
             CertificatePath = GetCertificatePath(true);
             Certificate = GetCertificate(CertificatePath);
 
-            HttpServer = HttpServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamFactory, "Emby", "web/index.html", textEncoding, SocketFactory, CryptographyProvider, JsonSerializer, XmlSerializer, EnvironmentInfo, Certificate, SupportsDualModeSockets);
+            HttpServer = HttpServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamFactory, "Emby", "web/index.html", textEncoding, SocketFactory, CryptographyProvider, JsonSerializer, XmlSerializer, EnvironmentInfo, Certificate, FileSystemManager, SupportsDualModeSockets);
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);

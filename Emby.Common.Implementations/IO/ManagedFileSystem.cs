@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.System;
 
 namespace Emby.Common.Implementations.IO
 {
@@ -18,17 +19,17 @@ namespace Emby.Common.Implementations.IO
         private readonly bool _supportsAsyncFileStreams;
         private char[] _invalidFileNameChars;
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
-        private bool EnableFileSystemRequestConcat = true;
+        private bool EnableFileSystemRequestConcat;
 
         private string _tempPath;
 
-        public ManagedFileSystem(ILogger logger, bool supportsAsyncFileStreams, bool enableManagedInvalidFileNameChars, bool enableFileSystemRequestConcat, string tempPath)
+        public ManagedFileSystem(ILogger logger, IEnvironmentInfo environmentInfo, string tempPath)
         {
             Logger = logger;
-            _supportsAsyncFileStreams = supportsAsyncFileStreams;
+            _supportsAsyncFileStreams = true;
             _tempPath = tempPath;
-            EnableFileSystemRequestConcat = enableFileSystemRequestConcat;
-            SetInvalidFileNameChars(enableManagedInvalidFileNameChars);
+            EnableFileSystemRequestConcat = false;
+            SetInvalidFileNameChars(environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows);
         }
 
         public void AddShortcutHandler(IShortcutHandler handler)

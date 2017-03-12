@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
+using Emby.Common.Implementations.IO;
 using Emby.Server.CinemaMode;
 using Emby.Server.Connect;
 using Emby.Server.Core;

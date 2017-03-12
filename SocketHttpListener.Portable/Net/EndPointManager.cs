@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using SocketHttpListener.Primitives;
@@ -105,7 +106,7 @@ namespace SocketHttpListener.Net
             }
             else
             {
-                epl = new EndPointListener(listener, addr, port, secure, listener.Certificate, logger, listener.CryptoProvider, listener.StreamFactory, listener.SocketFactory, listener.MemoryStreamFactory, listener.TextEncoding);
+                epl = new EndPointListener(listener, addr, port, secure, listener.Certificate, logger, listener.CryptoProvider, listener.StreamFactory, listener.SocketFactory, listener.MemoryStreamFactory, listener.TextEncoding, listener.FileSystem);
                 p[port] = epl;
             }
 
