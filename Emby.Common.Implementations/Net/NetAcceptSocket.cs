@@ -100,7 +100,7 @@ namespace Emby.Common.Implementations.Net
 #if NET46
         public Task SendFile(string path, byte[] preBuffer, byte[] postBuffer, CancellationToken cancellationToken)
         {
-            var options = TransmitFileOptions.Disconnect | TransmitFileOptions.ReuseSocket | TransmitFileOptions.UseKernelApc;
+            var options = TransmitFileOptions.UseKernelApc;
 
             var completionSource = new TaskCompletionSource<bool>();
 

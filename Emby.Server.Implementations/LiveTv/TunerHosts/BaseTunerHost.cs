@@ -69,7 +69,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         protected virtual List<TunerHostInfo> GetTunerHosts()
         {
             return GetConfiguration().TunerHosts
-                .Where(i => i.IsEnabled && string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase))
+                .Where(i => string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 

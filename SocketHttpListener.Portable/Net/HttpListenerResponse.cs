@@ -515,9 +515,9 @@ namespace SocketHttpListener.Net
             cookies.Add(cookie);
         }
 
-        public Task TransmitFile(string path, long offset, long count, CancellationToken cancellationToken)
+        public Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
-            return ((ResponseStream)OutputStream).TransmitFile(path, offset, count, cancellationToken);
+            return ((ResponseStream)OutputStream).TransmitFile(path, offset, count, fileShareMode, cancellationToken);
         }
     }
 }

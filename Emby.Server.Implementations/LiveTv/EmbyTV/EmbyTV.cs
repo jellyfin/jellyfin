@@ -2542,6 +2542,60 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             public ProgramInfo Program { get; set; }
             public CancellationTokenSource CancellationTokenSource { get; set; }
         }
+
+        public async Task ScanForTunerDeviceChanges(CancellationToken cancellationToken)
+        {
+            foreach (var host in _liveTvManager.TunerHosts)
+            {
+                await ScanForTunerDeviceChanges(host, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private async Task ScanForTunerDeviceChanges(ITunerHost host, CancellationToken cancellationToken)
+        {
+            var discoveredDevices = await DiscoverDevices(host, 3000, cancellationToken).ConfigureAwait(false);
+
+            var configuredDevices = GetConfiguration().TunerHosts
+                .Where(i => string.Equals(i.Type, host.Type, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            foreach (var device in discoveredDevices)
+            {
+                var configuredDevice = configuredDevices.FirstOrDefault(i => string.Equals(i.DeviceId, device.DeviceId, StringComparison.OrdinalIgnoreCase));
+
+                if (configuredDevice != null)
+                {
+                    if (!string.Equals(device.Url, configuredDevice.Url, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.Info("Tuner url has changed from {0} to {1}", configuredDevice.Url, device.Url);
+
+                        configuredDevice.Url = device.Url;
+                        await _liveTvManager.SaveTunerHost(configuredDevice).ConfigureAwait(false);
+                    }
+                }
+            }
+        }
+
+        private async Task<List<TunerHostInfo>> DiscoverDevices(ITunerHost host, int discoveryDuationMs, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var discoveredDevices = await host.DiscoverDevices(discoveryDuationMs, cancellationToken).ConfigureAwait(false);
+
+                foreach (var device in discoveredDevices)
+                {
+                    _logger.Info("Discovered tuner device {0} at {1}", host.Name, device.Url);
+                }
+
+                return discoveredDevices;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error discovering tuner devices", ex);
+
+                return new List<TunerHostInfo>();
+            }
+        }
     }
     public static class ConfigurationExtension
     {

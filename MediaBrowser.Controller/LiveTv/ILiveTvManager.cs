@@ -376,18 +376,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// <returns>Task.</returns>
         Task OnRecordingFileDeleted(BaseItem recording);
 
-        /// <summary>
-        /// Gets the sat ini mappings.
-        /// </summary>
-        /// <returns>List&lt;NameValuePair&gt;.</returns>
-        List<NameValuePair> GetSatIniMappings();
-
-        Task<List<ChannelInfo>> GetSatChannelScanResult(TunerHostInfo info, CancellationToken cancellationToken);
-
         Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken);
         Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken);
 
         List<IListingsProvider> ListingProviders { get; }
+
+        List<NameIdPair> GetTunerHostTypes();
 
         event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
         event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCancelled;
