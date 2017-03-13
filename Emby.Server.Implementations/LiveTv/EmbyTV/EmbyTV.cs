@@ -2543,6 +2543,20 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             public CancellationTokenSource CancellationTokenSource { get; set; }
         }
 
+        public async Task<List<TunerHostInfo>> DiscoverTuners(CancellationToken cancellationToken)
+        {
+            var list = new List<TunerHostInfo>();
+
+            foreach (var host in _liveTvManager.TunerHosts)
+            {
+                var discoveredDevices = await DiscoverDevices(host, 3000, cancellationToken).ConfigureAwait(false);
+
+                list.AddRange(discoveredDevices);
+            }
+
+            return list;
+        }
+
         public async Task ScanForTunerDeviceChanges(CancellationToken cancellationToken)
         {
             foreach (var host in _liveTvManager.TunerHosts)

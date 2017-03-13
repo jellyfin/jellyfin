@@ -1968,5 +1968,8 @@
   "HeaderUpcomingEpisodes": "Upcoming Episodes",
   "HeaderFavoriteVideos": "Favorite Videos",
   "HeaderLiveTvTunerSetup": "Live TV Tuner Setup",
-  "HeaderDetectMyDevices": "Detect My Devices"
+  "HeaderDetectMyDevices": "Detect My Devices",
+  "MessagePleaseWait": "Please wait. This may take a minute.",
+  "DetectingDevices": "Detecting devices",
+  "HeaderDeviceDiscovery": "Device Discovery"
 }

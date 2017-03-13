@@ -677,7 +677,14 @@ namespace MediaBrowser.Api.LiveTv
     [Authenticated]
     public class GetTunerHostTypes : IReturn<List<NameIdPair>>
     {
-        
+
+    }
+
+    [Route("/LiveTv/Tuners/Discvover", "GET")]
+    [Authenticated]
+    public class DiscoverTuners : IReturn<List<TunerHostInfo>>
+    {
+
     }
 
     public class LiveTvService : BaseApiService
@@ -728,6 +735,12 @@ namespace MediaBrowser.Api.LiveTv
             {
                 AllowEndOfFile = false
             };
+        }
+
+        public async Task<object> Get(DiscoverTuners request)
+        {
+            var result = await _liveTvManager.DiscoverTuners(CancellationToken.None).ConfigureAwait(false);
+            return ToOptimizedResult(result);
         }
 
         public async Task<object> Get(GetLiveStreamFile request)
