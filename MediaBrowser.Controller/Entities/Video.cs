@@ -614,7 +614,8 @@ namespace MediaBrowser.Controller.Entities
                 Timestamp = i.Timestamp,
                 Type = type,
                 PlayableStreamFileNames = i.PlayableStreamFileNames.ToList(),
-                SupportsDirectStream = i.VideoType == VideoType.VideoFile
+                SupportsDirectStream = i.VideoType == VideoType.VideoFile,
+                IsRemote = i.IsShortcut
             };
 
             if (info.Protocol == MediaProtocol.File)

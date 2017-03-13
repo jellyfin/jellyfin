@@ -382,6 +382,7 @@ namespace MediaBrowser.Controller.LiveTv
         List<IListingsProvider> ListingProviders { get; }
 
         List<NameIdPair> GetTunerHostTypes();
+        Task<List<TunerHostInfo>> DiscoverTuners(CancellationToken cancellationToken);
 
         event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
         event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCancelled;

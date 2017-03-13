@@ -706,6 +706,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 var modelInfo = await GetModelInfo(hostInfo, false, cancellationToken).ConfigureAwait(false);
 
                 hostInfo.DeviceId = modelInfo.DeviceID;
+                hostInfo.FriendlyName = modelInfo.FriendlyName;
 
                 return hostInfo;
             }

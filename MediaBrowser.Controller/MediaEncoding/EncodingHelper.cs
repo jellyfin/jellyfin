@@ -185,6 +185,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return null;
             }
 
+            // obviously don't do this for strm files
+            if (string.Equals(container, "strm", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
             return container;
         }
 
