@@ -238,7 +238,7 @@ namespace Emby.Drawing
             var outputFormat = GetOutputFormat(options.SupportedOutputFormats[0]);
             var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, outputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.Blur, options.BackgroundColor, options.ForegroundLayer);
 
-            var imageProcessingLockTaken = false;
+            //var imageProcessingLockTaken = false;
 
             try
             {
@@ -253,9 +253,9 @@ namespace Emby.Drawing
                     var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(cacheFilePath));
                     _fileSystem.CreateDirectory(Path.GetDirectoryName(tmpPath));
 
-                    await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
+                    //await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
 
-                    imageProcessingLockTaken = true;
+                    //imageProcessingLockTaken = true;
 
                     _imageEncoder.EncodeImage(originalImagePath, tmpPath, AutoOrient(options.Item), newWidth, newHeight, quality, options, outputFormat);
                     CopyFile(tmpPath, cacheFilePath);
@@ -273,13 +273,13 @@ namespace Emby.Drawing
                 // Just spit out the original file if all the options are default
                 return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
-            finally
-            {
-                if (imageProcessingLockTaken)
-                {
-                    _imageProcessingSemaphore.Release();
-                }
-            }
+            //finally
+            //{
+            //    if (imageProcessingLockTaken)
+            //    {
+            //        _imageProcessingSemaphore.Release();
+            //    }
+            //}
         }
 
         private void CopyFile(string src, string destination)
