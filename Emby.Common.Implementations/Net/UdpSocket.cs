@@ -60,6 +60,8 @@ namespace Emby.Common.Implementations.Net
             var state = new AsyncReceiveState(_Socket, receivedFromEndPoint);
             state.TaskCompletionSource = tcs;
 
+            cancellationToken.Register(() => tcs.TrySetCanceled());
+
 #if NETSTANDARD1_6
             _Socket.ReceiveFromAsync(new ArraySegment<Byte>(state.Buffer), SocketFlags.None, state.RemoteEndPoint)
                 .ContinueWith((task, asyncState) =>
@@ -160,7 +162,7 @@ namespace Emby.Common.Implementations.Net
                 var bytesRead = receiveData();
 
                 var ipEndPoint = state.RemoteEndPoint as IPEndPoint;
-                state.TaskCompletionSource.SetResult(
+                state.TaskCompletionSource.TrySetResult(
                     new SocketReceiveResult
                     {
                         Buffer = state.Buffer,
@@ -172,18 +174,18 @@ namespace Emby.Common.Implementations.Net
             }
             catch (ObjectDisposedException)
             {
-                state.TaskCompletionSource.SetCanceled();
+                state.TaskCompletionSource.TrySetCanceled();
             }
             catch (SocketException se)
             {
                 if (se.SocketErrorCode != SocketError.Interrupted && se.SocketErrorCode != SocketError.OperationAborted && se.SocketErrorCode != SocketError.Shutdown)
-                    state.TaskCompletionSource.SetException(se);
+                    state.TaskCompletionSource.TrySetException(se);
                 else
-                    state.TaskCompletionSource.SetCanceled();
+                    state.TaskCompletionSource.TrySetCanceled();
             }
             catch (Exception ex)
             {
-                state.TaskCompletionSource.SetException(ex);
+                state.TaskCompletionSource.TrySetException(ex);
             }
         }
 
@@ -206,7 +208,7 @@ namespace Emby.Common.Implementations.Net
                 var bytesRead = state.Socket.EndReceiveFrom(asyncResult, ref state.RemoteEndPoint);
 
                 var ipEndPoint = state.RemoteEndPoint as IPEndPoint;
-                state.TaskCompletionSource.SetResult(
+                state.TaskCompletionSource.TrySetResult(
                     new SocketReceiveResult
                     {
                         Buffer = state.Buffer,
@@ -218,11 +220,11 @@ namespace Emby.Common.Implementations.Net
             }
             catch (ObjectDisposedException)
             {
-                state.TaskCompletionSource.SetCanceled();
+                state.TaskCompletionSource.TrySetCanceled();
             }
             catch (Exception ex)
             {
-                state.TaskCompletionSource.SetException(ex);
+                state.TaskCompletionSource.TrySetException(ex);
             }
 #endif
         }

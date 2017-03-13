@@ -1180,6 +1180,8 @@ namespace Emby.Server.Implementations.LiveTv
         {
             EmbyTV.EmbyTV.Current.CreateRecordingFolders();
 
+            await EmbyTV.EmbyTV.Current.ScanForTunerDeviceChanges(cancellationToken).ConfigureAwait(false);
+
             var numComplete = 0;
             double progressPerService = _services.Count == 0
                 ? 0

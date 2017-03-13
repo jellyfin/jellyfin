@@ -653,9 +653,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             public int TunerCount { get; set; }
         }
 
-        public async Task<List<TunerHostInfo>> DiscoverDevices(int discoveryDurationMs)
+        public async Task<List<TunerHostInfo>> DiscoverDevices(int discoveryDurationMs, CancellationToken cancellationToken)
         {
-            var cancellationToken = new CancellationTokenSource(discoveryDurationMs).Token;
+            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(discoveryDurationMs).Token, cancellationToken).Token;
             var list = new List<TunerHostInfo>();
 
             // Create udp broadcast discovery message
