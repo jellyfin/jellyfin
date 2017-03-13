@@ -46,6 +46,7 @@ namespace MediaBrowser.Model.LiveTv
         public string Url { get; set; }
         public string Type { get; set; }
         public string DeviceId { get; set; }
+        public string FriendlyName { get; set; }
         public bool ImportFavoritesOnly { get; set; }
         public bool AllowHWTranscoding { get; set; }
         public bool EnableTvgId { get; set; }
