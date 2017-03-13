@@ -176,5 +176,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             return Task.FromResult(true);
         }
+
+        public Task<List<TunerHostInfo>> DiscoverDevices(int discoveryDurationMs)
+        {
+            return Task.FromResult(new List<TunerHostInfo>());
+        }
     }
 }

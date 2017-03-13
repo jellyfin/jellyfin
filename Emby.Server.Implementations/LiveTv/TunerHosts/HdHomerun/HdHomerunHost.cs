@@ -587,7 +587,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var hdhomerunChannel = channelInfo as HdHomerunChannelInfo;
 
             if (hdhomerunChannel != null && hdhomerunChannel.IsLegacyTuner)
-            {              
+            {
                 var mediaSource = GetLegacyMediaSource(info, hdhrId, channelInfo);
                 var modelInfo = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
 
@@ -651,6 +651,75 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             public string BaseURL { get; set; }
             public string LineupURL { get; set; }
             public int TunerCount { get; set; }
+        }
+
+        public async Task<List<TunerHostInfo>> DiscoverDevices(int discoveryDurationMs)
+        {
+            var cancellationToken = new CancellationTokenSource(discoveryDurationMs).Token;
+            var list = new List<TunerHostInfo>();
+
+            // Create udp broadcast discovery message
+            byte[] discBytes = { 0, 2, 0, 12, 1, 4, 255, 255, 255, 255, 2, 4, 255, 255, 255, 255, 115, 204, 125, 143 };
+            using (var udpClient = _socketFactory.CreateUdpBroadcastSocket(0))
+            {
+                // Need a way to set the Receive timeout on the socket otherwise this might never timeout?
+                try
+                {
+                    await udpClient.SendAsync(discBytes, discBytes.Length, new IpEndPointInfo(new IpAddressInfo("255.255.255.255", IpAddressFamily.InterNetwork), 65001), cancellationToken);
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        var response = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                        var deviceIp = response.RemoteEndPoint.IpAddress.Address;
+
+                        // check to make sure we have enough bytes received to be a valid message and make sure the 2nd byte is the discover reply byte
+                        if (response.ReceivedBytes > 13 && response.Buffer[1] == 3)
+                        {
+                            var deviceAddress = "http://" + deviceIp;
+
+                            var info = await TryGetTunerHostInfo(deviceAddress, cancellationToken).ConfigureAwait(false);
+
+                            if (info != null)
+                            {
+                                list.Add(info);
+                            }
+                        }
+                    }
+
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch
+                {
+                    // Socket timeout indicates all messages have been received.
+                }
+            }
+
+            return list;
+        }
+
+        private async Task<TunerHostInfo> TryGetTunerHostInfo(string url, CancellationToken cancellationToken)
+        {
+            var hostInfo = new TunerHostInfo
+            {
+                Type = Type,
+                Url = url
+            };
+
+            try
+            {
+                var modelInfo = await GetModelInfo(hostInfo, false, cancellationToken).ConfigureAwait(false);
+
+                hostInfo.DeviceId = modelInfo.DeviceID;
+
+                return hostInfo;
+            }
+            catch
+            {
+                // logged at lower levels
+            }
+
+            return null;
         }
     }
 }
