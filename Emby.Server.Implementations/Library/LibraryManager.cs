@@ -514,6 +514,11 @@ namespace Emby.Server.Implementations.Library
 
         public Guid GetNewItemId(string key, Type type)
         {
+            return GetNewItemIdInternal(key, type, false);
+        }
+
+        private Guid GetNewItemIdInternal(string key, Type type, bool forceCaseInsensitive)
+        {
             if (string.IsNullOrWhiteSpace(key))
             {
                 throw new ArgumentNullException("key");
@@ -531,7 +536,7 @@ namespace Emby.Server.Implementations.Library
                     .Replace("/", "\\");
             }
 
-            if (!ConfigurationManager.Configuration.EnableCaseSensitiveItemIds)
+            if (forceCaseInsensitive || !ConfigurationManager.Configuration.EnableCaseSensitiveItemIds)
             {
                 key = key.ToLower();
             }
@@ -865,7 +870,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Person}.</returns>
         public Person GetPerson(string name)
         {
-            return CreateItemByName<Person>(Person.GetPath(name), name);
+            return CreateItemByName<Person>(Person.GetPath, name);
         }
 
         /// <summary>
@@ -875,7 +880,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Studio}.</returns>
         public Studio GetStudio(string name)
         {
-            return CreateItemByName<Studio>(Studio.GetPath(name), name);
+            return CreateItemByName<Studio>(Studio.GetPath, name);
         }
 
         /// <summary>
@@ -885,7 +890,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Genre}.</returns>
         public Genre GetGenre(string name)
         {
-            return CreateItemByName<Genre>(Genre.GetPath(name), name);
+            return CreateItemByName<Genre>(Genre.GetPath, name);
         }
 
         /// <summary>
@@ -895,7 +900,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{MusicGenre}.</returns>
         public MusicGenre GetMusicGenre(string name)
         {
-            return CreateItemByName<MusicGenre>(MusicGenre.GetPath(name), name);
+            return CreateItemByName<MusicGenre>(MusicGenre.GetPath, name);
         }
 
         /// <summary>
@@ -905,7 +910,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{GameGenre}.</returns>
         public GameGenre GetGameGenre(string name)
         {
-            return CreateItemByName<GameGenre>(GameGenre.GetPath(name), name);
+            return CreateItemByName<GameGenre>(GameGenre.GetPath, name);
         }
 
         /// <summary>
@@ -923,7 +928,7 @@ namespace Emby.Server.Implementations.Library
 
             var name = value.ToString(CultureInfo.InvariantCulture);
 
-            return CreateItemByName<Year>(Year.GetPath(name), name);
+            return CreateItemByName<Year>(Year.GetPath, name);
         }
 
         /// <summary>
@@ -933,10 +938,10 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Genre}.</returns>
         public MusicArtist GetArtist(string name)
         {
-            return CreateItemByName<MusicArtist>(MusicArtist.GetPath(name), name);
+            return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name);
         }
 
-        private T CreateItemByName<T>(string path, string name)
+        private T CreateItemByName<T>(Func<string,string> getPathFn, string name)
             where T : BaseItem, new()
         {
             if (typeof(T) == typeof(MusicArtist))
@@ -957,7 +962,9 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var id = GetNewItemId(path, typeof(T));
+            var path = getPathFn(name);
+            var forceCaseInsensitiveId = ConfigurationManager.Configuration.EnableNormalizedItemByNameIds;
+            var id = GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
 
             var item = GetItemById(id) as T;
 
