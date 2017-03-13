@@ -556,12 +556,13 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 var rangeHeader = requestContext.Headers.Get("Range");
 
-                if (!isHeadRequest && !string.IsNullOrWhiteSpace(options.Path) && options.FileShare == FileShareMode.Read)
+                if (!isHeadRequest && !string.IsNullOrWhiteSpace(options.Path))
                 {
                     return new FileWriter(options.Path, contentType, rangeHeader, _logger, _fileSystem)
                     {
                         OnComplete = options.OnComplete,
-                        OnError = options.OnError
+                        OnError = options.OnError,
+                        FileShare = options.FileShare
                     };
                 }
 

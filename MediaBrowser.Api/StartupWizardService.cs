@@ -120,6 +120,7 @@ namespace MediaBrowser.Api
             config.EnableSeriesPresentationUniqueKey = true;
             config.EnableLocalizedGuids = true;
             config.EnableSimpleArtistDetection = true;
+            config.EnableNormalizedItemByNameIds = true;
         }
 
         public void Post(UpdateStartupConfiguration request)

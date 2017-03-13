@@ -48,6 +48,7 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableHttps { get; set; }
         public bool EnableSeriesPresentationUniqueKey { get; set; }
         public bool EnableLocalizedGuids { get; set; }
+        public bool EnableNormalizedItemByNameIds { get; set; }
 
         /// <summary>
         /// Gets or sets the value pointing to the file system where the ssl certiifcate is located..

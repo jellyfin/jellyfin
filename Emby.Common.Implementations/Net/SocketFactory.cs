@@ -97,10 +97,31 @@ namespace Emby.Common.Implementations.Net
             }
         }
 
+        public ISocket CreateUdpBroadcastSocket(int localPort)
+        {
+            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");
+
+            var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
+            try
+            {
+                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
+
+                return new UdpSocket(retVal, localPort, IPAddress.Any);
+            }
+            catch
+            {
+                if (retVal != null)
+                    retVal.Dispose();
+
+                throw;
+            }
+        }
+        
         /// <summary>
-        /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
-        /// </summary>
-        /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
+              /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
+              /// </summary>
+              /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
         public ISocket CreateSsdpUdpSocket(IpAddressInfo localIpAddress, int localPort)
         {
             if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");

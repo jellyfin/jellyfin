@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Model.Services
 {
@@ -154,6 +155,6 @@ namespace MediaBrowser.Model.Services
         //Add Metadata to Response
         Dictionary<string, object> Items { get; }
 
-        Task TransmitFile(string path, long offset, long count, CancellationToken cancellationToken);
+        Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken);
     }
 }
