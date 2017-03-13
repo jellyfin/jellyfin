@@ -188,7 +188,6 @@ namespace MediaBrowser.Api
                     // Add tuner
                     await _liveTvManager.SaveTunerHost(new TunerHostInfo
                     {
-                        IsEnabled = true,
                         Type = request.LiveTvTunerType,
                         Url = request.LiveTvTunerPath
 

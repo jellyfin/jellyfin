@@ -48,12 +48,10 @@ namespace MediaBrowser.Model.LiveTv
         public string DeviceId { get; set; }
         public bool ImportFavoritesOnly { get; set; }
         public bool AllowHWTranscoding { get; set; }
-        public bool IsEnabled { get; set; }
         public bool EnableTvgId { get; set; }
 
         public TunerHostInfo()
         {
-            IsEnabled = true;
             AllowHWTranscoding = true;
         }
     }
