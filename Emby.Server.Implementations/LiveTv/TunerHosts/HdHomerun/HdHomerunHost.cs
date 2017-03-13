@@ -215,7 +215,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var list = new List<LiveTvTunerInfo>();
 
             foreach (var host in GetConfiguration().TunerHosts
-                .Where(i => i.IsEnabled && string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase)))
+                .Where(i => string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase)))
             {
                 try
                 {
@@ -605,11 +605,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task Validate(TunerHostInfo info)
         {
-            if (!info.IsEnabled)
-            {
-                return;
-            }
-
             lock (_modelCache)
             {
                 _modelCache.Clear();

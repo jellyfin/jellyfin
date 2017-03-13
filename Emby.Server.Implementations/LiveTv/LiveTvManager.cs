@@ -2750,7 +2750,7 @@ namespace Emby.Server.Implementations.LiveTv
 
         private bool IsLiveTvEnabled(User user)
         {
-            return user.Policy.EnableLiveTvAccess && (Services.Count > 1 || GetConfiguration().TunerHosts.Count(i => i.IsEnabled) > 0);
+            return user.Policy.EnableLiveTvAccess && (Services.Count > 1 || GetConfiguration().TunerHosts.Count > 0);
         }
 
         public IEnumerable<User> GetEnabledUsers()
@@ -2988,7 +2988,7 @@ namespace Emby.Server.Implementations.LiveTv
             if (string.Equals(feature, "dvr-l", StringComparison.OrdinalIgnoreCase))
             {
                 var config = GetConfiguration();
-                if (config.TunerHosts.Count(i => i.IsEnabled) > 0 &&
+                if (config.TunerHosts.Count > 0 &&
                     config.ListingProviders.Count(i => (i.EnableAllTuners || i.EnabledTuners.Length > 0) && string.Equals(i.Type, SchedulesDirect.TypeName, StringComparison.OrdinalIgnoreCase)) > 0)
                 {
                     return Task.FromResult(new MBRegistrationRecord
