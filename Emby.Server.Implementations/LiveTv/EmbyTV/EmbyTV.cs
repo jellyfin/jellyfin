@@ -2553,7 +2553,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private async Task ScanForTunerDeviceChanges(ITunerHost host, CancellationToken cancellationToken)
         {
-            var discoveredDevices = await DiscoverDevices(host, 2000, cancellationToken).ConfigureAwait(false);
+            var discoveredDevices = await DiscoverDevices(host, 3000, cancellationToken).ConfigureAwait(false);
 
             var configuredDevices = GetConfiguration().TunerHosts
                 .Where(i => string.Equals(i.Type, host.Type, StringComparison.OrdinalIgnoreCase))
