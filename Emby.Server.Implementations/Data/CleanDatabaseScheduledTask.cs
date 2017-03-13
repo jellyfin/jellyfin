@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities.Audio;
@@ -22,13 +23,15 @@ namespace Emby.Server.Implementations.Data
         private readonly IItemRepository _itemRepo;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
+        private readonly IApplicationPaths _appPaths;
 
-        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IFileSystem fileSystem)
+        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IFileSystem fileSystem, IApplicationPaths appPaths)
         {
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _logger = logger;
             _fileSystem = fileSystem;
+            _appPaths = appPaths;
         }
 
         public string Name
@@ -150,12 +153,26 @@ namespace Emby.Server.Implementations.Data
 
                 try
                 {
-                    if (_fileSystem.FileExists(path) || _fileSystem.DirectoryExists(path))
+                    var isPathInLibrary = false;
+
+                    if (allLibraryPaths.Any(i => path.StartsWith(i, StringComparison.Ordinal)) || 
+                        allLibraryPaths.Contains(path, StringComparer.Ordinal) || 
+                        path.StartsWith(_appPaths.ProgramDataPath, StringComparison.Ordinal))
                     {
-                        continue;
+                        isPathInLibrary = true;
+
+                        if (_fileSystem.FileExists(path) || _fileSystem.DirectoryExists(path))
+                        {
+                            continue;
+                        }
                     }
 
                     var libraryItem = _libraryManager.GetItemById(item.Item1);
+
+                    if (libraryItem == null)
+                    {
+                        continue;
+                    }
 
                     if (libraryItem.IsTopParent)
                     {
@@ -180,7 +197,14 @@ namespace Emby.Server.Implementations.Data
                         continue;
                     }
 
-                    _logger.Info("Deleting item from database {0} because path no longer exists. type: {1} path: {2}", libraryItem.Name, libraryItem.GetType().Name, libraryItemPath ?? string.Empty);
+                    if (isPathInLibrary)
+                    {
+                        _logger.Info("Deleting item from database {0} because path no longer exists. type: {1} path: {2}", libraryItem.Name, libraryItem.GetType().Name, libraryItemPath ?? string.Empty);
+                    }
+                    else
+                    {
+                        _logger.Info("Deleting item from database {0} because path is no longer in the server library. type: {1} path: {2}", libraryItem.Name, libraryItem.GetType().Name, libraryItemPath ?? string.Empty);
+                    }
 
                     await libraryItem.OnFileDeleted().ConfigureAwait(false);
                 }

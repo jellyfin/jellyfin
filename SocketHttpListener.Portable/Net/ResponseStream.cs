@@ -307,13 +307,13 @@ namespace SocketHttpListener.Net
             throw new NotSupportedException();
         }
 
-        public Task TransmitFile(string path, long offset, long count, CancellationToken cancellationToken)
+        public Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
             //if (_supportsDirectSocketAccess && offset == 0 && count == 0 && !response.SendChunked)
             //{
             //    return TransmitFileOverSocket(path, offset, count, cancellationToken);
             //}
-            return TransmitFileManaged(path, offset, count, cancellationToken);
+            return TransmitFileManaged(path, offset, count, fileShareMode, cancellationToken);
         }
 
         private readonly byte[] _emptyBuffer = new byte[] { };
@@ -334,7 +334,7 @@ namespace SocketHttpListener.Net
             await _socket.SendFile(path, buffer, _emptyBuffer, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task TransmitFileManaged(string path, long offset, long count, CancellationToken cancellationToken)
+        private async Task TransmitFileManaged(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
             var chunked = response.SendChunked;
 
@@ -343,7 +343,7 @@ namespace SocketHttpListener.Net
                 await WriteAsync(_emptyBuffer, 0, 0, cancellationToken).ConfigureAwait(false);
             }
 
-            using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true))
+            using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, fileShareMode, true))
             {
                 if (offset > 0)
                 {

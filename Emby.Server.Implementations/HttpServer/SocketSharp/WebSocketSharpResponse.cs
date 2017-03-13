@@ -193,9 +193,9 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         {
         }
 
-        public Task TransmitFile(string path, long offset, long count, CancellationToken cancellationToken)
+        public Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
-            return _response.TransmitFile(path, offset, count, cancellationToken);
+            return _response.TransmitFile(path, offset, count, fileShareMode, cancellationToken);
         }
     }
 }

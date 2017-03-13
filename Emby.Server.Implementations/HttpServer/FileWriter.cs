@@ -27,6 +27,8 @@ namespace Emby.Server.Implementations.HttpServer
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
         public List<Cookie> Cookies { get; private set; }
 
+        public FileShareMode FileShare { get; set; }
+
         /// <summary>
         /// The _options
         /// </summary>
@@ -69,6 +71,7 @@ namespace Emby.Server.Implementations.HttpServer
                 SetRangeValues();
             }
 
+            FileShare = FileShareMode.Read;
             Cookies = new List<Cookie>();
         }
 
@@ -153,11 +156,11 @@ namespace Emby.Server.Implementations.HttpServer
                 if (string.IsNullOrWhiteSpace(RangeHeader) || (RangeStart <= 0 && RangeEnd >= TotalContentLength - 1))
                 {
                     Logger.Info("Transmit file {0}", Path);
-                    await response.TransmitFile(Path, 0, 0, cancellationToken).ConfigureAwait(false);
+                    await response.TransmitFile(Path, 0, 0, FileShare, cancellationToken).ConfigureAwait(false);
                     return;
                 }
 
-                await response.TransmitFile(Path, RangeStart, RangeEnd, cancellationToken).ConfigureAwait(false);
+                await response.TransmitFile(Path, RangeStart, RangeEnd, FileShare, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
