@@ -160,6 +160,11 @@ namespace Emby.Server.Implementations.LiveTv
             }).ToList();
         }
 
+        public Task<List<TunerHostInfo>> DiscoverTuners(CancellationToken cancellationToken)
+        {
+            return EmbyTV.EmbyTV.Current.DiscoverTuners(cancellationToken);
+        }
+
         void service_DataSourceChanged(object sender, EventArgs e)
         {
             if (!_isDisposed)
