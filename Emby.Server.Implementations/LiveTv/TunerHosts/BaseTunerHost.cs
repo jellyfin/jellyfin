@@ -135,8 +135,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     {
                         // Check to make sure the tuner is available
                         // If there's only one tuner, don't bother with the check and just let the tuner be the one to throw an error
-                        if (hostsWithChannel.Count > 1 &&
-                            !await IsAvailable(host, channelId, cancellationToken).ConfigureAwait(false))
+                        if (hostsWithChannel.Count > 1 && !await IsAvailable(host, channelId, cancellationToken).ConfigureAwait(false))
                         {
                             Logger.Error("Tuner is not currently available");
                             continue;
@@ -208,6 +207,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             foreach (var host in hostsWithChannel)
             {
+                if (!channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 try
                 {
                     var liveStream = await GetChannelStream(host, channelId, streamId, cancellationToken).ConfigureAwait(false);
@@ -243,7 +247,22 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         protected abstract Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken);
 
-        protected abstract bool IsValidChannelId(string channelId);
+        protected virtual string ChannelIdPrefix
+        {
+            get
+            {
+                return Type + "_";
+            }
+        }
+        protected virtual bool IsValidChannelId(string channelId)
+        {
+            if (string.IsNullOrWhiteSpace(channelId))
+            {
+                throw new ArgumentNullException("channelId");
+            }
+
+            return channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase);
+        }
 
         protected LiveTvOptions GetConfiguration()
         {
