@@ -56,7 +56,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             get { return "hdhomerun"; }
         }
 
-        private const string ChannelIdPrefix = "hdhr_";
+        protected override string ChannelIdPrefix
+        {
+            get
+            {
+                return "hdhr_";
+            }
+        }
 
         private string GetChannelId(TunerHostInfo info, Channels i)
         {
@@ -559,26 +565,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return list;
         }
 
-        protected override bool IsValidChannelId(string channelId)
-        {
-            if (string.IsNullOrWhiteSpace(channelId))
-            {
-                throw new ArgumentNullException("channelId");
-            }
-
-            return channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase);
-        }
-
         protected override async Task<LiveStream> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
         {
             var profile = streamId.Split('_')[0];
 
             Logger.Info("GetChannelStream: channel id: {0}. stream id: {1} profile: {2}", channelId, streamId, profile);
 
-            if (!channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("Channel not found");
-            }
             var hdhrId = GetHdHrIdFromChannelId(channelId);
 
             var channels = await GetChannels(info, true, CancellationToken.None).ConfigureAwait(false);
@@ -706,6 +698,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 var modelInfo = await GetModelInfo(hostInfo, false, cancellationToken).ConfigureAwait(false);
 
                 hostInfo.DeviceId = modelInfo.DeviceID;
+                hostInfo.FriendlyName = modelInfo.FriendlyName;
 
                 return hostInfo;
             }
