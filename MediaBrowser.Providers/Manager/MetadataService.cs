@@ -45,10 +45,19 @@ namespace MediaBrowser.Providers.Manager
             var updateType = ItemUpdateType.None;
             var requiresRefresh = false;
 
+            var libraryOptions = LibraryManager.GetLibraryOptions((BaseItem)item);
+
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
                 // TODO: If this returns true, should we instead just change metadata refresh mode to Full?
                 requiresRefresh = item.RequiresRefresh();
+            }
+
+            if (!requiresRefresh && 
+                libraryOptions.AutomaticRefreshIntervalDays > 0 && 
+                (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= libraryOptions.AutomaticRefreshIntervalDays)
+            {
+                requiresRefresh = true;
             }
 
             var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager, FileSystem);
@@ -116,8 +125,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            LibraryOptions libraryOptions = null;
-
             // Next run remote image providers, but only if local image providers didn't throw an exception
             if (!localImagesFailed && refreshOptions.ImageRefreshMode != ImageRefreshMode.ValidationOnly)
             {
@@ -125,11 +132,6 @@ namespace MediaBrowser.Providers.Manager
 
                 if (providers.Count > 0)
                 {
-                    if (libraryOptions == null)
-                    {
-                        libraryOptions = LibraryManager.GetLibraryOptions((BaseItem)item);
-                    }
-
                     var result = await itemImageProvider.RefreshImages(itemOfType, libraryOptions, providers, refreshOptions, config, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
@@ -175,11 +177,6 @@ namespace MediaBrowser.Providers.Manager
                 else
                 {
                     item.DateLastRefreshed = default(DateTime);
-                }
-
-                if (libraryOptions == null)
-                {
-                    libraryOptions = LibraryManager.GetLibraryOptions((BaseItem)item);
                 }
 
                 // Save to database

@@ -491,7 +491,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            //if (!(item is LiveTvProgram) || fields.Contains(ItemFields.PlayAccess))
+            if (!(item is LiveTvProgram) || fields.Contains(ItemFields.PlayAccess))
             {
                 dto.PlayAccess = item.GetPlayAccess(user);
             }
@@ -1639,7 +1639,7 @@ namespace Emby.Server.Implementations.Dto
             var width = size.Width;
             var height = size.Height;
 
-            if (width == 0 || height == 0)
+            if (width.Equals(0) || height.Equals(0))
             {
                 return null;
             }
