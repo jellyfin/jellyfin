@@ -697,6 +697,20 @@ namespace MediaBrowser.Api.Playback
                 {
                     request.SubtitleCodec = val;
                 }
+                else if (i == 31)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.RequireNonAnamorphic = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+                else if (i == 32)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.DeInterlace = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                    }
+                }
             }
         }
 

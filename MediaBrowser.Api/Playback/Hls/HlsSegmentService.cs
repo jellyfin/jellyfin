@@ -63,7 +63,7 @@ namespace MediaBrowser.Api.Playback.Hls
     /// <summary>
     /// Class GetHlsVideoSegment
     /// </summary>
-    [Route("/Videos/{Id}/hls/{PlaylistId}/{SegmentId}.ts", "GET")]
+    [Route("/Videos/{Id}/hls/{PlaylistId}/{SegmentId}.{SegmentContainer}", "GET")]
     public class GetHlsVideoSegmentLegacy : VideoStreamRequest
     {
         public string PlaylistId { get; set; }
