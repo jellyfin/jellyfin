@@ -99,7 +99,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode;
 
             var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
-            args += " " + EncodingHelper.GetVideoQualityParam(state, EncodingHelper.GetH264Encoder(state, encodingOptions), encodingOptions, GetDefaultH264Preset()) + keyFrameArg;
+            args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultH264Preset()) + keyFrameArg;
 
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
@@ -116,16 +116,6 @@ namespace MediaBrowser.Api.Playback.Hls
             args += " -flags -global_header";
 
             return args;
-        }
-
-        /// <summary>
-        /// Gets the segment file extension.
-        /// </summary>
-        /// <param name="state">The state.</param>
-        /// <returns>System.String.</returns>
-        protected override string GetSegmentFileExtension(StreamState state)
-        {
-            return ".ts";
         }
 
         public VideoHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, jsonSerializer, authorizationContext)

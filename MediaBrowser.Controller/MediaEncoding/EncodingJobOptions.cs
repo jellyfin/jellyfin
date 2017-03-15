@@ -46,7 +46,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             AudioBitRate = info.AudioBitrate;
             AudioSampleRate = info.TargetAudioSampleRate;
             DeviceProfile = deviceProfile;
-            VideoCodec = info.VideoCodec;
+            VideoCodec = info.TargetVideoCodec;
             VideoBitRate = info.VideoBitrate;
             AudioStreamIndex = info.AudioStreamIndex;
             MaxRefFrames = info.MaxRefFrames;
@@ -185,6 +185,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         [ApiMember(Name = "MaxVideoBitDepth", Description = "Optional.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? MaxVideoBitDepth { get; set; }
         public bool RequireAvc { get; set; }
+        public bool DeInterlace { get; set; }
+        public bool RequireNonAnamorphic { get; set; }
         public int? TranscodingMaxAudioChannels { get; set; }
         public int? CpuCoreLimit { get; set; }
         public string OutputContainer { get; set; }

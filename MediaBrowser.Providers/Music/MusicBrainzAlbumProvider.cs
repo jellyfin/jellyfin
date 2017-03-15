@@ -45,13 +45,20 @@ namespace MediaBrowser.Providers.Music
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(AlbumInfo searchInfo, CancellationToken cancellationToken)
         {
             var releaseId = searchInfo.GetReleaseId();
+            var releaseGroupId = searchInfo.GetReleaseGroupId();
 
             string url = null;
             var isNameSearch = false;
+            bool forceMusicBrainzProper = false;
 
             if (!string.IsNullOrEmpty(releaseId))
             {
                 url = string.Format("/ws/2/release/?query=reid:{0}", releaseId);
+            }
+            else if (!string.IsNullOrEmpty(releaseGroupId))
+            {
+                url = string.Format("/ws/2/release?release-group={0}", releaseGroupId);
+                forceMusicBrainzProper = true;
             }
             else
             {
@@ -75,7 +82,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrWhiteSpace(url))
             {
-                using (var stream = await GetMusicBrainzResponse(url, isNameSearch, cancellationToken).ConfigureAwait(false))
+                using (var stream = await GetMusicBrainzResponse(url, isNameSearch, forceMusicBrainzProper, cancellationToken).ConfigureAwait(false))
                 {
                     return GetResultsFromResponse(stream);
                 }
@@ -131,7 +138,14 @@ namespace MediaBrowser.Providers.Music
                 Item = new MusicAlbum()
             };
 
-            if (string.IsNullOrEmpty(releaseId))
+            // If we have a release group Id but not a release Id...
+            if (string.IsNullOrWhiteSpace(releaseId) && !string.IsNullOrWhiteSpace(releaseGroupId))
+            {
+                releaseId = await GetReleaseIdFromReleaseGroupId(releaseGroupId, cancellationToken).ConfigureAwait(false);
+                result.HasMetadata = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(releaseId))
             {
                 var artistMusicBrainzId = id.GetMusicBrainzArtistId();
 
@@ -139,13 +153,13 @@ namespace MediaBrowser.Providers.Music
 
                 if (releaseResult != null)
                 {
-                    if (!string.IsNullOrEmpty(releaseResult.ReleaseId))
+                    if (!string.IsNullOrWhiteSpace(releaseResult.ReleaseId))
                     {
                         releaseId = releaseResult.ReleaseId;
                         result.HasMetadata = true;
                     }
 
-                    if (!string.IsNullOrEmpty(releaseResult.ReleaseGroupId))
+                    if (!string.IsNullOrWhiteSpace(releaseResult.ReleaseGroupId))
                     {
                         releaseGroupId = releaseResult.ReleaseGroupId;
                         result.HasMetadata = true;
@@ -157,13 +171,13 @@ namespace MediaBrowser.Providers.Music
             }
 
             // If we have a release Id but not a release group Id...
-            if (!string.IsNullOrEmpty(releaseId) && string.IsNullOrEmpty(releaseGroupId))
+            if (!string.IsNullOrWhiteSpace(releaseId) && string.IsNullOrWhiteSpace(releaseGroupId))
             {
-                releaseGroupId = await GetReleaseGroupId(releaseId, cancellationToken).ConfigureAwait(false);
+                releaseGroupId = await GetReleaseGroupFromReleaseId(releaseId, cancellationToken).ConfigureAwait(false);
                 result.HasMetadata = true;
             }
 
-            if (!string.IsNullOrEmpty(releaseId) || !string.IsNullOrEmpty(releaseGroupId))
+            if (!string.IsNullOrWhiteSpace(releaseId) || !string.IsNullOrWhiteSpace(releaseGroupId))
             {
                 result.HasMetadata = true;
             }
@@ -411,13 +425,42 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
+        private async Task<string> GetReleaseIdFromReleaseGroupId(string releaseGroupId, CancellationToken cancellationToken)
+        {
+            var url = string.Format("/ws/2/release?release-group={0}", releaseGroupId);
+
+            using (var stream = await GetMusicBrainzResponse(url, true, true, cancellationToken).ConfigureAwait(false))
+            {
+                using (var oReader = new StreamReader(stream, Encoding.UTF8))
+                {
+                    var settings = _xmlSettings.Create(false);
+
+                    settings.CheckCharacters = false;
+                    settings.IgnoreProcessingInstructions = true;
+                    settings.IgnoreComments = true;
+
+                    using (var reader = XmlReader.Create(oReader, settings))
+                    {
+                        var result = ReleaseResult.Parse(reader).FirstOrDefault();
+
+                        if (result != null)
+                        {
+                            return result.ReleaseId;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Gets the release group id internal.
         /// </summary>
         /// <param name="releaseEntryId">The release entry id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
-        private async Task<string> GetReleaseGroupId(string releaseEntryId, CancellationToken cancellationToken)
+        private async Task<string> GetReleaseGroupFromReleaseId(string releaseEntryId, CancellationToken cancellationToken)
         {
             var url = string.Format("/ws/2/release-group/?query=reid:{0}", releaseEntryId);
 
@@ -514,11 +557,11 @@ namespace MediaBrowser.Providers.Music
         private List<MbzUrl> _mbzUrls = null;
         private MbzUrl _chosenUrl;
 
-        private async Task<MbzUrl> GetMbzUrl()
+        private async Task<MbzUrl> GetMbzUrl(bool forceMusicBrainzProper = false)
         {
             if (_chosenUrl == null || _mbzUrls == null || (DateTime.UtcNow.Ticks - _lastMbzUrlQueryTicks) > TimeSpan.FromHours(12).Ticks)
             {
-                var urls = await RefreshMzbUrls().ConfigureAwait(false);
+                var urls = await RefreshMzbUrls(forceMusicBrainzProper).ConfigureAwait(false);
 
                 if (urls.Count > 1)
                 {
@@ -533,30 +576,12 @@ namespace MediaBrowser.Providers.Music
             return _chosenUrl;
         }
 
-        private async Task<List<MbzUrl>> RefreshMzbUrls()
+        private async Task<List<MbzUrl>> RefreshMzbUrls(bool forceMusicBrainzProper = false)
         {
             List<MbzUrl> list;
 
-            try
+            if (forceMusicBrainzProper)
             {
-                var options = new HttpRequestOptions
-                {
-                    Url = "https://mb3admin.com/admin/service/standards/musicBrainzUrls",
-                    UserAgent = _appHost.Name + "/" + _appHost.ApplicationVersion
-                };
-
-                using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
-                {
-                    var results = _json.DeserializeFromStream<List<MbzUrl>>(stream);
-
-                    list = results;
-                }
-                _lastMbzUrlQueryTicks = DateTime.UtcNow.Ticks;
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error getting music brainz info", ex);
-
                 list = new List<MbzUrl>
                 {
                     new MbzUrl
@@ -566,22 +591,55 @@ namespace MediaBrowser.Providers.Music
                     }
                 };
             }
+            else
+            {
+                try
+                {
+                    var options = new HttpRequestOptions
+                    {
+                        Url = "https://mb3admin.com/admin/service/standards/musicBrainzUrls",
+                        UserAgent = _appHost.Name + "/" + _appHost.ApplicationVersion
+                    };
+
+                    using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
+                    {
+                        var results = _json.DeserializeFromStream<List<MbzUrl>>(stream);
+
+                        list = results;
+                    }
+                    _lastMbzUrlQueryTicks = DateTime.UtcNow.Ticks;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting music brainz info", ex);
+
+                    list = new List<MbzUrl>
+                {
+                    new MbzUrl
+                    {
+                        url = MusicBrainzBaseUrl,
+                        throttleMs = 1000
+                    }
+                };
+                }
+            }
 
             _mbzUrls = list.ToList();
 
             return list;
         }
 
+        internal Task<Stream> GetMusicBrainzResponse(string url, bool isSearch, CancellationToken cancellationToken)
+        {
+            return GetMusicBrainzResponse(url, isSearch, false, cancellationToken);
+        }
+
         /// <summary>
         /// Gets the music brainz response.
         /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="isSearch">if set to <c>true</c> [is search].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{XmlDocument}.</returns>
-        internal async Task<Stream> GetMusicBrainzResponse(string url, bool isSearch, CancellationToken cancellationToken)
+        internal async Task<Stream> GetMusicBrainzResponse(string url, bool isSearch, bool forceMusicBrainzProper, CancellationToken cancellationToken)
         {
-            var urlInfo = await GetMbzUrl().ConfigureAwait(false);
+            var urlInfo = await GetMbzUrl(forceMusicBrainzProper).ConfigureAwait(false);
             var throttleMs = urlInfo.throttleMs;
 
             if (throttleMs > 0)

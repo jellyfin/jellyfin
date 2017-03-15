@@ -684,7 +684,7 @@ namespace MediaBrowser.Api.LiveTv
     [Authenticated]
     public class DiscoverTuners : IReturn<List<TunerHostInfo>>
     {
-
+        public bool NewDevicesOnly { get; set; }
     }
 
     public class LiveTvService : BaseApiService
@@ -739,7 +739,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(DiscoverTuners request)
         {
-            var result = await _liveTvManager.DiscoverTuners(CancellationToken.None).ConfigureAwait(false);
+            var result = await _liveTvManager.DiscoverTuners(request.NewDevicesOnly, CancellationToken.None).ConfigureAwait(false);
             return ToOptimizedResult(result);
         }
 

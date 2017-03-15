@@ -734,16 +734,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             }
 
-            var charsetFromLanguage = string.IsNullOrWhiteSpace(language)
-                ? null
-                : GetSubtitleFileCharacterSetFromLanguage(language);
-
-            // This assumption should only be made for external subtitles
-            if (!string.IsNullOrWhiteSpace(charsetFromLanguage) && !string.Equals(charsetFromLanguage, "windows-1252", StringComparison.OrdinalIgnoreCase))
-            {
-                return charsetFromLanguage;
-            }
-
             var charset = await DetectCharset(path, language, protocol, cancellationToken).ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(charset))
@@ -756,7 +746,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 return charset;
             }
 
-            return charsetFromLanguage;
+            if (!string.IsNullOrWhiteSpace(language))
+            {
+                return GetSubtitleFileCharacterSetFromLanguage(language);
+            }
+
+            return null;
         }
 
         public string GetSubtitleFileCharacterSetFromLanguage(string language)
