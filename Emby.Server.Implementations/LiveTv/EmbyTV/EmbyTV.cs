@@ -2545,14 +2545,24 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private const int TunerDiscoveryDurationMs = 3000;
 
-        public async Task<List<TunerHostInfo>> DiscoverTuners(CancellationToken cancellationToken)
+        public async Task<List<TunerHostInfo>> DiscoverTuners(bool newDevicesOnly, CancellationToken cancellationToken)
         {
             var list = new List<TunerHostInfo>();
+
+            var configuredDeviceIds = GetConfiguration().TunerHosts
+               .Where(i => !string.IsNullOrWhiteSpace(i.DeviceId))
+               .Select(i => i.DeviceId)
+               .ToList();
 
             foreach (var host in _liveTvManager.TunerHosts)
             {
                 var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, cancellationToken).ConfigureAwait(false);
 
+                if (newDevicesOnly)
+                {
+                    discoveredDevices = discoveredDevices.Where(d => !configuredDeviceIds.Contains(d.DeviceId, StringComparer.OrdinalIgnoreCase))
+                            .ToList();
+                }
                 list.AddRange(discoveredDevices);
             }
 

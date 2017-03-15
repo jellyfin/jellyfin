@@ -733,12 +733,18 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (videoStream.IsInterlaced)
             {
-                return false;
+                if (request.DeInterlace)
+                {
+                    return false;
+                }
             }
 
             if (videoStream.IsAnamorphic ?? false)
             {
-                return false;
+                if (request.RequireNonAnamorphic)
+                {
+                    return false;
+                }
             }
 
             // Can't stream copy if we're burning in subtitles
