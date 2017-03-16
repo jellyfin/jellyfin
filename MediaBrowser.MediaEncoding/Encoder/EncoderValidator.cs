@@ -89,6 +89,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var found = new List<string>();
             var required = new[]
             {
+                "mpeg2video",
                 "h264_qsv",
                 "hevc_qsv",
                 "mpeg2_qsv",
