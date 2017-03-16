@@ -1787,6 +1787,7 @@
     "ButtonServer": "\uc11c\ubc84",
     "HeaderLibrary": "\ub77c\uc774\ube0c\ub7ec\ub9ac",
     "HeaderMedia": "\ubbf8\ub514\uc5b4",
+    "NoNewDevicesFound": "No new devices found.",
     "NoResultsFound": "No results found.",
     "ButtonManageServer": "\uc11c\ubc84 \uad00\ub9ac",
     "ButtonPreferences": "\ud658\uacbd \uc124\uc815",
@@ -1971,5 +1972,6 @@
     "DetectingDevices": "Detecting devices",
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
-    "EveryNDays": "Every {0} days"
+    "EveryNDays": "Every {0} days",
+    "HeaderNewDevices": "New Devices"
 }

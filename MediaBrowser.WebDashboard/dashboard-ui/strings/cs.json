@@ -1787,6 +1787,7 @@
     "ButtonServer": "Server",
     "HeaderLibrary": "Knihovna",
     "HeaderMedia": "M\u00e9dia",
+    "NoNewDevicesFound": "No new devices found.",
     "NoResultsFound": "\u017d\u00e1dn\u00e9 v\u00fdsledky.",
     "ButtonManageServer": "Spr\u00e1vce serveru",
     "ButtonPreferences": "P\u0159edvolby",
@@ -1971,5 +1972,6 @@
     "DetectingDevices": "Detecting devices",
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
-    "EveryNDays": "Every {0} days"
+    "EveryNDays": "Every {0} days",
+    "HeaderNewDevices": "New Devices"
 }

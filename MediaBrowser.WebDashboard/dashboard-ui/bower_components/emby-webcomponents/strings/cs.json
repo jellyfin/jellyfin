@@ -1,8 +1,4 @@
 {
-    "Connect": "P\u0159ipojit",
-    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
-    "Accept": "Accept",
-    "Reject": "Reject",
     "MessageUnlockAppWithPurchaseOrSupporter": "Odemknout tuto funkci pomoc\u00ed jednor\u00e1zov\u00e9 platby, nebo pomoc\u00ed aktivace p\u0159edplatn\u00e9ho Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Odemknout tuto funkci pomoc\u00ed aktivn\u00edho p\u0159edplatn\u00e9ho Emby Premiere.",
     "MessageToValidateSupporter": "Pokud m\u00e1te aktivn\u00ed p\u0159edplatn\u00e9 Emby Premiere, ujist\u011bte se, \u017ee m\u00e1te nastaven Emby Premiere v panelu Nastaven\u00ed pod N\u00e1pov\u011bda -> Emby Premiere.",
@@ -395,5 +391,10 @@
     "Original": "Original",
     "Fill": "Fill",
     "BestFit": "Best fit",
-    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information."
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
+    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information.",
+    "Accept": "Accept",
+    "Reject": "Reject",
+    "Connect": "P\u0159ipojit",
+    "LabelDownloadTo": "Download to:"
 }

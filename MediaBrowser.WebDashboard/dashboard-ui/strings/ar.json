@@ -1787,6 +1787,7 @@
     "ButtonServer": "\u0627\u0644\u062e\u0627\u062f\u0645",
     "HeaderLibrary": "\u0627\u0644\u0645\u0643\u062a\u0628\u0629",
     "HeaderMedia": "\u0627\u0644\u0648\u0633\u0627\u0626\u0637",
+    "NoNewDevicesFound": "No new devices found.",
     "NoResultsFound": "\u0644\u0645 \u064a\u062a\u0645 \u0627\u0644\u0639\u062b\u0648\u0631 \u0639\u0644\u0649 \u0623\u064a\u0629 \u0646\u062a\u0627\u0626\u062c.",
     "ButtonManageServer": "\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u062e\u0627\u062f\u0645",
     "ButtonPreferences": "\u0627\u0644\u062a\u0641\u0636\u064a\u0644\u0627\u062a",
@@ -1971,5 +1972,6 @@
     "DetectingDevices": "Detecting devices",
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
-    "EveryNDays": "Every {0} days"
+    "EveryNDays": "Every {0} days",
+    "HeaderNewDevices": "New Devices"
 }

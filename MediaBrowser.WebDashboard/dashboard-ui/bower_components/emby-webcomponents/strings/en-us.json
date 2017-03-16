@@ -395,5 +395,6 @@
   "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information.",
   "Accept": "Accept",
   "Reject": "Reject",
-  "Connect": "Connect"
+  "Connect": "Connect",
+  "LabelDownloadTo": "Download to:"
 }

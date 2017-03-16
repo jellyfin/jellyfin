@@ -1787,6 +1787,7 @@
     "ButtonServer": "Server",
     "HeaderLibrary": "Bibliotek",
     "HeaderMedia": "Medier",
+    "NoNewDevicesFound": "No new devices found.",
     "NoResultsFound": "Ingen resultater fundet.",
     "ButtonManageServer": "Administrer Server",
     "ButtonPreferences": "Pr\u00e6ferencer",
@@ -1971,5 +1972,6 @@
     "DetectingDevices": "Detecting devices",
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
-    "EveryNDays": "Every {0} days"
+    "EveryNDays": "Every {0} days",
+    "HeaderNewDevices": "New Devices"
 }

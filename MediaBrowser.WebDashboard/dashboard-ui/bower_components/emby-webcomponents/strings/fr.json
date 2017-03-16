@@ -1,8 +1,4 @@
 {
-    "Connect": "Connexion",
-    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
-    "Accept": "Accept",
-    "Reject": "Reject",
     "MessageUnlockAppWithPurchaseOrSupporter": "D\u00e9verrouillez cette fonctionnalit\u00e9 avec un petit achat en une fois, ou avec une souscription Emby Premiere.",
     "MessageUnlockAppWithSupporter": "D\u00e9verrouillez cette fonctionnalit\u00e9 avec une souscription Emby Premiere.",
     "MessageToValidateSupporter": "Si vous avez un abonnement Emby Premiere, veuillez-vous assurer que vous avez configur\u00e9 Emby Premiere dans votre menu de gestion Emby Server auquel vous pouvez acc\u00e9der en cliquant sur Emby Premiere dans le menu principal",
@@ -395,5 +391,10 @@
     "Original": "Original",
     "Fill": "Fill",
     "BestFit": "Best fit",
-    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information."
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
+    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information.",
+    "Accept": "Accept",
+    "Reject": "Reject",
+    "Connect": "Connexion",
+    "LabelDownloadTo": "Download to:"
 }

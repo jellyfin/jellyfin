@@ -1787,6 +1787,7 @@
     "ButtonServer": "Servidor",
     "HeaderLibrary": "Biblioteca",
     "HeaderMedia": "Medios",
+    "NoNewDevicesFound": "No new devices found.",
     "NoResultsFound": "No se encontraron resultados.",
     "ButtonManageServer": "Administrar Servidor",
     "ButtonPreferences": "Preferencias",
@@ -1969,7 +1970,8 @@
     "HeaderDetectMyDevices": "Detectar Mis Dispositivos",
     "MessagePleaseWait": "Por favor espere. Esto podr\u00eda tomar un minuto.",
     "DetectingDevices": "Detectando dispositivos",
-    "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
-    "Never": "Never",
-    "EveryNDays": "Every {0} days"
+    "LabelAutomaticallyRefreshInternetMetadataEvery": "Actualizar autom\u00e1ticamente metadatos de internet:",
+    "Never": "Nunca",
+    "EveryNDays": "Cada {0} d\u00edas",
+    "HeaderNewDevices": "New Devices"
 }
