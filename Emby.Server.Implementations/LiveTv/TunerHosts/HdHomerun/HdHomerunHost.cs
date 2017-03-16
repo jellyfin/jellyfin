@@ -131,7 +131,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 DiscoverResponse response;
                 if (_modelCache.TryGetValue(info.Url, out response))
                 {
-                    return response;
+                    if ((DateTime.UtcNow - response.DateQueried).TotalHours <= 12)
+                    {
+                        return response;
+                    }
                 }
             }
 
@@ -141,8 +144,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     Url = string.Format("{0}/discover.json", GetApiUrl(info, false)),
                     CancellationToken = cancellationToken,
-                    CacheLength = TimeSpan.FromDays(1),
-                    CacheMode = CacheMode.Unconditional,
                     TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds),
                     BufferContent = false
 
@@ -638,6 +639,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             public string BaseURL { get; set; }
             public string LineupURL { get; set; }
             public int TunerCount { get; set; }
+
+            public DateTime DateQueried { get; set; }
+
+            public DiscoverResponse()
+            {
+                DateQueried = DateTime.UtcNow;
+            }
         }
 
         public async Task<List<TunerHostInfo>> DiscoverDevices(int discoveryDurationMs, CancellationToken cancellationToken)
