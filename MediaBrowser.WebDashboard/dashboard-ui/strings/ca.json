@@ -1787,6 +1787,7 @@
     "ButtonServer": "Servidor",
     "HeaderLibrary": "Biblioteca",
     "HeaderMedia": "Media",
+    "NoNewDevicesFound": "No new devices found.",
     "NoResultsFound": "No results found.",
     "ButtonManageServer": "Gestionar Servidor",
     "ButtonPreferences": "Prefer\u00e8ncies",
@@ -1971,5 +1972,6 @@
     "DetectingDevices": "Detecting devices",
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
-    "EveryNDays": "Every {0} days"
+    "EveryNDays": "Every {0} days",
+    "HeaderNewDevices": "New Devices"
 }

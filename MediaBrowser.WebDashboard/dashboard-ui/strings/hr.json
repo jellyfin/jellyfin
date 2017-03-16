@@ -1787,6 +1787,7 @@
     "ButtonServer": "Server",
     "HeaderLibrary": "Biblioteka",
     "HeaderMedia": "Medij",
+    "NoNewDevicesFound": "No new devices found.",
     "NoResultsFound": "Nije ni\u0161ta prona\u0111eno.",
     "ButtonManageServer": "Upravljanje Serverom",
     "ButtonPreferences": "Postavke",
@@ -1971,5 +1972,6 @@
     "DetectingDevices": "Detecting devices",
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
-    "EveryNDays": "Every {0} days"
+    "EveryNDays": "Every {0} days",
+    "HeaderNewDevices": "New Devices"
 }

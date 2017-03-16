@@ -1787,6 +1787,7 @@
     "ButtonServer": "Server",
     "HeaderLibrary": "Bibliothek",
     "HeaderMedia": "Medien",
+    "NoNewDevicesFound": "Keine neuen Ger\u00e4te gefunden.",
     "NoResultsFound": "Keine Ergebnisse gefunden.",
     "ButtonManageServer": "Konfiguriere Server",
     "ButtonPreferences": "Einstellungen",
@@ -1969,7 +1970,8 @@
     "HeaderDetectMyDevices": "Nach Ger\u00e4ten suchen",
     "MessagePleaseWait": "Bitte warten, dies kann eine Minute dauern.",
     "DetectingDevices": "Suche Ger\u00e4te",
-    "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
-    "Never": "Never",
-    "EveryNDays": "Every {0} days"
+    "LabelAutomaticallyRefreshInternetMetadataEvery": "Aktualisiere Metadaten automatisch aus dem Internet:",
+    "Never": "Niemals",
+    "EveryNDays": "Alle {0} Tage",
+    "HeaderNewDevices": "Neue Ger\u00e4te"
 }

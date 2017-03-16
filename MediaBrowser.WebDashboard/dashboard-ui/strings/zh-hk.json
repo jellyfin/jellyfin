@@ -1787,6 +1787,7 @@
     "ButtonServer": "Server",
     "HeaderLibrary": "\u5a92\u9ad4\u5eab",
     "HeaderMedia": "Media",
+    "NoNewDevicesFound": "No new devices found.",
     "NoResultsFound": "No results found.",
     "ButtonManageServer": "Manage Server",
     "ButtonPreferences": "Preferences",
@@ -1971,5 +1972,6 @@
     "DetectingDevices": "Detecting devices",
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
-    "EveryNDays": "Every {0} days"
+    "EveryNDays": "Every {0} days",
+    "HeaderNewDevices": "New Devices"
 }
