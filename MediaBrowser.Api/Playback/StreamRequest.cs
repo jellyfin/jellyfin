@@ -42,6 +42,9 @@ namespace MediaBrowser.Api.Playback
         public string LiveStreamId { get; set; }
         public string Tag { get; set; }
         public string SegmentContainer { get; set; }
+
+        public int? SegmentLength { get; set; }
+        public int? MinSegments { get; set; }
     }
 
     public class VideoStreamRequest : StreamRequest

@@ -484,6 +484,15 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.CopyTimestamps = transcodingProfile.CopyTimestamps;
                 playlistItem.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
 
+                if (transcodingProfile.MinSegments > 0)
+                {
+                    playlistItem.MinSegments = transcodingProfile.MinSegments;
+                }
+                if (transcodingProfile.SegmentLength > 0)
+                {
+                    playlistItem.SegmentLength = transcodingProfile.SegmentLength;
+                }
+
                 if (!string.IsNullOrEmpty(transcodingProfile.MaxAudioChannels))
                 {
                     int transcodingMaxAudioChannels;

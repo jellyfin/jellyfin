@@ -52,6 +52,18 @@ namespace Emby.Common.Implementations.Net
             {
                 throw new SocketCreateException(ex.SocketErrorCode.ToString(), ex);
             }
+            catch (ArgumentException ex)
+            {
+                if (dualMode)
+                {
+                    // Mono for BSD incorrectly throws ArgumentException instead of SocketException
+                    throw new SocketCreateException("AddressFamilyNotSupported", ex);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
         public ISocket CreateTcpSocket(IpAddressInfo remoteAddress, int remotePort)

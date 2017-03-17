@@ -110,8 +110,11 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        var waitForSegments = state.SegmentLength >= 10 ? 2 : 3;
-                        await WaitForMinimumSegmentCount(playlist, waitForSegments, cancellationTokenSource.Token).ConfigureAwait(false);
+                        var minSegments = state.MinSegments;
+                        if (minSegments > 0)
+                        {
+                            await WaitForMinimumSegmentCount(playlist, minSegments, cancellationTokenSource.Token).ConfigureAwait(false);
+                        }
                     }
                 }
                 finally
