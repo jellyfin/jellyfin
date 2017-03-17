@@ -6,6 +6,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
@@ -36,6 +37,9 @@ namespace MediaBrowser.Model.Dlna
         public long StartPositionTicks { get; set; }
 
         public string VideoProfile { get; set; }
+
+        public int? SegmentLength { get; set; }
+        public int? MinSegments { get; set; }
 
         public bool RequireAvc { get; set; }
         public bool DeInterlace { get; set; }
@@ -291,6 +295,16 @@ namespace MediaBrowser.Model.Dlna
             if (!isDlna && isHls)
             {
                 list.Add(new NameValuePair("SegmentContainer", item.Container ?? string.Empty));
+
+                if (item.SegmentLength.HasValue)
+                {
+                    list.Add(new NameValuePair("SegmentLength", item.SegmentLength.Value.ToString(CultureInfo.InvariantCulture)));
+                }
+
+                if (item.MinSegments.HasValue)
+                {
+                    list.Add(new NameValuePair("MinSegments", item.MinSegments.Value.ToString(CultureInfo.InvariantCulture)));
+                }
             }
 
             return list;

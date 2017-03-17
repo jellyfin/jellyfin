@@ -60,6 +60,11 @@ namespace MediaBrowser.Api.Playback
         {
             get
             {
+                if (Request.SegmentLength.HasValue)
+                {
+                    return Request.SegmentLength.Value;
+                }
+
                 if (string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     var userAgent = UserAgent ?? string.Empty;
@@ -83,6 +88,19 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return 3;
+            }
+        }
+
+        public int MinSegments
+        {
+            get
+            {
+                if (Request.MinSegments.HasValue)
+                {
+                    return Request.MinSegments.Value;
+                }
+
+                return SegmentLength >= 10 ? 2 : 3;
             }
         }
 

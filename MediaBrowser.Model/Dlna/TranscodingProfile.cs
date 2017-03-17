@@ -42,6 +42,12 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("maxAudioChannels")]
         public string MaxAudioChannels { get; set; }
 
+        [XmlAttribute("minSegments")]
+        public int MinSegments { get; set; }
+
+        [XmlAttribute("segmentLength")]
+        public int SegmentLength { get; set; }
+
         public List<string> GetAudioCodecs()
         {
             List<string> list = new List<string>();
