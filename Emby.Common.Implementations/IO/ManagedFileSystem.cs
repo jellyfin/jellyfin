@@ -28,7 +28,11 @@ namespace Emby.Common.Implementations.IO
             Logger = logger;
             _supportsAsyncFileStreams = true;
             _tempPath = tempPath;
-            EnableFileSystemRequestConcat = false;
+
+            // On Linux, this needs to be true or symbolic links are ignored
+            EnableFileSystemRequestConcat = environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows &&
+                environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.OSX;
+
             SetInvalidFileNameChars(environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows);
         }
 

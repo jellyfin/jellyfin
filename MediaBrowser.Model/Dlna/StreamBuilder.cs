@@ -1037,6 +1037,12 @@ namespace MediaBrowser.Model.Dlna
 
         private bool IsAudioEligibleForDirectPlay(MediaSourceInfo item, long? maxBitrate)
         {
+            // Don't restrict by bitrate if coming from an external domain
+            if (item.IsRemote)
+            {
+                return true;    
+            }
+
             if (!maxBitrate.HasValue)
             {
                 _logger.Info("Cannot direct play due to unknown supported bitrate");
