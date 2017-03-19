@@ -29,6 +29,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public int? OutputVideoBitrate { get; set; }
         public MediaStream SubtitleStream { get; set; }
         public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
+        public List<string> SupportedSubtitleCodecs { get; set; }
 
         public int InternalSubtitleStreamOffset { get; set; }
         public MediaSourceInfo MediaSource { get; set; }
@@ -64,6 +65,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             get { return BaseRequest.CopyTimestamps; }
         }
 
+        public int? OutputAudioBitrate;
         public int? OutputAudioChannels;
         public int? OutputAudioSampleRate;
         public bool DeInterlace { get; set; }
@@ -74,8 +76,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             _logger = logger;
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             PlayableStreamFileNames = new List<string>();
+            SupportedAudioCodecs = new List<string>();
             SupportedVideoCodecs = new List<string>();
-            SupportedVideoCodecs = new List<string>();
+            SupportedSubtitleCodecs = new List<string>();
         }
 
         /// <summary>

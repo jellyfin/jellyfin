@@ -120,7 +120,6 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        public List<string> SupportedSubtitleCodecs { get; set; }
         public string UserAgent { get; set; }
         public TranscodingJobType TranscodingType { get; set; }
 
@@ -129,7 +128,6 @@ namespace MediaBrowser.Api.Playback
         {
             _mediaSourceManager = mediaSourceManager;
             _logger = logger;
-            SupportedSubtitleCodecs = new List<string>();
             TranscodingType = transcodingType;
         }
 
@@ -209,7 +207,6 @@ namespace MediaBrowser.Api.Playback
         }
 
         public string OutputFilePath { get; set; }
-        public int? OutputAudioBitrate;
 
         public string ActualOutputVideoCodec
         {

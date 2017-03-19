@@ -47,7 +47,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 EncodingHelper.GetMapArgs(state),
                 videoArguments,
                 threads,
-                GetAudioArguments(state),
+                EncodingHelper.GetProgressiveVideoAudioArguments(state, encodingOptions),
                 format,
                 state.OutputFilePath
                 ).Trim();
@@ -110,49 +110,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 args += EncodingHelper.GetGraphicalSubtitleParam(state, videoCodec);
             }
-
-            return args;
-        }
-
-        /// <summary>
-        /// Gets audio arguments to pass to ffmpeg
-        /// </summary>
-        /// <param name="state">The state.</param>
-        /// <returns>System.String.</returns>
-        private string GetAudioArguments(EncodingJob state)
-        {
-            // If the video doesn't have an audio stream, return a default.
-            if (state.AudioStream == null && state.VideoStream != null)
-            {
-                return string.Empty;
-            }
-
-            // Get the output codec name
-            var codec = EncodingHelper.GetAudioEncoder(state);
-
-            var args = "-codec:a:0 " + codec;
-
-            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
-            {
-                return args;
-            }
-
-            // Add the number of audio channels
-            var channels = state.OutputAudioChannels;
-
-            if (channels.HasValue)
-            {
-                args += " -ac " + channels.Value;
-            }
-
-            var bitrate = state.OutputAudioBitrate;
-
-            if (bitrate.HasValue)
-            {
-                args += " -ab " + bitrate.Value.ToString(UsCulture);
-            }
-
-            args += " " + EncodingHelper.GetAudioFilterParam(state, GetEncodingOptions(), false);
 
             return args;
         }

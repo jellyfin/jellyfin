@@ -1,4 +1,3 @@
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -9,12 +8,8 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Services;
 
@@ -116,11 +111,6 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var inputModifier = EncodingHelper.GetInputModifier(state, encodingOptions);
 
-            var subtitleArguments = state.SubtitleStream != null &&
-                                    state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed
-                ? GetSubtitleArguments(state)
-                : string.Empty;
-
             return string.Format("{0} {1}{2} {3} {4} -map_metadata -1 -map_chapters -1 -threads {5} {6}{7}{8} -y \"{9}\"",
                 inputModifier,
                 EncodingHelper.GetInputArgument(state, encodingOptions),
@@ -128,28 +118,11 @@ namespace MediaBrowser.Api.Playback.Progressive
                 EncodingHelper.GetMapArgs(state),
                 GetVideoArguments(state, videoCodec),
                 threads,
-                GetAudioArguments(state),
-                subtitleArguments,
+                EncodingHelper.GetProgressiveVideoAudioArguments(state, encodingOptions),
+                EncodingHelper.GetSubtitleEmbedArguments(state),
                 format,
                 outputPath
                 ).Trim();
-        }
-
-        private string GetSubtitleArguments(StreamState state)
-        {
-            var format = state.SupportedSubtitleCodecs.FirstOrDefault();
-            string codec;
-
-            if (string.IsNullOrWhiteSpace(format) || string.Equals(format, state.SubtitleStream.Codec, StringComparison.OrdinalIgnoreCase))
-            {
-                codec = "copy";
-            }
-            else
-            {
-                codec = format;
-            }
-
-            return " -codec:s:0 " + codec;
         }
 
         /// <summary>
@@ -230,49 +203,6 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 args += " -flags -global_header";
             }
-
-            return args;
-        }
-
-        /// <summary>
-        /// Gets audio arguments to pass to ffmpeg
-        /// </summary>
-        /// <param name="state">The state.</param>
-        /// <returns>System.String.</returns>
-        private string GetAudioArguments(StreamState state)
-        {
-            // If the video doesn't have an audio stream, return a default.
-            if (state.AudioStream == null && state.VideoStream != null)
-            {
-                return string.Empty;
-            }
-
-            // Get the output codec name
-            var codec = EncodingHelper.GetAudioEncoder(state);
-
-            var args = "-codec:a:0 " + codec;
-
-            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
-            {
-                return args;
-            }
-
-            // Add the number of audio channels
-            var channels = state.OutputAudioChannels;
-
-            if (channels.HasValue)
-            {
-                args += " -ac " + channels.Value;
-            }
-
-            var bitrate = state.OutputAudioBitrate;
-
-            if (bitrate.HasValue)
-            {
-                args += " -ab " + bitrate.Value.ToString(UsCulture);
-            }
-
-            args += " " + EncodingHelper.GetAudioFilterParam(state, ApiEntryPoint.Instance.GetEncodingOptions(), false);
 
             return args;
         }
