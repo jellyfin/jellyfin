@@ -22,15 +22,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IConfigurationManager _config;
+        private readonly IMediaEncoder _mediaEncoder;
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
         
-        public EncodingJobFactory(ILogger logger, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager, IConfigurationManager config)
+        public EncodingJobFactory(ILogger logger, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager, IConfigurationManager config, IMediaEncoder mediaEncoder)
         {
             _logger = logger;
             _libraryManager = libraryManager;
             _mediaSourceManager = mediaSourceManager;
             _config = config;
+            _mediaEncoder = mediaEncoder;
         }
 
         public async Task<EncodingJob> CreateJob(EncodingJobOptions options, EncodingHelper encodingHelper, bool isVideoRequest, IProgress<double> progress, CancellationToken cancellationToken)
@@ -59,6 +61,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 state.SupportedAudioCodecs = request.AudioCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
                 request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault();
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.SubtitleCodec))
+            {
+                state.SupportedSubtitleCodecs = request.SubtitleCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+                request.SubtitleCodec = state.SupportedSubtitleCodecs.FirstOrDefault(i => _mediaEncoder.CanEncodeToSubtitleCodec(i))
+                    ?? state.SupportedSubtitleCodecs.FirstOrDefault();
             }
 
             var item = _libraryManager.GetItemById(request.ItemId);

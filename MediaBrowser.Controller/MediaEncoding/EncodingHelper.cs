@@ -1736,5 +1736,187 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return threads;
         }
+
+        public string GetSubtitleEmbedArguments(EncodingJobInfo state)
+        {
+            if (state.SubtitleStream == null || state.SubtitleDeliveryMethod != SubtitleDeliveryMethod.Embed)
+            {
+                return string.Empty;
+            }
+
+            var format = state.SupportedSubtitleCodecs.FirstOrDefault();
+            string codec;
+
+            if (string.IsNullOrWhiteSpace(format) || string.Equals(format, state.SubtitleStream.Codec, StringComparison.OrdinalIgnoreCase))
+            {
+                codec = "copy";
+            }
+            else
+            {
+                codec = format;
+            }
+
+            // Muxing in dvbsub via either copy or -codec dvbsub does not seem to work
+            // It doesn't throw any errors but vlc on android will not render them
+            // They will need to be converted to an alternative format
+            // TODO: This is incorrectly assuming that dvdsub will be supported by the player
+            // The api will need to be expanded to accomodate this.
+            if (string.Equals(state.SubtitleStream.Codec, "DVBSUB", StringComparison.OrdinalIgnoreCase))
+            {
+                codec = "dvdsub";
+            }
+
+            var args = " -codec:s:0 " + codec;
+
+            args += " -disposition:s:0 default";
+
+            return args;
+        }
+
+        public string GetProgressiveVideoFullCommandLine(EncodingJobInfo state, EncodingOptions encodingOptions, string outputPath, string defaultH264Preset)
+        {
+            // Get the output codec name
+            var videoCodec = GetVideoEncoder(state, encodingOptions);
+
+            var format = string.Empty;
+            var keyFrame = string.Empty;
+
+            if (string.Equals(Path.GetExtension(outputPath), ".mp4", StringComparison.OrdinalIgnoreCase) &&
+                state.BaseRequest.Context == EncodingContext.Streaming)
+            {
+                // Comparison: https://github.com/jansmolders86/mediacenterjs/blob/master/lib/transcoding/desktop.js
+                format = " -f mp4 -movflags frag_keyframe+empty_moov";
+            }
+
+            var threads = GetNumberOfThreads(state, encodingOptions, string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase));
+
+            var inputModifier = GetInputModifier(state, encodingOptions);
+
+            return string.Format("{0} {1}{2} {3} {4} -map_metadata -1 -map_chapters -1 -threads {5} {6}{7}{8} -y \"{9}\"",
+                inputModifier,
+                GetInputArgument(state, encodingOptions),
+                keyFrame,
+                GetMapArgs(state),
+                GetProgressiveVideoArguments(state, encodingOptions, videoCodec, defaultH264Preset),
+                threads,
+                GetProgressiveVideoAudioArguments(state, encodingOptions),
+                GetSubtitleEmbedArguments(state),
+                format,
+                outputPath
+                ).Trim();
+        }
+
+        public string GetProgressiveVideoArguments(EncodingJobInfo state, EncodingOptions encodingOptions, string videoCodec, string defaultH264Preset)
+        {
+            var args = "-codec:v:0 " + videoCodec;
+
+            if (state.EnableMpegtsM2TsMode)
+            {
+                args += " -mpegts_m2ts_mode 1";
+            }
+
+            if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                if (state.VideoStream != null && IsH264(state.VideoStream) && string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
+                {
+                    args += " -bsf:v h264_mp4toannexb";
+                }
+
+                if (state.RunTimeTicks.HasValue && state.BaseRequest.CopyTimestamps)
+                {
+                    args += " -copyts -avoid_negative_ts disabled -start_at_zero";
+                }
+
+                if (!state.RunTimeTicks.HasValue)
+                {
+                    args += " -flags -global_header -fflags +genpts";
+                }
+
+                return args;
+            }
+
+            var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
+                5.ToString(_usCulture));
+
+            args += keyFrameArg;
+
+            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.BaseRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode;
+
+            var hasCopyTs = false;
+            // Add resolution params, if specified
+            if (!hasGraphicalSubs)
+            {
+                var outputSizeParam = GetOutputSizeParam(state, videoCodec);
+                args += outputSizeParam;
+                hasCopyTs = outputSizeParam.IndexOf("copyts", StringComparison.OrdinalIgnoreCase) != -1;
+            }
+
+            if (state.RunTimeTicks.HasValue && state.BaseRequest.CopyTimestamps)
+            {
+                if (!hasCopyTs)
+                {
+                    args += " -copyts";
+                }
+                args += " -avoid_negative_ts disabled -start_at_zero";
+            }
+
+            var qualityParam = GetVideoQualityParam(state, videoCodec, encodingOptions, defaultH264Preset);
+
+            if (!string.IsNullOrEmpty(qualityParam))
+            {
+                args += " " + qualityParam.Trim();
+            }
+
+            // This is for internal graphical subs
+            if (hasGraphicalSubs)
+            {
+                args += GetGraphicalSubtitleParam(state, videoCodec);
+            }
+
+            if (!state.RunTimeTicks.HasValue)
+            {
+                args += " -flags -global_header";
+            }
+
+            return args;
+        }
+
+        public string GetProgressiveVideoAudioArguments(EncodingJobInfo state, EncodingOptions encodingOptions)
+        {
+            // If the video doesn't have an audio stream, return a default.
+            if (state.AudioStream == null && state.VideoStream != null)
+            {
+                return string.Empty;
+            }
+
+            // Get the output codec name
+            var codec = GetAudioEncoder(state);
+
+            var args = "-codec:a:0 " + codec;
+
+            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                return args;
+            }
+
+            // Add the number of audio channels
+            var channels = state.OutputAudioChannels;
+
+            if (channels.HasValue)
+            {
+                args += " -ac " + channels.Value;
+            }
+
+            var bitrate = state.OutputAudioBitrate;
+
+            if (bitrate.HasValue)
+            {
+                args += " -ab " + bitrate.Value.ToString(_usCulture);
+            }
+            
+            args += " " + GetAudioFilterParam(state, encodingOptions, false);
+
+            return args;
+        }
     }
 }

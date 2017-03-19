@@ -36,7 +36,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public string MimeType { get; set; }
         public bool EstimateContentLength { get; set; }
-        public bool EnableMpegtsM2TsMode { get; set; }
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
         public long? EncodingDurationTicks { get; set; }
         public string LiveStreamId { get; set; }
@@ -109,7 +108,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         public string OutputFilePath { get; set; }
-        public int? OutputAudioBitrate;
 
         public string ActualOutputVideoCodec
         {

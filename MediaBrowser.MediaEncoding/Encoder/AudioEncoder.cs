@@ -17,7 +17,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
         }
 
-        protected override Task<string> GetCommandLineArguments(EncodingJob state)
+        protected override string GetCommandLineArguments(EncodingJob state)
         {
             var audioTranscodeParams = new List<string>();
 
@@ -78,7 +78,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 mapArgs,
                 metadata).Trim();
 
-            return Task.FromResult(result);
+            return result;
         }
 
         protected override string GetOutputFileExtension(EncodingJob state)
