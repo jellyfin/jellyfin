@@ -66,7 +66,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IProgress<double> progress,
             CancellationToken cancellationToken)
         {
-            var encodingJob = await new EncodingJobFactory(Logger, LibraryManager, MediaSourceManager, ConfigurationManager)
+            var encodingJob = await new EncodingJobFactory(Logger, LibraryManager, MediaSourceManager, ConfigurationManager, MediaEncoder)
                 .CreateJob(options, EncodingHelper, IsVideoEncoder, progress, cancellationToken).ConfigureAwait(false);
 
             encodingJob.OutputFilePath = GetOutputFilePath(encodingJob);

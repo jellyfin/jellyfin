@@ -109,7 +109,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         public string OutputFilePath { get; set; }
-        public int? OutputAudioBitrate;
 
         public string ActualOutputVideoCodec
         {

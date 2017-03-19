@@ -1736,5 +1736,79 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return threads;
         }
+
+        public string GetSubtitleEmbedArguments(EncodingJobInfo state)
+        {
+            if (state.SubtitleStream == null || state.SubtitleDeliveryMethod != SubtitleDeliveryMethod.Embed)
+            {
+                return string.Empty;
+            }
+
+            var format = state.SupportedSubtitleCodecs.FirstOrDefault();
+            string codec;
+
+            if (string.IsNullOrWhiteSpace(format) || string.Equals(format, state.SubtitleStream.Codec, StringComparison.OrdinalIgnoreCase))
+            {
+                codec = "copy";
+            }
+            else
+            {
+                codec = format;
+            }
+
+            // Muxing in dvbsub via either copy or -codec dvbsub does not seem to work
+            // It doesn't throw any errors but vlc on android will not render them
+            // They will need to be converted to an alternative format
+            // TODO: This is incorrectly assuming that dvdsub will be supported by the player
+            // The api will need to be expanded to accomodate this.
+            if (string.Equals(state.SubtitleStream.Codec, "DVBSUB", StringComparison.OrdinalIgnoreCase))
+            {
+                codec = "dvdsub";
+            }
+
+            var args = " -codec:s:0 " + codec;
+
+            args += " -disposition:s:0 default";
+
+            return args;
+        }
+
+        public string GetProgressiveVideoAudioArguments(EncodingJobInfo state, EncodingOptions encodingOptions)
+        {
+            // If the video doesn't have an audio stream, return a default.
+            if (state.AudioStream == null && state.VideoStream != null)
+            {
+                return string.Empty;
+            }
+
+            // Get the output codec name
+            var codec = GetAudioEncoder(state);
+
+            var args = "-codec:a:0 " + codec;
+
+            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                return args;
+            }
+
+            // Add the number of audio channels
+            var channels = state.OutputAudioChannels;
+
+            if (channels.HasValue)
+            {
+                args += " -ac " + channels.Value;
+            }
+
+            var bitrate = state.OutputAudioBitrate;
+
+            if (bitrate.HasValue)
+            {
+                args += " -ab " + bitrate.Value.ToString(_usCulture);
+            }
+            
+            args += " " + GetAudioFilterParam(state, encodingOptions, false);
+
+            return args;
+        }
     }
 }
