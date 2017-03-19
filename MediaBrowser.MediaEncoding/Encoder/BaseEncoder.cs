@@ -66,7 +66,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IProgress<double> progress,
             CancellationToken cancellationToken)
         {
-            var encodingJob = await new EncodingJobFactory(Logger, LibraryManager, MediaSourceManager, ConfigurationManager)
+            var encodingJob = await new EncodingJobFactory(Logger, LibraryManager, MediaSourceManager, ConfigurationManager, MediaEncoder)
                 .CreateJob(options, EncodingHelper, IsVideoEncoder, progress, cancellationToken).ConfigureAwait(false);
 
             encodingJob.OutputFilePath = GetOutputFilePath(encodingJob);
@@ -76,7 +76,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             await AcquireResources(encodingJob, cancellationToken).ConfigureAwait(false);
 
-            var commandLineArgs = await GetCommandLineArguments(encodingJob).ConfigureAwait(false);
+            var commandLineArgs = GetCommandLineArguments(encodingJob);
 
             var process = ProcessFactory.Create(new ProcessOptions
             {
@@ -265,7 +265,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return ConfigurationManager.GetConfiguration<EncodingOptions>("encoding");
         }
 
-        protected abstract Task<string> GetCommandLineArguments(EncodingJob job);
+        protected abstract string GetCommandLineArguments(EncodingJob job);
 
         private string GetOutputFilePath(EncodingJob state)
         {

@@ -14,7 +14,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string AudioCodec { get; set; }
 
         public DeviceProfile DeviceProfile { get; set; }
-        public EncodingContext Context { get; set; }
 
         public bool ReadInputAtNativeFramerate { get; set; }
 
@@ -198,6 +197,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         [ApiMember(Name = "VideoCodec", Description = "Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h264, mpeg4, theora, vpx, wmv.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string VideoCodec { get; set; }
 
+        public string SubtitleCodec { get; set; }
+
         /// <summary>
         /// Gets or sets the index of the audio stream.
         /// </summary>
@@ -212,9 +213,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         [ApiMember(Name = "VideoStreamIndex", Description = "Optional. The index of the video stream to use. If omitted the first video stream will be used.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? VideoStreamIndex { get; set; }
 
+        public EncodingContext Context { get; set; }
+
         public BaseEncodingJobOptions()
         {
             EnableAutoStreamCopy = true;
+            Context = EncodingContext.Streaming;
         }
     }
 }

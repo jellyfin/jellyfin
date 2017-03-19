@@ -3204,6 +3204,40 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
+        private bool IsAlphaNumeric(string str)
+        {
+            if (string.IsNullOrWhiteSpace(str))
+                return false;
+
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (!(char.IsLetter(str[i])) && (!(char.IsNumber(str[i]))))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool IsValidType(string value)
+        {
+            return IsAlphaNumeric(value);
+        }
+
+        private bool IsValidMediaType(string value)
+        {
+            return IsAlphaNumeric(value);
+        }
+
+        private bool IsValidId(string value)
+        {
+            return IsAlphaNumeric(value);
+        }
+
+        private bool IsValidPersonType(string value)
+        {
+            return IsAlphaNumeric(value);
+        }
+
         private List<string> GetWhereClauses(InternalItemsQuery query, IStatement statement, string paramSuffix = "")
         {
             if (query.IsResumable ?? false)
@@ -3423,9 +3457,9 @@ namespace Emby.Server.Implementations.Data
                     statement.TryBind("@ChannelId", query.ChannelIds[0]);
                 }
             }
-            if (query.ChannelIds.Length > 1)
+            else if (query.ChannelIds.Length > 1)
             {
-                var inClause = string.Join(",", query.ChannelIds.Select(i => "'" + i + "'").ToArray());
+                var inClause = string.Join(",", query.ChannelIds.Where(IsValidId).Select(i => "'" + i + "'").ToArray());
                 whereClauses.Add(string.Format("ChannelId in ({0})", inClause));
             }
 
@@ -4157,17 +4191,18 @@ namespace Emby.Server.Implementations.Data
                     whereClauses.Add("(IsVirtualItem=0 OR PremiereDate < DATETIME('now'))");
                 }
             }
-            if (query.MediaTypes.Length == 1)
+            var queryMediaTypes = query.MediaTypes.Where(IsValidMediaType).ToArray();
+            if (queryMediaTypes.Length == 1)
             {
                 whereClauses.Add("MediaType=@MediaTypes");
                 if (statement != null)
                 {
-                    statement.TryBind("@MediaTypes", query.MediaTypes[0]);
+                    statement.TryBind("@MediaTypes", queryMediaTypes[0]);
                 }
             }
-            if (query.MediaTypes.Length > 1)
+            else if (queryMediaTypes.Length > 1)
             {
-                var val = string.Join(",", query.MediaTypes.Select(i => "'" + i + "'").ToArray());
+                var val = string.Join(",", queryMediaTypes.Select(i => "'" + i + "'").ToArray());
 
                 whereClauses.Add("MediaType in (" + val + ")");
             }
@@ -4273,7 +4308,9 @@ namespace Emby.Server.Implementations.Data
             //var enableItemsByName = query.IncludeItemsByName ?? query.IncludeItemTypes.Length > 0;
             var enableItemsByName = query.IncludeItemsByName ?? false;
 
-            if (query.TopParentIds.Length == 1)
+            var queryTopParentIds = query.TopParentIds.Where(IsValidId).ToArray();
+
+            if (queryTopParentIds.Length == 1)
             {
                 if (enableItemsByName)
                 {
@@ -4289,12 +4326,12 @@ namespace Emby.Server.Implementations.Data
                 }
                 if (statement != null)
                 {
-                    statement.TryBind("@TopParentId", query.TopParentIds[0]);
+                    statement.TryBind("@TopParentId", queryTopParentIds[0]);
                 }
             }
-            if (query.TopParentIds.Length > 1)
+            else if (queryTopParentIds.Length > 1)
             {
-                var val = string.Join(",", query.TopParentIds.Select(i => "'" + i + "'").ToArray());
+                var val = string.Join(",", queryTopParentIds.Select(i => "'" + i + "'").ToArray());
 
                 if (enableItemsByName)
                 {
@@ -4544,7 +4581,7 @@ namespace Emby.Server.Implementations.Data
                 return result;
             }
 
-            return new[] { value };
+            return new[] { value }.Where(IsValidType);
         }
 
         public async Task DeleteItem(Guid id, CancellationToken cancellationToken)
@@ -4696,31 +4733,35 @@ namespace Emby.Server.Implementations.Data
                     statement.TryBind("@AppearsInItemId", query.AppearsInItemId.ToGuidParamValue());
                 }
             }
-            if (query.PersonTypes.Count == 1)
+            var queryPersonTypes = query.PersonTypes.Where(IsValidPersonType).ToList();
+
+            if (queryPersonTypes.Count == 1)
             {
                 whereClauses.Add("PersonType=@PersonType");
                 if (statement != null)
                 {
-                    statement.TryBind("@PersonType", query.PersonTypes[0]);
+                    statement.TryBind("@PersonType", queryPersonTypes[0]);
                 }
             }
-            if (query.PersonTypes.Count > 1)
+            else if (queryPersonTypes.Count > 1)
             {
-                var val = string.Join(",", query.PersonTypes.Select(i => "'" + i + "'").ToArray());
+                var val = string.Join(",", queryPersonTypes.Select(i => "'" + i + "'").ToArray());
 
                 whereClauses.Add("PersonType in (" + val + ")");
             }
-            if (query.ExcludePersonTypes.Count == 1)
+            var queryExcludePersonTypes = query.ExcludePersonTypes.Where(IsValidPersonType).ToList();
+
+            if (queryExcludePersonTypes.Count == 1)
             {
                 whereClauses.Add("PersonType<>@PersonType");
                 if (statement != null)
                 {
-                    statement.TryBind("@PersonType", query.ExcludePersonTypes[0]);
+                    statement.TryBind("@PersonType", queryExcludePersonTypes[0]);
                 }
             }
-            if (query.ExcludePersonTypes.Count > 1)
+            else if (queryExcludePersonTypes.Count > 1)
             {
-                var val = string.Join(",", query.ExcludePersonTypes.Select(i => "'" + i + "'").ToArray());
+                var val = string.Join(",", queryExcludePersonTypes.Select(i => "'" + i + "'").ToArray());
 
                 whereClauses.Add("PersonType not in (" + val + ")");
             }
