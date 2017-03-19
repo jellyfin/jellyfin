@@ -134,7 +134,6 @@ namespace MediaBrowser.Api.Playback
         public string MimeType { get; set; }
 
         public bool EstimateContentLength { get; set; }
-        public bool EnableMpegtsM2TsMode { get; set; }
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
 
         public long? EncodingDurationTicks { get; set; }
