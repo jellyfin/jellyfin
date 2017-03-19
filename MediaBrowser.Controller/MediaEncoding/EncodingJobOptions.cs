@@ -14,7 +14,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string AudioCodec { get; set; }
 
         public DeviceProfile DeviceProfile { get; set; }
-        public EncodingContext Context { get; set; }
 
         public bool ReadInputAtNativeFramerate { get; set; }
 
@@ -214,9 +213,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         [ApiMember(Name = "VideoStreamIndex", Description = "Optional. The index of the video stream to use. If omitted the first video stream will be used.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? VideoStreamIndex { get; set; }
 
+        public EncodingContext Context { get; set; }
+
         public BaseEncodingJobOptions()
         {
             EnableAutoStreamCopy = true;
+            Context = EncodingContext.Streaming;
         }
     }
 }

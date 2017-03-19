@@ -6,11 +6,8 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
-using System;
-using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback.Progressive
@@ -95,116 +92,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
 
-            // Get the output codec name
-            var videoCodec = EncodingHelper.GetVideoEncoder(state, encodingOptions);
-
-            var format = string.Empty;
-            var keyFrame = string.Empty;
-
-            if (string.Equals(Path.GetExtension(outputPath), ".mp4", StringComparison.OrdinalIgnoreCase))
-            {
-                // Comparison: https://github.com/jansmolders86/mediacenterjs/blob/master/lib/transcoding/desktop.js
-                format = " -f mp4 -movflags frag_keyframe+empty_moov";
-            }
-
-            var threads = EncodingHelper.GetNumberOfThreads(state, encodingOptions, string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase));
-
-            var inputModifier = EncodingHelper.GetInputModifier(state, encodingOptions);
-
-            return string.Format("{0} {1}{2} {3} {4} -map_metadata -1 -map_chapters -1 -threads {5} {6}{7}{8} -y \"{9}\"",
-                inputModifier,
-                EncodingHelper.GetInputArgument(state, encodingOptions),
-                keyFrame,
-                EncodingHelper.GetMapArgs(state),
-                GetVideoArguments(state, videoCodec),
-                threads,
-                EncodingHelper.GetProgressiveVideoAudioArguments(state, encodingOptions),
-                EncodingHelper.GetSubtitleEmbedArguments(state),
-                format,
-                outputPath
-                ).Trim();
-        }
-
-        /// <summary>
-        /// Gets video arguments to pass to ffmpeg
-        /// </summary>
-        /// <param name="state">The state.</param>
-        /// <param name="videoCodec">The video codec.</param>
-        /// <returns>System.String.</returns>
-        private string GetVideoArguments(StreamState state, string videoCodec)
-        {
-            var args = "-codec:v:0 " + videoCodec;
-
-            if (state.EnableMpegtsM2TsMode)
-            {
-                args += " -mpegts_m2ts_mode 1";
-            }
-
-            if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
-            {
-                if (state.VideoStream != null && EncodingHelper.IsH264(state.VideoStream) && string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
-                {
-                    args += " -bsf:v h264_mp4toannexb";
-                }
-
-                if (state.RunTimeTicks.HasValue && state.VideoRequest.CopyTimestamps)
-                {
-                    args += " -copyts -avoid_negative_ts disabled -start_at_zero";
-                }
-
-                if (!state.RunTimeTicks.HasValue)
-                {
-                    args += " -flags -global_header -fflags +genpts";
-                }
-
-                return args;
-            }
-
-            var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
-                5.ToString(UsCulture));
-
-            args += keyFrameArg;
-
-            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode;
-
-            var hasCopyTs = false;
-            // Add resolution params, if specified
-            if (!hasGraphicalSubs)
-            {
-                var outputSizeParam = EncodingHelper.GetOutputSizeParam(state, videoCodec);
-                args += outputSizeParam;
-                hasCopyTs = outputSizeParam.IndexOf("copyts", StringComparison.OrdinalIgnoreCase) != -1;
-            }
-
-            if (state.RunTimeTicks.HasValue && state.VideoRequest.CopyTimestamps)
-            {
-                if (!hasCopyTs)
-                {
-                    args += " -copyts";
-                }
-                args += " -avoid_negative_ts disabled -start_at_zero";
-            }
-
-            var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
-            var qualityParam = EncodingHelper.GetVideoQualityParam(state, videoCodec, encodingOptions, GetDefaultH264Preset());
-
-            if (!string.IsNullOrEmpty(qualityParam))
-            {
-                args += " " + qualityParam.Trim();
-            }
-
-            // This is for internal graphical subs
-            if (hasGraphicalSubs)
-            {
-                args += EncodingHelper.GetGraphicalSubtitleParam(state, videoCodec);
-            }
-
-            if (!state.RunTimeTicks.HasValue)
-            {
-                args += " -flags -global_header";
-            }
-
-            return args;
+            return EncodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, outputPath, GetDefaultH264Preset());
         }
     }
 }
