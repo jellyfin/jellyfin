@@ -363,7 +363,7 @@ namespace SocketHttpListener.Net
             }
         }
 
-        private async Task CopyToInternalAsync(Stream source, Stream destination, long copyLength, CancellationToken cancellationToken)
+        private static async Task CopyToInternalAsync(Stream source, Stream destination, long copyLength, CancellationToken cancellationToken)
         {
             var array = new byte[81920];
             int count;
