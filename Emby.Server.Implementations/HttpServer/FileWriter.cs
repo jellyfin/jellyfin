@@ -160,7 +160,7 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                await response.TransmitFile(Path, RangeStart, RangeEnd, FileShare, cancellationToken).ConfigureAwait(false);
+                await response.TransmitFile(Path, RangeStart, RangeLength, FileShare, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
