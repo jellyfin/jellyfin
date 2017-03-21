@@ -1,24 +1,12 @@
-﻿<div id="channelsPage" data-role="page" data-dom-cache="true" class="page libraryPage channelsPage pageWithAbsoluteTabs" data-title="${HeaderChannels}">
+﻿<div id="channelsPage" data-role="page" data-dom-cache="true" class="page libraryPage channelsPage noSecondaryNavPage" data-title="${HeaderChannels}">
 
-    <div is="emby-tabs" class="libraryViewNav">
-        <div class="emby-tabs-slider">
-            <button is="emby-button" class="emby-tab-button is-active" data-index="0">
-                <div class="emby-button-foreground">${TabLatest}</div>
-            </button>
-            <button is="emby-button" class="emby-tab-button" data-index="1">
-                <div class="emby-button-foreground">${TabChannels}</div>
-            </button>
-        </div>
+    <div class="homePageSection">
+
+        <h1 class="listHeader">${TabChannels}</h1>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer vertical-wrap"></div>
     </div>
 
-    <div class="is-active pageTabContent ehsContent" id="latestTab" data-index="0">
-        <div class="latestItems"></div>
-    </div>
-    <div class="pageTabContent ehsContent" id="channelsTab" data-index="1">
-        <div class="viewSettings">
-        </div>
-        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer vertical-wrap" style="text-align:center;"></div>
-    </div>
+    <div class="latestItems"></div>
 
     <div data-role="content">
     </div>

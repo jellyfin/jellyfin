@@ -72,6 +72,12 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableUserData { get; set; }
+        public bool EnableTotalRecordCount { get; set; }
+
+        public GetNextUpEpisodes()
+        {
+            EnableTotalRecordCount = true;
+        }
     }
 
     [Route("/Shows/Upcoming", "GET", Summary = "Gets a list of upcoming episodes")]
@@ -376,7 +382,8 @@ namespace MediaBrowser.Api
                 ParentId = request.ParentId,
                 SeriesId = request.SeriesId,
                 StartIndex = request.StartIndex,
-                UserId = request.UserId
+                UserId = request.UserId,
+                EnableTotalRecordCount = request.EnableTotalRecordCount
             });
 
             var user = _userManager.GetUserById(request.UserId);
