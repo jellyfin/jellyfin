@@ -107,7 +107,6 @@ using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.ServerManager;
 using Emby.Server.Implementations.Session;
-using Emby.Server.Implementations.Windows;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using MediaBrowser.Model.Activity;
@@ -1743,12 +1742,8 @@ namespace Emby.Server.Core
             ((IProcess)sender).Dispose();
         }
 
-        public void EnableLoopback(string appName)
+        public virtual void EnableLoopback(string appName)
         {
-            if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
-            {
-                LoopUtil.Run(appName);
-            }
         }
 
         private void RegisterModules()

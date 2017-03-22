@@ -5,7 +5,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Emby.Server.Implementations.Windows
+/*
+ * Important - Even though this will compile in the shared projects, it will cause build failures within the mono runtime
+ */
+namespace MediaBrowser.ServerApplication.Native
 {
     /// <summary>
     /// http://blogs.msdn.com/b/fiddler/archive/2011/12/10/fiddler-windows-8-apps-enable-LoopUtil-network-isolation-exemption.aspx
