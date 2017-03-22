@@ -11,7 +11,6 @@ using Emby.Server.Core;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.EntryPoints;
 using Emby.Server.Implementations.FFMpeg;
-using Emby.Server.Implementations.Windows;
 using Emby.Server.Sync;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Sync;
@@ -47,6 +46,11 @@ namespace MediaBrowser.ServerApplication
         protected override void RestartInternal()
         {
             MainStartup.Restart();
+        }
+
+        public override void EnableLoopback(string appName)
+        {
+            LoopUtil.Run(appName);
         }
 
         protected override List<Assembly> GetAssembliesWithPartsInternal()

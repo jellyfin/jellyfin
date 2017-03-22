@@ -267,7 +267,6 @@
     <Compile Include="Updates\InstallationManager.cs" />
     <Compile Include="UserViews\CollectionFolderImageProvider.cs" />
     <Compile Include="UserViews\DynamicImageProvider.cs" />
-    <Compile Include="Windows\LoopUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Localization\iso6392.txt" />
