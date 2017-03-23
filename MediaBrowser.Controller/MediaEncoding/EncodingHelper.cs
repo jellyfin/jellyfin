@@ -154,6 +154,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return "mpegts";
             }
+
             // For these need to find out the ffmpeg names
             if (string.Equals(container, "m2ts", StringComparison.OrdinalIgnoreCase))
             {
@@ -179,6 +180,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return null;
             }
+            if (string.Equals(container, "dvr-ms", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
             // Seeing reported failures here, not sure yet if this is related to specfying input format
             if (string.Equals(container, "m4v", StringComparison.OrdinalIgnoreCase))
             {

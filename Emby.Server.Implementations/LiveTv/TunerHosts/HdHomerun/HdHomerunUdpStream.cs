@@ -120,7 +120,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 // send url to start streaming
                                 await hdHomerunManager.StartStreaming(remoteAddress, localAddress, localPort, _channelCommands, _numTuners, cancellationToken).ConfigureAwait(false);
 
-                                var response = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                                var timeoutToken = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(5000).Token, cancellationToken).Token;
+                                var response = await udpClient.ReceiveAsync(timeoutToken).ConfigureAwait(false);
                                 _logger.Info("Opened HDHR UDP stream from {0}", remoteAddress);
 
                                 if (!cancellationToken.IsCancellationRequested)
@@ -135,8 +136,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                     await _multicastStream.CopyUntilCancelled(stream, onStarted, cancellationToken).ConfigureAwait(false);
                                 }
                             }
-                            catch (OperationCanceledException)
+                            catch (OperationCanceledException ex)
                             {
+                                _logger.Info("HDHR UDP stream cancelled or timed out from {0}", remoteAddress);
+                                openTaskCompletionSource.TrySetException(ex);
                                 break;
                             }
                             catch (Exception ex)
