@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             var result = await GetChannelsInternal(tuner, cancellationToken).ConfigureAwait(false);
             var list = result.ToList();
-            Logger.Debug("Channels from {0}: {1}", tuner.Url, JsonSerializer.SerializeToString(list));
+            Logger.Info("Channels from {0}: {1}", tuner.Url, JsonSerializer.SerializeToString(list));
 
             if (!string.IsNullOrWhiteSpace(key) && list.Count > 0)
             {
