@@ -13,7 +13,6 @@
     "Repeat": "Wiederholen",
     "TrackCount": "{0} Titel",
     "ItemCount": "{0} Eintr\u00e4ge",
-    "ReleaseYearValue": "Erscheinungsjahr: {0}",
     "OriginalAirDateValue": "Erstausstrahlung: {0}",
     "EndsAtValue": "Endet um {0}",
     "OptionSundayShort": "So",
@@ -396,5 +395,5 @@
     "Accept": "Akzeptieren",
     "Reject": "Ablehnen",
     "Connect": "Verbinde",
-    "LabelDownloadTo": "Download to:"
+    "LabelDownloadTo": "Herunterladen nach:"
 }
