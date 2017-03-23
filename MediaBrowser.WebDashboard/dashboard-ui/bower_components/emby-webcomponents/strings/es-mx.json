@@ -13,7 +13,6 @@
     "Repeat": "Repetir",
     "TrackCount": "{0} Pistas",
     "ItemCount": "{0} \u00edtems",
-    "ReleaseYearValue": "A\u00f1o de estreno: {0}",
     "OriginalAirDateValue": "Fecha de transmisi\u00f3n original: {0}",
     "EndsAtValue": "Termina a las {0}",
     "OptionSundayShort": "Dom",
@@ -396,5 +395,5 @@
     "Accept": "Aceptar",
     "Reject": "Rechazar",
     "Connect": "Conectar",
-    "LabelDownloadTo": "Download to:"
+    "LabelDownloadTo": "Descargar a:"
 }
