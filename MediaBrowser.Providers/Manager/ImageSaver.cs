@@ -172,18 +172,11 @@ namespace MediaBrowser.Providers.Manager
 
                 try
                 {
-                    var currentFile = _fileSystem.GetFileInfo(currentPath);
-
-                    // This will fail if the file is hidden
-                    if (currentFile.Exists)
-                    {
-                        if (currentFile.IsHidden)
-                        {
-                            _fileSystem.SetHidden(currentFile.FullName, false);
-                        }
-
-                        _fileSystem.DeleteFile(currentFile.FullName);
-                    }
+                    _fileSystem.DeleteFile(currentPath);
+                }
+                catch (FileNotFoundException)
+                {
+                    
                 }
                 finally
                 {
