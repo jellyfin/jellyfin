@@ -377,7 +377,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return count;
         }
 
-        public void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded)
+        public override void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
         {
             var ticks = transcodingPosition.HasValue ? transcodingPosition.Value.Ticks : (long?)null;
 
@@ -385,8 +385,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (!percentComplete.HasValue && ticks.HasValue && RunTimeTicks.HasValue)
             {
-                var pct = ticks.Value/RunTimeTicks.Value;
-                percentComplete = pct*100;
+                var pct = ticks.Value / RunTimeTicks.Value;
+                percentComplete = pct * 100;
             }
 
             if (percentComplete.HasValue)

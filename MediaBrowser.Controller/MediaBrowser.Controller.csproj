@@ -190,6 +190,7 @@
     <Compile Include="MediaEncoding\ImageEncodingOptions.cs" />
     <Compile Include="MediaEncoding\IMediaEncoder.cs" />
     <Compile Include="MediaEncoding\ISubtitleEncoder.cs" />
+    <Compile Include="MediaEncoding\JobLogger.cs" />
     <Compile Include="MediaEncoding\MediaInfoRequest.cs" />
     <Compile Include="MediaEncoding\MediaStreamSelector.cs" />
     <Compile Include="Net\AuthenticatedAttribute.cs" />
