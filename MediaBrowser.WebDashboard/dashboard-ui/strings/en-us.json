@@ -96,6 +96,7 @@
   "LabelDisplayMissingEpisodesWithinSeasonsHelp": "This must also be enabled for TV libraries in Emby Server setup.",
   "LabelUnairedMissingEpisodesWithinSeasons": "Display unaired episodes within seasons",
   "ImportMissingEpisodesHelp": "If enabled, information about missing episodes will be imported into your Emby database and displayed within seasons and series. This may cause significantly longer library scans.",
+  "MessageEnablingOptionLongerScans": "Enabling this option may result in significantly longer library scans.",
   "HeaderVideoPlaybackSettings": "Video Playback Settings",
   "OptionDownloadInternetMetadataTvPrograms": "Download internet metadata for programs listed in the guide",
   "HeaderPlaybackSettings": "Playback Settings",

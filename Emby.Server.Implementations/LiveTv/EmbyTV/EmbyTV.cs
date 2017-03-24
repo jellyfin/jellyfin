@@ -710,7 +710,34 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 throw new InvalidOperationException("SeriesId for program not found");
             }
 
+            // If any timers have already been manually created, make sure they don't get cancelled
+            var existingTimers = (await GetTimersAsync(CancellationToken.None).ConfigureAwait(false))
+                .Where(i =>
+                {
+                    if (string.Equals(i.ProgramId, info.ProgramId, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(info.ProgramId))
+                    {
+                        return true;
+                    }
+
+                    //if (string.Equals(i.SeriesId, info.SeriesId, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(info.SeriesId))
+                    //{
+                    //    return true;
+                    //}
+
+                    return false;
+                })
+                .ToList();
+
             _seriesTimerProvider.Add(info);
+
+            foreach (var timer in existingTimers)
+            {
+                timer.SeriesTimerId = info.Id;
+                timer.IsManual = true;
+
+                _timerProvider.AddOrUpdate(timer);
+            }
+
             await UpdateTimersForSeriesTimer(epgData, info, true, false).ConfigureAwait(false);
 
             return info.Id;
