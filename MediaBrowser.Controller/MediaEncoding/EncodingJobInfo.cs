@@ -12,7 +12,7 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.Controller.MediaEncoding
 {
     // For now, a common base class until the API and MediaEncoding classes are unified
-    public class EncodingJobInfo
+    public abstract class EncodingJobInfo
     {
         private readonly ILogger _logger;
 
@@ -115,5 +115,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 IsoMount = null;
             }
         }
+
+        public abstract void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate);
     }
 }

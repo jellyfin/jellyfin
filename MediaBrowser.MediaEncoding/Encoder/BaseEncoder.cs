@@ -242,7 +242,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private void OnTranscodeBeginning(EncodingJob job)
         {
-            job.ReportTranscodingProgress(null, null, null, null);
+            job.ReportTranscodingProgress(null, null, null, null, null);
         }
 
         private void OnTranscodeFailedToStart(string path, EncodingJob job)
