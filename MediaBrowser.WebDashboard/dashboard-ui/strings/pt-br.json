@@ -96,6 +96,7 @@
     "LabelDisplayMissingEpisodesWithinSeasonsHelp": "Isto tamb\u00e9m deve ser ativado para as bibliotecas de TV na configura\u00e7\u00e3o do Servidor Emby.",
     "LabelUnairedMissingEpisodesWithinSeasons": "Exibir epis\u00f3dios por estrear dentro das temporadas",
     "ImportMissingEpisodesHelp": "Se ativo, as informa\u00e7\u00f5es dos epis\u00f3dios que faltam ser\u00e3o importadas para sua base de dados do Emby e exibida dentro das temporadas e s\u00e9ries. Isto pode fazer com que o rastreamento da biblioteca seja mais longo.",
+    "MessageEnablingOptionLongerScans": "Ativar esta op\u00e7\u00e3o pode resultar em rastreamentos de biblioteca significativamente mais demorados.",
     "HeaderVideoPlaybackSettings": "Ajustes da Reprodu\u00e7\u00e3o de V\u00eddeo",
     "OptionDownloadInternetMetadataTvPrograms": "Baixar metadados da internet para os programas listados no guia",
     "HeaderPlaybackSettings": "Ajustes de Reprodu\u00e7\u00e3o",

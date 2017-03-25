@@ -96,6 +96,7 @@
     "LabelDisplayMissingEpisodesWithinSeasonsHelp": "Dette skal ogs\u00e5 aktiveres for TV-biblioteker i Emby Serversetup.",
     "LabelUnairedMissingEpisodesWithinSeasons": "Vis endnu ikke sendte episoder i s\u00e6soner",
     "ImportMissingEpisodesHelp": "hvis aktiveret, vil information omkring manglende episoder bliver importeret ind i din Emby-database og blive vist i s\u00e6soner og serier. Dette medf\u00f8rer muligvis l\u00e6ngere biblioteksscanninger.",
+    "MessageEnablingOptionLongerScans": "Enabling this option may result in significantly longer library scans.",
     "HeaderVideoPlaybackSettings": "Indstillinger for videoafspilning",
     "OptionDownloadInternetMetadataTvPrograms": "Donwload internet metadata for programmer vist i guiden",
     "HeaderPlaybackSettings": "Indstillinger for afspilning",

@@ -96,6 +96,7 @@
     "LabelDisplayMissingEpisodesWithinSeasonsHelp": "Ceci doit \u00e9galement \u00eatre activ\u00e9 pour les m\u00e9diath\u00e8ques TV dans la configuration du serveur Emby.",
     "LabelUnairedMissingEpisodesWithinSeasons": "Afficher les \u00e9pisodes non diffus\u00e9s dans les saisons",
     "ImportMissingEpisodesHelp": "Les informations \u00e0 propos des \u00e9pisodes manquants seront import\u00e9es dans votre base de donn\u00e9e Emby et affich\u00e9es dans les saisons et s\u00e9ries. Cela peut allonger significativement la dur\u00e9e de balayage de la m\u00e9diath\u00e8que.",
+    "MessageEnablingOptionLongerScans": "Enabling this option may result in significantly longer library scans.",
     "HeaderVideoPlaybackSettings": "Param\u00e8tres de lecture vid\u00e9o",
     "OptionDownloadInternetMetadataTvPrograms": "T\u00e9l\u00e9charger les m\u00e9tadonn\u00e9es depuis Internet pour les programmes figurants dans le guide",
     "HeaderPlaybackSettings": "Param\u00e8tres de lecture",
