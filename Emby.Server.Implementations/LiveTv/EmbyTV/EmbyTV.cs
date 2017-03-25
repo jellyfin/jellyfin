@@ -442,6 +442,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 result = await provider.GetChannels(info, cancellationToken).ConfigureAwait(false);
 
+                foreach (var channel in result)
+                {
+                    _logger.Info("Found epg channel in {0} {1} {2} {3}", provider.Name, info.ListingsId, channel.Name, channel.Id);
+                }
+
                 _epgChannels.AddOrUpdate(info.Id, result, (k, v) => result);
             }
 
@@ -1018,6 +1023,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (epgChannel == null)
                 {
+                    _logger.Debug("EPG channel not found for tuner channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
                     programs = new List<ProgramInfo>();
                 }
                 else
