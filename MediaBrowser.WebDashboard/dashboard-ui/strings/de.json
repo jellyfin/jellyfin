@@ -96,6 +96,7 @@
     "LabelDisplayMissingEpisodesWithinSeasonsHelp": "Dies sollte f\u00fcr Serien in der Bibliothek in den Emby Einstellungen aktiviert sein.",
     "LabelUnairedMissingEpisodesWithinSeasons": "Zeige noch nicht ausgestahlte Episoden innerhalb von Staffeln",
     "ImportMissingEpisodesHelp": "Wenn aktiviert, werden Informationen \u00fcber fehlende Episoden in Deine Emby Datenbank importiert und innerhalb von Staffeln angezeigt. Dies kann zu deutlich l\u00e4ngeren Bibliothek Scans f\u00fchren.",
+    "MessageEnablingOptionLongerScans": "Enabling this option may result in significantly longer library scans.",
     "HeaderVideoPlaybackSettings": "Videowiedergabe Einstellungen",
     "OptionDownloadInternetMetadataTvPrograms": "Lade Metadaten f\u00fcr Programme im TV Guide herunter",
     "HeaderPlaybackSettings": "Wiedergabe Einstellungen",
