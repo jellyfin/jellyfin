@@ -295,7 +295,8 @@ namespace MediaBrowser.Api.Playback.Progressive
                 responseHeaders["Accept-Ranges"] = "none";
             }
 
-            if (response.ContentLength.HasValue)
+            // Seeing cases of -1 here
+            if (response.ContentLength.HasValue && response.ContentLength.Value >= 0)
             {
                 responseHeaders["Content-Length"] = response.ContentLength.Value.ToString(UsCulture);
             }
