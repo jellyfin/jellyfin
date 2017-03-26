@@ -16,12 +16,15 @@ namespace Emby.Common.Implementations.Net
 
     internal sealed class UdpSocket : DisposableManagedObjectBase, ISocket
     {
-
-        #region Fields
-
         private Socket _Socket;
         private int _LocalPort;
-        #endregion
+
+        private SocketAsyncEventArgs _receiveSocketAsyncEventArgs = new SocketAsyncEventArgs()
+        {
+            SocketFlags = SocketFlags.None
+        };
+
+        private TaskCompletionSource<SocketReceiveResult> _currentReceiveTaskCompletionSource;
 
         public UdpSocket(Socket socket, int localPort, IPAddress ip)
         {
@@ -32,6 +35,32 @@ namespace Emby.Common.Implementations.Net
             LocalIPAddress = NetworkManager.ToIpAddressInfo(ip);
 
             _Socket.Bind(new IPEndPoint(ip, _LocalPort));
+
+            InitReceiveSocketAsyncEventArgs();
+        }
+
+        private void InitReceiveSocketAsyncEventArgs()
+        {
+            var buffer = new byte[8192];
+            _receiveSocketAsyncEventArgs.SetBuffer(buffer, 0, buffer.Length);
+            _receiveSocketAsyncEventArgs.Completed += _receiveSocketAsyncEventArgs_Completed;
+        }
+
+        private void _receiveSocketAsyncEventArgs_Completed(object sender, SocketAsyncEventArgs e)
+        {
+            var tcs = _currentReceiveTaskCompletionSource;
+            if (tcs != null)
+            {
+                _currentReceiveTaskCompletionSource = null;
+
+                tcs.TrySetResult(new SocketReceiveResult
+                {
+                    Buffer = e.Buffer,
+                    ReceivedBytes = e.BytesTransferred,
+                    RemoteEndPoint = ToIpEndPointInfo(e.RemoteEndPoint as IPEndPoint),
+                    LocalIPAddress = LocalIPAddress
+                });
+            }
         }
 
         public UdpSocket(Socket socket, IpEndPointInfo endPoint)
@@ -40,6 +69,8 @@ namespace Emby.Common.Implementations.Net
 
             _Socket = socket;
             _Socket.Connect(NetworkManager.ToIPEndPoint(endPoint));
+
+            InitReceiveSocketAsyncEventArgs();
         }
 
         public IpAddressInfo LocalIPAddress
@@ -57,12 +88,12 @@ namespace Emby.Common.Implementations.Net
             var tcs = new TaskCompletionSource<SocketReceiveResult>();
 
             EndPoint receivedFromEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            var state = new AsyncReceiveState(_Socket, receivedFromEndPoint);
-            state.TaskCompletionSource = tcs;
-
             cancellationToken.Register(() => tcs.TrySetCanceled());
 
 #if NETSTANDARD1_6
+            var state = new AsyncReceiveState(_Socket, receivedFromEndPoint);
+            state.TaskCompletionSource = tcs;
+
             _Socket.ReceiveFromAsync(new ArraySegment<Byte>(state.Buffer), SocketFlags.None, state.RemoteEndPoint)
                 .ContinueWith((task, asyncState) =>
                 {
@@ -74,7 +105,15 @@ namespace Emby.Common.Implementations.Net
                     }
                 }, state);
 #else
-            _Socket.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ref state.RemoteEndPoint, ProcessResponse, state);
+            //var state = new AsyncReceiveState(_Socket, receivedFromEndPoint);
+            //state.TaskCompletionSource = tcs;
+
+            //_Socket.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ref state.RemoteEndPoint, ProcessResponse, state);
+
+            _receiveSocketAsyncEventArgs.RemoteEndPoint = receivedFromEndPoint;
+            _currentReceiveTaskCompletionSource = tcs;
+
+            var isPending = _Socket.ReceiveFromAsync(_receiveSocketAsyncEventArgs);
 #endif
 
             return tcs.Task;
