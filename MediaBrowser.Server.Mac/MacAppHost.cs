@@ -87,10 +87,6 @@ namespace MediaBrowser.Server.Mac
             throw new NotImplementedException();
         }
 
-        protected override void EnableLoopbackInternal(string appName)
-        {
-        }
-
         public override bool SupportsRunningAsService
         {
             get
