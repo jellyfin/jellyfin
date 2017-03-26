@@ -421,17 +421,6 @@ namespace Emby.Server.Core.IO
 
                 var path = e.FullPath;
 
-                // For deletes, use the parent path
-                if (e.ChangeType == WatcherChangeTypes.Deleted)
-                {
-                    var parentPath = Path.GetDirectoryName(path);
-
-                    if (!string.IsNullOrWhiteSpace(parentPath))
-                    {
-                        path = parentPath;
-                    }
-                }
-
                 ReportFileSystemChanged(path);
             }
             catch (Exception ex)
