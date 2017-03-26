@@ -386,14 +386,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvstatus.html">
       <Link>Resources\dashboard-ui\livetvstatus.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvtunerprovider-hdhomerun.html">
-      <Link>Resources\dashboard-ui\livetvtunerprovider-hdhomerun.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvtunerprovider-m3u.html">
-      <Link>Resources\dashboard-ui\livetvtunerprovider-m3u.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvtunerprovider-satip.html">
-      <Link>Resources\dashboard-ui\livetvtunerprovider-satip.html</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvtuner.html">
+      <Link>Resources\dashboard-ui\livetvtuner.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\log.html">
       <Link>Resources\dashboard-ui\log.html</Link>
@@ -559,12 +553,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\wizardlibrary.html">
       <Link>Resources\dashboard-ui\wizardlibrary.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\wizardlivetvguide.html">
-      <Link>Resources\dashboard-ui\wizardlivetvguide.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\wizardlivetvtuner.html">
-      <Link>Resources\dashboard-ui\wizardlivetvtuner.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\wizardsettings.html">
       <Link>Resources\dashboard-ui\wizardsettings.html</Link>
@@ -799,6 +787,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\shortcuts.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\shortcuts.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\staticbackdrops.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\staticbackdrops.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\thememediaplayer.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\thememediaplayer.js</Link>
@@ -1252,6 +1243,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\empty.png">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\empty.png</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingbutton.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingbutton.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingcreator.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingcreator.css</Link>
@@ -1736,8 +1730,14 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\iap.js">
       <Link>Resources\dashboard-ui\components\iap.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\maintabsmanager.js">
+      <Link>Resources\dashboard-ui\components\maintabsmanager.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\remotecontrol.js">
       <Link>Resources\dashboard-ui\components\remotecontrol.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\tunerpicker.js">
+      <Link>Resources\dashboard-ui\components\tunerpicker.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\viewcontainer-lite.js">
       <Link>Resources\dashboard-ui\components\viewcontainer-lite.js</Link>
@@ -2141,8 +2141,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\dashboard\librarysettings.js">
       <Link>Resources\dashboard-ui\dashboard\librarysettings.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\dashboard\livetvtunerprovider-satip.js">
-      <Link>Resources\dashboard-ui\dashboard\livetvtunerprovider-satip.js</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\dashboard\livetvtuner.js">
+      <Link>Resources\dashboard-ui\dashboard\livetvtuner.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\dashboard\logpage.js">
       <Link>Resources\dashboard-ui\dashboard\logpage.js</Link>
@@ -2171,6 +2171,12 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\legacy\selectmenu.js">
       <Link>Resources\dashboard-ui\legacy\selectmenu.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\offline\offline.html">
+      <Link>Resources\dashboard-ui\offline\offline.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\offline\offline.js">
+      <Link>Resources\dashboard-ui\offline\offline.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\addpluginpage.js">
       <Link>Resources\dashboard-ui\scripts\addpluginpage.js</Link>
     </BundleResource>
@@ -2188,9 +2194,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\channels.js">
       <Link>Resources\dashboard-ui\scripts\channels.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\channelslatest.js">
-      <Link>Resources\dashboard-ui\scripts\channelslatest.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\connectlogin.js">
       <Link>Resources\dashboard-ui\scripts\connectlogin.js</Link>
@@ -2305,12 +2308,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvsuggested.js">
       <Link>Resources\dashboard-ui\scripts\livetvsuggested.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvtunerprovider-hdhomerun.js">
-      <Link>Resources\dashboard-ui\scripts\livetvtunerprovider-hdhomerun.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvtunerprovider-m3u.js">
-      <Link>Resources\dashboard-ui\scripts\livetvtunerprovider-m3u.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\localsync.js">
       <Link>Resources\dashboard-ui\scripts\localsync.js</Link>
@@ -2516,12 +2513,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\wizardcontroller.js">
       <Link>Resources\dashboard-ui\scripts\wizardcontroller.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\wizardlivetvguide.js">
-      <Link>Resources\dashboard-ui\scripts\wizardlivetvguide.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\wizardlivetvtuner.js">
-      <Link>Resources\dashboard-ui\scripts\wizardlivetvtuner.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\wizardsettings.js">
       <Link>Resources\dashboard-ui\scripts\wizardsettings.js</Link>
     </BundleResource>
@@ -2575,6 +2566,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\es.json">
       <Link>Resources\dashboard-ui\strings\es.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\fa.json">
+      <Link>Resources\dashboard-ui\strings\fa.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\fi.json">
       <Link>Resources\dashboard-ui\strings\fi.json</Link>

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
@@ -40,7 +41,52 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     var allStreams = _outputStreams.ToList();
                     foreach (var stream in allStreams)
                     {
-                        stream.Value.Queue(copy);
+                        stream.Value.Queue(copy, 0, copy.Length);
+                    }
+
+                    if (onStarted != null)
+                    {
+                        var onStartedCopy = onStarted;
+                        onStarted = null;
+                        Task.Run(onStartedCopy);
+                    }
+                }
+
+                else
+                {
+                    await Task.Delay(100).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private static int RtpHeaderBytes = 12;
+        public async Task CopyUntilCancelled(ISocket udpClient, Action onStarted, CancellationToken cancellationToken)
+        {
+            _cancellationToken = cancellationToken;
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var receiveToken = cancellationToken;
+
+                // On the first connection attempt, put a timeout to avoid being stuck indefinitely in the event of failure
+                if (onStarted != null)
+                {
+                    receiveToken = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(5000).Token, cancellationToken).Token;
+                }
+
+                var data = await udpClient.ReceiveAsync(receiveToken).ConfigureAwait(false);
+                var bytesRead = data.ReceivedBytes - RtpHeaderBytes;
+
+                if (bytesRead > 0)
+                {
+                    byte[] copy = new byte[bytesRead];
+                    Buffer.BlockCopy(data.Buffer, RtpHeaderBytes, copy, 0, bytesRead);
+
+                    var allStreams = _outputStreams.ToList();
+                    foreach (var stream in allStreams)
+                    {
+                        //stream.Value.Queue(data.Buffer, RtpHeaderBytes, bytesRead);
+                        stream.Value.Queue(copy, 0, copy.Length);
                     }
 
                     if (onStarted != null)
