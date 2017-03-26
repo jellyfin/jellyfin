@@ -508,6 +508,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.IsAVC = false;
             }
 
+            if (!string.IsNullOrWhiteSpace(streamInfo.field_order) && !string.Equals(streamInfo.field_order, "progressive", StringComparison.OrdinalIgnoreCase))
+            {
+                stream.IsInterlaced = true;
+            }
+
             // Filter out junk
             if (!string.IsNullOrWhiteSpace(streamInfo.codec_tag_string) && streamInfo.codec_tag_string.IndexOf("[0]", StringComparison.OrdinalIgnoreCase) == -1)
             {

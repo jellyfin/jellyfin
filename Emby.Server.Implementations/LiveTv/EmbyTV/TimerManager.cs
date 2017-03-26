@@ -166,5 +166,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             return GetAll().FirstOrDefault(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase));
         }
+
+        public TimerInfo GetTimerByProgramId(string programId)
+        {
+            return GetAll().FirstOrDefault(r => string.Equals(r.ProgramId, programId, StringComparison.OrdinalIgnoreCase));
+        }
     }
 }

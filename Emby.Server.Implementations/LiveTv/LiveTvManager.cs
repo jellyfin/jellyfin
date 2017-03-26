@@ -1078,25 +1078,28 @@ namespace Emby.Server.Implementations.LiveTv
 
             var channel = GetInternalChannel(program.ChannelId);
 
-            var channelUserdata = _userDataManager.GetUserData(userId, channel);
+            if (channel != null)
+            {
+                var channelUserdata = _userDataManager.GetUserData(userId, channel);
 
-            if (channelUserdata.Likes ?? false)
-            {
-                score += 2;
-            }
-            else if (!(channelUserdata.Likes ?? true))
-            {
-                score -= 2;
-            }
+                if (channelUserdata.Likes ?? false)
+                {
+                    score += 2;
+                }
+                else if (!(channelUserdata.Likes ?? true))
+                {
+                    score -= 2;
+                }
 
-            if (channelUserdata.IsFavorite)
-            {
-                score += 3;
-            }
+                if (channelUserdata.IsFavorite)
+                {
+                    score += 3;
+                }
 
-            if (factorChannelWatchCount)
-            {
-                score += channelUserdata.PlayCount;
+                if (factorChannelWatchCount)
+                {
+                    score += channelUserdata.PlayCount;
+                }
             }
 
             return score;

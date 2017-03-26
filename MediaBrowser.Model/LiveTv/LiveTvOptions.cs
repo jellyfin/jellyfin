@@ -34,7 +34,7 @@ namespace MediaBrowser.Model.LiveTv
             TunerHosts = new List<TunerHostInfo>();
             ListingProviders = new List<ListingsProviderInfo>();
             MediaLocationsCreated = new string[] { };
-            RecordingEncodingFormat = "mp4";
+            RecordingEncodingFormat = "mkv";
             RecordingPostProcessorArguments = "\"{path}\"";
             EnableRecordingEncoding = true;
         }
