@@ -1583,6 +1583,15 @@ namespace MediaBrowser.Controller.MediaEncoding
           MediaSourceInfo mediaSource,
           string requestedUrl)
         {
+            if (state == null)
+            {
+                throw new ArgumentNullException("state");
+            }
+            if (mediaSource == null)
+            {
+                throw new ArgumentNullException("mediaSource");
+            }
+
             state.MediaPath = mediaSource.Path;
             state.InputProtocol = mediaSource.Protocol;
             state.InputContainer = mediaSource.Container;
