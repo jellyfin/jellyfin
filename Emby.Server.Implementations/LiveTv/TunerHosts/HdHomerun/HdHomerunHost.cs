@@ -505,7 +505,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             else
             {
-                //return new HdHomerunHttpStream(mediaSource, streamId, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
+                var enableHttpStream = false;
+
+                if (enableHttpStream)
+                {
+                    return new HdHomerunHttpStream(mediaSource, streamId, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
+                }
+
                 return new HdHomerunUdpStream(mediaSource, streamId, new HdHomerunChannelCommands(hdhomerunChannel.Number), modelInfo.TunerCount, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager);
             }
         }
