@@ -204,19 +204,6 @@ namespace Emby.Server.Implementations.Udp
         }
 
         /// <summary>
-        /// Stops this instance.
-        /// </summary>
-        public void Stop()
-        {
-            _isDisposed = true;
-
-            if (_udpClient != null)
-            {
-                _udpClient.Dispose();
-            }
-        }
-
-        /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
@@ -224,7 +211,12 @@ namespace Emby.Server.Implementations.Udp
         {
             if (dispose)
             {
-                Stop();
+                _isDisposed = true;
+
+                if (_udpClient != null)
+                {
+                    _udpClient.Dispose();
+                }
             }
         }
 
@@ -247,9 +239,13 @@ namespace Emby.Server.Implementations.Udp
 
             try
             {
-                await _udpClient.SendAsync(bytes, bytes.Length, remoteEndPoint, CancellationToken.None).ConfigureAwait(false);
+                await _udpClient.SendWithLockAsync(bytes, bytes.Length, remoteEndPoint, CancellationToken.None).ConfigureAwait(false);
 
                 _logger.Info("Udp message sent to {0}", remoteEndPoint);
+            }
+            catch (OperationCanceledException)
+            {
+                
             }
             catch (Exception ex)
             {
