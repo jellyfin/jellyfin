@@ -144,11 +144,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             channel.TunerChannelId = string.IsNullOrWhiteSpace(tvgId) ? channelId : tvgId;
 
-            if (!string.IsNullOrWhiteSpace(channel.TunerChannelId) && channel.TunerChannelId.IndexOf(".json.schedulesdirect.org", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                channel.TunerChannelId = channel.TunerChannelId.Replace(".json.schedulesdirect.org", string.Empty, StringComparison.OrdinalIgnoreCase).TrimStart('I');
-            }
-
             var channelIdValues = new List<string>();
             if (!string.IsNullOrWhiteSpace(channelId))
             {
