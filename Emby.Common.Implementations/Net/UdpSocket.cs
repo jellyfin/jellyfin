@@ -119,10 +119,17 @@ namespace Emby.Common.Implementations.Net
         public Task<SocketReceiveResult> ReceiveAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-
             var tcs = new TaskCompletionSource<SocketReceiveResult>();
-
             EndPoint receivedFromEndPoint = new IPEndPoint(IPAddress.Any, 0);
+
+            var state = new AsyncReceiveState(_Socket, receivedFromEndPoint);
+            state.TaskCompletionSource = tcs;
+
+#if NET46
+            _Socket.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ref state.RemoteEndPoint, ProcessResponse, state);
+            return tcs.Task;
+#endif
+
             cancellationToken.Register(() => tcs.TrySetCanceled());
 
             _receiveSocketAsyncEventArgs.RemoteEndPoint = receivedFromEndPoint;
@@ -270,6 +277,53 @@ namespace Emby.Common.Implementations.Net
             }
 
             return NetworkManager.ToIpEndPointInfo(endpoint);
+        }
+
+        private void ProcessResponse(IAsyncResult asyncResult)
+        {
+#if NET46
+            var state = asyncResult.AsyncState as AsyncReceiveState;
+            try
+            {
+                var bytesRead = state.Socket.EndReceiveFrom(asyncResult, ref state.RemoteEndPoint);
+
+                var ipEndPoint = state.RemoteEndPoint as IPEndPoint;
+                state.TaskCompletionSource.SetResult(
+                    new SocketReceiveResult
+                    {
+                        Buffer = state.Buffer,
+                        ReceivedBytes = bytesRead,
+                        RemoteEndPoint = ToIpEndPointInfo(ipEndPoint),
+                        LocalIPAddress = LocalIPAddress
+                    }
+                );
+            }
+            catch (ObjectDisposedException)
+            {
+                state.TaskCompletionSource.SetCanceled();
+            }
+            catch (Exception ex)
+            {
+                state.TaskCompletionSource.SetException(ex);
+            }
+#endif
+        }
+
+        private class AsyncReceiveState
+        {
+            public AsyncReceiveState(Socket socket, EndPoint remoteEndPoint)
+            {
+                this.Socket = socket;
+                this.RemoteEndPoint = remoteEndPoint;
+            }
+
+            public EndPoint RemoteEndPoint;
+            public byte[] Buffer = new byte[8192];
+
+            public Socket Socket { get; private set; }
+
+            public TaskCompletionSource<SocketReceiveResult> TaskCompletionSource { get; set; }
+
         }
     }
 }
