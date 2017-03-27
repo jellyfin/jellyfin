@@ -13,7 +13,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
     public class QueueStream
     {
         private readonly Stream _outputStream;
-        private readonly ConcurrentQueue<Tuple<byte[],int,int>> _queue = new ConcurrentQueue<Tuple<byte[], int, int>>();
+        private readonly ConcurrentQueue<Tuple<byte[], int, int>> _queue = new ConcurrentQueue<Tuple<byte[], int, int>>();
         private CancellationToken _cancellationToken;
         public TaskCompletionSource<bool> TaskCompletion { get; private set; }
 
@@ -50,6 +50,38 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return null;
         }
 
+        private void OnClosed()
+        {
+            GC.Collect();
+            if (OnFinished != null)
+            {
+                OnFinished(this);
+            }
+        }
+
+        public async Task WriteAsync(byte[] bytes, int offset, int count)
+        {
+            //return _outputStream.WriteAsync(bytes, offset, count, cancellationToken);
+            var cancellationToken = _cancellationToken;
+
+            try
+            {
+                await _outputStream.WriteAsync(bytes, offset, count, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.Debug("QueueStream cancelled");
+                TaskCompletion.TrySetCanceled();
+                OnClosed();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in QueueStream", ex);
+                TaskCompletion.TrySetException(ex);
+                OnClosed();
+            }
+        }
+
         private async Task StartInternal()
         {
             var cancellationToken = _cancellationToken;
@@ -81,10 +113,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
             finally
             {
-                if (OnFinished != null)
-                {
-                    OnFinished(this);
-                }
+                OnClosed();
             }
         }
     }

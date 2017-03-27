@@ -1303,7 +1303,7 @@
     "ButtonScheduledTasks": "\u00dctemezett feladatok",
     "MessageItemsAdded": "Elem hozz\u00e1adva",
     "HeaderSelectCertificatePath": "Select Certificate Path",
-    "HeaderSupporterBenefit": "An active Emby Premiere subscription provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
+    "HeaderSupporterBenefit": "An active Emby Premiere subscription provides additional benefits such as access to Emby DVR, offline media, premium plugins, and more. {0}Learn more{1}.",
     "HeaderWelcomeToProjectServerDashboard": "\u00dcdv\u00f6z\u00f6llek az Emby Szerver Vez\u00e9rl\u0151pultj\u00e1ban",
     "HeaderWelcomeToProjectWebClient": "Welcome to Emby",
     "ButtonTakeTheTour": "Take the tour",
