@@ -35,13 +35,21 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                 if (bytesRead > 0)
                 {
-                    byte[] copy = new byte[bytesRead];
-                    Buffer.BlockCopy(buffer, 0, copy, 0, bytesRead);
-
                     var allStreams = _outputStreams.ToList();
-                    foreach (var stream in allStreams)
+
+                    if (allStreams.Count == 1)
                     {
-                        stream.Value.Queue(copy, 0, copy.Length);
+                        await allStreams[0].Value.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        byte[] copy = new byte[bytesRead];
+                        Buffer.BlockCopy(buffer, 0, copy, 0, bytesRead);
+
+                        foreach (var stream in allStreams)
+                        {
+                            stream.Value.Queue(copy, 0, copy.Length);
+                        }
                     }
 
                     if (onStarted != null)
@@ -79,14 +87,21 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                 if (bytesRead > 0)
                 {
-                    byte[] copy = new byte[bytesRead];
-                    Buffer.BlockCopy(data.Buffer, RtpHeaderBytes, copy, 0, bytesRead);
-
                     var allStreams = _outputStreams.ToList();
-                    foreach (var stream in allStreams)
+
+                    if (allStreams.Count == 1)
                     {
-                        //stream.Value.Queue(data.Buffer, RtpHeaderBytes, bytesRead);
-                        stream.Value.Queue(copy, 0, copy.Length);
+                        await allStreams[0].Value.WriteAsync(data.Buffer, 0, bytesRead).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        byte[] copy = new byte[bytesRead];
+                        Buffer.BlockCopy(data.Buffer, RtpHeaderBytes, copy, 0, bytesRead);
+
+                        foreach (var stream in allStreams)
+                        {
+                            stream.Value.Queue(copy, 0, copy.Length);
+                        }
                     }
 
                     if (onStarted != null)
