@@ -49,7 +49,7 @@ namespace Emby.Common.Implementations.Net
 
         private void InitReceiveSocketAsyncEventArgs()
         {
-            var receiveBuffer = new byte[8192];
+            var receiveBuffer = new byte[81920];
             _receiveSocketAsyncEventArgs.SetBuffer(receiveBuffer, 0, receiveBuffer.Length);
             _receiveSocketAsyncEventArgs.Completed += _receiveSocketAsyncEventArgs_Completed;
 
@@ -119,20 +119,29 @@ namespace Emby.Common.Implementations.Net
         public Task<SocketReceiveResult> ReceiveAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-
             var tcs = new TaskCompletionSource<SocketReceiveResult>();
-
             EndPoint receivedFromEndPoint = new IPEndPoint(IPAddress.Any, 0);
+
+            var state = new AsyncReceiveState(_Socket, receivedFromEndPoint);
+            state.TaskCompletionSource = tcs;
+
             cancellationToken.Register(() => tcs.TrySetCanceled());
 
             _receiveSocketAsyncEventArgs.RemoteEndPoint = receivedFromEndPoint;
             _currentReceiveTaskCompletionSource = tcs;
 
-            var willRaiseEvent = _Socket.ReceiveFromAsync(_receiveSocketAsyncEventArgs);
-
-            if (!willRaiseEvent)
+            try
             {
-                _receiveSocketAsyncEventArgs_Completed(this, _receiveSocketAsyncEventArgs);
+                var willRaiseEvent = _Socket.ReceiveFromAsync(_receiveSocketAsyncEventArgs);
+
+                if (!willRaiseEvent)
+                {
+                    _receiveSocketAsyncEventArgs_Completed(this, _receiveSocketAsyncEventArgs);
+                }
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
             }
 
             return tcs.Task;
@@ -145,31 +154,82 @@ namespace Emby.Common.Implementations.Net
             if (buffer == null) throw new ArgumentNullException("messageData");
             if (endPoint == null) throw new ArgumentNullException("endPoint");
 
-            cancellationToken.ThrowIfCancellationRequested();
+            var ipEndPoint = NetworkManager.ToIPEndPoint(endPoint);
 
-            var tcs = new TaskCompletionSource<int>();
+#if NETSTANDARD1_6
 
-            cancellationToken.Register(() => tcs.TrySetCanceled());
-
-            _sendSocketAsyncEventArgs.SetBuffer(buffer, 0, size);
-            _sendSocketAsyncEventArgs.RemoteEndPoint = NetworkManager.ToIPEndPoint(endPoint);
-            _currentSendTaskCompletionSource = tcs;
-
-            var willRaiseEvent = _Socket.SendAsync(_sendSocketAsyncEventArgs);
-
-            if (!willRaiseEvent)
+            if (size != buffer.Length)
             {
-                _sendSocketAsyncEventArgs_Completed(this, _sendSocketAsyncEventArgs);
+                byte[] copy = new byte[size];
+                Buffer.BlockCopy(buffer, 0, copy, 0, size);
+                buffer = copy;
             }
 
-            return tcs.Task;
+            cancellationToken.ThrowIfCancellationRequested();
+
+            _Socket.SendTo(buffer, ipEndPoint);
+            return Task.FromResult(true);
+#else
+            var taskSource = new TaskCompletionSource<bool>();
+
+            try
+            {
+                _Socket.BeginSendTo(buffer, 0, size, SocketFlags.None, ipEndPoint, result =>
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        taskSource.TrySetCanceled();
+                        return;
+                    }
+                    try
+                    {
+                        _Socket.EndSend(result);
+                        taskSource.TrySetResult(true);
+                    }
+                    catch (Exception ex)
+                    {
+                        taskSource.TrySetException(ex);
+                    }
+
+                }, null);
+            }
+            catch (Exception ex)
+            {
+                taskSource.TrySetException(ex);
+            }
+
+            return taskSource.Task;
+#endif
+            //ThrowIfDisposed();
+
+            //if (buffer == null) throw new ArgumentNullException("messageData");
+            //if (endPoint == null) throw new ArgumentNullException("endPoint");
+
+            //cancellationToken.ThrowIfCancellationRequested();
+
+            //var tcs = new TaskCompletionSource<int>();
+
+            //cancellationToken.Register(() => tcs.TrySetCanceled());
+
+            //_sendSocketAsyncEventArgs.SetBuffer(buffer, 0, size);
+            //_sendSocketAsyncEventArgs.RemoteEndPoint = NetworkManager.ToIPEndPoint(endPoint);
+            //_currentSendTaskCompletionSource = tcs;
+
+            //var willRaiseEvent = _Socket.SendAsync(_sendSocketAsyncEventArgs);
+
+            //if (!willRaiseEvent)
+            //{
+            //    _sendSocketAsyncEventArgs_Completed(this, _sendSocketAsyncEventArgs);
+            //}
+
+            //return tcs.Task;
         }
 
         public async Task SendWithLockAsync(byte[] buffer, int size, IpEndPointInfo endPoint, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
-            await _sendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            //await _sendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -177,7 +237,7 @@ namespace Emby.Common.Implementations.Net
             }
             finally
             {
-                _sendLock.Release();
+                //_sendLock.Release();
             }
         }
 
@@ -212,6 +272,53 @@ namespace Emby.Common.Implementations.Net
             }
 
             return NetworkManager.ToIpEndPointInfo(endpoint);
+        }
+
+        private void ProcessResponse(IAsyncResult asyncResult)
+        {
+#if NET46
+            var state = asyncResult.AsyncState as AsyncReceiveState;
+            try
+            {
+                var bytesRead = state.Socket.EndReceiveFrom(asyncResult, ref state.RemoteEndPoint);
+
+                var ipEndPoint = state.RemoteEndPoint as IPEndPoint;
+                state.TaskCompletionSource.SetResult(
+                    new SocketReceiveResult
+                    {
+                        Buffer = state.Buffer,
+                        ReceivedBytes = bytesRead,
+                        RemoteEndPoint = ToIpEndPointInfo(ipEndPoint),
+                        LocalIPAddress = LocalIPAddress
+                    }
+                );
+            }
+            catch (ObjectDisposedException)
+            {
+                state.TaskCompletionSource.SetCanceled();
+            }
+            catch (Exception ex)
+            {
+                state.TaskCompletionSource.SetException(ex);
+            }
+#endif
+        }
+
+        private class AsyncReceiveState
+        {
+            public AsyncReceiveState(Socket socket, EndPoint remoteEndPoint)
+            {
+                this.Socket = socket;
+                this.RemoteEndPoint = remoteEndPoint;
+            }
+
+            public EndPoint RemoteEndPoint;
+            public byte[] Buffer = new byte[8192];
+
+            public Socket Socket { get; private set; }
+
+            public TaskCompletionSource<SocketReceiveResult> TaskCompletionSource { get; set; }
+
         }
     }
 }
