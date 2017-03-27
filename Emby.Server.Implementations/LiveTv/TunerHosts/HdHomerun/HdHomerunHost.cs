@@ -20,6 +20,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -30,8 +31,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IServerApplicationHost _appHost;
         private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
+        private readonly IEnvironmentInfo _environment;
 
-        public HdHomerunHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IHttpClient httpClient, IFileSystem fileSystem, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager)
+        public HdHomerunHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IHttpClient httpClient, IFileSystem fileSystem, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager, IEnvironmentInfo environment)
             : base(config, logger, jsonSerializer, mediaEncoder)
         {
             _httpClient = httpClient;
@@ -39,6 +41,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _appHost = appHost;
             _socketFactory = socketFactory;
             _networkManager = networkManager;
+            _environment = environment;
         }
 
         public string Name
@@ -503,11 +506,29 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 return new HdHomerunUdpStream(mediaSource, streamId, new LegacyHdHomerunChannelCommands(hdhomerunChannel.Url), modelInfo.TunerCount, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager);
             }
-            else
+
+            // The UDP method is not working reliably on OSX, and on BSD it hasn't been tested yet
+            var enableHttpStream = _environment.OperatingSystem == OperatingSystem.OSX ||
+                _environment.OperatingSystem == OperatingSystem.BSD;
+
+            if (enableHttpStream)
             {
-                //return new HdHomerunHttpStream(mediaSource, streamId, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
-                return new HdHomerunUdpStream(mediaSource, streamId, new HdHomerunChannelCommands(hdhomerunChannel.Number), modelInfo.TunerCount, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager);
+                mediaSource.Protocol = MediaProtocol.Http;
+
+                var httpUrl = GetApiUrl(info, true) + "/auto/v" + hdhrId;
+
+                // If raw was used, the tuner doesn't support params
+                if (!string.IsNullOrWhiteSpace(profile)
+                    && !string.Equals(profile, "native", StringComparison.OrdinalIgnoreCase))
+                {
+                    httpUrl += "?transcode=" + profile;
+                }
+                mediaSource.Path = httpUrl;
+
+                return new HdHomerunHttpStream(mediaSource, streamId, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
             }
+
+            return new HdHomerunUdpStream(mediaSource, streamId, new HdHomerunChannelCommands(hdhomerunChannel.Number), modelInfo.TunerCount, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager);
         }
 
         public async Task Validate(TunerHostInfo info)
