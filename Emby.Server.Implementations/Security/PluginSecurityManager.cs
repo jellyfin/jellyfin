@@ -301,10 +301,12 @@ namespace Emby.Server.Implementations.Security
 
                     if (reg.registered)
                     {
+                        _logger.Info("Registered for feature {0}", feature);
                         LicenseFile.AddRegCheck(feature, reg.expDate);
                     }
                     else
                     {
+                        _logger.Info("Not registered for feature {0}", feature);
                         LicenseFile.RemoveRegCheck(feature);
                     }
 
