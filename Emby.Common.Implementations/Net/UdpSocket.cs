@@ -125,11 +125,6 @@ namespace Emby.Common.Implementations.Net
             var state = new AsyncReceiveState(_Socket, receivedFromEndPoint);
             state.TaskCompletionSource = tcs;
 
-#if NET46
-            _Socket.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ref state.RemoteEndPoint, ProcessResponse, state);
-            return tcs.Task;
-#endif
-
             cancellationToken.Register(() => tcs.TrySetCanceled());
 
             _receiveSocketAsyncEventArgs.RemoteEndPoint = receivedFromEndPoint;
