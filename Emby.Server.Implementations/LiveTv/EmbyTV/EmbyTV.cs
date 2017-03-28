@@ -2575,7 +2575,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 list.Add(new VirtualFolderInfo
                 {
                     Locations = new List<string> { customPath },
-                    Name = "Recorded Series",
+                    Name = "Recorded Shows",
                     CollectionType = CollectionType.TvShows
                 });
             }
