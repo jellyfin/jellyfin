@@ -135,13 +135,13 @@ namespace BDInfo
             {
                 IsBDPlus = true;
             }
-            
+
             if (DirectoryBDJO != null &&
                 _fileSystem.GetFiles(DirectoryBDJO.FullName).Any())
             {
                 IsBDJava = true;
             }
-            
+
             if (DirectorySNP != null &&
                 GetFiles(DirectorySNP.FullName, ".mnv").Any())
             {
@@ -206,7 +206,7 @@ namespace BDInfo
 
         private IEnumerable<FileSystemMetadata> GetFiles(string path, string extension)
         {
-            return _fileSystem.GetFiles(path).Where(i => string.Equals(i.Extension, extension, StringComparison.OrdinalIgnoreCase));
+            return _fileSystem.GetFiles(path, new[] { extension }, false, false);
         }
 
         public void Scan()
