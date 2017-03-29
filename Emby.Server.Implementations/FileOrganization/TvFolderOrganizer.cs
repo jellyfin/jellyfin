@@ -151,8 +151,7 @@ namespace Emby.Server.Implementations.FileOrganization
         /// <param name="extensions">The extensions.</param>
         private void DeleteLeftOverFiles(string path, IEnumerable<string> extensions)
         {
-            var eligibleFiles = _fileSystem.GetFiles(path, true)
-                .Where(i => extensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
+            var eligibleFiles = _fileSystem.GetFiles(path, extensions.ToArray(), false, true)
                 .ToList();
 
             foreach (var file in eligibleFiles)

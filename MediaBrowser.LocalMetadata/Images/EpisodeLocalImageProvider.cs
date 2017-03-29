@@ -56,7 +56,8 @@ namespace MediaBrowser.LocalMetadata.Images
 
             if (parentPathFiles.Any(i => string.Equals(i.FullName, metadataPath, StringComparison.OrdinalIgnoreCase)))
             {
-                return GetFilesFromParentFolder(nameWithoutExtension, directoryService.GetFiles(metadataPath));
+                var filesInMetadataFolder = _fileSystem.GetFiles(metadataPath, BaseItem.SupportedImageExtensions, false, false);
+                return GetFilesFromParentFolder(nameWithoutExtension, filesInMetadataFolder);
             }
 
             return new List<LocalImageInfo>();

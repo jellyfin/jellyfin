@@ -96,27 +96,37 @@ namespace MediaBrowser.LocalMetadata.Images
             return list;
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item, string path, IDirectoryService directoryService)
+        public List<LocalImageInfo> GetImages(IHasImages item, string path, bool isPathInMediaFolder, IDirectoryService directoryService)
         {
-            return GetImages(item, new[] { path }, directoryService);
+            return GetImages(item, new[] { path }, isPathInMediaFolder, directoryService);
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item, IEnumerable<string> paths, IDirectoryService directoryService)
+        public List<LocalImageInfo> GetImages(IHasImages item, IEnumerable<string> paths, bool arePathsInMediaFolders, IDirectoryService directoryService)
         {
-            var files = paths.SelectMany(directoryService.GetFiles)
-                .Where(i =>
-                {
-                    var ext = i.Extension;
+            IEnumerable<FileSystemMetadata> files;
 
-                    return !string.IsNullOrEmpty(ext) &&
-                           BaseItem.SupportedImageExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
-                })
-                .OrderBy(i => BaseItem.SupportedImageExtensionsList.IndexOf(i.Extension ?? string.Empty))
-               .ToList();
+            if (arePathsInMediaFolders)
+            {
+                files = paths.SelectMany(i => _fileSystem.GetFiles(i, BaseItem.SupportedImageExtensions, true, false));
+            }
+            else
+            {
+                files = paths.SelectMany(directoryService.GetFiles)
+                    .Where(i =>
+                    {
+                        var ext = i.Extension;
+
+                        return !string.IsNullOrEmpty(ext) &&
+                               BaseItem.SupportedImageExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
+                    });
+            }
+
+            files = files
+                .OrderBy(i => BaseItem.SupportedImageExtensionsList.IndexOf(i.Extension ?? string.Empty));
 
             var list = new List<LocalImageInfo>();
 
-            PopulateImages(item, list, files, false, directoryService);
+            PopulateImages(item, list, files.ToList(), false, directoryService);
 
             return list;
         }
@@ -132,7 +142,7 @@ namespace MediaBrowser.LocalMetadata.Images
                     PopulateSeasonImagesFromSeriesFolder(season, images, directoryService);
                 }
             }
-            
+
             var imagePrefix = item.FileNameWithoutExtension + "-";
             var isInMixedFolder = item.DetectIsInMixedFolder();
 
@@ -188,7 +198,7 @@ namespace MediaBrowser.LocalMetadata.Images
                 names.Insert(0, "folder");
                 names.Insert(0, "poster");
             }
-            
+
             // Support plex/kodi convention
             if (item is Series)
             {
@@ -256,18 +266,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
         private void PopulateBackdropsFromExtraFanart(string path, List<LocalImageInfo> images, IDirectoryService directoryService)
         {
-            var imageFiles = directoryService.GetFiles(path)
-                .Where(i =>
-                {
-                    var extension = i.Extension;
-
-                    if (string.IsNullOrEmpty(extension))
-                    {
-                        return false;
-                    }
-
-                    return BaseItem.SupportedImageExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
-                });
+            var imageFiles = _fileSystem.GetFiles(path, BaseItem.SupportedImageExtensions, false, false);
 
             images.AddRange(imageFiles.Select(i => new LocalImageInfo
             {

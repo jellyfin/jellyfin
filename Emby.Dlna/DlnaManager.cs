@@ -286,19 +286,12 @@ namespace Emby.Dlna
         {
             try
             {
-                var allFiles = _fileSystem.GetFiles(path)
+                var xmlFies = _fileSystem.GetFilePaths(path)
+                    .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
-                var xmlFies = allFiles
-                    .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                var parseFiles = new List<FileSystemMetadata>();
-
-                parseFiles.AddRange(xmlFies);
-
-                return parseFiles
-                    .Select(i => ParseProfileFile(i.FullName, type))
+                return xmlFies
+                    .Select(i => ParseProfileFile(i, type))
                     .Where(i => i != null)
                     .ToList();
             }
@@ -322,16 +315,9 @@ namespace Emby.Dlna
                 {
                     DeviceProfile profile;
 
-                    if (string.Equals(Path.GetExtension(path), ".xml", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var tempProfile = (DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(DeviceProfile), path);
+                    var tempProfile = (DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(DeviceProfile), path);
 
-                        profile = ReserializeProfile(tempProfile);
-                    }
-                    else
-                    {
-                        profile = (DeviceProfile)_jsonSerializer.DeserializeFromFile(typeof(DeviceProfile), path);
-                    }
+                    profile = ReserializeProfile(tempProfile);
 
                     profile.Id = path.ToLower().GetMD5().ToString("N");
                     profile.ProfileType = type;
@@ -553,15 +539,13 @@ namespace Emby.Dlna
     class DlnaProfileEntryPoint : IServerEntryPoint
     {
         private readonly IApplicationPaths _appPaths;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly IXmlSerializer _xmlSerializer;
 
-        public DlnaProfileEntryPoint(IApplicationPaths appPaths, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer)
+        public DlnaProfileEntryPoint(IApplicationPaths appPaths, IFileSystem fileSystem, IXmlSerializer xmlSerializer)
         {
             _appPaths = appPaths;
             _fileSystem = fileSystem;
-            _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
         }
 

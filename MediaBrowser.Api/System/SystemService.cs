@@ -122,8 +122,7 @@ namespace MediaBrowser.Api.System
 
             try
             {
-                files = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
-                    .Where(i => string.Equals(i.Extension, ".txt", StringComparison.OrdinalIgnoreCase))
+                files = _fileSystem.GetFiles(_appPaths.LogDirectoryPath, new[] { ".txt" }, true, false)
                     .ToList();
             }
             catch (IOException)
