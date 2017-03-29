@@ -49,7 +49,7 @@ namespace Emby.Common.Implementations.Net
 
         private void InitReceiveSocketAsyncEventArgs()
         {
-            var receiveBuffer = new byte[81920];
+            var receiveBuffer = new byte[8192];
             _receiveSocketAsyncEventArgs.SetBuffer(receiveBuffer, 0, receiveBuffer.Length);
             _receiveSocketAsyncEventArgs.Completed += _receiveSocketAsyncEventArgs_Completed;
 

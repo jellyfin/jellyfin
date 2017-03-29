@@ -1974,5 +1974,6 @@
   "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
   "Never": "Never",
   "EveryNDays": "Every {0} days",
-  "HeaderNewDevices": "New Devices"
+  "HeaderNewDevices": "New Devices",
+  "HeaderOnNow": "On Now"
 }
