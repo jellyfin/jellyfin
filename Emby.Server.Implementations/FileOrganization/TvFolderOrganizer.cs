@@ -53,9 +53,29 @@ namespace Emby.Server.Implementations.FileOrganization
             return false;
         }
 
+        private bool IsValidWatchLocation(string path, List<string> libraryFolderPaths)
+        {
+            if (IsPathAlreadyInMediaLibrary(path, libraryFolderPaths))
+            {
+                _logger.Info("Folder {0} is not eligible for auto-organize because it is also part of an Emby library", path);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool IsPathAlreadyInMediaLibrary(string path, List<string> libraryFolderPaths)
+        {
+            return libraryFolderPaths.Any(i => string.Equals(i, path, StringComparison.Ordinal) || _fileSystem.ContainsSubPath(i, path));
+        }
+
         public async Task Organize(AutoOrganizeOptions options, CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var watchLocations = options.TvOptions.WatchLocations.ToList();
+            var libraryFolderPaths = _libraryManager.GetVirtualFolders().SelectMany(i => i.Locations).ToList();
+
+            var watchLocations = options.TvOptions.WatchLocations
+                .Where(i => IsValidWatchLocation(i, libraryFolderPaths))
+                .ToList();
 
             var eligibleFiles = watchLocations.SelectMany(GetFilesToOrganize)
                 .OrderBy(_fileSystem.GetCreationTimeUtc)
