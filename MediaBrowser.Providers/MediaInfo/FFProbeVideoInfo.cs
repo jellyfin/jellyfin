@@ -662,8 +662,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // Try to eliminate menus and intros by skipping all files at the front of the list that are less than the minimum size
             // Once we reach a file that is at least the minimum, return all subsequent ones
-            var allVobs = _fileSystem.GetFiles(root, true)
-                .Where(file => string.Equals(file.Extension, ".vob", StringComparison.OrdinalIgnoreCase))
+            var allVobs = _fileSystem.GetFiles(root, new[] { ".vob" }, false, true)
                 .OrderBy(i => i.FullName)
                 .ToList();
 

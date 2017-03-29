@@ -436,7 +436,7 @@ namespace MediaBrowser.Providers.TV
         {
             try
             {
-                var files = _fileSystem.GetFiles(seriesDataPath)
+                var files = _fileSystem.GetFiles(seriesDataPath, new[] { ".xml" }, true, false)
                     .ToList();
 
                 var seriesXmlFilename = preferredMetadataLanguage + ".xml";

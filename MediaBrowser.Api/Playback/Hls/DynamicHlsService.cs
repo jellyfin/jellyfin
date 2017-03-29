@@ -345,34 +345,34 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (file != null)
             {
-                DeleteFile(file, retryCount);
+                DeleteFile(file.FullName, retryCount);
             }
         }
 
-        private void DeleteFile(FileSystemMetadata file, int retryCount)
+        private void DeleteFile(string path, int retryCount)
         {
             if (retryCount >= 5)
             {
                 return;
             }
 
-            Logger.Debug("Deleting partial HLS file {0}", file.FullName);
+            Logger.Debug("Deleting partial HLS file {0}", path);
 
             try
             {
-                FileSystem.DeleteFile(file.FullName);
+                FileSystem.DeleteFile(path);
             }
             catch (IOException ex)
             {
-                Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, file.FullName);
+                Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
 
                 var task = Task.Delay(100);
                 Task.WaitAll(task);
-                DeleteFile(file, retryCount + 1);
+                DeleteFile(path, retryCount + 1);
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, file.FullName);
+                Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
             }
         }
 
@@ -384,8 +384,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
             try
             {
-                return fileSystem.GetFiles(folder)
-                    .Where(i => string.Equals(i.Extension, segmentExtension, StringComparison.OrdinalIgnoreCase) && Path.GetFileNameWithoutExtension(i.Name).StartsWith(filePrefix, StringComparison.OrdinalIgnoreCase))
+                return fileSystem.GetFiles(folder, new[] { segmentExtension }, true, false)
+                    .Where(i => Path.GetFileNameWithoutExtension(i.Name).StartsWith(filePrefix, StringComparison.OrdinalIgnoreCase))
                     .OrderByDescending(fileSystem.GetLastWriteTimeUtc)
                     .FirstOrDefault();
             }

@@ -135,8 +135,7 @@ namespace MediaBrowser.Api.Images
         {
             try
             {
-				return _fileSystem.GetFiles(path, true)
-                    .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.Ordinal))
+				return _fileSystem.GetFiles(path, BaseItem.SupportedImageExtensions, false, true)
                     .Select(i => new ImageByNameInfo
                     {
                         Name = _fileSystem.GetFileNameWithoutExtension(i),
