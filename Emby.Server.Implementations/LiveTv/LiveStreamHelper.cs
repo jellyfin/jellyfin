@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 
 namespace Emby.Server.Implementations.LiveTv
@@ -28,6 +29,8 @@ namespace Emby.Server.Implementations.LiveTv
             var originalRuntime = mediaSource.RunTimeTicks;
 
             var now = DateTime.UtcNow;
+
+            var allowVideoStreamCopy = mediaSource.MediaStreams.Any(i => i.Type == MediaStreamType.Video && i.AllowStreamCopy);
 
             var info = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
             {
@@ -73,6 +76,8 @@ namespace Emby.Server.Implementations.LiveTv
             var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Video);
             if (videoStream != null)
             {
+                videoStream.AllowStreamCopy = allowVideoStreamCopy;
+
                 if (!videoStream.BitRate.HasValue)
                 {
                     var width = videoStream.Width ?? 1920;
