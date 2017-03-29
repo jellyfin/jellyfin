@@ -18,6 +18,7 @@ namespace SocketHttpListener.Net
         internal ICryptoProvider CryptoProvider { get; private set; }
         internal IStreamFactory StreamFactory { get; private set; }
         internal ISocketFactory SocketFactory { get; private set; }
+        internal IFileSystem FileSystem { get; private set; }
         internal ITextEncoding TextEncoding { get; private set; }
         internal IMemoryStreamFactory MemoryStreamFactory { get; private set; }
         internal INetworkManager NetworkManager { get; private set; }
@@ -39,7 +40,7 @@ namespace SocketHttpListener.Net
 
         public Action<HttpListenerContext> OnContext { get; set; }
 
-        public HttpListener(ILogger logger, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory)
+        public HttpListener(ILogger logger, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem)
         {
             _logger = logger;
             CryptoProvider = cryptoProvider;
@@ -48,19 +49,20 @@ namespace SocketHttpListener.Net
             NetworkManager = networkManager;
             TextEncoding = textEncoding;
             MemoryStreamFactory = memoryStreamFactory;
+            FileSystem = fileSystem;
             prefixes = new HttpListenerPrefixCollection(logger, this);
             registry = new Dictionary<HttpListenerContext, HttpListenerContext>();
             connections = new Dictionary<HttpConnection, HttpConnection>();
             auth_schemes = AuthenticationSchemes.Anonymous;
         }
 
-        public HttpListener(ICertificate certificate, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory)
-            :this(new NullLogger(), certificate, cryptoProvider, streamFactory, socketFactory, networkManager, textEncoding, memoryStreamFactory)
+        public HttpListener(ICertificate certificate, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem)
+            :this(new NullLogger(), certificate, cryptoProvider, streamFactory, socketFactory, networkManager, textEncoding, memoryStreamFactory, fileSystem)
         {
         }
 
-        public HttpListener(ILogger logger, ICertificate certificate, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory)
-            : this(logger, cryptoProvider, streamFactory, socketFactory, networkManager, textEncoding, memoryStreamFactory)
+        public HttpListener(ILogger logger, ICertificate certificate, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem)
+            : this(logger, cryptoProvider, streamFactory, socketFactory, networkManager, textEncoding, memoryStreamFactory, fileSystem)
         {
             _certificate = certificate;
         }

@@ -15,9 +15,6 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback.Progressive
@@ -298,7 +295,8 @@ namespace MediaBrowser.Api.Playback.Progressive
                 responseHeaders["Accept-Ranges"] = "none";
             }
 
-            if (response.ContentLength.HasValue)
+            // Seeing cases of -1 here
+            if (response.ContentLength.HasValue && response.ContentLength.Value >= 0)
             {
                 responseHeaders["Content-Length"] = response.ContentLength.Value.ToString(UsCulture);
             }

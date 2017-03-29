@@ -41,9 +41,16 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <summary>
         /// Gets the segment file extension.
         /// </summary>
-        /// <param name="state">The state.</param>
-        /// <returns>System.String.</returns>
-        protected abstract string GetSegmentFileExtension(StreamState state);
+        protected string GetSegmentFileExtension(StreamRequest request)
+        {
+            var segmentContainer = request.SegmentContainer;
+            if (!string.IsNullOrWhiteSpace(segmentContainer))
+            {
+                return "." + segmentContainer;
+            }
+
+            return ".ts";
+        }
 
         /// <summary>
         /// Gets the type of the transcoding job.
@@ -103,8 +110,11 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        var waitForSegments = state.SegmentLength >= 10 ? 2 : 3;
-                        await WaitForMinimumSegmentCount(playlist, waitForSegments, cancellationTokenSource.Token).ConfigureAwait(false);
+                        var minSegments = state.MinSegments;
+                        if (minSegments > 0)
+                        {
+                            await WaitForMinimumSegmentCount(playlist, minSegments, cancellationTokenSource.Token).ConfigureAwait(false);
+                        }
                     }
                 }
                 finally
@@ -258,14 +268,22 @@ namespace MediaBrowser.Api.Playback.Hls
                     "hls/" + Path.GetFileNameWithoutExtension(outputPath));
             }
 
-            var useGenericSegmenter = false;
+            var useGenericSegmenter = true;
             if (useGenericSegmenter)
             {
-                var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state);
+                var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request);
 
                 var timeDeltaParam = String.Empty;
 
-                return string.Format("{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f segment -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -segment_time {6} {10} -individual_header_trailer 0 -segment_format mpegts -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
+                var segmentFormat = GetSegmentFileExtension(state.Request).TrimStart('.');
+                if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
+                {
+                    segmentFormat = "mpegts";
+                }
+
+                baseUrlParam = string.Format("\"{0}/\"", "hls/" + Path.GetFileNameWithoutExtension(outputPath));
+
+                return string.Format("{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f segment -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -segment_time {6} {10} -individual_header_trailer 0 -segment_format {11} -segment_list_entry_prefix {12} -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
                     inputModifier,
                     EncodingHelper.GetInputArgument(state, encodingOptions),
                     threads,
@@ -276,7 +294,9 @@ namespace MediaBrowser.Api.Playback.Hls
                     startNumberParam,
                     outputPath,
                     outputTsArg,
-                    timeDeltaParam
+                    timeDeltaParam,
+                    segmentFormat,
+                    baseUrlParam
                 ).Trim();
             }
 
@@ -286,7 +306,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var args = string.Format("{0} {1} {2} -map_metadata -1 -map_chapters -1 -threads {3} {4} {5} -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero {6} -hls_time {7} -individual_header_trailer 0 -start_number {8} -hls_list_size {9}{10} -y \"{11}\"",
                 itsOffset,
                 inputModifier,
-                    EncodingHelper.GetInputArgument(state, encodingOptions),
+                EncodingHelper.GetInputArgument(state, encodingOptions),
                 threads,
                 EncodingHelper.GetMapArgs(state),
                 GetVideoArguments(state),

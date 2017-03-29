@@ -389,7 +389,7 @@ namespace MediaBrowser.Providers.TV
 
             _fileSystem.CreateDirectory(seriesDataPath);
 
-            return TvdbSeriesProvider.Current.DownloadSeriesZip(id, MetadataProviders.Tvdb.ToString(), seriesDataPath, lastTvDbUpdateTime, preferredMetadataLanguage, cancellationToken);
+            return TvdbSeriesProvider.Current.DownloadSeriesZip(id, MetadataProviders.Tvdb.ToString(), null, null, seriesDataPath, lastTvDbUpdateTime, preferredMetadataLanguage, cancellationToken);
         }
     }
 }

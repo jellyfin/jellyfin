@@ -231,6 +231,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     playlistItem.AudioCodecs = transcodingProfile.AudioCodec.Split(',');
                 }
+
                 playlistItem.SubProtocol = transcodingProfile.Protocol;
 
                 List<CodecProfile> audioCodecProfiles = new List<CodecProfile>();
@@ -323,7 +324,7 @@ namespace MediaBrowser.Model.Dlna
             if (directPlayProfile != null)
             {
                 // While options takes the network and other factors into account. Only applies to direct stream
-                if (item.SupportsDirectStream && IsAudioEligibleForDirectPlay(item, options.GetMaxBitrate(true)) && options.EnableDirectStream)
+                if (item.SupportsDirectStream && IsAudioEligibleForDirectPlay(item, options.GetMaxBitrate(true), PlayMethod.DirectStream) && options.EnableDirectStream)
                 {
                     playMethods.Add(PlayMethod.DirectStream);
                 }
@@ -331,7 +332,7 @@ namespace MediaBrowser.Model.Dlna
                 // The profile describes what the device supports
                 // If device requirements are satisfied then allow both direct stream and direct play
                 if (item.SupportsDirectPlay &&
-                    IsAudioEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true)) && options.EnableDirectPlay)
+                    IsAudioEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true), PlayMethod.DirectPlay) && options.EnableDirectPlay)
                 {
                     playMethods.Add(PlayMethod.DirectPlay);
                 }
@@ -479,9 +480,18 @@ namespace MediaBrowser.Model.Dlna
 
                 playlistItem.AudioCodecs = transcodingProfile.AudioCodec.Split(',');
 
-                playlistItem.VideoCodec = transcodingProfile.VideoCodec;
+                playlistItem.VideoCodecs = transcodingProfile.VideoCodec.Split(',');
                 playlistItem.CopyTimestamps = transcodingProfile.CopyTimestamps;
                 playlistItem.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
+
+                if (transcodingProfile.MinSegments > 0)
+                {
+                    playlistItem.MinSegments = transcodingProfile.MinSegments;
+                }
+                if (transcodingProfile.SegmentLength > 0)
+                {
+                    playlistItem.SegmentLength = transcodingProfile.SegmentLength;
+                }
 
                 if (!string.IsNullOrEmpty(transcodingProfile.MaxAudioChannels))
                 {
@@ -895,7 +905,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            return IsAudioEligibleForDirectPlay(item, maxBitrate);
+            return IsAudioEligibleForDirectPlay(item, maxBitrate, playMethod);
         }
 
         public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, string transcodingSubProtocol, string transcodingContainer)
@@ -1025,23 +1035,29 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        private bool IsAudioEligibleForDirectPlay(MediaSourceInfo item, long? maxBitrate)
+        private bool IsAudioEligibleForDirectPlay(MediaSourceInfo item, long? maxBitrate, PlayMethod playMethod)
         {
+            // Don't restrict by bitrate if coming from an external domain
+            if (item.IsRemote)
+            {
+                return true;    
+            }
+
             if (!maxBitrate.HasValue)
             {
-                _logger.Info("Cannot direct play due to unknown supported bitrate");
+                _logger.Info("Cannot "+ playMethod + " due to unknown supported bitrate");
                 return false;
             }
 
             if (!item.Bitrate.HasValue)
             {
-                _logger.Info("Cannot direct play due to unknown content bitrate");
+                _logger.Info("Cannot " + playMethod + " due to unknown content bitrate");
                 return false;
             }
 
             if (item.Bitrate.Value > maxBitrate.Value)
             {
-                _logger.Info("Bitrate exceeds DirectPlay limit: media bitrate: {0}, max bitrate: {1}", item.Bitrate.Value.ToString(CultureInfo.InvariantCulture), maxBitrate.Value.ToString(CultureInfo.InvariantCulture));
+                _logger.Info("Bitrate exceeds " + playMethod + " limit: media bitrate: {0}, max bitrate: {1}", item.Bitrate.Value.ToString(CultureInfo.InvariantCulture), maxBitrate.Value.ToString(CultureInfo.InvariantCulture));
                 return false;
             }
 
@@ -1137,6 +1153,37 @@ namespace MediaBrowser.Model.Dlna
                             break;
                         }
                     case ProfileConditionValue.IsAnamorphic:
+                        {
+                            bool isAnamorphic;
+                            if (bool.TryParse(value, out isAnamorphic))
+                            {
+                                if (isAnamorphic && condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.RequireNonAnamorphic = true;
+                                }
+                                else if (!isAnamorphic && condition.Condition == ProfileConditionType.NotEquals)
+                                {
+                                    item.RequireNonAnamorphic = true;
+                                }
+                            }
+                            break;
+                        }
+                    case ProfileConditionValue.IsInterlaced:
+                        {
+                            bool isInterlaced;
+                            if (bool.TryParse(value, out isInterlaced))
+                            {
+                                if (isInterlaced && condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.DeInterlace = true;
+                                }
+                                else if (!isInterlaced && condition.Condition == ProfileConditionType.NotEquals)
+                                {
+                                    item.DeInterlace = true;
+                                }
+                            }
+                            break;
+                        }
                     case ProfileConditionValue.AudioProfile:
                     case ProfileConditionValue.Has64BitOffsets:
                     case ProfileConditionValue.PacketLength:

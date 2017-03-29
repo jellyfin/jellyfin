@@ -13,7 +13,6 @@
     "Repeat": "Upprepa",
     "TrackCount": "{0} sp\u00e5r",
     "ItemCount": "{0} objekt",
-    "ReleaseYearValue": "Utgivnings\u00e5r: {0}",
     "OriginalAirDateValue": "Ursprungligt s\u00e4ndningsdatum: {0}",
     "EndsAtValue": "Slutar vid: {0}",
     "OptionSundayShort": "S\u00f6n",
@@ -44,6 +43,8 @@
     "RecordSeries": "Spela in serie",
     "HeaderCinemaMode": "Biol\u00e4ge",
     "HeaderCloudSync": "Molnsynkronisering",
+    "HeaderDownloadedMedia": "Downloaded Media",
+    "Downloads": "Downloads",
     "HeaderOfflineDownloads": "Offlinemedia",
     "HeaderOfflineDownloadsDescription": "Ladda ner media till dina enheter f\u00f6r att sen spela upp dom enkelt offline.",
     "CloudSyncFeatureDescription": "Synka din media till molnet f\u00f6r l\u00e4tttillg\u00e4ngligt backup, arkivering och konvertering.",
@@ -389,5 +390,10 @@
     "Original": "Original",
     "Fill": "Fyll",
     "BestFit": "Anpassad",
-    "MessagePlayAccessRestricted": "Uppspelning av detta inneh\u00e5llet \u00e4r f\u00f6r n\u00e4rvarande begr\u00e4nsat. Kontakta din Emby Server administrat\u00f6r f\u00f6r mer information."
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
+    "MessagePlayAccessRestricted": "Uppspelning av detta inneh\u00e5llet \u00e4r f\u00f6r n\u00e4rvarande begr\u00e4nsat. Kontakta din Emby Server administrat\u00f6r f\u00f6r mer information.",
+    "Accept": "Accept",
+    "Reject": "Reject",
+    "Connect": "Anslut",
+    "LabelDownloadTo": "Download to:"
 }

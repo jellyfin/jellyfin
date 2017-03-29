@@ -13,7 +13,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
     public class QueueStream
     {
         private readonly Stream _outputStream;
-        private readonly ConcurrentQueue<byte[]> _queue = new ConcurrentQueue<byte[]>();
+        private readonly ConcurrentQueue<Tuple<byte[], int, int>> _queue = new ConcurrentQueue<Tuple<byte[], int, int>>();
         private CancellationToken _cancellationToken;
         public TaskCompletionSource<bool> TaskCompletion { get; private set; }
 
@@ -28,9 +28,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             TaskCompletion = new TaskCompletionSource<bool>();
         }
 
-        public void Queue(byte[] bytes)
+        public void Queue(byte[] bytes, int offset, int count)
         {
-            _queue.Enqueue(bytes);
+            _queue.Enqueue(new Tuple<byte[], int, int>(bytes, offset, count));
         }
 
         public void Start(CancellationToken cancellationToken)
@@ -39,15 +39,47 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             Task.Run(() => StartInternal());
         }
 
-        private byte[] Dequeue()
+        private Tuple<byte[], int, int> Dequeue()
         {
-            byte[] bytes;
-            if (_queue.TryDequeue(out bytes))
+            Tuple<byte[], int, int> result;
+            if (_queue.TryDequeue(out result))
             {
-                return bytes;
+                return result;
             }
 
             return null;
+        }
+
+        private void OnClosed()
+        {
+            GC.Collect();
+            if (OnFinished != null)
+            {
+                OnFinished(this);
+            }
+        }
+
+        public async Task WriteAsync(byte[] bytes, int offset, int count)
+        {
+            //return _outputStream.WriteAsync(bytes, offset, count, cancellationToken);
+            var cancellationToken = _cancellationToken;
+
+            try
+            {
+                await _outputStream.WriteAsync(bytes, offset, count, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.Debug("QueueStream cancelled");
+                TaskCompletion.TrySetCanceled();
+                OnClosed();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in QueueStream", ex);
+                TaskCompletion.TrySetException(ex);
+                OnClosed();
+            }
         }
 
         private async Task StartInternal()
@@ -58,10 +90,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             {
                 while (true)
                 {
-                    var bytes = Dequeue();
-                    if (bytes != null)
+                    var result = Dequeue();
+                    if (result != null)
                     {
-                        await _outputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
+                        await _outputStream.WriteAsync(result.Item1, result.Item2, result.Item3, cancellationToken).ConfigureAwait(false);
                     }
                     else
                     {
@@ -81,10 +113,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
             finally
             {
-                if (OnFinished != null)
-                {
-                    OnFinished(this);
-                }
+                OnClosed();
             }
         }
     }

@@ -13,7 +13,6 @@
     "Repeat": "Wiederholen",
     "TrackCount": "{0} Titel",
     "ItemCount": "{0} Eintr\u00e4ge",
-    "ReleaseYearValue": "Erscheinungsjahr: {0}",
     "OriginalAirDateValue": "Erstausstrahlung: {0}",
     "EndsAtValue": "Endet um {0}",
     "OptionSundayShort": "So",
@@ -44,6 +43,8 @@
     "RecordSeries": "Serie aufnehmen",
     "HeaderCinemaMode": "Kinomodus",
     "HeaderCloudSync": "Cloud Synchronisation",
+    "HeaderDownloadedMedia": "Heruntergeladene Medien",
+    "Downloads": "Downloads",
     "HeaderOfflineDownloads": "Offline Medien",
     "HeaderOfflineDownloadsDescription": "Lade Medien auf deine Ger\u00e4te herunter um sie einfach offline zu nutzen.",
     "CloudSyncFeatureDescription": "Synchronisiere deine Medien in die Cloud f\u00fcr ein Backup, eine Archivierung und Konvertierung.",
@@ -389,5 +390,10 @@
     "Original": "Original",
     "Fill": "Ausf\u00fcllen",
     "BestFit": "Beste \u00dcbereinstimmung",
-    "MessagePlayAccessRestricted": "Das Abspielen dieses Inhaltes ist derzeit eingeschr\u00e4nkt. Bitte kontaktiere deinen Emby Server-Administrator f\u00fcr weitere Informationen."
+    "MessageNoServersAvailableToConnect": "Es steht kein verbindungsbereiter Server zur Verf\u00fcgung. Wenn du eingeladen wurdest, vergewissere dich, dass du die Einladung weiter unten akzeptierst oder den Link in der E-Mail angeklickt hast.",
+    "MessagePlayAccessRestricted": "Das Abspielen dieses Inhaltes ist derzeit eingeschr\u00e4nkt. Bitte kontaktiere deinen Emby Server-Administrator f\u00fcr weitere Informationen.",
+    "Accept": "Akzeptieren",
+    "Reject": "Ablehnen",
+    "Connect": "Verbinde",
+    "LabelDownloadTo": "Herunterladen nach:"
 }

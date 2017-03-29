@@ -647,9 +647,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     var videoStream = mediaInfo.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
-                    if (videoStream != null)
+                    if (videoStream != null && !videoStream.IsInterlaced)
                     {
-                        var isInterlaced = await DetectInterlaced(mediaInfo, videoStream, inputPath, probeSizeArgument).ConfigureAwait(false);
+                        var isInterlaced = DetectInterlaced(mediaInfo, videoStream);
 
                         if (isInterlaced)
                         {
@@ -672,7 +672,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        private async Task<bool> DetectInterlaced(MediaSourceInfo video, MediaStream videoStream, string inputPath, string probeSizeArgument)
+        private bool DetectInterlaced(MediaSourceInfo video, MediaStream videoStream)
         {
             var formats = (video.Container ?? string.Empty).Split(',').ToList();
             var enableInterlacedDection = formats.Contains("vob", StringComparer.OrdinalIgnoreCase) ||
@@ -698,163 +698,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            if (video.Protocol != MediaProtocol.File)
-            {
-                return false;
-            }
-
-            var args = "{0} -i {1} -map 0:v:{2} -an -filter:v idet -frames:v 500 -an -f null /dev/null";
-
-            var process = _processFactory.Create(new ProcessOptions
-            {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-
-                // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
-                RedirectStandardError = true,
-                FileName = FFMpegPath,
-                Arguments = string.Format(args, probeSizeArgument, inputPath, videoStream.Index.ToString(CultureInfo.InvariantCulture)).Trim(),
-
-                IsHidden = true,
-                ErrorDialog = false,
-                EnableRaisingEvents = true
-            });
-
-            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
-            var idetFoundInterlaced = false;
-
-            using (var processWrapper = new ProcessWrapper(process, this, _logger))
-            {
-                try
-                {
-                    StartProcess(processWrapper);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error starting ffprobe", ex);
-
-                    throw;
-                }
-
-                try
-                {
-                    //process.BeginOutputReadLine();
-
-                    using (var reader = new StreamReader(process.StandardError.BaseStream))
-                    {
-                        while (!reader.EndOfStream)
-                        {
-                            var line = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                            if (line.StartsWith("[Parsed_idet", StringComparison.OrdinalIgnoreCase))
-                            {
-                                var idetResult = AnalyzeIdetResult(line);
-
-                                if (idetResult.HasValue)
-                                {
-                                    if (!idetResult.Value)
-                                    {
-                                        return false;
-                                    }
-
-                                    idetFoundInterlaced = true;
-                                }
-                            }
-                        }
-                    }
-
-                }
-                catch
-                {
-                    StopProcess(processWrapper, 100);
-
-                    throw;
-                }
-            }
-
-            return idetFoundInterlaced;
-        }
-
-        private bool? AnalyzeIdetResult(string line)
-        {
-            // As you can see, the filter only guessed one frame as progressive. 
-            // Results like this are pretty typical. So if less than 30% of the detections are in the "Undetermined" category, then I only consider the video to be interlaced if at least 65% of the identified frames are in either the TFF or BFF category. 
-            // In this case (310 + 311)/(622) = 99.8% which is well over the 65% metric. I may refine that number with more testing but I honestly do not believe I will need to.
-            // http://awel.domblogger.net/videoTranscode/interlace.html
-            var index = line.IndexOf("detection:", StringComparison.OrdinalIgnoreCase);
-
-            if (index == -1)
-            {
-                return null;
-            }
-
-            line = line.Substring(index).Trim();
-            var parts = line.Split(' ').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => i.Trim()).ToList();
-
-            if (parts.Count < 2)
-            {
-                return null;
-            }
-            double tff = 0;
-            double bff = 0;
-            double progressive = 0;
-            double undetermined = 0;
-            double total = 0;
-
-            for (var i = 0; i < parts.Count - 1; i++)
-            {
-                var part = parts[i];
-
-                if (string.Equals(part, "tff:", StringComparison.OrdinalIgnoreCase))
-                {
-                    tff = GetNextPart(parts, i);
-                    total += tff;
-                }
-                else if (string.Equals(part, "bff:", StringComparison.OrdinalIgnoreCase))
-                {
-                    bff = GetNextPart(parts, i);
-                    total += tff;
-                }
-                else if (string.Equals(part, "progressive:", StringComparison.OrdinalIgnoreCase))
-                {
-                    progressive = GetNextPart(parts, i);
-                    total += progressive;
-                }
-                else if (string.Equals(part, "undetermined:", StringComparison.OrdinalIgnoreCase))
-                {
-                    undetermined = GetNextPart(parts, i);
-                    total += undetermined;
-                }
-            }
-
-            if (total == 0)
-            {
-                return null;
-            }
-
-            if ((undetermined / total) >= .3)
-            {
-                return false;
-            }
-
-            if (((tff + bff) / total) >= .4)
-            {
-                return true;
-            }
-
             return false;
-        }
-
-        private int GetNextPart(List<string> parts, int index)
-        {
-            var next = parts[index + 1];
-
-            int value;
-            if (int.TryParse(next, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
-            {
-                return value;
-            }
-            return 0;
         }
 
         /// <summary>

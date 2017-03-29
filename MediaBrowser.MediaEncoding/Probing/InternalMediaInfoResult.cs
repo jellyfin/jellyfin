@@ -264,6 +264,8 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <value>The loro_surmixlev.</value>
         public string loro_surmixlev { get; set; }
 
+        public string field_order { get; set; }
+
         /// <summary>
         /// Gets or sets the disposition.
         /// </summary>

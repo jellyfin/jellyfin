@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
+using Emby.Common.Implementations.IO;
 using Emby.Server.CinemaMode;
 using Emby.Server.Connect;
 using Emby.Server.Core;
@@ -45,6 +46,11 @@ namespace MediaBrowser.ServerApplication
         protected override void RestartInternal()
         {
             MainStartup.Restart();
+        }
+
+        public override void EnableLoopback(string appName)
+        {
+            LoopUtil.Run(appName);
         }
 
         protected override List<Assembly> GetAssembliesWithPartsInternal()
@@ -105,11 +111,6 @@ namespace MediaBrowser.ServerApplication
                 //Remove our shortcut from the startup folder for this user
                 FileSystemManager.DeleteFile(Path.Combine(startupPath, "Emby Server.lnk"));
             }
-        }
-
-        protected override void EnableLoopbackInternal(string appName)
-        {
-            LoopUtil.Run(appName);
         }
 
         public override bool SupportsRunningAsService

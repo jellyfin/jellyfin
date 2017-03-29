@@ -369,6 +369,8 @@ namespace Emby.Server.Implementations.Library
         {
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
+            enableAutoClose = false;
+
             try
             {
                 var tuple = GetProvider(request.OpenToken);

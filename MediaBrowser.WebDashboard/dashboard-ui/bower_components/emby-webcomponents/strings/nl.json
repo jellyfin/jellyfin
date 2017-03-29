@@ -13,7 +13,6 @@
     "Repeat": "Herhaling",
     "TrackCount": "{0} nummers",
     "ItemCount": "{0} items",
-    "ReleaseYearValue": "Jaar van uitgifte: {0}",
     "OriginalAirDateValue": "Originele uitzenddatum: {0}",
     "EndsAtValue": "Eindigt om {0}",
     "OptionSundayShort": "Zo",
@@ -44,6 +43,8 @@
     "RecordSeries": "Series Opnemen",
     "HeaderCinemaMode": "Bioscoop mode",
     "HeaderCloudSync": "Cloud Synchronisatie",
+    "HeaderDownloadedMedia": "Downloaded Media",
+    "Downloads": "Downloads",
     "HeaderOfflineDownloads": "Offline Media",
     "HeaderOfflineDownloadsDescription": "Download media naar je apparaten voor gemakkelijk offlineebruik.",
     "CloudSyncFeatureDescription": "Synchroniseer uw media naar de cloud voor eenvoudige backup, archivering en conversie.",
@@ -389,5 +390,10 @@
     "Original": "Original",
     "Fill": "Fill",
     "BestFit": "Best fit",
-    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information."
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
+    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information.",
+    "Accept": "Accept",
+    "Reject": "Reject",
+    "Connect": "Verbind",
+    "LabelDownloadTo": "Download to:"
 }

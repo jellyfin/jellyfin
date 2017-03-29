@@ -60,6 +60,11 @@ namespace MediaBrowser.Api.Playback
         {
             get
             {
+                if (Request.SegmentLength.HasValue)
+                {
+                    return Request.SegmentLength.Value;
+                }
+
                 if (string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     var userAgent = UserAgent ?? string.Empty;
@@ -86,6 +91,19 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
+        public int MinSegments
+        {
+            get
+            {
+                if (Request.MinSegments.HasValue)
+                {
+                    return Request.MinSegments.Value;
+                }
+
+                return SegmentLength >= 10 ? 2 : 3;
+            }
+        }
+
         public bool IsSegmentedLiveStream
         {
             get
@@ -102,7 +120,6 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        public List<string> SupportedSubtitleCodecs { get; set; }
         public string UserAgent { get; set; }
         public TranscodingJobType TranscodingType { get; set; }
 
@@ -111,14 +128,12 @@ namespace MediaBrowser.Api.Playback
         {
             _mediaSourceManager = mediaSourceManager;
             _logger = logger;
-            SupportedSubtitleCodecs = new List<string>();
             TranscodingType = transcodingType;
         }
 
         public string MimeType { get; set; }
 
         public bool EstimateContentLength { get; set; }
-        public bool EnableMpegtsM2TsMode { get; set; }
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
 
         public long? EncodingDurationTicks { get; set; }
@@ -139,6 +154,8 @@ namespace MediaBrowser.Api.Playback
             DisposeLiveStream();
             DisposeLogStream();
             DisposeIsoMount();
+
+            TranscodingJob = null;
         }
 
         private void DisposeLogStream()
@@ -191,7 +208,6 @@ namespace MediaBrowser.Api.Playback
         }
 
         public string OutputFilePath { get; set; }
-        public int? OutputAudioBitrate;
 
         public string ActualOutputVideoCodec
         {
@@ -461,6 +477,12 @@ namespace MediaBrowser.Api.Playback
 
                 return true;
             }
+        }
+
+        public TranscodingJob TranscodingJob;
+        public override void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
+        {
+            ApiEntryPoint.Instance.ReportTranscodingProgress(TranscodingJob, this, transcodingPosition, framerate, percentComplete, bytesTranscoded, bitRate);
         }
     }
 }

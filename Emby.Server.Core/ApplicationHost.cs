@@ -61,7 +61,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Common.Implementations;
 using Emby.Common.Implementations.Archiving;
-using Emby.Common.Implementations.Networking;
+using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.Reflection;
 using Emby.Common.Implementations.Serialization;
 using Emby.Common.Implementations.TextEncoding;
@@ -93,7 +93,7 @@ using Emby.Server.Implementations.Social;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
 using Emby.Server.Implementations.Dto;
-using Emby.Server.Implementations.EntryPoints;
+using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.FileOrganization;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.Security;
@@ -107,7 +107,6 @@ using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.ServerManager;
 using Emby.Server.Implementations.Session;
-using Emby.Server.Implementations.Social;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using MediaBrowser.Model.Activity;
@@ -294,6 +293,13 @@ namespace Emby.Server.Core
             ImageEncoder = imageEncoder;
 
             SetBaseExceptionMessage();
+
+            if (environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
+            {
+                fileSystem.AddShortcutHandler(new LnkShortcutHandler());
+            }
+
+            fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
         }
 
         private Version _version;
@@ -606,7 +612,7 @@ namespace Emby.Server.Core
             CertificatePath = GetCertificatePath(true);
             Certificate = GetCertificate(CertificatePath);
 
-            HttpServer = HttpServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamFactory, "Emby", "web/index.html", textEncoding, SocketFactory, CryptographyProvider, JsonSerializer, XmlSerializer, EnvironmentInfo, Certificate, SupportsDualModeSockets);
+            HttpServer = HttpServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamFactory, "Emby", "web/index.html", textEncoding, SocketFactory, CryptographyProvider, JsonSerializer, XmlSerializer, EnvironmentInfo, Certificate, FileSystemManager, SupportsDualModeSockets);
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
@@ -796,16 +802,24 @@ namespace Emby.Server.Core
                 info.FFMpegFilename = "ffmpeg";
                 info.FFProbeFilename = "ffprobe";
                 info.ArchiveType = "7z";
-                info.Version = "20160215";
+                info.Version = "20170308";
                 info.DownloadUrls = GetLinuxDownloadUrls();
             }
             else if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
             {
                 info.FFMpegFilename = "ffmpeg.exe";
                 info.FFProbeFilename = "ffprobe.exe";
-                info.Version = "20160410";
+                info.Version = "20170308";
                 info.ArchiveType = "7z";
                 info.DownloadUrls = GetWindowsDownloadUrls();
+            }
+            else if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.OSX)
+            {
+                info.FFMpegFilename = "ffmpeg";
+                info.FFProbeFilename = "ffprobe";
+                info.ArchiveType = "7z";
+                info.Version = "20170308";
+                info.DownloadUrls = GetMacDownloadUrls();
             }
             else
             {
@@ -816,6 +830,20 @@ namespace Emby.Server.Core
             return info;
         }
 
+        private string[] GetMacDownloadUrls()
+        {
+            switch (EnvironmentInfo.SystemArchitecture)
+            {
+                case Architecture.X64:
+                    return new[]
+                    {
+                                "https://embydata.com/downloads/ffmpeg/osx/ffmpeg-x64-20170308.7z"
+                    };
+            }
+
+            return new string[] { };
+        }
+
         private string[] GetWindowsDownloadUrls()
         {
             switch (EnvironmentInfo.SystemArchitecture)
@@ -823,12 +851,12 @@ namespace Emby.Server.Core
                 case Architecture.X64:
                     return new[]
                     {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160410-win64.7z"
+                                "https://embydata.com/downloads/ffmpeg/windows/ffmpeg-20170308-win64.7z"
                     };
                 case Architecture.X86:
                     return new[]
                     {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160410-win32.7z"
+                                "https://embydata.com/downloads/ffmpeg/windows/ffmpeg-20170308-win32.7z"
                     };
             }
 
@@ -842,12 +870,12 @@ namespace Emby.Server.Core
                 case Architecture.X64:
                     return new[]
                     {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-64bit-static.7z"
+                                "https://embydata.com/downloads/ffmpeg/linux/ffmpeg-git-20170301-64bit-static.7z"
                     };
                 case Architecture.X86:
                     return new[]
                     {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-32bit-static.7z"
+                                "https://embydata.com/downloads/ffmpeg/linux/ffmpeg-git-20170301-32bit-static.7z"
                     };
             }
 
@@ -1714,14 +1742,8 @@ namespace Emby.Server.Core
             ((IProcess)sender).Dispose();
         }
 
-        public void EnableLoopback(string appName)
+        public virtual void EnableLoopback(string appName)
         {
-            EnableLoopbackInternal(appName);
-        }
-
-        protected virtual void EnableLoopbackInternal(string appName)
-        {
-            
         }
 
         private void RegisterModules()

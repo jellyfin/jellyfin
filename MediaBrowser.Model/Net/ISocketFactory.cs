@@ -14,6 +14,8 @@ namespace MediaBrowser.Model.Net
 		/// <returns>A <see cref="ISocket"/> implementation.</returns>
 		ISocket CreateUdpSocket(int localPort);
 
+        ISocket CreateUdpBroadcastSocket(int localPort);
+
         ISocket CreateTcpSocket(IpAddressInfo remoteAddress, int remotePort);
 
         /// <summary>

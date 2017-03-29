@@ -3,6 +3,9 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Text;
 using SocketHttpListener.Primitives;
@@ -32,12 +35,14 @@ namespace SocketHttpListener.Net
 
         private readonly ILogger _logger;
         private readonly ITextEncoding _textEncoding;
+        private readonly IFileSystem _fileSystem;
 
-        internal HttpListenerResponse(HttpListenerContext context, ILogger logger, ITextEncoding textEncoding)
+        internal HttpListenerResponse(HttpListenerContext context, ILogger logger, ITextEncoding textEncoding, IFileSystem fileSystem)
         {
             this.context = context;
             _logger = logger;
             _textEncoding = textEncoding;
+            _fileSystem = fileSystem;
         }
 
         internal bool CloseConnection
@@ -366,7 +371,7 @@ namespace SocketHttpListener.Net
         {
             if (chunked)
             {
-                return ;
+                return;
             }
 
             Version v = context.Request.ProtocolVersion;
@@ -508,6 +513,11 @@ namespace SocketHttpListener.Net
             }
 
             cookies.Add(cookie);
+        }
+
+        public Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
+        {
+            return ((ResponseStream)OutputStream).TransmitFile(path, offset, count, fileShareMode, cancellationToken);
         }
     }
 }

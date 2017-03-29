@@ -464,10 +464,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            item.ProductionLocations = val.Split('/')
+                            item.ProductionLocations.AddRange(val.Split('/')
                                 .Select(i => i.Trim())
-                                .Where(i => !string.IsNullOrWhiteSpace(i))
-                                .ToList();
+                                .Where(i => !string.IsNullOrWhiteSpace(i)));
                         }
                         break;
                     }

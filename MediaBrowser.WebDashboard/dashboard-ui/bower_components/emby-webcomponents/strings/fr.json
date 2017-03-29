@@ -13,7 +13,6 @@
     "Repeat": "R\u00e9p\u00e9ter",
     "TrackCount": "{0} pistes",
     "ItemCount": "{0} \u00e9l\u00e9ments",
-    "ReleaseYearValue": "Ann\u00e9e de sortie: {0}",
     "OriginalAirDateValue": "Date de diffusion originale: {0}",
     "EndsAtValue": "Se termine \u00e0 {0}",
     "OptionSundayShort": "Dim",
@@ -44,6 +43,8 @@
     "RecordSeries": "Enregistrer s\u00e9ries",
     "HeaderCinemaMode": "Mode Cin\u00e9ma",
     "HeaderCloudSync": "Synchronisation avec le cloud",
+    "HeaderDownloadedMedia": "Downloaded Media",
+    "Downloads": "Downloads",
     "HeaderOfflineDownloads": "Contenu multim\u00e9dia hors-ligne",
     "HeaderOfflineDownloadsDescription": "T\u00e9l\u00e9chargez votre contenu multim\u00e9dia vers vos appareils pour une meilleure utilisation hors-ligne.",
     "CloudSyncFeatureDescription": "Synchronisez votre contenu multim\u00e9dia vers le cloud pour le sauvegarder, l'archiver et le convertir plus facilement.",
@@ -389,5 +390,10 @@
     "Original": "Original",
     "Fill": "Fill",
     "BestFit": "Best fit",
-    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information."
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
+    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information.",
+    "Accept": "Accept",
+    "Reject": "Reject",
+    "Connect": "Connexion",
+    "LabelDownloadTo": "Download to:"
 }

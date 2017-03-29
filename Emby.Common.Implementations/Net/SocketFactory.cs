@@ -52,6 +52,18 @@ namespace Emby.Common.Implementations.Net
             {
                 throw new SocketCreateException(ex.SocketErrorCode.ToString(), ex);
             }
+            catch (ArgumentException ex)
+            {
+                if (dualMode)
+                {
+                    // Mono for BSD incorrectly throws ArgumentException instead of SocketException
+                    throw new SocketCreateException("AddressFamilyNotSupported", ex);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
         public ISocket CreateTcpSocket(IpAddressInfo remoteAddress, int remotePort)
@@ -59,6 +71,7 @@ namespace Emby.Common.Implementations.Net
             if (remotePort < 0) throw new ArgumentException("remotePort cannot be less than zero.", "remotePort");
 
             var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
+            
             try
             {
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
@@ -96,10 +109,31 @@ namespace Emby.Common.Implementations.Net
             }
         }
 
+        public ISocket CreateUdpBroadcastSocket(int localPort)
+        {
+            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");
+
+            var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
+            try
+            {
+                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
+
+                return new UdpSocket(retVal, localPort, IPAddress.Any);
+            }
+            catch
+            {
+                if (retVal != null)
+                    retVal.Dispose();
+
+                throw;
+            }
+        }
+        
         /// <summary>
-        /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
-        /// </summary>
-        /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
+              /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
+              /// </summary>
+              /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
         public ISocket CreateSsdpUdpSocket(IpAddressInfo localIpAddress, int localPort)
         {
             if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");

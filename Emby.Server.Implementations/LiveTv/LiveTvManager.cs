@@ -150,6 +150,21 @@ namespace Emby.Server.Implementations.LiveTv
             get { return _listingProviders; }
         }
 
+        public List<NameIdPair> GetTunerHostTypes()
+        {
+            return _tunerHosts.OrderBy(i => i.Name).Select(i => new NameIdPair
+            {
+                Name = i.Name,
+                Id = i.Type
+
+            }).ToList();
+        }
+
+        public Task<List<TunerHostInfo>> DiscoverTuners(bool newDevicesOnly, CancellationToken cancellationToken)
+        {
+            return EmbyTV.EmbyTV.Current.DiscoverTuners(newDevicesOnly, cancellationToken);
+        }
+
         void service_DataSourceChanged(object sender, EventArgs e)
         {
             if (!_isDisposed)
@@ -1063,25 +1078,28 @@ namespace Emby.Server.Implementations.LiveTv
 
             var channel = GetInternalChannel(program.ChannelId);
 
-            var channelUserdata = _userDataManager.GetUserData(userId, channel);
+            if (channel != null)
+            {
+                var channelUserdata = _userDataManager.GetUserData(userId, channel);
 
-            if (channelUserdata.Likes ?? false)
-            {
-                score += 2;
-            }
-            else if (!(channelUserdata.Likes ?? true))
-            {
-                score -= 2;
-            }
+                if (channelUserdata.Likes ?? false)
+                {
+                    score += 2;
+                }
+                else if (!(channelUserdata.Likes ?? true))
+                {
+                    score -= 2;
+                }
 
-            if (channelUserdata.IsFavorite)
-            {
-                score += 3;
-            }
+                if (channelUserdata.IsFavorite)
+                {
+                    score += 3;
+                }
 
-            if (factorChannelWatchCount)
-            {
-                score += channelUserdata.PlayCount;
+                if (factorChannelWatchCount)
+                {
+                    score += channelUserdata.PlayCount;
+                }
             }
 
             return score;
@@ -1179,6 +1197,8 @@ namespace Emby.Server.Implementations.LiveTv
         private async Task RefreshChannelsInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
             EmbyTV.EmbyTV.Current.CreateRecordingFolders();
+
+            await EmbyTV.EmbyTV.Current.ScanForTunerDeviceChanges(cancellationToken).ConfigureAwait(false);
 
             var numComplete = 0;
             double progressPerService = _services.Count == 0
@@ -2748,7 +2768,7 @@ namespace Emby.Server.Implementations.LiveTv
 
         private bool IsLiveTvEnabled(User user)
         {
-            return user.Policy.EnableLiveTvAccess && (Services.Count > 1 || GetConfiguration().TunerHosts.Count(i => i.IsEnabled) > 0);
+            return user.Policy.EnableLiveTvAccess && (Services.Count > 1 || GetConfiguration().TunerHosts.Count > 0);
         }
 
         public IEnumerable<User> GetEnabledUsers()
@@ -2986,7 +3006,7 @@ namespace Emby.Server.Implementations.LiveTv
             if (string.Equals(feature, "dvr-l", StringComparison.OrdinalIgnoreCase))
             {
                 var config = GetConfiguration();
-                if (config.TunerHosts.Count(i => i.IsEnabled) > 0 &&
+                if (config.TunerHosts.Count > 0 &&
                     config.ListingProviders.Count(i => (i.EnableAllTuners || i.EnabledTuners.Length > 0) && string.Equals(i.Type, SchedulesDirect.TypeName, StringComparison.OrdinalIgnoreCase)) > 0)
                 {
                     return Task.FromResult(new MBRegistrationRecord
@@ -2998,50 +3018,6 @@ namespace Emby.Server.Implementations.LiveTv
             }
 
             return _security.GetRegistrationStatus(feature);
-        }
-
-        public List<NameValuePair> GetSatIniMappings()
-        {
-            return new List<NameValuePair>();
-            //var names = GetType().Assembly.GetManifestResourceNames().Where(i => i.IndexOf("SatIp.ini", StringComparison.OrdinalIgnoreCase) != -1).ToList();
-
-            //return names.Select(GetSatIniMappings).Where(i => i != null).DistinctBy(i => i.Value.Split('|')[0]).ToList();
-        }
-
-        public NameValuePair GetSatIniMappings(string resource)
-        {
-            return new NameValuePair();
-            //using (var stream = GetType().Assembly.GetManifestResourceStream(resource))
-            //{
-            //    using (var reader = new StreamReader(stream))
-            //    {
-            //        var parser = new StreamIniDataParser();
-            //        IniData data = parser.ReadData(reader);
-
-            //        var satType1 = data["SATTYPE"]["1"];
-            //        var satType2 = data["SATTYPE"]["2"];
-
-            //        if (string.IsNullOrWhiteSpace(satType2))
-            //        {
-            //            return null;
-            //        }
-
-            //        var srch = "SatIp.ini.";
-            //        var filename = Path.GetFileName(resource);
-
-            //        return new NameValuePair
-            //        {
-            //            Name = satType1 + " " + satType2,
-            //            Value = satType2 + "|" + filename.Substring(filename.IndexOf(srch) + srch.Length)
-            //        };
-            //    }
-            //}
-        }
-
-        public Task<List<ChannelInfo>> GetSatChannelScanResult(TunerHostInfo info, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(new List<ChannelInfo>());
-            //return new TunerHosts.SatIp.ChannelScan(_logger).Scan(info, cancellationToken);
         }
 
         public Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken)

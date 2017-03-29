@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.LiveTv
 
         public bool IsHidden
         {
-            get { return _liveTvManager.Services.Count == 1 && GetConfiguration().TunerHosts.Count(i => i.IsEnabled) == 0; }
+            get { return _liveTvManager.Services.Count == 1 && GetConfiguration().TunerHosts.Count == 0; }
         }
 
         public bool IsEnabled

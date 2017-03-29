@@ -205,6 +205,15 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 }
 
                 programInfo.ShowId = uniqueString.GetMD5().ToString("N");
+
+                // If we don't have valid episode info, assume it's a unique program, otherwise recordings might be skipped
+                if (programInfo.IsSeries && !programInfo.IsRepeat)
+                {
+                    if ((programInfo.EpisodeNumber ?? 0) == 0)
+                    {
+                        programInfo.ShowId = programInfo.ShowId + programInfo.StartDate.Ticks.ToString(CultureInfo.InvariantCulture);
+                    }
+                }
             }
 
             // Construct an id from the channel and start date

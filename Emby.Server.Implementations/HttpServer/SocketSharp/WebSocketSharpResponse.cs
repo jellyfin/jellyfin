@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using SocketHttpListener.Net;
 using HttpListenerResponse = SocketHttpListener.Net.HttpListenerResponse;
@@ -188,6 +191,11 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
 
         public void ClearCookies()
         {
+        }
+
+        public Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
+        {
+            return _response.TransmitFile(path, offset, count, fileShareMode, cancellationToken);
         }
     }
 }

@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace MediaBrowser.MediaEncoding.Encoder
+namespace MediaBrowser.Controller.MediaEncoding
 {
     public class JobLogger
     {
@@ -18,7 +18,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _logger = logger;
         }
 
-        public async void StartStreamingLog(EncodingJob transcodingJob, Stream source, Stream target)
+        public async void StartStreamingLog(EncodingJobInfo state, Stream source, Stream target)
         {
             try
             {
@@ -28,13 +28,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     {
                         var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
-                        ParseLogLine(line, transcodingJob);
+                        ParseLogLine(line, state);
 
                         var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
 
                         await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                        await target.FlushAsync().ConfigureAwait(false);
                     }
                 }
+            }
+            catch (ObjectDisposedException)
+            {
+                // Don't spam the log. This doesn't seem to throw in windows, but sometimes under linux
             }
             catch (Exception ex)
             {
@@ -42,21 +47,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        private void ParseLogLine(string line, EncodingJob transcodingJob)
+        private void ParseLogLine(string line, EncodingJobInfo state)
         {
             float? framerate = null;
             double? percent = null;
             TimeSpan? transcodingPosition = null;
             long? bytesTranscoded = null;
+            int? bitRate = null;
 
             var parts = line.Split(' ');
 
-            var totalMs = transcodingJob.RunTimeTicks.HasValue
-                ? TimeSpan.FromTicks(transcodingJob.RunTimeTicks.Value).TotalMilliseconds
+            var totalMs = state.RunTimeTicks.HasValue
+                ? TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalMilliseconds
                 : 0;
 
-            var startMs = transcodingJob.Options.StartTimeTicks.HasValue
-                ? TimeSpan.FromTicks(transcodingJob.Options.StartTimeTicks.Value).TotalMilliseconds
+            var startMs = state.BaseRequest.StartTimeTicks.HasValue
+                ? TimeSpan.FromTicks(state.BaseRequest.StartTimeTicks.Value).TotalMilliseconds
                 : 0;
 
             for (var i = 0; i < parts.Length; i++)
@@ -74,7 +80,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         framerate = val;
                     }
                 }
-                else if (transcodingJob.RunTimeTicks.HasValue &&
+                else if (state.RunTimeTicks.HasValue &&
                     part.StartsWith("time=", StringComparison.OrdinalIgnoreCase))
                 {
                     var time = part.Split(new[] { '=' }, 2).Last();
@@ -111,11 +117,32 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         }
                     }
                 }
+                else if (part.StartsWith("bitrate=", StringComparison.OrdinalIgnoreCase))
+                {
+                    var rate = part.Split(new[] { '=' }, 2).Last();
+
+                    int? scale = null;
+                    if (rate.IndexOf("kbits/s", StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        scale = 1024;
+                        rate = rate.Replace("kbits/s", string.Empty, StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    if (scale.HasValue)
+                    {
+                        float val;
+
+                        if (float.TryParse(rate, NumberStyles.Any, _usCulture, out val))
+                        {
+                            bitRate = (int)Math.Ceiling(val * scale.Value);
+                        }
+                    }
+                }
             }
 
             if (framerate.HasValue || percent.HasValue)
             {
-                transcodingJob.ReportTranscodingProgress(transcodingPosition, framerate, percent, bytesTranscoded);
+                state.ReportTranscodingProgress(transcodingPosition, framerate, percent, bytesTranscoded, bitRate);
             }
         }
     }

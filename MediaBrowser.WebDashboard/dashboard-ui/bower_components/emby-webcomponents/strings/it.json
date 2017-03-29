@@ -13,7 +13,6 @@
     "Repeat": "Ripeti",
     "TrackCount": "{0} tracce",
     "ItemCount": "{0} elementi",
-    "ReleaseYearValue": "Anno di uscita: {0}",
     "OriginalAirDateValue": "Prima messa in onda (originale): {0}",
     "EndsAtValue": "Finir\u00e0 alle {0}",
     "OptionSundayShort": "Dom",
@@ -44,6 +43,8 @@
     "RecordSeries": "Registra serie TV",
     "HeaderCinemaMode": "Modalit\u00e0 Cinema",
     "HeaderCloudSync": "Sinc. nel Cloud",
+    "HeaderDownloadedMedia": "Media Scaricati",
+    "Downloads": "Scaricamenti",
     "HeaderOfflineDownloads": "Media Offline",
     "HeaderOfflineDownloadsDescription": "Scarica facilmente i media sui tuoi dispositivi per vederli offline.",
     "CloudSyncFeatureDescription": "Sincronizza i tuoi media nel cloud per un facile backup, archiviazione e conversione.",
@@ -388,6 +389,11 @@
     "AspectRatio": "Rapporto d'aspetto",
     "Original": "Originale",
     "Fill": "Riempi",
-    "BestFit": "Best fit",
-    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information."
+    "BestFit": "Adatta",
+    "MessageNoServersAvailableToConnect": "Nessun server disponibile per la connessione. Se siete stati invitati a condividere un server, assicuratevi di accettare l'invito qui sotto o cliccando sul collegamento nella e-mail.",
+    "MessagePlayAccessRestricted": "Le riproduzione di questi contenuti \u00e8 bloccata. Per favore contatta il tuo amministratore Emby Server per maggiori informazioni.",
+    "Accept": "Accetta",
+    "Reject": "Rifiuta",
+    "Connect": "Connetti",
+    "LabelDownloadTo": "Download to:"
 }

@@ -373,19 +373,14 @@ namespace MediaBrowser.Providers.Manager
                     continue;
                 }
 
-                // Delete the source file
-                var currentFile = _fileSystem.GetFileInfo(image.Path);
-
-                // Deletion will fail if the file is hidden so remove the attribute first
-                if (currentFile.Exists)
+                try
                 {
-                    if (currentFile.IsHidden)
-                    {
-                        _fileSystem.SetHidden(currentFile.FullName, false);
-                    }
-
-                    _fileSystem.DeleteFile(currentFile.FullName);
+                    _fileSystem.DeleteFile(image.Path);
                     deleted = true;
+                }
+                catch (FileNotFoundException)
+                {
+                    
                 }
             }
 

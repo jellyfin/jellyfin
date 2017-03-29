@@ -70,7 +70,7 @@ namespace MediaBrowser.Providers.TV
             {
                 var language = item.GetPreferredMetadataLanguage();
 
-                var seriesDataPath = await TvdbSeriesProvider.Current.EnsureSeriesInfo(item.ProviderIds, language, cancellationToken).ConfigureAwait(false);
+                var seriesDataPath = await TvdbSeriesProvider.Current.EnsureSeriesInfo(item.ProviderIds, item.Name, item.ProductionYear, language, cancellationToken).ConfigureAwait(false);
 
                 var path = Path.Combine(seriesDataPath, "banners.xml");
 

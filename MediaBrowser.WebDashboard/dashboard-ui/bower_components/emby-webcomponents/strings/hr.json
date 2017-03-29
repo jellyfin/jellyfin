@@ -13,7 +13,6 @@
     "Repeat": "Ponovi",
     "TrackCount": "{0} pjesme",
     "ItemCount": "{0} stavaka",
-    "ReleaseYearValue": "Godina izdanja: {0}",
     "OriginalAirDateValue": "Originalni datum prikazivanja: {0}",
     "EndsAtValue": "Zavr\u0161ava u {0}",
     "OptionSundayShort": "Ned",
@@ -44,6 +43,8 @@
     "RecordSeries": "Snimi serije",
     "HeaderCinemaMode": "Kino na\u010din",
     "HeaderCloudSync": "Sink. preko oblaka",
+    "HeaderDownloadedMedia": "Downloaded Media",
+    "Downloads": "Downloads",
     "HeaderOfflineDownloads": "Izvanmre\u017eni mediji",
     "HeaderOfflineDownloadsDescription": "Preuzimanje medija na svojim ure\u0111ajima za jednostavnu upotrebu izvan mre\u017ee.",
     "CloudSyncFeatureDescription": "Sinkronizirajte svoje medije na oblaku za jednostavni backup, arhiviranje i konvertiranje.",
@@ -389,5 +390,10 @@
     "Original": "Original",
     "Fill": "Fill",
     "BestFit": "Best fit",
-    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information."
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
+    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information.",
+    "Accept": "Accept",
+    "Reject": "Reject",
+    "Connect": "Connect",
+    "LabelDownloadTo": "Download to:"
 }

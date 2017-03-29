@@ -3,20 +3,20 @@
     <div data-role="content">
         <div class="content-primary">
 
-            <div class="readOnlyContent">
 
-                <div class="liveTvStatusContent" style="display: none;">
+            <div class="liveTvStatusContent" style="display: none;">
 
-                    <div>
-                        <h1 style="display:inline-block;vertical-align:middle;">${HeaderTunerDevices}</h1>
-                        <button is="emby-button" type="button" class="raised btnAddDevice submit mini" style="margin-left:1em;" title="${ButtonAdd}">
-                            <i class="md-icon">add</i>
-                            <span>${ButtonAdd}</span>
-                        </button>
-                    </div>
-                    <div class="devicesList">
-                    </div>
+                <div class="flex align-items-center" style="margin:1em 0;">
+                    <h1 style="margin:0;">${HeaderTunerDevices}</h1>
+                    <button is="emby-button" type="button" class="raised btnAddDevice submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                        <i class="md-icon">add</i>
+                        <span>${ButtonAdd}</span>
+                    </button>
+                </div>
+                <div is="emby-itemscontainer" class="devicesList vertical-wrap" data-hovermenu="false" data-multiselect="false">
+                </div>
 
+                <div class="readOnlyContent">
                     <div>
                         <br />
                         <div>
@@ -46,12 +46,12 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="servicesSection" style="display:none;">
-                    <br />
-                    <h1>${HeaderExternalServices}</h1>
-                    <div class="servicesList">
-                    </div>
+            <div class="servicesSection readOnlyContent" style="display:none;">
+                <br />
+                <h1>${HeaderExternalServices}</h1>
+                <div class="servicesList">
                 </div>
             </div>
         </div>

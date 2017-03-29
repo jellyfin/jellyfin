@@ -5,6 +5,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
+/*
+ * Important - Even though this will compile in the shared projects, it will cause build failures within the mono runtime
+ */
 namespace MediaBrowser.ServerApplication.Native
 {
     /// <summary>
@@ -71,12 +74,12 @@ namespace MediaBrowser.ServerApplication.Native
         [DllImport("advapi32.dll", SetLastError = true)]
         internal static extern bool ConvertStringSidToSid(string strSid, out IntPtr pSid);
 
-        [DllImport("advapi32", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("advapi32", /*CharSet = CharSet.Auto,*/ SetLastError = true)]
         static extern bool ConvertSidToStringSid(
             [MarshalAs(UnmanagedType.LPArray)] byte[] pSID,
             out IntPtr ptrSid);
 
-        [DllImport("advapi32", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("advapi32", /*CharSet = CharSet.Auto,*/ SetLastError = true)]
         static extern bool ConvertSidToStringSid(IntPtr pSid, out string strSid);
 
         // Use this API to convert a string reference (e.g. "@{blah.pri?ms-resource://whatever}") into a plain string 
@@ -178,7 +181,7 @@ namespace MediaBrowser.ServerApplication.Native
 
             foreach (var app in Apps)
             {
-                if ((app.appContainerName ?? string.Empty).IndexOf(appName, StringComparison.OrdinalIgnoreCase) != -1 || 
+                if ((app.appContainerName ?? string.Empty).IndexOf(appName, StringComparison.OrdinalIgnoreCase) != -1 ||
                     (app.displayName ?? string.Empty).IndexOf(appName, StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     if (!app.LoopUtil)

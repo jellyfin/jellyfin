@@ -13,7 +13,6 @@
     "Repeat": "Opakovat",
     "TrackCount": "{0} stop",
     "ItemCount": "{0} polo\u017eek",
-    "ReleaseYearValue": "Rok vyd\u00e1n\u00ed: {0}",
     "OriginalAirDateValue": "Datum vys\u00edl\u00e1n\u00ed origin\u00e1lu: {0}",
     "EndsAtValue": "Kon\u010d\u00ed v {0}",
     "OptionSundayShort": "Ned",
@@ -44,6 +43,8 @@
     "RecordSeries": "Nahr\u00e1t s\u00e9rie",
     "HeaderCinemaMode": "Cinema M\u00f3d",
     "HeaderCloudSync": "Synchronizace s Cloudem",
+    "HeaderDownloadedMedia": "Downloaded Media",
+    "Downloads": "Downloads",
     "HeaderOfflineDownloads": "Offline m\u00e9dia",
     "HeaderOfflineDownloadsDescription": "St\u00e1hnout m\u00e9dia do va\u0161eho za\u0159\u00edzen\u00ed pro snadn\u00e9 pou\u017eit\u00ed offline.",
     "CloudSyncFeatureDescription": "Synchronizujte va\u0161e m\u00e9dia na cloud pro jednodu\u0161\u0161\u00ed z\u00e1lohov\u00e1n\u00ed, archivaci a konverzi.",
@@ -389,5 +390,10 @@
     "Original": "Original",
     "Fill": "Fill",
     "BestFit": "Best fit",
-    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information."
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
+    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information.",
+    "Accept": "Accept",
+    "Reject": "Reject",
+    "Connect": "P\u0159ipojit",
+    "LabelDownloadTo": "Download to:"
 }

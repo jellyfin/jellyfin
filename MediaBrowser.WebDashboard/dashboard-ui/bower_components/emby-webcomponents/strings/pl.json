@@ -13,7 +13,6 @@
     "Repeat": "Powt\u00f3rz",
     "TrackCount": "{0} tracks",
     "ItemCount": "{0} pozycji",
-    "ReleaseYearValue": "Release year: {0}",
     "OriginalAirDateValue": "Original air date: {0}",
     "EndsAtValue": "Ends at {0}",
     "OptionSundayShort": "Ndz.",
@@ -44,6 +43,8 @@
     "RecordSeries": "Record series",
     "HeaderCinemaMode": "Cinema Mode",
     "HeaderCloudSync": "Cloud Sync",
+    "HeaderDownloadedMedia": "Downloaded Media",
+    "Downloads": "Downloads",
     "HeaderOfflineDownloads": "Offline Media",
     "HeaderOfflineDownloadsDescription": "Download media to your devices for easy offline use.",
     "CloudSyncFeatureDescription": "Sync your media to the cloud for easy backup, archiving, and converting.",
@@ -389,5 +390,10 @@
     "Original": "Original",
     "Fill": "Fill",
     "BestFit": "Best fit",
-    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information."
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
+    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information.",
+    "Accept": "Accept",
+    "Reject": "Reject",
+    "Connect": "Po\u0142acz",
+    "LabelDownloadTo": "Download to:"
 }

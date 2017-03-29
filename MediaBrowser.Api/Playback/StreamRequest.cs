@@ -32,8 +32,6 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "AudioCodec", Description = "Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string AudioCodec { get; set; }
 
-        public string SubtitleCodec { get; set; }
-
         [ApiMember(Name = "DeviceProfileId", Description = "Optional. The dlna device profile id to utilize.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string DeviceProfileId { get; set; }
 
@@ -41,6 +39,10 @@ namespace MediaBrowser.Api.Playback
         public string PlaySessionId { get; set; }
         public string LiveStreamId { get; set; }
         public string Tag { get; set; }
+        public string SegmentContainer { get; set; }
+
+        public int? SegmentLength { get; set; }
+        public int? MinSegments { get; set; }
     }
 
     public class VideoStreamRequest : StreamRequest

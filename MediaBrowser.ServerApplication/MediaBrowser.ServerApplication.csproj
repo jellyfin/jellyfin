@@ -142,8 +142,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MainStartup.cs" />
-    <Compile Include="Native\LnkShortcutHandler.cs" />
-    <Compile Include="Native\LoopbackUtil.cs" />
+    <Compile Include="Native\LoopUtil.cs" />
     <Compile Include="Native\PowerManagement.cs" />
     <Compile Include="Native\Standby.cs" />
     <Compile Include="Native\ServerAuthorization.cs" />

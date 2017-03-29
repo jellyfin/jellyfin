@@ -13,7 +13,6 @@
     "Repeat": "Repetir",
     "TrackCount": "{0} tracks",
     "ItemCount": "\u00edtems {0}",
-    "ReleaseYearValue": "A\u00f1o de estreno: {0}",
     "OriginalAirDateValue": "Fecha de emisi\u00f3n original: {0}",
     "EndsAtValue": "Termina a las {0}",
     "OptionSundayShort": "Dom",
@@ -44,6 +43,8 @@
     "RecordSeries": "Record series",
     "HeaderCinemaMode": "Cinema Mode",
     "HeaderCloudSync": "Cloud Sync",
+    "HeaderDownloadedMedia": "Downloaded Media",
+    "Downloads": "Downloads",
     "HeaderOfflineDownloads": "Offline Media",
     "HeaderOfflineDownloadsDescription": "Download media to your devices for easy offline use.",
     "CloudSyncFeatureDescription": "Sync your media to the cloud for easy backup, archiving, and converting.",
@@ -389,5 +390,10 @@
     "Original": "Original",
     "Fill": "Fill",
     "BestFit": "Best fit",
-    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information."
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
+    "MessagePlayAccessRestricted": "Playback of this content is currently restricted. Please contact your Emby Server administrator for more information.",
+    "Accept": "Accept",
+    "Reject": "Reject",
+    "Connect": "Conectar",
+    "LabelDownloadTo": "Download to:"
 }

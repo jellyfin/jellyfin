@@ -23,21 +23,18 @@ namespace MediaBrowser.Controller.Net
         public Action OnComplete { get; set; }
         public Action OnError { get; set; }
 
+        public string Path { get; set; }
+
+        public FileShareMode FileShare { get; set; }
+
         public StaticResultOptions()
         {
             ResponseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            FileShare = FileShareMode.Read;
         }
     }
 
     public class StaticFileResultOptions : StaticResultOptions
     {
-        public string Path { get; set; }
-
-        public FileShareMode FileShare { get; set; }
-
-        public StaticFileResultOptions()
-        {
-            FileShare = FileShareMode.Read;
-        }
     }
 }

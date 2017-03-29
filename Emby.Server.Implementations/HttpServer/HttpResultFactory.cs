@@ -474,10 +474,6 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 throw new ArgumentNullException("cacheKey");
             }
-            if (options.ContentFactory == null)
-            {
-                throw new ArgumentNullException("factoryFn");
-            }
 
             var key = cacheKey.ToString("N");
 
@@ -560,30 +556,44 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 var rangeHeader = requestContext.Headers.Get("Range");
 
-                var stream = await factoryFn().ConfigureAwait(false);
+                if (!isHeadRequest && !string.IsNullOrWhiteSpace(options.Path))
+                {
+                    return new FileWriter(options.Path, contentType, rangeHeader, _logger, _fileSystem)
+                    {
+                        OnComplete = options.OnComplete,
+                        OnError = options.OnError,
+                        FileShare = options.FileShare
+                    };
+                }
 
                 if (!string.IsNullOrEmpty(rangeHeader))
                 {
+                    var stream = await factoryFn().ConfigureAwait(false);
+
                     return new RangeRequestWriter(rangeHeader, stream, contentType, isHeadRequest, _logger)
                     {
                         OnComplete = options.OnComplete
                     };
                 }
-
-                responseHeaders["Content-Length"] = stream.Length.ToString(UsCulture);
-
-                if (isHeadRequest)
+                else
                 {
-                    stream.Dispose();
+                    var stream = await factoryFn().ConfigureAwait(false);
 
-                    return GetHttpResult(new byte[] { }, contentType, true);
+                    responseHeaders["Content-Length"] = stream.Length.ToString(UsCulture);
+
+                    if (isHeadRequest)
+                    {
+                        stream.Dispose();
+
+                        return GetHttpResult(new byte[] { }, contentType, true);
+                    }
+
+                    return new StreamWriter(stream, contentType, _logger)
+                    {
+                        OnComplete = options.OnComplete,
+                        OnError = options.OnError
+                    };
                 }
-
-                return new StreamWriter(stream, contentType, _logger)
-                {
-                    OnComplete = options.OnComplete,
-                    OnError = options.OnError
-                };
             }
 
             using (var stream = await factoryFn().ConfigureAwait(false))

@@ -75,7 +75,7 @@ namespace MediaBrowser.Providers.TV
                 var seriesProviderIds = series.ProviderIds;
                 var seasonNumber = season.IndexNumber.Value;
 
-                var seriesDataPath = await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesProviderIds, series.GetPreferredMetadataLanguage(), cancellationToken).ConfigureAwait(false);
+                var seriesDataPath = await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesProviderIds, series.Name, series.ProductionYear, series.GetPreferredMetadataLanguage(), cancellationToken).ConfigureAwait(false);
 
                 if (!string.IsNullOrWhiteSpace(seriesDataPath))
                 {

@@ -55,9 +55,12 @@ namespace MediaBrowser.Model.Querying
         /// <value>The enable image types.</value>
         public ImageType[] EnableImageTypes { get; set; }
 
+        public bool EnableTotalRecordCount { get; set; }
+
         public NextUpQuery()
         {
             EnableImageTypes = new ImageType[] {};
+            EnableTotalRecordCount = true;
         }
     }
 }

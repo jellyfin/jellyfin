@@ -10,6 +10,8 @@ namespace MediaBrowser.Model.IO
     /// </summary>
     public interface IFileSystem
     {
+        void AddShortcutHandler(IShortcutHandler handler);
+
         /// <summary>
         /// Determines whether the specified filename is shortcut.
         /// </summary>

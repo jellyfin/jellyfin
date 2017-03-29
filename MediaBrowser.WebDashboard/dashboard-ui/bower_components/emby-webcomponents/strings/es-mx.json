@@ -13,7 +13,6 @@
     "Repeat": "Repetir",
     "TrackCount": "{0} Pistas",
     "ItemCount": "{0} \u00edtems",
-    "ReleaseYearValue": "A\u00f1o de estreno: {0}",
     "OriginalAirDateValue": "Fecha de transmisi\u00f3n original: {0}",
     "EndsAtValue": "Termina a las {0}",
     "OptionSundayShort": "Dom",
@@ -44,6 +43,8 @@
     "RecordSeries": "Grabar Series",
     "HeaderCinemaMode": "Modo Cine",
     "HeaderCloudSync": "Sinc. en la Nube",
+    "HeaderDownloadedMedia": "Medios Descargados",
+    "Downloads": "Descargas",
     "HeaderOfflineDownloads": "Medios sin conexion",
     "HeaderOfflineDownloadsDescription": "Descargue sus medios en su dispositivo para f\u00e1cil uso mientras esta desconectado.",
     "CloudSyncFeatureDescription": "Sincronice sus medios a la nube para un f\u00e1cil respaldo, archivo y conversi\u00f3n.",
@@ -389,5 +390,10 @@
     "Original": "Original",
     "Fill": "Llenar",
     "BestFit": "Mejor ajuste",
-    "MessagePlayAccessRestricted": "La reproducci\u00f3n de este contenido se encuentra restringida actualmente. Por favor contacte a su administrador para mas informaci\u00f3n."
+    "MessageNoServersAvailableToConnect": "No hay servidores disponibles para conectarse. Si se le ha invitado a compartir un servidor, aseg\u00farese de aceptarlo aqu\u00ed abajo o haciendo clic en la liga del correo electr\u00f3nico.",
+    "MessagePlayAccessRestricted": "La reproducci\u00f3n de este contenido se encuentra restringida actualmente. Por favor contacte a su administrador para mas informaci\u00f3n.",
+    "Accept": "Aceptar",
+    "Reject": "Rechazar",
+    "Connect": "Conectar",
+    "LabelDownloadTo": "Descargar a:"
 }
