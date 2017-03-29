@@ -261,7 +261,7 @@ namespace Emby.Server.Implementations.LiveTv
             return info.Item1;
         }
 
-        public Task<Tuple<MediaSourceInfo, IDirectStreamProvider, bool>> GetChannelStream(string id, string mediaSourceId, CancellationToken cancellationToken)
+        public Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetChannelStream(string id, string mediaSourceId, CancellationToken cancellationToken)
         {
             return GetLiveStream(id, mediaSourceId, true, cancellationToken);
         }
@@ -323,7 +323,7 @@ namespace Emby.Server.Implementations.LiveTv
             return _services.FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
         }
 
-        private async Task<Tuple<MediaSourceInfo, IDirectStreamProvider, bool>> GetLiveStream(string id, string mediaSourceId, bool isChannel, CancellationToken cancellationToken)
+        private async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStream(string id, string mediaSourceId, bool isChannel, CancellationToken cancellationToken)
         {
             if (string.Equals(id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
             {
@@ -334,7 +334,6 @@ namespace Emby.Server.Implementations.LiveTv
             bool isVideo;
             ILiveTvService service;
             IDirectStreamProvider directStreamProvider = null;
-            var assumeInterlaced = false;
 
             if (isChannel)
             {
@@ -383,12 +382,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             Normalize(info, service, isVideo);
 
-            if (!(service is EmbyTV.EmbyTV))
-            {
-                assumeInterlaced = true;
-            }
-
-            return new Tuple<MediaSourceInfo, IDirectStreamProvider, bool>(info, directStreamProvider, assumeInterlaced);
+            return new Tuple<MediaSourceInfo, IDirectStreamProvider>(info, directStreamProvider);
         }
 
         private void Normalize(MediaSourceInfo mediaSource, ILiveTvService service, bool isVideo)
@@ -491,6 +485,12 @@ namespace Emby.Server.Implementations.LiveTv
                     if (stream.Type == MediaStreamType.Video && string.IsNullOrWhiteSpace(stream.NalLengthSize))
                     {
                         stream.NalLengthSize = "0";
+                    }
+
+                    if (stream.Type == MediaStreamType.Video)
+                    {
+                        stream.IsInterlaced = true;
+                        stream.AllowStreamCopy = false;
                     }
                 }
             }
