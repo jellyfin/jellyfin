@@ -63,7 +63,7 @@ namespace MediaBrowser.Api.Playback.Hls
     /// <summary>
     /// Class GetHlsVideoSegment
     /// </summary>
-    [Route("/Videos/{Id}/hls/{PlaylistId}/{SegmentId}.ts", "GET")]
+    [Route("/Videos/{Id}/hls/{PlaylistId}/{SegmentId}.{SegmentContainer}", "GET")]
     public class GetHlsVideoSegmentLegacy : VideoStreamRequest
     {
         public string PlaylistId { get; set; }
@@ -109,11 +109,13 @@ namespace MediaBrowser.Api.Playback.Hls
         public Task<object> Get(GetHlsVideoSegmentLegacy request)
         {
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
-            file = Path.Combine(_config.ApplicationPaths.TranscodingTempPath, file);
+
+            var transcodeFolderPath = _config.ApplicationPaths.TranscodingTempPath;
+            file = Path.Combine(transcodeFolderPath, file);
 
             var normalizedPlaylistId = request.PlaylistId;
 
-            var playlistPath = _fileSystem.GetFilePaths(_config.ApplicationPaths.TranscodingTempPath)
+            var playlistPath = _fileSystem.GetFilePaths(transcodeFolderPath)
                 .FirstOrDefault(i => string.Equals(Path.GetExtension(i), ".m3u8", StringComparison.OrdinalIgnoreCase) && i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1);
 
             return GetFileResult(file, playlistPath);

@@ -84,7 +84,7 @@
     <Compile Include="FileOrganization\NameUtils.cs" />
     <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
     <Compile Include="FileOrganization\TvFolderOrganizer.cs" />
-    <Compile Include="HttpServer\GetSwaggerResource.cs" />
+    <Compile Include="HttpServer\FileWriter.cs" />
     <Compile Include="HttpServer\HttpListenerHost.cs" />
     <Compile Include="HttpServer\HttpResultFactory.cs" />
     <Compile Include="HttpServer\LoggerUtils.cs" />
@@ -102,7 +102,6 @@
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpRequest.cs" />
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpResponse.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
-    <Compile Include="HttpServer\SwaggerService.cs" />
     <Compile Include="Images\BaseDynamicImageProvider.cs" />
     <Compile Include="IO\FileRefresher.cs" />
     <Compile Include="IO\MbLinkShortcutHandler.cs" />
@@ -170,7 +169,6 @@
     <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
     <Compile Include="LiveTv\TunerHosts\BaseTunerHost.cs" />
     <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunManager.cs" />
-    <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunDiscovery.cs" />
     <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunHost.cs" />
     <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunHttpStream.cs" />
     <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunUdpStream.cs" />
@@ -302,8 +300,8 @@
       <HintPath>..\packages\Emby.XmlTv.1.0.7\lib\portable-net45+win8\Emby.XmlTv.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MediaBrowser.Naming, Version=1.0.6201.24431, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.4\lib\portable-net45+win8\MediaBrowser.Naming.dll</HintPath>
+    <Reference Include="MediaBrowser.Naming, Version=1.0.6279.25941, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.5\lib\portable-net45+win8\MediaBrowser.Naming.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SQLitePCL.pretty, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">

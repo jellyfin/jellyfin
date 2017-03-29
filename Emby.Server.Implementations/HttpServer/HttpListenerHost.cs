@@ -52,6 +52,7 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly ISocketFactory _socketFactory;
         private readonly ICryptoProvider _cryptoProvider;
 
+        private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly ICertificate _certificate;
@@ -70,8 +71,7 @@ namespace Emby.Server.Implementations.HttpServer
             ILogger logger,
             IServerConfigurationManager config,
             string serviceName,
-            string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer, IEnvironmentInfo environment, ICertificate certificate, IStreamFactory streamFactory, Func<Type, Func<string, object>> funcParseFn, bool enableDualModeSockets)
-            : base()
+            string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer, IEnvironmentInfo environment, ICertificate certificate, IStreamFactory streamFactory, Func<Type, Func<string, object>> funcParseFn, bool enableDualModeSockets, IFileSystem fileSystem)
         {
             Instance = this;
 
@@ -89,6 +89,7 @@ namespace Emby.Server.Implementations.HttpServer
             _streamFactory = streamFactory;
             _funcParseFn = funcParseFn;
             _enableDualModeSockets = enableDualModeSockets;
+            _fileSystem = fileSystem;
             _config = config;
 
             _logger = logger;
@@ -226,7 +227,8 @@ namespace Emby.Server.Implementations.HttpServer
                 _cryptoProvider,
                 _streamFactory,
                 _enableDualModeSockets,
-                GetRequest);
+                GetRequest,
+                _fileSystem);
         }
 
         private IHttpRequest GetRequest(HttpListenerContext httpContext)

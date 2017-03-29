@@ -34,7 +34,7 @@ namespace MediaBrowser.Model.LiveTv
             TunerHosts = new List<TunerHostInfo>();
             ListingProviders = new List<ListingsProviderInfo>();
             MediaLocationsCreated = new string[] { };
-            RecordingEncodingFormat = "mp4";
+            RecordingEncodingFormat = "mkv";
             RecordingPostProcessorArguments = "\"{path}\"";
             EnableRecordingEncoding = true;
         }
@@ -46,14 +46,13 @@ namespace MediaBrowser.Model.LiveTv
         public string Url { get; set; }
         public string Type { get; set; }
         public string DeviceId { get; set; }
+        public string FriendlyName { get; set; }
         public bool ImportFavoritesOnly { get; set; }
         public bool AllowHWTranscoding { get; set; }
-        public bool IsEnabled { get; set; }
         public bool EnableTvgId { get; set; }
 
         public TunerHostInfo()
         {
-            IsEnabled = true;
             AllowHWTranscoding = true;
         }
     }

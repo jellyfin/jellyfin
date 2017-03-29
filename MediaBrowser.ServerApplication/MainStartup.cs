@@ -331,9 +331,9 @@ namespace MediaBrowser.ServerApplication
         /// <param name="options">The options.</param>
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, bool runService, StartupOptions options)
         {
-            var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), true, true, false, appPaths.TempDirectory);
-            fileSystem.AddShortcutHandler(new LnkShortcutHandler());
-            fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
+            var environmentInfo = new EnvironmentInfo();
+
+            var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), environmentInfo, appPaths.TempDirectory);
 
             var imageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => _appHost.HttpClient, appPaths);
 
@@ -345,7 +345,7 @@ namespace MediaBrowser.ServerApplication
                 fileSystem,
                 new PowerManagement(),
                 "emby.windows.zip",
-                new EnvironmentInfo(),
+                environmentInfo,
                 imageEncoder,
                 new Server.Startup.Common.SystemEvents(logManager.GetLogger("SystemEvents")),
                 new RecyclableMemoryStreamProvider(),

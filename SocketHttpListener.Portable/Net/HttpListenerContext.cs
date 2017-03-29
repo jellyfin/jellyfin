@@ -18,20 +18,18 @@ namespace SocketHttpListener.Net
         HttpConnection cnc;
         string error;
         int err_status = 400;
-        private readonly ILogger _logger;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly IMemoryStreamFactory _memoryStreamFactory;
         private readonly ITextEncoding _textEncoding;
 
-        internal HttpListenerContext(HttpConnection cnc, ILogger logger, ICryptoProvider cryptoProvider, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding)
+        internal HttpListenerContext(HttpConnection cnc, ILogger logger, ICryptoProvider cryptoProvider, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem)
         {
             this.cnc = cnc;
-            _logger = logger;
             _cryptoProvider = cryptoProvider;
             _memoryStreamFactory = memoryStreamFactory;
             _textEncoding = textEncoding;
             request = new HttpListenerRequest(this, _textEncoding);
-            response = new HttpListenerResponse(this, _logger, _textEncoding);
+            response = new HttpListenerResponse(this, logger, _textEncoding, fileSystem);
         }
 
         internal int ErrorStatus

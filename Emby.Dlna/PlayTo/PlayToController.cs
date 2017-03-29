@@ -542,7 +542,7 @@ namespace Emby.Dlna.PlayTo
             {
                 var list = new ContentFeatureBuilder(profile)
                     .BuildVideoHeader(streamInfo.Container,
-                    streamInfo.VideoCodec,
+                    streamInfo.TargetVideoCodec,
                     streamInfo.TargetAudioCodec,
                     streamInfo.TargetWidth,
                     streamInfo.TargetHeight,

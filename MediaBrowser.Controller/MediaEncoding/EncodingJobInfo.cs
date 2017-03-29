@@ -12,7 +12,7 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.Controller.MediaEncoding
 {
     // For now, a common base class until the API and MediaEncoding classes are unified
-    public class EncodingJobInfo
+    public abstract class EncodingJobInfo
     {
         private readonly ILogger _logger;
 
@@ -29,6 +29,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public int? OutputVideoBitrate { get; set; }
         public MediaStream SubtitleStream { get; set; }
         public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
+        public List<string> SupportedSubtitleCodecs { get; set; }
 
         public int InternalSubtitleStreamOffset { get; set; }
         public MediaSourceInfo MediaSource { get; set; }
@@ -52,6 +53,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string InputContainer { get; set; }
         public IsoType? IsoType { get; set; }
 
+        public bool EnableMpegtsM2TsMode { get; set; }
+
         public BaseEncodingJobOptions BaseRequest { get; set; }
 
         public long? StartTimeTicks
@@ -64,6 +67,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             get { return BaseRequest.CopyTimestamps; }
         }
 
+        public int? OutputAudioBitrate;
         public int? OutputAudioChannels;
         public int? OutputAudioSampleRate;
         public bool DeInterlace { get; set; }
@@ -74,8 +78,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             _logger = logger;
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             PlayableStreamFileNames = new List<string>();
+            SupportedAudioCodecs = new List<string>();
             SupportedVideoCodecs = new List<string>();
-            SupportedVideoCodecs = new List<string>();
+            SupportedSubtitleCodecs = new List<string>();
         }
 
         /// <summary>
@@ -110,5 +115,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 IsoMount = null;
             }
         }
+
+        public abstract void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate);
     }
 }

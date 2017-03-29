@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Model.Net
 {
@@ -13,6 +15,7 @@ namespace MediaBrowser.Model.Net
         void Bind(IpEndPointInfo endpoint);
         void Connect(IpEndPointInfo endPoint);
         void StartAccept(Action<IAcceptSocket> onAccept, Func<bool> isClosed);
+        Task SendFile(string path, byte[] preBuffer, byte[] postBuffer, CancellationToken cancellationToken);
     }
 
     public class SocketCreateException : Exception

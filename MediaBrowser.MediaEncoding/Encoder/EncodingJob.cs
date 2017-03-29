@@ -36,7 +36,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public string MimeType { get; set; }
         public bool EstimateContentLength { get; set; }
-        public bool EnableMpegtsM2TsMode { get; set; }
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
         public long? EncodingDurationTicks { get; set; }
         public string LiveStreamId { get; set; }
@@ -109,7 +108,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         public string OutputFilePath { get; set; }
-        public int? OutputAudioBitrate;
 
         public string ActualOutputVideoCodec
         {
@@ -379,7 +377,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return count;
         }
 
-        public void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded)
+        public override void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
         {
             var ticks = transcodingPosition.HasValue ? transcodingPosition.Value.Ticks : (long?)null;
 
@@ -387,8 +385,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (!percentComplete.HasValue && ticks.HasValue && RunTimeTicks.HasValue)
             {
-                var pct = ticks.Value/RunTimeTicks.Value;
-                percentComplete = pct*100;
+                var pct = ticks.Value / RunTimeTicks.Value;
+                percentComplete = pct * 100;
             }
 
             if (percentComplete.HasValue)

@@ -208,7 +208,7 @@ namespace Emby.Dlna.Didl
             var targetHeight = streamInfo.TargetHeight;
 
             var contentFeatureList = new ContentFeatureBuilder(_profile).BuildVideoHeader(streamInfo.Container,
-                streamInfo.VideoCodec,
+                streamInfo.TargetVideoCodec,
                 streamInfo.TargetAudioCodec,
                 targetWidth,
                 targetHeight,
@@ -352,7 +352,7 @@ namespace Emby.Dlna.Didl
 
             var mediaProfile = _profile.GetVideoMediaProfile(streamInfo.Container,
                 streamInfo.TargetAudioCodec,
-                streamInfo.VideoCodec,
+                streamInfo.TargetVideoCodec,
                 streamInfo.TargetAudioBitrate,
                 targetWidth,
                 targetHeight,

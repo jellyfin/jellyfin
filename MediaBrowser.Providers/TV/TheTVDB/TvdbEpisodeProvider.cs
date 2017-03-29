@@ -119,7 +119,7 @@ namespace MediaBrowser.Providers.TV
             if (TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds) &&
                 (searchInfo.IndexNumber.HasValue || searchInfo.PremiereDate.HasValue))
             {
-                await TvdbSeriesProvider.Current.EnsureSeriesInfo(searchInfo.SeriesProviderIds, searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                await TvdbSeriesProvider.Current.EnsureSeriesInfo(searchInfo.SeriesProviderIds, null, null, searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
                 var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, searchInfo.SeriesProviderIds);
 

@@ -442,6 +442,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 result = await provider.GetChannels(info, cancellationToken).ConfigureAwait(false);
 
+                foreach (var channel in result)
+                {
+                    _logger.Info("Found epg channel in {0} {1} {2} {3}", provider.Name, info.ListingsId, channel.Name, channel.Id);
+                }
+
                 _epgChannels.AddOrUpdate(info.Id, result, (k, v) => result);
             }
 
@@ -493,11 +498,17 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (!string.IsNullOrWhiteSpace(tunerChannel.TunerChannelId))
             {
-                var mappedTunerChannelId = GetMappedChannel(tunerChannel.TunerChannelId, mappings);
+                var tunerChannelId = tunerChannel.TunerChannelId;
+                if (tunerChannelId.IndexOf(".json.schedulesdirect.org", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    tunerChannelId = tunerChannelId.Replace(".json.schedulesdirect.org", string.Empty, StringComparison.OrdinalIgnoreCase).TrimStart('I');
+                }
+
+                var mappedTunerChannelId = GetMappedChannel(tunerChannelId, mappings);
 
                 if (string.IsNullOrWhiteSpace(mappedTunerChannelId))
                 {
-                    mappedTunerChannelId = tunerChannel.TunerChannelId;
+                    mappedTunerChannelId = tunerChannelId;
                 }
 
                 var channel = epgChannels.FirstOrDefault(i => string.Equals(mappedTunerChannelId, i.Id, StringComparison.OrdinalIgnoreCase));
@@ -639,8 +650,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public Task<string> CreateTimer(TimerInfo timer, CancellationToken cancellationToken)
         {
-            var existingTimer = _timerProvider.GetAll()
-                .FirstOrDefault(i => string.Equals(timer.ProgramId, i.ProgramId, StringComparison.OrdinalIgnoreCase));
+            var existingTimer = string.IsNullOrWhiteSpace(timer.ProgramId) ?
+                null :
+                _timerProvider.GetTimerByProgramId(timer.ProgramId);
 
             if (existingTimer != null)
             {
@@ -710,7 +722,34 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 throw new InvalidOperationException("SeriesId for program not found");
             }
 
+            // If any timers have already been manually created, make sure they don't get cancelled
+            var existingTimers = (await GetTimersAsync(CancellationToken.None).ConfigureAwait(false))
+                .Where(i =>
+                {
+                    if (string.Equals(i.ProgramId, info.ProgramId, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(info.ProgramId))
+                    {
+                        return true;
+                    }
+
+                    if (string.Equals(i.SeriesId, info.SeriesId, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(info.SeriesId))
+                    {
+                        return true;
+                    }
+
+                    return false;
+                })
+                .ToList();
+
             _seriesTimerProvider.Add(info);
+
+            foreach (var timer in existingTimers)
+            {
+                timer.SeriesTimerId = info.Id;
+                timer.IsManual = true;
+
+                _timerProvider.AddOrUpdate(timer, false);
+            }
+
             await UpdateTimersForSeriesTimer(epgData, info, true, false).ConfigureAwait(false);
 
             return info.Id;
@@ -991,6 +1030,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (epgChannel == null)
                 {
+                    _logger.Debug("EPG channel not found for tuner channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
                     programs = new List<ProgramInfo>();
                 }
                 else
@@ -1272,6 +1312,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 if (recordingEndDate <= DateTime.UtcNow)
                 {
                     _logger.Warn("Recording timer fired for updatedTimer {0}, Id: {1}, but the program has already ended.", timer.Name, timer.Id);
+                    OnTimerOutOfDate(timer);
+                    return;
+                }
+
+                var registration = await _liveTvManager.GetRegistrationInfo("dvr").ConfigureAwait(false);
+                if (!registration.IsValid)
+                {
+                    _logger.Warn("Emby Premiere required to use Emby DVR.");
                     OnTimerOutOfDate(timer);
                     return;
                 }
@@ -2301,6 +2349,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     if (existingTimer == null)
                     {
+                        existingTimer = string.IsNullOrWhiteSpace(timer.ProgramId)
+                            ? null
+                            : _timerProvider.GetTimerByProgramId(timer.ProgramId);
+                    }
+
+                    if (existingTimer == null)
+                    {
                         if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
                         {
                             timer.Status = RecordingStatus.Cancelled;
@@ -2313,11 +2368,15 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                     else
                     {
-                        // Only update if not currently active
+                        // Only update if not currently active - test both new timer and existing in case Id's are different
+                        // Id's could be different if the timer was created manually prior to series timer creation
                         ActiveRecordingInfo activeRecordingInfo;
-                        if (!_activeRecordings.TryGetValue(timer.Id, out activeRecordingInfo))
+                        if (!_activeRecordings.TryGetValue(timer.Id, out activeRecordingInfo) && !_activeRecordings.TryGetValue(existingTimer.Id, out activeRecordingInfo))
                         {
                             UpdateExistingTimerWithNewMetadata(existingTimer, timer);
+
+                            // Needed by ShouldCancelTimerForSeriesTimer
+                            timer.IsManual = existingTimer.IsManual;
 
                             if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
                             {
@@ -2516,7 +2575,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 list.Add(new VirtualFolderInfo
                 {
                     Locations = new List<string> { customPath },
-                    Name = "Recorded Series",
+                    Name = "Recorded Shows",
                     CollectionType = CollectionType.TvShows
                 });
             }
@@ -2530,6 +2589,86 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             public TimerInfo Timer { get; set; }
             public ProgramInfo Program { get; set; }
             public CancellationTokenSource CancellationTokenSource { get; set; }
+        }
+
+        private const int TunerDiscoveryDurationMs = 3000;
+
+        public async Task<List<TunerHostInfo>> DiscoverTuners(bool newDevicesOnly, CancellationToken cancellationToken)
+        {
+            var list = new List<TunerHostInfo>();
+
+            var configuredDeviceIds = GetConfiguration().TunerHosts
+               .Where(i => !string.IsNullOrWhiteSpace(i.DeviceId))
+               .Select(i => i.DeviceId)
+               .ToList();
+
+            foreach (var host in _liveTvManager.TunerHosts)
+            {
+                var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, cancellationToken).ConfigureAwait(false);
+
+                if (newDevicesOnly)
+                {
+                    discoveredDevices = discoveredDevices.Where(d => !configuredDeviceIds.Contains(d.DeviceId, StringComparer.OrdinalIgnoreCase))
+                            .ToList();
+                }
+                list.AddRange(discoveredDevices);
+            }
+
+            return list;
+        }
+
+        public async Task ScanForTunerDeviceChanges(CancellationToken cancellationToken)
+        {
+            foreach (var host in _liveTvManager.TunerHosts)
+            {
+                await ScanForTunerDeviceChanges(host, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private async Task ScanForTunerDeviceChanges(ITunerHost host, CancellationToken cancellationToken)
+        {
+            var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, cancellationToken).ConfigureAwait(false);
+
+            var configuredDevices = GetConfiguration().TunerHosts
+                .Where(i => string.Equals(i.Type, host.Type, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            foreach (var device in discoveredDevices)
+            {
+                var configuredDevice = configuredDevices.FirstOrDefault(i => string.Equals(i.DeviceId, device.DeviceId, StringComparison.OrdinalIgnoreCase));
+
+                if (configuredDevice != null)
+                {
+                    if (!string.Equals(device.Url, configuredDevice.Url, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.Info("Tuner url has changed from {0} to {1}", configuredDevice.Url, device.Url);
+
+                        configuredDevice.Url = device.Url;
+                        await _liveTvManager.SaveTunerHost(configuredDevice).ConfigureAwait(false);
+                    }
+                }
+            }
+        }
+
+        private async Task<List<TunerHostInfo>> DiscoverDevices(ITunerHost host, int discoveryDuationMs, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var discoveredDevices = await host.DiscoverDevices(discoveryDuationMs, cancellationToken).ConfigureAwait(false);
+
+                foreach (var device in discoveredDevices)
+                {
+                    _logger.Info("Discovered tuner device {0} at {1}", host.Name, device.Url);
+                }
+
+                return discoveredDevices;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error discovering tuner devices", ex);
+
+                return new List<TunerHostInfo>();
+            }
         }
     }
     public static class ConfigurationExtension
