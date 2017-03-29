@@ -191,10 +191,9 @@ namespace MediaBrowser.Model.IO
         /// <summary>
         /// Gets the files.
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
-        /// <returns>IEnumerable&lt;FileInfo&gt;.</returns>
         IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false);
+
+        IEnumerable<FileSystemMetadata> GetFiles(string path, string [] extensions, bool enableCaseSensitiveExtensions, bool recursive);
 
         /// <summary>
         /// Gets the file system entries.

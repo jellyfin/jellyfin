@@ -39,7 +39,7 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             var collectionFolder = (CollectionFolder)item;
 
-            return new LocalImageProvider(_fileSystem).GetImages(item, collectionFolder.PhysicalLocations, directoryService);
+            return new LocalImageProvider(_fileSystem).GetImages(item, collectionFolder.PhysicalLocations, true, directoryService);
         }
     }
 }

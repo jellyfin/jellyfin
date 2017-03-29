@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Globalization;
 
@@ -36,11 +34,9 @@ namespace MediaBrowser.Providers.MediaInfo
             var videoFileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(video.Path);
             videoFileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(videoFileNameWithoutExtension);
 
-            foreach (var file in files)
+            foreach (var fullName in files)
             {
-                var fullName = file.FullName;
-
-                var fileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(file);
+                var fileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(fullName);
                 fileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(fileNameWithoutExtension);
 
                 var codec = Path.GetExtension(fullName).ToLower().TrimStart('.');
@@ -128,7 +124,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        public static IEnumerable<FileSystemMetadata> GetSubtitleFiles(Video video, IDirectoryService directoryService, IFileSystem fileSystem, bool clearCache)
+        public static IEnumerable<string> GetSubtitleFiles(Video video, IDirectoryService directoryService, IFileSystem fileSystem, bool clearCache)
         {
             var containingPath = video.ContainingFolderPath;
 
@@ -137,14 +133,15 @@ namespace MediaBrowser.Providers.MediaInfo
                 throw new ArgumentException(string.Format("Cannot search for items that don't have a path: {0} {1}", video.Name, video.Id));
             }
 
-            var files = directoryService.GetFiles(containingPath, clearCache);
+            var files = directoryService.GetFilePaths(containingPath, clearCache);
 
             var videoFileNameWithoutExtension = fileSystem.GetFileNameWithoutExtension(video.Path);
 
             return files.Where(i =>
             {
-                if (!i.IsDirectory &&
-                    SubtitleExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
+                var extension = Path.GetExtension(i);
+
+                if (SubtitleExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
                     var fileNameWithoutExtension = fileSystem.GetFileNameWithoutExtension(i);
 

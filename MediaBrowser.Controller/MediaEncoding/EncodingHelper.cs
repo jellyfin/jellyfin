@@ -1713,13 +1713,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 return "-c:v h264_qsv ";
                             }
                             break;
-                        //case "hevc":
-                        //case "h265":
-                        //    if (_mediaEncoder.SupportsDecoder("hevc_qsv"))
-                        //    {
-                        //        return "-c:v hevc_qsv ";
-                        //    }
-                        //    break;
+                        case "hevc":
+                        case "h265":
+                            if (_mediaEncoder.SupportsDecoder("hevc_qsv"))
+                            {
+                                return "-c:v hevc_qsv ";
+                            }
+                            break;
                         case "mpeg2video":
                             if (_mediaEncoder.SupportsDecoder("mpeg2_qsv"))
                             {
