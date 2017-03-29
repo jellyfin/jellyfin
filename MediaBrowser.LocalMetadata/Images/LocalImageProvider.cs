@@ -268,7 +268,7 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             var imageFiles = _fileSystem.GetFiles(path, BaseItem.SupportedImageExtensions, false, false);
 
-            images.AddRange(imageFiles.Select(i => new LocalImageInfo
+            images.AddRange(imageFiles.Where(i => i.Length > 0).Select(i => new LocalImageInfo
             {
                 FileInfo = i,
                 Type = ImageType.Backdrop
@@ -398,7 +398,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
         private FileSystemMetadata GetImage(IEnumerable<FileSystemMetadata> files, string name)
         {
-            return files.FirstOrDefault(i => !i.IsDirectory && string.Equals(name, _fileSystem.GetFileNameWithoutExtension(i), StringComparison.OrdinalIgnoreCase));
+            return files.FirstOrDefault(i => !i.IsDirectory && string.Equals(name, _fileSystem.GetFileNameWithoutExtension(i), StringComparison.OrdinalIgnoreCase) && i.Length > 0);
         }
     }
 }
