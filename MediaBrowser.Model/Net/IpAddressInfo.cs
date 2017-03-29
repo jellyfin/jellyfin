@@ -12,13 +12,13 @@ namespace MediaBrowser.Model.Net
         public string Address { get; set; }
         public IpAddressFamily AddressFamily { get; set; }
 
-        public IpAddressInfo()
-        {
-
-        }
-
         public IpAddressInfo(string address, IpAddressFamily addressFamily)
         {
+            if (string.IsNullOrWhiteSpace(address))
+            {
+                throw new ArgumentNullException("address");
+            }
+
             Address = address;
             AddressFamily = addressFamily;
         }

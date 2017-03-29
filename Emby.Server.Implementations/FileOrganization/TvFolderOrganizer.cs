@@ -72,16 +72,23 @@ namespace Emby.Server.Implementations.FileOrganization
 
                 foreach (var file in eligibleFiles)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     var organizer = new EpisodeFileOrganizer(_organizationService, _config, _fileSystem, _logger, _libraryManager,
                         _libraryMonitor, _providerManager);
 
                     try
                     {
                         var result = await organizer.OrganizeEpisodeFile(file.FullName, options, options.TvOptions.OverwriteExistingEpisodes, cancellationToken).ConfigureAwait(false);
+
                         if (result.Status == FileSortingStatus.Success && !processedFolders.Contains(file.DirectoryName, StringComparer.OrdinalIgnoreCase))
                         {
                             processedFolders.Add(file.DirectoryName);
                         }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
                     }
                     catch (Exception ex)
                     {

@@ -247,10 +247,7 @@ namespace Rssdp.Infrastructure
             {
                 await SendMessageIfSocketNotDisposed(messageData, new IpEndPointInfo
                 {
-                    IpAddress = new IpAddressInfo
-                    {
-                        Address = SsdpConstants.MulticastLocalAdminAddress
-                    },
+                    IpAddress = new IpAddressInfo(SsdpConstants.MulticastLocalAdminAddress, IpAddressFamily.InterNetwork),
                     Port = SsdpConstants.MulticastPort
 
                 }, cancellationToken).ConfigureAwait(false);

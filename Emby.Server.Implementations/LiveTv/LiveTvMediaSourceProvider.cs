@@ -104,7 +104,7 @@ namespace Emby.Server.Implementations.LiveTv
                     openKeys.Add(item.Id.ToString("N"));
                     openKeys.Add(source.Id ?? string.Empty);
                     source.OpenToken = string.Join(StreamIdDelimeterString, openKeys.ToArray());
-                } 
+                }
 
                 // Dummy this up so that direct play checks can still run
                 if (string.IsNullOrEmpty(source.Path) && source.Protocol == MediaProtocol.Http)
@@ -142,7 +142,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 if (!stream.SupportsProbing || stream.MediaStreams.Any(i => i.Index != -1))
                 {
-                    await AddMediaInfo(stream, isAudio, cancellationToken).ConfigureAwait(false);
+                    AddMediaInfo(stream, isAudio, cancellationToken);
                 }
                 else
                 {
@@ -158,7 +158,7 @@ namespace Emby.Server.Implementations.LiveTv
             return new Tuple<MediaSourceInfo, IDirectStreamProvider>(stream, directStreamProvider);
         }
 
-        private async Task AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
+        private void AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
         {
             mediaSource.DefaultSubtitleStreamIndex = null;
 
