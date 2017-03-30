@@ -137,19 +137,19 @@ namespace BDInfo
             }
 
             if (DirectoryBDJO != null &&
-                _fileSystem.GetFiles(DirectoryBDJO.FullName).Any())
+                _fileSystem.GetFilePaths(DirectoryBDJO.FullName).Any())
             {
                 IsBDJava = true;
             }
 
             if (DirectorySNP != null &&
-                GetFiles(DirectorySNP.FullName, ".mnv").Any())
+                GetFilePaths(DirectorySNP.FullName, ".mnv").Any())
             {
                 IsPSP = true;
             }
 
             if (DirectorySSIF != null &&
-                _fileSystem.GetFiles(DirectorySSIF.FullName).Any())
+                _fileSystem.GetFilePaths(DirectorySSIF.FullName).Any())
             {
                 Is3D = true;
             }
@@ -207,6 +207,11 @@ namespace BDInfo
         private IEnumerable<FileSystemMetadata> GetFiles(string path, string extension)
         {
             return _fileSystem.GetFiles(path, new[] { extension }, false, false);
+        }
+
+        private IEnumerable<string> GetFilePaths(string path, string extension)
+        {
+            return _fileSystem.GetFilePaths(path, new[] { extension }, false, false);
         }
 
         public void Scan()

@@ -382,7 +382,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 id = "native";
             }
-            id += "_" + url.GetMD5().ToString("N");
+            id += "_" + channelId.GetMD5().ToString("N") + "_" + url.GetMD5().ToString("N");
 
             var mediaSource = new MediaSourceInfo
             {

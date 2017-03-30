@@ -1255,9 +1255,9 @@ namespace Emby.Server.Implementations.Library
 
         private string GetCollectionType(string path)
         {
-            return _fileSystem.GetFiles(path, new[] { ".collection" }, true, false)
+            return _fileSystem.GetFilePaths(path, new[] { ".collection" }, true, false)
                 .Select(i => _fileSystem.GetFileNameWithoutExtension(i))
-                .FirstOrDefault();
+                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
 
         /// <summary>
