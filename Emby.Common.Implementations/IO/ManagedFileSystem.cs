@@ -662,7 +662,7 @@ namespace Emby.Common.Implementations.IO
 
         public IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false)
         {
-            return GetFiles(path, null, true, recursive);
+            return GetFiles(path, null, false, recursive);
         }
 
         public IEnumerable<FileSystemMetadata> GetFiles(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
@@ -791,8 +791,36 @@ namespace Emby.Common.Implementations.IO
 
         public IEnumerable<string> GetFilePaths(string path, bool recursive = false)
         {
+            return GetFilePaths(path, null, false, recursive);
+        }
+
+        public IEnumerable<string> GetFilePaths(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
+        {
             var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-            return Directory.EnumerateFiles(path, "*", searchOption);
+
+            // On linux and osx the search pattern is case sensitive
+            // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
+            if (enableCaseSensitiveExtensions && extensions != null && extensions.Length == 1)
+            {
+                return Directory.EnumerateFiles(path, "*" + extensions[0], searchOption);
+            }
+
+            var files = Directory.EnumerateFiles(path, "*", searchOption);
+
+            if (extensions != null && extensions.Length > 0)
+            {
+                files = files.Where(i =>
+                {
+                    var ext = Path.GetExtension(i);
+                    if (ext == null)
+                    {
+                        return false;
+                    }
+                    return extensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
+                });
+            }
+
+            return files;
         }
 
         public IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false)
