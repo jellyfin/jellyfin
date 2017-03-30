@@ -298,6 +298,7 @@ namespace MediaBrowser.Model.IO
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <returns>IEnumerable&lt;System.String&gt;.</returns>
         IEnumerable<string> GetFilePaths(string path, bool recursive = false);
+        IEnumerable<string> GetFilePaths(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive);
 
         /// <summary>
         /// Gets the file system entry paths.

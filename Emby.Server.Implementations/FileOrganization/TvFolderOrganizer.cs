@@ -178,18 +178,18 @@ namespace Emby.Server.Implementations.FileOrganization
         /// <param name="extensions">The extensions.</param>
         private void DeleteLeftOverFiles(string path, IEnumerable<string> extensions)
         {
-            var eligibleFiles = _fileSystem.GetFiles(path, extensions.ToArray(), false, true)
+            var eligibleFiles = _fileSystem.GetFilePaths(path, extensions.ToArray(), false, true)
                 .ToList();
 
             foreach (var file in eligibleFiles)
             {
                 try
                 {
-                    _fileSystem.DeleteFile(file.FullName);
+                    _fileSystem.DeleteFile(file);
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error deleting file {0}", ex, file.FullName);
+                    _logger.ErrorException("Error deleting file {0}", ex, file);
                 }
             }
         }
