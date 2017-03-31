@@ -296,8 +296,8 @@
       <Project>{4f26d5d8-a7b0-42b3-ba42-7cb7d245934e}</Project>
       <Name>SocketHttpListener.Portable</Name>
     </ProjectReference>
-    <Reference Include="Emby.XmlTv, Version=1.0.6251.29080, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Emby.XmlTv.1.0.7\lib\portable-net45+win8\Emby.XmlTv.dll</HintPath>
+    <Reference Include="Emby.XmlTv, Version=1.0.6299.28292, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Emby.XmlTv.1.0.8\lib\portable-net45+win8\Emby.XmlTv.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="MediaBrowser.Naming, Version=1.0.6279.25941, Culture=neutral, processorArchitecture=MSIL">
