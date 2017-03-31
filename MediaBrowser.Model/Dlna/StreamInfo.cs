@@ -40,6 +40,7 @@ namespace MediaBrowser.Model.Dlna
 
         public int? SegmentLength { get; set; }
         public int? MinSegments { get; set; }
+        public bool BreakOnNonKeyFrames { get; set; }
 
         public bool RequireAvc { get; set; }
         public bool DeInterlace { get; set; }
@@ -305,6 +306,8 @@ namespace MediaBrowser.Model.Dlna
                 {
                     list.Add(new NameValuePair("MinSegments", item.MinSegments.Value.ToString(CultureInfo.InvariantCulture)));
                 }
+
+                list.Add(new NameValuePair("BreakOnNonKeyFrames", item.BreakOnNonKeyFrames.ToString()));
             }
 
             return list;
