@@ -127,7 +127,7 @@ namespace MediaBrowser.Api.Playback
 
                 SetDeviceSpecificData(item, result.MediaSource, profile, authInfo, request.MaxStreamingBitrate,
                     request.StartTimeTicks ?? 0, result.MediaSource.Id, request.AudioStreamIndex,
-                    request.SubtitleStreamIndex, request.MaxAudioChannels, request.PlaySessionId, request.UserId, true, true, true, true);
+                    request.SubtitleStreamIndex, request.MaxAudioChannels, request.PlaySessionId, request.UserId, true, true, true, true, true, true);
             }
             else
             {
@@ -169,7 +169,7 @@ namespace MediaBrowser.Api.Playback
             {
                 var mediaSourceId = request.MediaSourceId;
 
-                SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate ?? profile.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex, request.MaxAudioChannels, request.UserId, request.EnableDirectPlay, request.ForceDirectPlayRemoteMediaSource, request.EnableDirectStream, request.EnableTranscoding);
+                SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate ?? profile.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex, request.MaxAudioChannels, request.UserId, request.EnableDirectPlay, request.ForceDirectPlayRemoteMediaSource, request.EnableDirectStream, request.EnableTranscoding, request.AllowVideoStreamCopy, request.AllowAudioStreamCopy);
             }
 
             return info;
@@ -255,13 +255,15 @@ namespace MediaBrowser.Api.Playback
             bool enableDirectPlay,
             bool forceDirectPlayRemoteMediaSource,
             bool enableDirectStream,
-            bool enableTranscoding)
+            bool enableTranscoding,
+            bool allowVideoStreamCopy,
+            bool allowAudioStreamCopy)
         {
             var item = _libraryManager.GetItemById(itemId);
 
             foreach (var mediaSource in result.MediaSources)
             {
-                SetDeviceSpecificData(item, mediaSource, profile, auth, maxBitrate, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex, maxAudioChannels, result.PlaySessionId, userId, enableDirectPlay, forceDirectPlayRemoteMediaSource, enableDirectStream, enableTranscoding);
+                SetDeviceSpecificData(item, mediaSource, profile, auth, maxBitrate, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex, maxAudioChannels, result.PlaySessionId, userId, enableDirectPlay, forceDirectPlayRemoteMediaSource, enableDirectStream, enableTranscoding, allowVideoStreamCopy, allowAudioStreamCopy);
             }
 
             SortMediaSources(result, maxBitrate);
@@ -282,7 +284,9 @@ namespace MediaBrowser.Api.Playback
             bool enableDirectPlay,
             bool forceDirectPlayRemoteMediaSource,
             bool enableDirectStream,
-            bool enableTranscoding)
+            bool enableTranscoding,
+            bool allowVideoStreamCopy,
+            bool allowAudioStreamCopy)
         {
             var streamBuilder = new StreamBuilder(_mediaEncoder, Logger);
 
@@ -418,6 +422,15 @@ namespace MediaBrowser.Api.Playback
                     {
                         streamInfo.StartPositionTicks = startTimeTicks;
                         mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
+
+                        if (!allowVideoStreamCopy)
+                        {
+                            mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
+                        }
+                        if (!allowAudioStreamCopy)
+                        {
+                            mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                        }
                         mediaSource.TranscodingContainer = streamInfo.Container;
                         mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                     }
