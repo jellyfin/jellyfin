@@ -28,6 +28,8 @@ namespace MediaBrowser.Model.MediaInfo
         public bool EnableDirectStream { get; set; }
         public bool EnableTranscoding { get; set; }
         public bool ForceDirectPlayRemoteMediaSource { get; set; }
+        public bool AllowVideoStreamCopy { get; set; }
+        public bool AllowAudioStreamCopy { get; set; }
 
         public PlaybackInfoRequest()
         {
@@ -35,6 +37,8 @@ namespace MediaBrowser.Model.MediaInfo
             EnableDirectPlay = true;
             EnableDirectStream = true;
             EnableTranscoding = true;
+            AllowVideoStreamCopy = true;
+            AllowAudioStreamCopy = true;
         }
     }
 }
