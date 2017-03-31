@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.MediaInfo;
+﻿using System;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,16 +48,11 @@ namespace MediaBrowser.Model.Dlna
                 {
                     if (i.MediaSource.Bitrate.HasValue)
                     {
-                        if (i.MediaSource.Bitrate.Value <= maxBitrate.Value)
-                        {
-                            return 0;
-                        }
-
-                        return 2;
+                        return Math.Abs(i.MediaSource.Bitrate.Value - maxBitrate.Value);
                     }
                 }
 
-                return 1;
+                return 0;
 
             }).ToList();
         }
