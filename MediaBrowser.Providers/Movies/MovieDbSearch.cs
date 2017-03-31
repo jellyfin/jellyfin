@@ -160,12 +160,7 @@ namespace MediaBrowser.Providers.Movies
 
                 var results = searchResults.results ?? new List<TmdbMovieSearchResult>();
 
-                var index = 0;
-                var resultTuples = results.Select(result => new Tuple<TmdbMovieSearchResult, int>(result, index++)).ToList();
-
-                return resultTuples.OrderBy(i => GetSearchResultOrder(i.Item1, year))
-                    .ThenBy(i => i.Item2)
-                    .Select(i => i.Item1)
+                return results
                     .Select(i =>
                     {
                         var remoteResult = new RemoteSearchResult
@@ -217,12 +212,7 @@ namespace MediaBrowser.Providers.Movies
 
                 var results = searchResults.results ?? new List<TvResult>();
 
-                var index = 0;
-                var resultTuples = results.Select(result => new Tuple<TvResult, int>(result, index++)).ToList();
-
-                return resultTuples.OrderBy(i => GetSearchResultOrder(i.Item1, year))
-                    .ThenBy(i => i.Item2)
-                    .Select(i => i.Item1)
+                return results
                     .Select(i =>
                     {
                         var remoteResult = new RemoteSearchResult
@@ -251,40 +241,6 @@ namespace MediaBrowser.Providers.Movies
                     })
                     .ToList();
             }
-        }
-
-        private int GetSearchResultOrder(TmdbMovieSearchResult result, int? year)
-        {
-            if (year.HasValue)
-            {
-                DateTime r;
-
-                // These dates are always in this exact format
-                if (DateTime.TryParseExact(result.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
-                {
-                    // Allow one year tolernace, preserve order from Tmdb
-                    return Math.Abs(r.Year - year.Value);
-                }
-            }
-
-            return int.MaxValue;
-        }
-
-        private int GetSearchResultOrder(TvResult result, int? year)
-        {
-            if (year.HasValue)
-            {
-                DateTime r;
-
-                // These dates are always in this exact format
-                if (DateTime.TryParseExact(result.first_air_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
-                {
-                    // Allow one year tolernace, preserve order from Tmdb
-                    return Math.Abs(r.Year - year.Value);
-                }
-            }
-
-            return int.MaxValue;
         }
 
         /// <summary>
