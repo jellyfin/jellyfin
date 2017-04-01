@@ -207,22 +207,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         break;
                     }
 
-                case "Metascore":
-                    {
-                        var text = reader.ReadElementContentAsString();
-                        var hasMetascore = item as IHasMetascore;
-                        if (hasMetascore != null)
-                        {
-                            float value;
-                            if (float.TryParse(text, NumberStyles.Any, _usCulture, out value))
-                            {
-                                hasMetascore.Metascore = value;
-                            }
-                        }
-
-                        break;
-                    }
-
                 case "AwardSummary":
                     {
                         var text = reader.ReadElementContentAsString();

@@ -122,11 +122,6 @@
         /// </summary>
         MediaSources,
 
-        /// <summary>
-        /// The metascore
-        /// </summary>
-        Metascore,
-
         OfficialRatingDescription,
 
         OriginalTitle,

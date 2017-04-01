@@ -247,7 +247,6 @@
     <Compile Include="Sorting\IsFolderComparer.cs" />
     <Compile Include="Sorting\IsPlayedComparer.cs" />
     <Compile Include="Sorting\IsUnplayedComparer.cs" />
-    <Compile Include="Sorting\MetascoreComparer.cs" />
     <Compile Include="Sorting\NameComparer.cs" />
     <Compile Include="Sorting\OfficialRatingComparer.cs" />
     <Compile Include="Sorting\PlayCountComparer.cs" />
