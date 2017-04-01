@@ -320,22 +320,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                case "metascore":
-                    {
-                        var text = reader.ReadElementContentAsString();
-                        var hasMetascore = item as IHasMetascore;
-                        if (hasMetascore != null)
-                        {
-                            float value;
-                            if (float.TryParse(text, NumberStyles.Any, _usCulture, out value))
-                            {
-                                hasMetascore.Metascore = value;
-                            }
-                        }
-
-                        break;
-                    }
-
                 case "awardsummary":
                     {
                         var text = reader.ReadElementContentAsString();

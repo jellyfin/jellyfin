@@ -114,7 +114,6 @@
     <Compile Include="Entities\IHasImages.cs" />
     <Compile Include="Entities\KeywordExtensions.cs" />
     <Compile Include="Entities\IHasMediaSources.cs" />
-    <Compile Include="Entities\IHasMetascore.cs" />
     <Compile Include="Entities\IHasProgramAttributes.cs" />
     <Compile Include="Entities\IHasScreenshots.cs" />
     <Compile Include="Entities\IHasSeries.cs" />
