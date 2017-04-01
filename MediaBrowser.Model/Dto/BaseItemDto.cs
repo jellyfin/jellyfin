@@ -81,8 +81,6 @@ namespace MediaBrowser.Model.Dto
 
         public string AwardSummary { get; set; }
 
-        public float? Metascore { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether [supports synchronize].
         /// </summary>

@@ -409,17 +409,6 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            var hasMetascore = item as IHasMetascore;
-            if (hasMetascore != null)
-            {
-                float metascore;
-
-                if (!string.IsNullOrEmpty(result.Metascore) && float.TryParse(result.Metascore, NumberStyles.Any, _usCulture, out metascore) && metascore >= 0)
-                {
-                    hasMetascore.Metascore = metascore;
-                }
-            }
-
             var hasAwards = item as IHasAwards;
             if (hasAwards != null && !string.IsNullOrEmpty(result.Awards))
             {
