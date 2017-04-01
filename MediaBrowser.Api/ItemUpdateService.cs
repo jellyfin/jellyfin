@@ -336,12 +336,6 @@ namespace MediaBrowser.Api
                 video.Video3DFormat = request.Video3DFormat;
             }
 
-            var hasMetascore = item as IHasMetascore;
-            if (hasMetascore != null)
-            {
-                hasMetascore.Metascore = request.Metascore;
-            }
-
             var hasAwards = item as IHasAwards;
             if (hasAwards != null)
             {

@@ -87,7 +87,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "awardsummary",
                     "enddate",
                     "lockedfields",
-                    "metascore",
                     "zap2itid",
                     "tvrageid",
                     "gamesdbid",
@@ -681,12 +680,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (item.VoteCount.HasValue)
             {
                 writer.WriteElementString("votes", item.VoteCount.Value.ToString(UsCulture));
-            }
-
-            var hasMetascore = item as IHasMetascore;
-            if (hasMetascore != null && hasMetascore.Metascore.HasValue)
-            {
-                writer.WriteElementString("metascore", hasMetascore.Metascore.Value.ToString(UsCulture));
             }
 
             // Use original runtime here, actual file runtime later in MediaInfo
