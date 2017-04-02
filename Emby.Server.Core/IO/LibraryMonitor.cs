@@ -166,7 +166,11 @@ namespace Emby.Server.Core.IO
         private void Restart()
         {
             Stop();
-            Start();
+
+            if (!_disposed)
+            {
+                Start();
+            }
         }
 
         private bool IsLibraryMonitorEnabaled(BaseItem item)
@@ -589,11 +593,13 @@ namespace Emby.Server.Core.IO
             }
         }
 
+        private bool _disposed;
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
         {
+            _disposed = true;
             Dispose(true);
             GC.SuppressFinalize(this);
         }
