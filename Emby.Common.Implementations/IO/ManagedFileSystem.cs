@@ -69,14 +69,6 @@ namespace Emby.Common.Implementations.IO
             }
         }
 
-        public char PathSeparator
-        {
-            get
-            {
-                return Path.PathSeparator;
-            }
-        }
-
         public string GetFullPath(string path)
         {
             return Path.GetFullPath(path);
@@ -544,6 +536,16 @@ namespace Emby.Common.Implementations.IO
             CopyFile(temp1, file2, true);
         }
 
+        private char GetSeparatorChar(string path)
+        {
+            if (path.IndexOf('/') != -1)
+            {
+                return '/';
+            }
+
+            return '\\';
+        }
+
         public bool AreEqual(string path1, string path2)
         {
             if (path1 == null && path2 == null)
@@ -556,8 +558,8 @@ namespace Emby.Common.Implementations.IO
                 return false;
             }
 
-            path1 = path1.TrimEnd(DirectorySeparatorChar);
-            path2 = path2.TrimEnd(DirectorySeparatorChar);
+            path1 = path1.TrimEnd(GetSeparatorChar(path1));
+            path2 = path2.TrimEnd(GetSeparatorChar(path2));
 
             return string.Equals(path1, path2, StringComparison.OrdinalIgnoreCase);
         }
@@ -574,7 +576,9 @@ namespace Emby.Common.Implementations.IO
                 throw new ArgumentNullException("path");
             }
 
-            return path.IndexOf(parentPath.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) != -1;
+            var separatorChar = GetSeparatorChar(parentPath);
+
+            return path.IndexOf(parentPath.TrimEnd(separatorChar) + separatorChar, StringComparison.OrdinalIgnoreCase) != -1;
         }
 
         public bool IsRootPath(string path)
@@ -606,7 +610,7 @@ namespace Emby.Common.Implementations.IO
                 return path;
             }
 
-            return path.TrimEnd(Path.DirectorySeparatorChar);
+            return path.TrimEnd(GetSeparatorChar(path));
         }
 
         public string GetFileNameWithoutExtension(FileSystemMetadata info)
