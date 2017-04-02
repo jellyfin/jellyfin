@@ -536,14 +536,14 @@ namespace Emby.Common.Implementations.IO
             CopyFile(temp1, file2, true);
         }
 
-        private char GetSeparatorChar(string path)
+        private char GetDirectorySeparatorChar(string path)
         {
-            if (path.IndexOf('/') != -1)
+            if (_sharpCifsFileSystem.IsEnabledForPath(path))
             {
-                return '/';
+                return _sharpCifsFileSystem.GetDirectorySeparatorChar(path);
             }
 
-            return '\\';
+            return Path.DirectorySeparatorChar;
         }
 
         public bool AreEqual(string path1, string path2)
@@ -558,8 +558,8 @@ namespace Emby.Common.Implementations.IO
                 return false;
             }
 
-            path1 = path1.TrimEnd(GetSeparatorChar(path1));
-            path2 = path2.TrimEnd(GetSeparatorChar(path2));
+            path1 = path1.TrimEnd(GetDirectorySeparatorChar(path1));
+            path2 = path2.TrimEnd(GetDirectorySeparatorChar(path2));
 
             return string.Equals(path1, path2, StringComparison.OrdinalIgnoreCase);
         }
@@ -576,7 +576,7 @@ namespace Emby.Common.Implementations.IO
                 throw new ArgumentNullException("path");
             }
 
-            var separatorChar = GetSeparatorChar(parentPath);
+            var separatorChar = GetDirectorySeparatorChar(parentPath);
 
             return path.IndexOf(parentPath.TrimEnd(separatorChar) + separatorChar, StringComparison.OrdinalIgnoreCase) != -1;
         }
@@ -610,7 +610,7 @@ namespace Emby.Common.Implementations.IO
                 return path;
             }
 
-            return path.TrimEnd(GetSeparatorChar(path));
+            return path.TrimEnd(GetDirectorySeparatorChar(path));
         }
 
         public string GetFileNameWithoutExtension(FileSystemMetadata info)
