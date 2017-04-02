@@ -30,6 +30,16 @@ namespace Emby.Common.Implementations.IO
             return path.StartsWith("smb://", StringComparison.OrdinalIgnoreCase) || IsUncPath(path);
         }
 
+        public char GetDirectorySeparatorChar(string path)
+        {
+            if (path.IndexOf('/') != -1)
+            {
+                return '/';
+            }
+
+            return '\\';
+        }
+
         public FileSystemMetadata GetFileSystemInfo(string path)
         {
             var file = CreateSmbFile(path);
