@@ -55,7 +55,7 @@ namespace Emby.Common.Implementations.IO
 
         private string GetReturnPath(SmbFile file)
         {
-            return file.GetCanonicalPath();
+            return file.GetCanonicalPath().TrimEnd('/');
             //return file.GetPath();
         }
 
@@ -419,9 +419,16 @@ namespace Emby.Common.Implementations.IO
             }
         }
 
+        private SmbFile CreateSmbDirectoryForListFiles(string path)
+        {
+            // In order to call ListFiles, it has to end with the separator
+
+            return CreateSmbFile(path.TrimEnd('/') + '/');
+        }
+
         public IEnumerable<FileSystemMetadata> GetDirectories(string path, bool recursive = false)
         {
-            var dir = CreateSmbFile(path);
+            var dir = CreateSmbDirectoryForListFiles(path);
             AssertDirectoryExists(dir, path);
 
             var list = ListFiles(dir, recursive);
@@ -437,7 +444,7 @@ namespace Emby.Common.Implementations.IO
 
         public IEnumerable<FileSystemMetadata> GetFiles(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
-            var dir = CreateSmbFile(path);
+            var dir = CreateSmbDirectoryForListFiles(path);
             AssertDirectoryExists(dir, path);
 
             var list = ListFiles(dir, recursive);
@@ -459,7 +466,7 @@ namespace Emby.Common.Implementations.IO
 
         public IEnumerable<FileSystemMetadata> GetFileSystemEntries(string path, bool recursive = false)
         {
-            var dir = CreateSmbFile(path);
+            var dir = CreateSmbDirectoryForListFiles(path);
             AssertDirectoryExists(dir, path);
 
             var list = ListFiles(dir, recursive);
@@ -472,7 +479,7 @@ namespace Emby.Common.Implementations.IO
 
         public IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false)
         {
-            var dir = CreateSmbFile(path);
+            var dir = CreateSmbDirectoryForListFiles(path);
             AssertDirectoryExists(dir, path);
 
             var list = ListFiles(dir, recursive);
@@ -485,7 +492,7 @@ namespace Emby.Common.Implementations.IO
 
         public IEnumerable<string> GetFilePaths(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
-            var dir = CreateSmbFile(path);
+            var dir = CreateSmbDirectoryForListFiles(path);
             AssertDirectoryExists(dir, path);
 
             var list = ListFiles(dir, recursive);
@@ -507,7 +514,7 @@ namespace Emby.Common.Implementations.IO
 
         public IEnumerable<string> GetDirectoryPaths(string path, bool recursive = false)
         {
-            var dir = CreateSmbFile(path);
+            var dir = CreateSmbDirectoryForListFiles(path);
             AssertDirectoryExists(dir, path);
 
             var list = ListFiles(dir, recursive);

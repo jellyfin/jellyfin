@@ -312,7 +312,6 @@ namespace MediaBrowser.Model.IO
         void SetReadOnly(string path, bool isHidden);
 
         char DirectorySeparatorChar { get; }
-        char PathSeparator { get; }
 
         string GetFullPath(string path);
 
