@@ -377,7 +377,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var arg = string.Format("-i {0}", GetInputPathArgument(state));
 
-            if (state.SubtitleStream != null && request.SubtitleMethod == SubtitleDeliveryMethod.Encode)
+            if (state.SubtitleStream != null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
             {
                 if (state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream)
                 {
@@ -410,7 +410,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (GetVideoEncoder(state, encodingOptions).IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && request.SubtitleMethod == SubtitleDeliveryMethod.Encode;
+                    var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
                     var hwOutputFormat = "vaapi";
 
                     if (hasGraphicalSubs)
@@ -782,7 +782,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Can't stream copy if we're burning in subtitles
             if (request.SubtitleStreamIndex.HasValue)
             {
-                if (request.SubtitleMethod == SubtitleDeliveryMethod.Encode)
+                if (state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
                 {
                     return false;
                 }
@@ -1042,7 +1042,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var pts = string.Empty;
 
-            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.BaseRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode && !state.CopyTimestamps)
+            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode && !state.CopyTimestamps)
             {
                 var seconds = TimeSpan.FromTicks(state.StartTimeTicks ?? 0).TotalSeconds;
 
@@ -1205,7 +1205,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 args += " -map -0:a";
             }
 
-            var subtitleMethod = state.BaseRequest.SubtitleMethod;
+            var subtitleMethod = state.SubtitleDeliveryMethod;
             if (state.SubtitleStream == null || subtitleMethod == SubtitleDeliveryMethod.Hls)
             {
                 args += " -map -0:s";
@@ -1421,7 +1421,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var output = string.Empty;
 
-            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && request.SubtitleMethod == SubtitleDeliveryMethod.Encode)
+            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
             {
                 var subParam = GetTextSubtitleParam(state);
 
@@ -1696,6 +1696,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 EnforceResolutionLimit(state);
+
+                NormalizeSubtitleEmbed(state);
             }
             else
             {
@@ -1703,6 +1705,21 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             state.MediaSource = mediaSource;
+        }
+
+        private void NormalizeSubtitleEmbed(EncodingJobInfo state)
+        {
+            if (state.SubtitleStream == null || state.SubtitleDeliveryMethod != SubtitleDeliveryMethod.Embed)
+            {
+                return ;
+            }
+
+            // This is tricky to remux in, after converting to dvdsub it's not positioned correctly
+            // Therefore, let's just burn it in
+            if (string.Equals(state.SubtitleStream.Codec, "DVBSUB", StringComparison.OrdinalIgnoreCase))
+            {
+                state.SubtitleDeliveryMethod = SubtitleDeliveryMethod.Encode;
+            }
         }
 
         /// <summary>
@@ -1810,16 +1827,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 codec = format;
             }
 
-            // Muxing in dvbsub via either copy or -codec dvbsub does not seem to work
-            // It doesn't throw any errors but vlc on android will not render them
-            // They will need to be converted to an alternative format
-            // TODO: This is incorrectly assuming that dvdsub will be supported by the player
-            // The api will need to be expanded to accomodate this.
-            if (string.Equals(state.SubtitleStream.Codec, "DVBSUB", StringComparison.OrdinalIgnoreCase))
-            {
-                codec = "dvdsub";
-            }
-
             var args = " -codec:s:0 " + codec;
 
             args += " -disposition:s:0 default";
@@ -1894,7 +1901,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             args += keyFrameArg;
 
-            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.BaseRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode;
+            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
             var hasCopyTs = false;
             // Add resolution params, if specified
