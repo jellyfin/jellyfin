@@ -192,6 +192,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public int? TranscodingMaxAudioChannels { get; set; }
         public int? CpuCoreLimit { get; set; }
         public string OutputContainer { get; set; }
+        public string LiveStreamId { get; set; }
 
         /// <summary>
         /// Gets or sets the video codec.

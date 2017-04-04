@@ -1015,29 +1015,28 @@ namespace Emby.Server.Implementations.LiveTv
                 }
             }
 
-            IEnumerable<LiveTvProgram> programs = _libraryManager.QueryItems(internalQuery).Items.Cast<LiveTvProgram>();
+            var programList = _libraryManager.QueryItems(internalQuery).Items.Cast<LiveTvProgram>().ToList();
+            var totalCount = programList.Count;
 
-            var programList = programs.ToList();
+            IOrderedEnumerable<LiveTvProgram> orderedPrograms = programList.OrderBy(i => i.StartDate.Date);
 
-            var factorChannelWatchCount = (query.IsAiring ?? false) || (query.IsKids ?? false) || (query.IsSports ?? false) || (query.IsMovie ?? false) || (query.IsNews ?? false) || (query.IsSeries ?? false);
+            if (query.IsAiring ?? false)
+            {
+                orderedPrograms = orderedPrograms
+                    .ThenByDescending(i => GetRecommendationScore(i, user.Id, true));
+            }
 
-            programs = programList.OrderBy(i => i.StartDate.Date)
-                .ThenByDescending(i => GetRecommendationScore(i, user.Id, factorChannelWatchCount))
-                .ThenBy(i => i.StartDate);
+            IEnumerable<LiveTvProgram> programs = orderedPrograms;
 
             if (query.Limit.HasValue)
             {
                 programs = programs.Take(query.Limit.Value);
             }
 
-            programList = programs.ToList();
-
-            var returnArray = programList.ToArray();
-
             var result = new QueryResult<LiveTvProgram>
             {
-                Items = returnArray,
-                TotalRecordCount = returnArray.Length
+                Items = programs.ToArray(),
+                TotalRecordCount = totalCount
             };
 
             return result;
