@@ -37,11 +37,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     var allStreams = _outputStreams.ToList();
 
-                    if (allStreams.Count == 1)
-                    {
-                        await allStreams[0].Value.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
-                    }
-                    else
+                    //if (allStreams.Count == 1)
+                    //{
+                    //    await allStreams[0].Value.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
+                    //}
+                    //else
                     {
                         byte[] copy = new byte[bytesRead];
                         Buffer.BlockCopy(buffer, 0, copy, 0, bytesRead);
