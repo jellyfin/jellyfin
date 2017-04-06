@@ -1404,12 +1404,14 @@ namespace Emby.Server.Implementations.Session
             {
                 var result = await _userManager.AuthenticateUser(request.Username, request.PasswordSha1, request.PasswordMd5, request.RemoteEndPoint).ConfigureAwait(false);
 
-                if (!result)
+                if (result == null)
                 {
                     EventHelper.FireEventIfNotNull(AuthenticationFailed, this, new GenericEventArgs<AuthenticationRequest>(request), _logger);
 
                     throw new SecurityException("Invalid user or password entered.");
                 }
+
+                user = result;
             }
 
             var token = await GetAuthorizationToken(user.Id.ToString("N"), request.DeviceId, request.App, request.AppVersion, request.DeviceName).ConfigureAwait(false);
