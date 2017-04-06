@@ -443,7 +443,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
 
                 // If requested segment is less than transcoding position, we can't transcode backwards, so assume it's ready
-                if (segmentIndex < currentTranscodingIndex)
+                if (segmentIndex != currentTranscodingIndex)
                 {
                     return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
                 }
