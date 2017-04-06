@@ -66,7 +66,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <returns>Task{System.Boolean}.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        Task<bool> AuthenticateUser(string username, string passwordSha1, string remoteEndPoint);
+        Task<User> AuthenticateUser(string username, string passwordSha1, string remoteEndPoint);
         
         /// <summary>
         /// Refreshes metadata for each user
@@ -164,7 +164,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="passwordMd5">The password MD5.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <returns>Task&lt;System.Boolean&gt;.</returns>
-        Task<bool> AuthenticateUser(string username, string passwordSha1, string passwordMd5, string remoteEndPoint);
+        Task<User> AuthenticateUser(string username, string passwordSha1, string passwordMd5, string remoteEndPoint);
 
         /// <summary>
         /// Starts the forgot password process.
