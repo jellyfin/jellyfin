@@ -94,7 +94,6 @@ namespace MediaBrowser.Api
         {
             config.EnableStandaloneMusicKeys = true;
             config.EnableCaseSensitiveItemIds = true;
-            config.EnableFolderView = true;
             config.SkipDeserializationForBasicTypes = true;
             config.SkipDeserializationForPrograms = true;
             config.SkipDeserializationForAudio = true;

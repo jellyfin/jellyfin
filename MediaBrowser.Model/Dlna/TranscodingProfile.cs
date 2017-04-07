@@ -48,6 +48,9 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("segmentLength")]
         public int SegmentLength { get; set; }
 
+        [XmlAttribute("breakOnNonKeyFrames")]
+        public bool BreakOnNonKeyFrames { get; set; }
+
         public List<string> GetAudioCodecs()
         {
             List<string> list = new List<string>();

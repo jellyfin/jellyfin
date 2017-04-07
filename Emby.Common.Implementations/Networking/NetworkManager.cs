@@ -500,11 +500,7 @@ namespace Emby.Common.Implementations.Networking
             {
                 return IpAddressInfo.IPv6Loopback;
             }
-            return new IpAddressInfo
-            {
-                Address = address.ToString(),
-                AddressFamily = address.AddressFamily == AddressFamily.InterNetworkV6 ? IpAddressFamily.InterNetworkV6 : IpAddressFamily.InterNetwork
-            };
+            return new IpAddressInfo(address.ToString(), address.AddressFamily == AddressFamily.InterNetworkV6 ? IpAddressFamily.InterNetworkV6 : IpAddressFamily.InterNetwork);
         }
 
         public async Task<IpAddressInfo[]> GetHostAddressesAsync(string host)

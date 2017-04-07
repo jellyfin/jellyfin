@@ -199,7 +199,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     return !video.SubtitleFiles
                         .SequenceEqual(SubtitleResolver.GetSubtitleFiles(video, directoryService, _fileSystem, false)
-                        .Select(i => i.FullName)
                         .OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
                 }
             }

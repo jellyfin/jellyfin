@@ -484,6 +484,8 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.CopyTimestamps = transcodingProfile.CopyTimestamps;
                 playlistItem.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
 
+                playlistItem.BreakOnNonKeyFrames = transcodingProfile.BreakOnNonKeyFrames;
+
                 if (transcodingProfile.MinSegments > 0)
                 {
                     playlistItem.MinSegments = transcodingProfile.MinSegments;

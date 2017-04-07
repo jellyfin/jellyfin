@@ -261,7 +261,7 @@ namespace Emby.Server.Implementations.LiveTv
             return info.Item1;
         }
 
-        public Task<Tuple<MediaSourceInfo, IDirectStreamProvider, bool>> GetChannelStream(string id, string mediaSourceId, CancellationToken cancellationToken)
+        public Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetChannelStream(string id, string mediaSourceId, CancellationToken cancellationToken)
         {
             return GetLiveStream(id, mediaSourceId, true, cancellationToken);
         }
@@ -323,7 +323,7 @@ namespace Emby.Server.Implementations.LiveTv
             return _services.FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
         }
 
-        private async Task<Tuple<MediaSourceInfo, IDirectStreamProvider, bool>> GetLiveStream(string id, string mediaSourceId, bool isChannel, CancellationToken cancellationToken)
+        private async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStream(string id, string mediaSourceId, bool isChannel, CancellationToken cancellationToken)
         {
             if (string.Equals(id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
             {
@@ -334,7 +334,6 @@ namespace Emby.Server.Implementations.LiveTv
             bool isVideo;
             ILiveTvService service;
             IDirectStreamProvider directStreamProvider = null;
-            var assumeInterlaced = false;
 
             if (isChannel)
             {
@@ -383,12 +382,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             Normalize(info, service, isVideo);
 
-            if (!(service is EmbyTV.EmbyTV))
-            {
-                assumeInterlaced = true;
-            }
-
-            return new Tuple<MediaSourceInfo, IDirectStreamProvider, bool>(info, directStreamProvider, assumeInterlaced);
+            return new Tuple<MediaSourceInfo, IDirectStreamProvider>(info, directStreamProvider);
         }
 
         private void Normalize(MediaSourceInfo mediaSource, ILiveTvService service, bool isVideo)
@@ -491,6 +485,12 @@ namespace Emby.Server.Implementations.LiveTv
                     if (stream.Type == MediaStreamType.Video && string.IsNullOrWhiteSpace(stream.NalLengthSize))
                     {
                         stream.NalLengthSize = "0";
+                    }
+
+                    if (stream.Type == MediaStreamType.Video)
+                    {
+                        stream.IsInterlaced = true;
+                        stream.AllowStreamCopy = false;
                     }
                 }
             }
@@ -1015,29 +1015,28 @@ namespace Emby.Server.Implementations.LiveTv
                 }
             }
 
-            IEnumerable<LiveTvProgram> programs = _libraryManager.QueryItems(internalQuery).Items.Cast<LiveTvProgram>();
+            var programList = _libraryManager.QueryItems(internalQuery).Items.Cast<LiveTvProgram>().ToList();
+            var totalCount = programList.Count;
 
-            var programList = programs.ToList();
+            IOrderedEnumerable<LiveTvProgram> orderedPrograms = programList.OrderBy(i => i.StartDate.Date);
 
-            var factorChannelWatchCount = (query.IsAiring ?? false) || (query.IsKids ?? false) || (query.IsSports ?? false) || (query.IsMovie ?? false) || (query.IsNews ?? false) || (query.IsSeries ?? false);
+            if (query.IsAiring ?? false)
+            {
+                orderedPrograms = orderedPrograms
+                    .ThenByDescending(i => GetRecommendationScore(i, user.Id, true));
+            }
 
-            programs = programList.OrderBy(i => i.StartDate.Date)
-                .ThenByDescending(i => GetRecommendationScore(i, user.Id, factorChannelWatchCount))
-                .ThenBy(i => i.StartDate);
+            IEnumerable<LiveTvProgram> programs = orderedPrograms;
 
             if (query.Limit.HasValue)
             {
                 programs = programs.Take(query.Limit.Value);
             }
 
-            programList = programs.ToList();
-
-            var returnArray = programList.ToArray();
-
             var result = new QueryResult<LiveTvProgram>
             {
-                Items = returnArray,
-                TotalRecordCount = returnArray.Length
+                Items = programs.ToArray(),
+                TotalRecordCount = totalCount
             };
 
             return result;

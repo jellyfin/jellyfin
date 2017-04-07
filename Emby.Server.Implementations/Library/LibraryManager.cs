@@ -448,7 +448,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (parent != null)
                 {
-                    await parent.ValidateChildren(new Progress<double>(), CancellationToken.None, new MetadataRefreshOptions(_fileSystem), false) .ConfigureAwait(false);
+                    await parent.ValidateChildren(new Progress<double>(), CancellationToken.None, new MetadataRefreshOptions(_fileSystem), false).ConfigureAwait(false);
                 }
             }
             else if (parent != null)
@@ -941,7 +941,7 @@ namespace Emby.Server.Implementations.Library
             return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name);
         }
 
-        private T CreateItemByName<T>(Func<string,string> getPathFn, string name)
+        private T CreateItemByName<T>(Func<string, string> getPathFn, string name)
             where T : BaseItem, new()
         {
             if (typeof(T) == typeof(MusicArtist))
@@ -1255,10 +1255,9 @@ namespace Emby.Server.Implementations.Library
 
         private string GetCollectionType(string path)
         {
-            return _fileSystem.GetFiles(path, false)
-                .Where(i => string.Equals(i.Extension, ".collection", StringComparison.OrdinalIgnoreCase))
+            return _fileSystem.GetFilePaths(path, new[] { ".collection" }, true, false)
                 .Select(i => _fileSystem.GetFileNameWithoutExtension(i))
-                .FirstOrDefault();
+                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
 
         /// <summary>
@@ -2474,29 +2473,36 @@ namespace Emby.Server.Implementations.Library
             return GetNamingOptions(new LibraryOptions());
         }
 
+        private NamingOptions _namingOptions;
+        private string[] _videoFileExtensions;
         public NamingOptions GetNamingOptions(LibraryOptions libraryOptions)
         {
-            var options = new ExtendedNamingOptions();
-
-            // These cause apps to have problems
-            options.AudioFileExtensions.Remove(".m3u");
-            options.AudioFileExtensions.Remove(".wpl");
-
-            if (!libraryOptions.EnableArchiveMediaFiles)
+            if (_namingOptions == null)
             {
-                options.AudioFileExtensions.Remove(".rar");
-                options.AudioFileExtensions.Remove(".zip");
+                var options = new ExtendedNamingOptions();
+
+                // These cause apps to have problems
+                options.AudioFileExtensions.Remove(".m3u");
+                options.AudioFileExtensions.Remove(".wpl");
+
+                //if (!libraryOptions.EnableArchiveMediaFiles)
+                {
+                    options.AudioFileExtensions.Remove(".rar");
+                    options.AudioFileExtensions.Remove(".zip");
+                }
+
+                //if (!libraryOptions.EnableArchiveMediaFiles)
+                {
+                    options.VideoFileExtensions.Remove(".rar");
+                    options.VideoFileExtensions.Remove(".zip");
+                }
+
+                options.VideoFileExtensions.Add(".tp");
+                _namingOptions = options;
+                _videoFileExtensions = _namingOptions.VideoFileExtensions.ToArray();
             }
 
-            if (!libraryOptions.EnableArchiveMediaFiles)
-            {
-                options.VideoFileExtensions.Remove(".rar");
-                options.VideoFileExtensions.Remove(".zip");
-            }
-
-            options.VideoFileExtensions.Add(".tp");
-
-            return options;
+            return _namingOptions;
         }
 
         public ItemLookupInfo ParseName(string name)
@@ -2515,12 +2521,14 @@ namespace Emby.Server.Implementations.Library
 
         public IEnumerable<Video> FindTrailers(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
+            var namingOptions = GetNamingOptions();
+
             var files = owner.DetectIsInMixedFolder() ? new List<FileSystemMetadata>() : fileSystemChildren.Where(i => i.IsDirectory)
                 .Where(i => string.Equals(i.Name, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => _fileSystem.GetFiles(i.FullName, false))
+                .SelectMany(i => _fileSystem.GetFiles(i.FullName, _videoFileExtensions, false, false))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(GetNamingOptions(), new NullLogger());
+            var videoListResolver = new VideoListResolver(namingOptions, new NullLogger());
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 
@@ -2561,12 +2569,14 @@ namespace Emby.Server.Implementations.Library
 
         public IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
+            var namingOptions = GetNamingOptions();
+
             var files = fileSystemChildren.Where(i => i.IsDirectory)
                 .Where(i => ExtrasSubfolderNames.Contains(i.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase))
-                .SelectMany(i => _fileSystem.GetFiles(i.FullName, false))
+                .SelectMany(i => _fileSystem.GetFiles(i.FullName, _videoFileExtensions, false, false))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(GetNamingOptions(), new NullLogger());
+            var videoListResolver = new VideoListResolver(namingOptions, new NullLogger());
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 

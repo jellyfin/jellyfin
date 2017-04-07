@@ -227,11 +227,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             throw new LiveTvConflictException();
         }
 
-        protected virtual bool EnableMediaProbing
-        {
-            get { return false; }
-        }
-
         protected async Task<bool> IsAvailable(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
         {
             try
