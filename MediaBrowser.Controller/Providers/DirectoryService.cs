@@ -103,6 +103,16 @@ namespace MediaBrowser.Controller.Providers
             return GetFileSystemEntries(path, clearCache).Where(i => !i.IsDirectory);
         }
 
+        public IEnumerable<string> GetFilePaths(string path)
+        {
+            return _fileSystem.GetFilePaths(path);
+        }
+
+        public IEnumerable<string> GetFilePaths(string path, bool clearCache)
+        {
+            return _fileSystem.GetFilePaths(path);
+        }
+
         public FileSystemMetadata GetFile(string path)
         {
             FileSystemMetadata file;

@@ -273,10 +273,19 @@ namespace Emby.Server.Implementations.HttpServer
                 return 400;
             }
 
+            var exceptionType = ex.GetType();
+
             int statusCode;
-            if (!_mapExceptionToStatusCode.TryGetValue(ex.GetType(), out statusCode))
+            if (!_mapExceptionToStatusCode.TryGetValue(exceptionType, out statusCode))
             {
-                statusCode = 500;
+                if (string.Equals(exceptionType.Name, "DirectoryNotFoundException", StringComparison.OrdinalIgnoreCase))
+                {
+                    statusCode = 404;
+                }
+                else
+                {
+                    statusCode = 500;
+                }
             }
 
             return statusCode;

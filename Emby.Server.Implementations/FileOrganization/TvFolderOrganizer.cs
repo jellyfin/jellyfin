@@ -53,9 +53,29 @@ namespace Emby.Server.Implementations.FileOrganization
             return false;
         }
 
+        private bool IsValidWatchLocation(string path, List<string> libraryFolderPaths)
+        {
+            if (IsPathAlreadyInMediaLibrary(path, libraryFolderPaths))
+            {
+                _logger.Info("Folder {0} is not eligible for auto-organize because it is also part of an Emby library", path);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool IsPathAlreadyInMediaLibrary(string path, List<string> libraryFolderPaths)
+        {
+            return libraryFolderPaths.Any(i => string.Equals(i, path, StringComparison.Ordinal) || _fileSystem.ContainsSubPath(i, path));
+        }
+
         public async Task Organize(AutoOrganizeOptions options, CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var watchLocations = options.TvOptions.WatchLocations.ToList();
+            var libraryFolderPaths = _libraryManager.GetVirtualFolders().SelectMany(i => i.Locations).ToList();
+
+            var watchLocations = options.TvOptions.WatchLocations
+                .Where(i => IsValidWatchLocation(i, libraryFolderPaths))
+                .ToList();
 
             var eligibleFiles = watchLocations.SelectMany(GetFilesToOrganize)
                 .OrderBy(_fileSystem.GetCreationTimeUtc)
@@ -72,16 +92,23 @@ namespace Emby.Server.Implementations.FileOrganization
 
                 foreach (var file in eligibleFiles)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     var organizer = new EpisodeFileOrganizer(_organizationService, _config, _fileSystem, _logger, _libraryManager,
                         _libraryMonitor, _providerManager);
 
                     try
                     {
                         var result = await organizer.OrganizeEpisodeFile(file.FullName, options, options.TvOptions.OverwriteExistingEpisodes, cancellationToken).ConfigureAwait(false);
+
                         if (result.Status == FileSortingStatus.Success && !processedFolders.Contains(file.DirectoryName, StringComparer.OrdinalIgnoreCase))
                         {
                             processedFolders.Add(file.DirectoryName);
                         }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
                     }
                     catch (Exception ex)
                     {
@@ -151,19 +178,18 @@ namespace Emby.Server.Implementations.FileOrganization
         /// <param name="extensions">The extensions.</param>
         private void DeleteLeftOverFiles(string path, IEnumerable<string> extensions)
         {
-            var eligibleFiles = _fileSystem.GetFiles(path, true)
-                .Where(i => extensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
+            var eligibleFiles = _fileSystem.GetFilePaths(path, extensions.ToArray(), false, true)
                 .ToList();
 
             foreach (var file in eligibleFiles)
             {
                 try
                 {
-                    _fileSystem.DeleteFile(file.FullName);
+                    _fileSystem.DeleteFile(file);
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error deleting file {0}", ex, file.FullName);
+                    _logger.ErrorException("Error deleting file {0}", ex, file);
                 }
             }
         }

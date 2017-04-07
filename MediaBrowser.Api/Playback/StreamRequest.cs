@@ -37,12 +37,12 @@ namespace MediaBrowser.Api.Playback
 
         public string Params { get; set; }
         public string PlaySessionId { get; set; }
-        public string LiveStreamId { get; set; }
         public string Tag { get; set; }
         public string SegmentContainer { get; set; }
 
         public int? SegmentLength { get; set; }
         public int? MinSegments { get; set; }
+        public bool BreakOnNonKeyFrames { get; set; }
     }
 
     public class VideoStreamRequest : StreamRequest

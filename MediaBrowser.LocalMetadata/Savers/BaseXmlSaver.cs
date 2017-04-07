@@ -68,7 +68,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                     "LockData",
                     "LockedFields",
                     "Format3D",
-                    "Metascore",
                     
                     // Deprecated. No longer saving in this field.
                     "MPAARating",
@@ -419,12 +418,6 @@ namespace MediaBrowser.LocalMetadata.Savers
             if (hasDisplayOrder != null && !string.IsNullOrEmpty(hasDisplayOrder.DisplayOrder))
             {
                 writer.WriteElementString("DisplayOrder", hasDisplayOrder.DisplayOrder);
-            }
-
-            var hasMetascore = item as IHasMetascore;
-            if (hasMetascore != null && hasMetascore.Metascore.HasValue)
-            {
-                writer.WriteElementString("Metascore", hasMetascore.Metascore.Value.ToString(UsCulture));
             }
 
             var hasAwards = item as IHasAwards;

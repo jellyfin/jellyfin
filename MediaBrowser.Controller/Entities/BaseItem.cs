@@ -1926,8 +1926,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i.IsLocalFile)
                 .Select(i => System.IO.Path.GetDirectoryName(i.Path))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .SelectMany(directoryService.GetFiles)
-                .Select(i => i.FullName)
+                .SelectMany(directoryService.GetFilePaths)
                 .ToList();
 
             var deletedImages = ImageInfos
@@ -2100,8 +2099,8 @@ namespace MediaBrowser.Controller.Entities
             var extensions = new[] { ".nfo", ".xml", ".srt" }.ToList();
             extensions.AddRange(SupportedImageExtensionsList);
 
-            return FileSystem.GetFiles(System.IO.Path.GetDirectoryName(Path))
-                .Where(i => extensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase) && System.IO.Path.GetFileNameWithoutExtension(i.FullName).StartsWith(filename, StringComparison.OrdinalIgnoreCase))
+            return FileSystem.GetFiles(System.IO.Path.GetDirectoryName(Path), extensions.ToArray(), false, false)
+                .Where(i => System.IO.Path.GetFileNameWithoutExtension(i.FullName).StartsWith(filename, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 
