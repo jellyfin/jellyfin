@@ -70,7 +70,11 @@ namespace Emby.Common.Implementations.Net
         {
             if (remotePort < 0) throw new ArgumentException("remotePort cannot be less than zero.", "remotePort");
 
-            var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
+            var addressFamily = remoteAddress.AddressFamily == IpAddressFamily.InterNetwork
+               ? AddressFamily.InterNetwork
+               : AddressFamily.InterNetworkV6;
+
+            var retVal = new Socket(addressFamily, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
 
             try
             {
@@ -80,7 +84,7 @@ namespace Emby.Common.Implementations.Net
             {
                 // This is not supported on all operating systems (qnap)
             }
-
+            
             try
             {
                 return new UdpSocket(retVal, new IpEndPointInfo(remoteAddress, remotePort));
