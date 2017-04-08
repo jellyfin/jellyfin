@@ -461,7 +461,7 @@ namespace MediaBrowser.Api
             {
                 var success = await _userManager.AuthenticateUser(user.Name, request.CurrentPassword, Request.RemoteIp).ConfigureAwait(false);
 
-                if (success != null)
+                if (success == null)
                 {
                     throw new ArgumentException("Invalid user or password entered.");
                 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -72,6 +73,14 @@ namespace Emby.Common.Implementations.EnvironmentInfo
             return System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
 #endif
                 return "1.0";
+            }
+        }
+
+        public char PathSeparator
+        {
+            get
+            {
+                return Path.PathSeparator;
             }
         }
 
