@@ -734,6 +734,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\globalize.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\globalize.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\homesections.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\homesections.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\idb.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\idb.js</Link>
     </BundleResource>
