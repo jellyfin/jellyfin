@@ -890,6 +890,11 @@ namespace MediaBrowser.Api.Playback.Hls
                 args += " -copyts";
             }
 
+            if (!string.IsNullOrEmpty(state.OutputVideoSync))
+            {
+                args += " -vsync " + state.OutputVideoSync;
+            }
+
             return args;
         }
 
@@ -932,7 +937,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
 
                 var videoCodec = EncodingHelper.GetVideoEncoder(state, ApiEntryPoint.Instance.GetEncodingOptions());
-                var breakOnNonKeyFrames = state.Request.BreakOnNonKeyFrames && string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase);
+                var breakOnNonKeyFrames = state.EnableBreakOnNonKeyFrames(videoCodec);
 
                 var breakOnNonKeyFramesArg = breakOnNonKeyFrames ? " -break_non_keyframes 1" : "";
 
