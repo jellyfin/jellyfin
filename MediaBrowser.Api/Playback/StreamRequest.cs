@@ -42,7 +42,6 @@ namespace MediaBrowser.Api.Playback
 
         public int? SegmentLength { get; set; }
         public int? MinSegments { get; set; }
-        public bool BreakOnNonKeyFrames { get; set; }
     }
 
     public class VideoStreamRequest : StreamRequest

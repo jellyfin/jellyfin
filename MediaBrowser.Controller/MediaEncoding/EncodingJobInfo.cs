@@ -41,7 +41,20 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string OutputContainer { get; set; }
 
-        public string OutputVideoSync = "-1";
+        public string OutputVideoSync
+        {
+            get
+            {
+                // For live tv + recordings
+                if (string.Equals(InputContainer, "mpegts", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(InputContainer, "ts", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "cfr";
+                }
+
+                return "-1";
+            }
+        }
         public string OutputAudioSync = "1";
         public string InputAudioSync { get; set; }
         public string InputVideoSync { get; set; }
@@ -72,15 +85,40 @@ namespace MediaBrowser.Controller.MediaEncoding
         public int? OutputAudioSampleRate;
         public bool DeInterlace { get; set; }
         public bool IsVideoRequest { get; set; }
+        public TranscodingJobType TranscodingType { get; set; }
 
-        public EncodingJobInfo(ILogger logger)
+        public EncodingJobInfo(ILogger logger, TranscodingJobType jobType)
         {
             _logger = logger;
+            TranscodingType = jobType;
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             PlayableStreamFileNames = new List<string>();
             SupportedAudioCodecs = new List<string>();
             SupportedVideoCodecs = new List<string>();
             SupportedSubtitleCodecs = new List<string>();
+        }
+
+        public bool IsSegmentedLiveStream
+        {
+            get
+            {
+                return TranscodingType != TranscodingJobType.Progressive && !RunTimeTicks.HasValue;
+            }
+        }
+
+        public bool EnableBreakOnNonKeyFrames(string videoCodec)
+        {
+            if (TranscodingType != TranscodingJobType.Progressive)
+            {
+                if (IsSegmentedLiveStream)
+                {
+                    return false;
+                }
+
+                return BaseRequest.BreakOnNonKeyFrames && string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -117,5 +155,24 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         public abstract void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate);
+    }
+
+    /// <summary>
+    /// Enum TranscodingJobType
+    /// </summary>
+    public enum TranscodingJobType
+    {
+        /// <summary>
+        /// The progressive
+        /// </summary>
+        Progressive,
+        /// <summary>
+        /// The HLS
+        /// </summary>
+        Hls,
+        /// <summary>
+        /// The dash
+        /// </summary>
+        Dash
     }
 }
