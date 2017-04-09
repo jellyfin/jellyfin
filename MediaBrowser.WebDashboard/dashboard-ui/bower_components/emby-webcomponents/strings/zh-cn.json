@@ -156,7 +156,6 @@
     "LabelAlbum": "\u4e13\u8f91\uff1a",
     "LabelCommunityRating": "\u516c\u4f17\u8bc4\u5206\uff1a",
     "LabelVoteCount": "\u6295\u7968\u8ba1\u6570\uff1a",
-    "LabelMetascore": "\u5a92\u4f53\u8bc4\u5206\uff1a",
     "LabelCriticRating": "\u5f71\u8bc4\u4eba\u8bc4\u5206\uff1a",
     "LabelCriticRatingSummary": "\u5f71\u8bc4\u4eba\u8bc4\u4ef7\uff1a",
     "LabelAwardSummary": "\u83b7\u5956\u6458\u8981\uff1a",
@@ -395,5 +394,15 @@
     "Accept": "Accept",
     "Reject": "Reject",
     "Connect": "Connect",
-    "LabelDownloadTo": "Download to:"
+    "HeaderMyMedia": "My Media",
+    "LatestFromLibrary": "Latest {0}",
+    "HeaderLatestChannelMedia": "Latest Channel Items",
+    "HeaderContinueWatching": "Continue Watching",
+    "HeaderContinueListening": "Continue Listening",
+    "HeaderActiveRecordings": "Active Recordings",
+    "HeaderLatestRecordings": "Latest Recordings",
+    "LabelDownloadTo": "Download to:",
+    "HeaderNextUp": "Next Up",
+    "HeaderLatestFrom": "Latest from {0}",
+    "More": "More"
 }

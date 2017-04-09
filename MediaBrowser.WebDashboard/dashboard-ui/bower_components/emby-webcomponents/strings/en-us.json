@@ -394,5 +394,15 @@
   "Accept": "Accept",
   "Reject": "Reject",
   "Connect": "Connect",
-  "LabelDownloadTo": "Download to:"
+  "HeaderMyMedia": "My Media",
+  "LatestFromLibrary": "Latest {0}",
+  "HeaderLatestChannelMedia": "Latest Channel Items",
+  "HeaderContinueWatching": "Continue Watching",
+  "HeaderContinueListening": "Continue Listening",
+  "HeaderActiveRecordings": "Active Recordings",
+  "HeaderLatestRecordings": "Latest Recordings",
+  "LabelDownloadTo": "Download to:",
+  "HeaderNextUp": "Next Up",
+  "HeaderLatestFrom": "Latest from {0}",
+  "More": "More"
 }

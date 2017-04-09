@@ -156,7 +156,6 @@
     "LabelAlbum": "Album :",
     "LabelCommunityRating": "Note de la communaut\u00e9",
     "LabelVoteCount": "Nombre de votes",
-    "LabelMetascore": "Metascore",
     "LabelCriticRating": "Note des critiques",
     "LabelCriticRatingSummary": "R\u00e9sum\u00e9 des critiques",
     "LabelAwardSummary": "R\u00e9compenses",
@@ -395,5 +394,15 @@
     "Accept": "Accept",
     "Reject": "Reject",
     "Connect": "Connexion",
-    "LabelDownloadTo": "Download to:"
+    "HeaderMyMedia": "My Media",
+    "LatestFromLibrary": "Latest {0}",
+    "HeaderLatestChannelMedia": "Latest Channel Items",
+    "HeaderContinueWatching": "Continue Watching",
+    "HeaderContinueListening": "Continue Listening",
+    "HeaderActiveRecordings": "Active Recordings",
+    "HeaderLatestRecordings": "Latest Recordings",
+    "LabelDownloadTo": "Download to:",
+    "HeaderNextUp": "Next Up",
+    "HeaderLatestFrom": "Latest from {0}",
+    "More": "Plus"
 }

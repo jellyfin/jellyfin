@@ -156,7 +156,6 @@
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "Anv\u00e4ndaromd\u00f6me:",
     "LabelVoteCount": "Antal r\u00f6ster:",
-    "LabelMetascore": "Metabetyg:",
     "LabelCriticRating": "Kritikerbetyg:",
     "LabelCriticRatingSummary": "Sammanfattning av kritikerbetyg:",
     "LabelAwardSummary": "Sammanfattning av utm\u00e4rkelser:",
@@ -395,5 +394,15 @@
     "Accept": "Accept",
     "Reject": "Reject",
     "Connect": "Anslut",
-    "LabelDownloadTo": "Download to:"
+    "HeaderMyMedia": "My Media",
+    "LatestFromLibrary": "Latest {0}",
+    "HeaderLatestChannelMedia": "Latest Channel Items",
+    "HeaderContinueWatching": "Continue Watching",
+    "HeaderContinueListening": "Continue Listening",
+    "HeaderActiveRecordings": "Active Recordings",
+    "HeaderLatestRecordings": "Latest Recordings",
+    "LabelDownloadTo": "Download to:",
+    "HeaderNextUp": "Next Up",
+    "HeaderLatestFrom": "Latest from {0}",
+    "More": "Mer"
 }

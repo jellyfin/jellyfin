@@ -156,7 +156,6 @@
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "K\u00f6z\u00f6ss\u00e9gi \u00e9rt\u00e9kel\u00e9s:",
     "LabelVoteCount": "Vote count:",
-    "LabelMetascore": "Metascore:",
     "LabelCriticRating": "Critic rating:",
     "LabelCriticRatingSummary": "Critic rating summary:",
     "LabelAwardSummary": "Award summary:",
@@ -395,5 +394,15 @@
     "Accept": "Accept",
     "Reject": "Reject",
     "Connect": "Connect",
-    "LabelDownloadTo": "Download to:"
+    "HeaderMyMedia": "My Media",
+    "LatestFromLibrary": "Latest {0}",
+    "HeaderLatestChannelMedia": "Latest Channel Items",
+    "HeaderContinueWatching": "Continue Watching",
+    "HeaderContinueListening": "Continue Listening",
+    "HeaderActiveRecordings": "Active Recordings",
+    "HeaderLatestRecordings": "Latest Recordings",
+    "LabelDownloadTo": "Download to:",
+    "HeaderNextUp": "Next Up",
+    "HeaderLatestFrom": "Latest from {0}",
+    "More": "Tov\u00e1bb"
 }
