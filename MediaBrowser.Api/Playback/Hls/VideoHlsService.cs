@@ -85,35 +85,41 @@ namespace MediaBrowser.Api.Playback.Hls
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
                 // if h264_mp4toannexb is ever added, do not use it for live tv
-                if (state.VideoStream != null && EncodingHelper.IsH264(state.VideoStream) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
+                if (state.VideoStream != null && EncodingHelper.IsH264(state.VideoStream) &&
+                    !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
                     args += " -bsf:v h264_mp4toannexb";
                 }
-                args += " -flags -global_header";
-                return args;
             }
-
-            var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
-                state.SegmentLength.ToString(UsCulture));
-
-            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
-
-            var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
-            args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultH264Preset()) + keyFrameArg;
-
-            // Add resolution params, if specified
-            if (!hasGraphicalSubs)
+            else
             {
-                args += EncodingHelper.GetOutputSizeParam(state, codec);
-            }
+                var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
+                    state.SegmentLength.ToString(UsCulture));
 
-            // This is for internal graphical subs
-            if (hasGraphicalSubs)
-            {
-                args += EncodingHelper.GetGraphicalSubtitleParam(state, codec);
+                var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
+
+                var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+                args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultH264Preset()) + keyFrameArg;
+
+                // Add resolution params, if specified
+                if (!hasGraphicalSubs)
+                {
+                    args += EncodingHelper.GetOutputSizeParam(state, codec);
+                }
+
+                // This is for internal graphical subs
+                if (hasGraphicalSubs)
+                {
+                    args += EncodingHelper.GetGraphicalSubtitleParam(state, codec);
+                }
             }
 
             args += " -flags -global_header";
+
+            if (!string.IsNullOrEmpty(state.OutputVideoSync))
+            {
+                args += " -vsync " + state.OutputVideoSync;
+            }
 
             return args;
         }

@@ -156,7 +156,6 @@
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "F\u00e6llesskabsvurdering:",
     "LabelVoteCount": "Antal stemmer:",
-    "LabelMetascore": "Metascore:",
     "LabelCriticRating": "Kritikervurdering:",
     "LabelCriticRatingSummary": "Resum\u00e9 af kritikervurderinger:",
     "LabelAwardSummary": "Resum\u00e9 af priser:",
@@ -395,5 +394,15 @@
     "Accept": "Godkend",
     "Reject": "Afvis",
     "Connect": "Forbind",
-    "LabelDownloadTo": "Download til:"
+    "HeaderMyMedia": "My Media",
+    "LatestFromLibrary": "Latest {0}",
+    "HeaderLatestChannelMedia": "Latest Channel Items",
+    "HeaderContinueWatching": "Continue Watching",
+    "HeaderContinueListening": "Continue Listening",
+    "HeaderActiveRecordings": "Active Recordings",
+    "HeaderLatestRecordings": "Latest Recordings",
+    "LabelDownloadTo": "Download til:",
+    "HeaderNextUp": "Next Up",
+    "HeaderLatestFrom": "Latest from {0}",
+    "More": "More"
 }

@@ -16,6 +16,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.IO;
@@ -828,24 +829,5 @@ namespace MediaBrowser.Api
                 }
             }
         }
-    }
-
-    /// <summary>
-    /// Enum TranscodingJobType
-    /// </summary>
-    public enum TranscodingJobType
-    {
-        /// <summary>
-        /// The progressive
-        /// </summary>
-        Progressive,
-        /// <summary>
-        /// The HLS
-        /// </summary>
-        Hls,
-        /// <summary>
-        /// The dash
-        /// </summary>
-        Dash
     }
 }

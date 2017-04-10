@@ -663,11 +663,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 param += string.Format(" -r {0}", framerate.Value.ToString(_usCulture));
             }
 
-            if (!string.IsNullOrEmpty(state.OutputVideoSync))
-            {
-                param += " -vsync " + state.OutputVideoSync;
-            }
-
             var request = state.BaseRequest;
 
             if (!string.IsNullOrEmpty(request.Profile))
@@ -1571,10 +1566,14 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.IsVideoRequest)
             {
+                var outputVideoCodec = GetVideoEncoder(state, encodingOptions);
+
                 // Important: If this is ever re-enabled, make sure not to use it with wtv because it breaks seeking
-                if (string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase) && state.CopyTimestamps)
+                if (!string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase) && 
+                    state.TranscodingType != TranscodingJobType.Progressive &&
+                    state.EnableBreakOnNonKeyFrames(outputVideoCodec))
                 {
-                    //inputModifier += " -noaccurate_seek";
+                    inputModifier += " -noaccurate_seek";
                 }
 
                 if (!string.IsNullOrWhiteSpace(state.InputContainer) && state.VideoType == VideoType.VideoFile && string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
@@ -1878,7 +1877,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                if (state.VideoStream != null && IsH264(state.VideoStream) && string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
+                if (state.VideoStream != null && IsH264(state.VideoStream) &&
+                    string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
                     args += " -bsf:v h264_mp4toannexb";
                 }
@@ -1892,51 +1893,56 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     args += " -flags -global_header -fflags +genpts";
                 }
-
-                return args;
             }
-
-            var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
-                5.ToString(_usCulture));
-
-            args += keyFrameArg;
-
-            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
-
-            var hasCopyTs = false;
-            // Add resolution params, if specified
-            if (!hasGraphicalSubs)
+            else
             {
-                var outputSizeParam = GetOutputSizeParam(state, videoCodec);
-                args += outputSizeParam;
-                hasCopyTs = outputSizeParam.IndexOf("copyts", StringComparison.OrdinalIgnoreCase) != -1;
-            }
+                var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
+                    5.ToString(_usCulture));
 
-            if (state.RunTimeTicks.HasValue && state.BaseRequest.CopyTimestamps)
-            {
-                if (!hasCopyTs)
+                args += keyFrameArg;
+
+                var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
+
+                var hasCopyTs = false;
+                // Add resolution params, if specified
+                if (!hasGraphicalSubs)
                 {
-                    args += " -copyts";
+                    var outputSizeParam = GetOutputSizeParam(state, videoCodec);
+                    args += outputSizeParam;
+                    hasCopyTs = outputSizeParam.IndexOf("copyts", StringComparison.OrdinalIgnoreCase) != -1;
                 }
-                args += " -avoid_negative_ts disabled -start_at_zero";
+
+                if (state.RunTimeTicks.HasValue && state.BaseRequest.CopyTimestamps)
+                {
+                    if (!hasCopyTs)
+                    {
+                        args += " -copyts";
+                    }
+                    args += " -avoid_negative_ts disabled -start_at_zero";
+                }
+
+                var qualityParam = GetVideoQualityParam(state, videoCodec, encodingOptions, defaultH264Preset);
+
+                if (!string.IsNullOrEmpty(qualityParam))
+                {
+                    args += " " + qualityParam.Trim();
+                }
+
+                // This is for internal graphical subs
+                if (hasGraphicalSubs)
+                {
+                    args += GetGraphicalSubtitleParam(state, videoCodec);
+                }
+
+                if (!state.RunTimeTicks.HasValue)
+                {
+                    args += " -flags -global_header";
+                }
             }
 
-            var qualityParam = GetVideoQualityParam(state, videoCodec, encodingOptions, defaultH264Preset);
-
-            if (!string.IsNullOrEmpty(qualityParam))
+            if (!string.IsNullOrEmpty(state.OutputVideoSync))
             {
-                args += " " + qualityParam.Trim();
-            }
-
-            // This is for internal graphical subs
-            if (hasGraphicalSubs)
-            {
-                args += GetGraphicalSubtitleParam(state, videoCodec);
-            }
-
-            if (!state.RunTimeTicks.HasValue)
-            {
-                args += " -flags -global_header";
+                args += " -vsync " + state.OutputVideoSync;
             }
 
             return args;

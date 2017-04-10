@@ -156,7 +156,6 @@
     "LabelAlbum": "\uc568\ubc94",
     "LabelCommunityRating": "\ucee4\ubba4\ub2c8\ud2f0 \ud3c9\uc810:",
     "LabelVoteCount": "\ud3c9\uac00 \ud69f\uc218:",
-    "LabelMetascore": "Metascore:",
     "LabelCriticRating": "Critic \ud3c9\uc810:",
     "LabelCriticRatingSummary": "Critic \ud3c9\uc810 \uc694\uc57d:",
     "LabelAwardSummary": "\uc218\uc0c1 \uc694\uc57d:",
@@ -395,5 +394,15 @@
     "Accept": "Accept",
     "Reject": "Reject",
     "Connect": "\uc811\uc18d",
-    "LabelDownloadTo": "Download to:"
+    "HeaderMyMedia": "My Media",
+    "LatestFromLibrary": "Latest {0}",
+    "HeaderLatestChannelMedia": "Latest Channel Items",
+    "HeaderContinueWatching": "Continue Watching",
+    "HeaderContinueListening": "Continue Listening",
+    "HeaderActiveRecordings": "Active Recordings",
+    "HeaderLatestRecordings": "Latest Recordings",
+    "LabelDownloadTo": "Download to:",
+    "HeaderNextUp": "Next Up",
+    "HeaderLatestFrom": "Latest from {0}",
+    "More": "More"
 }

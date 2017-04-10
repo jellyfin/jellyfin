@@ -17,6 +17,8 @@ using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.Updates;
+using MediaBrowser.Server.Startup.Common;
 using MediaBrowser.ServerApplication.Native;
 
 namespace MediaBrowser.ServerApplication
@@ -51,6 +53,11 @@ namespace MediaBrowser.ServerApplication
         public override void EnableLoopback(string appName)
         {
             LoopUtil.Run(appName);
+        }
+
+        public override PackageVersionClass SystemUpdateLevel
+        {
+            get { return UpdateLevelHelper.GetSystemUpdateLevel(ConfigurationManager); }
         }
 
         protected override List<Assembly> GetAssembliesWithPartsInternal()
