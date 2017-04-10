@@ -157,5 +157,7 @@ namespace MediaBrowser.Common
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
         object CreateInstance(Type type);
+
+        PackageVersionClass SystemUpdateLevel { get; }
     }
 }

@@ -104,14 +104,6 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        public bool IsSegmentedLiveStream
-        {
-            get
-            {
-                return TranscodingType != TranscodingJobType.Progressive && !RunTimeTicks.HasValue;
-            }
-        }
-
         public int HlsListSize
         {
             get
@@ -121,14 +113,12 @@ namespace MediaBrowser.Api.Playback
         }
 
         public string UserAgent { get; set; }
-        public TranscodingJobType TranscodingType { get; set; }
 
         public StreamState(IMediaSourceManager mediaSourceManager, ILogger logger, TranscodingJobType transcodingType) 
-            : base(logger)
+            : base(logger, transcodingType)
         {
             _mediaSourceManager = mediaSourceManager;
             _logger = logger;
-            TranscodingType = transcodingType;
         }
 
         public string MimeType { get; set; }
