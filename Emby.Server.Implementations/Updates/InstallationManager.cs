@@ -270,9 +270,14 @@ namespace Emby.Server.Implementations.Updates
             }
         }
 
+        private PackageVersionClass GetSystemUpdateLevel()
+        {
+            return _applicationHost.SystemUpdateLevel;
+        }
+
         private TimeSpan GetCacheLength()
         {
-            switch (_config.CommonConfiguration.SystemUpdateLevel)
+            switch (GetSystemUpdateLevel())
             {
                 case PackageVersionClass.Beta:
                     return TimeSpan.FromMinutes(30);
@@ -424,10 +429,12 @@ namespace Emby.Server.Implementations.Updates
                     .ToList();
             }
 
+            var systemUpdateLevel = GetSystemUpdateLevel();
+
             // Figure out what needs to be installed
             var packages = plugins.Select(p =>
             {
-                var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, p.Id.ToString(), applicationVersion, _config.CommonConfiguration.SystemUpdateLevel);
+                var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, p.Id.ToString(), applicationVersion, systemUpdateLevel);
 
                 return latestPluginInfo != null && GetPackageVersion(latestPluginInfo) > p.Version ? latestPluginInfo : null;
 
