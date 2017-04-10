@@ -1366,7 +1366,7 @@ namespace Emby.Server.Core
                 SupportsLibraryMonitor = true,
                 EncoderLocationType = MediaEncoder.EncoderLocationType,
                 SystemArchitecture = EnvironmentInfo.SystemArchitecture,
-                SystemUpdateLevel = ConfigurationManager.CommonConfiguration.SystemUpdateLevel,
+                SystemUpdateLevel = SystemUpdateLevel,
                 PackageName = StartupOptions.GetOption("-package")
             };
         }
@@ -1591,7 +1591,7 @@ namespace Emby.Server.Core
             }
             catch (NotImplementedException)
             {
-                
+
             }
             catch (Exception ex)
             {
@@ -1632,7 +1632,7 @@ namespace Emby.Server.Core
         public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var cacheLength = TimeSpan.FromHours(3);
-            var updateLevel = ConfigurationManager.CommonConfiguration.SystemUpdateLevel;
+            var updateLevel = SystemUpdateLevel;
 
             if (updateLevel == PackageVersionClass.Beta)
             {

@@ -12,6 +12,8 @@ using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.Updates;
+using MediaBrowser.Server.Startup.Common;
 
 namespace MediaBrowser.Server.Mono
 {
@@ -38,6 +40,11 @@ namespace MediaBrowser.Server.Mono
         protected override ISyncManager CreateSyncManager()
         {
             return new SyncManager();
+        }
+
+        public override PackageVersionClass SystemUpdateLevel
+        {
+            get { return UpdateLevelHelper.GetSystemUpdateLevel(ConfigurationManager); }
         }
 
         protected override void RestartInternal()
