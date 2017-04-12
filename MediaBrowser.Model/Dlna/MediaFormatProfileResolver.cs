@@ -349,7 +349,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     return MediaFormatProfile.LPCM16_48_MONO;
                 }
-                if (frequency.Value == 48000 && channels.Value == 1)
+                if (frequency.Value == 48000 && channels.Value == 2)
                 {
                     return MediaFormatProfile.LPCM16_48_STEREO;
                 }
