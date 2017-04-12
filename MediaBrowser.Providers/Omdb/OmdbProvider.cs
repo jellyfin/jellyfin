@@ -14,8 +14,6 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Providers.Omdb
 {
@@ -68,21 +66,11 @@ namespace MediaBrowser.Providers.Omdb
                 item.ProductionYear = year;
             }
 
-            // Seeing some bogus RT data on omdb for series, so filter it out here
-            // RT doesn't even have tv series
-            int tomatoMeter;
+            var tomatoScore = result.GetRottenTomatoScore();
 
-            if (!string.IsNullOrEmpty(result.tomatoMeter)
-                && int.TryParse(result.tomatoMeter, NumberStyles.Integer, _usCulture, out tomatoMeter)
-                && tomatoMeter >= 0)
+            if (tomatoScore.HasValue)
             {
-                item.CriticRating = tomatoMeter;
-            }
-
-            if (!string.IsNullOrEmpty(result.tomatoConsensus)
-                && !string.Equals(result.tomatoConsensus, "No consensus yet.", StringComparison.OrdinalIgnoreCase))
-            {
-                item.CriticRatingSummary = WebUtility.HtmlDecode(result.tomatoConsensus);
+                item.CriticRating = tomatoScore;
             }
 
             int voteCount;
@@ -169,21 +157,11 @@ namespace MediaBrowser.Providers.Omdb
                 item.ProductionYear = year;
             }
 
-            // Seeing some bogus RT data on omdb for series, so filter it out here
-            // RT doesn't even have tv series
-            int tomatoMeter;
+            var tomatoScore = result.GetRottenTomatoScore();
 
-            if (!string.IsNullOrEmpty(result.tomatoMeter)
-                && int.TryParse(result.tomatoMeter, NumberStyles.Integer, _usCulture, out tomatoMeter)
-                && tomatoMeter >= 0)
+            if (tomatoScore.HasValue)
             {
-                item.CriticRating = tomatoMeter;
-            }
-
-            if (!string.IsNullOrEmpty(result.tomatoConsensus)
-                && !string.Equals(result.tomatoConsensus, "No consensus yet.", StringComparison.OrdinalIgnoreCase))
-            {
-                item.CriticRatingSummary = WebUtility.HtmlDecode(result.tomatoConsensus);
+                item.CriticRating = tomatoScore;
             }
 
             int voteCount;
@@ -486,39 +464,51 @@ namespace MediaBrowser.Providers.Omdb
             public string Year { get; set; }
             public string Rated { get; set; }
             public string Released { get; set; }
-            public int Episode { get; set; }
             public string Runtime { get; set; }
             public string Genre { get; set; }
             public string Director { get; set; }
             public string Writer { get; set; }
             public string Actors { get; set; }
             public string Plot { get; set; }
+            public string Language { get; set; }
+            public string Country { get; set; }
+            public string Awards { get; set; }
             public string Poster { get; set; }
+            public List<OmdbRating> Ratings { get; set; }
+            public string Metascore { get; set; }
             public string imdbRating { get; set; }
             public string imdbVotes { get; set; }
             public string imdbID { get; set; }
             public string Type { get; set; }
-            public string tomatoMeter { get; set; }
-            public string tomatoImage { get; set; }
-            public string tomatoRating { get; set; }
-            public string tomatoReviews { get; set; }
-            public string tomatoFresh { get; set; }
-            public string tomatoRotten { get; set; }
-            public string tomatoConsensus { get; set; }
-            public string tomatoUserMeter { get; set; }
-            public string tomatoUserRating { get; set; }
-            public string tomatoUserReviews { get; set; }
             public string DVD { get; set; }
             public string BoxOffice { get; set; }
             public string Production { get; set; }
             public string Website { get; set; }
             public string Response { get; set; }
+            public int Episode { get; set; }
 
-            public string Language { get; set; }
-            public string Country { get; set; }
-            public string Awards { get; set; }
-            public string Metascore { get; set; }
+            public float? GetRottenTomatoScore()
+            {
+                if (Ratings != null)
+                {
+                    var rating = Ratings.FirstOrDefault(i => string.Equals(i.Source, "Rotten Tomatoes", StringComparison.OrdinalIgnoreCase));
+                    if (rating != null && rating.Value != null)
+                    {
+                        var value = rating.Value.TrimEnd('%');
+                        float score;
+                        if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out score))
+                        {
+                            return score;
+                        }
+                    }
+                }
+                return null;
+            }
         }
-
+        public class OmdbRating
+        {
+            public string Source { get; set; }
+            public string Value { get; set; }
+        }
     }
 }
