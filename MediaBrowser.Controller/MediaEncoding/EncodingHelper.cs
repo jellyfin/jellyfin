@@ -719,8 +719,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                 }
                 // nvenc doesn't decode with param -level set ?!
-                if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase)){
-                    param += "";
+                else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase)){
+                    //param += "";
                 }
                 else if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1604,6 +1604,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                         }
                     }
                 }
+            }
+
+            if (state.MediaSource.RequiresLooping)
+            {
+                inputModifier += " -stream_loop -1";
             }
 
             return inputModifier;
