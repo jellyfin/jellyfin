@@ -280,9 +280,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new List<string>();
 
-            files.Add("bower_components/requirejs/require.js" + versionString);
-
-            files.Add("scripts/site.js" + versionString);
+            files.Add("scripts/apploader.js" + versionString);
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
