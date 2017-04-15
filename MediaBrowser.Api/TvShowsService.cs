@@ -137,6 +137,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Shows/{Id}/Episodes", "GET", Summary = "Gets episodes for a tv season")]
+    [Route("/Shows/Episodes", "GET", Summary = "Gets episodes for a tv season")]
     public class GetEpisodes : IReturn<ItemsResult>, IHasItemFields, IHasDtoOptions
     {
         /// <summary>
@@ -200,9 +201,11 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableUserData { get; set; }
 
+        public string SeriesName { get; set; }
     }
 
     [Route("/Shows/{Id}/Seasons", "GET", Summary = "Gets seasons for a tv series")]
+    [Route("/Shows/Seasons", "GET", Summary = "Gets seasons for a tv series")]
     public class GetSeasons : IReturn<ItemsResult>, IHasItemFields, IHasDtoOptions
     {
         /// <summary>
@@ -246,6 +249,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableUserData { get; set; }
 
+        public string SeriesName { get; set; }
     }
 
     /// <summary>
@@ -427,11 +431,11 @@ namespace MediaBrowser.Api
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var series = _libraryManager.GetItemById(request.Id) as Series;
+            var series = GetSeries(request.Id, request.SeriesName, user);
 
             if (series == null)
             {
-                throw new ResourceNotFoundException("No series exists with Id " + request.Id);
+                throw new ResourceNotFoundException("Series not found");
             }
 
             var seasons = (await series.GetItems(new InternalItemsQuery(user)
@@ -455,6 +459,26 @@ namespace MediaBrowser.Api
             };
         }
 
+        private Series GetSeries(string seriesId, string seriesName, User user)
+        {
+            if (!string.IsNullOrWhiteSpace(seriesId))
+            {
+                return _libraryManager.GetItemById(seriesId) as Series;
+            }
+
+            if (!string.IsNullOrWhiteSpace(seriesName))
+            {
+                return _libraryManager.GetItemList(new InternalItemsQuery(user)
+                {
+                    Name = seriesName,
+                    IncludeItemTypes = new string[] { typeof(Series).Name }
+
+                }).OfType<Series>().FirstOrDefault();
+            }
+
+            return null;
+        }
+
         public async Task<object> Get(GetEpisodes request)
         {
             var user = _userManager.GetUserById(request.UserId);
@@ -474,11 +498,11 @@ namespace MediaBrowser.Api
             }
             else if (request.Season.HasValue)
             {
-                var series = _libraryManager.GetItemById(request.Id) as Series;
+                var series = GetSeries(request.Id, request.SeriesName, user);
 
                 if (series == null)
                 {
-                    throw new ResourceNotFoundException("No series exists with Id " + request.Id);
+                    throw new ResourceNotFoundException("Series not found");
                 }
 
                 var season = series.GetSeasons(user).FirstOrDefault(i => i.IndexNumber == request.Season.Value);
@@ -494,11 +518,11 @@ namespace MediaBrowser.Api
             }
             else
             {
-                var series = _libraryManager.GetItemById(request.Id) as Series;
+                var series = GetSeries(request.Id, request.SeriesName, user);
 
                 if (series == null)
                 {
-                    throw new ResourceNotFoundException("No series exists with Id " + request.Id);
+                    throw new ResourceNotFoundException("Series not found");
                 }
 
                 episodes = series.GetEpisodes(user);

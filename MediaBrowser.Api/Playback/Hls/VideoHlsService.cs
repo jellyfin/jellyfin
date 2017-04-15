@@ -6,10 +6,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using System;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Services;
 
@@ -58,6 +55,11 @@ namespace MediaBrowser.Api.Playback.Hls
             if (bitrate.HasValue)
             {
                 args += " -ab " + bitrate.Value.ToString(UsCulture);
+            }
+
+            if (state.OutputAudioSampleRate.HasValue)
+            {
+                args += " -ar " + state.OutputAudioSampleRate.Value.ToString(UsCulture);
             }
 
             args += " " + EncodingHelper.GetAudioFilterParam(state, ApiEntryPoint.Instance.GetEncodingOptions(), true);
