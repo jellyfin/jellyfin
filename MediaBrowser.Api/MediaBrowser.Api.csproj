@@ -134,6 +134,7 @@
     <Compile Include="SearchService.cs" />
     <Compile Include="Session\SessionsService.cs" />
     <Compile Include="SimilarItemsHelper.cs" />
+    <Compile Include="SuggestionsService.cs" />
     <Compile Include="System\ActivityLogService.cs" />
     <Compile Include="System\ActivityLogWebSocketListener.cs" />
     <Compile Include="System\SystemService.cs" />

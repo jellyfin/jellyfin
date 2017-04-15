@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return "-1";
             }
         }
-        public string OutputAudioSync = "1";
+
         public string InputAudioSync { get; set; }
         public string InputVideoSync { get; set; }
         public TransportStreamTimestamp InputTimestamp { get; set; }

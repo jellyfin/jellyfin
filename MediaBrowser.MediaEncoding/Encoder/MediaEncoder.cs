@@ -664,28 +664,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private bool DetectInterlaced(MediaSourceInfo video, MediaStream videoStream)
         {
-            var formats = (video.Container ?? string.Empty).Split(',').ToList();
-            var enableInterlacedDection = formats.Contains("vob", StringComparer.OrdinalIgnoreCase) ||
-                                          formats.Contains("m2ts", StringComparer.OrdinalIgnoreCase) ||
-                                          formats.Contains("ts", StringComparer.OrdinalIgnoreCase) ||
-                                          formats.Contains("mpegts", StringComparer.OrdinalIgnoreCase) ||
-                                          formats.Contains("wtv", StringComparer.OrdinalIgnoreCase);
-
             // If it's mpeg based, assume true
             if ((videoStream.Codec ?? string.Empty).IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                if (enableInterlacedDection)
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                // If the video codec is not some form of mpeg, then take a shortcut and limit this to containers that are likely to have interlaced content
-                if (!enableInterlacedDection)
-                {
-                    return false;
-                }
+                var formats = (video.Container ?? string.Empty).Split(',').ToList();
+                return formats.Contains("vob", StringComparer.OrdinalIgnoreCase) ||
+                                              formats.Contains("m2ts", StringComparer.OrdinalIgnoreCase) ||
+                                              formats.Contains("ts", StringComparer.OrdinalIgnoreCase) ||
+                                              formats.Contains("mpegts", StringComparer.OrdinalIgnoreCase) ||
+                                              formats.Contains("wtv", StringComparer.OrdinalIgnoreCase);
+
             }
 
             return false;
