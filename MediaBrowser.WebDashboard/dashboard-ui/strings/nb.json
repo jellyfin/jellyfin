@@ -1,5 +1,5 @@
 {
-    "HeaderOnNow": "On Now",
+    "HeaderOnNow": " P\u00e5 N\u00e5",
     "LabelPrevious": "Forrige",
     "LabelFinish": "Ferdig",
     "LabelNext": "Neste",
@@ -1075,7 +1075,7 @@
     "HeaderShareMediaFolders": "Del media mapper",
     "MessageGuestSharingPermissionsHelp": "De fleste funksjonene er i utgangspunktet utilgjengelig for gjester, men kan aktiveres ved behov.",
     "HeaderInvitations": "Invitasjoner",
-    "Invitations": "Invitations",
+    "Invitations": "Invitasjoner",
     "LabelForgotPasswordUsernameHelp": "Skriv inn ditt brukernavn, hvis du husker det.",
     "HeaderForgotPassword": "Glemt passord",
     "TitlePasswordReset": "Resett passord",
@@ -1973,7 +1973,7 @@
     "MessagePleaseWait": "Please wait. This may take a minute.",
     "DetectingDevices": "Detecting devices",
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
-    "Never": "Never",
+    "Never": "Aldri",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "New Devices"
+    "HeaderNewDevices": "Nye enheter"
 }

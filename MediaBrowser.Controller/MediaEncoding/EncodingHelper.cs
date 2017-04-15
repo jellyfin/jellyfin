@@ -719,14 +719,15 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                 }
                 // nvenc doesn't decode with param -level set ?!
-                else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase)){
+                else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
+                {
                     //param += "";
                 }
                 else if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase))
                 {
                     param += " -level " + level;
                 }
-                
+
             }
 
             if (string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase))
@@ -1014,43 +1015,32 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetAudioFilterParam(EncodingJobInfo state, EncodingOptions encodingOptions, bool isHls)
         {
-            var volParam = string.Empty;
-            var audioSampleRate = string.Empty;
-
             var channels = state.OutputAudioChannels;
+
+            var filters = new List<string>();
 
             // Boost volume to 200% when downsampling from 6ch to 2ch
             if (channels.HasValue && channels.Value <= 2)
             {
                 if (state.AudioStream != null && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5 && !encodingOptions.DownMixAudioBoost.Equals(1))
                 {
-                    volParam = ",volume=" + encodingOptions.DownMixAudioBoost.ToString(_usCulture);
+                    filters.Add("volume=" + encodingOptions.DownMixAudioBoost.ToString(_usCulture));
                 }
             }
-
-            if (state.OutputAudioSampleRate.HasValue)
-            {
-                audioSampleRate = state.OutputAudioSampleRate.Value + ":";
-            }
-
-            var adelay = isHls ? "adelay=1," : string.Empty;
-
-            var pts = string.Empty;
 
             if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode && !state.CopyTimestamps)
             {
                 var seconds = TimeSpan.FromTicks(state.StartTimeTicks ?? 0).TotalSeconds;
 
-                pts = string.Format(",asetpts=PTS-{0}/TB", Math.Round(seconds).ToString(_usCulture));
+                filters.Add(string.Format("asetpts=PTS-{0}/TB", Math.Round(seconds).ToString(_usCulture)));
             }
 
-            return string.Format("-af \"{0}aresample={1}async={4}{2}{3}\"",
+            if (filters.Count > 0)
+            {
+                return "-af \"" + string.Join(",", filters.ToArray()) + "\"";
+            }
 
-                adelay,
-                audioSampleRate,
-                volParam,
-                pts,
-                state.OutputAudioSync);
+            return string.Empty;
         }
 
         /// <summary>
@@ -1282,7 +1272,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var videoSizeParam = string.Empty;
-            
+
             if (state.VideoStream != null && state.VideoStream.Width.HasValue && state.VideoStream.Height.HasValue)
             {
                 videoSizeParam = string.Format("scale={0}:{1}", state.VideoStream.Width.Value.ToString(_usCulture), state.VideoStream.Height.Value.ToString(_usCulture));
@@ -1569,7 +1559,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var outputVideoCodec = GetVideoEncoder(state, encodingOptions);
 
                 // Important: If this is ever re-enabled, make sure not to use it with wtv because it breaks seeking
-                if (!string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase) && 
+                if (!string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase) &&
                     state.TranscodingType != TranscodingJobType.Progressive &&
                     state.EnableBreakOnNonKeyFrames(outputVideoCodec))
                 {
@@ -1657,7 +1647,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (state.ReadInputAtNativeFramerate ||
                 mediaSource.Protocol == MediaProtocol.File && string.Equals(mediaSource.Container, "wtv", StringComparison.OrdinalIgnoreCase))
             {
-                state.OutputAudioSync = "1000";
                 state.InputVideoSync = "-1";
                 state.InputAudioSync = "1";
             }
@@ -1715,7 +1704,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (state.SubtitleStream == null || state.SubtitleDeliveryMethod != SubtitleDeliveryMethod.Embed)
             {
-                return ;
+                return;
             }
 
             // This is tricky to remux in, after converting to dvdsub it's not positioned correctly
@@ -1985,7 +1974,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 args += " -ab " + bitrate.Value.ToString(_usCulture);
             }
-            
+
+            if (state.OutputAudioSampleRate.HasValue)
+            {
+                args += " -ar " + state.OutputAudioSampleRate.Value.ToString(_usCulture);
+            }
+
             args += " " + GetAudioFilterParam(state, encodingOptions, false);
 
             return args;

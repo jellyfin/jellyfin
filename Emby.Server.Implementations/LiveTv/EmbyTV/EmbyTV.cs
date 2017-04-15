@@ -39,6 +39,7 @@ using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Threading;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -1512,7 +1513,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     _timerProvider.AddOrUpdate(timer, false);
 
                     SaveRecordingMetadata(timer, recordPath, seriesPath);
-                    EnforceKeepUpTo(timer);
+                    EnforceKeepUpTo(timer, seriesPath);
                 };
 
                 await recorder.Record(mediaStreamInfo, recordPath, duration, onStarted, cancellationToken)
@@ -1583,9 +1584,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }, _logger);
         }
 
-        private async void EnforceKeepUpTo(TimerInfo timer)
+        private async void EnforceKeepUpTo(TimerInfo timer, string seriesPath)
         {
             if (string.IsNullOrWhiteSpace(timer.SeriesTimerId))
+            {
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(seriesPath))
             {
                 return;
             }
@@ -1621,6 +1626,43 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     .ToList();
 
                 await DeleteLibraryItemsForTimers(timersToDelete).ConfigureAwait(false);
+
+                var librarySeries = _libraryManager.FindByPath(seriesPath, true) as Folder;
+
+                if (librarySeries == null)
+                {
+                    return;
+                }
+
+                var episodesToDelete = (await librarySeries.GetItems(new InternalItemsQuery
+                {
+                    SortBy = new[] { ItemSortBy.DateCreated },
+                    SortOrder = SortOrder.Descending,
+                    IsVirtualItem = false,
+                    IsFolder = false,
+                    Recursive = true
+
+                }).ConfigureAwait(false))
+                    .Items
+                    .Where(i => i.LocationType == LocationType.FileSystem && _fileSystem.FileExists(i.Path))
+                    .Skip(seriesTimer.KeepUpTo - 1)
+                    .ToList();
+
+                foreach (var item in episodesToDelete)
+                {
+                    try
+                    {
+                        await _libraryManager.DeleteItem(item, new DeleteOptions
+                        {
+                            DeleteFileLocation = true
+
+                        }).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error deleting item", ex);
+                    }
+                }
             }
             finally
             {
@@ -1658,7 +1700,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 await _libraryManager.DeleteItem(libraryItem, new DeleteOptions
                 {
                     DeleteFileLocation = true
-                });
+
+                }).ConfigureAwait(false);
             }
             else
             {
