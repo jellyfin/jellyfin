@@ -2284,7 +2284,7 @@ namespace Emby.Server.Implementations.LiveTv
             };
         }
 
-        public void AddChannelInfo(List<Tuple<BaseItemDto, LiveTvChannel>> tuples, DtoOptions options, User user)
+        public async Task AddChannelInfo(List<Tuple<BaseItemDto, LiveTvChannel>> tuples, DtoOptions options, User user)
         {
             var now = DateTime.UtcNow;
 
@@ -2304,6 +2304,12 @@ namespace Emby.Server.Implementations.LiveTv
 
             RemoveFields(options);
 
+            var currentProgramsList = new List<BaseItem>();
+            var currentChannelsDict = new Dictionary<string, BaseItemDto>();
+
+            var addCurrentProgram = options.AddCurrentProgram;
+            var addMediaSources = options.Fields.Contains(ItemFields.MediaSources);
+
             foreach (var tuple in tuples)
             {
                 var dto = tuple.Item1;
@@ -2314,19 +2320,38 @@ namespace Emby.Server.Implementations.LiveTv
                 dto.ChannelType = channel.ChannelType;
                 dto.ServiceName = channel.ServiceName;
 
-                if (options.Fields.Contains(ItemFields.MediaSources))
+                currentChannelsDict[dto.Id] = dto;
+
+                if (addMediaSources)
                 {
                     dto.MediaSources = channel.GetMediaSources(true).ToList();
                 }
 
-                if (options.AddCurrentProgram)
+                if (addCurrentProgram)
                 {
                     var channelIdString = channel.Id.ToString("N");
                     var currentProgram = programs.FirstOrDefault(i => string.Equals(i.ChannelId, channelIdString));
 
                     if (currentProgram != null)
                     {
-                        dto.CurrentProgram = _dtoService.GetBaseItemDto(currentProgram, options, user);
+                        currentProgramsList.Add(currentProgram);
+                    }
+                }
+            }
+
+            if (addCurrentProgram)
+            {
+                var currentProgramDtos = await _dtoService.GetBaseItemDtos(currentProgramsList, options, user).ConfigureAwait(false);
+
+                foreach (var programDto in currentProgramDtos)
+                {
+                    if (!string.IsNullOrWhiteSpace(programDto.ChannelId))
+                    {
+                        BaseItemDto channelDto;
+                        if (currentChannelsDict.TryGetValue(programDto.ChannelId, out channelDto))
+                        {
+                            channelDto.CurrentProgram = programDto;
+                        }
                     }
                 }
             }
