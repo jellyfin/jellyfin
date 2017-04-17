@@ -197,6 +197,8 @@ namespace Emby.Server.Implementations.Session
                     _logger.ErrorException("Error disposing session controller", ex);
                 }
             }
+
+            info.Dispose();
         }
 
         /// <summary>
@@ -415,7 +417,7 @@ namespace Emby.Server.Implementations.Session
 
                 if (!_activeConnections.TryGetValue(key, out sessionInfo))
                 {
-                    sessionInfo = new SessionInfo
+                    sessionInfo = new SessionInfo(this, _logger)
                     {
                         Client = appName,
                         DeviceId = deviceId,
@@ -609,6 +611,7 @@ namespace Emby.Server.Implementations.Session
                 ClearTranscodingInfo(session.DeviceId);
             }
 
+            session.StopAutomaticProgress();
             session.QueueableMediaTypes = info.QueueableMediaTypes;
 
             var users = GetUsers(session);
@@ -727,6 +730,7 @@ namespace Emby.Server.Implementations.Session
 
             }, _logger);
 
+            session.StartAutomaticProgress(_timerFactory, info);
             StartIdleCheckTimer();
         }
 
@@ -787,6 +791,8 @@ namespace Emby.Server.Implementations.Session
             }
 
             var session = GetSession(info.SessionId);
+
+            session.StopAutomaticProgress();
 
             var libraryItem = string.IsNullOrWhiteSpace(info.ItemId)
                 ? null

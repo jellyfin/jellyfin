@@ -4,16 +4,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Threading;
 
 namespace MediaBrowser.Controller.Session
 {
     /// <summary>
     /// Class SessionInfo
     /// </summary>
-    public class SessionInfo
+    public class SessionInfo : IDisposable
     {
-        public SessionInfo()
+        private ISessionManager _sessionManager;
+        private readonly ILogger _logger;
+
+        public SessionInfo(ISessionManager sessionManager, ILogger logger)
         {
+            _sessionManager = sessionManager;
+            _logger = logger;
             QueueableMediaTypes = new List<string>();
 
             AdditionalUsers = new List<SessionUserInfo>();
@@ -21,7 +28,7 @@ namespace MediaBrowser.Controller.Session
         }
 
         public PlayerStateInfo PlayState { get; set; }
-        
+
         public List<SessionUserInfo> AdditionalUsers { get; set; }
 
         public ClientCapabilities Capabilities { get; set; }
@@ -133,7 +140,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The application icon URL.</value>
         public string AppIconUrl { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the supported commands.
         /// </summary>
@@ -195,6 +202,86 @@ namespace MediaBrowser.Controller.Session
         public bool ContainsUser(Guid userId)
         {
             return (UserId ?? Guid.Empty) == userId || AdditionalUsers.Any(i => userId == new Guid(i.UserId));
+        }
+
+        private readonly object _progressLock = new object();
+        private ITimer _progressTimer;
+        private PlaybackProgressInfo _lastProgressInfo;
+
+        public void StartAutomaticProgress(ITimerFactory timerFactory, PlaybackProgressInfo progressInfo)
+        {
+            lock (_progressLock)
+            {
+                _lastProgressInfo = progressInfo;
+
+                if (_progressTimer != null)
+                {
+                    return;
+                }
+
+                _progressTimer = timerFactory.Create(OnProgressTimerCallback, null, 1000, 1000);
+            }
+        }
+
+        // 1 second
+        private const long ProgressIncrement = 10000000;
+
+        private async void OnProgressTimerCallback(object state)
+        {
+            var progressInfo = _lastProgressInfo;
+            if (progressInfo == null)
+            {
+                return;
+            }
+            if (progressInfo.IsPaused)
+            {
+                return;
+            }
+            var positionTicks = progressInfo.PositionTicks ?? 0;
+            if (positionTicks <= 0)
+            {
+                return;
+            }
+
+            var newPositionTicks = positionTicks + ProgressIncrement;
+            var item = progressInfo.Item;
+            long? runtimeTicks = item == null ? null : item.RunTimeTicks;
+
+            // Don't report beyond the runtime
+            if (runtimeTicks.HasValue && newPositionTicks >= runtimeTicks.Value)
+            {
+                return;
+            }
+
+            progressInfo.PositionTicks = newPositionTicks;
+
+            try
+            {
+                await _sessionManager.OnPlaybackProgress(progressInfo).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error reporting playback progress", ex);
+            }
+        }
+
+        public void StopAutomaticProgress()
+        {
+            lock (_progressLock)
+            {
+                if (_progressTimer != null)
+                {
+                    _progressTimer.Dispose();
+                    _progressTimer = null;
+                }
+                _lastProgressInfo = null;
+            }
+        }
+
+        public void Dispose()
+        {
+            StopAutomaticProgress();
+            _sessionManager = null;
         }
     }
 }
