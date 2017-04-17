@@ -15,12 +15,6 @@ namespace MediaBrowser.Model.Session
         public List<string> SupportedCommands { get; set; }
 
         /// <summary>
-        /// Gets or sets the queueable media types.
-        /// </summary>
-        /// <value>The queueable media types.</value>
-        public List<string> QueueableMediaTypes { get; set; }
-
-        /// <summary>
         /// Gets or sets the playable media types.
         /// </summary>
         /// <value>The playable media types.</value>
@@ -119,7 +113,6 @@ namespace MediaBrowser.Model.Session
             AdditionalUsers = new List<SessionUserInfo>();
 
             PlayableMediaTypes = new List<string>();
-            QueueableMediaTypes = new List<string>();
             SupportedCommands = new List<string>();
         }
     }

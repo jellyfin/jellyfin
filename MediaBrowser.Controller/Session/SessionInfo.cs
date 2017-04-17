@@ -21,7 +21,6 @@ namespace MediaBrowser.Controller.Session
         {
             _sessionManager = sessionManager;
             _logger = logger;
-            QueueableMediaTypes = new List<string>();
 
             AdditionalUsers = new List<SessionUserInfo>();
             PlayState = new PlayerStateInfo();
@@ -38,12 +37,6 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The remote end point.</value>
         public string RemoteEndPoint { get; set; }
-
-        /// <summary>
-        /// Gets or sets the queueable media types.
-        /// </summary>
-        /// <value>The queueable media types.</value>
-        public List<string> QueueableMediaTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the playable media types.
@@ -214,12 +207,14 @@ namespace MediaBrowser.Controller.Session
             {
                 _lastProgressInfo = progressInfo;
 
-                if (_progressTimer != null)
+                if (_progressTimer == null)
                 {
-                    return;
+                    _progressTimer = timerFactory.Create(OnProgressTimerCallback, null, 1000, 1000);
                 }
-
-                _progressTimer = timerFactory.Create(OnProgressTimerCallback, null, 1000, 1000);
+                else
+                {
+                    _progressTimer.Change(1000, 1000);
+                }
             }
         }
 
@@ -237,10 +232,11 @@ namespace MediaBrowser.Controller.Session
             {
                 return;
             }
+
             var positionTicks = progressInfo.PositionTicks ?? 0;
-            if (positionTicks <= 0)
+            if (positionTicks < 0)
             {
-                return;
+                positionTicks = 0;
             }
 
             var newPositionTicks = positionTicks + ProgressIncrement;
