@@ -137,7 +137,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Shows/{Id}/Episodes", "GET", Summary = "Gets episodes for a tv season")]
-    [Route("/Shows/Episodes", "GET", Summary = "Gets episodes for a tv season")]
+    [Route("/Shows/Episodes", "POST", Summary = "Gets episodes for a tv season")]
     public class GetEpisodes : IReturn<ItemsResult>, IHasItemFields, IHasDtoOptions
     {
         /// <summary>
@@ -205,7 +205,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Shows/{Id}/Seasons", "GET", Summary = "Gets seasons for a tv series")]
-    [Route("/Shows/Seasons", "GET", Summary = "Gets seasons for a tv series")]
+    [Route("/Shows/Seasons", "POST", Summary = "Gets seasons for a tv series")]
     public class GetSeasons : IReturn<ItemsResult>, IHasItemFields, IHasDtoOptions
     {
         /// <summary>
@@ -457,6 +457,16 @@ namespace MediaBrowser.Api
                 TotalRecordCount = returnItems.Length,
                 Items = returnItems
             };
+        }
+
+        public Task<object> Post(GetSeasons request)
+        {
+            return Get(request);
+        }
+
+        public Task<object> Post(GetEpisodes request)
+        {
+            return Get(request);
         }
 
         private Series GetSeries(string seriesId, string seriesName, User user)
