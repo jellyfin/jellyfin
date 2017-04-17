@@ -169,7 +169,7 @@ namespace MediaBrowser.Api.Playback
                 {
                     OpenToken = state.MediaSource.OpenToken
 
-                }, false, cancellationTokenSource.Token).ConfigureAwait(false);
+                }, cancellationTokenSource.Token).ConfigureAwait(false);
 
                 EncodingHelper.AttachMediaSourceInfo(state, liveStreamResponse.MediaSource, state.RequestedUrl);
 

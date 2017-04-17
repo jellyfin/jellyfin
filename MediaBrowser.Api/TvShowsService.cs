@@ -137,7 +137,6 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Shows/{Id}/Episodes", "GET", Summary = "Gets episodes for a tv season")]
-    [Route("/Shows/Episodes", "POST", Summary = "Gets episodes for a tv season")]
     public class GetEpisodes : IReturn<ItemsResult>, IHasItemFields, IHasDtoOptions
     {
         /// <summary>
@@ -200,12 +199,9 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableUserData { get; set; }
-
-        public string SeriesName { get; set; }
     }
 
     [Route("/Shows/{Id}/Seasons", "GET", Summary = "Gets seasons for a tv series")]
-    [Route("/Shows/Seasons", "POST", Summary = "Gets seasons for a tv series")]
     public class GetSeasons : IReturn<ItemsResult>, IHasItemFields, IHasDtoOptions
     {
         /// <summary>
@@ -248,8 +244,6 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableUserData { get; set; }
-
-        public string SeriesName { get; set; }
     }
 
     /// <summary>
@@ -431,7 +425,7 @@ namespace MediaBrowser.Api
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var series = GetSeries(request.Id, request.SeriesName, user);
+            var series = GetSeries(request.Id, user);
 
             if (series == null)
             {
@@ -459,31 +453,11 @@ namespace MediaBrowser.Api
             };
         }
 
-        public Task<object> Post(GetSeasons request)
-        {
-            return Get(request);
-        }
-
-        public Task<object> Post(GetEpisodes request)
-        {
-            return Get(request);
-        }
-
-        private Series GetSeries(string seriesId, string seriesName, User user)
+        private Series GetSeries(string seriesId, User user)
         {
             if (!string.IsNullOrWhiteSpace(seriesId))
             {
                 return _libraryManager.GetItemById(seriesId) as Series;
-            }
-
-            if (!string.IsNullOrWhiteSpace(seriesName))
-            {
-                return _libraryManager.GetItemList(new InternalItemsQuery(user)
-                {
-                    Name = seriesName,
-                    IncludeItemTypes = new string[] { typeof(Series).Name }
-
-                }).OfType<Series>().FirstOrDefault();
             }
 
             return null;
@@ -508,7 +482,7 @@ namespace MediaBrowser.Api
             }
             else if (request.Season.HasValue)
             {
-                var series = GetSeries(request.Id, request.SeriesName, user);
+                var series = GetSeries(request.Id, user);
 
                 if (series == null)
                 {
@@ -528,7 +502,7 @@ namespace MediaBrowser.Api
             }
             else
             {
-                var series = GetSeries(request.Id, request.SeriesName, user);
+                var series = GetSeries(request.Id, user);
 
                 if (series == null)
                 {

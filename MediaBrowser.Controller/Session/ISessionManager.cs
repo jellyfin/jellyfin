@@ -99,6 +99,8 @@ namespace MediaBrowser.Controller.Session
         /// <exception cref="System.ArgumentNullException"></exception>
         Task OnPlaybackProgress(PlaybackProgressInfo info);
 
+        Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated);
+
         /// <summary>
         /// Used to report that playback has ended for an item
         /// </summary>
