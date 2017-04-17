@@ -612,8 +612,7 @@ namespace Emby.Server.Implementations.Session
                 ClearTranscodingInfo(session.DeviceId);
             }
 
-            session.StopAutomaticProgress();
-            session.QueueableMediaTypes = info.QueueableMediaTypes;
+            session.StartAutomaticProgress(_timerFactory, info);
 
             var users = GetUsers(session);
 
@@ -720,7 +719,11 @@ namespace Emby.Server.Implementations.Session
 
             }, _logger);
 
-            session.StartAutomaticProgress(_timerFactory, info);
+            if (!isAutomated)
+            {
+                session.StartAutomaticProgress(_timerFactory, info);
+            }
+
             StartIdleCheckTimer();
         }
 
@@ -1005,19 +1008,9 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            if (command.PlayCommand != PlayCommand.PlayNow)
+            if (items.Any(i => !session.PlayableMediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
             {
-                if (items.Any(i => !session.QueueableMediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
-                {
-                    throw new ArgumentException(string.Format("{0} is unable to queue the requested media type.", session.DeviceName ?? session.Id));
-                }
-            }
-            else
-            {
-                if (items.Any(i => !session.PlayableMediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
-                {
-                    throw new ArgumentException(string.Format("{0} is unable to play the requested media type.", session.DeviceName ?? session.Id));
-                }
+                throw new ArgumentException(string.Format("{0} is unable to play the requested media type.", session.DeviceName ?? session.Id));
             }
 
             if (user != null && command.ItemIds.Length == 1 && user.Configuration.EnableNextEpisodeAutoPlay)
@@ -1597,7 +1590,6 @@ namespace Emby.Server.Implementations.Session
                 LastActivityDate = session.LastActivityDate,
                 NowViewingItem = session.NowViewingItem,
                 ApplicationVersion = session.ApplicationVersion,
-                QueueableMediaTypes = session.QueueableMediaTypes,
                 PlayableMediaTypes = session.PlayableMediaTypes,
                 AdditionalUsers = session.AdditionalUsers,
                 SupportedCommands = session.SupportedCommands,
