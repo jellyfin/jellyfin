@@ -426,18 +426,6 @@ namespace MediaBrowser.Api
             {
                 job.ChangeKillTimerIfStarted();
             }
-
-            if (!string.IsNullOrWhiteSpace(job.LiveStreamId))
-            {
-                try
-                {
-                    await _mediaSourceManager.PingLiveStream(job.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error closing live stream", ex);
-                }
-            }
         }
 
         /// <summary>
