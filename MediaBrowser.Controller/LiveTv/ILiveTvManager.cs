@@ -367,7 +367,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="items">The items.</param>
         /// <param name="options">The options.</param>
         /// <param name="user">The user.</param>
-        void AddChannelInfo(List<Tuple<BaseItemDto, LiveTvChannel>> items, DtoOptions options, User user);
+        Task AddChannelInfo(List<Tuple<BaseItemDto, LiveTvChannel>> items, DtoOptions options, User user);
 
         /// <summary>
         /// Called when [recording file deleted].
