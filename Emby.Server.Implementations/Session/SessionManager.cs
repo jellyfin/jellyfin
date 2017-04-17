@@ -197,6 +197,8 @@ namespace Emby.Server.Implementations.Session
                     _logger.ErrorException("Error disposing session controller", ex);
                 }
             }
+
+            info.Dispose();
         }
 
         /// <summary>
@@ -308,10 +310,7 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Updates the now playing item id.
         /// </summary>
-        /// <param name="session">The session.</param>
-        /// <param name="info">The information.</param>
-        /// <param name="libraryItem">The library item.</param>
-        private async Task UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem)
+        private async Task UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem, bool updateLastCheckInTime)
         {
             if (string.IsNullOrWhiteSpace(info.MediaSourceId))
             {
@@ -350,7 +349,11 @@ namespace Emby.Server.Implementations.Session
 
             session.NowPlayingItem = info.Item;
             session.LastActivityDate = DateTime.UtcNow;
-            session.LastPlaybackCheckIn = DateTime.UtcNow;
+
+            if (updateLastCheckInTime)
+            {
+                session.LastPlaybackCheckIn = DateTime.UtcNow;
+            }
 
             session.PlayState.IsPaused = info.IsPaused;
             session.PlayState.PositionTicks = info.PositionTicks;
@@ -415,7 +418,7 @@ namespace Emby.Server.Implementations.Session
 
                 if (!_activeConnections.TryGetValue(key, out sessionInfo))
                 {
-                    sessionInfo = new SessionInfo
+                    sessionInfo = new SessionInfo(this, _logger)
                     {
                         Client = appName,
                         DeviceId = deviceId,
@@ -602,14 +605,14 @@ namespace Emby.Server.Implementations.Session
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
-            await UpdateNowPlayingItem(session, info, libraryItem).ConfigureAwait(false);
+            await UpdateNowPlayingItem(session, info, libraryItem, true).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(session.DeviceId) && info.PlayMethod != PlayMethod.Transcode)
             {
                 ClearTranscodingInfo(session.DeviceId);
             }
 
-            session.QueueableMediaTypes = info.QueueableMediaTypes;
+            session.StartAutomaticProgress(_timerFactory, info);
 
             var users = GetUsers(session);
 
@@ -668,14 +671,15 @@ namespace Emby.Server.Implementations.Session
             await _userDataManager.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None).ConfigureAwait(false);
         }
 
+        public Task OnPlaybackProgress(PlaybackProgressInfo info)
+        {
+            return OnPlaybackProgress(info, false);
+        }
+
         /// <summary>
         /// Used to report playback progress for an item
         /// </summary>
-        /// <param name="info">The info.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        /// <exception cref="System.ArgumentOutOfRangeException">positionTicks</exception>
-        public async Task OnPlaybackProgress(PlaybackProgressInfo info)
+        public async Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated)
         {
             if (info == null)
             {
@@ -688,7 +692,7 @@ namespace Emby.Server.Implementations.Session
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
-            await UpdateNowPlayingItem(session, info, libraryItem).ConfigureAwait(false);
+            await UpdateNowPlayingItem(session, info, libraryItem, !isAutomated).ConfigureAwait(false);
 
             var users = GetUsers(session);
 
@@ -697,18 +701,6 @@ namespace Emby.Server.Implementations.Session
                 foreach (var user in users)
                 {
                     await OnPlaybackProgress(user, libraryItem, info).ConfigureAwait(false);
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(info.LiveStreamId))
-            {
-                try
-                {
-                    await _mediaSourceManager.PingLiveStream(info.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error closing live stream", ex);
                 }
             }
 
@@ -726,6 +718,11 @@ namespace Emby.Server.Implementations.Session
                 PlaySessionId = info.PlaySessionId
 
             }, _logger);
+
+            if (!isAutomated)
+            {
+                session.StartAutomaticProgress(_timerFactory, info);
+            }
 
             StartIdleCheckTimer();
         }
@@ -787,6 +784,8 @@ namespace Emby.Server.Implementations.Session
             }
 
             var session = GetSession(info.SessionId);
+
+            session.StopAutomaticProgress();
 
             var libraryItem = string.IsNullOrWhiteSpace(info.ItemId)
                 ? null
@@ -1009,19 +1008,9 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            if (command.PlayCommand != PlayCommand.PlayNow)
+            if (items.Any(i => !session.PlayableMediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
             {
-                if (items.Any(i => !session.QueueableMediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
-                {
-                    throw new ArgumentException(string.Format("{0} is unable to queue the requested media type.", session.DeviceName ?? session.Id));
-                }
-            }
-            else
-            {
-                if (items.Any(i => !session.PlayableMediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
-                {
-                    throw new ArgumentException(string.Format("{0} is unable to play the requested media type.", session.DeviceName ?? session.Id));
-                }
+                throw new ArgumentException(string.Format("{0} is unable to play the requested media type.", session.DeviceName ?? session.Id));
             }
 
             if (user != null && command.ItemIds.Length == 1 && user.Configuration.EnableNextEpisodeAutoPlay)
@@ -1601,7 +1590,6 @@ namespace Emby.Server.Implementations.Session
                 LastActivityDate = session.LastActivityDate,
                 NowViewingItem = session.NowViewingItem,
                 ApplicationVersion = session.ApplicationVersion,
-                QueueableMediaTypes = session.QueueableMediaTypes,
                 PlayableMediaTypes = session.PlayableMediaTypes,
                 AdditionalUsers = session.AdditionalUsers,
                 SupportedCommands = session.SupportedCommands,

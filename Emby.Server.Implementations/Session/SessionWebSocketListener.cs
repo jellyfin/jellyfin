@@ -289,7 +289,6 @@ namespace Emby.Server.Implementations.Session
 
                 var itemId = vals[0];
 
-                var queueableMediaTypes = string.Empty;
                 var canSeek = true;
 
                 if (vals.Length > 1)
@@ -298,15 +297,14 @@ namespace Emby.Server.Implementations.Session
                 }
                 if (vals.Length > 2)
                 {
-                    queueableMediaTypes = vals[2];
+                    // vals[2] used to be QueueableMediaTypes
                 }
 
                 var info = new PlaybackStartInfo
                 {
                     CanSeek = canSeek,
                     ItemId = itemId,
-                    SessionId = session.Id,
-                    QueueableMediaTypes = queueableMediaTypes.Split(',').ToList()
+                    SessionId = session.Id
                 };
 
                 if (vals.Length > 3)

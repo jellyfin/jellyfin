@@ -68,10 +68,9 @@ namespace MediaBrowser.Controller.Library
         /// Opens the media source.
         /// </summary>
         /// <param name="request">The request.</param>
-        /// <param name="enableAutoClose">if set to <c>true</c> [enable automatic close].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
-        Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, bool enableAutoClose, CancellationToken cancellationToken);
+        Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the live stream.
@@ -82,14 +81,6 @@ namespace MediaBrowser.Controller.Library
         Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken);
 
         Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken);
-        
-        /// <summary>
-        /// Pings the media source.
-        /// </summary>
-        /// <param name="id">The live stream identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task PingLiveStream(string id, CancellationToken cancellationToken);
 
         /// <summary>
         /// Closes the media source.

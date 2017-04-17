@@ -356,7 +356,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     OpenToken = state.MediaSource.OpenToken
 
-                }, false, cancellationToken).ConfigureAwait(false);
+                }, cancellationToken).ConfigureAwait(false);
 
                 EncodingHelper.AttachMediaSourceInfo(state, liveStreamResponse.MediaSource, null);
 
