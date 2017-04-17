@@ -310,10 +310,7 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Updates the now playing item id.
         /// </summary>
-        /// <param name="session">The session.</param>
-        /// <param name="info">The information.</param>
-        /// <param name="libraryItem">The library item.</param>
-        private async Task UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem)
+        private async Task UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem, bool updateLastCheckInTime)
         {
             if (string.IsNullOrWhiteSpace(info.MediaSourceId))
             {
@@ -352,7 +349,11 @@ namespace Emby.Server.Implementations.Session
 
             session.NowPlayingItem = info.Item;
             session.LastActivityDate = DateTime.UtcNow;
-            session.LastPlaybackCheckIn = DateTime.UtcNow;
+
+            if (updateLastCheckInTime)
+            {
+                session.LastPlaybackCheckIn = DateTime.UtcNow;
+            }
 
             session.PlayState.IsPaused = info.IsPaused;
             session.PlayState.PositionTicks = info.PositionTicks;
@@ -604,7 +605,7 @@ namespace Emby.Server.Implementations.Session
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
-            await UpdateNowPlayingItem(session, info, libraryItem).ConfigureAwait(false);
+            await UpdateNowPlayingItem(session, info, libraryItem, true).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(session.DeviceId) && info.PlayMethod != PlayMethod.Transcode)
             {
@@ -671,14 +672,15 @@ namespace Emby.Server.Implementations.Session
             await _userDataManager.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None).ConfigureAwait(false);
         }
 
+        public Task OnPlaybackProgress(PlaybackProgressInfo info)
+        {
+            return OnPlaybackProgress(info, false);
+        }
+
         /// <summary>
         /// Used to report playback progress for an item
         /// </summary>
-        /// <param name="info">The info.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        /// <exception cref="System.ArgumentOutOfRangeException">positionTicks</exception>
-        public async Task OnPlaybackProgress(PlaybackProgressInfo info)
+        public async Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated)
         {
             if (info == null)
             {
@@ -691,7 +693,7 @@ namespace Emby.Server.Implementations.Session
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
-            await UpdateNowPlayingItem(session, info, libraryItem).ConfigureAwait(false);
+            await UpdateNowPlayingItem(session, info, libraryItem, !isAutomated).ConfigureAwait(false);
 
             var users = GetUsers(session);
 
@@ -700,18 +702,6 @@ namespace Emby.Server.Implementations.Session
                 foreach (var user in users)
                 {
                     await OnPlaybackProgress(user, libraryItem, info).ConfigureAwait(false);
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(info.LiveStreamId))
-            {
-                try
-                {
-                    await _mediaSourceManager.PingLiveStream(info.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error closing live stream", ex);
                 }
             }
 

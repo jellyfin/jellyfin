@@ -257,7 +257,7 @@ namespace MediaBrowser.Controller.Session
 
             try
             {
-                await _sessionManager.OnPlaybackProgress(progressInfo).ConfigureAwait(false);
+                await _sessionManager.OnPlaybackProgress(progressInfo, true).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

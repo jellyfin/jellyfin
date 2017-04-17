@@ -12,7 +12,6 @@ using MediaBrowser.Controller.Library;
 namespace MediaBrowser.Api
 {
     [Route("/Users/{UserId}/Suggestions", "GET", Summary = "Gets items based on a query.")]
-    [Route("/Users/{UserId}/Suggestions", "POST", Summary = "Gets items based on a query.")]
     public class GetSuggestedItems : IReturn<QueryResult<BaseItem>>
     {
         public string MediaType { get; set; }
@@ -21,7 +20,6 @@ namespace MediaBrowser.Api
         public bool EnableTotalRecordCount { get; set; }
         public int? StartIndex { get; set; }
         public int? Limit { get; set; }
-        public string Name { get; set; }
 
         public string[] GetMediaTypes()
         {
@@ -56,13 +54,6 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(result);
         }
 
-        public async Task<object> Post(GetSuggestedItems request)
-        {
-            var result = await GetResultItems(request).ConfigureAwait(false);
-
-            return ToOptimizedResult(result);
-        }
-
         private async Task<QueryResult<BaseItemDto>> GetResultItems(GetSuggestedItems request)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
@@ -86,29 +77,6 @@ namespace MediaBrowser.Api
 
         private QueryResult<BaseItem> GetItems(GetSuggestedItems request, User user, DtoOptions dtoOptions)
         {
-            BaseItem similarToItem = null;
-
-            if (!string.IsNullOrWhiteSpace(request.Name))
-            {
-                // get item by name, then get similar items from that
-                similarToItem = _libraryManager.GetItemList(new InternalItemsQuery(user)
-                {
-                    SortBy = new string[] {ItemSortBy.Random},
-                    MediaTypes = request.GetMediaTypes(),
-                    IncludeItemTypes = request.GetIncludeItemTypes(),
-                    IsVirtualItem = false,
-                    Name = request.Name,
-                    Recursive = true,
-                    Limit = 1
-
-                }).FirstOrDefault();
-
-                if (similarToItem == null)
-                {
-                    return new QueryResult<BaseItem>();
-                }
-            }
-
             return _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
                 SortBy = new string[] { ItemSortBy.Random },
@@ -119,8 +87,7 @@ namespace MediaBrowser.Api
                 Limit = request.Limit,
                 DtoOptions = dtoOptions,
                 EnableTotalRecordCount = request.EnableTotalRecordCount,
-                Recursive = true,
-                SimilarTo = similarToItem
+                Recursive = true
             });
         }
     }
