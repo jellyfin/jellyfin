@@ -761,22 +761,33 @@ namespace MediaBrowser.Controller.Entities
                 itemsList = itemsList.Where(i => i.IsVisibleStandalone(query.User));
             }
 
-            var itemsArray = itemsList.ToArray();
-            var totalCount = itemsArray.Length;
+            IEnumerable<BaseItem> returnItems;
+            int totalCount = 0;
+
+            if (query.EnableTotalRecordCount)
+            {
+                var itemsArray = itemsList.ToArray();
+                totalCount = itemsArray.Length;
+                returnItems = itemsArray;
+            }
+            else
+            {
+                returnItems = itemsList;
+            }
 
             if (limit.HasValue)
             {
-                itemsArray = itemsArray.Skip(startIndex ?? 0).Take(limit.Value).ToArray();
+                returnItems = returnItems.Skip(startIndex ?? 0).Take(limit.Value);
             }
             else if (startIndex.HasValue)
             {
-                itemsArray = itemsArray.Skip(startIndex.Value).ToArray();
+                returnItems = returnItems.Skip(startIndex.Value);
             }
 
             return new QueryResult<BaseItem>
             {
                 TotalRecordCount = totalCount,
-                Items = itemsArray
+                Items = returnItems.ToArray()
             };
         }
 
@@ -1493,7 +1504,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if (itemDto.RecursiveItemCount.Value > 0)
                     {
-                        var unplayedPercentage = (unplayedCount/itemDto.RecursiveItemCount.Value)*100;
+                        var unplayedPercentage = (unplayedCount / itemDto.RecursiveItemCount.Value) * 100;
                         dto.PlayedPercentage = 100 - unplayedPercentage;
                         dto.Played = dto.PlayedPercentage.Value >= 100;
                     }
