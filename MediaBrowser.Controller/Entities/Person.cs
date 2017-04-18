@@ -15,12 +15,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Person : BaseItem, IItemByName, IHasLookupInfo<PersonLookupInfo>
     {
-        /// <summary>
-        /// Gets or sets the place of birth.
-        /// </summary>
-        /// <value>The place of birth.</value>
-        public string PlaceOfBirth { get; set; }
-
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();
