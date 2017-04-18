@@ -27,23 +27,14 @@ namespace MediaBrowser.Controller.Entities.Movies
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
             RemoteTrailerIds = new List<Guid>();
-            Taglines = new List<string>();
         }
 
         public string AwardSummary { get; set; }
-
-        public float? Metascore { get; set; }
 
         public List<Guid> LocalTrailerIds { get; set; }
         public List<Guid> RemoteTrailerIds { get; set; }
 
         public List<MediaUrl> RemoteTrailers { get; set; }
-
-        /// <summary>
-        /// Gets or sets the taglines.
-        /// </summary>
-        /// <value>The taglines.</value>
-        public List<string> Taglines { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the TMDB collection.
