@@ -21,7 +21,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Text;
-using UniversalDetector;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
@@ -197,17 +196,20 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (requiresCharset)
             {
-                var charset = await GetSubtitleFileCharacterSet(path, language, protocol, cancellationToken).ConfigureAwait(false);
+                var bytes = await GetBytes(path, protocol, cancellationToken).ConfigureAwait(false);
+
+                var charset = _textEncoding.GetDetectedEncodingName(bytes, language);
+                _logger.Debug("charset {0} detected for {1}", charset ?? "null", path);
 
                 if (!string.IsNullOrEmpty(charset))
                 {
-                    using (var fs = await GetStream(path, protocol, cancellationToken).ConfigureAwait(false))
+                    using (var inputStream = _memoryStreamProvider.CreateNew(bytes))
                     {
-                        using (var reader = new StreamReader(fs, GetEncoding(charset)))
+                        using (var reader = new StreamReader(inputStream, _textEncoding.GetEncodingFromCharset(charset)))
                         {
                             var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                            var bytes = Encoding.UTF8.GetBytes(text);
+                            bytes = Encoding.UTF8.GetBytes(text);
 
                             return _memoryStreamProvider.CreateNew(bytes);
                         }
@@ -216,28 +218,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
 
             return _fileSystem.OpenRead(path);
-        }
-
-        private Encoding GetEncoding(string charset)
-        {
-            if (string.IsNullOrWhiteSpace(charset))
-            {
-                throw new ArgumentNullException("charset");
-            }
-
-            _logger.Debug("Getting encoding object for character set: {0}", charset);
-
-            try
-            {
-                return Encoding.GetEncoding(charset);
-            }
-            catch (ArgumentException)
-            {
-                charset = charset.Replace("-", string.Empty);
-                _logger.Debug("Getting encoding object for character set: {0}", charset);
-
-                return Encoding.GetEncoding(charset);
-            }
         }
 
         private async Task<Tuple<string, MediaProtocol, string, bool>> GetReadableFile(string mediaPath,
@@ -724,126 +704,33 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         public async Task<string> GetSubtitleFileCharacterSet(string path, string language, MediaProtocol protocol, CancellationToken cancellationToken)
         {
-            if (protocol == MediaProtocol.File)
-            {
-                var fileEncoding = _textEncoding.GetFileEncoding(path);
+            var bytes = await GetBytes(path, protocol, cancellationToken).ConfigureAwait(false);
 
-                if (fileEncoding != null && fileEncoding.Equals(Encoding.UTF8))
-                {
-                    return string.Empty;
-                }
-            }
+            var charset = _textEncoding.GetDetectedEncodingName(bytes, language);
 
-            var charset = await DetectCharset(path, language, protocol, cancellationToken).ConfigureAwait(false);
+            _logger.Debug("charset {0} detected for {1}", charset ?? "null", path);
 
-            if (!string.IsNullOrWhiteSpace(charset))
-            {
-                if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
-                {
-                    return null;
-                }
-
-                return charset;
-            }
-
-            if (!string.IsNullOrWhiteSpace(language))
-            {
-                return GetSubtitleFileCharacterSetFromLanguage(language);
-            }
-
-            return null;
+            return charset;
         }
 
-        public string GetSubtitleFileCharacterSetFromLanguage(string language)
-        {
-            // https://developer.xamarin.com/api/type/System.Text.Encoding/
-
-            switch (language.ToLower())
-            {
-                case "hun":
-                    return "windows-1252";
-                case "pol":
-                case "cze":
-                case "ces":
-                case "slo":
-                case "slk":
-                case "slv":
-                case "srp":
-                case "hrv":
-                case "rum":
-                case "ron":
-                case "rup":
-                case "alb":
-                case "sqi":
-                    return "windows-1250";
-                case "ara":
-                    return "windows-1256";
-                case "heb":
-                    return "windows-1255";
-                case "grc":
-                case "gre":
-                    return "windows-1253";
-                case "crh":
-                case "ota":
-                case "tur":
-                    return "windows-1254";
-                case "rus":
-                    return "windows-1251";
-                case "vie":
-                    return "windows-1258";
-                case "kor":
-                    return "cp949";
-                default:
-                    return "windows-1252";
-            }
-        }
-
-        private async Task<string> DetectCharset(string path, string language, MediaProtocol protocol, CancellationToken cancellationToken)
-        {
-            try
-            {
-                using (var file = await GetStream(path, protocol, cancellationToken).ConfigureAwait(false))
-                {
-                    var detector = new CharsetDetector();
-                    detector.Feed(file);
-                    detector.DataEnd();
-
-                    var charset = detector.Charset;
-
-                    if (!string.IsNullOrWhiteSpace(charset))
-                    {
-                        _logger.Info("UniversalDetector detected charset {0} for {1}", charset, path);
-                    }
-
-                    // This is often incorrectly indetected. If this happens, try to use other techniques instead
-                    if (string.Equals("x-mac-cyrillic", charset, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (!string.IsNullOrWhiteSpace(language))
-                        {
-                            return null;
-                        }
-                    }
-
-                    return charset;
-                }
-            }
-            catch (IOException ex)
-            {
-                _logger.ErrorException("Error attempting to determine subtitle charset from {0}", ex, path);
-            }
-
-            return null;
-        }
-
-        private async Task<Stream> GetStream(string path, MediaProtocol protocol, CancellationToken cancellationToken)
+        private async Task<byte[]> GetBytes(string path, MediaProtocol protocol, CancellationToken cancellationToken)
         {
             if (protocol == MediaProtocol.Http)
             {
-                return await _httpClient.Get(path, cancellationToken).ConfigureAwait(false);
+                using (var file = await _httpClient.Get(path, cancellationToken).ConfigureAwait(false))
+                {
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await file.CopyToAsync(memoryStream).ConfigureAwait(false);
+                        memoryStream.Position = 0;
+
+                        return memoryStream.ToArray();
+                    }
+                }
             }
             if (protocol == MediaProtocol.File)
             {
-                return _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite);
+                return _fileSystem.ReadAllBytes(path);
             }
 
             throw new ArgumentOutOfRangeException("protocol");

@@ -153,17 +153,6 @@ namespace MediaBrowser.Controller.Entities
             return types.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }
 
-        public static bool IsEligibleForEnhancedView(string viewType)
-        {
-            var types = new[] 
-            { 
-                CollectionType.Movies, 
-                CollectionType.TvShows 
-            };
-
-            return types.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
-        }
-
         public static bool EnableOriginalFolder(string viewType)
         {
             var types = new[] 

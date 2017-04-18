@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Channels;
@@ -735,7 +736,70 @@ namespace MediaBrowser.Controller.Entities
                 query.ParentId = query.ParentId ?? Id;
             }
 
+            if (RequiresPostFiltering2(query))
+            {
+                return QueryWithPostFiltering2(query);
+            }
+
             return LibraryManager.GetItemsResult(query);
+        }
+
+        private QueryResult<BaseItem> QueryWithPostFiltering2(InternalItemsQuery query)
+        {
+            var startIndex = query.StartIndex;
+            var limit = query.Limit;
+
+            query.StartIndex = null;
+            query.Limit = null;
+
+            var itemsList = LibraryManager.GetItemList(query);
+            var user = query.User;
+
+            if (user != null)
+            {
+                // needed for boxsets
+                itemsList = itemsList.Where(i => i.IsVisibleStandalone(query.User));
+            }
+
+            IEnumerable<BaseItem> returnItems;
+            int totalCount = 0;
+
+            if (query.EnableTotalRecordCount)
+            {
+                var itemsArray = itemsList.ToArray();
+                totalCount = itemsArray.Length;
+                returnItems = itemsArray;
+            }
+            else
+            {
+                returnItems = itemsList;
+            }
+
+            if (limit.HasValue)
+            {
+                returnItems = returnItems.Skip(startIndex ?? 0).Take(limit.Value);
+            }
+            else if (startIndex.HasValue)
+            {
+                returnItems = returnItems.Skip(startIndex.Value);
+            }
+
+            return new QueryResult<BaseItem>
+            {
+                TotalRecordCount = totalCount,
+                Items = returnItems.ToArray()
+            };
+        }
+
+        private bool RequiresPostFiltering2(InternalItemsQuery query)
+        {
+            if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], typeof(BoxSet).Name, StringComparison.OrdinalIgnoreCase))
+            {
+                Logger.Debug("Query requires post-filtering due to BoxSet query");
+                return true;
+            }
+
+            return false;
         }
 
         private bool RequiresPostFiltering(InternalItemsQuery query)
@@ -1440,7 +1504,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if (itemDto.RecursiveItemCount.Value > 0)
                     {
-                        var unplayedPercentage = (unplayedCount/itemDto.RecursiveItemCount.Value)*100;
+                        var unplayedPercentage = (unplayedCount / itemDto.RecursiveItemCount.Value) * 100;
                         dto.PlayedPercentage = 100 - unplayedPercentage;
                         dto.Played = dto.PlayedPercentage.Value >= 100;
                     }
