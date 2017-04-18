@@ -1,10 +1,14 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
 
 namespace MediaBrowser.Model.Text
 {
     public interface ITextEncoding
     {
         Encoding GetASCIIEncoding();
-        Encoding GetFileEncoding(string path);
+
+        string GetDetectedEncodingName(byte[] bytes, string language);
+        Encoding GetDetectedEncoding(byte[] bytes, string language);
+        Encoding GetEncodingFromCharset(string charset);
     }
 }
