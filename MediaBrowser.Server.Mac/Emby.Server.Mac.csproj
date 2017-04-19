@@ -599,6 +599,12 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Swiper\dist\js\swiper.min.js">
       <Link>Resources\dashboard-ui\bower_components\Swiper\dist\js\swiper.min.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\alameda\LICENSE">
+      <Link>Resources\dashboard-ui\bower_components\alameda\LICENSE</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\alameda\alameda.js">
+      <Link>Resources\dashboard-ui\bower_components\alameda\alameda.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\cryptojslib\components\core-min.js">
       <Link>Resources\dashboard-ui\bower_components\cryptojslib\components\core-min.js</Link>
     </BundleResource>
@@ -1049,6 +1055,27 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\guide\tvguide.template.html">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\guide\tvguide.template.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\headroom\headroom.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\headroom\headroom.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\headroom\headroom.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\headroom\headroom.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\homescreensettings\homescreensettings.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\homescreensettings\homescreensettings.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\homescreensettings\homescreensettings.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\homescreensettings\homescreensettings.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\homescreensettings\homescreensettings.template.html">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\homescreensettings\homescreensettings.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\homescreensettings\homescreensettingsdialog.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\homescreensettings\homescreensettingsdialog.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\homescreensettings\homescreensettingsdialog.template.html">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\homescreensettings\homescreensettingsdialog.template.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\htmlaudioplayer\blank.mp3">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\htmlaudioplayer\blank.mp3</Link>
     </BundleResource>
@@ -1075,12 +1102,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\images\imagehelper.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\images\imagehelper.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\images\indexeddbimagefetcher.js">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\images\indexeddbimagefetcher.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\images\persistentimagefetcher.js">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\images\persistentimagefetcher.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\images\style.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\images\style.css</Link>
@@ -1421,6 +1442,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\ko.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\ko.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\lt-lt.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\lt-lt.json</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\ms.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\ms.json</Link>
     </BundleResource>
@@ -1576,30 +1600,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\fetch\fetch.js">
       <Link>Resources\dashboard-ui\bower_components\fetch\fetch.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\font-roboto\roboto.html">
-      <Link>Resources\dashboard-ui\bower_components\font-roboto\roboto.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\headroomjs\LICENSE">
-      <Link>Resources\dashboard-ui\bower_components\headroomjs\LICENSE</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\headroomjs\dist\angular.headroom.js">
-      <Link>Resources\dashboard-ui\bower_components\headroomjs\dist\angular.headroom.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\headroomjs\dist\angular.headroom.min.js">
-      <Link>Resources\dashboard-ui\bower_components\headroomjs\dist\angular.headroom.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\headroomjs\dist\headroom.js">
-      <Link>Resources\dashboard-ui\bower_components\headroomjs\dist\headroom.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\headroomjs\dist\headroom.min.js">
-      <Link>Resources\dashboard-ui\bower_components\headroomjs\dist\headroom.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\headroomjs\dist\jQuery.headroom.js">
-      <Link>Resources\dashboard-ui\bower_components\headroomjs\dist\jQuery.headroom.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\headroomjs\dist\jQuery.headroom.min.js">
-      <Link>Resources\dashboard-ui\bower_components\headroomjs\dist\jQuery.headroom.min.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hlsjs\LICENSE">
       <Link>Resources\dashboard-ui\bower_components\hlsjs\LICENSE</Link>
@@ -2183,6 +2183,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\addpluginpage.js">
       <Link>Resources\dashboard-ui\scripts\addpluginpage.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\apploader.js">
+      <Link>Resources\dashboard-ui\scripts\apploader.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\appservices.js">
       <Link>Resources\dashboard-ui\scripts\appservices.js</Link>
     </BundleResource>
@@ -2434,9 +2437,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\secondaryitems.js">
       <Link>Resources\dashboard-ui\scripts\secondaryitems.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\sections.js">
-      <Link>Resources\dashboard-ui\scripts\sections.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\selectserver.js">
       <Link>Resources\dashboard-ui\scripts\selectserver.js</Link>
