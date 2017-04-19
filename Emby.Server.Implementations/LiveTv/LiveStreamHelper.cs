@@ -82,19 +82,24 @@ namespace Emby.Server.Implementations.LiveTv
                 {
                     var width = videoStream.Width ?? 1920;
 
-                    if (width >= 1900)
+                    if (width >= 3000)
+                    {
+                        videoStream.BitRate = 25000000;
+                    }
+
+                    else if (width >= 1900)
                     {
                         videoStream.BitRate = 15000000;
                     }
 
-                    else if (width >= 1260)
+                    else if (width >= 1200)
                     {
-                        videoStream.BitRate = 3000000;
+                        videoStream.BitRate = 4000000;
                     }
 
                     else if (width >= 700)
                     {
-                        videoStream.BitRate = 1000000;
+                        videoStream.BitRate = 1500000;
                     }
                 }
 
