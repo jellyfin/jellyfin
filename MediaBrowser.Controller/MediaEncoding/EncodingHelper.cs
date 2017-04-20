@@ -747,11 +747,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool CanStreamCopyVideo(EncodingJobInfo state, MediaStream videoStream)
         {
-            if (!videoStream.AllowStreamCopy)
-            {
-                return false;
-            }
-
             var request = state.BaseRequest;
 
             if (!request.AllowVideoStreamCopy)
@@ -897,11 +892,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool CanStreamCopyAudio(EncodingJobInfo state, MediaStream audioStream, List<string> supportedAudioCodecs)
         {
-            if (!audioStream.AllowStreamCopy)
-            {
-                return false;
-            }
-
             var request = state.BaseRequest;
 
             if (!request.AllowAudioStreamCopy)
