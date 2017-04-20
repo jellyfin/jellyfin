@@ -490,7 +490,6 @@ namespace Emby.Server.Implementations.LiveTv
                     if (stream.Type == MediaStreamType.Video)
                     {
                         stream.IsInterlaced = true;
-                        stream.AllowStreamCopy = false;
                     }
                 }
             }

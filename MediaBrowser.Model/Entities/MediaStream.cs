@@ -13,11 +13,6 @@ namespace MediaBrowser.Model.Entities
     [DebuggerDisplay("StreamType = {Type}")]
     public class MediaStream
     {
-        public MediaStream()
-        {
-            AllowStreamCopy = true;
-        }
-
         /// <summary>
         /// Gets or sets the codec.
         /// </summary>
@@ -157,8 +152,6 @@ namespace MediaBrowser.Model.Entities
         public bool IsInterlaced { get; set; }
 
         public bool? IsAVC { get; set; }
-
-        public bool AllowStreamCopy { get; set; }
 
         /// <summary>
         /// Gets or sets the channel layout.
