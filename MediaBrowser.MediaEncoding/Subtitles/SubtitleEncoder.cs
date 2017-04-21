@@ -524,8 +524,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 if (!_fileSystem.FileExists(outputPath))
                 {
-                    await ExtractTextSubtitleInternal(_mediaEncoder.GetInputArgument(inputFiles, protocol), subtitleStreamIndex,
-                            outputCodec, outputPath, cancellationToken).ConfigureAwait(false);
+                    await ExtractTextSubtitleInternal(_mediaEncoder.GetInputArgument(inputFiles, protocol), subtitleStreamIndex, outputCodec, outputPath, cancellationToken).ConfigureAwait(false);
                 }
             }
             finally
