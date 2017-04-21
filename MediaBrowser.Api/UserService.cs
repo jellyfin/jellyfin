@@ -444,7 +444,7 @@ namespace MediaBrowser.Api
 
         public async Task PostAsync(UpdateUserPassword request)
         {
-            AssertCanUpdateUser(_authContext, _userManager, request.Id);
+            AssertCanUpdateUser(_authContext, _userManager, request.Id, true);
 
             var user = _userManager.GetUserById(request.Id);
 
@@ -482,7 +482,7 @@ namespace MediaBrowser.Api
         
         public async Task PostAsync(UpdateUserEasyPassword request)
         {
-            AssertCanUpdateUser(_authContext, _userManager, request.Id);
+            AssertCanUpdateUser(_authContext, _userManager, request.Id, true);
             
             var user = _userManager.GetUserById(request.Id);
 
@@ -518,7 +518,7 @@ namespace MediaBrowser.Api
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
             var id = GetPathValue(1);
 
-            AssertCanUpdateUser(_authContext, _userManager, id);
+            AssertCanUpdateUser(_authContext, _userManager, id, false);
 
             var dtoUser = request;
 
@@ -568,7 +568,7 @@ namespace MediaBrowser.Api
 
         public void Post(UpdateUserConfiguration request)
         {
-            AssertCanUpdateUser(_authContext, _userManager, request.Id);
+            AssertCanUpdateUser(_authContext, _userManager, request.Id, false);
 
             var task = _userManager.UpdateConfiguration(request.Id, request);
 
