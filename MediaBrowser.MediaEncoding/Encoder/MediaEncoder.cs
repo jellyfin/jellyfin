@@ -49,11 +49,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(1, 1);
 
-        /// <summary>
-        /// The FF probe resource pool
-        /// </summary>
-        private readonly SemaphoreSlim _ffProbeResourcePool = new SemaphoreSlim(2, 2);
-
         public string FFMpegPath { get; private set; }
 
         public string FFProbePath { get; private set; }
@@ -591,20 +586,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
-                await _ffProbeResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-                try
-                {
-                    StartProcess(processWrapper);
-                }
-                catch (Exception ex)
-                {
-                    _ffProbeResourcePool.Release();
-
-                    _logger.ErrorException("Error starting ffprobe", ex);
-
-                    throw;
-                }
+                StartProcess(processWrapper);
 
                 try
                 {
@@ -654,10 +636,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     StopProcess(processWrapper, 100);
 
                     throw;
-                }
-                finally
-                {
-                    _ffProbeResourcePool.Release();
                 }
             }
         }

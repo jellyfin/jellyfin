@@ -66,7 +66,7 @@ namespace MediaBrowser.Api
             return ResultFactory.GetOptimizedResult(Request, result);
         }
 
-        protected void AssertCanUpdateUser(IAuthorizationContext authContext, IUserManager userManager, string userId)
+        protected void AssertCanUpdateUser(IAuthorizationContext authContext, IUserManager userManager, string userId, bool restrictUserPreferences)
         {
             var auth = authContext.GetAuthorizationInfo(Request);
 
@@ -80,7 +80,7 @@ namespace MediaBrowser.Api
                     throw new SecurityException("Unauthorized access.");
                 }
             }
-            else
+            else if (restrictUserPreferences)
             {
                 if (!authenticatedUser.Policy.EnableUserPreferenceAccess)
                 {

@@ -1725,6 +1725,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.VideoStream != null && !string.IsNullOrWhiteSpace(state.VideoStream.Codec))
             {
+                if (!string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
+                {
+                    return "-hwaccel auto";
+                }
+
                 if (string.Equals(encodingOptions.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (state.MediaSource.VideoStream.Codec.ToLower())

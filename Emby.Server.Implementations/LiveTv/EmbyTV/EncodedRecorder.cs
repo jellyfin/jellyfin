@@ -11,14 +11,16 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Common.Configuration;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -37,8 +39,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly IProcessFactory _processFactory;
         private readonly IJsonSerializer _json;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
+        private readonly IServerConfigurationManager _config;
 
-        public EncodedRecorder(ILogger logger, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IServerApplicationPaths appPaths, IJsonSerializer json, LiveTvOptions liveTvOptions, IHttpClient httpClient, IProcessFactory processFactory)
+        public EncodedRecorder(ILogger logger, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IServerApplicationPaths appPaths, IJsonSerializer json, LiveTvOptions liveTvOptions, IHttpClient httpClient, IProcessFactory processFactory, IServerConfigurationManager config)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -48,6 +51,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _liveTvOptions = liveTvOptions;
             _httpClient = httpClient;
             _processFactory = processFactory;
+            _config = config;
         }
 
         private string OutputFormat
@@ -87,6 +91,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             await RecordFromFile(mediaSource, mediaSource.Path, targetFile, duration, onStarted, cancellationToken).ConfigureAwait(false);
 
             _logger.Info("Recording completed to file {0}", targetFile);
+        }
+
+        private EncodingOptions GetEncodingOptions()
+        {
+            return _config.GetConfiguration<EncodingOptions>("encoding");
         }
 
         private Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
@@ -163,6 +172,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var durationParam = " -t " + _mediaEncoder.GetTimeParameter(duration.Ticks);
             var inputModifiers = "-fflags +genpts -async 1 -vsync -1";
+
+            if (!string.IsNullOrWhiteSpace(GetEncodingOptions().HardwareAccelerationType))
+            {
+                inputModifiers += " -hwaccel auto";
+            }
+
             var commandLineArgs = "-i \"{0}\"{5} {2} -map_metadata -1 -threads 0 {3}{4}{6} -y \"{1}\"";
 
             long startTimeTicks = 0;
