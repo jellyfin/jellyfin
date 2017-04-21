@@ -30,8 +30,6 @@ namespace Emby.Server.Implementations.LiveTv
 
             var now = DateTime.UtcNow;
 
-            var allowVideoStreamCopy = mediaSource.MediaStreams.Any(i => i.Type == MediaStreamType.Video && i.AllowStreamCopy);
-
             var info = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
             {
                 InputPath = mediaSource.Path,
@@ -76,25 +74,28 @@ namespace Emby.Server.Implementations.LiveTv
             var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Video);
             if (videoStream != null)
             {
-                videoStream.AllowStreamCopy = allowVideoStreamCopy;
-
                 if (!videoStream.BitRate.HasValue)
                 {
                     var width = videoStream.Width ?? 1920;
 
-                    if (width >= 1900)
+                    if (width >= 3000)
+                    {
+                        videoStream.BitRate = 30000000;
+                    }
+
+                    else if (width >= 1900)
+                    {
+                        videoStream.BitRate = 20000000;
+                    }
+
+                    else if (width >= 1200)
                     {
                         videoStream.BitRate = 8000000;
                     }
 
-                    else if (width >= 1260)
-                    {
-                        videoStream.BitRate = 3000000;
-                    }
-
                     else if (width >= 700)
                     {
-                        videoStream.BitRate = 1000000;
+                        videoStream.BitRate = 2000000;
                     }
                 }
 

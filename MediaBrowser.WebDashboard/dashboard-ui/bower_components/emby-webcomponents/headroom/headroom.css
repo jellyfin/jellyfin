@@ -1,0 +1,1 @@
+.headroom{-webkit-transition:-webkit-transform 180ms linear;-o-transition:transform 180ms linear;transition:transform 180ms linear}.headroom--pinned{-webkit-transform:none;transform:none}.headroom--unpinned:not(.headroomDisabled){-webkit-transform:translateY(-100%);transform:translateY(-100%)}

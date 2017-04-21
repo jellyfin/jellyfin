@@ -1,5 +1,5 @@
 {
-    "HeaderOnNow": "On Now",
+    "HeaderOnNow": "En ce moment",
     "LabelPrevious": "Pr\u00e9c\u00e9dent",
     "LabelFinish": "Terminer",
     "LabelNext": "Suivant",
@@ -1304,7 +1304,7 @@
     "ButtonScheduledTasks": "T\u00e2ches planifi\u00e9es",
     "MessageItemsAdded": "\u00c9l\u00e9ments ajout\u00e9s",
     "HeaderSelectCertificatePath": "S\u00e9lectionnez le chemin du certificat",
-    "HeaderSupporterBenefit": "Un abonnement Emby Premiere vous offre des avantages suppl\u00e9mentaires tels que la synchronisation entre vos appareils, les extensions premium, du contenu de cha\u00eenes sur internet, et plus encore. {0}En savoir plus{1}.",
+    "HeaderSupporterBenefit": "Un abonnement Emby Premiere vous offre des avantages suppl\u00e9mentaires tels que l'acc\u00e8s au magn\u00e9toscope num\u00e9rique, aux m\u00e9dias hors-ligne, aux extensions premium et plus encore. {0}En savoir plus{1}.",
     "HeaderWelcomeToProjectServerDashboard": "Bienvenue dans le tableau de bord du serveur Emby",
     "HeaderWelcomeToProjectWebClient": "Bienvenue dans Emby",
     "ButtonTakeTheTour": "Visite guid\u00e9e",

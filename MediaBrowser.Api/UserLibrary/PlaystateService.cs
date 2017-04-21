@@ -109,13 +109,6 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "CanSeek", Description = "Indicates if the client can seek", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
         public bool CanSeek { get; set; }
 
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "QueueableMediaTypes", Description = "A list of media types that can be queued from this item, comma delimited. Audio,Video,Book,Game", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
-        public string QueueableMediaTypes { get; set; }
-
         [ApiMember(Name = "AudioStreamIndex", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
         public int? AudioStreamIndex { get; set; }
 
@@ -292,13 +285,10 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public void Post(OnPlaybackStart request)
         {
-            var queueableMediaTypes = request.QueueableMediaTypes ?? string.Empty;
-
             Post(new ReportPlaybackStart
             {
                 CanSeek = request.CanSeek,
                 ItemId = request.Id,
-                QueueableMediaTypes = queueableMediaTypes.Split(',').ToList(),
                 MediaSourceId = request.MediaSourceId,
                 AudioStreamIndex = request.AudioStreamIndex,
                 SubtitleStreamIndex = request.SubtitleStreamIndex,

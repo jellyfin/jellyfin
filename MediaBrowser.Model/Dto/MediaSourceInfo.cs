@@ -40,6 +40,8 @@ namespace MediaBrowser.Model.Dto
         public string LiveStreamId { get; set; }
         public int? BufferMs { get; set; }
 
+        public bool RequiresLooping { get; set; }
+
         public VideoType? VideoType { get; set; }
 
         public IsoType? IsoType { get; set; }

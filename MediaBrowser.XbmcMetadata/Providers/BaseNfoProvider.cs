@@ -78,9 +78,4 @@ namespace MediaBrowser.XbmcMetadata.Providers
             }
         }
     }
-
-    static class XmlProviderUtils
-    {
-        internal static readonly SemaphoreSlim XmlParsingResourcePool = new SemaphoreSlim(4, 4);
-    }
 }

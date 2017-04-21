@@ -1990,24 +1990,6 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            if (string.IsNullOrWhiteSpace(item.Tagline))
-            {
-                var movie = item as Movie;
-                if (movie != null && movie.Taglines.Count > 0)
-                {
-                    movie.Tagline = movie.Taglines[0];
-                }
-            }
-
-            if (type == typeof(Person) && item.ProductionLocations.Count == 0)
-            {
-                var person = (Person)item;
-                if (!string.IsNullOrWhiteSpace(person.PlaceOfBirth))
-                {
-                    item.ProductionLocations = new List<string> { person.PlaceOfBirth };
-                }
-            }
-
             return item;
         }
 

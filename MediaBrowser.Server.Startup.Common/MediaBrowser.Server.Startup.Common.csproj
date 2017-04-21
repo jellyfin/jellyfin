@@ -77,6 +77,7 @@
     <Compile Include="IO\MemoryStreamProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SystemEvents.cs" />
+    <Compile Include="UpdateLevelHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Emby.Drawing.ImageMagick\Emby.Drawing.ImageMagick.csproj">

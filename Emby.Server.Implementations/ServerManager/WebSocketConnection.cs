@@ -13,7 +13,6 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Text;
-using UniversalDetector;
 
 namespace Emby.Server.Implementations.ServerManager
 {
@@ -137,7 +136,8 @@ namespace Emby.Server.Implementations.ServerManager
             {
                 return;
             }
-            var charset = DetectCharset(bytes);
+
+            var charset = _textEncoding.GetDetectedEncodingName(bytes, null);
 
             if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
             {
@@ -147,33 +147,6 @@ namespace Emby.Server.Implementations.ServerManager
             {
                 OnReceiveInternal(_textEncoding.GetASCIIEncoding().GetString(bytes, 0, bytes.Length));
             }
-        }
-        private string DetectCharset(byte[] bytes)
-        {
-            try
-            {
-                using (var ms = _memoryStreamProvider.CreateNew(bytes))
-                {
-                    var detector = new CharsetDetector();
-                    detector.Feed(ms);
-                    detector.DataEnd();
-
-                    var charset = detector.Charset;
-
-                    if (!string.IsNullOrWhiteSpace(charset))
-                    {
-                        //_logger.Debug("UniversalDetector detected charset {0}", charset);
-                    }
-
-                    return charset;
-                }
-            }
-            catch (IOException ex)
-            {
-                _logger.ErrorException("Error attempting to determine web socket message charset", ex);
-            }
-
-            return null;
         }
 
         private void OnReceiveInternal(string message)

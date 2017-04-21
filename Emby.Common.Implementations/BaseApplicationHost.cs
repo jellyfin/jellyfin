@@ -179,6 +179,11 @@ namespace Emby.Common.Implementations
             }
         }
 
+        public virtual PackageVersionClass SystemUpdateLevel
+        {
+            get { return PackageVersionClass.Release; }
+        }
+
         public virtual string OperatingSystemDisplayName
         {
             get { return EnvironmentInfo.OperatingSystemName; }

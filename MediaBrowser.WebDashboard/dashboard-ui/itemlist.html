@@ -1,16 +1,17 @@
 ﻿<div id="itemListPage" data-role="page" class="page libraryPage folderListPage noSecondaryNavPage" data-backbutton="true">
     <div class="alphaPicker alphaPicker-vertical alphabetPicker">
     </div>
-    <div data-role="content" class="itemListContent">
 
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+    <div class="itemListContent padded-top padded-bottom-page">
+
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em .7em;">
             <div class="paging"></div>
             <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
             <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
             <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
             <button type="button" is="paper-icon-button-light" class="btnNewCollection autoSize hide"><i class="md-icon">add</i></button>
         </div>
-        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer itemsContainerWithAlphaPicker"></div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer padded-left-withalphapicker padded-left padded-right"></div>
         <div class="paging"></div>
     </div>
 </div>
