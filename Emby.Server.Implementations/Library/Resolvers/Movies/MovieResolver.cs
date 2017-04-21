@@ -219,7 +219,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
                 if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<MusicVideo>(args.Path, args.Parent, files, args.DirectoryService, collectionType, false);
+                    return FindMovie<MusicVideo>(args.Path, args.Parent, files, args.DirectoryService, collectionType, true);
                 }
 
                 if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))

@@ -109,7 +109,7 @@ namespace MediaBrowser.Api.Playback
         {
             var authInfo = _authContext.GetAuthorizationInfo(Request);
 
-            var result = await _mediaSourceManager.OpenLiveStream(request, true, CancellationToken.None).ConfigureAwait(false);
+            var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None).ConfigureAwait(false);
 
             var profile = request.DeviceProfile;
             if (profile == null)

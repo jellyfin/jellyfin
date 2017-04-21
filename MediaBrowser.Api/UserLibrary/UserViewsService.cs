@@ -31,17 +31,6 @@ namespace MediaBrowser.Api.UserLibrary
         public string PresetViews { get; set; }
     }
 
-    [Route("/Users/{UserId}/SpecialViewOptions", "GET")]
-    public class GetSpecialViewOptions : IReturn<List<SpecialViewOption>>
-    {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
-    }
-
     [Route("/Users/{UserId}/GroupingOptions", "GET")]
     public class GetGroupingOptions : IReturn<List<SpecialViewOption>>
     {
@@ -114,29 +103,6 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(result);
         }
 
-        public async Task<object> Get(GetSpecialViewOptions request)
-        {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var views = user.RootFolder
-                .GetChildren(user, true)
-                .OfType<ICollectionFolder>()
-                .Where(IsEligibleForSpecialView)
-                .ToList();
-
-            var list = views
-                .Select(i => new SpecialViewOption
-                {
-                    Name = i.Name,
-                    Id = i.Id.ToString("N")
-
-                })
-            .OrderBy(i => i.Name)
-            .ToList();
-
-            return ToOptimizedResult(list);
-        }
-
         public async Task<object> Get(GetGroupingOptions request)
         {
             var user = _userManager.GetUserById(request.UserId);
@@ -158,11 +124,6 @@ namespace MediaBrowser.Api.UserLibrary
             .ToList();
 
             return ToOptimizedResult(list);
-        }
-
-        private bool IsEligibleForSpecialView(ICollectionFolder view)
-        {
-            return UserView.IsEligibleForEnhancedView(view.CollectionType);
         }
     }
 

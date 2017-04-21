@@ -50,16 +50,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(1, 1);
 
         /// <summary>
-        /// The video image resource pool
-        /// </summary>
-        private readonly SemaphoreSlim _videoImageResourcePool = new SemaphoreSlim(1, 1);
-
-        /// <summary>
-        /// The audio image resource pool
-        /// </summary>
-        private readonly SemaphoreSlim _audioImageResourcePool = new SemaphoreSlim(2, 2);
-
-        /// <summary>
         /// The FF probe resource pool
         /// </summary>
         private readonly SemaphoreSlim _ffProbeResourcePool = new SemaphoreSlim(2, 2);
@@ -674,28 +664,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private bool DetectInterlaced(MediaSourceInfo video, MediaStream videoStream)
         {
-            var formats = (video.Container ?? string.Empty).Split(',').ToList();
-            var enableInterlacedDection = formats.Contains("vob", StringComparer.OrdinalIgnoreCase) ||
-                                          formats.Contains("m2ts", StringComparer.OrdinalIgnoreCase) ||
-                                          formats.Contains("ts", StringComparer.OrdinalIgnoreCase) ||
-                                          formats.Contains("mpegts", StringComparer.OrdinalIgnoreCase) ||
-                                          formats.Contains("wtv", StringComparer.OrdinalIgnoreCase);
-
             // If it's mpeg based, assume true
             if ((videoStream.Codec ?? string.Empty).IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                if (enableInterlacedDection)
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                // If the video codec is not some form of mpeg, then take a shortcut and limit this to containers that are likely to have interlaced content
-                if (!enableInterlacedDection)
-                {
-                    return false;
-                }
+                var formats = (video.Container ?? string.Empty).Split(',').ToList();
+                return formats.Contains("vob", StringComparer.OrdinalIgnoreCase) ||
+                                              formats.Contains("m2ts", StringComparer.OrdinalIgnoreCase) ||
+                                              formats.Contains("ts", StringComparer.OrdinalIgnoreCase) ||
+                                              formats.Contains("mpegts", StringComparer.OrdinalIgnoreCase) ||
+                                              formats.Contains("wtv", StringComparer.OrdinalIgnoreCase);
+
             }
 
             return false;
@@ -724,8 +702,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private async Task<string> ExtractImage(string[] inputFiles, string container, int? imageStreamIndex, MediaProtocol protocol, bool isAudio,
             Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
-            var resourcePool = isAudio ? _audioImageResourcePool : _videoImageResourcePool;
-
             var inputArgument = GetInputArgument(inputFiles, protocol);
 
             if (isAudio)
@@ -740,7 +716,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, imageStreamIndex, protocol, threedFormat, offset, true, resourcePool, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, imageStreamIndex, protocol, threedFormat, offset, true, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -752,10 +728,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return await ExtractImageInternal(inputArgument, container, imageStreamIndex, protocol, threedFormat, offset, false, resourcePool, cancellationToken).ConfigureAwait(false);
+            return await ExtractImageInternal(inputArgument, container, imageStreamIndex, protocol, threedFormat, offset, false, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<string> ExtractImageInternal(string inputPath, string container, int? imageStreamIndex, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        private async Task<string> ExtractImageInternal(string inputPath, string container, int? imageStreamIndex, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -835,31 +811,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
-                await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
                 bool ranToCompletion;
 
-                try
+                StartProcess(processWrapper);
+
+                var timeoutMs = ConfigurationManager.Configuration.ImageExtractionTimeoutMs;
+                if (timeoutMs <= 0)
                 {
-                    StartProcess(processWrapper);
-
-                    var timeoutMs = ConfigurationManager.Configuration.ImageExtractionTimeoutMs;
-                    if (timeoutMs <= 0)
-                    {
-                        timeoutMs = DefaultImageExtractionTimeoutMs;
-                    }
-
-                    ranToCompletion = process.WaitForExit(timeoutMs);
-
-                    if (!ranToCompletion)
-                    {
-                        StopProcess(processWrapper, 1000);
-                    }
-
+                    timeoutMs = DefaultImageExtractionTimeoutMs;
                 }
-                finally
+
+                ranToCompletion = process.WaitForExit(timeoutMs);
+
+                if (!ranToCompletion)
                 {
-                    resourcePool.Release();
+                    StopProcess(processWrapper, 1000);
                 }
 
                 var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
@@ -1118,7 +1084,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             if (dispose)
             {
-                _videoImageResourcePool.Dispose();
                 StopProcesses();
             }
         }

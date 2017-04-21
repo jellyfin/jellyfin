@@ -16,6 +16,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.IO;
@@ -425,18 +426,6 @@ namespace MediaBrowser.Api
             {
                 job.ChangeKillTimerIfStarted();
             }
-
-            if (!string.IsNullOrWhiteSpace(job.LiveStreamId))
-            {
-                try
-                {
-                    await _mediaSourceManager.PingLiveStream(job.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error closing live stream", ex);
-                }
-            }
         }
 
         /// <summary>
@@ -828,24 +817,5 @@ namespace MediaBrowser.Api
                 }
             }
         }
-    }
-
-    /// <summary>
-    /// Enum TranscodingJobType
-    /// </summary>
-    public enum TranscodingJobType
-    {
-        /// <summary>
-        /// The progressive
-        /// </summary>
-        Progressive,
-        /// <summary>
-        /// The HLS
-        /// </summary>
-        Hls,
-        /// <summary>
-        /// The dash
-        /// </summary>
-        Dash
     }
 }
