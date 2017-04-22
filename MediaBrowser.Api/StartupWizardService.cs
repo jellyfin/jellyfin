@@ -101,6 +101,7 @@ namespace MediaBrowser.Api
             config.EnableLocalizedGuids = true;
             config.EnableSimpleArtistDetection = true;
             config.EnableNormalizedItemByNameIds = true;
+            config.DisableLiveTvChannelUserDataName = true;
         }
 
         public void Post(UpdateStartupConfiguration request)
