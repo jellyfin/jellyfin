@@ -19,10 +19,8 @@
                 <span>${ButtonSignIn}</span>
             </button>
             <div class="forgotPassword">
-                <a href="https://emby.media/community/index.php?app=core&module=global&section=lostpass" target="_blank" class="clearLink">
-                    <button is="emby-button" type="button" class="raised block">
-                        <span>${ButtonForgotPassword}</span>
-                    </button>
+                <a href="https://emby.media/community/index.php?app=core&module=global&section=lostpass" target="_blank" is="emby-linkbutton" class="raised block">
+                    <span>${ButtonForgotPassword}</span>
                 </a>
             </div>
             <div class="skip">
@@ -34,14 +32,12 @@
 
             <div class="newUsers" style="margin-top: 2em;">
                 <h2 style="text-align: left;">${HeaderNewUsers}</h2>
-                <a href="https://emby.media/community/index.php?app=core&module=global&section=register" target="_blank" class="clearLink">
-                    <button is="emby-button" type="button" class="raised button-accent block btnSignupForConnect">
-                        <span>${ButtonSignUp}</span>
-                    </button>
+                <a href="https://emby.media/community/index.php?app=core&module=global&section=register" target="_blank" is="emby-linkbutton" class="raised button-accent block btnSignupForConnect">
+                    <span>${ButtonSignUp}</span>
                 </a>
             </div>
             <div class="terms hide fieldDescription" style="margin-top: 2em; color: #ccc;"></div>
-            <div class="hide tvAppInfo"><br /><br /><i class="md-icon" style="color: #52B54B">new_releases</i> Try the new <a href="//tv.emby.media" target="_blank">Emby Theater at tv.emby.media</a>, a remote-friendly app designed for your TV or large screen monitor.</div>
+            <div class="hide tvAppInfo"><br /><br /><i class="md-icon" style="color: #52B54B">new_releases</i> Try the new <a is="emby-linkbutton" class="button-link" href="//tv.emby.media" target="_blank">Emby Theater at tv.emby.media</a>, a remote-friendly app designed for your TV or large screen monitor.</div>
         </form>
 
         <form class="manualServerForm hide" style="margin: 0 auto;">

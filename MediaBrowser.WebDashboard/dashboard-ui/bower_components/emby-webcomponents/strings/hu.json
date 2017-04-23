@@ -48,8 +48,7 @@
     "HeaderOfflineDownloads": "Offline Media",
     "HeaderOfflineDownloadsDescription": "Download media to your devices for easy offline use.",
     "CloudSyncFeatureDescription": "Sync your media to the cloud for easy backup, archiving, and converting.",
-    "CoverArtFeatureDescription": "Cover Art creates fun covers and other treatments to help you personalize your media images.",
-    "CoverArt": "Lemezbor\u00edt\u00f3",
+    "DvrFeatureDescription": "Schedule individual Live TV recordings, series recordings, and more with Emby DVR.",
     "ButtonCancelSyncJob": "Cancel download",
     "CancelSyncJobConfirmation": "Cancelling the sync job will remove downloaded media from the device during the next sync process. Are you sure you wish to proceed?",
     "CinemaModeFeatureDescription": "A Cinema Mode igazi mozi \u00e9lm\u00e9nyt ny\u00fajt el\u0151zetessel \u00e9s egyedi intr\u00f3val a film vet\u00edt\u00e9se el\u0151tt.",
@@ -430,5 +429,8 @@
     "Shows": "Shows",
     "HeaderLibraryFolders": "Library Folders",
     "HeaderLandingScreens": "Landing Screens",
-    "LandingScreensHelp": "Select the default landing screen when clicking on a library."
+    "LandingScreensHelp": "Select the default landing screen when clicking on a library.",
+    "HeaderTermsOfPurchase": "Terms of Purchase",
+    "PrivacyPolicy": "Privacy policy",
+    "TermsOfUse": "Terms of use"
 }

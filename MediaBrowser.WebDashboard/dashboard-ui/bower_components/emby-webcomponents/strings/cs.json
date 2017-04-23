@@ -48,8 +48,7 @@
     "HeaderOfflineDownloads": "Offline m\u00e9dia",
     "HeaderOfflineDownloadsDescription": "St\u00e1hnout m\u00e9dia do va\u0161eho za\u0159\u00edzen\u00ed pro snadn\u00e9 pou\u017eit\u00ed offline.",
     "CloudSyncFeatureDescription": "Synchronizujte va\u0161e m\u00e9dia na cloud pro jednodu\u0161\u0161\u00ed z\u00e1lohov\u00e1n\u00ed, archivaci a konverzi.",
-    "CoverArtFeatureDescription": "Cover Art vytv\u00e1\u0159\u00ed z\u00e1bavn\u00e9 obaly a dal\u0161\u00ed mo\u017enosti \u00faprav, kter\u00e9 v\u00e1m pomohou p\u0159izp\u016fsobit va\u0161e medi\u00e1ln\u00ed obr\u00e1zky.",
-    "CoverArt": "Obal",
+    "DvrFeatureDescription": "Schedule individual Live TV recordings, series recordings, and more with Emby DVR.",
     "ButtonCancelSyncJob": "Zru\u0161it synchronizaci",
     "CancelSyncJobConfirmation": "Zru\u0161en\u00edm synchronizace budou odstran\u011bny ji\u017e synchronizovan\u00e1 media ze za\u0159\u00edzen\u00ed b\u011bhem dal\u0161\u00edho synchroniza\u010dn\u00edho procesu. Chcete opravdu pokra\u010dovat?",
     "CinemaModeFeatureDescription": "S re\u017eimem Kino z\u00edskate funkci, kter\u00e1 p\u0159ed hlavn\u00edm programem p\u0159ehraje trailery a u\u017eivatelsk\u00e1 intra.",
@@ -430,5 +429,8 @@
     "Shows": "Shows",
     "HeaderLibraryFolders": "Library Folders",
     "HeaderLandingScreens": "Landing Screens",
-    "LandingScreensHelp": "Select the default landing screen when clicking on a library."
+    "LandingScreensHelp": "Select the default landing screen when clicking on a library.",
+    "HeaderTermsOfPurchase": "Terms of Purchase",
+    "PrivacyPolicy": "Privacy policy",
+    "TermsOfUse": "Terms of use"
 }

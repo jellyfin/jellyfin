@@ -48,8 +48,7 @@
     "HeaderOfflineDownloads": "Offlinemedia",
     "HeaderOfflineDownloadsDescription": "Ladda ner media till dina enheter f\u00f6r att sen spela upp dom enkelt offline.",
     "CloudSyncFeatureDescription": "Synka din media till molnet f\u00f6r l\u00e4tttillg\u00e4ngligt backup, arkivering och konvertering.",
-    "CoverArtFeatureDescription": "Cover Art ger dig roliga omslag och andra funktioner f\u00f6r att personanpassa dina mediabilder.",
-    "CoverArt": "Bildomslag",
+    "DvrFeatureDescription": "Schedule individual Live TV recordings, series recordings, and more with Emby DVR.",
     "ButtonCancelSyncJob": "Avbryt synkronisering",
     "CancelSyncJobConfirmation": "Om synkroniseringen avbryts kommer synkad media tas bort under n\u00e4sta synkprocess. \u00c4r du s\u00e4ker p\u00e5 att du vill forts\u00e4tta?",
     "CinemaModeFeatureDescription": "Biol\u00e4get ger dig en bioupplevelse med trailers och anpassade intros f\u00f6re varje film.",
@@ -430,5 +429,8 @@
     "Shows": "Shows",
     "HeaderLibraryFolders": "Library Folders",
     "HeaderLandingScreens": "Landing Screens",
-    "LandingScreensHelp": "Select the default landing screen when clicking on a library."
+    "LandingScreensHelp": "Select the default landing screen when clicking on a library.",
+    "HeaderTermsOfPurchase": "Terms of Purchase",
+    "PrivacyPolicy": "Privacy policy",
+    "TermsOfUse": "Terms of use"
 }

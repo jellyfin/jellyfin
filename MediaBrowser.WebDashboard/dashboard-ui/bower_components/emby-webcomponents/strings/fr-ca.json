@@ -48,8 +48,7 @@
     "HeaderOfflineDownloads": "M\u00e9dia hors ligne",
     "HeaderOfflineDownloadsDescription": "T\u00e9l\u00e9chargez le m\u00e9dia sur vos appareils pour une utilisation hors ligne facile.",
     "CloudSyncFeatureDescription": "Synchronisez vos m\u00e9dias avec le Cloud pour faciliter la sauvegarde, l'archivage et la conversion.",
-    "CoverArtFeatureDescription": "Covert Art cr\u00e9e des couvertures amusantes et d'autres traitements pour vous aider \u00e0 personnaliser vos images multim\u00e9dias.",
-    "CoverArt": "Covert Art",
+    "DvrFeatureDescription": "Schedule individual Live TV recordings, series recordings, and more with Emby DVR.",
     "ButtonCancelSyncJob": "Annuler la synchronisation",
     "CancelSyncJobConfirmation": "L'annulation de la t\u00e2che de synchronisation supprimera le support synchronis\u00e9 du p\u00e9riph\u00e9rique pendant le prochain processus de synchronisation. \u00cates-vous s\u00fbr de vouloir continuer?",
     "CinemaModeFeatureDescription": "Le Mode Cin\u00e9ma vous donne la v\u00e9ritable exp\u00e9rience cin\u00e9matographique avec des bandes annonces et des intros personnalis\u00e9s avant le film.",
@@ -430,5 +429,8 @@
     "Shows": "Shows",
     "HeaderLibraryFolders": "Library Folders",
     "HeaderLandingScreens": "Landing Screens",
-    "LandingScreensHelp": "Select the default landing screen when clicking on a library."
+    "LandingScreensHelp": "Select the default landing screen when clicking on a library.",
+    "HeaderTermsOfPurchase": "Terms of Purchase",
+    "PrivacyPolicy": "Privacy policy",
+    "TermsOfUse": "Terms of use"
 }

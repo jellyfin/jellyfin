@@ -48,8 +48,7 @@
     "HeaderOfflineDownloads": "\u79bb\u7ebf\u5a92\u4f53",
     "HeaderOfflineDownloadsDescription": "Download media to your devices for easy offline use.",
     "CloudSyncFeatureDescription": "Sync your media to the cloud for easy backup, archiving, and converting.",
-    "CoverArtFeatureDescription": "Cover Art creates fun covers and other treatments to help you personalize your media images.",
-    "CoverArt": "\u5c01\u9762\u56fe",
+    "DvrFeatureDescription": "Schedule individual Live TV recordings, series recordings, and more with Emby DVR.",
     "ButtonCancelSyncJob": "\u53d6\u6d88\u540c\u6b65",
     "CancelSyncJobConfirmation": "Cancelling the sync job will remove downloaded media from the device during the next sync process. Are you sure you wish to proceed?",
     "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
@@ -430,5 +429,8 @@
     "Shows": "Shows",
     "HeaderLibraryFolders": "Library Folders",
     "HeaderLandingScreens": "Landing Screens",
-    "LandingScreensHelp": "Select the default landing screen when clicking on a library."
+    "LandingScreensHelp": "Select the default landing screen when clicking on a library.",
+    "HeaderTermsOfPurchase": "Terms of Purchase",
+    "PrivacyPolicy": "Privacy policy",
+    "TermsOfUse": "Terms of use"
 }

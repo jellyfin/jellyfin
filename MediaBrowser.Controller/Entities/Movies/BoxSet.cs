@@ -205,7 +205,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             if (base.IsVisible(user))
             {
-                return GetChildren(user, true).Any();
+                return base.GetChildren(user, true).Any();
             }
 
             return false;
