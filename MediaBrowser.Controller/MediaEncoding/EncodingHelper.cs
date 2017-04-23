@@ -732,7 +732,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase))
             {
-                param += " -x264opts:0 subme=0:rc_lookahead=10:me_range=4:me=dia:no_chroma_me:8x8dct=0:partitions=none";
+                param += " -x264opts:0 subme=0:me_range=4:rc_lookahead=10:me=dia:no_chroma_me:8x8dct=0:partitions=none";
             }
 
             if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase) &&

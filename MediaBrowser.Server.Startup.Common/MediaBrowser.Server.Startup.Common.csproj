@@ -73,25 +73,12 @@
     <Compile Include="Cryptography\X509Extension.cs" />
     <Compile Include="Cryptography\X509Extensions.cs" />
     <Compile Include="Cryptography\X520Attributes.cs" />
-    <Compile Include="ImageEncoderHelper.cs" />
     <Compile Include="IO\MemoryStreamProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SystemEvents.cs" />
     <Compile Include="UpdateLevelHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Emby.Drawing.ImageMagick\Emby.Drawing.ImageMagick.csproj">
-      <Project>{6cfee013-6e7c-432b-ac37-cabf0880c69a}</Project>
-      <Name>Emby.Drawing.ImageMagick</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Emby.Drawing.Net\Emby.Drawing.Net.csproj">
-      <Project>{c97a239e-a96c-4d64-a844-ccf8cc30aecb}</Project>
-      <Name>Emby.Drawing.Net</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj">
-      <Project>{08fff49b-f175-4807-a2b5-73b0ebd9f716}</Project>
-      <Name>Emby.Drawing</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj">
       <Project>{e383961b-9356-4d5d-8233-9a1079d03055}</Project>
       <Name>Emby.Server.Implementations</Name>
