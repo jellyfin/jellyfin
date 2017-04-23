@@ -48,8 +48,7 @@
     "HeaderOfflineDownloads": "Offline Media",
     "HeaderOfflineDownloadsDescription": "Download media naar je apparaten voor gemakkelijk offlineebruik.",
     "CloudSyncFeatureDescription": "Synchroniseer uw media naar de cloud voor eenvoudige backup, archivering en conversie.",
-    "CoverArtFeatureDescription": "Cover Art cre\u00ebert leuke covers en andere bewerkingen om u te helpen uw mediabeelden te personaliseren.",
-    "CoverArt": "Cover Art",
+    "DvrFeatureDescription": "Schedule individual Live TV recordings, series recordings, and more with Emby DVR.",
     "ButtonCancelSyncJob": "Annuleer synchronisatie",
     "CancelSyncJobConfirmation": "Als u de synchroniseertaak annuleert wordt de gesynchroniseerde media bij de volgende synchroniseertaak van het apparaat verwijderd. Weet u zeker dat u door wilt gaan?",
     "CinemaModeFeatureDescription": "Bioscoop mode geeft u de ware bioscoopervaring met trailers en aangepaste intro voor de weergave van uw keuze.",
@@ -430,5 +429,8 @@
     "Shows": "Shows",
     "HeaderLibraryFolders": "Library Folders",
     "HeaderLandingScreens": "Landing Screens",
-    "LandingScreensHelp": "Select the default landing screen when clicking on a library."
+    "LandingScreensHelp": "Select the default landing screen when clicking on a library.",
+    "HeaderTermsOfPurchase": "Terms of Purchase",
+    "PrivacyPolicy": "Privacy policy",
+    "TermsOfUse": "Terms of use"
 }

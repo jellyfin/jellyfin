@@ -48,8 +48,7 @@
     "HeaderOfflineDownloads": "Medios sin conexion",
     "HeaderOfflineDownloadsDescription": "Descargue sus medios en su dispositivo para f\u00e1cil uso mientras esta desconectado.",
     "CloudSyncFeatureDescription": "Sincronice sus medios a la nube para un f\u00e1cil respaldo, archivo y conversi\u00f3n.",
-    "CoverArtFeatureDescription": "Cover Art crea divertidas caratulas y da otros tratamientos para ayudar a personalizar las im\u00e1genes de sus medios.",
-    "CoverArt": "Cover Art",
+    "DvrFeatureDescription": "Programe grabaciones individuales de TV en Vivo, series, y mas con Emby DVR.",
     "ButtonCancelSyncJob": "Cancelar descarga",
     "CancelSyncJobConfirmation": "Cancelando el trabajo de sincronizaci\u00f3n eliminara los medios descargados del dispositivo durante el pr\u00f3ximo proceso de sincronizaci\u00f3n. \u00bfEsta seguro de que desea continuar?",
     "CinemaModeFeatureDescription": "El Modo Cine le da una verdadera experiencia de cine con trailers e intros personalizados antes de la funci\u00f3n.",
@@ -428,7 +427,10 @@
     "LabelSelectFolderGroups": "Agrupar autom\u00e1ticamente el contenido de las siguientes carpetas en vistas tales como Pel\u00edculas, M\u00fasica y TV:",
     "LabelSelectFolderGroupsHelp": "Las carpetas sin marcar ser\u00e1n mostradas individualmente en su propia vista.",
     "Shows": "Programas",
-    "HeaderLibraryFolders": "Library Folders",
+    "HeaderLibraryFolders": "Carpetas de Biblioteca",
     "HeaderLandingScreens": "Pantallas de Llegada",
-    "LandingScreensHelp": "Seleccione la pantalla de llegada por defecto al dar clic sobre una biblioteca."
+    "LandingScreensHelp": "Seleccione la pantalla de llegada por defecto al dar clic sobre una biblioteca.",
+    "HeaderTermsOfPurchase": "T\u00e9rminos de Compra",
+    "PrivacyPolicy": "Privacy policy",
+    "TermsOfUse": "Terms of use"
 }

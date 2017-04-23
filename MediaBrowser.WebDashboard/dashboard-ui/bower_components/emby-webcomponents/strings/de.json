@@ -48,8 +48,7 @@
     "HeaderOfflineDownloads": "Offline Medien",
     "HeaderOfflineDownloadsDescription": "Lade Medien auf deine Ger\u00e4te herunter um sie einfach offline zu nutzen.",
     "CloudSyncFeatureDescription": "Synchronisiere deine Medien in die Cloud f\u00fcr ein Backup, eine Archivierung und Konvertierung.",
-    "CoverArtFeatureDescription": "Cover Art erstellt z.B. lustige Cover und erlaubt dir eine weitergehende pers\u00f6nliche Gestaltung deiner Medienbilder.",
-    "CoverArt": "Cover Art",
+    "DvrFeatureDescription": "Schedule individual Live TV recordings, series recordings, and more with Emby DVR.",
     "ButtonCancelSyncJob": "Download abbrechen",
     "CancelSyncJobConfirmation": "Der Abbruch der Synchronisation wird bereits heruntergeladene Medien bei der n\u00e4chsten Synchronisation vom Ger\u00e4t l\u00f6schen. M\u00f6chtest du wirklich fortfahren?",
     "CinemaModeFeatureDescription": "Der Cinema Mode bringt das richtige Kinogef\u00fchl mit Trailern und eigenen Intros vor dem Hauptfilm.",
@@ -425,10 +424,13 @@
     "Suggestions": "Empfehlungen",
     "Favorites": "Favoriten",
     "Collections": "Sammlungen",
-    "LabelSelectFolderGroups": "Automatically group content from the following folders into views such as Movies, Music and TV:",
-    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own view.",
+    "LabelSelectFolderGroups": "Gruppiere Inhalte von folgenden Verzeichnissen automatisch zu Ansichten wie beispielsweise Filme, Musik und TV:",
+    "LabelSelectFolderGroupsHelp": "Verzeichnisse die nicht markiert sind werden alleine mit ihren eigenen Ansichten angezeigt.",
     "Shows": "Serien",
-    "HeaderLibraryFolders": "Library Folders",
+    "HeaderLibraryFolders": "Bibliotheksverzeichnisse",
     "HeaderLandingScreens": "Einstiegsbildschirme",
-    "LandingScreensHelp": "W\u00e4hle den Standard-Einstiegsbildschirm bei Klick auf eine Bibliothek."
+    "LandingScreensHelp": "W\u00e4hle den Standard-Einstiegsbildschirm bei Klick auf eine Bibliothek.",
+    "HeaderTermsOfPurchase": "Terms of Purchase",
+    "PrivacyPolicy": "Privacy policy",
+    "TermsOfUse": "Terms of use"
 }

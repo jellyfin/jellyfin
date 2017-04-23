@@ -795,7 +795,7 @@
     "TabNfoSettings": "Nfo \u8bbe\u5b9a",
     "HeaderKodiMetadataHelp": "Emby includes native support for Nfo metadata files. To enable or disable Nfo metadata, use the Metadata tab to configure options for your media types.",
     "LabelKodiMetadataUser": "\u540c\u6b65\u7528\u6237\u7684\u89c2\u770b\u65e5\u671f\u5230nfo\u6587\u4ef6:",
-    "LabelKodiMetadataUserHelp": "Enable this to keep watch data in sync between Emby Server and Nfo files.",
+    "LabelKodiMetadataUserHelp": "Enable this to save watch data to Nfo files for other applications to utilize.",
     "LabelKodiMetadataDateFormat": "\u53d1\u884c\u65e5\u671f\u683c\u5f0f\uff1a",
     "LabelKodiMetadataDateFormatHelp": "Nfo\u7684\u6240\u6709\u65e5\u671f\u5c06\u4f7f\u7528\u8fd9\u79cd\u683c\u5f0f\u88ab\u8bfb\u53d6\u548c\u5199\u5165\u3002",
     "LabelKodiMetadataSaveImagePaths": "\u4fdd\u5b58\u56fe\u50cf\u8def\u5f84\u5728NFO\u6587\u4ef6",
