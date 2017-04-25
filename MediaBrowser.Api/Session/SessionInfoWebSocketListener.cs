@@ -58,7 +58,7 @@ namespace MediaBrowser.Api.Session
 
         void _sessionManager_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
         {
-            SendData(false);
+            SendData(!e.IsAutomated);
         }
 
         void _sessionManager_PlaybackStopped(object sender, PlaybackStopEventArgs e)

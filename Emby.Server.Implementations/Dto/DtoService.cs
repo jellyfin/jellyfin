@@ -499,7 +499,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.BasicSyncInfo) || fields.Contains(ItemFields.SyncInfo))
             {
-                var userCanSync = user != null && user.Policy.EnableSync;
+                var userCanSync = user != null && user.Policy.EnableContentDownloading;
                 if (userCanSync && _syncManager.SupportsSync(item))
                 {
                     dto.SupportsSync = true;
