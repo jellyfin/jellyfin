@@ -715,7 +715,8 @@ namespace Emby.Server.Implementations.Session
                 ClientName = session.Client,
                 DeviceId = session.DeviceId,
                 IsPaused = info.IsPaused,
-                PlaySessionId = info.PlaySessionId
+                PlaySessionId = info.PlaySessionId,
+                IsAutomated = isAutomated
 
             }, _logger);
 
