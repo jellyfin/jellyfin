@@ -942,7 +942,8 @@ namespace Emby.Server.Implementations.Library
         {
             return new UserPolicy
             {
-                EnableSync = true
+                EnableContentDownloading = true,
+                EnableSyncTranscoding = true
             };
         }
 

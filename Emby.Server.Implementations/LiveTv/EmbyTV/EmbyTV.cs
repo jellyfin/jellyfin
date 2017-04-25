@@ -422,7 +422,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     if (!string.IsNullOrWhiteSpace(epgChannel.Name))
                     {
-                        tunerChannel.Name = epgChannel.Name;
+                        //tunerChannel.Name = epgChannel.Name;
                     }
                     if (!string.IsNullOrWhiteSpace(epgChannel.ImageUrl))
                     {

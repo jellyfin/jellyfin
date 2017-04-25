@@ -16,6 +16,7 @@ namespace MediaBrowser.Controller.Library
         public BaseItemInfo MediaInfo { get; set; }
         public string MediaSourceId { get; set; }
         public bool IsPaused { get; set; }
+        public bool IsAutomated { get; set; }
 
         public string DeviceId { get; set; }
         public string DeviceName { get; set; }
