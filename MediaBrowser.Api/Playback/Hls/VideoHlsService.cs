@@ -20,6 +20,7 @@ namespace MediaBrowser.Api.Playback.Hls
     /// <summary>
     /// Class VideoHlsService
     /// </summary>
+    [Authenticated]
     public class VideoHlsService : BaseHlsService
     {
         public object Get(GetLiveHlsStream request)
