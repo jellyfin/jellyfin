@@ -258,7 +258,7 @@
     "PleaseEnterNameOrId": "\u8bf7\u8f93\u5165\u4e00\u4e2a\u540d\u79f0\u6216\u4e00\u4e2a\u5916\u90e8ID\u3002",
     "MessageItemSaved": "\u9879\u76ee\u5df2\u4fdd\u5b58\u3002",
     "SearchResults": "\u641c\u7d22\u7ed3\u679c",
-    "SyncToOtherDevice": "\u540c\u6b65\u5230\u5176\u4ed6\u8bbe\u5907",
+    "DownloadToOtherDevice": "Download to other device",
     "MakeAvailableOffline": "Make available offline",
     "ServerNameIsRestarting": "Emby Server - {0} \u91cd\u542f\u4e2d\u3002",
     "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",

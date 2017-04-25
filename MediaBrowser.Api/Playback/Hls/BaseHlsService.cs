@@ -13,10 +13,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Api.Playback.Hls
 {

@@ -258,7 +258,7 @@
     "PleaseEnterNameOrId": "Unesite naziv ili vanjski Id.",
     "MessageItemSaved": "Stavka je snimljena.",
     "SearchResults": "Rezultati pretra\u017eivanja",
-    "SyncToOtherDevice": "Sinkronizacija na druge ure\u0111aje",
+    "DownloadToOtherDevice": "Download to other device",
     "MakeAvailableOffline": "Dostupno izvanmre\u017eno",
     "ServerNameIsRestarting": "Emby Server - {0} se ponovo pokre\u0107e.",
     "ServerNameIsShuttingDown": "Emby Server - {0} se gasi.",

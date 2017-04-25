@@ -37,6 +37,7 @@
         SetRepeatMode = 29,
         ChannelUp = 30,
         ChannelDown = 31,
-        SetMaxStreamingBitrate = 31
+        SetMaxStreamingBitrate = 31,
+        Guide = 32
     }
 }

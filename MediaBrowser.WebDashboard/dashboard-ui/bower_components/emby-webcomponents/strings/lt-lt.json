@@ -258,7 +258,7 @@
     "PleaseEnterNameOrId": "\u012eveskite vard\u0105 arba i\u0161orin\u012f ID.",
     "MessageItemSaved": "Elementas i\u0161saugotas.",
     "SearchResults": "Paie\u0161kos rezultatai",
-    "SyncToOtherDevice": "Sinchronizuoti \u012f kit\u0105 \u012frengin\u012f",
+    "DownloadToOtherDevice": "Download to other device",
     "MakeAvailableOffline": "\u012egalinti \u017ei\u016br\u0117jim\u0105 neprisijungus",
     "ServerNameIsRestarting": "Emby Serveris - {0} leid\u017eiamas i\u0161 naujo.",
     "ServerNameIsShuttingDown": "Emby Serveris - {0} i\u0161sijungia.",

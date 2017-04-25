@@ -258,7 +258,7 @@
     "PleaseEnterNameOrId": "Pros\u00edm, zadejte n\u00e1zev nebo extern\u00ed Id.",
     "MessageItemSaved": "Polo\u017eka ulo\u017eena.",
     "SearchResults": "V\u00fdsledky vyhled\u00e1v\u00e1n\u00ed",
-    "SyncToOtherDevice": "Synchronizovat na dal\u0161\u00ed za\u0159\u00edzen\u00ed",
+    "DownloadToOtherDevice": "Download to other device",
     "MakeAvailableOffline": "Zp\u0159\u00edstupnit offline",
     "ServerNameIsRestarting": "Emby Server - {0} je restartov\u00e1n.",
     "ServerNameIsShuttingDown": "Emby Server - {0} je vyp\u00edn\u00e1n.",

@@ -258,7 +258,7 @@
     "PleaseEnterNameOrId": "Por favor introduzca un nombre o id externo.",
     "MessageItemSaved": "\u00cdtem guardado.",
     "SearchResults": "Resultados de la b\u00fasqueda",
-    "SyncToOtherDevice": "Sincronizar a otro dispositivo",
+    "DownloadToOtherDevice": "Download to other device",
     "MakeAvailableOffline": "Hacer disponible sin conexi\u00f3n",
     "ServerNameIsRestarting": "El Servidor Emby - {0} se esta reiniciando.",
     "ServerNameIsShuttingDown": "El Servidor Emby - {0} se esta apagando.",
@@ -431,6 +431,6 @@
     "HeaderLandingScreens": "Pantallas de Llegada",
     "LandingScreensHelp": "Seleccione la pantalla de llegada por defecto al dar clic sobre una biblioteca.",
     "HeaderTermsOfPurchase": "T\u00e9rminos de Compra",
-    "PrivacyPolicy": "Privacy policy",
-    "TermsOfUse": "Terms of use"
+    "PrivacyPolicy": "Pol\u00edtica de privacidad",
+    "TermsOfUse": "T\u00e9rminos de uso"
 }
