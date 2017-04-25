@@ -258,7 +258,7 @@
     "PleaseEnterNameOrId": "Indtast venligst et navn eller eksternt Id.",
     "MessageItemSaved": "Element gemt.",
     "SearchResults": "S\u00f8geresultater",
-    "SyncToOtherDevice": "Synk til anden enhed",
+    "DownloadToOtherDevice": "Download to other device",
     "MakeAvailableOffline": "G\u00f8r tilg\u00e6ngelig offline",
     "ServerNameIsRestarting": "Emby Server - {0} genstarter.",
     "ServerNameIsShuttingDown": "Emby Server - {0} lukker ned.",

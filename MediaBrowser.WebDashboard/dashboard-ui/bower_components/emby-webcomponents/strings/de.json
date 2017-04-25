@@ -48,7 +48,7 @@
     "HeaderOfflineDownloads": "Offline Medien",
     "HeaderOfflineDownloadsDescription": "Lade Medien auf deine Ger\u00e4te herunter um sie einfach offline zu nutzen.",
     "CloudSyncFeatureDescription": "Synchronisiere deine Medien in die Cloud f\u00fcr ein Backup, eine Archivierung und Konvertierung.",
-    "DvrFeatureDescription": "Schedule individual Live TV recordings, series recordings, and more with Emby DVR.",
+    "DvrFeatureDescription": "Plane individuelle Aufnahmen von Live-TV, Serien und mehr mit Emby DVR.",
     "ButtonCancelSyncJob": "Download abbrechen",
     "CancelSyncJobConfirmation": "Der Abbruch der Synchronisation wird bereits heruntergeladene Medien bei der n\u00e4chsten Synchronisation vom Ger\u00e4t l\u00f6schen. M\u00f6chtest du wirklich fortfahren?",
     "CinemaModeFeatureDescription": "Der Cinema Mode bringt das richtige Kinogef\u00fchl mit Trailern und eigenen Intros vor dem Hauptfilm.",
@@ -258,7 +258,7 @@
     "PleaseEnterNameOrId": "Bitte gib einen Namen oder eine externe Id an.",
     "MessageItemSaved": "Element gespeichert",
     "SearchResults": "Suchergebnisse",
-    "SyncToOtherDevice": "Mit einem anderen Ger\u00e4t synchronisieren",
+    "DownloadToOtherDevice": "Download to other device",
     "MakeAvailableOffline": "Offline verf\u00fcgbar machen",
     "ServerNameIsRestarting": "Emby Server - {0} startet neu.",
     "ServerNameIsShuttingDown": "Emby Server - {0} f\u00e4hrt herunter.",
@@ -430,7 +430,7 @@
     "HeaderLibraryFolders": "Bibliotheksverzeichnisse",
     "HeaderLandingScreens": "Einstiegsbildschirme",
     "LandingScreensHelp": "W\u00e4hle den Standard-Einstiegsbildschirm bei Klick auf eine Bibliothek.",
-    "HeaderTermsOfPurchase": "Terms of Purchase",
-    "PrivacyPolicy": "Privacy policy",
-    "TermsOfUse": "Terms of use"
+    "HeaderTermsOfPurchase": "Bestellungsbedingungen",
+    "PrivacyPolicy": "Datenschutzbestimmungen",
+    "TermsOfUse": "Nutzungsbedingungen"
 }

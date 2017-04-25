@@ -258,7 +258,7 @@
     "PleaseEnterNameOrId": "Prosz\u0119 wprowad\u017a nazw\u0119 lub zewn\u0119trzne Id.",
     "MessageItemSaved": "Obiekt zapisany.",
     "SearchResults": "Search Results",
-    "SyncToOtherDevice": "Sync to other device",
+    "DownloadToOtherDevice": "Download to other device",
     "MakeAvailableOffline": "Make available offline",
     "ServerNameIsRestarting": "Emby Server - {0} is restarting.",
     "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",

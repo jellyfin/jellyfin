@@ -258,7 +258,7 @@
     "PleaseEnterNameOrId": "Voer een naam of een externe Id in",
     "MessageItemSaved": "Item opgeslagen.",
     "SearchResults": "Zoekresultaten",
-    "SyncToOtherDevice": "Synchroniseren met een ander apparaat",
+    "DownloadToOtherDevice": "Download to other device",
     "MakeAvailableOffline": "Maak offline beschikbaar",
     "ServerNameIsRestarting": "Emby Server - {0} is opnieuw aan het opstarten.",
     "ServerNameIsShuttingDown": "Emby Server - {0} is aan het afsluiten.",

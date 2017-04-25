@@ -1106,7 +1106,7 @@
   "OptionEnableTranscodingThrottle": "Enable throttling",
   "OptionEnableTranscodingThrottleHelp": "Throttling will automatically adjust transcoding speed in order to minimize server cpu utilization during playback.",
   "LabelUploadSpeedLimit": "Upload speed limit (Mbps):",
-  "OptionAllowSyncTranscoding": "Allow syncing that requires transcoding",
+  "OptionAllowSyncTranscoding": "Allow downloading that requires transcoding",
   "HeaderPlayback": "Media Playback",
   "OptionAllowAudioPlaybackTranscoding": "Allow audio playback that requires transcoding",
   "OptionAllowVideoPlaybackTranscoding": "Allow video playback that requires transcoding",
@@ -1975,5 +1975,6 @@
   "Never": "Never",
   "EveryNDays": "Every {0} days",
   "HeaderNewDevices": "New Devices",
-  "HeaderOnNow": "On Now"
+  "HeaderOnNow": "On Now",
+  "Downloading": "Downloading"
 }

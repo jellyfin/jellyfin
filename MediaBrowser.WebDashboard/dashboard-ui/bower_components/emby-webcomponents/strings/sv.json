@@ -258,7 +258,7 @@
     "PleaseEnterNameOrId": "Ange ett namn eller externt id.",
     "MessageItemSaved": "Objektet har sparats.",
     "SearchResults": "S\u00f6kresultat",
-    "SyncToOtherDevice": "Synka till annan enhet",
+    "DownloadToOtherDevice": "Download to other device",
     "MakeAvailableOffline": "G\u00f6r tillg\u00e4nglig offline",
     "ServerNameIsRestarting": "Emby Server - {0} startas om.",
     "ServerNameIsShuttingDown": "Emby Server - {0} st\u00e4ngs ner.",

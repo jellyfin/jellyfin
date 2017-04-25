@@ -258,7 +258,7 @@
     "PleaseEnterNameOrId": "Introduzca un nombre o un identificador externo.",
     "MessageItemSaved": "Elemento grabado.",
     "SearchResults": "Search Results",
-    "SyncToOtherDevice": "Sync to other device",
+    "DownloadToOtherDevice": "Download to other device",
     "MakeAvailableOffline": "Make available offline",
     "ServerNameIsRestarting": "Emby Server - {0} is restarting.",
     "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",

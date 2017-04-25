@@ -258,7 +258,7 @@
     "PleaseEnterNameOrId": "Por favor, digite um nome ou Id externo.",
     "MessageItemSaved": "Item salvo.",
     "SearchResults": "Resultados da Busca",
-    "SyncToOtherDevice": "Sincronizar para outro dispositivo",
+    "DownloadToOtherDevice": "Download to other device",
     "MakeAvailableOffline": "Disponibilizar Offline",
     "ServerNameIsRestarting": "Servidor Emby - {0} est\u00e1 reiniciando.",
     "ServerNameIsShuttingDown": "Servidor Emby - {0} est\u00e1 desligando.",
