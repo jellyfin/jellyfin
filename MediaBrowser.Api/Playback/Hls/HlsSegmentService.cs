@@ -76,6 +76,7 @@ namespace MediaBrowser.Api.Playback.Hls
         public string SegmentId { get; set; }
     }
 
+    [Authenticated]
     public class HlsSegmentService : BaseApiService
     {
         private readonly IServerApplicationPaths _appPaths;
