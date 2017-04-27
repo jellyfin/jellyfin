@@ -56,6 +56,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
+        public string AlbumCoverPath { get; set; }
+
         public string InputAudioSync { get; set; }
         public string InputVideoSync { get; set; }
         public TransportStreamTimestamp InputTimestamp { get; set; }

@@ -1979,5 +1979,66 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return args;
         }
+
+        public string GetProgressiveAudioFullCommandLine(EncodingJobInfo state, EncodingOptions encodingOptions, string outputPath)
+        {
+            var audioTranscodeParams = new List<string>();
+
+            var bitrate = state.OutputAudioBitrate;
+
+            if (bitrate.HasValue)
+            {
+                audioTranscodeParams.Add("-ab " + bitrate.Value.ToString(_usCulture));
+            }
+
+            if (state.OutputAudioChannels.HasValue)
+            {
+                audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(_usCulture));
+            }
+
+            // opus will fail on 44100
+            if (!string.Equals(state.OutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase))
+            {
+                if (state.OutputAudioSampleRate.HasValue)
+                {
+                    audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(_usCulture));
+                }
+            }
+
+            var albumCoverInput = string.Empty;
+            var mapArgs = string.Empty;
+            var metadata = string.Empty;
+            var vn = string.Empty;
+
+            var hasArt = !string.IsNullOrWhiteSpace(state.AlbumCoverPath);
+            hasArt = false;
+
+            if (hasArt)
+            {
+                albumCoverInput = " -i \"" + state.AlbumCoverPath + "\"";
+                mapArgs = " -map 0:a -map 1:v -c:v copy";
+                metadata = " -metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover(Front)\"";
+            }
+            else
+            {
+                vn = " -vn";
+            }
+
+            var threads = GetNumberOfThreads(state, encodingOptions, false);
+
+            var inputModifier = GetInputModifier(state, encodingOptions);
+
+            return string.Format("{0} {1}{7}{8} -threads {2}{3} {4} -id3v2_version 3 -write_id3v1 1{6} -y \"{5}\"",
+                inputModifier,
+                GetInputArgument(state, encodingOptions),
+                threads,
+                vn,
+                string.Join(" ", audioTranscodeParams.ToArray()),
+                outputPath,
+                metadata,
+                albumCoverInput,
+                mapArgs).Trim();
+        }
+
     }
 }
