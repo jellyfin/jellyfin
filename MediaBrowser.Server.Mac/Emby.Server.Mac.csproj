@@ -2345,9 +2345,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\moviesrecommended.js">
       <Link>Resources\dashboard-ui\scripts\moviesrecommended.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\moviestudios.js">
-      <Link>Resources\dashboard-ui\scripts\moviestudios.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\movietrailers.js">
       <Link>Resources\dashboard-ui\scripts\movietrailers.js</Link>
     </BundleResource>
@@ -2357,11 +2354,11 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\musicartists.js">
       <Link>Resources\dashboard-ui\scripts\musicartists.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\musicfolders.js">
-      <Link>Resources\dashboard-ui\scripts\musicfolders.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\musicgenres.js">
       <Link>Resources\dashboard-ui\scripts\musicgenres.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\musicplaylists.js">
+      <Link>Resources\dashboard-ui\scripts\musicplaylists.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\musicrecommended.js">
       <Link>Resources\dashboard-ui\scripts\musicrecommended.js</Link>
