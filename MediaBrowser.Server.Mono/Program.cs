@@ -258,7 +258,12 @@ namespace MediaBrowser.Server.Mono
 
             if (!Debugger.IsAttached)
             {
-                Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
+                var message = LogHelper.GetLogMessage(exception).ToString();
+
+                if (message.IndexOf("InotifyWatcher", StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
+                }
             }
         }
 
