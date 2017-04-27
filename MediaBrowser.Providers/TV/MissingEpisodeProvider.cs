@@ -203,7 +203,7 @@ namespace MediaBrowser.Providers.TV
             CancellationToken cancellationToken)
         {
             var existingEpisodes = (from s in series
-                                    from c in s.GetRecursiveChildren().OfType<Episode>()
+                                    from c in s.GetRecursiveChildren(i => i is Episode).Cast<Episode>()
                                     select new Tuple<int, Episode>((c.ParentIndexNumber ?? 0) , c))
                                    .ToList();
 
@@ -275,13 +275,16 @@ namespace MediaBrowser.Providers.TV
             return hasChanges;
         }
 
-        private Series DetermineAppropriateSeries(IEnumerable<Series> series, int seasonNumber)
+        private Series DetermineAppropriateSeries(List<Series> series, int seasonNumber)
         {
-            var seriesAndOffsets = series.ToList();
+            if (series.Count == 1)
+            {
+                return series[0];
+            }
 
-            return seriesAndOffsets.FirstOrDefault(s => s.GetRecursiveChildren().OfType<Season>().Any(season => (season.IndexNumber) == seasonNumber)) ??
-                            seriesAndOffsets.FirstOrDefault(s => s.GetRecursiveChildren().OfType<Season>().Any(season => (season.IndexNumber) == 1)) ??
-                            seriesAndOffsets.OrderBy(s => s.GetRecursiveChildren().OfType<Season>().Select(season => season.IndexNumber).Min()).First();
+            return series.FirstOrDefault(s => s.GetRecursiveChildren(i => i is Season).Any(season => (season.IndexNumber) == seasonNumber)) ??
+                            series.FirstOrDefault(s => s.GetRecursiveChildren(i => i is Season).Any(season => (season.IndexNumber) == 1)) ??
+                            series.OrderBy(s => s.GetRecursiveChildren(i => i is Season).Select(season => season.IndexNumber).Min()).First();
         }
 
         /// <summary>
@@ -292,7 +295,7 @@ namespace MediaBrowser.Providers.TV
             bool allowMissingEpisodes)
         {
             var existingEpisodes = (from s in series
-                                    from c in s.GetRecursiveChildren().OfType<Episode>()
+                                    from c in s.GetRecursiveChildren(i => i is Episode).Cast<Episode>()
                                     select new { Episode = c })
                                    .ToList();
 
@@ -402,7 +405,7 @@ namespace MediaBrowser.Providers.TV
 
                     // Season does not have a number
                     // Remove if there are no episodes directly in series without a season number
-                    return i.Series.GetRecursiveChildren().OfType<Episode>().All(s => s.ParentIndexNumber.HasValue || s.IsInSeasonFolder);
+                    return i.Series.GetRecursiveChildren(e => e is Episode).Cast<Episode>().All(s => s.ParentIndexNumber.HasValue || s.IsInSeasonFolder);
                 })
                 .ToList();
 
