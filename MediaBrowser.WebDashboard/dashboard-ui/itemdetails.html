@@ -19,7 +19,7 @@
 
     <div class="detailPageContent padded-bottom-page">
 
-        <div class="detailPagePrimaryContainer">
+        <div class="detailPagePrimaryContainer padded-left padded-right">
             <div class="detailImageContainer">
             </div>
             <div class="detailPagePrimaryContent">
@@ -94,82 +94,84 @@
                 </div>
             </div>
         </div>
-        <div class="seriesTimerScheduleSection detailSection hide" style="margin-top:-3em;">
-            <h1>
+        <div class="seriesTimerScheduleSection verticalSection detailVerticalSection hide" style="margin-top:-3em;">
+            <h2 class="sectionTitle padded-left">
                 ${HeaderSchedule}
-            </h1>
-            <div class="seriesTimerSchedule">
+            </h2>
+            <div class="seriesTimerSchedule padded-left padded-right">
             </div>
         </div>
         <div class="collectionItems"></div>
-        <div class="nextUpSection detailSection hide">
-            <h1>
+        <div class="nextUpSection verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left">
                 ${HeaderNextUp}
-            </h1>
-            <div is="emby-itemscontainer" class="nextUpItems vertical-wrap"></div>
+            </h2>
+            <div is="emby-itemscontainer" class="nextUpItems vertical-wrap padded-left padded-right"></div>
         </div>
-        <div id="childrenCollapsible" class="hide detailSection">
-            <h1 class="childrenSectionHeader">
+        <div id="childrenCollapsible" class="hide verticalSection detailVerticalSection">
+            <h2 class="childrenSectionHeader sectionTitle sectionTitle-cards padded-left">
                 <span id="childrenTitle"></span>
-            </h1>
+            </h2>
             <div id="childrenContent">
-                <div is="emby-itemscontainer" class="childrenItemsContainer itemsContainer" style="text-align: left;"></div>
+                <div is="emby-itemscontainer" class="childrenItemsContainer itemsContainer padded-left padded-right" style="text-align: left;"></div>
             </div>
         </div>
-        <div id="additionalPartsCollapsible" class="detailSection hide">
-            <h1>
+        <div id="additionalPartsCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left">
                 ${HeaderAdditionalParts}
-            </h1>
-            <div id="additionalPartsContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap"></div>
+            </h2>
+            <div id="additionalPartsContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right"></div>
         </div>
-        <div id="castCollapsible" class="detailSection hide">
-            <h1 id="peopleHeader">
+        <div id="castCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 id="peopleHeader" class="sectionTitle sectionTitle-cards padded-left">
                 ${HeaderCastCrew}
-            </h1>
-            <div id="castContent" is="emby-itemscontainer" class="itemsContainer"></div>
-            <button is="emby-button" type="button" class="raised more morePeople hide">${ButtonMore}</button>
+            </h2>
+            <div id="castContent" is="emby-itemscontainer" class="itemsContainer padded-left padded-right"></div>
+            <div class="padded-left">
+                <button is="emby-button" type="button" class="raised more morePeople hide">${ButtonMore}</button>
+            </div>
         </div>
-        <div id="seriesScheduleSection" class="detailSection hide">
+        <div id="seriesScheduleSection" class="verticalSection detailVerticalSection hide">
             <h1>
                 ${HeaderUpcomingOnTV}
             </h1>
-            <div id="seriesScheduleList" is="emby-itemscontainer" class="itemsContainer vertical-list"></div>
+            <div id="seriesScheduleList" is="emby-itemscontainer" class="itemsContainer vertical-list padded-left padded-right"></div>
         </div>
 
-        <div class="detailSection photoInfo hide">
-            <h1>
+        <div class="verticalSection detailVerticalSection photoInfo hide">
+            <h2 class="sectionTitle padded-left">
                 ${HeaderPhotoInfo}
-            </h1>
-            <div>
-                <div class="photoInfoContent"></div>
-            </div>
+            </h2>
+            <div class="photoInfoContent padded-left padded-right"></div>
         </div>
 
-        <div id="specialsCollapsible" class="detailSection hide">
-            <h1>
+        <div id="specialsCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left">
                 ${HeaderSpecialFeatures}
-            </h1>
-            <div id="specialsContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap"></div>
+            </h2>
+            <div id="specialsContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right"></div>
         </div>
-        <div id="musicVideosCollapsible" class="detailSection hide">
-            <h1>
+        <div id="musicVideosCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left">
                 ${HeaderMusicVideos}
-            </h1>
-            <div id="musicVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap"></div>
+            </h2>
+            <div id="musicVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right"></div>
         </div>
-        <div id="moreFromSection" class="detailSection hide">
-            <h1 class="moreFromHeader"></h1>
+        <div id="moreFromSection" class="verticalSection detailVerticalSection hide">
+            <h2 class="moreFromHeader sectionTitle sectionTitle-cards padded-left"></h2>
             <div id="moreFromItems"></div>
         </div>
-        <div id="similarCollapsible" class="detailSection hide">
-            <h1>${HeaderMoreLikeThis}</h1>
+        <div id="similarCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left">
+                ${HeaderMoreLikeThis}
+            </h2>
             <div class="similarContent"></div>
         </div>
-        <div id="criticReviewsCollapsible" class="detailSection hide">
-            <h1>
+        <div id="criticReviewsCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle padded-left">
                 ${HeaderAwardsAndReviews}
-            </h1>
-            <div>
+            </h2>
+            <div class="padded-left padded-right">
                 <p id="awardSummary"></p>
                 <div class="paperList" id="criticRatingSummary">
                     <div class="listItem">
@@ -185,29 +187,29 @@
             </div>
         </div>
 
-        <div id="scenesCollapsible" class="detailSection hide">
-            <h1>
+        <div id="scenesCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left">
                 ${HeaderScenes}
-            </h1>
-            <div is="emby-itemscontainer" id="scenesContent" class="itemsContainer"></div>
+            </h2>
+            <div is="emby-itemscontainer" id="scenesContent" class="itemsContainer padded-left padded-right"></div>
         </div>
-        <div id="themeSongsCollapsible" class="detailSection hide">
-            <h1>
+        <div id="themeSongsCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle padded-left">
                 ${HeaderThemeSongs}
-            </h1>
-            <div id="themeSongsContent" is="emby-itemscontainer"></div>
+            </h2>
+            <div id="themeSongsContent" is="emby-itemscontainer" class="padded-left padded-right"></div>
         </div>
 
-        <div id="themeVideosCollapsible" class="detailSection hide">
-            <h1>
+        <div id="themeVideosCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left">
                 ${HeaderThemeVideos}
-            </h1>
-            <div id="themeVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap"></div>
+            </h2>
+            <div id="themeVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right"></div>
         </div>
 
-        <div class="detailSection audioVideoMediaInfo hide">
-            <h1>${HeaderMediaInfo}</h1>
-            <div>
+        <div class="verticalSection detailVerticalSection audioVideoMediaInfo hide">
+            <h2 class="sectionTitle padded-left">${HeaderMediaInfo}</h2>
+            <div class="padded-left padded-right">
                 <div class="splitVersionContainer" style="border-bottom: 1px solid #444; padding: 1em 0;">
                     <button is="emby-button" type="button" class="raised btnSplitVersions subdued">${ButtonSplitVersionsApart}</button>
                 </div>

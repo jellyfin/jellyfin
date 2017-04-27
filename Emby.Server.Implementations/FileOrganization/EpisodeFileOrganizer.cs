@@ -470,7 +470,7 @@ namespace Emby.Server.Implementations.FileOrganization
                 return new List<string>();
             }
 
-            var episodePaths = series.GetRecursiveChildren()
+            var episodePaths = series.GetRecursiveChildren(i => i is Episode)
                 .OfType<Episode>()
                 .Where(i =>
                 {

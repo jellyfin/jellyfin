@@ -134,34 +134,27 @@ namespace MediaBrowser.Controller.Playlists
             var musicGenre = item as MusicGenre;
             if (musicGenre != null)
             {
-                var items = LibraryManager.GetItemList(new InternalItemsQuery(user)
+                return LibraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     Recursive = true,
                     IncludeItemTypes = new[] { typeof(Audio).Name },
-                    Genres = new[] { musicGenre.Name }
+                    GenreIds = new[] { musicGenre.Id.ToString("N") },
+                    SortBy = new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName },
+                    SortOrder = SortOrder.Ascending
                 });
-
-                return LibraryManager.Sort(items, user, new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }, SortOrder.Ascending);
             }
 
             var musicArtist = item as MusicArtist;
             if (musicArtist != null)
             {
-                Func<BaseItem, bool> filter = i =>
+                return LibraryManager.GetItemList(new InternalItemsQuery(user)
                 {
-                    var audio = i as Audio;
-                    return audio != null && audio.HasAnyArtist(musicArtist.Name);
-                };
-
-                var items = user == null
-                    ? LibraryManager.RootFolder.GetRecursiveChildren(filter)
-                    : user.RootFolder.GetRecursiveChildren(user, new InternalItemsQuery(user)
-                    {
-                        IncludeItemTypes = new[] { typeof(Audio).Name },
-                        ArtistIds = new[] { musicArtist.Id.ToString("N") }
-                    });
-
-                return LibraryManager.Sort(items, user, new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }, SortOrder.Ascending);
+                    Recursive = true,
+                    IncludeItemTypes = new[] { typeof(Audio).Name },
+                    ArtistIds = new[] { musicArtist.Id.ToString("N") },
+                    SortBy = new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName },
+                    SortOrder = SortOrder.Ascending
+                });
             }
 
             var folder = item as Folder;

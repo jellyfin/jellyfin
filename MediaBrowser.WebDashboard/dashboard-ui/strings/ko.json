@@ -1,5 +1,6 @@
 {
     "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
     "LabelPrevious": "\uc774\uc804",
     "LabelFinish": "\ub05d\ub0b4\uae30",
     "LabelNext": "\ub2e4\uc74c",
@@ -1107,7 +1108,7 @@
     "OptionEnableTranscodingThrottle": "throttling \uc0ac\uc6a9",
     "OptionEnableTranscodingThrottleHelp": "throttling \uc740 \uc7ac\uc0dd\ud558\ub294 \ub3d9\uc548 \uc11c\ubc84 CPU \uc0ac\uc6a9\ub960\uc744 \ucd5c\uc18c\ud654\ud558\uae30 \uc704\ud558\uc5ec \uc790\ub3d9\uc73c\ub85c \ud2b8\ub79c\uc2a4\ucf54\ub529 \uc18d\ub3c4\ub97c \uc870\uc808\ud569\ub2c8\ub2e4.",
     "LabelUploadSpeedLimit": "\uc5c5\ub85c\ub4dc \uc18d\ub3c4 \uc81c\ud55c (Mbps):",
-    "OptionAllowSyncTranscoding": "Allow syncing that requires transcoding",
+    "OptionAllowSyncTranscoding": "Allow downloading that requires transcoding",
     "HeaderPlayback": "\ubbf8\ub514\uc5b4 \uc7ac\uc0dd",
     "OptionAllowAudioPlaybackTranscoding": "\ud2b8\ub79c\uc2a4\ucf54\ub529\uc774 \ud544\uc694\ud55c \uc624\ub514\uc624 \uc7ac\uc0dd \ud5c8\uc6a9",
     "OptionAllowVideoPlaybackTranscoding": "\ud2b8\ub79c\uc2a4\ucf54\ub529\uc774 \ud544\uc694\ud55c \ube44\ub514\uc624 \uc7ac\uc0dd \ud5c8\uc6a9",

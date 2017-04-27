@@ -15,6 +15,8 @@ namespace MediaBrowser.Api.Playback.Hls
     /// <summary>
     /// Class GetHlsAudioSegment
     /// </summary>
+    // Can't require authentication just yet due to seeing some requests come from Chrome without full query string
+    //[Authenticated]
     [Route("/Audio/{Id}/hls/{SegmentId}/stream.mp3", "GET")]
     [Route("/Audio/{Id}/hls/{SegmentId}/stream.aac", "GET")]
     public class GetHlsAudioSegmentLegacy
@@ -38,6 +40,7 @@ namespace MediaBrowser.Api.Playback.Hls
     /// Class GetHlsVideoSegment
     /// </summary>
     [Route("/Videos/{Id}/hls/{PlaylistId}/stream.m3u8", "GET")]
+    [Authenticated]
     public class GetHlsPlaylistLegacy
     {
         // TODO: Deprecate with new iOS app
@@ -52,6 +55,7 @@ namespace MediaBrowser.Api.Playback.Hls
     }
 
     [Route("/Videos/ActiveEncodings", "DELETE")]
+    [Authenticated]
     public class StopEncodingProcess
     {
         [ApiMember(Name = "DeviceId", Description = "The device id of the client requesting. Used to stop encoding processes when needed.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
@@ -64,6 +68,8 @@ namespace MediaBrowser.Api.Playback.Hls
     /// <summary>
     /// Class GetHlsVideoSegment
     /// </summary>
+    // Can't require authentication just yet due to seeing some requests come from Chrome without full query string
+    //[Authenticated]
     [Route("/Videos/{Id}/hls/{PlaylistId}/{SegmentId}.{SegmentContainer}", "GET")]
     public class GetHlsVideoSegmentLegacy : VideoStreamRequest
     {
@@ -76,7 +82,6 @@ namespace MediaBrowser.Api.Playback.Hls
         public string SegmentId { get; set; }
     }
 
-    [Authenticated]
     public class HlsSegmentService : BaseApiService
     {
         private readonly IServerApplicationPaths _appPaths;

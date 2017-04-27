@@ -35,9 +35,11 @@ namespace Emby.Server.Implementations.Logging
 
             // Write to console just in case file logging fails
             _console.WriteLine("UnhandledException");
-            _console.WriteLine(builder.ToString());
 
-            _fileSystem.WriteAllText(path, builder.ToString());
+            var logMessage = builder.ToString();
+            _console.WriteLine(logMessage);
+
+            _fileSystem.WriteAllText(path, logMessage);
         }
     }
 }
