@@ -1,5 +1,6 @@
 {
     "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
     "LabelPrevious": "\u4e0a\u4e00\u4e2a",
     "LabelFinish": "\u5b8c\u6210",
     "LabelNext": "\u4e0b\u4e00\u4e2a",
@@ -1107,7 +1108,7 @@
     "OptionEnableTranscodingThrottle": "Enable throttling",
     "OptionEnableTranscodingThrottleHelp": "Throttling will automatically adjust transcoding speed in order to minimize server cpu utilization during playback.",
     "LabelUploadSpeedLimit": "\u4e0a\u4f20\u901f\u5ea6\u9650\u5236 (Mbps)\uff1a",
-    "OptionAllowSyncTranscoding": "Allow syncing that requires transcoding",
+    "OptionAllowSyncTranscoding": "Allow downloading that requires transcoding",
     "HeaderPlayback": "\u5a92\u4f53\u64ad\u653e",
     "OptionAllowAudioPlaybackTranscoding": "Allow audio playback that requires transcoding",
     "OptionAllowVideoPlaybackTranscoding": "Allow video playback that requires transcoding",
