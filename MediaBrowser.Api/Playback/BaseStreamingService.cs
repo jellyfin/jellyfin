@@ -720,12 +720,12 @@ namespace MediaBrowser.Api.Playback
 
             state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
 
-            var primaryImage = item.GetImageInfo(ImageType.Primary, 0) ??
-                         item.Parents.Select(i => i.GetImageInfo(ImageType.Primary, 0)).FirstOrDefault(i => i != null);
-            if (primaryImage != null)
-            {
-                state.AlbumCoverPath = primaryImage.Path;
-            }
+            //var primaryImage = item.GetImageInfo(ImageType.Primary, 0) ??
+            //             item.Parents.Select(i => i.GetImageInfo(ImageType.Primary, 0)).FirstOrDefault(i => i != null);
+            //if (primaryImage != null)
+            //{
+            //    state.AlbumCoverPath = primaryImage.Path;
+            //}
 
             MediaSourceInfo mediaSource = null;
             if (string.IsNullOrWhiteSpace(request.LiveStreamId))
