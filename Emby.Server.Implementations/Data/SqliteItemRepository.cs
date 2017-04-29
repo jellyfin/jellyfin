@@ -240,7 +240,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "SourceType", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "CriticRating", "Float", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "CriticRatingSummary", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "InheritedTags", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "CleanName", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "PresentationUniqueKey", "Text", existingColumnNames);
@@ -454,7 +453,6 @@ namespace Emby.Server.Implementations.Data
             "DateLastMediaAdded",
             "Album",
             "CriticRating",
-            "CriticRatingSummary",
             "IsVirtualItem",
             "SeriesName",
             "SeasonName",
@@ -579,7 +577,6 @@ namespace Emby.Server.Implementations.Data
                 "SourceType",
                 "TrailerTypes",
                 "CriticRating",
-                "CriticRatingSummary",
                 "InheritedTags",
                 "CleanName",
                 "PresentationUniqueKey",
@@ -942,7 +939,6 @@ namespace Emby.Server.Implementations.Data
             }
 
             saveItemStatement.TryBind("@CriticRating", item.CriticRating);
-            saveItemStatement.TryBind("@CriticRatingSummary", item.CriticRatingSummary);
 
             var inheritedTags = item.InheritedTags;
             if (inheritedTags.Count > 0)
@@ -1802,15 +1798,6 @@ namespace Emby.Server.Implementations.Data
                 item.CriticRating = reader.GetFloat(index);
             }
             index++;
-
-            if (query.HasField(ItemFields.CriticRatingSummary))
-            {
-                if (!reader.IsDBNull(index))
-                {
-                    item.CriticRatingSummary = reader.GetString(index);
-                }
-                index++;
-            }
 
             if (!reader.IsDBNull(index))
             {

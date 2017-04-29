@@ -275,17 +275,7 @@ namespace Emby.Server.Implementations.Channels
 
         public async Task<IEnumerable<MediaSourceInfo>> GetStaticMediaSources(BaseItem item, CancellationToken cancellationToken)
         {
-            IEnumerable<ChannelMediaInfo> results = new List<ChannelMediaInfo>();
-            var video = item as Video;
-            if (video != null)
-            {
-                results = video.ChannelMediaSources;
-            }
-            var audio = item as Audio;
-            if (audio != null)
-            {
-                results = audio.ChannelMediaSources ?? GetSavedMediaSources(audio);
-            }
+            IEnumerable<ChannelMediaInfo> results = GetSavedMediaSources(item);
 
             return SortMediaInfoResults(results)
                 .Select(i => GetMediaSource(item, i))
@@ -1378,7 +1368,6 @@ namespace Emby.Server.Implementations.Channels
             if (channelVideoItem != null)
             {
                 channelVideoItem.ExtraType = info.ExtraType;
-                channelVideoItem.ChannelMediaSources = info.MediaSources;
 
                 var mediaSource = info.MediaSources.FirstOrDefault();
                 item.Path = mediaSource == null ? null : mediaSource.Path;

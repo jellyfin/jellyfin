@@ -32,6 +32,7 @@ using Mono.Unix.Native;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.IO;
 using Emby.Server.Core.Logging;
+using Emby.Drawing.Net;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -111,12 +112,7 @@ namespace MediaBrowser.Server.Mac
 
 			_fileSystem = fileSystem;
 
-			var imageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, 
-			                                                      logManager, 
-			                                                      fileSystem, 
-			                                                      options, 
-			                                                      () => AppHost.HttpClient, 
-			                                                      appPaths);
+			var imageEncoder = new GDIImageEncoder(fileSystem, logManager.GetLogger("GDI"));
 
 			AppHost = new MacAppHost(appPaths,
 									 logManager,

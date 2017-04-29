@@ -240,7 +240,6 @@ namespace MediaBrowser.Api
             item.OriginalTitle = string.IsNullOrWhiteSpace(request.OriginalTitle) ? null : request.OriginalTitle;
 
             item.CriticRating = request.CriticRating;
-            item.CriticRatingSummary = request.CriticRatingSummary;
 
             item.DisplayMediaType = request.DisplayMediaType;
             item.CommunityRating = request.CommunityRating;

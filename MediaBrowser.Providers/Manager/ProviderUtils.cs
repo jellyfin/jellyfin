@@ -265,11 +265,6 @@ namespace MediaBrowser.Providers.Manager
             {
                 target.CriticRating = source.CriticRating;
             }
-
-            if (replaceData || string.IsNullOrEmpty(target.CriticRatingSummary))
-            {
-                target.CriticRatingSummary = source.CriticRatingSummary;
-            }
         }
 
         private static void MergeTrailers(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)

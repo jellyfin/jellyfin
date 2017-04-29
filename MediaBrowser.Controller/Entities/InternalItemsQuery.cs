@@ -187,7 +187,6 @@ namespace MediaBrowser.Controller.Entities
                 case ItemFields.OriginalTitle:
                 case ItemFields.Tags:
                 case ItemFields.DateLastMediaAdded:
-                case ItemFields.CriticRatingSummary:
                     return fields.Count == 0 || fields.Contains(name);
                 default:
                     return true;
