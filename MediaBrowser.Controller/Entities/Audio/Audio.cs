@@ -9,7 +9,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities.Audio
@@ -24,8 +23,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasLookupInfo<SongInfo>,
         IHasMediaSources
     {
-        public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
-
         /// <summary>
         /// Gets or sets the artist.
         /// </summary>

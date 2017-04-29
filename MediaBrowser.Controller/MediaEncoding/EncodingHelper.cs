@@ -2011,12 +2011,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             var vn = string.Empty;
 
             var hasArt = !string.IsNullOrWhiteSpace(state.AlbumCoverPath);
-            hasArt = false;
 
             if (hasArt)
             {
                 albumCoverInput = " -i \"" + state.AlbumCoverPath + "\"";
-                mapArgs = " -map 0:a -map 1:v -c:v copy";
+                mapArgs = " -map 0:a -map 1:v -c:1:v copy";
                 metadata = " -metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover(Front)\"";
             }
             else
