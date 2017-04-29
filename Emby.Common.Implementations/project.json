@@ -23,6 +23,7 @@
         "System.Xml.ReaderWriter": "4.0.0"
       },
       "dependencies": {
+        "System.Runtime.InteropServices.RuntimeInformation": "4.3.0",
         "SimpleInjector": "3.2.4",
         "ServiceStack.Text": "4.5.4",
         "NLog": "4.4.0-betaV15",

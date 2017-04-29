@@ -46,7 +46,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                     "Countries",
                     "CustomRating",
                     "CriticRating",
-                    "CriticRatingSummary",
                     "DeathDate",
                     "DisplayOrder",
                     "EndDate",
@@ -331,11 +330,6 @@ namespace MediaBrowser.LocalMetadata.Savers
             if (item.CriticRating.HasValue)
             {
                 writer.WriteElementString("CriticRating", item.CriticRating.Value.ToString(UsCulture));
-            }
-
-            if (!string.IsNullOrEmpty(item.CriticRatingSummary))
-            {
-                writer.WriteElementString("CriticRatingSummary", item.CriticRatingSummary);
             }
 
             if (!string.IsNullOrEmpty(item.Overview))
