@@ -967,11 +967,6 @@ namespace Emby.Server.Implementations.Dto
 
             dto.CriticRating = item.CriticRating;
 
-            if (fields.Contains(ItemFields.CriticRatingSummary))
-            {
-                dto.CriticRatingSummary = item.CriticRatingSummary;
-            }
-
             var hasTrailers = item as IHasTrailers;
             if (hasTrailers != null)
             {

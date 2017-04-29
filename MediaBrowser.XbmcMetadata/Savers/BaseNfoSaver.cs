@@ -56,7 +56,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "tag",
                     "runtime",
                     "actor",
-                    "criticratingsummary",
                     "criticrating",
                     "fileinfo",
                     "director",
@@ -660,11 +659,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (item.CriticRating.HasValue)
             {
                 writer.WriteElementString("criticrating", item.CriticRating.Value.ToString(UsCulture));
-            }
-
-            if (!string.IsNullOrEmpty(item.CriticRatingSummary))
-            {
-                writer.WriteElementString("criticratingsummary", item.CriticRatingSummary);
             }
 
             var hasDisplayOrder = item as IHasDisplayOrder;

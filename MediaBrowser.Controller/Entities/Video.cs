@@ -33,7 +33,6 @@ namespace MediaBrowser.Controller.Entities
         public List<string> AdditionalParts { get; set; }
         public List<string> LocalAlternateVersions { get; set; }
         public List<LinkedChild> LinkedAlternateVersions { get; set; }
-        public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
 
         [IgnoreDataMember]
         public override bool SupportsPlayedStatus
@@ -158,7 +157,6 @@ namespace MediaBrowser.Controller.Entities
             PlayableStreamFileNames = new List<string>();
             AdditionalParts = new List<string>();
             LocalAlternateVersions = new List<string>();
-            Tags = new List<string>();
             SubtitleFiles = new List<string>();
             LinkedAlternateVersions = new List<LinkedChild>();
         }

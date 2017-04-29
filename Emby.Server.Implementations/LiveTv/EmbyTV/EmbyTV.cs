@@ -2251,11 +2251,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         writer.WriteElementString("criticrating", item.CriticRating.Value.ToString(CultureInfo.InvariantCulture));
                     }
 
-                    if (!string.IsNullOrEmpty(item.CriticRatingSummary))
-                    {
-                        writer.WriteElementString("criticratingsummary", item.CriticRatingSummary);
-                    }
-
                     if (!string.IsNullOrWhiteSpace(item.Tagline))
                     {
                         writer.WriteElementString("tagline", item.Tagline);

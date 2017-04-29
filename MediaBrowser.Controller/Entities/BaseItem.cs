@@ -835,13 +835,6 @@ namespace MediaBrowser.Controller.Entities
         public float? CriticRating { get; set; }
 
         /// <summary>
-        /// Gets or sets the critic rating summary.
-        /// </summary>
-        /// <value>The critic rating summary.</value>
-        [IgnoreDataMember]
-        public string CriticRatingSummary { get; set; }
-
-        /// <summary>
         /// Gets or sets the official rating description.
         /// </summary>
         /// <value>The official rating description.</value>
@@ -2296,11 +2289,6 @@ namespace MediaBrowser.Controller.Entities
                 if (!string.Equals(item.CustomRating, ownedItem.CustomRating, StringComparison.Ordinal))
                 {
                     ownedItem.CustomRating = item.CustomRating;
-                    newOptions.ForceSave = true;
-                }
-                if (!string.Equals(item.CriticRatingSummary, ownedItem.CriticRatingSummary, StringComparison.Ordinal))
-                {
-                    ownedItem.CriticRatingSummary = item.CriticRatingSummary;
                     newOptions.ForceSave = true;
                 }
                 if (!string.Equals(item.OfficialRatingDescription, ownedItem.OfficialRatingDescription, StringComparison.Ordinal))
