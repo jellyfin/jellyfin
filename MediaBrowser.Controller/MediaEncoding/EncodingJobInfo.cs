@@ -39,6 +39,16 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool ReadInputAtNativeFramerate { get; set; }
 
+        public bool IgnoreDts
+        {
+            get { return MediaSource.IgnoreDts; }
+        }
+
+        public bool IgnoreIndex
+        {
+            get { return MediaSource.IgnoreIndex; }
+        }
+
         public string OutputContainer { get; set; }
 
         public string OutputVideoSync
