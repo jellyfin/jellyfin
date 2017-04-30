@@ -1642,7 +1642,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             state.RunTimeTicks = mediaSource.RunTimeTicks;
             state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
             state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
-            state.IgnoreDts = mediaSource.IgnoreDts;
 
             if (state.ReadInputAtNativeFramerate ||
                 mediaSource.Protocol == MediaProtocol.File && string.Equals(mediaSource.Container, "wtv", StringComparison.OrdinalIgnoreCase))
