@@ -24,6 +24,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
+using Priority_Queue;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -577,7 +578,6 @@ namespace MediaBrowser.Providers.Manager
             return SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
         }
 
-        private readonly SemaphoreSlim _saveLock = new SemaphoreSlim(1, 1);
         /// <summary>
         /// Saves the metadata.
         /// </summary>
@@ -607,8 +607,6 @@ namespace MediaBrowser.Providers.Manager
                         continue;
                     }
 
-                    await _saveLock.WaitAsync().ConfigureAwait(false);
-
                     try
                     {
                         _libraryMonitor.ReportFileSystemChangeBeginning(path);
@@ -620,7 +618,6 @@ namespace MediaBrowser.Providers.Manager
                     }
                     finally
                     {
-                        _saveLock.Release();
                         _libraryMonitor.ReportFileSystemChangeComplete(path, false);
                     }
                 }
@@ -851,20 +848,20 @@ namespace MediaBrowser.Providers.Manager
                 });
         }
 
-        private readonly ConcurrentQueue<Tuple<Guid, MetadataRefreshOptions>> _refreshQueue =
-            new ConcurrentQueue<Tuple<Guid, MetadataRefreshOptions>>();
+        private readonly SimplePriorityQueue<Tuple<Guid, MetadataRefreshOptions>> _refreshQueue =
+            new SimplePriorityQueue<Tuple<Guid, MetadataRefreshOptions>>();
 
         private readonly object _refreshQueueLock = new object();
         private bool _isProcessingRefreshQueue;
 
-        public void QueueRefresh(Guid id, MetadataRefreshOptions options)
+        public void QueueRefresh(Guid id, MetadataRefreshOptions options, RefreshPriority priority)
         {
             if (_disposed)
             {
                 return;
             }
 
-            _refreshQueue.Enqueue(new Tuple<Guid, MetadataRefreshOptions>(id, options));
+            _refreshQueue.Enqueue(new Tuple<Guid, MetadataRefreshOptions>(id, options), (int)priority);
 
             lock (_refreshQueueLock)
             {
@@ -876,12 +873,19 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
+        private bool TryDequeue(out Tuple<Guid, MetadataRefreshOptions> item)
+        {
+            item = _refreshQueue.Dequeue();
+
+            return item != null;
+        }
+
         private async Task StartProcessingRefreshQueue()
         {
             Tuple<Guid, MetadataRefreshOptions> refreshItem;
             var libraryManager = _libraryManagerFactory();
 
-            while (_refreshQueue.TryDequeue(out refreshItem))
+            while (TryDequeue(out refreshItem))
             {
                 if (_disposed)
                 {

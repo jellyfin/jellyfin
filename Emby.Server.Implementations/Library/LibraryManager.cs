@@ -2126,7 +2126,8 @@ namespace Emby.Server.Implementations.Library
                     // Not sure why this is necessary but need to figure it out
                     // View images are not getting utilized without this
                     ForceSave = true
-                });
+
+                }, RefreshPriority.Normal);
             }
 
             return item;
@@ -2188,7 +2189,8 @@ namespace Emby.Server.Implementations.Library
                 {
                     // Need to force save to increment DateLastSaved
                     ForceSave = true
-                });
+
+                }, RefreshPriority.Normal);
             }
 
             return item;
@@ -2252,7 +2254,8 @@ namespace Emby.Server.Implementations.Library
                 {
                     // Need to force save to increment DateLastSaved
                     ForceSave = true
-                });
+
+                }, RefreshPriority.Normal);
             }
 
             return item;
@@ -2328,7 +2331,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     // Need to force save to increment DateLastSaved
                     ForceSave = true
-                });
+                }, RefreshPriority.Normal);
             }
 
             return item;

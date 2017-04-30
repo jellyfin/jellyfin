@@ -857,7 +857,8 @@ namespace Emby.Server.Implementations.LiveTv
                 _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
                 {
                     MetadataRefreshMode = metadataRefreshMode
-                });
+
+                }, RefreshPriority.Normal);
             }
 
             return item.Id;
@@ -1395,11 +1396,11 @@ namespace Emby.Server.Implementations.LiveTv
 
                     foreach (var program in newPrograms)
                     {
-                        _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions(_fileSystem));
+                        _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.Low);
                     }
                     foreach (var program in updatedPrograms)
                     {
-                        _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions(_fileSystem));
+                        _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.Low);
                     }
 
                     currentChannel.IsMovie = isMovie;

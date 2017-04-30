@@ -548,11 +548,6 @@ namespace MediaBrowser.Providers.Music
             return null;
         }
 
-        /// <summary>
-        /// The _music brainz resource pool
-        /// </summary>
-        private readonly SemaphoreSlim _musicBrainzResourcePool = new SemaphoreSlim(1, 1);
-
         private long _lastMbzUrlQueryTicks = 0;
         private List<MbzUrl> _mbzUrls = null;
         private MbzUrl _chosenUrl;
@@ -656,7 +651,6 @@ namespace MediaBrowser.Providers.Music
                 Url = url,
                 CancellationToken = cancellationToken,
                 UserAgent = _appHost.Name + "/" + _appHost.ApplicationVersion,
-                ResourcePool = _musicBrainzResourcePool,
                 BufferContent = throttleMs > 0
             };
 
