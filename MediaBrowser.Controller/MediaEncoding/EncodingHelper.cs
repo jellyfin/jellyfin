@@ -1517,12 +1517,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             inputModifier += " " + GetFastSeekCommandLineParameter(state.BaseRequest);
             inputModifier = inputModifier.Trim();
 
-            //inputModifier += " -fflags +genpts+ignidx+igndts";
-            //if (state.IsVideoRequest && genPts)
-            //{
-            //    inputModifier += " -fflags +genpts";
-            //}
-
             if (!string.IsNullOrEmpty(state.InputAudioSync))
             {
                 inputModifier += " -async " + state.InputAudioSync;
@@ -1536,6 +1530,21 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (state.ReadInputAtNativeFramerate)
             {
                 inputModifier += " -re";
+            }
+
+            var flags = new List<string>();
+            if (state.IgnoreDts)
+            {
+                flags.Add("+igndts");
+            }
+            if (state.IgnoreIndex)
+            {
+                flags.Add("+ignidx");
+            }
+
+            if (flags.Count > 0)
+            {
+                inputModifier += " -fflags " + string.Join("", flags.ToArray());
             }
 
             var videoDecoder = GetVideoDecoder(state, encodingOptions);
@@ -1633,6 +1642,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             state.RunTimeTicks = mediaSource.RunTimeTicks;
             state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
             state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
+            state.IgnoreDts = mediaSource.IgnoreDts;
 
             if (state.ReadInputAtNativeFramerate ||
                 mediaSource.Protocol == MediaProtocol.File && string.Equals(mediaSource.Container, "wtv", StringComparison.OrdinalIgnoreCase))
