@@ -12,7 +12,9 @@ namespace MediaBrowser.Model.Dlna
                 new ResolutionConfiguration(426, 320000),
                 new ResolutionConfiguration(640, 400000),
                 new ResolutionConfiguration(720, 950000),
-                new ResolutionConfiguration(1280, 2500000)
+                new ResolutionConfiguration(1280, 2500000),
+                new ResolutionConfiguration(1920, 4000000),
+                new ResolutionConfiguration(3840, 35000000)
             };
 
         public static ResolutionOptions Normalize(int? inputBitrate,
@@ -35,19 +37,15 @@ namespace MediaBrowser.Model.Dlna
 				}
 			}
 
-			foreach (var config in Configurations)
+            var resolutionConfig = GetResolutionConfiguration(outputBitrate);
+            if (resolutionConfig != null)
             {
-				if (outputBitrate <= config.MaxBitrate)
+                var originvalValue = maxWidth;
+
+                maxWidth = Math.Min(resolutionConfig.MaxWidth, maxWidth ?? resolutionConfig.MaxWidth);
+                if (!originvalValue.HasValue || originvalValue.Value != maxWidth.Value)
                 {
-                    var originvalValue = maxWidth;
-
-                    maxWidth = Math.Min(config.MaxWidth, maxWidth ?? config.MaxWidth);
-                    if (!originvalValue.HasValue || originvalValue.Value != maxWidth.Value)
-                    {
-                        maxHeight = null;
-                    }
-
-                    break;
+                    maxHeight = null;
                 }
             }
 
@@ -56,6 +54,19 @@ namespace MediaBrowser.Model.Dlna
                 MaxWidth = maxWidth,
                 MaxHeight = maxHeight
             };
+        }
+
+        private static ResolutionConfiguration GetResolutionConfiguration(int outputBitrate)
+        {
+            foreach (var config in Configurations)
+            {
+                if (outputBitrate <= config.MaxBitrate)
+                {
+                    return config;
+                }
+            }
+
+            return null;
         }
 
         private static double GetVideoBitrateScaleFactor(string codec)
