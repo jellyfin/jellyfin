@@ -19,7 +19,6 @@ namespace MediaBrowser.Providers.Omdb
 {
     public class OmdbProvider
     {
-        internal static readonly SemaphoreSlim ResourcePool = new SemaphoreSlim(1, 1);
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
@@ -330,7 +329,6 @@ namespace MediaBrowser.Providers.Omdb
             return httpClient.Get(new HttpRequestOptions
             {
                 Url = url,
-                ResourcePool = ResourcePool,
                 CancellationToken = cancellationToken,
                 BufferContent = true,
                 EnableDefaultUserAgent = true
