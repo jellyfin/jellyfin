@@ -201,7 +201,8 @@ namespace Emby.Server.Implementations.Playlists
             _providerManager.QueueRefresh(playlist.Id, new MetadataRefreshOptions(_fileSystem)
             {
                 ForceSave = true
-            });
+
+            }, RefreshPriority.High);
         }
 
         public async Task RemoveFromPlaylist(string playlistId, IEnumerable<string> entryIds)
@@ -228,7 +229,8 @@ namespace Emby.Server.Implementations.Playlists
             _providerManager.QueueRefresh(playlist.Id, new MetadataRefreshOptions(_fileSystem)
             {
                 ForceSave = true
-            });
+
+            }, RefreshPriority.High);
         }
 
         public async Task MoveItem(string playlistId, string entryId, int newIndex)

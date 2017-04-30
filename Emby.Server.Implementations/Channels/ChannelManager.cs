@@ -1416,7 +1416,7 @@ namespace Emby.Server.Implementations.Channels
             if (!_refreshedItems.ContainsKey(program.Id))
             {
                 _refreshedItems.TryAdd(program.Id, true);
-                _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions(_fileSystem));
+                _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.Low);
             }
 
         }

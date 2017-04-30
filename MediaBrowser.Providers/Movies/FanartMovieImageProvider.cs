@@ -284,7 +284,6 @@ namespace MediaBrowser.Providers.Movies
                 using (var response = await _httpClient.Get(new HttpRequestOptions
                 {
                     Url = url,
-                    ResourcePool = FanartArtistProvider.Current.FanArtResourcePool,
                     CancellationToken = cancellationToken,
                     BufferContent = true
 
