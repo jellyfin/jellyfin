@@ -175,8 +175,7 @@ namespace MediaBrowser.Providers.TV
             return _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = url,
-                ResourcePool = TvdbSeriesProvider.Current.TvDbResourcePool
+                Url = url
             });
         }
     }

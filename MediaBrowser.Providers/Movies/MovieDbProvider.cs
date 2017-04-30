@@ -30,8 +30,6 @@ namespace MediaBrowser.Providers.Movies
     /// </summary>
     public class MovieDbProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IDisposable, IHasOrder
     {
-        internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(1, 1);
-
         internal static MovieDbProvider Current { get; private set; }
 
         private readonly IJsonSerializer _jsonSerializer;
@@ -137,10 +135,6 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
-            if (dispose)
-            {
-                MovieDbResourcePool.Dispose();
-            }
         }
 
         /// <summary>
@@ -431,7 +425,6 @@ namespace MediaBrowser.Providers.Movies
                 await Task.Delay(Convert.ToInt32(delayMs)).ConfigureAwait(false);
             }
 
-            options.ResourcePool = MovieDbResourcePool;
             _lastRequestTicks = DateTime.UtcNow.Ticks;
 
             options.BufferContent = true;

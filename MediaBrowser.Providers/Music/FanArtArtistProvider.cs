@@ -27,7 +27,6 @@ namespace MediaBrowser.Providers.Music
 {
     public class FanartArtistProvider : IRemoteImageProvider, IHasOrder
     {
-        internal readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(3, 3);
         internal const string ApiKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
         private const string FanArtBaseUrl = "https://webservice.fanart.tv/v3.1/music/{1}?api_key={0}";
 
@@ -255,7 +254,6 @@ namespace MediaBrowser.Providers.Music
                 using (var response = await _httpClient.Get(new HttpRequestOptions
                 {
                     Url = url,
-                    ResourcePool = FanArtResourcePool,
                     CancellationToken = cancellationToken,
                     BufferContent = true
 

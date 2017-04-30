@@ -1817,7 +1817,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public virtual Task ChangedExternally()
         {
-            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(FileSystem));
+            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(FileSystem), RefreshPriority.High);
             return Task.FromResult(true);
         }
 

@@ -20,9 +20,7 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Queues the refresh.
         /// </summary>
-        /// <param name="itemId">The item identifier.</param>
-        /// <param name="options">The options.</param>
-        void QueueRefresh(Guid itemId, MetadataRefreshOptions options);
+        void QueueRefresh(Guid itemId, MetadataRefreshOptions options, RefreshPriority priority);
 
         /// <summary>
         /// Refreshes the full item.
@@ -160,5 +158,12 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
         Task<HttpResponseInfo> GetSearchImage(string providerName, string url, CancellationToken cancellationToken);
+    }
+
+    public enum RefreshPriority
+    {
+        High = 0,
+        Normal = 1,
+        Low = 2
     }
 }
