@@ -12,6 +12,7 @@ namespace Emby.Common.Implementations.Security
         public static void CreateSelfSignCertificatePfx(
             string fileName,
             string hostname,
+            string password,
             ILogger logger)
         {
             if (string.IsNullOrWhiteSpace(fileName))
