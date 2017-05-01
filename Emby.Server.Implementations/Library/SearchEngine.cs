@@ -165,7 +165,10 @@ namespace Emby.Server.Implementations.Library
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 Limit = query.Limit,
-                IncludeItemsByName = true
+                IncludeItemsByName = string.IsNullOrWhiteSpace(query.ParentId),
+                ParentId = string.IsNullOrWhiteSpace(query.ParentId) ? (Guid?)null : new Guid(query.ParentId),
+                SortBy = new[] { ItemSortBy.SortName },
+                Recursive = true
             });
 
             // Add search hints based on item name

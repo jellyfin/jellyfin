@@ -1138,7 +1138,7 @@ namespace Emby.Server.Core
 
             // Generate self-signed cert
             var certHost = GetHostnameFromExternalDns(ServerConfigurationManager.Configuration.WanDdns);
-            var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + (certHost + "1").GetMD5().ToString("N") + ".pfx");
+            var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + (certHost + "2").GetMD5().ToString("N") + ".pfx");
             var password = "embycert";
 
             if (generateCertificate)
