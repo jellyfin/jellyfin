@@ -34,6 +34,7 @@ namespace MediaBrowser.Model.Search
         public bool IncludeArtists { get; set; }
 
         public string[] IncludeItemTypes { get; set; }
+        public string ParentId { get; set; }
 
         public SearchQuery()
         {
