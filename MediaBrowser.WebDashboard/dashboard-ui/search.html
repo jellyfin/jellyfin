@@ -1,48 +1,8 @@
-﻿<div id="searchPage" data-role="page" class="page libraryPage allLibraryPage noSecondaryNavPage" data-title="${ButtonSearch}" style="padding-top:0!important;">
+﻿<div id="searchPage" data-role="page" class="page libraryPage allLibraryPage noSecondaryNavPage" data-title="${ButtonSearch}" data-backbutton="true">
 
-    <style>
-        @media all and (max-width: 800px) {
+    <div class="padded-left padded-right searchFields">
+    </div>
 
-            .txtSearch {
-                padding-left: 7.5%;
-                padding-bottom: 1em;
-            }
-        }
-
-        @media all and (max-width: 650px) {
-
-            .txtSearch {
-                padding-left: 10%;
-            }
-        }
-
-        @media all and (max-width: 500px) {
-
-            .txtSearch {
-                padding-left: 12.5%;
-            }
-        }
-    </style>
-
-    <button is="paper-icon-button-light" style="position: absolute; top: .6em; left: 0; z-index: 1;" tabindex="-1" class="btnBack autoSize searchBackButton">
-        <i class="md-icon">&#xE5C4;</i>
-    </button>
-
-    <div style="padding-top:0!important;padding-left:0!important;padding-right:0!important;">
-        <div class="readOnlyContent" style="text-align: center;margin: 0 auto;">
-
-            <div class="inputContainer searchInputContainer" style="margin-bottom:1em;">
-                <input is="emby-input" class="txtSearch" autocomplete="off" placeholder="${ButtonSearch}" autofocus />
-            </div>
-
-            <div class="textSuggestions hide">
-                <h1>${TabSuggestions}</h1>
-
-                <div class="searchSuggestions">
-                </div>
-            </div>
-        </div>
-
-        <div is="emby-itemscontainer" class="searchResults hide itemsContainer vertical-wrap paddedItemsContainer"></div>
+    <div class="searchResults padded-bottom-page">
     </div>
 </div>
