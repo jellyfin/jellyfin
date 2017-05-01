@@ -66,6 +66,8 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "IncludeItemTypes", Description = "Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string IncludeItemTypes { get; set; }
 
+        public string ParentId { get; set; }
+
         public GetSearchHints()
         {
             IncludeArtists = true;
@@ -135,7 +137,8 @@ namespace MediaBrowser.Api
                 IncludeStudios = request.IncludeStudios,
                 StartIndex = request.StartIndex,
                 UserId = request.UserId,
-                IncludeItemTypes = (request.IncludeItemTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray()
+                IncludeItemTypes = (request.IncludeItemTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
+                ParentId = request.ParentId
 
             }).ConfigureAwait(false);
 
