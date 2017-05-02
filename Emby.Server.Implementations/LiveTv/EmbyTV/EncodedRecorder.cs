@@ -80,13 +80,20 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public string GetOutputPath(MediaSourceInfo mediaSource, string targetFile)
         {
-            return Path.ChangeExtension(targetFile, "." + OutputFormat);
+            var extension = OutputFormat;
+
+            if (string.Equals(extension, "mpegts", StringComparison.OrdinalIgnoreCase))
+            {
+                extension = "ts";
+            }
+
+            return Path.ChangeExtension(targetFile, "." + extension);
         }
 
         public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
-            var durationToken = new CancellationTokenSource(duration);
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+            //var durationToken = new CancellationTokenSource(duration);
+            //cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
 
             await RecordFromFile(mediaSource, mediaSource.Path, targetFile, duration, onStarted, cancellationToken).ConfigureAwait(false);
 
@@ -171,34 +178,32 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             var durationParam = " -t " + _mediaEncoder.GetTimeParameter(duration.Ticks);
-            var inputModifiers = "-fflags +genpts -async 1 -vsync -1";
+
+            var flags = new List<string>();
+            if (mediaSource.IgnoreDts)
+            {
+                flags.Add("+igndts");
+            }
+            if (mediaSource.IgnoreIndex)
+            {
+                flags.Add("+ignidx");
+            }
+
+            var inputModifiers = "-async 1 -vsync -1";
+
+            if (flags.Count > 0)
+            {
+                inputModifiers += " -fflags " + string.Join("", flags.ToArray());
+            }
 
             if (!string.IsNullOrWhiteSpace(GetEncodingOptions().HardwareAccelerationType))
             {
                 inputModifiers += " -hwaccel auto";
             }
 
-            var commandLineArgs = "-i \"{0}\"{5} {2} -map_metadata -1 -threads 0 {3}{4}{6} -y \"{1}\"";
-
-            long startTimeTicks = 0;
-            //if (mediaSource.DateLiveStreamOpened.HasValue)
-            //{
-            //    var elapsed = DateTime.UtcNow - mediaSource.DateLiveStreamOpened.Value;
-            //    elapsed -= TimeSpan.FromSeconds(10);
-            //    if (elapsed.TotalSeconds >= 0)
-            //    {
-            //        startTimeTicks = elapsed.Ticks + startTimeTicks;
-            //    }
-            //}
-
             if (mediaSource.ReadAtNativeFramerate)
             {
                 inputModifiers += " -re";
-            }
-
-            if (startTimeTicks > 0)
-            {
-                inputModifiers = "-ss " + _mediaEncoder.GetTimeParameter(startTimeTicks) + " " + inputModifiers;
             }
 
             var analyzeDurationSeconds = 5;
@@ -212,7 +217,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 " -f mp4 -movflags frag_keyframe+empty_moov" :
                 string.Empty;
 
-            commandLineArgs = string.Format(commandLineArgs, inputTempFile, targetFile, videoArgs, GetAudioArgs(mediaSource), subtitleArgs, durationParam, outputParam);
+            var commandLineArgs = string.Format("-i \"{0}\"{5} {2} -map_metadata -1 -threads 0 {3}{4}{6} -y \"{1}\"", 
+                inputTempFile, 
+                targetFile, 
+                videoArgs, 
+                GetAudioArgs(mediaSource), 
+                subtitleArgs, 
+                durationParam, 
+                outputParam);
 
             return inputModifiers + " " + commandLineArgs;
         }
