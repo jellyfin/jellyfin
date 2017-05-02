@@ -4,6 +4,8 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Controller.Extensions;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -122,6 +124,11 @@ namespace MediaBrowser.Providers.Manager
                 if (replaceData || targetResult.People == null || targetResult.People.Count == 0)
                 {
                     targetResult.People = sourceResult.People;
+
+                }
+                else if (targetResult.People != null && sourceResult.People != null)
+                {
+                    MergePeople(sourceResult.People, targetResult.People);
                 }
             }
 
@@ -202,6 +209,31 @@ namespace MediaBrowser.Providers.Manager
             if (mergeMetadataSettings)
             {
                 MergeMetadataSettings(source, target);
+            }
+        }
+
+        private static void MergePeople(List<PersonInfo> source, List<PersonInfo> target)
+        {
+            foreach (var person in target)
+            {
+                var normalizedName = person.Name.RemoveDiacritics();
+                var personInSource = source.FirstOrDefault(i => string.Equals(i.Name.RemoveDiacritics(), normalizedName, StringComparison.OrdinalIgnoreCase));
+
+                if (personInSource != null)
+                {
+                    foreach (var providerId in personInSource.ProviderIds)
+                    {
+                        if (!person.ProviderIds.ContainsKey(providerId.Key))
+                        {
+                            person.ProviderIds[providerId.Key] = providerId.Value;
+                        }
+                    }
+
+                    if (string.IsNullOrWhiteSpace(person.ImageUrl))
+                    {
+                        person.ImageUrl = personInSource.ImageUrl;
+                    }
+                }
             }
         }
 

@@ -1231,7 +1231,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     RequiresOpening = false,
                     RequiresClosing = false,
                     Protocol = MediaBrowser.Model.MediaInfo.MediaProtocol.Http,
-                    BufferMs = 0
+                    BufferMs = 0,
+                    IgnoreDts = true
                 };
 
                 var isAudio = false;
@@ -1516,8 +1517,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     EnforceKeepUpTo(timer, seriesPath);
                 };
 
-                await recorder.Record(mediaStreamInfo, recordPath, duration, onStarted, cancellationToken)
-                        .ConfigureAwait(false);
+                await recorder.Record(mediaStreamInfo, recordPath, duration, onStarted, cancellationToken).ConfigureAwait(false);
 
                 recordingStatus = RecordingStatus.Completed;
                 _logger.Info("Recording completed: {0}", recordPath);

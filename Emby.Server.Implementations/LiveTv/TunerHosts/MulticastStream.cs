@@ -29,6 +29,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             byte[] buffer = new byte[BufferSize];
 
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 var bytesRead = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
