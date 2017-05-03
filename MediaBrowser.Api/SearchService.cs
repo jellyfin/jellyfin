@@ -9,6 +9,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
@@ -170,10 +171,10 @@ namespace MediaBrowser.Api
                 MatchedTerm = hintInfo.MatchedTerm,
                 DisplayMediaType = item.DisplayMediaType,
                 RunTimeTicks = item.RunTimeTicks,
-                ProductionYear = item.ProductionYear
+                ProductionYear = item.ProductionYear,
+                ChannelId = item.ChannelId,
+                EndDate = item.EndDate
             };
-
-            result.ChannelId = item.ChannelId;
 
             var primaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary);
 
@@ -186,10 +187,25 @@ namespace MediaBrowser.Api
             SetThumbImageInfo(result, item);
             SetBackdropImageInfo(result, item);
 
+            var program = item as LiveTvProgram;
+            if (program != null)
+            {
+                result.StartDate = program.StartDate;
+            }
+
             var hasSeries = item as IHasSeries;
             if (hasSeries != null)
             {
                 result.Series = hasSeries.SeriesName;
+            }
+
+            var series = item as Series;
+            if (series != null)
+            {
+                if (series.Status.HasValue)
+                {
+                    result.Status = series.Status.Value.ToString();
+                }
             }
 
             var album = item as MusicAlbum;

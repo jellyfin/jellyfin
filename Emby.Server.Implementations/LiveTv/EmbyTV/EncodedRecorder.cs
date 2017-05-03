@@ -213,9 +213,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var subtitleArgs = CopySubtitles ? " -codec:s copy" : " -sn";
 
-            var outputParam = string.Equals(Path.GetExtension(targetFile), ".mp4", StringComparison.OrdinalIgnoreCase) ?
-                " -f mp4 -movflags frag_keyframe+empty_moov" :
-                string.Empty;
+            //var outputParam = string.Equals(Path.GetExtension(targetFile), ".mp4", StringComparison.OrdinalIgnoreCase) ?
+            //    " -f mp4 -movflags frag_keyframe+empty_moov" :
+            //    string.Empty;
+
+            var outputParam = string.Empty;
 
             var commandLineArgs = string.Format("-i \"{0}\"{5} {2} -map_metadata -1 -threads 0 {3}{4}{6} -y \"{1}\"", 
                 inputTempFile, 
