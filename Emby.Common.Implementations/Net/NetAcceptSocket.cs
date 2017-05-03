@@ -100,7 +100,7 @@ namespace Emby.Common.Implementations.Net
 #if NET46
         public Task SendFile(string path, byte[] preBuffer, byte[] postBuffer, CancellationToken cancellationToken)
         {
-            var options = TransmitFileOptions.UseKernelApc;
+            var options = TransmitFileOptions.UseDefaultWorkerThread;
 
             var completionSource = new TaskCompletionSource<bool>();
 

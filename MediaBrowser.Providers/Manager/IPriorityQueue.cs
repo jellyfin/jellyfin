@@ -24,7 +24,7 @@ namespace Priority_Queue
         /// <summary>
         /// Removes the head of the queue (node with minimum priority; ties are broken by order of insertion), and returns it.
         /// </summary>
-        TItem Dequeue();
+        bool TryDequeue(out TItem item);
 
         /// <summary>
         /// Removes every node from the queue.
