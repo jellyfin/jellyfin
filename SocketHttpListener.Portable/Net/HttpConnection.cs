@@ -217,7 +217,7 @@ namespace SocketHttpListener.Net
                 {
                     var supportsDirectSocketAccess = !context.Response.SendChunked && !isExpect100Continue && !secure;
 
-                    o_stream = new ResponseStream(stream, context.Response, _memoryStreamFactory, _textEncoding, _fileSystem, sock, supportsDirectSocketAccess);
+                    o_stream = new ResponseStream(stream, context.Response, _memoryStreamFactory, _textEncoding, _fileSystem, sock, supportsDirectSocketAccess, _logger);
                 }
                 else
                 {

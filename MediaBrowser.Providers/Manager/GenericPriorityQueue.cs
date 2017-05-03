@@ -243,13 +243,15 @@ namespace Priority_Queue
         /// If queue is empty, result is undefined
         /// O(log n)
         /// </summary>
-        public TItem Dequeue()
+        public bool TryDequeue(out TItem item)
         {
-#if DEBUG
             if (_numNodes <= 0)
             {
-                throw new InvalidOperationException("Cannot call Dequeue() on an empty queue");
+                item = default(TItem);
+                return false;
             }
+
+#if DEBUG
 
             if (!IsValidQueue())
             {
@@ -260,7 +262,8 @@ namespace Priority_Queue
 
             TItem returnMe = _nodes[1];
             Remove(returnMe);
-            return returnMe;
+            item = returnMe;
+            return true;
         }
 
         /// <summary>
