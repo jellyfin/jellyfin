@@ -126,17 +126,25 @@ namespace Priority_Queue
         /// If queue is empty, throws an exception
         /// O(log n)
         /// </summary>
-        public TItem Dequeue()
+        public bool TryDequeue(out TItem item)
         {
             lock (_queue)
             {
                 if (_queue.Count <= 0)
                 {
-                    throw new InvalidOperationException("Cannot call Dequeue() on an empty queue");
+                    item = default(TItem);
+                    return false;
                 }
 
-                SimpleNode node = _queue.Dequeue();
-                return node.Data;
+                SimpleNode node;
+                if (_queue.TryDequeue(out node))
+                {
+                    item = node.Data;
+                    return true;
+                }
+
+                item = default(TItem);
+                return false;
             }
         }
 

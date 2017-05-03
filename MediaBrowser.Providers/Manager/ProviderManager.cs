@@ -873,19 +873,12 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private bool TryDequeue(out Tuple<Guid, MetadataRefreshOptions> item)
-        {
-            item = _refreshQueue.Dequeue();
-
-            return item != null;
-        }
-
         private async Task StartProcessingRefreshQueue()
         {
             Tuple<Guid, MetadataRefreshOptions> refreshItem;
             var libraryManager = _libraryManagerFactory();
 
-            while (TryDequeue(out refreshItem))
+            while (_refreshQueue.TryDequeue(out refreshItem))
             {
                 if (_disposed)
                 {
