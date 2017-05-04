@@ -278,7 +278,7 @@ namespace MediaBrowser.Api
 
         public object Get(GetParentPath request)
         {
-            var parent = Path.GetDirectoryName(request.Path);
+            var parent = _fileSystem.GetDirectoryName(request.Path);
 
             if (string.IsNullOrEmpty(parent))
             {

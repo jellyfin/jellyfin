@@ -84,7 +84,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             // even though it's actually using the metadata folder.
                             filename = Path.GetFileName(filename);
 
-                            var parentFolder = Path.GetDirectoryName(_xmlPath);
+                            var parentFolder = _fileSystem.GetDirectoryName(_xmlPath);
                             filename = Path.Combine(parentFolder, filename);
                             var file = _fileSystem.GetFileInfo(filename);
 

@@ -150,7 +150,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             }, cancellationToken).ConfigureAwait(false);
 
-            //Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
+            //Directory.CreateDirectory(_fileSystem.GetDirectoryName(cachePath));
             //_json.SerializeToFile(result, cachePath);
 
             return result;

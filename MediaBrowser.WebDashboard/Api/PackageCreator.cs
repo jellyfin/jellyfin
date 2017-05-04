@@ -98,8 +98,8 @@ namespace MediaBrowser.WebDashboard.Api
             }
 
             path = GetDashboardResourcePath(path);
-            var parent = Path.GetDirectoryName(path);
-
+            var parent = _fileSystem.GetDirectoryName(path);
+            
             return string.Equals(_basePath, parent, StringComparison.OrdinalIgnoreCase) ||
                    string.Equals(Path.Combine(_basePath, "voice"), parent, StringComparison.OrdinalIgnoreCase);
         }

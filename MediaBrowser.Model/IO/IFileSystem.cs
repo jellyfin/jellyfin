@@ -146,6 +146,8 @@ namespace MediaBrowser.Model.IO
         /// <returns>System.String.</returns>
         string NormalizePath(string path);
 
+        string GetDirectoryName(string path);
+
         /// <summary>
         /// Gets the file name without extension.
         /// </summary>

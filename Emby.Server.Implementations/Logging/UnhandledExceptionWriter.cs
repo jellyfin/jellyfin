@@ -29,7 +29,7 @@ namespace Emby.Server.Implementations.Logging
             _logManager.Flush();
 
             var path = Path.Combine(_appPaths.LogDirectoryPath, "unhandled_" + Guid.NewGuid() + ".txt");
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
             var builder = LogHelper.GetLogMessage(ex);
 

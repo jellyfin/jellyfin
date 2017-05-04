@@ -213,7 +213,7 @@ namespace MediaBrowser.Controller.Entities
                 .SelectMany(c => c.LinkedChildren)
                 .ToList();
 
-            var changed = !linkedChildren.SequenceEqual(LinkedChildren, new LinkedChildComparer());
+            var changed = !linkedChildren.SequenceEqual(LinkedChildren, new LinkedChildComparer(FileSystem));
 
             LinkedChildren = linkedChildren;
 
@@ -332,13 +332,13 @@ namespace MediaBrowser.Controller.Entities
                 .OfType<Folder>()
                 .ToList();
 
-            return PhysicalLocations.Where(i => !string.Equals(i, Path, StringComparison.OrdinalIgnoreCase)).SelectMany(i => GetPhysicalParents(i, rootChildren)).DistinctBy(i => i.Id);
+            return PhysicalLocations.Where(i => !FileSystem.AreEqual(i, Path)).SelectMany(i => GetPhysicalParents(i, rootChildren)).DistinctBy(i => i.Id);
         }
 
         private IEnumerable<Folder> GetPhysicalParents(string path, List<Folder> rootChildren)
         {
             var result = rootChildren
-                .Where(i => string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase))
+                .Where(i => FileSystem.AreEqual(i.Path, path))
                 .ToList();
 
             if (result.Count == 0)

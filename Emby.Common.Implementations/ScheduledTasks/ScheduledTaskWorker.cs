@@ -158,7 +158,7 @@ namespace Emby.Common.Implementations.ScheduledTasks
                 _lastExecutionResult = value;
 
                 var path = GetHistoryFilePath();
-				_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+				_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
                 lock (_lastExecutionResultSyncLock)
                 {
@@ -575,7 +575,7 @@ namespace Emby.Common.Implementations.ScheduledTasks
         {
             var path = GetConfigurationFilePath();
 
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
             JsonSerializer.SerializeToFile(triggers, path);
         }

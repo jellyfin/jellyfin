@@ -1497,7 +1497,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 _libraryManager.RegisterIgnoredPath(recordPath);
                 _libraryMonitor.ReportFileSystemChangeBeginning(recordPath);
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(recordPath));
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(recordPath));
                 activeRecordingInfo.Path = recordPath;
 
                 var duration = recordingEndDate - DateTime.UtcNow;
@@ -1725,7 +1725,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             while (FileExists(path, timerId))
             {
-                var parent = Path.GetDirectoryName(originalPath);
+                var parent = _fileSystem.GetDirectoryName(originalPath);
                 var name = Path.GetFileNameWithoutExtension(originalPath);
                 name += "-" + index.ToString(CultureInfo.InvariantCulture);
 
@@ -1892,7 +1892,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            var imageSavePath = Path.Combine(Path.GetDirectoryName(recordingPath), imageSaveFilenameWithoutExtension);
+            var imageSavePath = Path.Combine(_fileSystem.GetDirectoryName(recordingPath), imageSaveFilenameWithoutExtension);
 
             // preserve original image extension
             imageSavePath = Path.ChangeExtension(imageSavePath, Path.GetExtension(image.Path));
@@ -2545,7 +2545,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private void SaveEpgDataForChannel(string channelId, List<ProgramInfo> epgData)
         {
             var path = GetChannelEpgCachePath(channelId);
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
             lock (_epgLock)
             {
                 _jsonSerializer.SerializeToFile(epgData, path);

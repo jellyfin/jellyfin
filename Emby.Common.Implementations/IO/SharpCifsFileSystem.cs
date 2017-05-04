@@ -30,6 +30,34 @@ namespace Emby.Common.Implementations.IO
             return path.StartsWith("smb://", StringComparison.OrdinalIgnoreCase) || IsUncPath(path);
         }
 
+        public string NormalizePath(string path)
+        {
+            if (path.StartsWith("smb://", StringComparison.OrdinalIgnoreCase))
+            {
+                return path;
+            }
+
+            if (IsUncPath(path))
+            {
+                return ConvertUncToSmb(path);
+            }
+
+            return path;
+        }
+
+        public string GetDirectoryName(string path)
+        {
+            var separator = GetDirectorySeparatorChar(path);
+            var result = Path.GetDirectoryName(path);
+
+            if (separator == '/')
+            {
+                result = result.Replace('\\', '/');
+            }
+
+            return result;
+        }
+
         public char GetDirectorySeparatorChar(string path)
         {
             if (path.IndexOf('/') != -1)

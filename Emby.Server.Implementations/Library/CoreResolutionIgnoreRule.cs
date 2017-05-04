@@ -79,7 +79,7 @@ namespace Emby.Server.Implementations.Library
             {
                 if (parent == null)
                 {
-                    var parentFolderName = Path.GetFileName(Path.GetDirectoryName(path));
+                    var parentFolderName = Path.GetFileName(_fileSystem.GetDirectoryName(path));
 
                     if (string.Equals(parentFolderName, BaseItem.ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
                     {

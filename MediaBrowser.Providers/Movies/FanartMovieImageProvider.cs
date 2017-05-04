@@ -277,7 +277,7 @@ namespace MediaBrowser.Providers.Movies
 
             var path = GetFanartJsonPath(id);
 
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
             try
             {

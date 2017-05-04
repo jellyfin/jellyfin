@@ -86,7 +86,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             }).ConfigureAwait(false);
 
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFile));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(cacheFile));
 
             using (var stream = _fileSystem.OpenRead(tempFile))
             {

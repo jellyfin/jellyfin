@@ -1962,8 +1962,34 @@ namespace Emby.Server.Implementations.Library
                 return new List<Folder>();
             }
 
-            return GetUserRootFolder().Children
-                .OfType<Folder>()
+            return GetCollectionFoldersInternal(item, GetUserRootFolder().Children.OfType<Folder>().ToList());
+        }
+
+        public List<Folder> GetCollectionFolders(BaseItem item, List<Folder> allUserRootChildren)
+        {
+            while (item != null)
+            {
+                var parent = item.GetParent();
+
+                if (parent == null || parent is AggregateFolder)
+                {
+                    break;
+                }
+
+                item = parent;
+            }
+
+            if (item == null)
+            {
+                return new List<Folder>();
+            }
+
+            return GetCollectionFoldersInternal(item, allUserRootChildren);
+        }
+
+        private List<Folder> GetCollectionFoldersInternal(BaseItem item, List<Folder> allUserRootChildren)
+        {
+            return allUserRootChildren
                 .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path, StringComparer.OrdinalIgnoreCase))
                 .ToList();
         }

@@ -39,7 +39,7 @@ namespace MediaBrowser.LocalMetadata.Providers
 
         protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
-            var metadataPath = Path.GetDirectoryName(info.Path);
+            var metadataPath = FileSystem.GetDirectoryName(info.Path);
             metadataPath = Path.Combine(metadataPath, "metadata");
 
             var metadataFile = Path.Combine(metadataPath, Path.ChangeExtension(Path.GetFileName(info.Path), ".xml"));

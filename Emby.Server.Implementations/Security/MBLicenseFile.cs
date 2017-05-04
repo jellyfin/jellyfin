@@ -193,7 +193,7 @@ namespace Emby.Server.Implementations.Security
             }
 
             var licenseFile = Filename;
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(licenseFile));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(licenseFile));
             lock (_fileLock)
             {
                 _fileSystem.WriteAllLines(licenseFile, lines);

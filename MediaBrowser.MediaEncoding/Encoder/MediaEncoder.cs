@@ -210,7 +210,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (EnableEncoderFontFile)
                 {
-                    var directory = Path.GetDirectoryName(FFMpegPath);
+                    var directory = FileSystem.GetDirectoryName(FFMpegPath);
 
                     if (!string.IsNullOrWhiteSpace(directory) && FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.ProgramDataPath, directory))
                     {
@@ -415,7 +415,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetProbePathFromEncoderPath(string appPath)
         {
-            return FileSystem.GetFilePaths(Path.GetDirectoryName(appPath))
+            return FileSystem.GetFilePaths(FileSystem.GetDirectoryName(appPath))
                 .FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffprobe", StringComparison.OrdinalIgnoreCase));
         }
 
@@ -704,7 +704,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             var tempExtractPath = Path.Combine(ConfigurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".jpg");
-            FileSystem.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
+            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(tempExtractPath));
 
             // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar then scale to width 600. 
             // This filter chain may have adverse effects on recorded tv thumbnails if ar changes during presentation ex. commercials @ diff ar
