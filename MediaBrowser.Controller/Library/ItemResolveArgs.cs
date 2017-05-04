@@ -114,7 +114,7 @@ namespace MediaBrowser.Controller.Library
                     return false;
                 }
 
-                var parentDir = System.IO.Path.GetDirectoryName(Path) ?? string.Empty;
+                var parentDir = BaseItem.FileSystem.GetDirectoryName(Path) ?? string.Empty;
 
                 return parentDir.Length > _appPaths.RootFolderPath.Length
                        && parentDir.StartsWith(_appPaths.RootFolderPath, StringComparison.OrdinalIgnoreCase);
@@ -130,7 +130,7 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                return IsDirectory && string.Equals(Path, _appPaths.RootFolderPath, StringComparison.OrdinalIgnoreCase);
+                return IsDirectory && BaseItem.FileSystem.AreEqual(Path, _appPaths.RootFolderPath);
             }
         }
 
@@ -300,7 +300,7 @@ namespace MediaBrowser.Controller.Library
             if (args != null)
             {
                 if (args.Path == null && Path == null) return true;
-                return args.Path != null && args.Path.Equals(Path, StringComparison.OrdinalIgnoreCase);
+                return args.Path != null && BaseItem.FileSystem.AreEqual(args.Path, Path);
             }
             return false;
         }

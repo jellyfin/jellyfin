@@ -96,7 +96,7 @@ namespace BDInfo
             }
 
             DirectoryRoot =
-                _fileSystem.GetDirectoryInfo(Path.GetDirectoryName(DirectoryBDMV.FullName));
+                _fileSystem.GetDirectoryInfo(_fileSystem.GetDirectoryName(DirectoryBDMV.FullName));
             DirectoryBDJO =
                 GetDirectory("BDJO", DirectoryBDMV, 0);
             DirectoryCLIPINF =
@@ -349,7 +349,7 @@ namespace BDInfo
                 {
                     return dir;
                 }
-                var parentFolder = Path.GetDirectoryName(dir.FullName);
+                var parentFolder = _fileSystem.GetDirectoryName(dir.FullName);
                 if (string.IsNullOrEmpty(parentFolder))
                 {
                     dir = null;

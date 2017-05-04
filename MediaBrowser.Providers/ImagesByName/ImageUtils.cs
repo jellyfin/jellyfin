@@ -35,7 +35,7 @@ namespace MediaBrowser.Providers.ImagesByName
 
                 }).ConfigureAwait(false);
 
-                fileSystem.CreateDirectory(Path.GetDirectoryName(file));
+                fileSystem.CreateDirectory(fileSystem.GetDirectoryName(file));
 
                 try
                 {

@@ -250,7 +250,7 @@ namespace Emby.Server.Implementations.Updates
 
                 }).ConfigureAwait(false);
 
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(PackageCachePath));
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(PackageCachePath));
 
                 _fileSystem.CopyFile(tempFile, PackageCachePath, true);
                 _lastPackageUpdateTime = DateTime.UtcNow;
@@ -627,7 +627,7 @@ namespace Emby.Server.Implementations.Updates
             // Success - move it to the real target 
             try
             {
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(target));
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(target));
                 _fileSystem.CopyFile(tempFile, target, true);
                 //If it is an archive - write out a version file so we know what it is
                 if (isArchive)
