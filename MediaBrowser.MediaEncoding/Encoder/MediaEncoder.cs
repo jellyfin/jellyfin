@@ -187,18 +187,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        public bool IsDefaultEncoderPath
-        {
-            get
-            {
-                var path = FFMpegPath;
-
-                var parentPath = Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "ffmpeg", "20160410");
-
-                return FileSystem.ContainsSubPath(parentPath, path);
-            }
-        }
-
         private bool IsSystemInstalledPath(string path)
         {
             if (path.IndexOf("/", StringComparison.Ordinal) == -1 && path.IndexOf("\\", StringComparison.Ordinal) == -1)
@@ -226,8 +214,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     if (!string.IsNullOrWhiteSpace(directory) && FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.ProgramDataPath, directory))
                     {
-                        await new FontConfigLoader(_httpClient, ConfigurationManager.ApplicationPaths, _logger, _zipClient,
-                                FileSystem).DownloadFonts(directory).ConfigureAwait(false);
+                        await new FontConfigLoader(_httpClient, ConfigurationManager.ApplicationPaths, _logger, _zipClient, FileSystem).DownloadFonts(directory).ConfigureAwait(false);
                     }
                 }
             }
