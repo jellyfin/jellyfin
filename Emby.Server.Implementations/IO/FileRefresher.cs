@@ -207,7 +207,7 @@ namespace Emby.Server.Implementations.IO
             {
                 item = LibraryManager.FindByPath(path, null);
 
-                path = System.IO.Path.GetDirectoryName(path);
+                path = _fileSystem.GetDirectoryName(path);
             }
 
             if (item != null)

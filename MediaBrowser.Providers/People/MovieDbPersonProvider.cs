@@ -250,7 +250,7 @@ namespace MediaBrowser.Providers.People
 
             }).ConfigureAwait(false))
             {
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(dataFilePath));
 
                 using (var fs = _fileSystem.GetFileStream(dataFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                 {

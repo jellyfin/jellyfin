@@ -238,7 +238,7 @@ namespace MediaBrowser.Providers.Manager
         {
             _logger.Debug("Saving image to {0}", path);
 
-            var parentFolder = Path.GetDirectoryName(path);
+            var parentFolder = _fileSystem.GetDirectoryName(path);
 
             await _imageSaveSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -247,7 +247,7 @@ namespace MediaBrowser.Providers.Manager
                 _libraryMonitor.ReportFileSystemChangeBeginning(path);
                 _libraryMonitor.ReportFileSystemChangeBeginning(parentFolder);
 
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
                 // If the file is currently hidden we'll have to remove that or the save will fail
                 var file = _fileSystem.GetFileInfo(path);
@@ -449,7 +449,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (type == ImageType.Primary && item is Episode)
                 {
-                    path = Path.Combine(Path.GetDirectoryName(item.Path), "metadata", filename + extension);
+                    path = Path.Combine(_fileSystem.GetDirectoryName(item.Path), "metadata", filename + extension);
                 }
 
                 else if (item.DetectIsInMixedFolder())
@@ -581,7 +581,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (item is Episode)
                 {
-                    var seasonFolder = Path.GetDirectoryName(item.Path);
+                    var seasonFolder = _fileSystem.GetDirectoryName(item.Path);
 
                     var imageFilename = _fileSystem.GetFileNameWithoutExtension(item.Path) + "-thumb" + extension;
 
@@ -629,7 +629,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 imageFilename = "poster";
             }
-            var folder = Path.GetDirectoryName(item.Path);
+            var folder = _fileSystem.GetDirectoryName(item.Path);
 
             return Path.Combine(folder, _fileSystem.GetFileNameWithoutExtension(item.Path) + "-" + imageFilename + extension);
         }

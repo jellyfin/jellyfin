@@ -45,6 +45,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns>System.String.</returns>
         private static string GetFileInputArgument(string path)
         {
+            if (path.IndexOf("://") != -1)
+            {
+                return string.Format("\"{0}\"", path);
+            }
+
             // Quotes are valid path characters in linux and they need to be escaped here with a leading \
             path = NormalizePath(path);
 

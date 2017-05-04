@@ -35,7 +35,7 @@ namespace MediaBrowser.LocalMetadata.Providers
             var specificFile = Path.ChangeExtension(info.Path, ".xml");
             var file = FileSystem.GetFileInfo(specificFile);
 
-            return info.IsInMixedFolder || file.Exists ? file : FileSystem.GetFileInfo(Path.Combine(Path.GetDirectoryName(info.Path), "game.xml"));
+            return info.IsInMixedFolder || file.Exists ? file : FileSystem.GetFileInfo(Path.Combine(FileSystem.GetDirectoryName(info.Path), "game.xml"));
         }
     }
 }
