@@ -1145,7 +1145,7 @@ namespace Emby.Server.Core
             {
                 if (!FileSystemManager.FileExists(certPath))
                 {
-                    FileSystemManager.CreateDirectory(Path.GetDirectoryName(certPath));
+                    FileSystemManager.CreateDirectory(FileSystemManager.GetDirectoryName(certPath));
 
                     try
                     {

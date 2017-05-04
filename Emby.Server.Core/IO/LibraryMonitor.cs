@@ -466,7 +466,7 @@ namespace Emby.Server.Core.IO
                 }
 
                 // Go up a level
-                var parent = Path.GetDirectoryName(i);
+                var parent = _fileSystem.GetDirectoryName(i);
                 if (!string.IsNullOrEmpty(parent))
                 {
                     if (_fileSystem.AreEqual(parent, path))
@@ -492,7 +492,7 @@ namespace Emby.Server.Core.IO
 
         private void CreateRefresher(string path)
         {
-            var parentPath = Path.GetDirectoryName(path);
+            var parentPath = _fileSystem.GetDirectoryName(path);
 
             lock (_activeRefreshers)
             {
@@ -521,7 +521,7 @@ namespace Emby.Server.Core.IO
                     }
 
                     // They are siblings. Rebase the refresher to the parent folder.
-                    if (string.Equals(parentPath, Path.GetDirectoryName(refresher.Path), StringComparison.Ordinal))
+                    if (string.Equals(parentPath, _fileSystem.GetDirectoryName(refresher.Path), StringComparison.Ordinal))
                     {
                         refresher.ResetPath(parentPath, path);
                         return;

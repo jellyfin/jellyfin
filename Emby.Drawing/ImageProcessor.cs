@@ -244,9 +244,9 @@ namespace Emby.Drawing
                     var newWidth = Convert.ToInt32(newSize.Width);
                     var newHeight = Convert.ToInt32(newSize.Height);
 
-                    _fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
+                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(cacheFilePath));
                     var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(cacheFilePath));
-                    _fileSystem.CreateDirectory(Path.GetDirectoryName(tmpPath));
+                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(tmpPath));
 
                     _imageEncoder.EncodeImage(originalImagePath, tmpPath, AutoOrient(options.Item), newWidth, newHeight, quality, options, outputFormat);
                     CopyFile(tmpPath, cacheFilePath);
@@ -418,9 +418,9 @@ namespace Emby.Drawing
 
             try
             {
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(croppedImagePath));
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(croppedImagePath));
                 var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(croppedImagePath));
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(tmpPath));
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(tmpPath));
 
                 _imageEncoder.CropWhiteSpace(originalImagePath, tmpPath);
                 CopyFile(tmpPath, croppedImagePath);
@@ -592,7 +592,7 @@ namespace Emby.Drawing
                 try
                 {
                     var path = ImageSizeFile;
-                    _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
                     _jsonSerializer.SerializeToFile(_cachedImagedSizes, path);
                 }
                 catch (Exception ex)
@@ -765,10 +765,10 @@ namespace Emby.Drawing
                 return enhancedImagePath;
             }
 
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(enhancedImagePath));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(enhancedImagePath));
 
             var tmpPath = Path.Combine(_appPaths.TempDirectory, Path.ChangeExtension(Guid.NewGuid().ToString(), Path.GetExtension(enhancedImagePath)));
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(tmpPath));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(tmpPath));
 
             await ExecuteImageEnhancers(supportedEnhancers, originalImagePath, tmpPath, item, imageType, imageIndex).ConfigureAwait(false);
 
