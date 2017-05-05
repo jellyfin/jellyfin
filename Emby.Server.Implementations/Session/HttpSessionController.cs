@@ -129,7 +129,7 @@ namespace Emby.Server.Implementations.Session
 
         public Task SendLibraryUpdateInfo(LibraryUpdateInfo info, CancellationToken cancellationToken)
         {
-            return Task.FromResult(true);
+            return SendMessage("LibraryChanged", info, cancellationToken);
         }
 
         public Task SendRestartRequiredNotification(SystemInfo info, CancellationToken cancellationToken)

@@ -138,6 +138,8 @@ namespace MediaBrowser.Api.Playback
             return MimeTypes.GetMimeType(outputPath);
         }
 
+        public bool EnableDlnaHeaders { get; set; }
+
         public void Dispose()
         {
             DisposeTranscodingThrottler();

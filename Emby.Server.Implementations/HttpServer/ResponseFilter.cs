@@ -26,8 +26,8 @@ namespace Emby.Server.Implementations.HttpServer
         public void FilterResponse(IRequest req, IResponse res, object dto)
         {
             // Try to prevent compatibility view
-            res.AddHeader("X-UA-Compatible", "IE=Edge");
-            res.AddHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Range, X-MediaBrowser-Token, X-Emby-Authorization");
+            //res.AddHeader("X-UA-Compatible", "IE=Edge");
+            res.AddHeader("Access-Control-Allow-Headers", "Accept, Accept-Language, Authorization, Cache-Control, Content-Disposition, Content-Encoding, Content-Language, Content-Length, Content-MD5, Content-Range, Content-Type, Date, Host, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Origin, OriginToken, Pragma, Range, Slug, Transfer-Encoding, Want-Digest, X-MediaBrowser-Token, X-Emby-Authorization");
             res.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
             res.AddHeader("Access-Control-Allow-Origin", "*");
 
@@ -45,8 +45,6 @@ namespace Emby.Server.Implementations.HttpServer
                     res.AddHeader("X-Application-Error-Code", error);
                 }
             }
-
-            var vary = "Accept-Encoding";
 
             var hasHeaders = dto as IHasHeaders;
             var sharpResponse = res as WebSocketSharpResponse;
@@ -86,23 +84,9 @@ namespace Emby.Server.Implementations.HttpServer
                         }
                     }
                 }
-
-                string hasHeadersVary;
-                if (hasHeaders.Headers.TryGetValue("Vary", out hasHeadersVary))
-                {
-                    vary = hasHeadersVary;
-                }
-
-                hasHeaders.Headers["Vary"] = vary;
             }
 
             //res.KeepAlive = false;
-
-            // Per Google PageSpeed
-            // This instructs the proxies to cache two versions of the resource: one compressed, and one uncompressed. 
-            // The correct version of the resource is delivered based on the client request header. 
-            // This is a good choice for applications that are singly homed and depend on public proxies for user locality.                        
-            res.AddHeader("Vary", vary);
         }
 
         /// <summary>
