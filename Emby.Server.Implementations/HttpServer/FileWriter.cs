@@ -58,6 +58,7 @@ namespace Emby.Server.Implementations.HttpServer
             Headers["Content-Type"] = contentType;
 
             TotalContentLength = fileSystem.GetFileInfo(path).Length;
+            Headers["Accept-Ranges"] = "bytes";
 
             if (string.IsNullOrWhiteSpace(rangeHeader))
             {
@@ -66,7 +67,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
             else
             {
-                Headers["Accept-Ranges"] = "bytes";
                 StatusCode = HttpStatusCode.PartialContent;
                 SetRangeValues();
             }
@@ -96,8 +96,12 @@ namespace Emby.Server.Implementations.HttpServer
             RangeLength = 1 + RangeEnd - RangeStart;
 
             // Content-Length is the length of what we're serving, not the original content
-            Headers["Content-Length"] = RangeLength.ToString(UsCulture);
-            Headers["Content-Range"] = string.Format("bytes {0}-{1}/{2}", RangeStart, RangeEnd, TotalContentLength);
+            var lengthString = RangeLength.ToString(UsCulture);
+            Headers["Content-Length"] = lengthString;
+            var rangeString = string.Format("bytes {0}-{1}/{2}", RangeStart, RangeEnd, TotalContentLength);
+            Headers["Content-Range"] = rangeString;
+
+            Logger.Info("Setting range response values for {0}. RangeRequest: {1} Content-Length: {2}, Content-Range: {3}", Path, RangeHeader, lengthString, rangeString);
         }
 
         /// <summary>

@@ -125,8 +125,7 @@ namespace MediaBrowser.Providers.TV
                 Id = _libraryManager.GetNewItemId((series.Id + (seasonNumber ?? -1).ToString(_usCulture) + seasonName), typeof(Season)),
                 IsVirtualItem = isVirtualItem,
                 SeriesId = series.Id,
-                SeriesName = series.Name,
-                SeriesSortName = series.SortName
+                SeriesName = series.Name
             };
 
             season.SetParent(series);

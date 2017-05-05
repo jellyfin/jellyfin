@@ -11,7 +11,6 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The name of the series.</value>
         string SeriesName { get; set; }
         string FindSeriesName();
-        string SeriesSortName { get; set; }
         string FindSeriesSortName();
         Guid? SeriesId { get; set; }
         Guid? FindSeriesId();

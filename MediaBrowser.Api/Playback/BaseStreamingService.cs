@@ -675,7 +675,8 @@ namespace MediaBrowser.Api.Playback
             {
                 Request = request,
                 RequestedUrl = url,
-                UserAgent = Request.UserAgent
+                UserAgent = Request.UserAgent,
+                EnableDlnaHeaders = !string.IsNullOrWhiteSpace(request.Params)
             };
 
             var auth = AuthorizationContext.GetAuthorizationInfo(Request);
@@ -917,6 +918,11 @@ namespace MediaBrowser.Api.Playback
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected void AddDlnaHeaders(StreamState state, IDictionary<string, string> responseHeaders, bool isStaticallyStreamed)
         {
+            if (!state.EnableDlnaHeaders)
+            {
+                return;
+            }
+
             var profile = state.DeviceProfile;
 
             var transferMode = GetHeader("transferMode.dlna.org");

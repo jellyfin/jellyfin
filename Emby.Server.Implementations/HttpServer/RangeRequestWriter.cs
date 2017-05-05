@@ -189,10 +189,15 @@ namespace Emby.Server.Implementations.HttpServer
         private async Task CopyToInternalAsync(Stream source, Stream destination, long copyLength)
         {
             var array = new byte[BufferSize];
-            int count;
-            while ((count = await source.ReadAsync(array, 0, array.Length).ConfigureAwait(false)) != 0)
+            int bytesRead;
+            while ((bytesRead = await source.ReadAsync(array, 0, array.Length).ConfigureAwait(false)) != 0)
             {
-                var bytesToCopy = Math.Min(count, copyLength);
+                if (bytesRead == 0)
+                {
+                    break;
+                }
+
+                var bytesToCopy = Math.Min(bytesRead, copyLength);
 
                 await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToCopy)).ConfigureAwait(false);
 
