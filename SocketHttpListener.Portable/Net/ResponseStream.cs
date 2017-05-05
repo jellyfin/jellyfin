@@ -344,13 +344,6 @@ namespace SocketHttpListener.Net
 
         private async Task TransmitFileManaged(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
-            var chunked = response.SendChunked;
-
-            if (!chunked)
-            {
-                await WriteAsync(_emptyBuffer, 0, 0, cancellationToken).ConfigureAwait(false);
-            }
-
             using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, fileShareMode, true))
             {
                 if (offset > 0)
@@ -358,7 +351,7 @@ namespace SocketHttpListener.Net
                     fs.Position = offset;
                 }
 
-                var targetStream = chunked ? this : stream;
+                var targetStream = this;
 
                 if (count > 0)
                 {
@@ -374,14 +367,23 @@ namespace SocketHttpListener.Net
         private static async Task CopyToInternalAsync(Stream source, Stream destination, long copyLength, CancellationToken cancellationToken)
         {
             var array = new byte[81920];
-            int count;
-            while ((count = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            int bytesRead;
+            
+            while ((bytesRead = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
             {
-                var bytesToCopy = Math.Min(count, copyLength);
+                if (bytesRead == 0)
+                {
+                    break;
+                }
 
-                await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToCopy), cancellationToken).ConfigureAwait(false);
+                var bytesToWrite = Math.Min(bytesRead, copyLength);
 
-                copyLength -= bytesToCopy;
+                if (bytesToWrite > 0)
+                {
+                    await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToWrite), cancellationToken).ConfigureAwait(false);
+                }
+
+                copyLength -= bytesToWrite;
 
                 if (copyLength <= 0)
                 {

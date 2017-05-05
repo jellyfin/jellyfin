@@ -51,9 +51,6 @@ namespace MediaBrowser.Controller.Entities.TV
             get { return SeriesId; }
         }
 
-        [IgnoreDataMember]
-        public string SeriesSortName { get; set; }
-
         public override double? GetDefaultPrimaryImageAspectRatio()
         {
             double value = 2;
@@ -65,7 +62,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeriesSortName()
         {
             var series = Series;
-            return series == null ? SeriesSortName : series.SortName;
+            return series == null ? SeriesName : series.SortName;
         }
 
         // Genre, Rating and Stuido will all be the same

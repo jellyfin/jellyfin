@@ -501,7 +501,7 @@ namespace Emby.Server.Implementations.HttpServer
         private bool ShouldCompressResponse(IRequest requestContext, string contentType)
         {
             // It will take some work to support compression with byte range requests
-            if (!string.IsNullOrEmpty(requestContext.Headers.Get("Range")))
+            if (!string.IsNullOrWhiteSpace(requestContext.Headers.Get("Range")))
             {
                 return false;
             }
@@ -566,7 +566,7 @@ namespace Emby.Server.Implementations.HttpServer
                     };
                 }
 
-                if (!string.IsNullOrEmpty(rangeHeader))
+                if (!string.IsNullOrWhiteSpace(rangeHeader))
                 {
                     var stream = await factoryFn().ConfigureAwait(false);
 
@@ -621,6 +621,7 @@ namespace Emby.Server.Implementations.HttpServer
                     responseHeaders["Content-Encoding"] = requestedCompressionType;
                 }
 
+                responseHeaders["Vary"] = "Accept-Encoding";
                 responseHeaders["Content-Length"] = content.Length.ToString(UsCulture);
 
                 if (isHeadRequest)

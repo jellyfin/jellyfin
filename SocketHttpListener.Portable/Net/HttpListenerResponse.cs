@@ -480,6 +480,8 @@ namespace SocketHttpListener.Net
                     headers.SetInternal("Set-Cookie", cookie.ToString());
             }
 
+            headers.SetInternal("Status", status_code.ToString(CultureInfo.InvariantCulture));
+
             using (StreamWriter writer = new StreamWriter(ms, encoding, 256, true))
             {
                 writer.Write("HTTP/{0} {1} {2}\r\n", version, status_code, status_description);
