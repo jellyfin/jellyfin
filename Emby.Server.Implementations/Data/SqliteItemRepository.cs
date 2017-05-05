@@ -254,7 +254,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "SeasonName", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "SeasonId", "GUID", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "SeriesId", "GUID", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "SeriesSortName", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "ExternalSeriesId", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "Tagline", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "Keywords", "Text", existingColumnNames);
@@ -458,7 +457,6 @@ namespace Emby.Server.Implementations.Data
             "SeasonName",
             "SeasonId",
             "SeriesId",
-            "SeriesSortName",
             "PresentationUniqueKey",
             "InheritedParentalRatingValue",
             "InheritedTags",
@@ -591,7 +589,6 @@ namespace Emby.Server.Implementations.Data
                 "SeasonName",
                 "SeasonId",
                 "SeriesId",
-                "SeriesSortName",
                 "ExternalSeriesId",
                 "Tagline",
                 "Keywords",
@@ -1020,13 +1017,11 @@ namespace Emby.Server.Implementations.Data
             if (hasSeries != null)
             {
                 saveItemStatement.TryBind("@SeriesId", hasSeries.SeriesId);
-                saveItemStatement.TryBind("@SeriesSortName", hasSeries.SeriesSortName);
                 saveItemStatement.TryBind("@SeriesPresentationUniqueKey", hasSeries.SeriesPresentationUniqueKey);
             }
             else
             {
                 saveItemStatement.TryBindNull("@SeriesId");
-                saveItemStatement.TryBindNull("@SeriesSortName");
                 saveItemStatement.TryBindNull("@SeriesPresentationUniqueKey");
             }
 
@@ -1839,15 +1834,6 @@ namespace Emby.Server.Implementations.Data
                 if (!reader.IsDBNull(index))
                 {
                     hasSeries.SeriesId = reader.GetGuid(index);
-                }
-            }
-            index++;
-
-            if (hasSeries != null)
-            {
-                if (!reader.IsDBNull(index))
-                {
-                    hasSeries.SeriesSortName = reader.GetString(index);
                 }
             }
             index++;
@@ -2879,6 +2865,10 @@ namespace Emby.Server.Implementations.Data
             if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
             {
                 return new Tuple<string, bool>("(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)", false);
+            }
+            if (string.Equals(name, ItemSortBy.SeriesSortName, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("(Select SortName from TypedBaseItems where B.Guid=A.SeriesId)", false);
             }
 
             return new Tuple<string, bool>(name, false);

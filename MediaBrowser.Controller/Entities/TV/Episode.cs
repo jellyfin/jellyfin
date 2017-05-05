@@ -57,13 +57,10 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <value>The index number.</value>
         public int? IndexNumberEnd { get; set; }
 
-        [IgnoreDataMember]
-        public string SeriesSortName { get; set; }
-
         public string FindSeriesSortName()
         {
             var series = Series;
-            return series == null ? SeriesSortName : series.SortName;
+            return series == null ? SeriesName : series.SortName;
         }
 
         [IgnoreDataMember]

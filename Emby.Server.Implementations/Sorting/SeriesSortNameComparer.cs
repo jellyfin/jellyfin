@@ -22,7 +22,7 @@ namespace Emby.Server.Implementations.Sorting
         {
             var hasSeries = item as IHasSeries;
 
-            return hasSeries != null ? hasSeries.SeriesSortName : null;
+            return hasSeries != null ? hasSeries.FindSeriesSortName() : null;
         }
 
         /// <summary>
