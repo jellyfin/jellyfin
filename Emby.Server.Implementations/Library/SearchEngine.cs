@@ -98,7 +98,7 @@ namespace Emby.Server.Implementations.Library
 
             var hints = new List<Tuple<BaseItem, string, int>>();
 
-            var excludeItemTypes = new List<string>();
+            var excludeItemTypes = query.ExcludeItemTypes.ToList();
             var includeItemTypes = (query.IncludeItemTypes ?? new string[] { }).ToList();
 
             excludeItemTypes.Add(typeof(Year).Name);
@@ -174,7 +174,8 @@ namespace Emby.Server.Implementations.Library
                 IsMovie = query.IsMovie,
                 IsNews = query.IsNews,
                 IsSeries = query.IsSeries,
-                IsSports = query.IsSports
+                IsSports = query.IsSports,
+                MediaTypes = query.MediaTypes
             });
 
             // Add search hints based on item name
