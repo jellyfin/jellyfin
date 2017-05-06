@@ -71,10 +71,9 @@ namespace Emby.Server.Implementations.Data
                 double newPercentCommplete = 45 + .55 * p;
                 progress.Report(newPercentCommplete);
             });
-            await CleanDeletedItems(cancellationToken, innerProgress).ConfigureAwait(false);
-            progress.Report(100);
 
             await _itemRepo.UpdateInheritedValues(cancellationToken).ConfigureAwait(false);
+            progress.Report(100);
         }
 
         private async Task CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)
@@ -113,115 +112,6 @@ namespace Emby.Server.Implementations.Data
             }
 
             progress.Report(100);
-        }
-
-        private async Task CleanDeletedItems(CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            var result = _itemRepo.GetItemIdsWithPath(new InternalItemsQuery
-            {
-                LocationTypes = new[] { LocationType.FileSystem },
-                //Limit = limit,
-
-                // These have their own cleanup routines
-                ExcludeItemTypes = new[]
-                {
-                    typeof(Person).Name,
-                    typeof(Genre).Name,
-                    typeof(MusicGenre).Name,
-                    typeof(GameGenre).Name,
-                    typeof(Studio).Name,
-                    typeof(Year).Name,
-                    typeof(Channel).Name,
-                    typeof(AggregateFolder).Name,
-                    typeof(CollectionFolder).Name
-                }
-            });
-
-            var numComplete = 0;
-            var numItems = result.Count;
-
-            var allLibraryPaths = _libraryManager
-                .GetVirtualFolders()
-                .SelectMany(i => i.Locations)
-                .ToList();
-
-            foreach (var item in result)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var path = item.Item2;
-
-                try
-                {
-                    var isPathInLibrary = false;
-
-                    if (allLibraryPaths.Any(i => path.StartsWith(i, StringComparison.Ordinal)) || 
-                        allLibraryPaths.Contains(path, StringComparer.Ordinal) || 
-                        path.StartsWith(_appPaths.ProgramDataPath, StringComparison.Ordinal))
-                    {
-                        isPathInLibrary = true;
-
-                        if (_fileSystem.FileExists(path) || _fileSystem.DirectoryExists(path))
-                        {
-                            continue;
-                        }
-                    }
-
-                    var libraryItem = _libraryManager.GetItemById(item.Item1);
-
-                    if (libraryItem == null)
-                    {
-                        continue;
-                    }
-
-                    if (libraryItem.IsTopParent)
-                    {
-                        continue;
-                    }
-
-                    var hasDualAccess = libraryItem as IHasDualAccess;
-                    if (hasDualAccess != null && hasDualAccess.IsAccessedByName)
-                    {
-                        continue;
-                    }
-
-                    var libraryItemPath = libraryItem.Path;
-                    if (!string.Equals(libraryItemPath, path, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _logger.Error("CleanDeletedItems aborting delete for item {0}-{1} because paths don't match. {2}---{3}", libraryItem.Id, libraryItem.Name, libraryItem.Path ?? string.Empty, path ?? string.Empty);
-                        continue;
-                    }
-
-                    if (Folder.IsPathOffline(path, allLibraryPaths))
-                    {
-                        continue;
-                    }
-
-                    if (isPathInLibrary)
-                    {
-                        _logger.Info("Deleting item from database {0} because path no longer exists. type: {1} path: {2}", libraryItem.Name, libraryItem.GetType().Name, libraryItemPath ?? string.Empty);
-                    }
-                    else
-                    {
-                        _logger.Info("Deleting item from database {0} because path is no longer in the server library. type: {1} path: {2}", libraryItem.Name, libraryItem.GetType().Name, libraryItemPath ?? string.Empty);
-                    }
-
-                    await libraryItem.OnFileDeleted().ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in CleanDeletedItems. File {0}", ex, path);
-                }
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= numItems;
-                progress.Report(percent * 100);
-            }
         }
 
         /// <summary>
