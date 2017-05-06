@@ -209,7 +209,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "DateModified", "DATETIME", existingColumnNames);
 
                     AddColumn(db, "TypedBaseItems", "ForcedSortName", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "LocationType", "Text", existingColumnNames);
 
                     AddColumn(db, "TypedBaseItems", "IsSeries", "BIT", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "IsLive", "BIT", existingColumnNames);
@@ -555,7 +554,6 @@ namespace Emby.Server.Implementations.Data
                 "DateCreated",
                 "DateModified",
                 "ForcedSortName",
-                "LocationType",
                 "PreferredMetadataLanguage",
                 "PreferredMetadataCountryCode",
                 "IsHD",
@@ -835,7 +833,6 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@DateModified", item.DateModified);
 
             saveItemStatement.TryBind("@ForcedSortName", item.ForcedSortName);
-            saveItemStatement.TryBind("@LocationType", item.LocationType.ToString());
 
             saveItemStatement.TryBind("@PreferredMetadataLanguage", item.PreferredMetadataLanguage);
             saveItemStatement.TryBind("@PreferredMetadataCountryCode", item.PreferredMetadataCountryCode);
@@ -4077,27 +4074,6 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add("ProductionYear in (" + val + ")");
             }
 
-            if (query.LocationTypes.Length == 1)
-            {
-                if (query.LocationTypes[0] == LocationType.Virtual && _config.Configuration.SchemaVersion >= 90)
-                {
-                    query.IsVirtualItem = true;
-                }
-                else
-                {
-                    whereClauses.Add("LocationType=@LocationType");
-                    if (statement != null)
-                    {
-                        statement.TryBind("@LocationType", query.LocationTypes[0].ToString());
-                    }
-                }
-            }
-            else if (query.LocationTypes.Length > 1)
-            {
-                var val = string.Join(",", query.LocationTypes.Select(i => "'" + i + "'").ToArray());
-
-                whereClauses.Add("LocationType in (" + val + ")");
-            }
             if (query.IsVirtualItem.HasValue)
             {
                 whereClauses.Add("IsVirtualItem=@IsVirtualItem");
