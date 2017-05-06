@@ -49,11 +49,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(1, 1);
 
-        /// <summary>
-        /// The FF probe resource pool
-        /// </summary>
-        private readonly SemaphoreSlim _ffProbeResourcePool = new SemaphoreSlim(2, 2);
-
         public string FFMpegPath { get; private set; }
 
         public string FFProbePath { get; private set; }
@@ -192,18 +187,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        public bool IsDefaultEncoderPath
-        {
-            get
-            {
-                var path = FFMpegPath;
-
-                var parentPath = Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "ffmpeg", "20160410");
-
-                return FileSystem.ContainsSubPath(parentPath, path);
-            }
-        }
-
         private bool IsSystemInstalledPath(string path)
         {
             if (path.IndexOf("/", StringComparison.Ordinal) == -1 && path.IndexOf("\\", StringComparison.Ordinal) == -1)
@@ -227,12 +210,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (EnableEncoderFontFile)
                 {
-                    var directory = Path.GetDirectoryName(FFMpegPath);
+                    var directory = FileSystem.GetDirectoryName(FFMpegPath);
 
                     if (!string.IsNullOrWhiteSpace(directory) && FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.ProgramDataPath, directory))
                     {
-                        await new FontConfigLoader(_httpClient, ConfigurationManager.ApplicationPaths, _logger, _zipClient,
-                                FileSystem).DownloadFonts(directory).ConfigureAwait(false);
+                        await new FontConfigLoader(_httpClient, ConfigurationManager.ApplicationPaths, _logger, _zipClient, FileSystem).DownloadFonts(directory).ConfigureAwait(false);
                     }
                 }
             }
@@ -433,7 +415,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetProbePathFromEncoderPath(string appPath)
         {
-            return FileSystem.GetFilePaths(Path.GetDirectoryName(appPath))
+            return FileSystem.GetFilePaths(FileSystem.GetDirectoryName(appPath))
                 .FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffprobe", StringComparison.OrdinalIgnoreCase));
         }
 
@@ -591,20 +573,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
-                await _ffProbeResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-                try
-                {
-                    StartProcess(processWrapper);
-                }
-                catch (Exception ex)
-                {
-                    _ffProbeResourcePool.Release();
-
-                    _logger.ErrorException("Error starting ffprobe", ex);
-
-                    throw;
-                }
+                StartProcess(processWrapper);
 
                 try
                 {
@@ -654,10 +623,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     StopProcess(processWrapper, 100);
 
                     throw;
-                }
-                finally
-                {
-                    _ffProbeResourcePool.Release();
                 }
             }
         }
@@ -739,7 +704,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             var tempExtractPath = Path.Combine(ConfigurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".jpg");
-            FileSystem.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
+            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(tempExtractPath));
 
             // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar then scale to width 600. 
             // This filter chain may have adverse effects on recorded tv thumbnails if ar changes during presentation ex. commercials @ diff ar

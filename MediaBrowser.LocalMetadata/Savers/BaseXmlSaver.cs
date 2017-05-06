@@ -46,7 +46,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                     "Countries",
                     "CustomRating",
                     "CriticRating",
-                    "CriticRatingSummary",
                     "DeathDate",
                     "DisplayOrder",
                     "EndDate",
@@ -71,8 +70,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                     
                     // Deprecated. No longer saving in this field.
                     "MPAARating",
-
-                    "MPAADescription",
 
                     "MusicBrainzArtistId",
                     "MusicBrainzAlbumArtistId",
@@ -210,7 +207,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
         private void SaveToFile(Stream stream, string path)
         {
-            FileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(path));
 
             var file = FileSystem.GetFileInfo(path);
 
@@ -309,11 +306,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteElementString("ContentRating", item.OfficialRating);
             }
 
-            if (!string.IsNullOrEmpty(item.OfficialRatingDescription))
-            {
-                writer.WriteElementString("MPAADescription", item.OfficialRatingDescription);
-            }
-
             writer.WriteElementString("Added", item.DateCreated.ToLocalTime().ToString("G"));
 
             writer.WriteElementString("LockData", item.IsLocked.ToString().ToLower());
@@ -331,11 +323,6 @@ namespace MediaBrowser.LocalMetadata.Savers
             if (item.CriticRating.HasValue)
             {
                 writer.WriteElementString("CriticRating", item.CriticRating.Value.ToString(UsCulture));
-            }
-
-            if (!string.IsNullOrEmpty(item.CriticRatingSummary))
-            {
-                writer.WriteElementString("CriticRatingSummary", item.CriticRatingSummary);
             }
 
             if (!string.IsNullOrEmpty(item.Overview))

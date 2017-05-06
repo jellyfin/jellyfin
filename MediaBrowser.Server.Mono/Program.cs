@@ -159,9 +159,9 @@ namespace MediaBrowser.Server.Mono
             Task.WaitAll(task);
         }
 
-        private static void GenerateCertificate(string certPath, string certHost)
+        private static void GenerateCertificate(string certPath, string certHost, string certPassword)
         {
-            CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, _logger);
+            CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, certPassword, _logger);
         }
 
         private static MonoEnvironmentInfo GetEnvironmentInfo()
@@ -258,7 +258,12 @@ namespace MediaBrowser.Server.Mono
 
             if (!Debugger.IsAttached)
             {
-                Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
+                var message = LogHelper.GetLogMessage(exception).ToString();
+
+                if (message.IndexOf("InotifyWatcher", StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
+                }
             }
         }
 

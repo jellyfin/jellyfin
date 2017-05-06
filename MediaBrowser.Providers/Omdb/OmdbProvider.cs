@@ -19,7 +19,6 @@ namespace MediaBrowser.Providers.Omdb
 {
     public class OmdbProvider
     {
-        internal static readonly SemaphoreSlim ResourcePool = new SemaphoreSlim(1, 1);
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
@@ -104,17 +103,17 @@ namespace MediaBrowser.Providers.Omdb
             ParseAdditionalMetadata(itemResult, result);
         }
 
-        public async Task<bool> FetchEpisodeData<T>(MetadataResult<T> itemResult, int episodeNumber, int seasonNumber, string imdbId, string language, string country, CancellationToken cancellationToken)
+        public async Task<bool> FetchEpisodeData<T>(MetadataResult<T> itemResult, int episodeNumber, int seasonNumber, string episodeImdbId, string seriesImdbId, string language, string country, CancellationToken cancellationToken)
             where T : BaseItem
         {
-            if (string.IsNullOrWhiteSpace(imdbId))
+            if (string.IsNullOrWhiteSpace(seriesImdbId))
             {
-                throw new ArgumentNullException("imdbId");
+                throw new ArgumentNullException("seriesImdbId");
             }
 
             T item = itemResult.Item;
 
-            var seasonResult = await GetSeasonRootObject(imdbId, seasonNumber, cancellationToken).ConfigureAwait(false);
+            var seasonResult = await GetSeasonRootObject(seriesImdbId, seasonNumber, cancellationToken).ConfigureAwait(false);
 
             if (seasonResult == null)
             {
@@ -123,12 +122,28 @@ namespace MediaBrowser.Providers.Omdb
 
             RootObject result = null;
 
-            foreach (var episode in (seasonResult.Episodes ?? new RootObject[] { }))
+            if (!string.IsNullOrWhiteSpace(episodeImdbId))
             {
-                if (episode.Episode == episodeNumber)
+                foreach (var episode in (seasonResult.Episodes ?? new RootObject[] { }))
                 {
-                    result = episode;
-                    break;
+                    if (string.Equals(episodeImdbId, episode.imdbID, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = episode;
+                        break;
+                    }
+                }
+            }
+
+            // finally, search by numbers
+            if (result == null)
+            {
+                foreach (var episode in (seasonResult.Episodes ?? new RootObject[] { }))
+                {
+                    if (episode.Episode == episodeNumber)
+                    {
+                        result = episode;
+                        break;
+                    }
                 }
             }
 
@@ -283,7 +298,7 @@ namespace MediaBrowser.Providers.Omdb
             using (var stream = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
                 var rootObject = _jsonSerializer.DeserializeFromStream<RootObject>(stream);
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
                 _jsonSerializer.SerializeToFile(rootObject, path);
             }
 
@@ -318,7 +333,7 @@ namespace MediaBrowser.Providers.Omdb
             using (var stream = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
                 var rootObject = _jsonSerializer.DeserializeFromStream<SeasonRootObject>(stream);
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
                 _jsonSerializer.SerializeToFile(rootObject, path);
             }
 
@@ -330,7 +345,6 @@ namespace MediaBrowser.Providers.Omdb
             return httpClient.Get(new HttpRequestOptions
             {
                 Url = url,
-                ResourcePool = ResourcePool,
                 CancellationToken = cancellationToken,
                 BufferContent = true,
                 EnableDefaultUserAgent = true

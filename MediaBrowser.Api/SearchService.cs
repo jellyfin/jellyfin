@@ -9,6 +9,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
@@ -65,6 +66,23 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "IncludeItemTypes", Description = "Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string IncludeItemTypes { get; set; }
+
+        public string ParentId { get; set; }
+
+        [ApiMember(Name = "IsMovie", Description = "Optional filter for movies.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
+        public bool? IsMovie { get; set; }
+
+        [ApiMember(Name = "IsSeries", Description = "Optional filter for movies.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
+        public bool? IsSeries { get; set; }
+
+        [ApiMember(Name = "IsNews", Description = "Optional filter for news.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
+        public bool? IsNews { get; set; }
+
+        [ApiMember(Name = "IsKids", Description = "Optional filter for kids.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
+        public bool? IsKids { get; set; }
+
+        [ApiMember(Name = "IsSports", Description = "Optional filter for sports.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
+        public bool? IsSports { get; set; }
 
         public GetSearchHints()
         {
@@ -135,7 +153,14 @@ namespace MediaBrowser.Api
                 IncludeStudios = request.IncludeStudios,
                 StartIndex = request.StartIndex,
                 UserId = request.UserId,
-                IncludeItemTypes = (request.IncludeItemTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray()
+                IncludeItemTypes = (request.IncludeItemTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
+                ParentId = request.ParentId,
+
+                IsKids = request.IsKids,
+                IsMovie = request.IsMovie,
+                IsNews = request.IsNews,
+                IsSeries = request.IsSeries,
+                IsSports = request.IsSports
 
             }).ConfigureAwait(false);
 
@@ -167,10 +192,10 @@ namespace MediaBrowser.Api
                 MatchedTerm = hintInfo.MatchedTerm,
                 DisplayMediaType = item.DisplayMediaType,
                 RunTimeTicks = item.RunTimeTicks,
-                ProductionYear = item.ProductionYear
+                ProductionYear = item.ProductionYear,
+                ChannelId = item.ChannelId,
+                EndDate = item.EndDate
             };
-
-            result.ChannelId = item.ChannelId;
 
             var primaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary);
 
@@ -183,10 +208,25 @@ namespace MediaBrowser.Api
             SetThumbImageInfo(result, item);
             SetBackdropImageInfo(result, item);
 
+            var program = item as LiveTvProgram;
+            if (program != null)
+            {
+                result.StartDate = program.StartDate;
+            }
+
             var hasSeries = item as IHasSeries;
             if (hasSeries != null)
             {
                 result.Series = hasSeries.SeriesName;
+            }
+
+            var series = item as Series;
+            if (series != null)
+            {
+                if (series.Status.HasValue)
+                {
+                    result.Status = series.Status.Value.ToString();
+                }
             }
 
             var album = item as MusicAlbum;

@@ -8,13 +8,6 @@
             </div>
         </div>
 
-        <div id="playlists" class="verticalSection hide">
-            <h2 class="sectionTitle sectionTitle-cards padded-left">${HeaderPlaylists}</h2>
-
-            <div is="emby-itemscontainer" class="itemsContainer padded-left padded-right" style="text-align:left;">
-            </div>
-        </div>
-
         <div id="recentlyPlayed" class="verticalSection hide">
             <h2 class="sectionTitle sectionTitle-cards padded-left">${HeaderRecentlyPlayed}</h2>
 
@@ -80,7 +73,11 @@
             <div class="paging"></div>
         </div>
     </div>
-    <div class="pageTabContent" id="songsTab" data-index="4">
+    <div class="pageTabContent" data-index="4">
+
+        <div is="emby-itemscontainer" id="items" class="itemsContainer padded-left padded-right vertical-wrap centered"></div>
+    </div>
+    <div class="pageTabContent" id="songsTab" data-index="5">
         <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em 1em;">
             <div class="paging"></div>
             <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
@@ -93,21 +90,9 @@
             <div class="paging"></div>
         </div>
     </div>
-    <div class="pageTabContent" id="genresTab" data-index="5">
-        <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
-            <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
-        </div>
+    <div class="pageTabContent" id="genresTab" data-index="6">
         <div is="emby-itemscontainer" id="items" class="itemsContainer padded-left padded-right vertical-wrap"></div>
     </div>
-    <div class="pageTabContent" id="foldersTab" data-index="6">
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em 1em;">
-            <div class="paging"></div>
-        </div>
-
-        <div is="emby-itemscontainer" class="itemsContainer padded-left padded-right vertical-wrap">
-        </div>
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
-            <div class="paging"></div>
-        </div>
+    <div class="pageTabContent" data-index="7" style="padding-top:1em;">
     </div>
 </div>

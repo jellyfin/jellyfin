@@ -89,6 +89,7 @@ namespace MediaBrowser.Api.Playback.Hls
         public string SegmentId { get; set; }
     }
 
+    [Authenticated]
     public class DynamicHlsService : BaseHlsService
     {
 
@@ -378,7 +379,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private static FileSystemMetadata GetLastTranscodingFile(string playlist, string segmentExtension, IFileSystem fileSystem)
         {
-            var folder = Path.GetDirectoryName(playlist);
+            var folder = fileSystem.GetDirectoryName(playlist);
 
             var filePrefix = Path.GetFileNameWithoutExtension(playlist) ?? string.Empty;
 
@@ -415,7 +416,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private string GetSegmentPath(StreamState state, string playlist, int index)
         {
-            var folder = Path.GetDirectoryName(playlist);
+            var folder = FileSystem.GetDirectoryName(playlist);
 
             var filename = Path.GetFileNameWithoutExtension(playlist);
 
@@ -807,7 +808,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                return "-codec:a:0 copy";
+                return "-codec:a:0 copy -copypriorss:a:0 0";
             }
 
             var args = "-codec:a:0 " + codec;
@@ -925,7 +926,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (useGenericSegmenter)
             {
-                var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request);
+                var outputTsArg = Path.Combine(FileSystem.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request);
 
                 var timeDeltaParam = String.Empty;
 

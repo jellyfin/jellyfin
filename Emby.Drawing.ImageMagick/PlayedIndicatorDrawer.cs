@@ -68,7 +68,7 @@ namespace Emby.Drawing.ImageMagick
 
             var namespacePath = typeof(PlayedIndicatorDrawer).Namespace + ".fonts." + name;
             var tempPath = Path.Combine(paths.TempDirectory, Guid.NewGuid().ToString("N") + ".ttf");
-			fileSystem.CreateDirectory(Path.GetDirectoryName(tempPath));
+			fileSystem.CreateDirectory(fileSystem.GetDirectoryName(tempPath));
 
             using (var stream = typeof(PlayedIndicatorDrawer).Assembly.GetManifestResourceStream(namespacePath))
             {
@@ -78,7 +78,7 @@ namespace Emby.Drawing.ImageMagick
                 }
             }
 
-			fileSystem.CreateDirectory(Path.GetDirectoryName(filePath));
+			fileSystem.CreateDirectory(fileSystem.GetDirectoryName(filePath));
 
             try
             {
@@ -108,7 +108,7 @@ namespace Emby.Drawing.ImageMagick
 
             }).ConfigureAwait(false);
 
-			fileSystem.CreateDirectory(Path.GetDirectoryName(filePath));
+			fileSystem.CreateDirectory(fileSystem.GetDirectoryName(filePath));
 
             try
             {

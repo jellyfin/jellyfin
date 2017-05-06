@@ -44,7 +44,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 {
                     IndexNumber = new SeasonPathParser(namingOptions, new RegexProvider()).Parse(args.Path, true, true).SeasonNumber,
                     SeriesId = series.Id,
-                    SeriesSortName = series.SortName,
                     SeriesName = series.Name
                 };
 

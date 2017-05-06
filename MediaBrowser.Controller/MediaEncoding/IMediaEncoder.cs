@@ -126,7 +126,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         Task UpdateEncoderPath(string path, string pathType);
         bool SupportsEncoder(string encoder);
-        bool IsDefaultEncoderPath { get; }
 
         void SetLogFilename(string name);
         void ClearLogFilename();

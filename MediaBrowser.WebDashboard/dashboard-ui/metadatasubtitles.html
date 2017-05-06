@@ -1,6 +1,6 @@
 ﻿<div id="metadataSubtitlesPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="scripts/metadatasubtitles,emby-input,emby-checkbox,emby-button">
 
-    <div data-role="content">
+    <div>
 
         <div class="content-primary">
 
@@ -53,7 +53,7 @@
                 <div class="inputContainer">
                     <input is="emby-input" type="text" id="txtOpenSubtitleUsername" autocomplete="off" label="${LabelOpenSubtitlesUsername}" />
                     <div class="fieldDescription">
-                        <a target="_blank" href="http://www.opensubtitles.org/">${ButtonRegister}</a>
+                        <a is="emby-linkbutton" class="button-link" target="_blank" href="http://www.opensubtitles.org/">${ButtonRegister}</a>
                     </div>
                 </div>
 

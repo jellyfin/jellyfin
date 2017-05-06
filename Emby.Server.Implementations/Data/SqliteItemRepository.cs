@@ -201,7 +201,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "SortName", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "RunTimeTicks", "BIGINT", existingColumnNames);
 
-                    AddColumn(db, "TypedBaseItems", "OfficialRatingDescription", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "HomePageUrl", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "VoteCount", "INT", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "DisplayMediaType", "Text", existingColumnNames);
@@ -209,7 +208,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "DateModified", "DATETIME", existingColumnNames);
 
                     AddColumn(db, "TypedBaseItems", "ForcedSortName", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "LocationType", "Text", existingColumnNames);
 
                     AddColumn(db, "TypedBaseItems", "IsSeries", "BIT", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "IsLive", "BIT", existingColumnNames);
@@ -240,7 +238,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "SourceType", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "CriticRating", "Float", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "CriticRatingSummary", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "InheritedTags", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "CleanName", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "PresentationUniqueKey", "Text", existingColumnNames);
@@ -255,7 +252,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "SeasonName", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "SeasonId", "GUID", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "SeriesId", "GUID", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "SeriesSortName", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "ExternalSeriesId", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "Tagline", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "Keywords", "Text", existingColumnNames);
@@ -429,7 +425,6 @@ namespace Emby.Server.Implementations.Data
             "ParentIndexNumber",
             "ProductionYear",
             "OfficialRating",
-            "OfficialRatingDescription",
             "HomePageUrl",
             "DisplayMediaType",
             "ForcedSortName",
@@ -454,13 +449,11 @@ namespace Emby.Server.Implementations.Data
             "DateLastMediaAdded",
             "Album",
             "CriticRating",
-            "CriticRatingSummary",
             "IsVirtualItem",
             "SeriesName",
             "SeasonName",
             "SeasonId",
             "SeriesId",
-            "SeriesSortName",
             "PresentationUniqueKey",
             "InheritedParentalRatingValue",
             "InheritedTags",
@@ -552,14 +545,12 @@ namespace Emby.Server.Implementations.Data
                 "InheritedParentalRatingValue",
                 "SortName",
                 "RunTimeTicks",
-                "OfficialRatingDescription",
                 "HomePageUrl",
                 "VoteCount",
                 "DisplayMediaType",
                 "DateCreated",
                 "DateModified",
                 "ForcedSortName",
-                "LocationType",
                 "PreferredMetadataLanguage",
                 "PreferredMetadataCountryCode",
                 "IsHD",
@@ -579,7 +570,6 @@ namespace Emby.Server.Implementations.Data
                 "SourceType",
                 "TrailerTypes",
                 "CriticRating",
-                "CriticRatingSummary",
                 "InheritedTags",
                 "CleanName",
                 "PresentationUniqueKey",
@@ -594,7 +584,6 @@ namespace Emby.Server.Implementations.Data
                 "SeasonName",
                 "SeasonId",
                 "SeriesId",
-                "SeriesSortName",
                 "ExternalSeriesId",
                 "Tagline",
                 "Keywords",
@@ -833,7 +822,6 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@SortName", item.SortName);
             saveItemStatement.TryBind("@RunTimeTicks", item.RunTimeTicks);
 
-            saveItemStatement.TryBind("@OfficialRatingDescription", item.OfficialRatingDescription);
             saveItemStatement.TryBind("@HomePageUrl", item.HomePageUrl);
             saveItemStatement.TryBind("@VoteCount", item.VoteCount);
             saveItemStatement.TryBind("@DisplayMediaType", item.DisplayMediaType);
@@ -841,7 +829,6 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@DateModified", item.DateModified);
 
             saveItemStatement.TryBind("@ForcedSortName", item.ForcedSortName);
-            saveItemStatement.TryBind("@LocationType", item.LocationType.ToString());
 
             saveItemStatement.TryBind("@PreferredMetadataLanguage", item.PreferredMetadataLanguage);
             saveItemStatement.TryBind("@PreferredMetadataCountryCode", item.PreferredMetadataCountryCode);
@@ -942,7 +929,6 @@ namespace Emby.Server.Implementations.Data
             }
 
             saveItemStatement.TryBind("@CriticRating", item.CriticRating);
-            saveItemStatement.TryBind("@CriticRatingSummary", item.CriticRatingSummary);
 
             var inheritedTags = item.InheritedTags;
             if (inheritedTags.Count > 0)
@@ -1024,13 +1010,11 @@ namespace Emby.Server.Implementations.Data
             if (hasSeries != null)
             {
                 saveItemStatement.TryBind("@SeriesId", hasSeries.SeriesId);
-                saveItemStatement.TryBind("@SeriesSortName", hasSeries.SeriesSortName);
                 saveItemStatement.TryBind("@SeriesPresentationUniqueKey", hasSeries.SeriesPresentationUniqueKey);
             }
             else
             {
                 saveItemStatement.TryBindNull("@SeriesId");
-                saveItemStatement.TryBindNull("@SeriesSortName");
                 saveItemStatement.TryBindNull("@SeriesPresentationUniqueKey");
             }
 
@@ -1290,19 +1274,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     return false;
                 }
-                if (type == typeof(Year))
-                {
-                    return false;
-                }
-                if (type == typeof(Book))
-                {
-                    return false;
-                }
                 if (type == typeof(Person))
-                {
-                    return false;
-                }
-                if (type == typeof(RecordingGroup))
                 {
                     return false;
                 }
@@ -1339,28 +1311,39 @@ namespace Emby.Server.Implementations.Data
                     return false;
                 }
             }
-            if (_config.Configuration.SkipDeserializationForPrograms)
+
+            if (type == typeof(Year))
             {
-                if (type == typeof(LiveTvProgram))
-                {
-                    return false;
-                }
+                return false;
             }
+            if (type == typeof(Book))
+            {
+                return false;
+            }
+            if (type == typeof(RecordingGroup))
+            {
+                return false;
+            }
+            if (type == typeof(LiveTvProgram))
+            {
+                return false;
+            }
+            if (type == typeof(LiveTvAudioRecording))
+            {
+                return false;
+            }
+            if (type == typeof(AudioPodcast))
+            {
+                return false;
+            }
+            if (type == typeof(AudioBook))
+            {
+                return false;
+            }
+
             if (_config.Configuration.SkipDeserializationForAudio)
             {
                 if (type == typeof(Audio))
-                {
-                    return false;
-                }
-                if (type == typeof(LiveTvAudioRecording))
-                {
-                    return false;
-                }
-                if (type == typeof(AudioPodcast))
-                {
-                    return false;
-                }
-                if (type == typeof(AudioBook))
                 {
                     return false;
                 }
@@ -1609,15 +1592,6 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            if (query.HasField(ItemFields.OfficialRatingDescription))
-            {
-                if (!reader.IsDBNull(index))
-                {
-                    item.OfficialRatingDescription = reader.GetString(index);
-                }
-                index++;
-            }
-
             if (query.HasField(ItemFields.HomePageUrl))
             {
                 if (!reader.IsDBNull(index))
@@ -1803,15 +1777,6 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            if (query.HasField(ItemFields.CriticRatingSummary))
-            {
-                if (!reader.IsDBNull(index))
-                {
-                    item.CriticRatingSummary = reader.GetString(index);
-                }
-                index++;
-            }
-
             if (!reader.IsDBNull(index))
             {
                 item.IsVirtualItem = reader.GetBoolean(index);
@@ -1852,15 +1817,6 @@ namespace Emby.Server.Implementations.Data
                 if (!reader.IsDBNull(index))
                 {
                     hasSeries.SeriesId = reader.GetGuid(index);
-                }
-            }
-            index++;
-
-            if (hasSeries != null)
-            {
-                if (!reader.IsDBNull(index))
-                {
-                    hasSeries.SeriesSortName = reader.GetString(index);
                 }
             }
             index++;
@@ -2892,6 +2848,10 @@ namespace Emby.Server.Implementations.Data
             if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
             {
                 return new Tuple<string, bool>("(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)", false);
+            }
+            if (string.Equals(name, ItemSortBy.SeriesSortName, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("(Select SortName from TypedBaseItems where B.Guid=A.SeriesId)", false);
             }
 
             return new Tuple<string, bool>(name, false);
@@ -4100,27 +4060,6 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add("ProductionYear in (" + val + ")");
             }
 
-            if (query.LocationTypes.Length == 1)
-            {
-                if (query.LocationTypes[0] == LocationType.Virtual && _config.Configuration.SchemaVersion >= 90)
-                {
-                    query.IsVirtualItem = true;
-                }
-                else
-                {
-                    whereClauses.Add("LocationType=@LocationType");
-                    if (statement != null)
-                    {
-                        statement.TryBind("@LocationType", query.LocationTypes[0].ToString());
-                    }
-                }
-            }
-            else if (query.LocationTypes.Length > 1)
-            {
-                var val = string.Join(",", query.LocationTypes.Select(i => "'" + i + "'").ToArray());
-
-                whereClauses.Add("LocationType in (" + val + ")");
-            }
             if (query.IsVirtualItem.HasValue)
             {
                 whereClauses.Add("IsVirtualItem=@IsVirtualItem");

@@ -246,18 +246,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         break;
                     }
 
-                case "CriticRatingSummary":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.CriticRatingSummary = val;
-                        }
-
-                        break;
-                    }
-
                 case "Language":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -373,17 +361,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         if (!string.IsNullOrWhiteSpace(rating))
                         {
                             item.OfficialRating = rating;
-                        }
-                        break;
-                    }
-
-                case "MPAADescription":
-                    {
-                        var rating = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(rating))
-                        {
-                            item.OfficialRatingDescription = rating;
                         }
                         break;
                     }

@@ -5,7 +5,7 @@
             <div class="sectionTitleContainer">
                 <h2 class="sectionTitle sectionTitle-cards padded-left">${HeaderContinueWatching}</h2>
                 <button is="emby-button" type="button" class="raised raised-mini sectionTitleButton categorySyncButton button-accent" data-category="Resume">
-                    <span>${ButtonSync}</span>
+                    <span>${ButtonDownload}</span>
                 </button>
             </div>
 
@@ -17,7 +17,7 @@
             <div class="sectionTitleContainer">
                 <h2 class="sectionTitle sectionTitle-cards padded-left nextUpHeader">${HeaderNextUp}</h2>
                 <button is="emby-button" type="button" class="raised raised-mini sectionTitleButton categorySyncButton button-accent" data-category="NextUp">
-                    <span>${ButtonSync}</span>
+                    <span>${ButtonDownload}</span>
                 </button>
             </div>
             <div is="emby-itemscontainer" id="nextUpItems" class="itemsContainer vertical-wrap padded-left padded-right">
@@ -30,7 +30,7 @@
             <div class="sectionTitleContainer">
                 <h2 class="sectionTitle sectionTitle-cards padded-left">${HeaderLatestEpisodes}</h2>
                 <button is="emby-button" type="button" class="raised raised-mini categorySyncButton sectionTitleButton button-accent" data-category="Latest">
-                    <span>${ButtonSync}</span>
+                    <span>${ButtonDownload}</span>
                 </button>
             </div>
             <div is="emby-itemscontainer" id="latestEpisodes" class="itemsContainer vertical-wrap padded-left padded-right">
@@ -68,23 +68,8 @@
         <div id="items"></div>
     </div>
     <div class="pageTabContent" id="studiosTab" data-index="5">
-        <div class="viewSettings">
-            <div class="listTopPaging">
-            </div>
-        </div>
         <div is="emby-itemscontainer" id="items" class="itemsContainer padded-left padded-right vertical-wrap" style="text-align: center;"></div>
     </div>
-    <div class="pageTabContent" id="episodesTab" data-index="6">
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em 1em;">
-            <div class="paging"></div>
-            <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
-            <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
-            <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
-        </div>
-        <div is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right">
-        </div>
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
-            <div class="paging"></div>
-        </div>
+    <div class="pageTabContent" data-index="6" style="padding-top:1em;">
     </div>
 </div>

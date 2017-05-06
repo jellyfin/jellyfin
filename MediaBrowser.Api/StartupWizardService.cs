@@ -95,12 +95,12 @@ namespace MediaBrowser.Api
             config.EnableStandaloneMusicKeys = true;
             config.EnableCaseSensitiveItemIds = true;
             config.SkipDeserializationForBasicTypes = true;
-            config.SkipDeserializationForPrograms = true;
             config.SkipDeserializationForAudio = true;
             config.EnableSeriesPresentationUniqueKey = true;
             config.EnableLocalizedGuids = true;
             config.EnableSimpleArtistDetection = true;
             config.EnableNormalizedItemByNameIds = true;
+            config.DisableLiveTvChannelUserDataName = true;
         }
 
         public void Post(UpdateStartupConfiguration request)

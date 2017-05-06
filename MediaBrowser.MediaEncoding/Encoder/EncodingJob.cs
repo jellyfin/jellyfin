@@ -41,8 +41,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public string ItemType { get; set; }
 
-        public string AlbumCoverPath { get; set; }
-
         public string GetMimeType(string outputPath)
         {
             if (!string.IsNullOrEmpty(MimeType))

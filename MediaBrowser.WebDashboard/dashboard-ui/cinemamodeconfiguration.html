@@ -1,6 +1,6 @@
 ﻿<div id="cinemaModeConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" data-require="dashboard/cinemamodeconfiguration,emby-checkbox,emby-input,emby-button">
 
-    <div data-role="content">
+    <div>
         <div class="content-primary">
 
             <form class="cinemaModeConfigurationForm">
@@ -40,7 +40,7 @@
                             <span>${OptionOtherTrailers}</span>
                         </label>
                     </div>
-                    <div class="fieldDescription"><a class="lnkSupporterLearnMore" href="http://emby.media/premiere" target="_blank">${LabelTheseFeaturesRequireSubscriptionHelpAndTrailers}</a></div>
+                    <div class="fieldDescription"><a is="emby-linkbutton" class="button-link lnkSupporterLearnMore" href="http://emby.media/premiere" target="_blank">${LabelTheseFeaturesRequireSubscriptionHelpAndTrailers}</a></div>
                 </div>
                 <br /><br />
                 <div class="checkboxContainer checkboxContainer-withDescription">
@@ -50,7 +50,7 @@
                     </label>
                     <div class="fieldDescription checkboxFieldDescription">${OptionTrailersFromMyMoviesHelp}</div>
                     <div class="fieldDescription checkboxFieldDescription">
-                        <a href="http://emby.media/community/index.php?/topic/674-media-files-folders-structure/" target="_blank">${ButtonLearnMore}</a>
+                        <a is="emby-linkbutton" class="button-link" href="http://emby.media/community/index.php?/topic/674-media-files-folders-structure/" target="_blank">${ButtonLearnMore}</a>
                     </div>
                 </div>
                 <br />
@@ -86,7 +86,7 @@
                     </div>
                     <div class="fieldDescription">
                         <div>${LabelCodecIntrosPathHelp}</div>
-                        <div style="margin-top:.5em;"><a href="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" target="_blank">${ButtonLearnMore}</a></div>
+                        <div style="margin-top:.5em;"><a is="emby-linkbutton" class="button-link" href="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" target="_blank">${ButtonLearnMore}</a></div>
                     </div>
                 </div>
                 <br />

@@ -115,7 +115,7 @@ namespace MediaBrowser.Providers.Subtitles
 
                 using (var stream = response.Stream)
                 {
-                    var savePath = Path.Combine(Path.GetDirectoryName(video.Path),
+                    var savePath = Path.Combine(_fileSystem.GetDirectoryName(video.Path),
                         _fileSystem.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLower());
 
                     if (response.IsForced)
@@ -256,12 +256,7 @@ namespace MediaBrowser.Providers.Subtitles
                 _monitor.ReportFileSystemChangeComplete(path, false);
             }
 
-            return _libraryManager.GetItemById(itemId).RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
-            {
-                ImageRefreshMode = ImageRefreshMode.ValidationOnly,
-                MetadataRefreshMode = MetadataRefreshMode.ValidationOnly
-
-            }, CancellationToken.None);
+            return _libraryManager.GetItemById(itemId).ChangedExternally();
         }
 
         public Task<SubtitleResponse> GetRemoteSubtitles(string id, CancellationToken cancellationToken)

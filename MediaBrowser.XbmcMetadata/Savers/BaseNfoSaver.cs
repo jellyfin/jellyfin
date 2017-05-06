@@ -19,7 +19,6 @@ using System.Text;
 using System.Threading;
 using System.Xml;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
@@ -42,7 +41,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "year",
                     "sorttitle",
                     "mpaa",
-                    "mpaadescription",
                     "aspectratio",
                     "website",
                     "collectionnumber",
@@ -56,7 +54,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "tag",
                     "runtime",
                     "actor",
-                    "criticratingsummary",
                     "criticrating",
                     "fileinfo",
                     "director",
@@ -212,7 +209,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private void SaveToFile(Stream stream, string path)
         {
-            FileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(path));
 
             var file = FileSystem.GetFileInfo(path);
 
@@ -557,11 +554,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("mpaa", item.OfficialRating);
             }
 
-            if (!string.IsNullOrEmpty(item.OfficialRatingDescription))
-            {
-                writer.WriteElementString("mpaadescription", item.OfficialRatingDescription);
-            }
-
             var hasAspectRatio = item as IHasAspectRatio;
             if (hasAspectRatio != null)
             {
@@ -660,11 +652,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (item.CriticRating.HasValue)
             {
                 writer.WriteElementString("criticrating", item.CriticRating.Value.ToString(UsCulture));
-            }
-
-            if (!string.IsNullOrEmpty(item.CriticRatingSummary))
-            {
-                writer.WriteElementString("criticratingsummary", item.CriticRatingSummary);
             }
 
             var hasDisplayOrder = item as IHasDisplayOrder;

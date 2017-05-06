@@ -29,15 +29,17 @@ namespace Emby.Server.Implementations.Logging
             _logManager.Flush();
 
             var path = Path.Combine(_appPaths.LogDirectoryPath, "unhandled_" + Guid.NewGuid() + ".txt");
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
             var builder = LogHelper.GetLogMessage(ex);
 
             // Write to console just in case file logging fails
             _console.WriteLine("UnhandledException");
-            _console.WriteLine(builder.ToString());
 
-            _fileSystem.WriteAllText(path, builder.ToString());
+            var logMessage = builder.ToString();
+            _console.WriteLine(logMessage);
+
+            _fileSystem.WriteAllText(path, logMessage);
         }
     }
 }

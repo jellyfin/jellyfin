@@ -53,8 +53,8 @@ namespace MediaBrowser.Providers.TV
 
         private async Task<bool> AddDummySeasonFolders(Series series, CancellationToken cancellationToken)
         {
-            var episodesInSeriesFolder = series.GetRecursiveChildren()
-                .OfType<Episode>()
+            var episodesInSeriesFolder = series.GetRecursiveChildren(i => i is Episode)
+                .Cast<Episode>()
                 .Where(i => !i.IsInSeasonFolder)
                 .ToList();
 
@@ -125,8 +125,7 @@ namespace MediaBrowser.Providers.TV
                 Id = _libraryManager.GetNewItemId((series.Id + (seasonNumber ?? -1).ToString(_usCulture) + seasonName), typeof(Season)),
                 IsVirtualItem = isVirtualItem,
                 SeriesId = series.Id,
-                SeriesName = series.Name,
-                SeriesSortName = series.SortName
+                SeriesName = series.Name
             };
 
             season.SetParent(series);

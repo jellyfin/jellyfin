@@ -50,7 +50,6 @@ namespace MediaBrowser.Model.Users
         /// Gets or sets a value indicating whether [enable synchronize].
         /// </summary>
         /// <value><c>true</c> if [enable synchronize]; otherwise, <c>false</c>.</value>
-        public bool EnableSync { get; set; }
         public bool EnableSyncTranscoding { get; set; }
 
         public string[] EnabledDevices { get; set; }
@@ -71,7 +70,6 @@ namespace MediaBrowser.Model.Users
 
         public UserPolicy()
         {
-            EnableSync = true;
             EnableSyncTranscoding = true;
 
             EnableMediaPlayback = true;

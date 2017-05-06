@@ -20,8 +20,7 @@ namespace MediaBrowser.Providers.Music
         {
             var album = (MusicAlbum)item;
 
-            var image = album.GetRecursiveChildren()
-                .OfType<Audio>()
+            var image = album.GetRecursiveChildren(i => !i.IsFolder)
                 .Select(i => i.GetImageInfo(type, 0))
                 .FirstOrDefault(i => i != null && i.IsLocalFile);
 

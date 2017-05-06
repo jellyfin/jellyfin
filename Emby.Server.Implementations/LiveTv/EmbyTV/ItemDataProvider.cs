@@ -72,7 +72,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             var file = _dataPath + ".json";
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(file));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(file));
 
             lock (_fileDataLock)
             {

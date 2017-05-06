@@ -43,11 +43,6 @@
         ChildCount,
 
         /// <summary>
-        /// The critic rating summary
-        /// </summary>
-        CriticRatingSummary,
-
-        /// <summary>
         /// The cumulative run time ticks
         /// </summary>
         CumulativeRunTimeTicks,
@@ -121,8 +116,6 @@
         /// The media versions
         /// </summary>
         MediaSources,
-
-        OfficialRatingDescription,
 
         OriginalTitle,
 

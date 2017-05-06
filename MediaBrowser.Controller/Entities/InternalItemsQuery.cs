@@ -129,7 +129,6 @@ namespace MediaBrowser.Controller.Entities
         public string[] AncestorIds { get; set; }
         public string[] TopParentIds { get; set; }
 
-        public LocationType[] LocationTypes { get; set; }
         public string[] PresetViews { get; set; }
         public SourceType[] SourceTypes { get; set; }
         public SourceType[] ExcludeSourceTypes { get; set; }
@@ -176,7 +175,6 @@ namespace MediaBrowser.Controller.Entities
                 case ItemFields.DateCreated:
                 case ItemFields.SortName:
                 case ItemFields.Overview:
-                case ItemFields.OfficialRatingDescription:
                 case ItemFields.HomePageUrl:
                 case ItemFields.VoteCount:
                 case ItemFields.DisplayMediaType:
@@ -187,7 +185,6 @@ namespace MediaBrowser.Controller.Entities
                 case ItemFields.OriginalTitle:
                 case ItemFields.Tags:
                 case ItemFields.DateLastMediaAdded:
-                case ItemFields.CriticRatingSummary:
                     return fields.Count == 0 || fields.Contains(name);
                 default:
                     return true;
@@ -230,7 +227,6 @@ namespace MediaBrowser.Controller.Entities
             TopParentIds = new string[] { };
             ExcludeTags = new string[] { };
             ExcludeInheritedTags = new string[] { };
-            LocationTypes = new LocationType[] { };
             PresetViews = new string[] { };
             SourceTypes = new SourceType[] { };
             ExcludeSourceTypes = new SourceType[] { };

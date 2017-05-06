@@ -81,7 +81,7 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
-            query.Genres = new[] { Name };
+            query.GenreIds = new[] { Id.ToString("N") };
             query.IncludeItemTypes = new[] { typeof(Game).Name };
 
             return LibraryManager.GetItemList(query);

@@ -68,6 +68,8 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if [enable case sensitive item ids]; otherwise, <c>false</c>.</value>
         public bool EnableCaseSensitiveItemIds { get; set; }
 
+        public bool DisableLiveTvChannelUserDataName { get; set; }
+
         /// <summary>
         /// Gets or sets the metadata path.
         /// </summary>
@@ -162,7 +164,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableAutomaticRestart { get; set; }
         public bool SkipDeserializationForBasicTypes { get; set; }
-        public bool SkipDeserializationForPrograms { get; set; }
         public bool SkipDeserializationForAudio { get; set; }
 
         public string ServerName { get; set; }

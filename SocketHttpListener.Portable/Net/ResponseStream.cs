@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Text;
 using SocketHttpListener.Primitives;
@@ -26,8 +27,9 @@ namespace SocketHttpListener.Net
         private readonly IFileSystem _fileSystem;
         private readonly IAcceptSocket _socket;
         private readonly bool _supportsDirectSocketAccess;
+        private readonly ILogger _logger;
 
-        internal ResponseStream(Stream stream, HttpListenerResponse response, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IAcceptSocket socket, bool supportsDirectSocketAccess)
+        internal ResponseStream(Stream stream, HttpListenerResponse response, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IAcceptSocket socket, bool supportsDirectSocketAccess, ILogger logger)
         {
             this.response = response;
             _memoryStreamFactory = memoryStreamFactory;
@@ -35,6 +37,7 @@ namespace SocketHttpListener.Net
             _fileSystem = fileSystem;
             _socket = socket;
             _supportsDirectSocketAccess = supportsDirectSocketAccess;
+            _logger = logger;
             this.stream = stream;
         }
 
@@ -309,40 +312,38 @@ namespace SocketHttpListener.Net
 
         public Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
-            //if (_supportsDirectSocketAccess && offset == 0 && count == 0 && !response.SendChunked)
+            //if (_supportsDirectSocketAccess && offset == 0 && count == 0 && !response.SendChunked && response.ContentLength64 > 8192)
             //{
-            //    return TransmitFileOverSocket(path, offset, count, cancellationToken);
+            //    return TransmitFileOverSocket(path, offset, count, fileShareMode, cancellationToken);
             //}
             return TransmitFileManaged(path, offset, count, fileShareMode, cancellationToken);
         }
 
         private readonly byte[] _emptyBuffer = new byte[] { };
-        private async Task TransmitFileOverSocket(string path, long offset, long count, CancellationToken cancellationToken)
+        private Task TransmitFileOverSocket(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
             MemoryStream ms = GetHeaders(response, _memoryStreamFactory, false);
 
-            var buffer = new byte[] {};
+            byte[] buffer;
             if (ms != null)
             {
-                ms.Position = 0;
-
-                byte[] msBuffer;
-                _memoryStreamFactory.TryGetBuffer(ms, out msBuffer);
-                buffer = msBuffer;
+                using (var msCopy = new MemoryStream())
+                {
+                    ms.CopyTo(msCopy);
+                    buffer = msCopy.ToArray();
+                }
+            }
+            else
+            {
+                return TransmitFileManaged(path, offset, count, fileShareMode, cancellationToken);
             }
 
-            await _socket.SendFile(path, buffer, _emptyBuffer, cancellationToken).ConfigureAwait(false);
+            _logger.Info("Socket sending file {0} {1}", path, response.ContentLength64);
+            return _socket.SendFile(path, buffer, _emptyBuffer, cancellationToken);
         }
 
         private async Task TransmitFileManaged(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
-            var chunked = response.SendChunked;
-
-            if (!chunked)
-            {
-                await WriteAsync(_emptyBuffer, 0, 0, cancellationToken).ConfigureAwait(false);
-            }
-
             using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, fileShareMode, true))
             {
                 if (offset > 0)
@@ -350,7 +351,7 @@ namespace SocketHttpListener.Net
                     fs.Position = offset;
                 }
 
-                var targetStream = chunked ? this : stream;
+                var targetStream = this;
 
                 if (count > 0)
                 {
@@ -366,14 +367,23 @@ namespace SocketHttpListener.Net
         private static async Task CopyToInternalAsync(Stream source, Stream destination, long copyLength, CancellationToken cancellationToken)
         {
             var array = new byte[81920];
-            int count;
-            while ((count = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            int bytesRead;
+            
+            while ((bytesRead = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
             {
-                var bytesToCopy = Math.Min(count, copyLength);
+                if (bytesRead == 0)
+                {
+                    break;
+                }
 
-                await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToCopy), cancellationToken).ConfigureAwait(false);
+                var bytesToWrite = Math.Min(bytesRead, copyLength);
 
-                copyLength -= bytesToCopy;
+                if (bytesToWrite > 0)
+                {
+                    await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToWrite), cancellationToken).ConfigureAwait(false);
+                }
+
+                copyLength -= bytesToWrite;
 
                 if (copyLength <= 0)
                 {

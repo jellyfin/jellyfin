@@ -358,18 +358,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                case "criticratingsummary":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.CriticRatingSummary = val;
-                        }
-
-                        break;
-                    }
-
                 case "language":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -460,17 +448,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (!string.IsNullOrWhiteSpace(rating))
                         {
                             item.OfficialRating = rating;
-                        }
-                        break;
-                    }
-
-                case "mpaadescription":
-                    {
-                        var rating = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(rating))
-                        {
-                            item.OfficialRatingDescription = rating;
                         }
                         break;
                     }

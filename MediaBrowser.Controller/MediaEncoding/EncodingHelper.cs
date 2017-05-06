@@ -732,7 +732,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase))
             {
-                param += " -x264opts:0 subme=0:rc_lookahead=10:me_range=4:me=dia:no_chroma_me:8x8dct=0:partitions=none";
+                param += " -x264opts:0 subme=0:me_range=4:rc_lookahead=10:me=dia:no_chroma_me:8x8dct=0:partitions=none";
             }
 
             if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
@@ -1517,12 +1517,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             inputModifier += " " + GetFastSeekCommandLineParameter(state.BaseRequest);
             inputModifier = inputModifier.Trim();
 
-            //inputModifier += " -fflags +genpts+ignidx+igndts";
-            //if (state.IsVideoRequest && genPts)
-            //{
-            //    inputModifier += " -fflags +genpts";
-            //}
-
             if (!string.IsNullOrEmpty(state.InputAudioSync))
             {
                 inputModifier += " -async " + state.InputAudioSync;
@@ -1536,6 +1530,21 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (state.ReadInputAtNativeFramerate)
             {
                 inputModifier += " -re";
+            }
+
+            var flags = new List<string>();
+            if (state.IgnoreDts)
+            {
+                flags.Add("+igndts");
+            }
+            if (state.IgnoreIndex)
+            {
+                flags.Add("+ignidx");
+            }
+
+            if (flags.Count > 0)
+            {
+                inputModifier += " -fflags " + string.Join("", flags.ToArray());
             }
 
             var videoDecoder = GetVideoDecoder(state, encodingOptions);
@@ -1725,6 +1734,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.VideoStream != null && !string.IsNullOrWhiteSpace(state.VideoStream.Codec))
             {
+                if (!string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
+                {
+                    return "-hwaccel auto";
+                }
+
                 if (string.Equals(encodingOptions.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (state.MediaSource.VideoStream.Codec.ToLower())
@@ -1974,5 +1988,65 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return args;
         }
+
+        public string GetProgressiveAudioFullCommandLine(EncodingJobInfo state, EncodingOptions encodingOptions, string outputPath)
+        {
+            var audioTranscodeParams = new List<string>();
+
+            var bitrate = state.OutputAudioBitrate;
+
+            if (bitrate.HasValue)
+            {
+                audioTranscodeParams.Add("-ab " + bitrate.Value.ToString(_usCulture));
+            }
+
+            if (state.OutputAudioChannels.HasValue)
+            {
+                audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(_usCulture));
+            }
+
+            // opus will fail on 44100
+            if (!string.Equals(state.OutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase))
+            {
+                if (state.OutputAudioSampleRate.HasValue)
+                {
+                    audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(_usCulture));
+                }
+            }
+
+            var albumCoverInput = string.Empty;
+            var mapArgs = string.Empty;
+            var metadata = string.Empty;
+            var vn = string.Empty;
+
+            var hasArt = !string.IsNullOrWhiteSpace(state.AlbumCoverPath);
+
+            if (hasArt)
+            {
+                albumCoverInput = " -i \"" + state.AlbumCoverPath + "\"";
+                mapArgs = " -map 0:a -map 1:v -c:1:v copy";
+                metadata = " -metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover(Front)\"";
+            }
+            else
+            {
+                vn = " -vn";
+            }
+
+            var threads = GetNumberOfThreads(state, encodingOptions, false);
+
+            var inputModifier = GetInputModifier(state, encodingOptions);
+
+            return string.Format("{0} {1}{7}{8} -threads {2}{3} {4} -id3v2_version 3 -write_id3v1 1{6} -y \"{5}\"",
+                inputModifier,
+                GetInputArgument(state, encodingOptions),
+                threads,
+                vn,
+                string.Join(" ", audioTranscodeParams.ToArray()),
+                outputPath,
+                metadata,
+                albumCoverInput,
+                mapArgs).Trim();
+        }
+
     }
 }

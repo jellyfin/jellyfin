@@ -1,6 +1,6 @@
 ﻿<div id="dashboardPage" data-role="page" class="page type-interior dashboardHomePage fullWidthContent" data-require="scripts/dashboardpage,buttonenabled,listViewStyle,emby-collapse,emby-button">
 
-    <div data-role="content">
+    <div>
         <div class="content-primary">
 
             <div class="dashboardContent">
@@ -148,10 +148,10 @@
                 <div class="dashboardFooter">
                     <div style="height:1px;" class="ui-bar-inherit"></div>
                     <div style="margin-top:1em;">
-                        <a href="http://emby.media" target="_blank">Emby</a>
-                        <a href="http://emby.media/community" target="_blank">${LinkCommunity}</a>
-                        <a href="https://github.com/MediaBrowser" target="_blank">${LinkGithub}</a>
-                        <a class="swaggerLink" target="_blank" href="#">${LinkApi}</a>
+                        <a is="emby-linkbutton" class="button-link" href="http://emby.media" target="_blank">Emby</a>
+                        <a is="emby-linkbutton" class="button-link" href="http://emby.media/community" target="_blank">${LinkCommunity}</a>
+                        <a is="emby-linkbutton" class="button-link" href="https://github.com/MediaBrowser" target="_blank">${LinkGithub}</a>
+                        <a is="emby-linkbutton" class="button-link swaggerLink" target="_blank" href="#">${LinkApi}</a>
                     </div>
                 </div>
             </div>

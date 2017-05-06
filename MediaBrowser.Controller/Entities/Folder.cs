@@ -640,7 +640,7 @@ namespace MediaBrowser.Controller.Entities
                     return true;
                 }
 
-                path = System.IO.Path.GetDirectoryName(path);
+                path = FileSystem.GetDirectoryName(path);
             }
 
             return allLibraryPaths.Any(i => ContainsPath(i, originalPath));
@@ -1206,11 +1206,17 @@ namespace MediaBrowser.Controller.Entities
                 return GetLinkedChildren();
             }
 
-            var locations = user.RootFolder
-                .Children
+            if (LinkedChildren.Count == 0)
+            {
+                return new List<BaseItem>();
+            }
+
+            var allUserRootChildren = user.RootFolder.Children.OfType<Folder>().ToList();
+
+            var collectionFolderIds = allUserRootChildren
                 .OfType<CollectionFolder>()
                 .Where(i => i.IsVisible(user))
-                .SelectMany(i => i.PhysicalLocations)
+                .Select(i => i.Id)
                 .ToList();
 
             return LinkedChildren
@@ -1228,9 +1234,16 @@ namespace MediaBrowser.Controller.Entities
                                 return null;
                             }
                         }
-                        else if (childLocationType == LocationType.FileSystem && !locations.Any(l => FileSystem.ContainsSubPath(l, child.Path)))
+                        else if (childLocationType == LocationType.FileSystem)
                         {
-                            return null;
+                            var itemCollectionFolderIds =
+                                LibraryManager.GetCollectionFolders(child, allUserRootChildren)
+                                .Select(f => f.Id).ToList();
+
+                            if (!itemCollectionFolderIds.Any(collectionFolderIds.Contains))
+                            {
+                                return null;
+                            }
                         }
                     }
 
@@ -1323,7 +1336,7 @@ namespace MediaBrowser.Controller.Entities
             }
             else { newShortcutLinks = new List<LinkedChild>(); }
 
-            if (!newShortcutLinks.SequenceEqual(currentShortcutLinks, new LinkedChildComparer()))
+            if (!newShortcutLinks.SequenceEqual(currentShortcutLinks, new LinkedChildComparer(FileSystem)))
             {
                 Logger.Info("Shortcut links have changed for {0}", Path);
 

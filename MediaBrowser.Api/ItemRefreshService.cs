@@ -62,14 +62,7 @@ namespace MediaBrowser.Api
 
             var options = GetRefreshOptions(request);
 
-            if (item is Folder)
-            {
-                _providerManager.QueueRefresh(item.Id, options);
-            }
-            else
-            {
-                _providerManager.RefreshFullItem(item, options, CancellationToken.None);
-            }
+            _providerManager.QueueRefresh(item.Id, options, RefreshPriority.High);
         }
 
         private MetadataRefreshOptions GetRefreshOptions(BaseRefreshRequest request)

@@ -1962,8 +1962,34 @@ namespace Emby.Server.Implementations.Library
                 return new List<Folder>();
             }
 
-            return GetUserRootFolder().Children
-                .OfType<Folder>()
+            return GetCollectionFoldersInternal(item, GetUserRootFolder().Children.OfType<Folder>().ToList());
+        }
+
+        public List<Folder> GetCollectionFolders(BaseItem item, List<Folder> allUserRootChildren)
+        {
+            while (item != null)
+            {
+                var parent = item.GetParent();
+
+                if (parent == null || parent is AggregateFolder)
+                {
+                    break;
+                }
+
+                item = parent;
+            }
+
+            if (item == null)
+            {
+                return new List<Folder>();
+            }
+
+            return GetCollectionFoldersInternal(item, allUserRootChildren);
+        }
+
+        private List<Folder> GetCollectionFoldersInternal(BaseItem item, List<Folder> allUserRootChildren)
+        {
+            return allUserRootChildren
                 .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path, StringComparer.OrdinalIgnoreCase))
                 .ToList();
         }
@@ -2126,7 +2152,8 @@ namespace Emby.Server.Implementations.Library
                     // Not sure why this is necessary but need to figure it out
                     // View images are not getting utilized without this
                     ForceSave = true
-                });
+
+                }, RefreshPriority.Normal);
             }
 
             return item;
@@ -2188,7 +2215,8 @@ namespace Emby.Server.Implementations.Library
                 {
                     // Need to force save to increment DateLastSaved
                     ForceSave = true
-                });
+
+                }, RefreshPriority.Normal);
             }
 
             return item;
@@ -2252,7 +2280,8 @@ namespace Emby.Server.Implementations.Library
                 {
                     // Need to force save to increment DateLastSaved
                     ForceSave = true
-                });
+
+                }, RefreshPriority.Normal);
             }
 
             return item;
@@ -2328,7 +2357,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     // Need to force save to increment DateLastSaved
                     ForceSave = true
-                });
+                }, RefreshPriority.Normal);
             }
 
             return item;

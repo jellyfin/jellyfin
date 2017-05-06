@@ -1,6 +1,6 @@
 ﻿<div id="playlistsPage" data-dom-cache="true" data-role="page" class="page libraryPage noSecondaryNavPage" data-title="${HeaderPlaylists}">
 
-    <div data-role="content">
+    <div class="padded-left padded-right padded-top">
 
         <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; padding: 0 .5em 1em;">
             <div class="listTopPaging">
@@ -9,7 +9,7 @@
             <button type="button" is="paper-icon-button-light" class="btnNewPlaylist autoSize"><i class="md-icon">add</i></button>
         </div>
 
-        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer centered"></div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer centered"></div>
         <div class="noItemsMessage hide" style="text-align: center;">
             <p>${MessageNoPlaylistsAvailable}</p>
         </div>

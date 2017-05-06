@@ -412,7 +412,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException("outputPath");
             }
 
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
 
             var encodingParam = await GetSubtitleFileCharacterSet(inputPath, language, inputProtocol, cancellationToken).ConfigureAwait(false);
 
@@ -524,8 +524,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 if (!_fileSystem.FileExists(outputPath))
                 {
-                    await ExtractTextSubtitleInternal(_mediaEncoder.GetInputArgument(inputFiles, protocol), subtitleStreamIndex,
-                            outputCodec, outputPath, cancellationToken).ConfigureAwait(false);
+                    await ExtractTextSubtitleInternal(_mediaEncoder.GetInputArgument(inputFiles, protocol), subtitleStreamIndex, outputCodec, outputPath, cancellationToken).ConfigureAwait(false);
                 }
             }
             finally
@@ -547,7 +546,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException("outputPath");
             }
 
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
 
             var processArgs = string.Format("-i {0} -map 0:{1} -an -vn -c:s {2} \"{3}\"", inputPath,
                 subtitleStreamIndex, outputCodec, outputPath);
