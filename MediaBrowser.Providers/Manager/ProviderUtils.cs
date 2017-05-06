@@ -91,11 +91,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (replaceData || string.IsNullOrEmpty(target.OfficialRatingDescription))
-            {
-                target.OfficialRatingDescription = source.OfficialRatingDescription;
-            }
-
             if (replaceData || string.IsNullOrEmpty(target.CustomRating))
             {
                 target.CustomRating = source.CustomRating;

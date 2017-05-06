@@ -71,8 +71,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                     // Deprecated. No longer saving in this field.
                     "MPAARating",
 
-                    "MPAADescription",
-
                     "MusicBrainzArtistId",
                     "MusicBrainzAlbumArtistId",
                     "MusicBrainzAlbumId",
@@ -306,11 +304,6 @@ namespace MediaBrowser.LocalMetadata.Savers
             if (!string.IsNullOrEmpty(item.OfficialRating))
             {
                 writer.WriteElementString("ContentRating", item.OfficialRating);
-            }
-
-            if (!string.IsNullOrEmpty(item.OfficialRatingDescription))
-            {
-                writer.WriteElementString("MPAADescription", item.OfficialRatingDescription);
             }
 
             writer.WriteElementString("Added", item.DateCreated.ToLocalTime().ToString("G"));

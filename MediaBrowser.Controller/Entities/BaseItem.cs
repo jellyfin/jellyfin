@@ -84,6 +84,7 @@ namespace MediaBrowser.Controller.Entities
 
         public long? Size { get; set; }
         public string Container { get; set; }
+
         [IgnoreDataMember]
         public string Tagline { get; set; }
 
@@ -833,13 +834,6 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The critic rating.</value>
         [IgnoreDataMember]
         public float? CriticRating { get; set; }
-
-        /// <summary>
-        /// Gets or sets the official rating description.
-        /// </summary>
-        /// <value>The official rating description.</value>
-        [IgnoreDataMember]
-        public string OfficialRatingDescription { get; set; }
 
         /// <summary>
         /// Gets or sets the custom rating.
@@ -2289,11 +2283,6 @@ namespace MediaBrowser.Controller.Entities
                 if (!string.Equals(item.CustomRating, ownedItem.CustomRating, StringComparison.Ordinal))
                 {
                     ownedItem.CustomRating = item.CustomRating;
-                    newOptions.ForceSave = true;
-                }
-                if (!string.Equals(item.OfficialRatingDescription, ownedItem.OfficialRatingDescription, StringComparison.Ordinal))
-                {
-                    ownedItem.OfficialRatingDescription = item.OfficialRatingDescription;
                     newOptions.ForceSave = true;
                 }
             }

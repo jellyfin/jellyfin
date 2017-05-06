@@ -101,12 +101,6 @@ namespace Emby.Server.Implementations.Security
         /// <returns></returns>
         public async Task LoadAllRegistrationInfo()
         {
-            var response = await _httpClient.GetResponse(new HttpRequestOptions
-            {
-                Url = "http://192.168.1.2:8096/emby/Videos/663c8a38ccfe91af6566852f78e62c26/stream.mkv?Static=true&mediaSourceId=663c8a38ccfe91af6566852f78e62c26&deviceId=hyJA92oXn4RExFTGismCnY6da91kwnTvv8YvsYf0E&Tag=bcdc02b1cdd6f1eb4a57a6812831617b"
-
-            }).ConfigureAwait(false);
-
             var tasks = new List<Task>();
 
             ResetSupporterInfo();

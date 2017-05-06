@@ -452,17 +452,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                case "mpaadescription":
-                    {
-                        var rating = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(rating))
-                        {
-                            item.OfficialRatingDescription = rating;
-                        }
-                        break;
-                    }
-
                 case "customrating":
                     {
                         var val = reader.ReadElementContentAsString();
