@@ -117,8 +117,6 @@
         /// </summary>
         MediaSources,
 
-        OfficialRatingDescription,
-
         OriginalTitle,
 
         /// <summary>

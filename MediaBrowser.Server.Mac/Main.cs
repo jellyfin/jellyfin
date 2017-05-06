@@ -138,9 +138,9 @@ namespace MediaBrowser.Server.Mac
 			Task.Run (() => StartServer(CancellationToken.None));
         }
 
-        private static void GenerateCertificate(string certPath, string certHost)
+        private static void GenerateCertificate(string certPath, string certHost, string certPassword)
         {
-            CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, _logger);
+			CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, certPassword, _logger);
         }
 
         private static EnvironmentInfo GetEnvironmentInfo()

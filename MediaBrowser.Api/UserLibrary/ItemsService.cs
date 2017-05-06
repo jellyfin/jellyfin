@@ -328,7 +328,15 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (!string.IsNullOrEmpty(request.LocationTypes))
             {
-                query.LocationTypes = request.LocationTypes.Split(',').Select(d => (LocationType)Enum.Parse(typeof(LocationType), d, true)).ToArray();
+                var requestedLocationTypes =
+                    request.LocationTypes.Split(',')
+                        .Select(d => (LocationType) Enum.Parse(typeof (LocationType), d, true))
+                        .ToList();
+
+                if (requestedLocationTypes.Count > 0 && requestedLocationTypes.Count < 4)
+                {
+                    query.IsVirtualItem = requestedLocationTypes.Contains(LocationType.Virtual);
+                }
             }
 
             // Min official rating

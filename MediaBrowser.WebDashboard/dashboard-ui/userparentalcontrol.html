@@ -1,6 +1,6 @@
 ﻿<div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userparentalcontrol,emby-checkbox,emby-button,emby-select">
 
-    <div data-role="content">
+    <div>
         <div class="content-primary">
             <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                 <a href="#" data-role="button" onclick="Dashboard.navigate('useredit.html', true);">${TabProfile}</a>
@@ -21,10 +21,10 @@
                 </div>
                 <br />
 
-                <div>
-                    <div class="detailSectionHeader">
-                        <h1>${LabelBlockContentWithTags}</h1>
-                        <button is="emby-button" type="button" class="raised btnAddBlockedTag submit mini" style="margin-left:1em;" title="${ButtonAddUser}">
+                <div class="verticalSection">
+                    <div class="detailSectionHeader sectionTitleContainer">
+                        <h1 class="sectionTitle">${LabelBlockContentWithTags}</h1>
+                        <button is="emby-button" type="button" class="raised btnAddBlockedTag submit raised-mini sectionTitleButton" style="margin-left:1em;" title="${ButtonAdd}">
                             <i class="md-icon">add</i>
                             <span>${ButtonAdd}</span>
                         </button>
@@ -33,12 +33,11 @@
 
                     </div>
                 </div>
-                <br />
 
-                <div class="accessScheduleSection">
-                    <div class="detailSectionHeader">
-                        <h1>${HeaderAccessSchedule}</h1>
-                        <button is="emby-button" type="button" class="raised btnAddSchedule submit mini" style="margin-left:1em;" title="${ButtonAddUser}">
+                <div class="accessScheduleSection verticalSection">
+                    <div class="sectionTitleContainer">
+                        <h1 class="sectionTitle">${HeaderAccessSchedule}</h1>
+                        <button is="emby-button" type="button" class="raised btnAddSchedule submit raised-mini sectionTitleButton" style="margin-left:1em;" title="${ButtonAdd}">
                             <i class="md-icon">add</i>
                             <span>${ButtonAdd}</span>
                         </button>
@@ -47,10 +46,8 @@
                     <div class="accessScheduleList paperList">
 
                     </div>
-                    <br />
                 </div>
 
-                <br />
                 <div>
                     <button is="emby-button" type="submit" class="raised button-submit block">
                         <span>${ButtonSave}</span>

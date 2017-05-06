@@ -1,36 +1,40 @@
 ﻿<div id="userProfilesPage" data-role="page" class="page type-interior userProfilesPage fullWidthContent" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userprofilespage,emby-button">
 
-    <div data-role="content">
+    <div>
         <div class="content-primary">
-            <div class="detailSectionHeader">
-                <h1>
-                    <span style="vertical-align:middle;">${HeaderUsers}</span>
-                </h1>
-                <button is="emby-button" type="button" class="raised btnAddUser submit mini" style="margin-left:1em;" title="${ButtonAddUser}">
-                    <i class="md-icon">add</i>
-                    <span>${ButtonAdd}</span>
-                </button>
+            <div class="verticalSection">
+                <div class="sectionTitleContainer">
+                    <h1 class="sectionTitle">
+                        <span>${HeaderUsers}</span>
+                    </h1>
+                    <button is="emby-button" type="button" class="raised btnAddUser submit raised-mini sectionTitleButton" style="margin-left:1em;" title="${ButtonAddUser}">
+                        <i class="md-icon">add</i>
+                        <span>${ButtonAdd}</span>
+                    </button>
+                </div>
+                <div class="localUsers itemsContainer vertical-wrap" style="margin-top: .5em;"></div>
             </div>
-            <div class="localUsers itemsContainer vertical-wrap" style="text-align:left;margin-top:.5em;"></div>
 
-            <div class="detailSectionHeader" style="margin-top:2.5em;">
-                <h1>
-                    ${HeaderGuests}
-                </h1>
-                <button is="emby-button" type="button" class="raised btnInvite submit mini" style="margin-left:1em;" title="${ButtonInviteUser}">
-                    <i class="md-icon">add</i>
-                    <span>${ButtonAdd}</span>
-                </button>
+            <div class="verticalSection">
+                <div class="sectionTitleContainer">
+                    <h1 class="sectionTitle">
+                        ${HeaderGuests}
+                    </h1>
+                    <button is="emby-button" type="button" class="raised btnInvite submit raised-mini" style="margin-left:1em;" title="${ButtonInviteUser}">
+                        <i class="md-icon">add</i>
+                        <span>${ButtonAdd}</span>
+                    </button>
+                </div>
+                <div class="connectUsers itemsContainer vertical-wrap" style="margin-top:.5em;"></div>
             </div>
-            <div class="connectUsers itemsContainer vertical-wrap" style="text-align:left;margin-top:.5em;"></div>
 
-            <div class="sectionPendingGuests" style="display:none;margin-top:2.5em;">
-                <div class="detailSectionHeader" style="margin-top:2.5em;">
-                    <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+            <div class="sectionPendingGuests verticalSection" style="display:none;">
+                <div class="sectionTitleContainer">
+                    <h3 class="sectionTitle">
                         ${HeaderPendingInvitations}
                     </h3>
                 </div>
-                <div class="itemsContainer vertical-wrap pending" style="text-align:left;margin-top:.5em;"></div>
+                <div class="itemsContainer vertical-wrap pending" style="margin-top:.5em;"></div>
             </div>
         </div>
 
