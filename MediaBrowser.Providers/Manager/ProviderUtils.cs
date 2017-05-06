@@ -4,6 +4,8 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Controller.Extensions;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -89,11 +91,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (replaceData || string.IsNullOrEmpty(target.OfficialRatingDescription))
-            {
-                target.OfficialRatingDescription = source.OfficialRatingDescription;
-            }
-
             if (replaceData || string.IsNullOrEmpty(target.CustomRating))
             {
                 target.CustomRating = source.CustomRating;
@@ -122,6 +119,11 @@ namespace MediaBrowser.Providers.Manager
                 if (replaceData || targetResult.People == null || targetResult.People.Count == 0)
                 {
                     targetResult.People = sourceResult.People;
+
+                }
+                else if (targetResult.People != null && sourceResult.People != null)
+                {
+                    MergePeople(sourceResult.People, targetResult.People);
                 }
             }
 
@@ -205,6 +207,31 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
+        private static void MergePeople(List<PersonInfo> source, List<PersonInfo> target)
+        {
+            foreach (var person in target)
+            {
+                var normalizedName = person.Name.RemoveDiacritics();
+                var personInSource = source.FirstOrDefault(i => string.Equals(i.Name.RemoveDiacritics(), normalizedName, StringComparison.OrdinalIgnoreCase));
+
+                if (personInSource != null)
+                {
+                    foreach (var providerId in personInSource.ProviderIds)
+                    {
+                        if (!person.ProviderIds.ContainsKey(providerId.Key))
+                        {
+                            person.ProviderIds[providerId.Key] = providerId.Value;
+                        }
+                    }
+
+                    if (string.IsNullOrWhiteSpace(person.ImageUrl))
+                    {
+                        person.ImageUrl = personInSource.ImageUrl;
+                    }
+                }
+            }
+        }
+
         public static void MergeMetadataSettings(BaseItem source,
            BaseItem target)
         {
@@ -264,11 +291,6 @@ namespace MediaBrowser.Providers.Manager
             if (replaceData || !target.CriticRating.HasValue)
             {
                 target.CriticRating = source.CriticRating;
-            }
-
-            if (replaceData || string.IsNullOrEmpty(target.CriticRatingSummary))
-            {
-                target.CriticRatingSummary = source.CriticRatingSummary;
             }
         }
 

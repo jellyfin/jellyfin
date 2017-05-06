@@ -38,7 +38,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
         public List<LocalImageInfo> GetImages(IHasImages item, IDirectoryService directoryService)
         {
-            var parentPath = Path.GetDirectoryName(item.Path);
+            var parentPath = _fileSystem.GetDirectoryName(item.Path);
 
             var parentPathFiles = directoryService.GetFileSystemEntries(parentPath)
                 .ToList();

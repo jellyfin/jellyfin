@@ -152,9 +152,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             var currentOfficialRating = OfficialRating;
 
             // Gather all possible ratings
-            var ratings = GetRecursiveChildren()
-                .Concat(GetLinkedChildren())
-                .Where(i => i is Movie || i is Series || i is MusicAlbum || i is Game)
+            var ratings = GetRecursiveChildren(i => i is Movie || i is Series || i is MusicAlbum || i is Game)
                 .Select(i => i.OfficialRating)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -205,7 +203,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             if (base.IsVisible(user))
             {
-                return GetChildren(user, true).Any();
+                return base.GetChildren(user, true).Any();
             }
 
             return false;

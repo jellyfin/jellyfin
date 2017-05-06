@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Playlists;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -27,53 +28,17 @@ namespace Emby.Server.Implementations.Library
             return list.Concat(GetInstantMixFromGenres(item.Genres, user));
         }
 
-        public IEnumerable<Audio> GetInstantMixFromArtist(MusicArtist artist, User user)
+        public IEnumerable<Audio> GetInstantMixFromArtist(MusicArtist item, User user)
         {
-            var genres = user.RootFolder
-                .GetRecursiveChildren(user, new InternalItemsQuery(user)
-                {
-                    IncludeItemTypes = new[] { typeof(Audio).Name }
-                })
-                .Cast<Audio>()
-                .Where(i => i.HasAnyArtist(artist.Name))
-                .SelectMany(i => i.Genres)
-                .Concat(artist.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase);
-
-            return GetInstantMixFromGenres(genres, user);
+            return GetInstantMixFromGenres(item.Genres, user);
         }
 
         public IEnumerable<Audio> GetInstantMixFromAlbum(MusicAlbum item, User user)
         {
-            var genres = item
-                .GetRecursiveChildren(user, new InternalItemsQuery(user)
-                {
-                    IncludeItemTypes = new[] { typeof(Audio).Name }
-                })
-               .Cast<Audio>()
-               .SelectMany(i => i.Genres)
-               .Concat(item.Genres)
-               .DistinctNames();
-
-            return GetInstantMixFromGenres(genres, user);
+            return GetInstantMixFromGenres(item.Genres, user);
         }
 
         public IEnumerable<Audio> GetInstantMixFromFolder(Folder item, User user)
-        {
-            var genres = item
-               .GetRecursiveChildren(user, new InternalItemsQuery(user)
-               {
-                   IncludeItemTypes = new[] {typeof(Audio).Name}
-               })
-               .Cast<Audio>()
-               .SelectMany(i => i.Genres)
-               .Concat(item.Genres)
-               .DistinctNames();
-
-            return GetInstantMixFromGenres(genres, user);
-        }
-
-        public IEnumerable<Audio> GetInstantMixFromPlaylist(Playlist item, User user)
         {
             var genres = item
                .GetRecursiveChildren(user, new InternalItemsQuery(user)
@@ -88,28 +53,42 @@ namespace Emby.Server.Implementations.Library
             return GetInstantMixFromGenres(genres, user);
         }
 
+        public IEnumerable<Audio> GetInstantMixFromPlaylist(Playlist item, User user)
+        {
+            return GetInstantMixFromGenres(item.Genres, user);
+        }
+
         public IEnumerable<Audio> GetInstantMixFromGenres(IEnumerable<string> genres, User user)
         {
-            var genreList = genres.ToList();
+            var genreIds = genres.DistinctNames().Select(i =>
+            {
+                try
+                {
+                    return _libraryManager.GetMusicGenre(i).Id.ToString("N");
+                }
+                catch
+                {
+                    return null;
+                }
 
-            var inputItems = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            }).Where(i => i != null);
+
+            return GetInstantMixFromGenreIds(genreIds, user);
+        }
+
+        public IEnumerable<Audio> GetInstantMixFromGenreIds(IEnumerable<string> genreIds, User user)
+        {
+            return _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Audio).Name },
 
-                Genres = genreList.ToArray()
+                GenreIds = genreIds.ToArray(),
 
-            });
+                Limit = 200,
 
-            var genresDictionary = genreList.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+                SortBy = new[] { ItemSortBy.Random }
 
-            return inputItems
-                .Cast<Audio>()
-                .Select(i => new Tuple<Audio, int>(i, i.Genres.Count(genresDictionary.ContainsKey)))
-                .OrderByDescending(i => i.Item2)
-                .ThenBy(i => Guid.NewGuid())
-                .Select(i => i.Item1)
-                .Take(200)
-                .OrderBy(i => Guid.NewGuid());
+            }).Cast<Audio>();
         }
 
         public IEnumerable<Audio> GetInstantMixFromItem(BaseItem item, User user)
@@ -117,7 +96,7 @@ namespace Emby.Server.Implementations.Library
             var genre = item as MusicGenre;
             if (genre != null)
             {
-                return GetInstantMixFromGenres(new[] { item.Name }, user);
+                return GetInstantMixFromGenreIds(new[] { item.Id.ToString("N") }, user);
             }
 
             var playlist = item as Playlist;

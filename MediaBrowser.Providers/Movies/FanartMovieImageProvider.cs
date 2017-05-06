@@ -277,14 +277,13 @@ namespace MediaBrowser.Providers.Movies
 
             var path = GetFanartJsonPath(id);
 
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
             try
             {
                 using (var response = await _httpClient.Get(new HttpRequestOptions
                 {
                     Url = url,
-                    ResourcePool = FanartArtistProvider.Current.FanArtResourcePool,
                     CancellationToken = cancellationToken,
                     BufferContent = true
 

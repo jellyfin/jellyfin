@@ -63,11 +63,11 @@ namespace MediaBrowser.Controller.Providers
                 //_logger.Debug("Getting files for " + path);
 
                 entries = new Dictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
-                
+
                 try
                 {
                     // using EnumerateFileSystemInfos doesn't handle reparse points (symlinks)
-					var list = _fileSystem.GetFileSystemEntries(path)
+                    var list = _fileSystem.GetFileSystemEntries(path)
                         .ToList();
 
                     // Seeing dupes on some users file system for some reason
@@ -80,7 +80,7 @@ namespace MediaBrowser.Controller.Providers
                 {
                 }
 
-                //var group = entries.ToLookup(i => Path.GetDirectoryName(i.FullName)).ToList();
+                //var group = entries.ToLookup(i => _fileSystem.GetDirectoryName(i.FullName)).ToList();
 
                 _cache.TryAdd(path, entries);
             }

@@ -226,7 +226,7 @@ namespace MediaBrowser.Providers.TV
 
             if (searchInfo.IndexNumber.HasValue)
             {
-                var files = GetEpisodeXmlFiles(searchInfo.ParentIndexNumber, searchInfo.IndexNumber, searchInfo.IndexNumberEnd, Path.GetDirectoryName(xmlFile));
+                var files = GetEpisodeXmlFiles(searchInfo.ParentIndexNumber, searchInfo.IndexNumber, searchInfo.IndexNumberEnd, _fileSystem.GetDirectoryName(xmlFile));
 
                 list = files.Select(GetXmlReader).ToList();
             }
@@ -919,8 +919,7 @@ namespace MediaBrowser.Providers.TV
             return _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = url,
-                ResourcePool = TvdbSeriesProvider.Current.TvDbResourcePool
+                Url = url
             });
         }
 

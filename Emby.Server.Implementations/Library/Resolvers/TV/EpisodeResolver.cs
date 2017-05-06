@@ -57,7 +57,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                     {
                         episode.SeriesId = series.Id;
                         episode.SeriesName = series.Name;
-                        episode.SeriesSortName = series.SortName;
                     }
                     if (season != null)
                     {

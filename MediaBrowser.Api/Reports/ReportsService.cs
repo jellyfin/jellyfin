@@ -300,11 +300,6 @@ namespace MediaBrowser.Api.Reports
                 }
             }
 
-            if (!string.IsNullOrEmpty(request.LocationTypes))
-            {
-                query.LocationTypes = request.LocationTypes.Split(',').Select(d => (LocationType)Enum.Parse(typeof(LocationType), d, true)).ToArray();
-            }
-
             // Min official rating
             if (!string.IsNullOrWhiteSpace(request.MinOfficialRating))
             {

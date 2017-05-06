@@ -942,7 +942,8 @@ namespace Emby.Server.Implementations.Library
         {
             return new UserPolicy
             {
-                EnableSync = true
+                EnableContentDownloading = true,
+                EnableSyncTranscoding = true
             };
         }
 
@@ -964,7 +965,7 @@ namespace Emby.Server.Implementations.Library
 
             var path = GetPolifyFilePath(user);
 
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
             lock (_policySyncLock)
             {
@@ -1051,7 +1052,7 @@ namespace Emby.Server.Implementations.Library
                 config = _jsonSerializer.DeserializeFromString<UserConfiguration>(json);
             }
 
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
             lock (_configSyncLock)
             {

@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
@@ -13,11 +14,13 @@ namespace Emby.Server.Implementations.Library.Resolvers
     {
         private readonly IImageProcessor _imageProcessor;
         private readonly ILibraryManager _libraryManager;
+        private readonly IFileSystem _fileSystem;
 
-        public PhotoResolver(IImageProcessor imageProcessor, ILibraryManager libraryManager)
+        public PhotoResolver(IImageProcessor imageProcessor, ILibraryManager libraryManager, IFileSystem fileSystem)
         {
             _imageProcessor = imageProcessor;
             _libraryManager = libraryManager;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -41,7 +44,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                         var filename = Path.GetFileNameWithoutExtension(args.Path);
 
                         // Make sure the image doesn't belong to a video file
-                        if (args.DirectoryService.GetFilePaths(Path.GetDirectoryName(args.Path)).Any(i => IsOwnedByMedia(args.GetLibraryOptions(), i, filename)))
+                        if (args.DirectoryService.GetFilePaths(_fileSystem.GetDirectoryName(args.Path)).Any(i => IsOwnedByMedia(args.GetLibraryOptions(), i, filename)))
                         {
                             return null;
                         }

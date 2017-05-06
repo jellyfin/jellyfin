@@ -586,7 +586,7 @@ namespace MediaBrowser.Controller.Entities
         {
             query.Recursive = true;
             query.ParentId = queryParent.Id;
-            query.Genres = new[] { displayParent.Name };
+            query.GenreIds = new[] { displayParent.Id.ToString("N") };
             query.SetUser(user);
 
             query.IncludeItemTypes = new[] { typeof(Movie).Name };
@@ -729,7 +729,7 @@ namespace MediaBrowser.Controller.Entities
         {
             query.Recursive = true;
             query.ParentId = queryParent.Id;
-            query.Genres = new[] { displayParent.Name };
+            query.GenreIds = new[] { displayParent.Id.ToString("N") };
             query.SetUser(user);
 
             query.IncludeItemTypes = new[] { typeof(Series).Name };
@@ -901,6 +901,11 @@ namespace MediaBrowser.Controller.Entities
             }
 
             if (request.Genres.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.GenreIds.Length > 0)
             {
                 return false;
             }
@@ -1766,26 +1771,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return new List<Folder> { parent };
-        }
-
-        private IEnumerable<BaseItem> GetRecursiveChildren(Folder parent, User user, IEnumerable<string> viewTypes)
-        {
-            if (parent == null || parent is UserView)
-            {
-                if (user == null)
-                {
-                    return GetMediaFolders(null, viewTypes).SelectMany(i => i.GetRecursiveChildren());
-                }
-
-                return GetMediaFolders(user, viewTypes).SelectMany(i => i.GetRecursiveChildren(user));
-            }
-
-            if (user == null)
-            {
-                return parent.GetRecursiveChildren();
-            }
-
-            return parent.GetRecursiveChildren(user);
         }
 
         private async Task<QueryResult<BaseItem>> GetLiveTvView(Folder queryParent, User user, InternalItemsQuery query)

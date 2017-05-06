@@ -81,7 +81,7 @@ namespace Emby.Drawing.Net
             {
                 using (var croppedImage = image.CropWhitespace())
                 {
-                    _fileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
+                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
 
                     using (var outputStream = _fileSystem.GetFileStream(outputPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, false))
                     {
@@ -135,7 +135,7 @@ namespace Emby.Drawing.Net
 
                         var outputFormat = GetOutputFormat(originalImage, selectedOutputFormat);
 
-                        _fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
+                        _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(cacheFilePath));
 
                         // Save to the cache location
                         using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, false))

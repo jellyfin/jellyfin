@@ -12,6 +12,7 @@ namespace Emby.Common.Implementations.Security
         public static void CreateSelfSignCertificatePfx(
             string fileName,
             string hostname,
+            string password,
             ILogger logger)
         {
             if (string.IsNullOrWhiteSpace(fileName))
@@ -43,7 +44,7 @@ namespace Emby.Common.Implementations.Security
             cb.NotAfter = notAfter;
             cb.SubjectName = subject;
             cb.SubjectPublicKey = subjectKey;
-
+            
             // signature
             cb.Hash = "SHA256";
             byte[] rawcert = cb.Sign(issuerKey);
@@ -59,6 +60,7 @@ namespace Emby.Common.Implementations.Security
             attributes.Add(PKCS9.localKeyId, list);
 
             p12.AddCertificate(new X509Certificate(rawcert), attributes);
+            p12.Password = password;
 
             p12.AddPkcs8ShroudedKeyBag(subjectKey, attributes);
             p12.SaveToFile(fileName);

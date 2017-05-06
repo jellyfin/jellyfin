@@ -499,7 +499,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.BasicSyncInfo) || fields.Contains(ItemFields.SyncInfo))
             {
-                var userCanSync = user != null && user.Policy.EnableSync;
+                var userCanSync = user != null && user.Policy.EnableContentDownloading;
                 if (userCanSync && _syncManager.SupportsSync(item))
                 {
                     dto.SupportsSync = true;
@@ -966,11 +966,6 @@ namespace Emby.Server.Implementations.Dto
             }
 
             dto.CriticRating = item.CriticRating;
-
-            if (fields.Contains(ItemFields.CriticRatingSummary))
-            {
-                dto.CriticRatingSummary = item.CriticRatingSummary;
-            }
 
             var hasTrailers = item as IHasTrailers;
             if (hasTrailers != null)

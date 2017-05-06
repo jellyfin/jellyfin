@@ -165,12 +165,6 @@ namespace MediaBrowser.Model.Dto
 
         public string[] ProductionLocations { get; set; }
 
-        /// <summary>
-        /// Gets or sets the critic rating summary.
-        /// </summary>
-        /// <value>The critic rating summary.</value>
-        public string CriticRatingSummary { get; set; }
-
         public List<string> MultiPartGameFiles { get; set; }
 
         /// <summary>

@@ -139,7 +139,7 @@ namespace Emby.Server.Implementations.Images
             CancellationToken cancellationToken)
         {
             var outputPathWithoutExtension = Path.Combine(ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
-            FileSystem.CreateDirectory(Path.GetDirectoryName(outputPathWithoutExtension));
+            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(outputPathWithoutExtension));
             string outputPath = await CreateImage(item, itemsWithImages, outputPathWithoutExtension, imageType, 0).ConfigureAwait(false);
 
             if (string.IsNullOrWhiteSpace(outputPath))
@@ -205,7 +205,7 @@ namespace Emby.Server.Implementations.Images
 
         private async Task<string> CreateCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height)
         {
-            FileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
+            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(outputPath));
 
             var options = new ImageCollageOptions
             {

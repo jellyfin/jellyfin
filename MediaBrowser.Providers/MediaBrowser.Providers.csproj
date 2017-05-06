@@ -65,10 +65,15 @@
     <Compile Include="LiveTv\ChannelMetadataService.cs" />
     <Compile Include="LiveTv\ProgramMetadataService.cs" />
     <Compile Include="LiveTv\VideoRecordingService.cs" />
+    <Compile Include="Manager\GenericPriorityQueue.cs" />
+    <Compile Include="Manager\GenericPriorityQueueNode.cs" />
+    <Compile Include="Manager\IFixedSizePriorityQueue.cs" />
     <Compile Include="Manager\ImageSaver.cs" />
+    <Compile Include="Manager\IPriorityQueue.cs" />
     <Compile Include="Manager\ItemImageProvider.cs" />
     <Compile Include="Manager\ProviderManager.cs" />
     <Compile Include="Manager\MetadataService.cs" />
+    <Compile Include="Manager\SimplePriorityQueue.cs" />
     <Compile Include="MediaInfo\FFProbeAudioInfo.cs" />
     <Compile Include="MediaInfo\FFProbeProvider.cs" />
     <Compile Include="MediaInfo\FFProbeVideoInfo.cs" />

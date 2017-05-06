@@ -105,7 +105,7 @@ namespace MediaBrowser.Controller.Entities
                 return new[] {
                     new FileSystemMetadata
                     {
-                        FullName = System.IO.Path.GetDirectoryName(Path),
+                        FullName = FileSystem.GetDirectoryName(Path),
                         IsDirectory = true
                     }
                 };

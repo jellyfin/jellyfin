@@ -27,7 +27,6 @@ namespace MediaBrowser.Providers.Music
 
         public static AudioDbArtistProvider Current;
 
-        public SemaphoreSlim AudioDbResourcePool = new SemaphoreSlim(2, 2);
         private const string ApiKey = "49jhsf8248yfahka89724011";
         public const string BaseUrl = "http://www.theaudiodb.com/api/v1/json/" + ApiKey;
 
@@ -151,13 +150,12 @@ namespace MediaBrowser.Providers.Music
             using (var response = await _httpClient.Get(new HttpRequestOptions
             {
                 Url = url,
-                ResourcePool = AudioDbResourcePool,
                 CancellationToken = cancellationToken,
                 BufferContent = true
 
             }).ConfigureAwait(false))
             {
-				_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+				_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
                 using (var xmlFileStream = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                 {

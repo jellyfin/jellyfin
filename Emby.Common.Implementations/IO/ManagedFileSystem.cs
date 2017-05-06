@@ -546,24 +546,6 @@ namespace Emby.Common.Implementations.IO
             return Path.DirectorySeparatorChar;
         }
 
-        public bool AreEqual(string path1, string path2)
-        {
-            if (path1 == null && path2 == null)
-            {
-                return true;
-            }
-
-            if (path1 == null || path2 == null)
-            {
-                return false;
-            }
-
-            path1 = path1.TrimEnd(GetDirectorySeparatorChar(path1));
-            path2 = path2.TrimEnd(GetDirectorySeparatorChar(path2));
-
-            return string.Equals(path1, path2, StringComparison.OrdinalIgnoreCase);
-        }
-
         public bool ContainsSubPath(string parentPath, string path)
         {
             if (string.IsNullOrEmpty(parentPath))
@@ -588,7 +570,7 @@ namespace Emby.Common.Implementations.IO
                 throw new ArgumentNullException("path");
             }
 
-            var parent = Path.GetDirectoryName(path);
+            var parent = GetDirectoryName(path);
 
             if (!string.IsNullOrEmpty(parent))
             {
@@ -598,11 +580,26 @@ namespace Emby.Common.Implementations.IO
             return true;
         }
 
+        public string GetDirectoryName(string path)
+        {
+            if (_sharpCifsFileSystem.IsEnabledForPath(path))
+            {
+                return _sharpCifsFileSystem.GetDirectoryName(path);
+            }
+
+            return Path.GetDirectoryName(path);
+        }
+
         public string NormalizePath(string path)
         {
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException("path");
+            }
+
+            if (_sharpCifsFileSystem.IsEnabledForPath(path))
+            {
+                return _sharpCifsFileSystem.NormalizePath(path);
             }
 
             if (path.EndsWith(":\\", StringComparison.OrdinalIgnoreCase))
@@ -611,6 +608,21 @@ namespace Emby.Common.Implementations.IO
             }
 
             return path.TrimEnd(GetDirectorySeparatorChar(path));
+        }
+
+        public bool AreEqual(string path1, string path2)
+        {
+            if (path1 == null && path2 == null)
+            {
+                return true;
+            }
+
+            if (path1 == null || path2 == null)
+            {
+                return false;
+            }
+
+            return string.Equals(NormalizePath(path1), NormalizePath(path2), StringComparison.OrdinalIgnoreCase);
         }
 
         public string GetFileNameWithoutExtension(FileSystemMetadata info)
@@ -637,11 +649,17 @@ namespace Emby.Common.Implementations.IO
 
             // Cannot use Path.IsPathRooted because it returns false under mono when using windows-based paths, e.g. C:\\
 
+            if (_sharpCifsFileSystem.IsEnabledForPath(path))
+            {
+                return true;
+            }
+
             if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) != -1 &&
                 !path.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
+
             return true;
 
             //return Path.IsPathRooted(path);

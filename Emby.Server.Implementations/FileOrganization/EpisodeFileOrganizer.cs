@@ -352,7 +352,7 @@ namespace Emby.Server.Implementations.FileOrganization
                         _libraryMonitor.ReportFileSystemChangeBeginning(path);
 
                         var renameRelatedFiles = !hasRenamedFiles &&
-                            string.Equals(Path.GetDirectoryName(path), Path.GetDirectoryName(result.TargetPath), StringComparison.OrdinalIgnoreCase);
+                            string.Equals(_fileSystem.GetDirectoryName(path), _fileSystem.GetDirectoryName(result.TargetPath), StringComparison.OrdinalIgnoreCase);
 
                         if (renameRelatedFiles)
                         {
@@ -432,7 +432,7 @@ namespace Emby.Server.Implementations.FileOrganization
 
             // Now find other files
             var originalFilenameWithoutExtension = Path.GetFileNameWithoutExtension(path);
-            var directory = Path.GetDirectoryName(path);
+            var directory = _fileSystem.GetDirectoryName(path);
 
             if (!string.IsNullOrWhiteSpace(originalFilenameWithoutExtension) && !string.IsNullOrWhiteSpace(directory))
             {
@@ -445,7 +445,7 @@ namespace Emby.Server.Implementations.FileOrganization
 
                 foreach (var file in files)
                 {
-                    directory = Path.GetDirectoryName(file);
+                    directory = _fileSystem.GetDirectoryName(file);
                     var filename = Path.GetFileName(file);
 
                     filename = filename.Replace(originalFilenameWithoutExtension, targetFilenameWithoutExtension,
@@ -470,7 +470,7 @@ namespace Emby.Server.Implementations.FileOrganization
                 return new List<string>();
             }
 
-            var episodePaths = series.GetRecursiveChildren()
+            var episodePaths = series.GetRecursiveChildren(i => i is Episode)
                 .OfType<Episode>()
                 .Where(i =>
                 {
@@ -499,7 +499,7 @@ namespace Emby.Server.Implementations.FileOrganization
                 .Select(i => i.Path)
                 .ToList();
 
-            var folder = Path.GetDirectoryName(targetPath);
+            var folder = _fileSystem.GetDirectoryName(targetPath);
             var targetFileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(targetPath);
 
             try
@@ -529,7 +529,7 @@ namespace Emby.Server.Implementations.FileOrganization
 
             _libraryMonitor.ReportFileSystemChangeBeginning(result.TargetPath);
 
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(result.TargetPath));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(result.TargetPath));
 
             var targetAlreadyExists = _fileSystem.FileExists(result.TargetPath);
 
