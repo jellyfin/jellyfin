@@ -365,17 +365,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         break;
                     }
 
-                case "MPAADescription":
-                    {
-                        var rating = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(rating))
-                        {
-                            item.OfficialRatingDescription = rating;
-                        }
-                        break;
-                    }
-
                 case "CustomRating":
                     {
                         var val = reader.ReadElementContentAsString();

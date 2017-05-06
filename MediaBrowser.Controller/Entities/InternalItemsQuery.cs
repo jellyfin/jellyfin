@@ -175,7 +175,6 @@ namespace MediaBrowser.Controller.Entities
                 case ItemFields.DateCreated:
                 case ItemFields.SortName:
                 case ItemFields.Overview:
-                case ItemFields.OfficialRatingDescription:
                 case ItemFields.HomePageUrl:
                 case ItemFields.VoteCount:
                 case ItemFields.DisplayMediaType:

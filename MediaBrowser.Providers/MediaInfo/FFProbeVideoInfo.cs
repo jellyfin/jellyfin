@@ -356,11 +356,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(data.OfficialRatingDescription) || isFullRefresh)
-            {
-                video.OfficialRatingDescription = data.OfficialRatingDescription;
-            }
-
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Genres))
             {
                 if (video.Genres.Count == 0 || isFullRefresh)

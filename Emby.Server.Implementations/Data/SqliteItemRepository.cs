@@ -201,7 +201,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "SortName", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "RunTimeTicks", "BIGINT", existingColumnNames);
 
-                    AddColumn(db, "TypedBaseItems", "OfficialRatingDescription", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "HomePageUrl", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "VoteCount", "INT", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "DisplayMediaType", "Text", existingColumnNames);
@@ -426,7 +425,6 @@ namespace Emby.Server.Implementations.Data
             "ParentIndexNumber",
             "ProductionYear",
             "OfficialRating",
-            "OfficialRatingDescription",
             "HomePageUrl",
             "DisplayMediaType",
             "ForcedSortName",
@@ -547,7 +545,6 @@ namespace Emby.Server.Implementations.Data
                 "InheritedParentalRatingValue",
                 "SortName",
                 "RunTimeTicks",
-                "OfficialRatingDescription",
                 "HomePageUrl",
                 "VoteCount",
                 "DisplayMediaType",
@@ -825,7 +822,6 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@SortName", item.SortName);
             saveItemStatement.TryBind("@RunTimeTicks", item.RunTimeTicks);
 
-            saveItemStatement.TryBind("@OfficialRatingDescription", item.OfficialRatingDescription);
             saveItemStatement.TryBind("@HomePageUrl", item.HomePageUrl);
             saveItemStatement.TryBind("@VoteCount", item.VoteCount);
             saveItemStatement.TryBind("@DisplayMediaType", item.DisplayMediaType);
@@ -1278,19 +1274,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     return false;
                 }
-                if (type == typeof(Year))
-                {
-                    return false;
-                }
-                if (type == typeof(Book))
-                {
-                    return false;
-                }
                 if (type == typeof(Person))
-                {
-                    return false;
-                }
-                if (type == typeof(RecordingGroup))
                 {
                     return false;
                 }
@@ -1327,28 +1311,39 @@ namespace Emby.Server.Implementations.Data
                     return false;
                 }
             }
-            if (_config.Configuration.SkipDeserializationForPrograms)
+
+            if (type == typeof(Year))
             {
-                if (type == typeof(LiveTvProgram))
-                {
-                    return false;
-                }
+                return false;
             }
+            if (type == typeof(Book))
+            {
+                return false;
+            }
+            if (type == typeof(RecordingGroup))
+            {
+                return false;
+            }
+            if (type == typeof(LiveTvProgram))
+            {
+                return false;
+            }
+            if (type == typeof(LiveTvAudioRecording))
+            {
+                return false;
+            }
+            if (type == typeof(AudioPodcast))
+            {
+                return false;
+            }
+            if (type == typeof(AudioBook))
+            {
+                return false;
+            }
+
             if (_config.Configuration.SkipDeserializationForAudio)
             {
                 if (type == typeof(Audio))
-                {
-                    return false;
-                }
-                if (type == typeof(LiveTvAudioRecording))
-                {
-                    return false;
-                }
-                if (type == typeof(AudioPodcast))
-                {
-                    return false;
-                }
-                if (type == typeof(AudioBook))
                 {
                     return false;
                 }
@@ -1596,15 +1591,6 @@ namespace Emby.Server.Implementations.Data
                 item.OfficialRating = reader.GetString(index);
             }
             index++;
-
-            if (query.HasField(ItemFields.OfficialRatingDescription))
-            {
-                if (!reader.IsDBNull(index))
-                {
-                    item.OfficialRatingDescription = reader.GetString(index);
-                }
-                index++;
-            }
 
             if (query.HasField(ItemFields.HomePageUrl))
             {
