@@ -2155,11 +2155,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         writer.WriteElementString("mpaa", item.OfficialRating);
                     }
 
-                    if (!string.IsNullOrEmpty(item.OfficialRatingDescription))
-                    {
-                        writer.WriteElementString("mpaadescription", item.OfficialRatingDescription);
-                    }
-
                     var overview = (item.Overview ?? string.Empty)
                         .StripHtml()
                         .Replace("&quot;", "'");

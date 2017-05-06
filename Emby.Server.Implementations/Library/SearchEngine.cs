@@ -168,7 +168,13 @@ namespace Emby.Server.Implementations.Library
                 IncludeItemsByName = string.IsNullOrWhiteSpace(query.ParentId),
                 ParentId = string.IsNullOrWhiteSpace(query.ParentId) ? (Guid?)null : new Guid(query.ParentId),
                 SortBy = new[] { ItemSortBy.SortName },
-                Recursive = true
+                Recursive = true,
+
+                IsKids = query.IsKids,
+                IsMovie = query.IsMovie,
+                IsNews = query.IsNews,
+                IsSeries = query.IsSeries,
+                IsSports = query.IsSports
             });
 
             // Add search hints based on item name

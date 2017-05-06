@@ -36,6 +36,16 @@ namespace MediaBrowser.Model.Search
         public string[] IncludeItemTypes { get; set; }
         public string ParentId { get; set; }
 
+        public bool? IsMovie { get; set; }
+
+        public bool? IsSeries { get; set; }
+
+        public bool? IsNews { get; set; }
+
+        public bool? IsKids { get; set; }
+
+        public bool? IsSports { get; set; }
+
         public SearchQuery()
         {
             IncludeArtists = true;

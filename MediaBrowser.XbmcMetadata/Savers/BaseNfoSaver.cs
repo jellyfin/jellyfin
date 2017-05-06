@@ -19,7 +19,6 @@ using System.Text;
 using System.Threading;
 using System.Xml;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
@@ -42,7 +41,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "year",
                     "sorttitle",
                     "mpaa",
-                    "mpaadescription",
                     "aspectratio",
                     "website",
                     "collectionnumber",
@@ -554,11 +552,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (!string.IsNullOrEmpty(item.OfficialRating))
             {
                 writer.WriteElementString("mpaa", item.OfficialRating);
-            }
-
-            if (!string.IsNullOrEmpty(item.OfficialRatingDescription))
-            {
-                writer.WriteElementString("mpaadescription", item.OfficialRatingDescription);
             }
 
             var hasAspectRatio = item as IHasAspectRatio;

@@ -69,6 +69,21 @@ namespace MediaBrowser.Api
 
         public string ParentId { get; set; }
 
+        [ApiMember(Name = "IsMovie", Description = "Optional filter for movies.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
+        public bool? IsMovie { get; set; }
+
+        [ApiMember(Name = "IsSeries", Description = "Optional filter for movies.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
+        public bool? IsSeries { get; set; }
+
+        [ApiMember(Name = "IsNews", Description = "Optional filter for news.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
+        public bool? IsNews { get; set; }
+
+        [ApiMember(Name = "IsKids", Description = "Optional filter for kids.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
+        public bool? IsKids { get; set; }
+
+        [ApiMember(Name = "IsSports", Description = "Optional filter for sports.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
+        public bool? IsSports { get; set; }
+
         public GetSearchHints()
         {
             IncludeArtists = true;
@@ -139,7 +154,13 @@ namespace MediaBrowser.Api
                 StartIndex = request.StartIndex,
                 UserId = request.UserId,
                 IncludeItemTypes = (request.IncludeItemTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
-                ParentId = request.ParentId
+                ParentId = request.ParentId,
+
+                IsKids = request.IsKids,
+                IsMovie = request.IsMovie,
+                IsNews = request.IsNews,
+                IsSeries = request.IsSeries,
+                IsSports = request.IsSports
 
             }).ConfigureAwait(false);
 
