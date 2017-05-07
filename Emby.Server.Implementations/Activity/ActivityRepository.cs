@@ -60,7 +60,7 @@ namespace Emby.Server.Implementations.Activity
                     {
                         using (var statement = db.PrepareStatement("replace into ActivityLogEntries (Id, Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity) values (@Id, @Name, @Overview, @ShortOverview, @Type, @ItemId, @UserId, @DateCreated, @LogSeverity)"))
                         {
-                            statement.TryBind("@Id", entry.Id.ToGuidParamValue());
+                            statement.TryBind("@Id", entry.Id.ToGuidBlob());
                             statement.TryBind("@Name", entry.Name);
 
                             statement.TryBind("@Overview", entry.Overview);
@@ -168,7 +168,7 @@ namespace Emby.Server.Implementations.Activity
 
             var info = new ActivityLogEntry
             {
-                Id = reader[index].ReadGuid().ToString("N")
+                Id = reader[index].ReadGuidFromBlob().ToString("N")
             };
 
             index++;

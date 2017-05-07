@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.Notifications
             }
 
             clauses.Add("UserId=?");
-            paramList.Add(query.UserId.ToGuidParamValue());
+            paramList.Add(query.UserId.ToGuidBlob());
 
             var whereClause = " where " + string.Join(" And ", clauses.ToArray());
 
@@ -133,7 +133,7 @@ namespace Emby.Server.Implementations.Notifications
                     using (var statement = connection.PrepareStatement("select Level from Notifications where UserId=@UserId and IsRead=@IsRead"))
                     {
                         statement.TryBind("@IsRead", false);
-                        statement.TryBind("@UserId", userId.ToGuidParamValue());
+                        statement.TryBind("@UserId", userId.ToGuidBlob());
 
                         var levels = new List<NotificationLevel>();
 
@@ -159,8 +159,8 @@ namespace Emby.Server.Implementations.Notifications
         {
             var notification = new Notification
             {
-                Id = reader[0].ReadGuid().ToString("N"),
-                UserId = reader[1].ReadGuid().ToString("N"),
+                Id = reader[0].ReadGuidFromBlob().ToString("N"),
+                UserId = reader[1].ReadGuidFromBlob().ToString("N"),
                 Date = reader[2].ReadDateTime(),
                 Name = reader[3].ToString()
             };
@@ -251,8 +251,8 @@ namespace Emby.Server.Implementations.Notifications
                     {
                         using (var statement = conn.PrepareStatement("replace into Notifications (Id, UserId, Date, Name, Description, Url, Level, IsRead, Category, RelatedId) values (@Id, @UserId, @Date, @Name, @Description, @Url, @Level, @IsRead, @Category, @RelatedId)"))
                         {
-                            statement.TryBind("@Id", notification.Id.ToGuidParamValue());
-                            statement.TryBind("@UserId", notification.UserId.ToGuidParamValue());
+                            statement.TryBind("@Id", notification.Id.ToGuidBlob());
+                            statement.TryBind("@UserId", notification.UserId.ToGuidBlob());
                             statement.TryBind("@Date", notification.Date.ToDateTimeParamValue());
                             statement.TryBind("@Name", notification.Name);
                             statement.TryBind("@Description", notification.Description);
@@ -315,7 +315,7 @@ namespace Emby.Server.Implementations.Notifications
                         using (var statement = conn.PrepareStatement("update Notifications set IsRead=@IsRead where UserId=@UserId"))
                         {
                             statement.TryBind("@IsRead", isRead);
-                            statement.TryBind("@UserId", userId.ToGuidParamValue());
+                            statement.TryBind("@UserId", userId.ToGuidBlob());
 
                             statement.MoveNext();
                         }
@@ -337,13 +337,13 @@ namespace Emby.Server.Implementations.Notifications
                         using (var statement = conn.PrepareStatement("update Notifications set IsRead=@IsRead where UserId=@UserId and Id=@Id"))
                         {
                             statement.TryBind("@IsRead", isRead);
-                            statement.TryBind("@UserId", userId.ToGuidParamValue());
+                            statement.TryBind("@UserId", userId.ToGuidBlob());
 
                             foreach (var id in notificationIdList)
                             {
                                 statement.Reset();
 
-                                statement.TryBind("@Id", id.ToGuidParamValue());
+                                statement.TryBind("@Id", id.ToGuidBlob());
 
                                 statement.MoveNext();
                             }
