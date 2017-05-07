@@ -2128,7 +2128,7 @@ namespace Emby.Server.Implementations.Data
                     connection.RunInTransaction(db =>
                     {
                         // First delete chapters
-                        db.Execute("delete from " + ChaptersTableName + " where ItemId=@ItemId", id.ToGuidParamValue());
+                        db.Execute("delete from " + ChaptersTableName + " where ItemId=@ItemId", id.ToGuidBlob());
 
                         using (var saveChapterStatement = PrepareStatement(db, "replace into " + ChaptersTableName + " (ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath, ImageDateModified) values (@ItemId, @ChapterIndex, @StartPositionTicks, @Name, @ImagePath, @ImageDateModified)"))
                         {
@@ -2139,7 +2139,7 @@ namespace Emby.Server.Implementations.Data
                                     saveChapterStatement.Reset();
                                 }
 
-                                saveChapterStatement.TryBind("@ItemId", id.ToGuidParamValue());
+                                saveChapterStatement.TryBind("@ItemId", id.ToGuidBlob());
                                 saveChapterStatement.TryBind("@ChapterIndex", index);
                                 saveChapterStatement.TryBind("@StartPositionTicks", chapter.StartPositionTicks);
                                 saveChapterStatement.TryBind("@Name", chapter.Name);
@@ -2919,7 +2919,7 @@ namespace Emby.Server.Implementations.Data
 
                         foreach (var row in statement.ExecuteQuery())
                         {
-                            list.Add(row[0].ReadGuid());
+                            list.Add(row[0].ReadGuidFromBlob());
                         }
                     }
 
@@ -3113,7 +3113,7 @@ namespace Emby.Server.Implementations.Data
 
                                 foreach (var row in statement.ExecuteQuery())
                                 {
-                                    list.Add(row[0].ReadGuid());
+                                    list.Add(row[0].ReadGuidFromBlob());
                                 }
                             }
                         }
@@ -3643,7 +3643,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("(select Name from TypedBaseItems where guid=" + paramName + ") in (select Name from People where ItemId=Guid)");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, personId.ToGuidParamValue());
+                        statement.TryBind(paramName, personId.ToGuidBlob());
                     }
                     index++;
                 }
@@ -3843,7 +3843,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("(select CleanName from TypedBaseItems where guid=" + paramName + ") in (select CleanValue from itemvalues where ItemId=Guid and Type<=1)");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, artistId.ToGuidParamValue());
+                        statement.TryBind(paramName, artistId.ToGuidBlob());
                     }
                     index++;
                 }
@@ -3862,7 +3862,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("Album in (select Name from typedbaseitems where guid=" + paramName + ")");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, albumId.ToGuidParamValue());
+                        statement.TryBind(paramName, albumId.ToGuidBlob());
                     }
                     index++;
                 }
@@ -3881,7 +3881,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("(select CleanName from TypedBaseItems where guid=" + paramName + ") not in (select CleanValue from itemvalues where ItemId=Guid and Type<=1)");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, artistId.ToGuidParamValue());
+                        statement.TryBind(paramName, artistId.ToGuidBlob());
                     }
                     index++;
                 }
@@ -3900,7 +3900,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("(select CleanName from TypedBaseItems where guid=" + paramName + ") in (select CleanValue from itemvalues where ItemId=Guid and Type=2)");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, genreId.ToGuidParamValue());
+                        statement.TryBind(paramName, genreId.ToGuidBlob());
                     }
                     index++;
                 }
@@ -3953,7 +3953,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("(select CleanName from TypedBaseItems where guid=" + paramName + ") in (select CleanValue from itemvalues where ItemId=Guid and Type=3)");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, studioId.ToGuidParamValue());
+                        statement.TryBind(paramName, studioId.ToGuidBlob());
                     }
                     index++;
                 }
@@ -4521,22 +4521,22 @@ namespace Emby.Server.Implementations.Data
                     connection.RunInTransaction(db =>
                     {
                         // Delete people
-                        ExecuteWithSingleParam(db, "delete from People where ItemId=@Id", id.ToGuidParamValue());
+                        ExecuteWithSingleParam(db, "delete from People where ItemId=@Id", id.ToGuidBlob());
 
                         // Delete chapters
-                        ExecuteWithSingleParam(db, "delete from " + ChaptersTableName + " where ItemId=@Id", id.ToGuidParamValue());
+                        ExecuteWithSingleParam(db, "delete from " + ChaptersTableName + " where ItemId=@Id", id.ToGuidBlob());
 
                         // Delete media streams
-                        ExecuteWithSingleParam(db, "delete from mediastreams where ItemId=@Id", id.ToGuidParamValue());
+                        ExecuteWithSingleParam(db, "delete from mediastreams where ItemId=@Id", id.ToGuidBlob());
 
                         // Delete ancestors
-                        ExecuteWithSingleParam(db, "delete from AncestorIds where ItemId=@Id", id.ToGuidParamValue());
+                        ExecuteWithSingleParam(db, "delete from AncestorIds where ItemId=@Id", id.ToGuidBlob());
 
                         // Delete item values
-                        ExecuteWithSingleParam(db, "delete from ItemValues where ItemId=@Id", id.ToGuidParamValue());
+                        ExecuteWithSingleParam(db, "delete from ItemValues where ItemId=@Id", id.ToGuidBlob());
 
                         // Delete the item
-                        ExecuteWithSingleParam(db, "delete from TypedBaseItems where guid=@Id", id.ToGuidParamValue());
+                        ExecuteWithSingleParam(db, "delete from TypedBaseItems where guid=@Id", id.ToGuidBlob());
                     }, TransactionMode);
                 }
             }
@@ -4643,7 +4643,7 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add("ItemId=@ItemId");
                 if (statement != null)
                 {
-                    statement.TryBind("@ItemId", query.ItemId.ToGuidParamValue());
+                    statement.TryBind("@ItemId", query.ItemId.ToGuidBlob());
                 }
             }
             if (query.AppearsInItemId != Guid.Empty)
@@ -4651,7 +4651,7 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add("Name in (Select Name from People where ItemId=@AppearsInItemId)");
                 if (statement != null)
                 {
-                    statement.TryBind("@AppearsInItemId", query.AppearsInItemId.ToGuidParamValue());
+                    statement.TryBind("@AppearsInItemId", query.AppearsInItemId.ToGuidBlob());
                 }
             }
             var queryPersonTypes = query.PersonTypes.Where(IsValidPersonType).ToList();
@@ -4730,14 +4730,14 @@ namespace Emby.Server.Implementations.Data
 
             // First delete 
             deleteAncestorsStatement.Reset();
-            deleteAncestorsStatement.TryBind("@ItemId", itemId.ToGuidParamValue());
+            deleteAncestorsStatement.TryBind("@ItemId", itemId.ToGuidBlob());
             deleteAncestorsStatement.MoveNext();
 
             foreach (var ancestorId in ancestorIds)
             {
                 updateAncestorsStatement.Reset();
-                updateAncestorsStatement.TryBind("@ItemId", itemId.ToGuidParamValue());
-                updateAncestorsStatement.TryBind("@AncestorId", ancestorId.ToGuidParamValue());
+                updateAncestorsStatement.TryBind("@ItemId", itemId.ToGuidBlob());
+                updateAncestorsStatement.TryBind("@AncestorId", ancestorId.ToGuidBlob());
                 updateAncestorsStatement.TryBind("@AncestorIdText", ancestorId.ToString("N"));
                 updateAncestorsStatement.MoveNext();
             }
@@ -5198,7 +5198,7 @@ namespace Emby.Server.Implementations.Data
             CheckDisposed();
 
             // First delete 
-            db.Execute("delete from ItemValues where ItemId=@Id", itemId.ToGuidParamValue());
+            db.Execute("delete from ItemValues where ItemId=@Id", itemId.ToGuidBlob());
 
             using (var statement = PrepareStatement(db, "insert into ItemValues (ItemId, Type, Value, CleanValue) values (@ItemId, @Type, @Value, @CleanValue)"))
             {
@@ -5214,7 +5214,7 @@ namespace Emby.Server.Implementations.Data
 
                     statement.Reset();
 
-                    statement.TryBind("@ItemId", itemId.ToGuidParamValue());
+                    statement.TryBind("@ItemId", itemId.ToGuidBlob());
                     statement.TryBind("@Type", pair.Item1);
                     statement.TryBind("@Value", itemValue);
 
@@ -5252,7 +5252,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     // First delete 
                     // "delete from People where ItemId=?"
-                    connection.Execute("delete from People where ItemId=?", itemId.ToGuidParamValue());
+                    connection.Execute("delete from People where ItemId=?", itemId.ToGuidBlob());
 
                     var listIndex = 0;
 
@@ -5266,7 +5266,7 @@ namespace Emby.Server.Implementations.Data
                                 statement.Reset();
                             }
 
-                            statement.TryBind("@ItemId", itemId.ToGuidParamValue());
+                            statement.TryBind("@ItemId", itemId.ToGuidBlob());
                             statement.TryBind("@Name", person.Name);
                             statement.TryBind("@Role", person.Role);
                             statement.TryBind("@PersonType", person.Type);
@@ -5339,7 +5339,7 @@ namespace Emby.Server.Implementations.Data
 
                     using (var statement = PrepareStatementSafe(connection, cmdText))
                     {
-                        statement.TryBind("@ItemId", query.ItemId.ToGuidParamValue());
+                        statement.TryBind("@ItemId", query.ItemId.ToGuidBlob());
 
                         if (query.Type.HasValue)
                         {
@@ -5383,7 +5383,7 @@ namespace Emby.Server.Implementations.Data
                 using (var connection = CreateConnection())
                 {
                     // First delete chapters
-                    connection.Execute("delete from mediastreams where ItemId=@ItemId", id.ToGuidParamValue());
+                    connection.Execute("delete from mediastreams where ItemId=@ItemId", id.ToGuidBlob());
 
                     using (var statement = PrepareStatement(connection, string.Format("replace into mediastreams ({0}) values ({1})",
                                 string.Join(",", _mediaStreamSaveColumns),
@@ -5393,7 +5393,7 @@ namespace Emby.Server.Implementations.Data
                         {
                             var paramList = new List<object>();
 
-                            paramList.Add(id.ToGuidParamValue());
+                            paramList.Add(id.ToGuidBlob());
                             paramList.Add(stream.Index);
                             paramList.Add(stream.Type.ToString());
                             paramList.Add(stream.Codec);
