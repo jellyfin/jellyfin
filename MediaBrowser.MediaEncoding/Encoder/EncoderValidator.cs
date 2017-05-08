@@ -50,10 +50,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return false;
             }
 
-            if (logOutput)
-            {
-                _logger.Info("ffmpeg info: {0}", output);
-            }
+            _logger.Info("ffmpeg info: {0}", output);
 
             if (output.IndexOf("Libav developers", StringComparison.OrdinalIgnoreCase) != -1)
             {

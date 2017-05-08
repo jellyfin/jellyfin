@@ -294,6 +294,15 @@ namespace Emby.Server.Core.IO
                 return;
             }
 
+            if (_environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
+            {
+                if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) || path.StartsWith("smb://", StringComparison.OrdinalIgnoreCase))
+                {
+                    // not supported
+                    return;
+                }
+            }
+
             // Already being watched
             if (_fileSystemWatchers.ContainsKey(path))
             {

@@ -93,7 +93,7 @@ namespace Emby.Server.Implementations.Data
                     {
                         using (var statement = db.PrepareStatement("replace into users (guid, data) values (@guid, @data)"))
                         {
-                            statement.TryBind("@guid", user.Id.ToGuidParamValue());
+                            statement.TryBind("@guid", user.Id.ToGuidBlob());
                             statement.TryBind("@data", serialized);
                             statement.MoveNext();
                         }
@@ -116,7 +116,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     foreach (var row in connection.Query("select guid,data from users"))
                     {
-                        var id = row[0].ReadGuid();
+                        var id = row[0].ReadGuidFromBlob();
 
                         using (var stream = _memoryStreamProvider.CreateNew(row[1].ToBlob()))
                         {
@@ -156,7 +156,7 @@ namespace Emby.Server.Implementations.Data
                     {
                         using (var statement = db.PrepareStatement("delete from users where guid=@id"))
                         {
-                            statement.TryBind("@id", user.Id.ToGuidParamValue());
+                            statement.TryBind("@id", user.Id.ToGuidBlob());
                             statement.MoveNext();
                         }
                     }, TransactionMode);

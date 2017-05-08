@@ -26,17 +26,17 @@ namespace Emby.Server.Implementations.Data
             });
         }
 
-        public static byte[] ToGuidParamValue(this string str)
+        public static byte[] ToGuidBlob(this string str)
         {
-            return ToGuidParamValue(new Guid(str));
+            return ToGuidBlob(new Guid(str));
         }
 
-        public static byte[] ToGuidParamValue(this Guid guid)
+        public static byte[] ToGuidBlob(this Guid guid)
         {
             return guid.ToByteArray();
         }
 
-        public static Guid ReadGuid(this IResultSetValue result)
+        public static Guid ReadGuidFromBlob(this IResultSetValue result)
         {
             return new Guid(result.ToBlob());
         }
@@ -172,7 +172,7 @@ namespace Emby.Server.Implementations.Data
 
         public static Guid GetGuid(this IReadOnlyList<IResultSetValue> result, int index)
         {
-            return result[index].ReadGuid();
+            return result[index].ReadGuidFromBlob();
         }
 
         private static void CheckName(string name)
@@ -262,7 +262,7 @@ namespace Emby.Server.Implementations.Data
             IBindParameter bindParam;
             if (statement.BindParameters.TryGetValue(name, out bindParam))
             {
-                bindParam.Bind(value.ToGuidParamValue());
+                bindParam.Bind(value.ToGuidBlob());
             }
             else
             {

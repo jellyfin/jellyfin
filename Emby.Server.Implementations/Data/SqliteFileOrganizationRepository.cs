@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.Data
 
                         using (var statement = db.PrepareStatement(commandText))
                         {
-                            statement.TryBind("@ResultId", result.Id.ToGuidParamValue());
+                            statement.TryBind("@ResultId", result.Id.ToGuidBlob());
                             statement.TryBind("@OriginalPath", result.OriginalPath);
 
                             statement.TryBind("@TargetPath", result.TargetPath);
@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.Data
                     {
                         using (var statement = db.PrepareStatement("delete from FileOrganizerResults where ResultId = @ResultId"))
                         {
-                            statement.TryBind("@ResultId", id.ToGuidParamValue());
+                            statement.TryBind("@ResultId", id.ToGuidBlob());
                             statement.MoveNext();
                         }
                     }, TransactionMode);
@@ -188,7 +188,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     using (var statement = connection.PrepareStatement("select ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths from FileOrganizerResults where ResultId=@ResultId"))
                     {
-                        statement.TryBind("@ResultId", id.ToGuidParamValue());
+                        statement.TryBind("@ResultId", id.ToGuidBlob());
 
                         foreach (var row in statement.ExecuteQuery())
                         {
@@ -207,7 +207,7 @@ namespace Emby.Server.Implementations.Data
 
             var result = new FileOrganizationResult
             {
-                Id = reader[0].ReadGuid().ToString("N")
+                Id = reader[0].ReadGuidFromBlob().ToString("N")
             };
 
             index++;

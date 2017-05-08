@@ -213,7 +213,7 @@ namespace Emby.Server.Implementations.Data
         {
             using (var statement = db.PrepareStatement("replace into userdata (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
             {
-                statement.TryBind("@userId", userId.ToGuidParamValue());
+                statement.TryBind("@userId", userId.ToGuidBlob());
                 statement.TryBind("@key", key);
 
                 if (userData.Rating.HasValue)
@@ -311,7 +311,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where key =@Key and userId=@UserId"))
                     {
-                        statement.TryBind("@UserId", userId.ToGuidParamValue());
+                        statement.TryBind("@UserId", userId.ToGuidBlob());
                         statement.TryBind("@Key", key);
 
                         foreach (var row in statement.ExecuteQuery())
@@ -364,7 +364,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where userId=@UserId"))
                     {
-                        statement.TryBind("@UserId", userId.ToGuidParamValue());
+                        statement.TryBind("@UserId", userId.ToGuidBlob());
 
                         foreach (var row in statement.ExecuteQuery())
                         {
@@ -386,7 +386,7 @@ namespace Emby.Server.Implementations.Data
             var userData = new UserItemData();
 
             userData.Key = reader[0].ToString();
-            userData.UserId = reader[1].ReadGuid();
+            userData.UserId = reader[1].ReadGuidFromBlob();
 
             if (reader[2].SQLiteType != SQLiteType.Null)
             {
