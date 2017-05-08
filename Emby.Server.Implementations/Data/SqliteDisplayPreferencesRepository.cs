@@ -106,8 +106,8 @@ namespace Emby.Server.Implementations.Data
 
             using (var statement = connection.PrepareStatement("replace into userdisplaypreferences (id, userid, client, data) values (@id, @userId, @client, @data)"))
             {
-                statement.TryBind("@id", displayPreferences.Id.ToGuidParamValue());
-                statement.TryBind("@userId", userId.ToGuidParamValue());
+                statement.TryBind("@id", displayPreferences.Id.ToGuidBlob());
+                statement.TryBind("@userId", userId.ToGuidBlob());
                 statement.TryBind("@client", client);
                 statement.TryBind("@data", serialized);
 
@@ -170,8 +170,8 @@ namespace Emby.Server.Implementations.Data
                 {
                     using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where id = @id and userId=@userId and client=@client"))
                     {
-                        statement.TryBind("@id", guidId.ToGuidParamValue());
-                        statement.TryBind("@userId", userId.ToGuidParamValue());
+                        statement.TryBind("@id", guidId.ToGuidBlob());
+                        statement.TryBind("@userId", userId.ToGuidBlob());
                         statement.TryBind("@client", client);
 
                         foreach (var row in statement.ExecuteQuery())
@@ -204,7 +204,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where userId=@userId"))
                     {
-                        statement.TryBind("@userId", userId.ToGuidParamValue());
+                        statement.TryBind("@userId", userId.ToGuidBlob());
 
                         foreach (var row in statement.ExecuteQuery())
                         {

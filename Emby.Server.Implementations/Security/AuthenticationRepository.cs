@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.Security
                     {
                         using (var statement = db.PrepareStatement("replace into AccessTokens (Id, AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, IsActive, DateCreated, DateRevoked) values (@Id, @AccessToken, @DeviceId, @AppName, @AppVersion, @DeviceName, @UserId, @IsActive, @DateCreated, @DateRevoked)"))
                         {
-                            statement.TryBind("@Id", info.Id.ToGuidParamValue());
+                            statement.TryBind("@Id", info.Id.ToGuidBlob());
                             statement.TryBind("@AccessToken", info.AccessToken);
 
                             statement.TryBind("@DeviceId", info.DeviceId);
@@ -259,7 +259,7 @@ namespace Emby.Server.Implementations.Security
 
                     using (var statement = connection.PrepareStatement(commandText))
                     {
-                        statement.BindParameters["@Id"].Bind(id.ToGuidParamValue());
+                        statement.BindParameters["@Id"].Bind(id.ToGuidBlob());
 
                         foreach (var row in statement.ExecuteQuery())
                         {
@@ -275,7 +275,7 @@ namespace Emby.Server.Implementations.Security
         {
             var info = new AuthenticationInfo
             {
-                Id = reader[0].ReadGuid().ToString("N"),
+                Id = reader[0].ReadGuidFromBlob().ToString("N"),
                 AccessToken = reader[1].ToString()
             };
 
