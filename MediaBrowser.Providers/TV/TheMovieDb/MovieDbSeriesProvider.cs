@@ -443,7 +443,7 @@ namespace MediaBrowser.Providers.TV
 
         private async Task<RemoteSearchResult> FindByExternalId(string id, string externalSource, CancellationToken cancellationToken)
         {
-            var url = string.Format("https://api.themoviedb.org/3/tv/find/{0}?api_key={1}&external_source={2}",
+            var url = string.Format("https://api.themoviedb.org/3/find/{0}?api_key={1}&external_source={2}",
                 id,
                 MovieDbProvider.ApiKey,
                 externalSource);
