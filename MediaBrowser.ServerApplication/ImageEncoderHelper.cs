@@ -2,6 +2,7 @@
 using Emby.Drawing;
 using Emby.Drawing.Net;
 using Emby.Drawing.ImageMagick;
+using Emby.Drawing.Skia;
 using Emby.Server.Core;
 using Emby.Server.Implementations;
 using MediaBrowser.Common.Configuration;
@@ -23,6 +24,15 @@ namespace MediaBrowser.Server.Startup.Common
         {
             if (!startupOptions.ContainsOption("-enablegdi"))
             {
+                try
+                {
+                    return new SkiaEncoder(logManager.GetLogger("ImageMagick"), appPaths, httpClient, fileSystem);
+                }
+                catch
+                {
+                    logger.Error("Error loading ImageMagick. Will revert to GDI.");
+                }
+
                 try
                 {
                     return new ImageMagickEncoder(logManager.GetLogger("ImageMagick"), appPaths, httpClient, fileSystem);
