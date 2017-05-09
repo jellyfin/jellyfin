@@ -54,8 +54,6 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Emby.Server.Core", "Emby.Se
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.Drawing", "Emby.Drawing\Emby.Drawing.csproj", "{08FFF49B-F175-4807-A2B5-73B0EBD9F716}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack", "ServiceStack\ServiceStack.csproj", "{680A1709-25EB-4D52-A87F-EE03FFD94BAA}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketHttpListener.Portable", "SocketHttpListener.Portable\SocketHttpListener.Portable.csproj", "{4F26D5D8-A7B0-42B3-BA42-7CB7D245934E}"
 EndProject
 Global
