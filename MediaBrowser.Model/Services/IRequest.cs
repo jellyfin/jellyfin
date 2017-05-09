@@ -155,6 +155,8 @@ namespace MediaBrowser.Model.Services
         //Add Metadata to Response
         Dictionary<string, object> Items { get; }
 
+        QueryParamCollection Headers { get; }
+
         Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken);
     }
 }
