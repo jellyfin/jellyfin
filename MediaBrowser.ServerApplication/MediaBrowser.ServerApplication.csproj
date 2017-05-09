@@ -189,6 +189,12 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\packages\SkiaSharp.1.57.1\runtimes\win7-x64\native\libSkiaSharp.dll">
+      <Link>x64\libSkiaSharp.dll</Link>
+    </Content>
+    <Content Include="..\packages\SkiaSharp.1.57.1\runtimes\win7-x86\native\libSkiaSharp.dll">
+      <Link>x86\libSkiaSharp.dll</Link>
+    </Content>
     <Content Include="..\Tools\Installation\MediaBrowser.InstallUtil.dll">
       <Link>MediaBrowser.InstallUtil.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -1178,13 +1184,6 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-  <Import Project="..\packages\SkiaSharp.1.57.1\build\net45\SkiaSharp.targets" Condition="Exists('..\packages\SkiaSharp.1.57.1\build\net45\SkiaSharp.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\SkiaSharp.1.57.1\build\net45\SkiaSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.1.57.1\build\net45\SkiaSharp.targets'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
