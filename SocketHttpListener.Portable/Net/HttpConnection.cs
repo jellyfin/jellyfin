@@ -6,6 +6,7 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
 using SocketHttpListener.Primitives;
 
@@ -41,8 +42,9 @@ namespace SocketHttpListener.Net
         private readonly ITextEncoding _textEncoding;
         private readonly IStreamFactory _streamFactory;
         private readonly IFileSystem _fileSystem;
+        private readonly IEnvironmentInfo _environment;
 
-        private HttpConnection(ILogger logger, IAcceptSocket sock, EndPointListener epl, bool secure, ICertificate cert, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem)
+        private HttpConnection(ILogger logger, IAcceptSocket sock, EndPointListener epl, bool secure, ICertificate cert, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IEnvironmentInfo environment)
         {
             _logger = logger;
             this.sock = sock;
@@ -53,6 +55,7 @@ namespace SocketHttpListener.Net
             _memoryStreamFactory = memoryStreamFactory;
             _textEncoding = textEncoding;
             _fileSystem = fileSystem;
+            _environment = environment;
             _streamFactory = streamFactory;
         }
 
@@ -84,9 +87,9 @@ namespace SocketHttpListener.Net
             Init();
         }
 
-        public static async Task<HttpConnection> Create(ILogger logger, IAcceptSocket sock, EndPointListener epl, bool secure, ICertificate cert, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem)
+        public static async Task<HttpConnection> Create(ILogger logger, IAcceptSocket sock, EndPointListener epl, bool secure, ICertificate cert, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IEnvironmentInfo environment)
         {
-            var connection = new HttpConnection(logger, sock, epl, secure, cert, cryptoProvider, streamFactory, memoryStreamFactory, textEncoding, fileSystem);
+            var connection = new HttpConnection(logger, sock, epl, secure, cert, cryptoProvider, streamFactory, memoryStreamFactory, textEncoding, fileSystem, environment);
 
             await connection.InitStream().ConfigureAwait(false);
 
@@ -217,7 +220,7 @@ namespace SocketHttpListener.Net
                 {
                     var supportsDirectSocketAccess = !context.Response.SendChunked && !isExpect100Continue && !secure;
 
-                    o_stream = new ResponseStream(stream, context.Response, _memoryStreamFactory, _textEncoding, _fileSystem, sock, supportsDirectSocketAccess, _logger);
+                    o_stream = new ResponseStream(stream, context.Response, _memoryStreamFactory, _textEncoding, _fileSystem, sock, supportsDirectSocketAccess, _logger, _environment);
                 }
                 else
                 {

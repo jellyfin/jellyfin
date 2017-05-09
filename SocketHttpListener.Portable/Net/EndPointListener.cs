@@ -8,6 +8,7 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
 using SocketHttpListener.Primitives;
 
@@ -33,8 +34,9 @@ namespace SocketHttpListener.Net
         private readonly ITextEncoding _textEncoding;
         private readonly IMemoryStreamFactory _memoryStreamFactory;
         private readonly IFileSystem _fileSystem;
+        private readonly IEnvironmentInfo _environment;
 
-        public EndPointListener(HttpListener listener, IpAddressInfo addr, int port, bool secure, ICertificate cert, ILogger logger, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem)
+        public EndPointListener(HttpListener listener, IpAddressInfo addr, int port, bool secure, ICertificate cert, ILogger logger, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IEnvironmentInfo environment)
         {
             this.listener = listener;
             _logger = logger;
@@ -44,6 +46,7 @@ namespace SocketHttpListener.Net
             _memoryStreamFactory = memoryStreamFactory;
             _textEncoding = textEncoding;
             _fileSystem = fileSystem;
+            _environment = environment;
 
             this.secure = secure;
             this.cert = cert;
@@ -109,7 +112,7 @@ namespace SocketHttpListener.Net
                     return;
                 }
 
-                HttpConnection conn = await HttpConnection.Create(_logger, accepted, listener, listener.secure, listener.cert, _cryptoProvider, _streamFactory, _memoryStreamFactory, _textEncoding, _fileSystem).ConfigureAwait(false);
+                HttpConnection conn = await HttpConnection.Create(_logger, accepted, listener, listener.secure, listener.cert, _cryptoProvider, _streamFactory, _memoryStreamFactory, _textEncoding, _fileSystem, _environment).ConfigureAwait(false);
 
                 //_logger.Debug("Adding unregistered connection to {0}. Id: {1}", accepted.RemoteEndPoint, connectionId);
                 lock (listener.unregistered)

@@ -1132,7 +1132,8 @@ namespace Emby.Server.Core
                 // Custom cert
                 return new CertificateInfo
                 {
-                    Path = ServerConfigurationManager.Configuration.CertificatePath
+                    Path = ServerConfigurationManager.Configuration.CertificatePath,
+                    Password = ServerConfigurationManager.Configuration.CertificatePassword
                 };
             }
 

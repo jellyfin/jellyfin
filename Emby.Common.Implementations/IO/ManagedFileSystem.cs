@@ -392,10 +392,27 @@ namespace Emby.Common.Implementations.IO
 
             if (_supportsAsyncFileStreams && isAsync)
             {
-                return new FileStream(path, GetFileMode(mode), GetFileAccess(access), GetFileShare(share), 262144, true);
+                return GetFileStream(path, mode, access, share, FileOpenOptions.Asynchronous);
             }
 
-            return new FileStream(path, GetFileMode(mode), GetFileAccess(access), GetFileShare(share), 262144);
+            return GetFileStream(path, mode, access, share, FileOpenOptions.None);
+        }
+
+        public Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, FileOpenOptions fileOpenOptions)
+        {
+            if (_sharpCifsFileSystem.IsEnabledForPath(path))
+            {
+                return _sharpCifsFileSystem.GetFileStream(path, mode, access, share);
+            }
+
+            var defaultBufferSize = 4096;
+            return new FileStream(path, GetFileMode(mode), GetFileAccess(access), GetFileShare(share), defaultBufferSize, GetFileOptions(fileOpenOptions));
+        }
+
+        private FileOptions GetFileOptions(FileOpenOptions mode)
+        {
+            var val = (int)mode;
+            return (FileOptions)val;
         }
 
         private FileMode GetFileMode(FileOpenMode mode)
