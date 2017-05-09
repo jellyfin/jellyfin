@@ -108,6 +108,8 @@ namespace MediaBrowser.Model.IO
         /// <returns>FileStream.</returns>
         Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, bool isAsync = false);
 
+        Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, FileOpenOptions fileOpenOptions);
+
         /// <summary>
         /// Opens the read.
         /// </summary>
@@ -402,4 +404,46 @@ namespace MediaBrowser.Model.IO
         ReadWrite = 3
     }
 
+    //
+    // Summary:
+    //     Represents advanced options for creating a System.IO.FileStream object.
+    [Flags]
+    public enum FileOpenOptions
+    {
+        //
+        // Summary:
+        //     Indicates that the system should write through any intermediate cache and go
+        //     directly to disk.
+        WriteThrough = int.MinValue,
+        //
+        // Summary:
+        //     Indicates that no additional options should be used when creating a System.IO.FileStream
+        //     object.
+        None = 0,
+        //
+        // Summary:
+        //     Indicates that a file is encrypted and can be decrypted only by using the same
+        //     user account used for encryption.
+        Encrypted = 16384,
+        //
+        // Summary:
+        //     Indicates that a file is automatically deleted when it is no longer in use.
+        DeleteOnClose = 67108864,
+        //
+        // Summary:
+        //     Indicates that the file is to be accessed sequentially from beginning to end.
+        //     The system can use this as a hint to optimize file caching. If an application
+        //     moves the file pointer for random access, optimum caching may not occur; however,
+        //     correct operation is still guaranteed.
+        SequentialScan = 134217728,
+        //
+        // Summary:
+        //     Indicates that the file is accessed randomly. The system can use this as a hint
+        //     to optimize file caching.
+        RandomAccess = 268435456,
+        //
+        // Summary:
+        //     Indicates that a file can be used for asynchronous reading and writing.
+        Asynchronous = 1073741824
+    }
 }

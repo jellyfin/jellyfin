@@ -671,12 +671,15 @@ namespace MediaBrowser.Api.Playback
                 request.AudioCodec = EncodingHelper.InferAudioCodec(url);
             }
 
+            var enableDlnaHeaders = !string.IsNullOrWhiteSpace(request.Params) /*||
+                                    string.Equals(Request.Headers.Get("GetContentFeatures.DLNA.ORG"), "1", StringComparison.OrdinalIgnoreCase)*/;
+
             var state = new StreamState(MediaSourceManager, Logger, TranscodingJobType)
             {
                 Request = request,
                 RequestedUrl = url,
                 UserAgent = Request.UserAgent,
-                EnableDlnaHeaders = !string.IsNullOrWhiteSpace(request.Params)
+                EnableDlnaHeaders = enableDlnaHeaders
             };
 
             var auth = AuthorizationContext.GetAuthorizationInfo(Request);

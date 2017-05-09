@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
 using SocketHttpListener.Primitives;
 
@@ -28,8 +29,9 @@ namespace SocketHttpListener.Net
         private readonly IAcceptSocket _socket;
         private readonly bool _supportsDirectSocketAccess;
         private readonly ILogger _logger;
+        private readonly IEnvironmentInfo _environment;
 
-        internal ResponseStream(Stream stream, HttpListenerResponse response, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IAcceptSocket socket, bool supportsDirectSocketAccess, ILogger logger)
+        internal ResponseStream(Stream stream, HttpListenerResponse response, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IAcceptSocket socket, bool supportsDirectSocketAccess, ILogger logger, IEnvironmentInfo environment)
         {
             this.response = response;
             _memoryStreamFactory = memoryStreamFactory;
@@ -38,6 +40,7 @@ namespace SocketHttpListener.Net
             _socket = socket;
             _supportsDirectSocketAccess = supportsDirectSocketAccess;
             _logger = logger;
+            _environment = environment;
             this.stream = stream;
         }
 
@@ -344,7 +347,20 @@ namespace SocketHttpListener.Net
 
         private async Task TransmitFileManaged(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
-            using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, fileShareMode, true))
+            var allowAsync = _environment.OperatingSystem != OperatingSystem.Windows;
+
+            var fileOpenOptions = offset > 0
+                ? FileOpenOptions.RandomAccess
+                : FileOpenOptions.SequentialScan;
+
+            if (allowAsync)
+            {
+                fileOpenOptions |= FileOpenOptions.Asynchronous;
+            }
+
+            // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
+
+            using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, fileShareMode, fileOpenOptions))
             {
                 if (offset > 0)
                 {
@@ -355,11 +371,53 @@ namespace SocketHttpListener.Net
 
                 if (count > 0)
                 {
-                    await CopyToInternalAsync(fs, targetStream, count, cancellationToken).ConfigureAwait(false);
+                    if (allowAsync)
+                    {
+                        await CopyToInternalAsync(fs, targetStream, count, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await CopyToInternalAsyncWithSyncRead(fs, targetStream, count, cancellationToken).ConfigureAwait(false);
+                    }
                 }
                 else
                 {
-                    await fs.CopyToAsync(targetStream, 81920, cancellationToken).ConfigureAwait(false);
+                    if (allowAsync)
+                    {
+                        await fs.CopyToAsync(targetStream, 81920, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        fs.CopyTo(targetStream, 81920);
+                    }
+                }
+            }
+        }
+
+        private static async Task CopyToInternalAsyncWithSyncRead(Stream source, Stream destination, long copyLength, CancellationToken cancellationToken)
+        {
+            var array = new byte[81920];
+            int bytesRead;
+
+            while ((bytesRead = source.Read(array, 0, array.Length)) != 0)
+            {
+                if (bytesRead == 0)
+                {
+                    break;
+                }
+
+                var bytesToWrite = Math.Min(bytesRead, copyLength);
+
+                if (bytesToWrite > 0)
+                {
+                    await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToWrite), cancellationToken).ConfigureAwait(false);
+                }
+
+                copyLength -= bytesToWrite;
+
+                if (copyLength <= 0)
+                {
+                    break;
                 }
             }
         }
@@ -368,7 +426,7 @@ namespace SocketHttpListener.Net
         {
             var array = new byte[81920];
             int bytesRead;
-            
+
             while ((bytesRead = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
             {
                 if (bytesRead == 0)

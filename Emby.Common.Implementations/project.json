@@ -45,7 +45,7 @@
         "System.Net.Requests": "4.3.0",
         "System.Xml.ReaderWriter": "4.3.0",
         "System.Xml.XmlSerializer": "4.3.0",
-        "System.Net.Http": "4.3.0",
+        "System.Net.Http": "4.3.2",
         "System.Net.Primitives": "4.3.0",
         "System.Net.Sockets": "4.3.0",
         "System.Net.NetworkInformation": "4.3.0",
