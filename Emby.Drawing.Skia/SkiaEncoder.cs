@@ -95,6 +95,8 @@ namespace Emby.Drawing.Skia
             {
                 // @todo
             }
+
+            _fileSystem.CopyFile(inputPath, outputPath, true);
         }
 
         public ImageSize GetImageSize(string path)
@@ -118,6 +120,15 @@ namespace Emby.Drawing.Skia
 
         public void EncodeImage(string inputPath, string outputPath, bool autoOrient, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
+            if (string.IsNullOrWhiteSpace(inputPath))
+            {
+                throw new ArgumentNullException("inputPath");
+            }
+            if (string.IsNullOrWhiteSpace(inputPath))
+            {
+                throw new ArgumentNullException("outputPath");
+            }
+
             using (var bitmap = SKBitmap.Decode(inputPath))
             {
                 using (var resizedBitmap = new SKBitmap(width, height, bitmap.ColorType, bitmap.AlphaType))

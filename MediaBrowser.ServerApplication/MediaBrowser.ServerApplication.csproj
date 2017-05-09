@@ -1112,6 +1112,10 @@
       <Project>{c97a239e-a96c-4d64-a844-ccf8cc30aecb}</Project>
       <Name>Emby.Drawing.Net</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Emby.Drawing.Skia\Emby.Drawing.Skia.csproj">
+      <Project>{2312da6d-ff86-4597-9777-bceec32d96dd}</Project>
+      <Name>Emby.Drawing.Skia</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj">
       <Project>{08fff49b-f175-4807-a2b5-73b0ebd9f716}</Project>
       <Name>Emby.Drawing</Name>
