@@ -243,10 +243,7 @@ namespace Emby.Drawing.Skia
                 using (var resizedBitmap = new SKBitmap(width, height, bitmap.ColorType, bitmap.AlphaType))
                 {
                     // scale image
-                    var resizeMethod = options.Image.Type == MediaBrowser.Model.Entities.ImageType.Logo ||
-                                       options.Image.Type == MediaBrowser.Model.Entities.ImageType.Art
-                        ? SKBitmapResizeMethod.Lanczos3
-                        : SKBitmapResizeMethod.Lanczos3;
+                    var resizeMethod = SKBitmapResizeMethod.Lanczos3;
 
                     bitmap.Resize(resizedBitmap, resizeMethod);
 
