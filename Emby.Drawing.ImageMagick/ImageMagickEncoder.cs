@@ -105,17 +105,6 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        public void CropWhiteSpace(string inputPath, string outputPath)
-        {
-            CheckDisposed();
-
-            using (var wand = new MagickWand(inputPath))
-            {
-                wand.CurrentImage.TrimImage(10);
-                wand.SaveImage(outputPath);
-            }
-        }
-
         public ImageSize GetImageSize(string path)
         {
             CheckDisposed();
@@ -150,6 +139,11 @@ namespace Emby.Drawing.ImageMagick
             {
                 using (var originalImage = new MagickWand(inputPath))
                 {
+                    if (options.CropWhiteSpace)
+                    {
+                        originalImage.CurrentImage.TrimImage(10);
+                    }
+
                     ScaleImage(originalImage, width, height, options.Blur ?? 0);
 
                     if (autoOrient)

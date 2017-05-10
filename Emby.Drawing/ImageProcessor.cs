@@ -136,14 +136,6 @@ namespace Emby.Drawing
             }
         }
 
-        private string CroppedWhitespaceImageCachePath
-        {
-            get
-            {
-                return Path.Combine(_appPaths.ImageCachePath, "cropped-images");
-            }
-        }
-
         public void AddParts(IEnumerable<IImageEnhancer> enhancers)
         {
             ImageEnhancers = enhancers.ToArray();
@@ -184,14 +176,6 @@ namespace Emby.Drawing
             if (!_imageEncoder.SupportsImageEncoding)
             {
                 return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
-            }
-
-            if (options.CropWhiteSpace && _imageEncoder.SupportsImageEncoding)
-            {
-                var tuple = await GetWhitespaceCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
-
-                originalImagePath = tuple.Item1;
-                dateModified = tuple.Item2;
             }
 
             if (options.Enhancers.Count > 0)
@@ -398,46 +382,6 @@ namespace Emby.Drawing
             }
 
             return requestedFormat;
-        }
-
-        /// <summary>
-        /// Crops whitespace from an image, caches the result, and returns the cached path
-        /// </summary>
-        private async Task<Tuple<string, DateTime>> GetWhitespaceCroppedImage(string originalImagePath, DateTime dateModified)
-        {
-            var name = originalImagePath;
-            name += "datemodified=" + dateModified.Ticks;
-
-            var croppedImagePath = GetCachePath(CroppedWhitespaceImageCachePath, name, Path.GetExtension(originalImagePath));
-
-            // Check again in case of contention
-            if (_fileSystem.FileExists(croppedImagePath))
-            {
-                return GetResult(croppedImagePath);
-            }
-
-            try
-            {
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(croppedImagePath));
-                var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(croppedImagePath));
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(tmpPath));
-
-                _imageEncoder.CropWhiteSpace(originalImagePath, tmpPath);
-                CopyFile(tmpPath, croppedImagePath);
-                return GetResult(tmpPath);
-            }
-            catch (NotImplementedException)
-            {
-                // No need to spam the log with an error message
-                return new Tuple<string, DateTime>(originalImagePath, dateModified);
-            }
-            catch (Exception ex)
-            {
-                // We have to have a catch-all here because some of the .net image methods throw a plain old Exception
-                _logger.ErrorException("Error cropping image {0}", ex, originalImagePath);
-
-                return new Tuple<string, DateTime>(originalImagePath, dateModified);
-            }
         }
 
         private Tuple<string, DateTime> GetResult(string path)

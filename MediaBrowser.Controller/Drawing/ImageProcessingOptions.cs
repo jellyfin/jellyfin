@@ -86,6 +86,7 @@ namespace MediaBrowser.Controller.Drawing
                 PercentPlayed.Equals(0) &&
                 !UnplayedCount.HasValue &&
                 !Blur.HasValue &&
+                !CropWhiteSpace &&
                 string.IsNullOrEmpty(BackgroundColor) &&
                 string.IsNullOrEmpty(ForegroundLayer);
         }
