@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": " P\u00e5 N\u00e5",
-    "Downloading": "Downloading",
     "LabelPrevious": "Forrige",
     "LabelFinish": "Ferdig",
     "LabelNext": "Neste",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "Skjul sett innhold fra siste media.",
     "DeleteMedia": "Slett media",
     "HeaderSync": "Synk.",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "Ok",
     "ButtonCancel": "Avbryt",
     "ButtonExit": "Avslutt",
     "ButtonNew": "Ny",
+    "All": "All",
     "OptionDev": "Dev",
     "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Oppgave Triggers",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "Mangler Episoder",
     "OptionUnairedEpisode": "Kommende Episoder",
     "OptionEpisodeSortName": "Episode Etter Navn",
-    "OptionSeriesSortName": "Serienavn",
     "OptionTvdbRating": "Tvdb Rangering",
     "HeaderAddTitles": "Legg til Titler",
     "LabelEnableDlnaPlayTo": "Sl\u00e5 p\u00e5 DLNA Play To",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Aldri",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "Nye enheter"
+    "HeaderNewDevices": "Nye enheter",
+    "HeaderOnNow": " P\u00e5 N\u00e5",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

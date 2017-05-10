@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "On Now",
-    "Downloading": "Downloading",
     "LabelPrevious": "\uc774\uc804",
     "LabelFinish": "\ub05d\ub0b4\uae30",
     "LabelNext": "\ub2e4\uc74c",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "\ucd5c\uadfc \ubbf8\ub514\uc5b4\uc5d0\uc11c \uc2dc\uccad\ud55c \ucf58\ud150\uce20 \uc228\uae40",
     "DeleteMedia": "Delete media",
     "HeaderSync": "\ub3d9\uae30\ud654",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "OK",
     "ButtonCancel": "\ucde8\uc18c",
     "ButtonExit": "\uc885\ub8cc",
     "ButtonNew": "New",
+    "All": "All",
     "OptionDev": "\uac1c\ubc1c (\ubd88\uc548\uc815)",
     "OptionBeta": "\ubca0\ud0c0",
     "HeaderTaskTriggers": "\uc791\uc5c5 \ud2b8\ub9ac\uac70",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "\ub204\ub77d \uc5d0\ud53c\uc18c\ub4dc",
     "OptionUnairedEpisode": "\ubc29\uc1a1\ud558\uc9c0 \uc54a\uc740 \uc5d0\ud53c\uc18c\ub4dc",
     "OptionEpisodeSortName": "\uc5d0\ud53c\uc18c\ub4dc \uc815\ub82c \uc81c\ubaa9",
-    "OptionSeriesSortName": "\uc2dc\ub9ac\uc988 \uc81c\ubaa9",
     "OptionTvdbRating": "TVDb \ud3c9\uc810",
     "HeaderAddTitles": "\uc81c\ubaa9 \ucd94\uac00",
     "LabelEnableDlnaPlayTo": "\ub2e4\uc74c\uc5d0\uc11c DNLA \uc7ac\uc0dd \uc0ac\uc6a9:",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "New Devices"
+    "HeaderNewDevices": "New Devices",
+    "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

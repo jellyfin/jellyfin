@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "On Now",
-    "Downloading": "Downloading",
     "LabelPrevious": "Tr\u01b0\u1edbc",
     "LabelFinish": "K\u1ebft th\u00fac",
     "LabelNext": "Ti\u1ebfp theo",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "Hide watched content from latest media",
     "DeleteMedia": "Delete media",
     "HeaderSync": "Sync",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "Ok",
     "ButtonCancel": "Tho\u00e1t",
     "ButtonExit": "Exit",
     "ButtonNew": "M\u1edbi",
+    "All": "All",
     "OptionDev": "Kh\u00f4ng \u1ed5n \u0111\u1ecbnh",
     "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Task Triggers",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "Missing Episodes",
     "OptionUnairedEpisode": "Unaired Episodes",
     "OptionEpisodeSortName": "Episode Sort Name",
-    "OptionSeriesSortName": "Series Name",
     "OptionTvdbRating": "Tvdb Rating",
     "HeaderAddTitles": "Th\u00eam c\u00e1c ti\u00eau \u0111\u1ec1",
     "LabelEnableDlnaPlayTo": "Cho ph\u00e9p DLNA ch\u1ea1y \u0111\u1ec3",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "New Devices"
+    "HeaderNewDevices": "New Devices",
+    "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "On Now",
-    "Downloading": "Downloading",
     "LabelPrevious": "F\u00f6reg\u00e5ende",
     "LabelFinish": "Klart",
     "LabelNext": "N\u00e4sta",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "D\u00f6lj visat inneh\u00e5ll ifr\u00e5n senaste media",
     "DeleteMedia": "Ta bort media",
     "HeaderSync": "Synkronisera",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "OK",
     "ButtonCancel": "Avbryt",
     "ButtonExit": "Avsluta",
     "ButtonNew": "Nytillkommet",
+    "All": "All",
     "OptionDev": "Utvecklarversion",
     "OptionBeta": "Betaversion",
     "HeaderTaskTriggers": "Aktivitetsutl\u00f6sare",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "Saknade avsnitt",
     "OptionUnairedEpisode": "Ej s\u00e4nda avsnitt",
     "OptionEpisodeSortName": "Sorteringstitel f\u00f6r avsnitt",
-    "OptionSeriesSortName": "Seriens namn",
     "OptionTvdbRating": "TVDB-betyg",
     "HeaderAddTitles": "L\u00e4gg till titlar",
     "LabelEnableDlnaPlayTo": "Anv\u00e4nd DLNA spela-upp-p\u00e5",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "New Devices"
+    "HeaderNewDevices": "New Devices",
+    "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

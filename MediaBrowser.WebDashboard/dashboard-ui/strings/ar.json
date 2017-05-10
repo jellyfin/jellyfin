@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "On Now",
-    "Downloading": "Downloading",
     "LabelPrevious": "\u0627\u0644\u0633\u0627\u0628\u0642",
     "LabelFinish": "\u0627\u0646\u0647\u0627\u0621",
     "LabelNext": "\u0627\u0644\u062a\u0627\u0644\u064a",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "\u0625\u062e\u0641\u0627\u0621 \u0627\u0644\u0645\u062d\u062a\u0648\u0649 \u0627\u0644\u0645\u0634\u0627\u0647\u062f \u0645\u0646 \u0623\u062d\u062f\u062b \u0627\u0644\u0648\u0633\u0627\u0626\u0637",
     "DeleteMedia": "\u062d\u0630\u0641 \u0627\u0644\u0648\u0633\u0627\u0626\u0637",
     "HeaderSync": "\u062a\u0632\u0627\u0645\u0646",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "\u0645\u0648\u0627\u0641\u0642",
     "ButtonCancel": "\u0627\u0644\u063a\u0627\u0621",
     "ButtonExit": "\u062e\u0631\u0648\u062c",
     "ButtonNew": "\u062c\u062f\u064a\u062f",
+    "All": "All",
     "OptionDev": "\u0627\u0644\u0645\u0637\u0648\u0631",
     "OptionBeta": "\u0628\u064a\u062a\u0627",
     "HeaderTaskTriggers": "\u0632\u0646\u0627\u062f\u0627\u062a \u0627\u0644\u0645\u0647\u0627\u0645",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "\u062d\u0644\u0641\u0629 \u0645\u0641\u0642\u0648\u062f\u0629",
     "OptionUnairedEpisode": "\u062d\u0644\u0641\u0629 \u0644\u0645 \u062a\u0628\u062b\u0651",
     "OptionEpisodeSortName": "\u0627\u0644\u0627\u0633\u0645 \u0627\u0644\u062a\u0631\u062a\u064a\u0628\u064a \u0644\u0644\u062d\u0644\u0642\u0629",
-    "OptionSeriesSortName": "\u0627\u0633\u0645 \u0627\u0644\u0645\u0633\u0644\u0633\u0644",
     "OptionTvdbRating": "\u062a\u0642\u064a\u064a\u0645 Tvdb",
     "HeaderAddTitles": "\u0625\u0636\u0627\u0641\u0629 \u0639\u0646\u0627\u0648\u064a\u0646",
     "LabelEnableDlnaPlayTo": "\u062a\u0641\u0639\u064a\u0644 \u062e\u0627\u0635\u064a\u0629 DLNA Play To",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "New Devices"
+    "HeaderNewDevices": "New Devices",
+    "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

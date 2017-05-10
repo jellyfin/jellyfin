@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "Transmiti\u00e9ndo Ahora",
-    "Downloading": "Descargando",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Terminar",
     "LabelNext": "Siguiente",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "Ocultar contenido ya visto de Agregadas Recientemente",
     "DeleteMedia": "Eliminar medios",
     "HeaderSync": "Sinc",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancelar",
     "ButtonExit": "Salir",
     "ButtonNew": "Nuevo",
+    "All": "All",
     "OptionDev": "Desarrollo",
     "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Disparadores de Tarea",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "Episodios Faltantes",
     "OptionUnairedEpisode": "Episodios no Emitidos",
     "OptionEpisodeSortName": "Nombre para Ordenar el Episodio",
-    "OptionSeriesSortName": "Nombre de la Serie",
     "OptionTvdbRating": "Calificaci\u00f3n de Tvdb",
     "HeaderAddTitles": "Agregar T\u00edtulos",
     "LabelEnableDlnaPlayTo": "Habilitar Reproducir En mediante DLNA",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Actualizar autom\u00e1ticamente metadatos de internet:",
     "Never": "Nunca",
     "EveryNDays": "Cada {0} d\u00edas",
-    "HeaderNewDevices": "Nuevos Dispositivos"
+    "HeaderNewDevices": "Nuevos Dispositivos",
+    "HeaderOnNow": "Transmiti\u00e9ndo Ahora",
+    "Downloading": "Descargando",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

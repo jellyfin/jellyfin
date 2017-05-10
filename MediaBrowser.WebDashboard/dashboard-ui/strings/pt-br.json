@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "Em Exibi\u00e7\u00e3o",
-    "Downloading": "Transferindo",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Finalizar",
     "LabelNext": "Pr\u00f3ximo",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "Ocultar conte\u00fado j\u00e1 assistido das m\u00eddias recentes",
     "DeleteMedia": "Excluir m\u00eddia",
     "HeaderSync": "Sincroniza\u00e7\u00e3o",
+    "HeaderUpcomingNews": "Not\u00edcias Recentes",
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancelar",
     "ButtonExit": "Sair",
     "ButtonNew": "Novo",
+    "All": "Tudo",
     "OptionDev": "Dev",
     "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Disparadores de Tarefa",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "Epis\u00f3dios Faltantes",
     "OptionUnairedEpisode": "Epis\u00f3dios Por Estrear",
     "OptionEpisodeSortName": "Nome de Ordena\u00e7\u00e3o do Epis\u00f3dio",
-    "OptionSeriesSortName": "Nome da S\u00e9rie",
     "OptionTvdbRating": "Avalia\u00e7\u00e3o Tvdb",
     "HeaderAddTitles": "Adicionar T\u00edtulos",
     "LabelEnableDlnaPlayTo": "Ativar Reproduzir Em usando DLNA",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Atualizar os metadados automaticamente da internet:",
     "Never": "Nunca",
     "EveryNDays": "A cada {0} dias",
-    "HeaderNewDevices": "Novos Dispositivos"
+    "HeaderNewDevices": "Novos Dispositivos",
+    "HeaderOnNow": "Em Exibi\u00e7\u00e3o",
+    "Downloading": "Transferindo",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }
