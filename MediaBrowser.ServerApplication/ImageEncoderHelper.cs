@@ -26,7 +26,7 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 try
                 {
-                    //return new SkiaEncoder(logManager.GetLogger("ImageMagick"), appPaths, httpClient, fileSystem);
+                    return new SkiaEncoder(logManager.GetLogger("ImageMagick"), appPaths, httpClient, fileSystem);
                 }
                 catch
                 {

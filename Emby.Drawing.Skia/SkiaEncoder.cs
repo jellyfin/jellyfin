@@ -192,17 +192,32 @@ namespace Emby.Drawing.Skia
             }
         }
 
+        private SKBitmap Decode(string path)
+        {
+            using (var stream = new SKFileStream(path))
+            {
+                var codec = SKCodec.Create(stream);
+
+                // create the bitmap
+                var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height);
+                // decode
+                codec.GetPixels(bitmap.Info, bitmap.GetPixels());
+
+                return bitmap;
+            }
+        }
+
         private SKBitmap GetBitmap(string path, bool cropWhitespace)
         {
             if (cropWhitespace)
             {
-                using (var bitmap = SKBitmap.Decode(path))
+                using (var bitmap = Decode(path))
                 {
                     return CropWhiteSpace(bitmap);
                 }
             } 
 
-            return SKBitmap.Decode(path);
+            return Decode(path);
         }
 
         public void EncodeImage(string inputPath, string outputPath, bool autoOrient, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
