@@ -46,7 +46,7 @@ namespace Emby.Server.Implementations.Devices
         public Task SaveDevice(DeviceInfo device)
         {
             var path = Path.Combine(GetDevicePath(device.Id), "device.json");
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
             lock (_syncLock)
             {
@@ -180,7 +180,7 @@ namespace Emby.Server.Implementations.Devices
         public void AddCameraUpload(string deviceId, LocalFileInfo file)
         {
             var path = Path.Combine(GetDevicePath(deviceId), "camerauploads.json");
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
             lock (_syncLock)
             {

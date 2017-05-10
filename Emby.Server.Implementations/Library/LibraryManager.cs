@@ -1197,6 +1197,7 @@ namespace Emby.Server.Implementations.Library
                 catch (OperationCanceledException)
                 {
                     _logger.Info("Post-scan task cancelled: {0}", task.GetType().Name);
+                    throw;
                 }
                 catch (Exception ex)
                 {

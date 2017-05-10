@@ -158,7 +158,7 @@ namespace Emby.Server.Implementations.Devices
 
             _libraryMonitor.ReportFileSystemChangeBeginning(path);
 
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
             try
             {
