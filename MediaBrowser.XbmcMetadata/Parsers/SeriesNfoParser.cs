@@ -13,6 +13,19 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 {
     public class SeriesNfoParser : BaseNfoParser<Series>
     {
+        protected override bool SupportsUrlAfterClosingXmlTag
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        protected override string MovieDbParserSearchString
+        {
+            get { return "themoviedb.org/tv/"; }
+        }
+
         /// <summary>
         /// Fetches the data from XML node.
         /// </summary>
