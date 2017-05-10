@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "En ce moment",
-    "Downloading": "T\u00e9l\u00e9chargement",
     "LabelPrevious": "Pr\u00e9c\u00e9dent",
     "LabelFinish": "Terminer",
     "LabelNext": "Suivant",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "Masquer le contenu d\u00e9j\u00e0 vu dans les m\u00e9dias r\u00e9cents",
     "DeleteMedia": "Supprimer le m\u00e9dia",
     "HeaderSync": "Synchroniser",
+    "HeaderUpcomingNews": "Actualit\u00e9s \u00e0 venir",
     "ButtonOk": "Ok",
     "ButtonCancel": "Annuler",
     "ButtonExit": "Quitter",
     "ButtonNew": "Nouveau",
+    "All": "Tout",
     "OptionDev": "D\u00e9veloppement",
     "OptionBeta": "Beta",
     "HeaderTaskTriggers": "D\u00e9clencheurs de t\u00e2ches",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "\u00c9pisodes manquantes",
     "OptionUnairedEpisode": "\u00c9pisodes non diffus\u00e9s",
     "OptionEpisodeSortName": "Nom de tri de l'\u00e9pisode",
-    "OptionSeriesSortName": "Nom de la s\u00e9rie",
     "OptionTvdbRating": "Note d'\u00e9valuation TVDb",
     "HeaderAddTitles": "Ajouter des \u00e9l\u00e9ments",
     "LabelEnableDlnaPlayTo": "Activer Lire sur en DLNA",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Actualiser automatiquement les m\u00e9tadonn\u00e9es depuis internet\u00a0:",
     "Never": "Jamais",
     "EveryNDays": "Tous les {0} jours",
-    "HeaderNewDevices": "Nouveaux appareils"
+    "HeaderNewDevices": "Nouveaux appareils",
+    "HeaderOnNow": "En ce moment",
+    "Downloading": "T\u00e9l\u00e9chargement",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

@@ -26,6 +26,8 @@ namespace Emby.Server.Implementations.Library.Validators
 
             while (yearNumber < maxYear)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 try
                 {
                     var year = _libraryManager.GetYear(yearNumber);
@@ -35,7 +37,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 catch (OperationCanceledException)
                 {
                     // Don't clutter the log
-                    break;
+                    throw;
                 }
                 catch (Exception ex)
                 {

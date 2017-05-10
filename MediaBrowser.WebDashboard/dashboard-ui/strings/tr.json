@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "On Now",
-    "Downloading": "Downloading",
     "LabelPrevious": "\u00d6nceki",
     "LabelFinish": "Bitir",
     "LabelNext": "Sonraki",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "Hide watched content from latest media",
     "DeleteMedia": "Delete media",
     "HeaderSync": "Sync",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "Tamam",
     "ButtonCancel": "\u0130ptal",
     "ButtonExit": "Exit",
     "ButtonNew": "Yeni",
+    "All": "All",
     "OptionDev": "Gelistirici",
     "OptionBeta": "Deneme",
     "HeaderTaskTriggers": "Task Triggers",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "Missing Episodes",
     "OptionUnairedEpisode": "Unaired Episodes",
     "OptionEpisodeSortName": "Episode Sort Name",
-    "OptionSeriesSortName": "Seri Ad\u0131",
     "OptionTvdbRating": "Tvdb Reyting",
     "HeaderAddTitles": "Add Titles",
     "LabelEnableDlnaPlayTo": "Enable DLNA Play To",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "New Devices"
+    "HeaderNewDevices": "New Devices",
+    "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

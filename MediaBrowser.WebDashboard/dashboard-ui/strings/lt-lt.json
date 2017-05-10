@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "On Now",
-    "Downloading": "Downloading",
     "LabelPrevious": "Ankstesnis",
     "LabelFinish": "Baigti",
     "LabelNext": "Kitas",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "Nerodyti per\u017ei\u016br\u0117tos medijos i\u0161 naujausios medijos",
     "DeleteMedia": "Delete media",
     "HeaderSync": "SInchron.",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "OK",
     "ButtonCancel": "At\u0161aukti",
     "ButtonExit": "I\u0161eiti",
     "ButtonNew": "Naujas",
+    "All": "All",
     "OptionDev": "K\u016br\u0117jai",
     "OptionBeta": "Beta",
     "HeaderTaskTriggers": "U\u017eduo\u010di\u0173 trigeris",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "Tr\u016bkstamos serijos",
     "OptionUnairedEpisode": "Nerodytos serijos",
     "OptionEpisodeSortName": "Serijos pavadinimas r\u016b\u0161iavimui",
-    "OptionSeriesSortName": "Laidos pavadinimas",
     "OptionTvdbRating": "Tvdb vertinimas",
     "HeaderAddTitles": "Prid\u0117ti pavadinimus",
     "LabelEnableDlnaPlayTo": "\u012ejungti DLNA",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "New Devices"
+    "HeaderNewDevices": "New Devices",
+    "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

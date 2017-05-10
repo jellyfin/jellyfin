@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "Most",
-    "Downloading": "Downloading",
     "LabelPrevious": "El\u0151z\u0151",
     "LabelFinish": "Befejez",
     "LabelNext": "K\u00f6vetkez\u0151",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "Hide watched content from latest media",
     "DeleteMedia": "Delete media",
     "HeaderSync": "Sync",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "Ok",
     "ButtonCancel": "M\u00e9gsem",
     "ButtonExit": "Kil\u00e9p\u00e9s",
     "ButtonNew": "\u00daj",
+    "All": "All",
     "OptionDev": "Dev",
     "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Task Triggers",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "Hi\u00e1nyz\u00f3 Epiz\u00f3dok",
     "OptionUnairedEpisode": "Nem vet\u00edtett Epiz\u00f3dok",
     "OptionEpisodeSortName": "Episode Sort Name",
-    "OptionSeriesSortName": "Series Name",
     "OptionTvdbRating": "Tvdb Rating",
     "HeaderAddTitles": "Add Titles",
     "LabelEnableDlnaPlayTo": "Enable DLNA Play To",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "New Devices"
+    "HeaderNewDevices": "New Devices",
+    "HeaderOnNow": "Most",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

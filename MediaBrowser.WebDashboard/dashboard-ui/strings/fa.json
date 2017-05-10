@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "On Now",
-    "Downloading": "Downloading",
     "LabelPrevious": "\u0642\u0628\u0644\u06cc",
     "LabelFinish": "\u067e\u0627\u06cc\u0627\u0646",
     "LabelNext": "\u0628\u0639\u062f\u06cc",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "\u0631\u0633\u0627\u0646\u0647 \u0647\u0627\u06cc \u062a\u0645\u0627\u0634\u0627 \u0634\u062f\u0647 \u0631\u0627 \u067e\u0646\u0647\u0627\u0646 \u06a9\u0646",
     "DeleteMedia": "\u062d\u0630\u0641 \u0631\u0633\u0627\u0646\u0647",
     "HeaderSync": "\u0647\u0645\u06af\u0627\u0645 \u0633\u0627\u0632\u06cc",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "\u062e\u0648\u0628",
     "ButtonCancel": "\u0644\u063a\u0648 \u06a9\u0631\u062f\u0646",
     "ButtonExit": "\u062e\u0631\u0648\u062c",
     "ButtonNew": "\u062c\u062f\u06cc\u062f",
+    "All": "All",
     "OptionDev": "Dev",
     "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Task Triggers",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "Missing Episodes",
     "OptionUnairedEpisode": "Unaired Episodes",
     "OptionEpisodeSortName": "Episode Sort Name",
-    "OptionSeriesSortName": "Series Name",
     "OptionTvdbRating": "Tvdb Rating",
     "HeaderAddTitles": "Add Titles",
     "LabelEnableDlnaPlayTo": "Enable DLNA Play To",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "New Devices"
+    "HeaderNewDevices": "New Devices",
+    "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

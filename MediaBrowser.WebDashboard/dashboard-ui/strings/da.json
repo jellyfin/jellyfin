@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "On Now",
-    "Downloading": "Downloading",
     "LabelPrevious": "Forrige",
     "LabelFinish": "Afslut",
     "LabelNext": "N\u00e6ste",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "Skjul sete fra seneste",
     "DeleteMedia": "Slet medie",
     "HeaderSync": "Sync",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "Ok",
     "ButtonCancel": "Annuller",
     "ButtonExit": "Afslut",
     "ButtonNew": "Ny",
+    "All": "All",
     "OptionDev": "Dev",
     "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Task Triggers",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "Manglende episoder",
     "OptionUnairedEpisode": "Ikke sendte episoder",
     "OptionEpisodeSortName": "Navn for sortering af episoder",
-    "OptionSeriesSortName": "Seriens navn",
     "OptionTvdbRating": "Tvdb bed\u00f8mmelse",
     "HeaderAddTitles": "Tilf\u00f8j titler",
     "LabelEnableDlnaPlayTo": "Aktiver DLNA \"Afspil Til\"",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Genopfrisk automatisk metadata fra internettet:",
     "Never": "Aldrig",
     "EveryNDays": "Hver {0} dage",
-    "HeaderNewDevices": "Nye Enheder"
+    "HeaderNewDevices": "Nye Enheder",
+    "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

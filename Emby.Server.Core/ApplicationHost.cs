@@ -761,7 +761,10 @@ namespace Emby.Server.Core
                     return null;
                 }
 
-                X509Certificate2 localCert = new X509Certificate2(certificateLocation, info.Password);
+                // Don't use an empty string password
+                var password = string.IsNullOrWhiteSpace(info.Password) ? null : info.Password;
+
+                X509Certificate2 localCert = new X509Certificate2(certificateLocation, password);
                 //localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
                 if (!localCert.HasPrivateKey)
                 {
