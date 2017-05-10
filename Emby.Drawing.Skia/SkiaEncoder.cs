@@ -66,7 +66,15 @@ namespace Emby.Drawing.Skia
 
         public static string GetVersion()
         {
-            return typeof(SKCanvas).GetTypeInfo().Assembly.GetName().Version.ToString();
+            using (var bitmap = new SKBitmap())
+            {
+                return typeof(SKBitmap).GetTypeInfo().Assembly.GetName().Version.ToString();
+            }
+        }
+
+        private static bool IsWhiteSpace(SKColor color)
+        {
+            return (color.Red == 255 && color.Green == 255 && color.Blue == 255) || color.Alpha == 0;
         }
 
         public static SKEncodedImageFormat GetImageFormat(ImageFormat selectedFormat)
@@ -81,22 +89,88 @@ namespace Emby.Drawing.Skia
                     return SKEncodedImageFormat.Gif;
                 case ImageFormat.Webp:
                     return SKEncodedImageFormat.Webp;
-                case ImageFormat.Png:
                 default:
                     return SKEncodedImageFormat.Png;
             }
         }
 
-        public void CropWhiteSpace(string inputPath, string outputPath)
+        private static bool IsAllWhiteRow(SKBitmap bmp, int row)
+        {
+            for (var i = 0; i < bmp.Width; ++i)
+            {
+                if (!IsWhiteSpace(bmp.GetPixel(i, row)))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static bool IsAllWhiteColumn(SKBitmap bmp, int col)
+        {
+            for (var i = 0; i < bmp.Height; ++i)
+            {
+                if (!IsWhiteSpace(bmp.GetPixel(col, i)))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private SKBitmap CropWhiteSpace(SKBitmap bitmap)
         {
             CheckDisposed();
 
-            using (var bitmap = SKBitmap.Decode(inputPath))
+            var topmost = 0;
+            for (int row = 0; row < bitmap.Height; ++row)
             {
-                // @todo
+                if (IsAllWhiteRow(bitmap, row))
+                    topmost = row;
+                else break;
             }
 
-            _fileSystem.CopyFile(inputPath, outputPath, true);
+            int bottommost = 0;
+            for (int row = bitmap.Height - 1; row >= 0; --row)
+            {
+                if (IsAllWhiteRow(bitmap, row))
+                    bottommost = row;
+                else break;
+            }
+
+            int leftmost = 0, rightmost = 0;
+            for (int col = 0; col < bitmap.Width; ++col)
+            {
+                if (IsAllWhiteColumn(bitmap, col))
+                    leftmost = col;
+                else
+                    break;
+            }
+
+            for (int col = bitmap.Width - 1; col >= 0; --col)
+            {
+                if (IsAllWhiteColumn(bitmap, col))
+                    rightmost = col;
+                else
+                    break;
+            }
+
+            var newRect = SKRectI.Create(leftmost, topmost, rightmost - leftmost, bottommost - topmost);
+
+            using (var image = SKImage.FromBitmap(bitmap))
+            {
+                using (var subset = image.Subset(newRect))
+                {
+                    return SKBitmap.FromImage(subset);
+                    //using (var data = subset.Encode(StripCollageBuilder.GetEncodedFormat(outputPath), 90))
+                    //{
+                    //    using (var fileStream = _fileSystem.GetFileStream(outputPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+                    //    {
+                    //        data.AsStream().CopyTo(fileStream);
+                    //    }
+                    //}
+                }
+            }
         }
 
         public ImageSize GetImageSize(string path)
@@ -118,6 +192,19 @@ namespace Emby.Drawing.Skia
             }
         }
 
+        private SKBitmap GetBitmap(string path, bool cropWhitespace)
+        {
+            if (cropWhitespace)
+            {
+                using (var bitmap = SKBitmap.Decode(path))
+                {
+                    return CropWhiteSpace(bitmap);
+                }
+            } 
+
+            return SKBitmap.Decode(path);
+        }
+
         public void EncodeImage(string inputPath, string outputPath, bool autoOrient, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
             if (string.IsNullOrWhiteSpace(inputPath))
@@ -129,12 +216,34 @@ namespace Emby.Drawing.Skia
                 throw new ArgumentNullException("outputPath");
             }
 
-            using (var bitmap = SKBitmap.Decode(inputPath))
+            var skiaOutputFormat = GetImageFormat(selectedOutputFormat);
+
+            var hasBackgroundColor = !string.IsNullOrWhiteSpace(options.BackgroundColor);
+            var hasForegroundColor = !string.IsNullOrWhiteSpace(options.ForegroundLayer);
+            var blur = options.Blur ?? 0;
+            var hasIndicator = !options.AddPlayedIndicator && !options.UnplayedCount.HasValue && options.PercentPlayed.Equals(0);
+
+            using (var bitmap = GetBitmap(inputPath, options.CropWhiteSpace))
             {
                 using (var resizedBitmap = new SKBitmap(width, height, bitmap.ColorType, bitmap.AlphaType))
                 {
                     // scale image
-                    bitmap.Resize(resizedBitmap, SKBitmapResizeMethod.Lanczos3);
+                    var resizeMethod = options.Image.Type == MediaBrowser.Model.Entities.ImageType.Logo ||
+                                       options.Image.Type == MediaBrowser.Model.Entities.ImageType.Art
+                        ? SKBitmapResizeMethod.Lanczos3
+                        : SKBitmapResizeMethod.Lanczos3;
+
+                    bitmap.Resize(resizedBitmap, resizeMethod);
+
+                    // If all we're doing is resizing then we can stop now
+                    if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
+                    {
+                        using (var outputStream = new SKFileWStream(outputPath))
+                        {
+                            resizedBitmap.Encode(outputStream, skiaOutputFormat, quality);
+                            return;
+                        }
+                    }
 
                     // create bitmap to use for canvas drawing
                     using (var saveBitmap = new SKBitmap(width, height, bitmap.ColorType, bitmap.AlphaType))
@@ -143,13 +252,13 @@ namespace Emby.Drawing.Skia
                         using (var canvas = new SKCanvas(saveBitmap))
                         {
                             // set background color if present
-                            if (!string.IsNullOrWhiteSpace(options.BackgroundColor))
+                            if (hasBackgroundColor)
                             {
                                 canvas.Clear(SKColor.Parse(options.BackgroundColor));
                             }
 
                             // Add blur if option is present
-                            if (options.Blur > 0)
+                            if (blur > 0)
                             {
                                 using (var paint = new SKPaint())
                                 {
@@ -168,20 +277,23 @@ namespace Emby.Drawing.Skia
                             }
 
                             // If foreground layer present then draw
-                            if (!string.IsNullOrWhiteSpace(options.ForegroundLayer))
+                            if (hasForegroundColor)
                             {
                                 Double opacity;
                                 if (!Double.TryParse(options.ForegroundLayer, out opacity)) opacity = .4;
 
-                                var foregroundColor = String.Format("#{0:X2}000000", (Byte)((1-opacity) * 0xFF));
+                                var foregroundColor = String.Format("#{0:X2}000000", (Byte)((1 - opacity) * 0xFF));
                                 canvas.DrawColor(SKColor.Parse(foregroundColor), SKBlendMode.SrcOver);
                             }
 
-                            DrawIndicator(canvas, width, height, options);
+                            if (hasIndicator)
+                            {
+                                DrawIndicator(canvas, width, height, options);
+                            }
 
                             using (var outputStream = new SKFileWStream(outputPath))
                             {
-                                saveBitmap.Encode(outputStream, GetImageFormat(selectedOutputFormat), quality);
+                                saveBitmap.Encode(outputStream, skiaOutputFormat, quality);
                             }
                         }
                     }
@@ -204,17 +316,13 @@ namespace Emby.Drawing.Skia
             }
             else
             {
-                new StripCollageBuilder(_appPaths, _fileSystem).BuildPosterCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
+                // @todo create Poster collage capability
+                new StripCollageBuilder(_appPaths, _fileSystem).BuildSquareCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
             }
         }
 
         private void DrawIndicator(SKCanvas canvas, int imageWidth, int imageHeight, ImageProcessingOptions options)
         {
-            if (!options.AddPlayedIndicator && !options.UnplayedCount.HasValue && options.PercentPlayed.Equals(0))
-            {
-                return;
-            }
-
             try
             {
                 var currentImageSize = new ImageSize(imageWidth, imageHeight);

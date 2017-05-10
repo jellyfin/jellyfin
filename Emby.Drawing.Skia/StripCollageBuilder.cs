@@ -2,9 +2,6 @@
 using MediaBrowser.Common.Configuration;
 using System;
 using System.IO;
-using System.Collections.Generic;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Drawing.Skia
@@ -20,7 +17,7 @@ namespace Emby.Drawing.Skia
             _fileSystem = fileSystem;
         }
 
-        private SKEncodedImageFormat GetEncodedFormat(string outputPath)
+        public static SKEncodedImageFormat GetEncodedFormat(string outputPath)
         {
             var ext = Path.GetExtension(outputPath).ToLower();
 
@@ -42,13 +39,7 @@ namespace Emby.Drawing.Skia
 
         public void BuildPosterCollage(string[] paths, string outputPath, int width, int height)
         {
-            using (var bitmap = BuildPosterCollageBitmap(paths, width, height))
-            {
-                using (var outputStream = new SKFileWStream(outputPath))
-                {
-                    bitmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
-                }
-            }
+            // @todo
         }
 
         public void BuildSquareCollage(string[] paths, string outputPath, int width, int height)
@@ -73,136 +64,64 @@ namespace Emby.Drawing.Skia
             }
         }
 
-        private SKBitmap BuildPosterCollageBitmap(string[] paths, int width, int height)
-        {
-            return null;
-           /* var inputPaths = ImageHelpers.ProjectPaths(paths, 3);
-            using (var wandImages = new MagickWand(inputPaths.ToArray()))
-            {
-                var wand = new MagickWand(width, height);
-                wand.OpenImage("gradient:#111111-#111111");
-                using (var draw = new DrawingWand())
-                {
-                    var iSlice = Convert.ToInt32(width * 0.3);
-                    int iTrans = Convert.ToInt32(height * .25);
-                    int iHeight = Convert.ToInt32(height * .65);
-                    var horizontalImagePadding = Convert.ToInt32(width * 0.0366);
-
-                    foreach (var element in wandImages.ImageList)
-                    {
-                        using (var blackPixelWand = new PixelWand(ColorName.Black))
-                        {
-                            int iWidth = (int)Math.Abs(iHeight * element.Width / element.Height);
-                            element.Gravity = GravityType.CenterGravity;
-                            element.BackgroundColor = blackPixelWand;
-                            element.ResizeImage(iWidth, iHeight, FilterTypes.LanczosFilter);
-                            int ix = (int)Math.Abs((iWidth - iSlice) / 2);
-                            element.CropImage(iSlice, iHeight, ix, 0);
-
-                            element.ExtentImage(iSlice, iHeight, 0 - horizontalImagePadding, 0);
-                        }
-                    }
-
-                    wandImages.SetFirstIterator();
-                    using (var wandList = wandImages.AppendImages())
-                    {
-                        wandList.CurrentImage.TrimImage(1);
-                        using (var mwr = wandList.CloneMagickWand())
-                        {
-                            using (var blackPixelWand = new PixelWand(ColorName.Black))
-                            {
-                                using (var greyPixelWand = new PixelWand(ColorName.Grey70))
-                                {
-                                    mwr.CurrentImage.ResizeImage(wandList.CurrentImage.Width, (wandList.CurrentImage.Height / 2), FilterTypes.LanczosFilter, 1);
-                                    mwr.CurrentImage.FlipImage();
-
-                                    mwr.CurrentImage.AlphaChannel = AlphaChannelType.DeactivateAlphaChannel;
-                                    mwr.CurrentImage.ColorizeImage(blackPixelWand, greyPixelWand);
-
-                                    using (var mwg = new MagickWand(wandList.CurrentImage.Width, iTrans))
-                                    {
-                                        mwg.OpenImage("gradient:black-none");
-                                        var verticalSpacing = Convert.ToInt32(height * 0.01111111111111111111111111111111);
-                                        mwr.CurrentImage.CompositeImage(mwg, CompositeOperator.CopyOpacityCompositeOp, 0, verticalSpacing);
-
-                                        wandList.AddImage(mwr);
-                                        int ex = (int)(wand.CurrentImage.Width - mwg.CurrentImage.Width) / 2;
-                                        wand.CurrentImage.CompositeImage(wandList.AppendImages(true), CompositeOperator.AtopCompositeOp, ex, Convert.ToInt32(height * .05));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                return wand;
-            }*/
-        }
-
         private SKBitmap BuildThumbCollageBitmap(string[] paths, int width, int height)
         {
-            return null;
-            /*var inputPaths = ImageHelpers.ProjectPaths(paths, 4);
-            using (var wandImages = new MagickWand(inputPaths.ToArray()))
+            var bitmap = new SKBitmap(width, height);
+
+            using (var canvas = new SKCanvas(bitmap))
             {
-                var wand = new MagickWand(width, height);
-                wand.OpenImage("gradient:#111111-#111111");
-                using (var draw = new DrawingWand())
+                canvas.Clear(SKColors.Black);
+
+                var iSlice = Convert.ToInt32(width * 0.24125);
+                int iTrans = Convert.ToInt32(height * .25);
+                int iHeight = Convert.ToInt32(height * .70);
+                var horizontalImagePadding = Convert.ToInt32(width * 0.0125);
+                var verticalSpacing = Convert.ToInt32(height * 0.01111111111111111111111111111111);
+                int imageIndex = 0;
+
+                for (int i = 0; i < 4; i++)
                 {
-                    var iSlice = Convert.ToInt32(width * 0.24125);
-                    int iTrans = Convert.ToInt32(height * .25);
-                    int iHeight = Convert.ToInt32(height * .70);
-                    var horizontalImagePadding = Convert.ToInt32(width * 0.0125);
-
-                    foreach (var element in wandImages.ImageList)
+                    using (var currentBitmap = SKBitmap.Decode(paths[imageIndex]))
                     {
-                        using (var blackPixelWand = new PixelWand(ColorName.Black))
+                        int iWidth = (int)Math.Abs(iHeight * currentBitmap.Width / currentBitmap.Height);
+                        using (var resizeBitmap = new SKBitmap(iWidth, iHeight, currentBitmap.ColorType, currentBitmap.AlphaType))
                         {
-                            int iWidth = (int)Math.Abs(iHeight * element.Width / element.Height);
-                            element.Gravity = GravityType.CenterGravity;
-                            element.BackgroundColor = blackPixelWand;
-                            element.ResizeImage(iWidth, iHeight, FilterTypes.LanczosFilter);
+                            currentBitmap.Resize(resizeBitmap, SKBitmapResizeMethod.Lanczos3);
                             int ix = (int)Math.Abs((iWidth - iSlice) / 2);
-                            element.CropImage(iSlice, iHeight, ix, 0);
-
-                            element.ExtentImage(iSlice, iHeight, 0 - horizontalImagePadding, 0);
-                        }
-                    }
-
-                    wandImages.SetFirstIterator();
-                    using (var wandList = wandImages.AppendImages())
-                    {
-                        wandList.CurrentImage.TrimImage(1);
-                        using (var mwr = wandList.CloneMagickWand())
-                        {
-                            using (var blackPixelWand = new PixelWand(ColorName.Black))
+                            using (var image = SKImage.FromBitmap(resizeBitmap))
                             {
-                                using (var greyPixelWand = new PixelWand(ColorName.Grey70))
+                                using (var subset = image.Subset(SKRectI.Create(ix, 0, iSlice, iHeight)))
                                 {
-                                    mwr.CurrentImage.ResizeImage(wandList.CurrentImage.Width, (wandList.CurrentImage.Height / 2), FilterTypes.LanczosFilter, 1);
-                                    mwr.CurrentImage.FlipImage();
+                                    canvas.DrawImage(subset, (horizontalImagePadding * (i + 1)) + (iSlice * i), 0);
 
-                                    mwr.CurrentImage.AlphaChannel = AlphaChannelType.DeactivateAlphaChannel;
-                                    mwr.CurrentImage.ColorizeImage(blackPixelWand, greyPixelWand);
-
-                                    using (var mwg = new MagickWand(wandList.CurrentImage.Width, iTrans))
+                                    using (var croppedBitmap = SKBitmap.FromImage(subset))
                                     {
-                                        mwg.OpenImage("gradient:black-none");
-                                        var verticalSpacing = Convert.ToInt32(height * 0.01111111111111111111111111111111);
-                                        mwr.CurrentImage.CompositeImage(mwg, CompositeOperator.CopyOpacityCompositeOp, 0, verticalSpacing);
+                                        using (var flipped = new SKBitmap(croppedBitmap.Width, croppedBitmap.Height / 2, croppedBitmap.ColorType, croppedBitmap.AlphaType))
+                                        {
+                                            croppedBitmap.Resize(flipped, SKBitmapResizeMethod.Lanczos3);
 
-                                        wandList.AddImage(mwr);
-                                        int ex = (int)(wand.CurrentImage.Width - mwg.CurrentImage.Width) / 2;
-                                        wand.CurrentImage.CompositeImage(wandList.AppendImages(true), CompositeOperator.AtopCompositeOp, ex, Convert.ToInt32(height * .045));
+                                            using (var gradient = new SKPaint())
+                                            {
+                                                var matrix = SKMatrix.MakeScale(1, -1);
+                                                matrix.SetScaleTranslate(1, -1, 0, flipped.Height);
+                                                gradient.Shader = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(0, flipped.Height), new[] { new SKColor(0, 0, 0, 0), SKColors.Black }, null, SKShaderTileMode.Clamp, matrix);
+                                                canvas.DrawBitmap(flipped, (horizontalImagePadding * (i + 1)) + (iSlice * i), iHeight + verticalSpacing, gradient);
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
 
-                return wand;
-            }*/
+                    imageIndex++;
+
+                    if (imageIndex >= paths.Length)
+                        imageIndex = 0;
+                }
+            }
+
+            return bitmap;
         }
 
         private SKBitmap BuildSquareCollageBitmap(string[] paths, int width, int height)
@@ -224,7 +143,7 @@ namespace Emby.Drawing.Skia
                             {
                                 // scale image
                                 currentBitmap.Resize(resizedBitmap, SKBitmapResizeMethod.Lanczos3);
-                        
+
                                 // draw this image into the strip at the next position
                                 var xPos = x * cellWidth;
                                 var yPos = y * cellHeight;
