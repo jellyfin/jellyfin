@@ -53,6 +53,11 @@ namespace Emby.Common.Implementations.IO
             if (separator == '/')
             {
                 result = result.Replace('\\', '/');
+
+                if (result.StartsWith("smb:/", StringComparison.OrdinalIgnoreCase) && !result.StartsWith("smb://", StringComparison.OrdinalIgnoreCase))
+                {
+                    result = result.Replace("smb:/", "smb://");
+                }
             }
 
             return result;
