@@ -96,16 +96,30 @@ namespace Emby.Drawing.Skia
 
                                     using (var croppedBitmap = SKBitmap.FromImage(subset))
                                     {
-                                        using (var flipped = new SKBitmap(croppedBitmap.Width, croppedBitmap.Height / 2, croppedBitmap.ColorType, croppedBitmap.AlphaType))
+                                        using (var reflectionBitmap = new SKBitmap(croppedBitmap.Width, croppedBitmap.Height / 2, croppedBitmap.ColorType, croppedBitmap.AlphaType))
                                         {
-                                            croppedBitmap.Resize(flipped, SKBitmapResizeMethod.Lanczos3);
+                                            croppedBitmap.Resize(reflectionBitmap, SKBitmapResizeMethod.Lanczos3);
 
-                                            using (var gradient = new SKPaint())
+                                            using (var flippedBitmap = new SKBitmap(reflectionBitmap.Width, reflectionBitmap.Height))
                                             {
-                                                var matrix = SKMatrix.MakeScale(1, -1);
-                                                matrix.SetScaleTranslate(1, -1, 0, flipped.Height);
-                                                gradient.Shader = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(0, flipped.Height), new[] { new SKColor(0, 0, 0, 0), SKColors.Black }, null, SKShaderTileMode.Clamp, matrix);
-                                                canvas.DrawBitmap(flipped, (horizontalImagePadding * (i + 1)) + (iSlice * i), iHeight + verticalSpacing, gradient);
+                                                using (var flippedCanvas = new SKCanvas(flippedBitmap))
+                                                {
+                                                    var matrix = SKMatrix.MakeScale(1, -1);
+                                                    matrix.SetScaleTranslate(1, -1, 0, flippedBitmap.Height);
+                                                    flippedCanvas.SetMatrix(matrix);
+                                                    flippedCanvas.DrawBitmap(reflectionBitmap, 0, 0);
+                                                    flippedCanvas.ResetMatrix();
+
+                                                    using (var gradient = new SKPaint())
+                                                    {
+                                                        gradient.IsAntialias = true;
+                                                        gradient.BlendMode = SKBlendMode.SrcATop;
+                                                        gradient.Shader = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(0, flippedBitmap.Height), new[] { new SKColor(0, 0, 0, 0), new SKColor(0, 0, 0, 255) }, null, SKShaderTileMode.Clamp);
+                                                        flippedCanvas.DrawPaint(gradient);
+                                                    }
+
+                                                    canvas.DrawBitmap(flippedBitmap, (horizontalImagePadding * (i + 1)) + (iSlice * i), iHeight + verticalSpacing);
+                                                }
                                             }
                                         }
                                     }
