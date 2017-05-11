@@ -124,6 +124,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 args += " -vsync " + state.OutputVideoSync;
             }
 
+            args += EncodingHelper.GetOutputFFlags(state);
+
             return args;
         }
 
