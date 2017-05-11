@@ -225,8 +225,8 @@ namespace Emby.Drawing
 
                 if (!_fileSystem.FileExists(cacheFilePath))
                 {
-                    var newWidth = Convert.ToInt32(newSize.Width);
-                    var newHeight = Convert.ToInt32(newSize.Height);
+                    var newWidth = Convert.ToInt32(Math.Round(newSize.Width));
+                    var newHeight = Convert.ToInt32(Math.Round(newSize.Height));
 
                     _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(cacheFilePath));
                     var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(cacheFilePath));
@@ -339,13 +339,13 @@ namespace Emby.Drawing
 
             if (width.HasValue)
             {
-                var heightValue = aspect / width.Value;
-                return new ImageSize(width.Value, Convert.ToInt32(heightValue));
+                var heightValue = width.Value / aspect;
+                return new ImageSize(width.Value, heightValue);
             }
 
             var height = options.Height ?? options.MaxHeight ?? 200;
             var widthValue = aspect * height;
-            return new ImageSize(Convert.ToInt32(widthValue), height);
+            return new ImageSize(widthValue, height);
         }
 
         private double GetEstimatedAspectRatio(ImageType type)
