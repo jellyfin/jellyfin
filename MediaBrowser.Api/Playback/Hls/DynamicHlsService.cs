@@ -879,7 +879,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 // Add resolution params, if specified
                 if (!hasGraphicalSubs)
                 {
-                    args += EncodingHelper.GetOutputSizeParam(state, codec, EnableCopyTs(state));
+                    args += EncodingHelper.GetOutputSizeParam(state, codec, true);
                 }
 
                 // This is for internal graphical subs
@@ -891,7 +891,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 //args += " -flags -global_header";
             }
 
-            if (EnableCopyTs(state) && args.IndexOf("-copyts", StringComparison.OrdinalIgnoreCase) == -1)
+            if (args.IndexOf("-copyts", StringComparison.OrdinalIgnoreCase) == -1)
             {
                 args += " -copyts";
             }
@@ -901,13 +901,9 @@ namespace MediaBrowser.Api.Playback.Hls
                 args += " -vsync " + state.OutputVideoSync;
             }
 
-            return args;
-        }
+            args += EncodingHelper.GetOutputFFlags(state);
 
-        private bool EnableCopyTs(StreamState state)
-        {
-            //return state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode;
-            return true;
+            return args;
         }
 
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)

@@ -166,7 +166,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 var currentPath = currentImagePath;
 
-                _logger.Debug("Deleting previous image {0}", currentPath);
+                _logger.Info("Deleting previous image {0}", currentPath);
 
                 _libraryMonitor.ReportFileSystemChangeBeginning(currentPath);
 
@@ -236,7 +236,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task.</returns>
         private async Task SaveImageToLocation(Stream source, string path, CancellationToken cancellationToken)
         {
-            _logger.Debug("Saving image to {0}", path);
+            _logger.Info("Saving image to {0}", path);
 
             var parentFolder = _fileSystem.GetDirectoryName(path);
 
@@ -249,31 +249,16 @@ namespace MediaBrowser.Providers.Manager
 
                 _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
-                // If the file is currently hidden we'll have to remove that or the save will fail
-                var file = _fileSystem.GetFileInfo(path);
+                _fileSystem.SetAttributes(path, false, false);
 
-                // This will fail if the file is hidden
-                if (file.Exists)
+                using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.Asynchronous))
                 {
-                    if (file.IsHidden)
-                    {
-                        _fileSystem.SetHidden(file.FullName, false);
-                    }
-                    if (file.IsReadOnly)
-                    {
-                        _fileSystem.SetReadOnly(path, false);
-                    }
-                }
-
-                using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
-                {
-                    await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken)
-                            .ConfigureAwait(false);
+                    await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                 }
 
                 if (_config.Configuration.SaveMetadataHidden)
                 {
-                    _fileSystem.SetHidden(file.FullName, true);
+                    _fileSystem.SetHidden(path, true);
                 }
             }
             finally

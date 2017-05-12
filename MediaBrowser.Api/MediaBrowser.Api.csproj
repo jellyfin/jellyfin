@@ -82,10 +82,6 @@
     <Compile Include="Reports\Model\ReportRow.cs" />
     <Compile Include="Reports\ReportRequests.cs" />
     <Compile Include="Reports\ReportsService.cs" />
-    <Compile Include="Reports\Stat\ReportStatBuilder.cs" />
-    <Compile Include="Reports\Stat\ReportStatGroup.cs" />
-    <Compile Include="Reports\Stat\ReportStatItem.cs" />
-    <Compile Include="Reports\Stat\ReportStatResult.cs" />
     <Compile Include="Social\SharingService.cs" />
     <Compile Include="StartupWizardService.cs" />
     <Compile Include="Subtitles\SubtitleService.cs" />

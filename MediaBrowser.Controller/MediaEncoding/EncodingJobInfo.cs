@@ -39,14 +39,52 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool ReadInputAtNativeFramerate { get; set; }
 
-        public bool IgnoreDts
+        public bool IgnoreInputDts
         {
-            get { return MediaSource.IgnoreDts; }
+            get
+            {
+                return MediaSource.IgnoreDts;
+            }
         }
 
-        public bool IgnoreIndex
+        public bool IgnoreInputIndex
         {
-            get { return MediaSource.IgnoreIndex; }
+            get
+            {
+                return MediaSource.IgnoreIndex;
+            }
+        }
+
+        public bool GenPtsInput
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public bool DiscardCorruptFramesInput
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public bool EnableFastSeekInput
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public bool GenPtsOutput
+        {
+            get
+            {
+                return false;
+            }
         }
 
         public string OutputContainer { get; set; }

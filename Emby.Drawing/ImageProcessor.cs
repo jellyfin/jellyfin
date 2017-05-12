@@ -198,7 +198,7 @@ namespace Emby.Drawing
                 return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
-            ImageSize? originalImageSize;
+            ImageSize? originalImageSize = null;
             try
             {
                 originalImageSize = GetImageSize(originalImagePath, dateModified, true);
@@ -333,7 +333,7 @@ namespace Emby.Drawing
                 return new ImageSize(options.Width.Value, options.Height.Value);
             }
 
-            var aspect = GetEstimatedAspectRatio(options.Image.Type);
+            var aspect = GetEstimatedAspectRatio(options.Image.Type, options.Item);
 
             var width = options.Width ?? options.MaxWidth;
 
@@ -348,7 +348,7 @@ namespace Emby.Drawing
             return new ImageSize(widthValue, height);
         }
 
-        private double GetEstimatedAspectRatio(ImageType type)
+        private double GetEstimatedAspectRatio(ImageType type, IHasImages item)
         {
             switch (type)
             {
@@ -368,7 +368,7 @@ namespace Emby.Drawing
                 case ImageType.Logo:
                     return 2.58;
                 case ImageType.Primary:
-                    return .667;
+                    return item.GetDefaultPrimaryImageAspectRatio() ?? .667;
                 default:
                     return 1;
             }
@@ -499,26 +499,39 @@ namespace Emby.Drawing
         /// <returns>ImageSize.</returns>
         private ImageSize GetImageSizeInternal(string path, bool allowSlowMethod)
         {
+            // Can't use taglib because it keeps a lock on the file
+            //try
+            //{
+            //    using (var file = TagLib.File.Create(new StreamFileAbstraction(Path.GetFileName(path), _fileSystem.OpenRead(path), null)))
+            //    {
+            //        var image = file as TagLib.Image.File;
+
+            //        var properties = image.Properties;
+
+            //        return new ImageSize
+            //        {
+            //            Height = properties.PhotoHeight,
+            //            Width = properties.PhotoWidth
+            //        };
+            //    }
+            //}
+            //catch
+            //{
+            //}
+
             try
             {
-                using (var file = TagLib.File.Create(new StreamFileAbstraction(Path.GetFileName(path), _fileSystem.OpenRead(path), null)))
-                {
-                    var image = file as TagLib.Image.File;
-
-                    var properties = image.Properties;
-
-                    return new ImageSize
-                    {
-                        Height = properties.PhotoHeight,
-                        Width = properties.PhotoWidth
-                    };
-                }
+                return ImageHeader.GetDimensions(path, _logger, _fileSystem);
             }
             catch
             {
-            }
+                if (allowSlowMethod)
+                {
+                    return _imageEncoder.GetImageSize(path);
+                }
 
-            return ImageHeader.GetDimensions(path, _logger, _fileSystem);
+                throw;
+            }
         }
 
         private readonly ITimer _saveImageSizeTimer;
