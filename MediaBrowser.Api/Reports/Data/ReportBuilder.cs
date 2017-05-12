@@ -102,7 +102,7 @@ namespace MediaBrowser.Api.Reports
 						HeaderMetadata.Series,
 						HeaderMetadata.Season,
 						HeaderMetadata.SeasonNumber,
-						HeaderMetadata.DateAdded,
+                        HeaderMetadata.DateAdded,
 						HeaderMetadata.Year,
 						HeaderMetadata.Genres
 					};
@@ -269,10 +269,11 @@ namespace MediaBrowser.Api.Reports
                         HeaderMetadata.ImagePrimary,
                         HeaderMetadata.ImageBackdrop,
                         HeaderMetadata.ImageLogo,
-						HeaderMetadata.Name,
+                        HeaderMetadata.Name,
 						HeaderMetadata.EpisodeSeries,
 						HeaderMetadata.Season,
-						HeaderMetadata.DateAdded,
+                        HeaderMetadata.EpisodeNumber,
+                        HeaderMetadata.DateAdded,
 						HeaderMetadata.ReleaseDate,
 						HeaderMetadata.Year,
 						HeaderMetadata.Genres,
@@ -448,6 +449,12 @@ namespace MediaBrowser.Api.Reports
                     };
                     option.Header.SortField = "SortName";
                     internalHeader = HeaderMetadata.Season;
+                    break;
+
+                case HeaderMetadata.EpisodeNumber:
+                    option.Column = (i, r) => this.GetObject<BaseItem, string>(i, (x) => x.IndexNumber == null ? "" : x.IndexNumber.ToString());
+                    //option.Header.SortField = "IndexNumber";
+                    //option.Header.HeaderFieldType = ReportFieldType.Int;
                     break;
 
                 case HeaderMetadata.Network:
