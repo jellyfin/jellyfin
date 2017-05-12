@@ -50,5 +50,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <value><c>true</c> if [supports image encoding]; otherwise, <c>false</c>.</value>
         bool SupportsImageEncoding { get; }
+
+        ImageSize GetImageSize(string path);
     }
 }
