@@ -769,7 +769,7 @@ namespace MediaBrowser.ServerApplication
                 return;
             }
 
-            MessageBox.Show("The Visual C++ 2013 Runtime will now be installed.");
+            MessageBox.Show("The Visual C++ 2013 Runtime will now be installed.", "Install Visual C++ Runtime", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             try
             {
@@ -823,7 +823,7 @@ namespace MediaBrowser.ServerApplication
                 return;
             }
 
-            MessageBox.Show("The Visual C++ 2015 Runtime will now be installed.");
+            MessageBox.Show("The Visual C++ 2015 Runtime will now be installed.", "Install Visual C++ Runtime", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             try
             {
