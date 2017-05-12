@@ -1034,6 +1034,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-intersectionobserver.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-intersectionobserver.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyedgehack.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyedgehack.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-scroll.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-scroll.js</Link>
     </BundleResource>
