@@ -56,7 +56,7 @@ namespace Emby.Drawing
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationPaths _appPaths;
-        private readonly IImageEncoder _imageEncoder;
+        private IImageEncoder _imageEncoder;
         private readonly Func<ILibraryManager> _libraryManager;
 
         public ImageProcessor(ILogger logger,
@@ -64,7 +64,7 @@ namespace Emby.Drawing
             IFileSystem fileSystem,
             IJsonSerializer jsonSerializer,
             IImageEncoder imageEncoder,
-            int maxConcurrentImageProcesses, Func<ILibraryManager> libraryManager, ITimerFactory timerFactory)
+            Func<ILibraryManager> libraryManager, ITimerFactory timerFactory)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -101,6 +101,20 @@ namespace Emby.Drawing
             }
 
             _cachedImagedSizes = new ConcurrentDictionary<Guid, ImageSize>(sizeDictionary);
+        }
+
+        public IImageEncoder ImageEncoder
+        {
+            get { return _imageEncoder; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+
+                _imageEncoder = value;
+            }
         }
 
         public string[] SupportedInputFormats

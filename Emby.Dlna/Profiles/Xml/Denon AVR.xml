@@ -21,8 +21,8 @@
   <MaxAlbumArtHeight>480</MaxAlbumArtHeight>
   <MaxIconWidth>48</MaxIconWidth>
   <MaxIconHeight>48</MaxIconHeight>
-  <MaxStreamingBitrate>30000000</MaxStreamingBitrate>
-  <MaxStaticBitrate>30000000</MaxStaticBitrate>
+  <MaxStreamingBitrate>40000000</MaxStreamingBitrate>
+  <MaxStaticBitrate>40000000</MaxStaticBitrate>
   <MusicStreamingTranscodingBitrate>192000</MusicStreamingTranscodingBitrate>
   <MaxStaticMusicBitrate xsi:nil="true" />
   <XDlnaDoc>DMS-1.50</XDlnaDoc>
@@ -45,7 +45,15 @@
   <CodecProfiles />
   <ResponseProfiles />
   <SubtitleProfiles>
-    <SubtitleProfile format="srt" method="Embed" />
     <SubtitleProfile format="srt" method="External" />
+    <SubtitleProfile format="sub" method="External" />
+    <SubtitleProfile format="srt" method="Embed" />
+    <SubtitleProfile format="ass" method="Embed" />
+    <SubtitleProfile format="ssa" method="Embed" />
+    <SubtitleProfile format="smi" method="Embed" />
+    <SubtitleProfile format="dvdsub" method="Embed" />
+    <SubtitleProfile format="pgs" method="Embed" />
+    <SubtitleProfile format="pgssub" method="Embed" />
+    <SubtitleProfile format="sub" method="Embed" />
   </SubtitleProfiles>
 </Profile>

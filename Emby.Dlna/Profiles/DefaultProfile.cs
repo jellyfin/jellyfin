@@ -30,8 +30,8 @@ namespace Emby.Dlna.Profiles
             MaxIconWidth = 48;
             MaxIconHeight = 48;
 
-            MaxStreamingBitrate = 30000000;
-            MaxStaticBitrate = 30000000;
+            MaxStreamingBitrate = 40000000;
+            MaxStaticBitrate = 40000000;
             MusicStreamingTranscodingBitrate = 192000;
 
             EnableAlbumArtInDidl = false;
@@ -64,15 +64,13 @@ namespace Emby.Dlna.Profiles
             {
                 new DirectPlayProfile
                 {
-                    Container = "m4v,ts,mpegts,mkv,avi,mpg,mpeg,mp4,mov",
-                    VideoCodec = "h264",
-                    AudioCodec = "aac,mp3,ac3",
+                    Container = "m4v,mpegts,ts,3gp,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm,wtv,m2ts,dvr-ms",
                     Type = DlnaProfileType.Video
                 },
 
                 new DirectPlayProfile
                 {
-                    Container = "mp3,wma,aac,wav,flac",
+                    Container = "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac",
                     Type = DlnaProfileType.Audio
                 }
             };
@@ -82,13 +80,61 @@ namespace Emby.Dlna.Profiles
                 new SubtitleProfile
                 {
                     Format = "srt",
-                    Method = SubtitleDeliveryMethod.Embed
+                    Method = SubtitleDeliveryMethod.External,
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "sub",
+                    Method = SubtitleDeliveryMethod.External,
                 },
 
                 new SubtitleProfile
                 {
                     Format = "srt",
-                    Method = SubtitleDeliveryMethod.External,
+                    Method = SubtitleDeliveryMethod.Embed
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "ass",
+                    Method = SubtitleDeliveryMethod.Embed
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "ssa",
+                    Method = SubtitleDeliveryMethod.Embed
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "smi",
+                    Method = SubtitleDeliveryMethod.Embed
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "dvdsub",
+                    Method = SubtitleDeliveryMethod.Embed
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "pgs",
+                    Method = SubtitleDeliveryMethod.Embed
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "pgssub",
+                    Method = SubtitleDeliveryMethod.Embed
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "sub",
+                    Method = SubtitleDeliveryMethod.Embed
                 }
             };
 
