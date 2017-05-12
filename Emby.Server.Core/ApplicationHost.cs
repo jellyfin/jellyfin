@@ -187,7 +187,7 @@ namespace Emby.Server.Core
         /// <value>The HTTP server.</value>
         private IHttpServer HttpServer { get; set; }
         private IDtoService DtoService { get; set; }
-        private IImageProcessor ImageProcessor { get; set; }
+        public IImageProcessor ImageProcessor { get; set; }
 
         /// <summary>
         /// Gets or sets the media encoder.
@@ -783,14 +783,7 @@ namespace Emby.Server.Core
 
         private IImageProcessor GetImageProcessor()
         {
-            var maxConcurrentImageProcesses = Math.Max(Environment.ProcessorCount, 4);
-
-            if (StartupOptions.ContainsOption("-imagethreads"))
-            {
-                int.TryParse(StartupOptions.GetOption("-imagethreads"), NumberStyles.Any, CultureInfo.InvariantCulture, out maxConcurrentImageProcesses);
-            }
-
-            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, ImageEncoder, maxConcurrentImageProcesses, () => LibraryManager, TimerFactory);
+            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, ImageEncoder, () => LibraryManager, TimerFactory);
         }
 
         protected virtual FFMpegInstallInfo GetFfmpegInstallInfo()
