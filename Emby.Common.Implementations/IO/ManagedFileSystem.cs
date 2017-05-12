@@ -518,6 +518,49 @@ namespace Emby.Common.Implementations.IO
             }
         }
 
+        public void SetAttributes(string path, bool isHidden, bool isReadOnly)
+        {
+            if (_sharpCifsFileSystem.IsEnabledForPath(path))
+            {
+                _sharpCifsFileSystem.SetAttributes(path, isHidden, isReadOnly);
+                return;
+            }
+
+            var info = GetFileInfo(path);
+
+            if (!info.Exists)
+            {
+                return;
+            }
+
+            if (info.IsReadOnly == isReadOnly && info.IsHidden == isHidden)
+            {
+                return;
+            }
+
+            var attributes = File.GetAttributes(path);
+
+            if (isReadOnly)
+            {
+                attributes = attributes | FileAttributes.ReadOnly;
+            }
+            else
+            {
+                attributes = RemoveAttribute(attributes, FileAttributes.ReadOnly);
+            }
+
+            if (isHidden)
+            {
+                attributes = attributes | FileAttributes.Hidden;
+            }
+            else
+            {
+                attributes = RemoveAttribute(attributes, FileAttributes.Hidden);
+            }
+
+            File.SetAttributes(path, attributes);
+        }
+
         private static FileAttributes RemoveAttribute(FileAttributes attributes, FileAttributes attributesToRemove)
         {
             return attributes & ~attributesToRemove;
@@ -690,20 +733,7 @@ namespace Emby.Common.Implementations.IO
                 return;
             }
 
-            var fileInfo = GetFileInfo(path);
-
-            if (fileInfo.Exists)
-            {
-                if (fileInfo.IsHidden)
-                {
-                    SetHidden(path, false);
-                }
-                if (fileInfo.IsReadOnly)
-                {
-                    SetReadOnly(path, false);
-                }
-            }
-
+            SetAttributes(path, false, false);
             File.Delete(path);
         }
 
