@@ -79,13 +79,11 @@
     <Compile Include="PlayTo\uParserObject.cs" />
     <Compile Include="PlayTo\UpnpContainer.cs" />
     <Compile Include="PlayTo\uPnpNamespaces.cs" />
-    <Compile Include="Profiles\BubbleUpnpProfile.cs" />
     <Compile Include="Profiles\DefaultProfile.cs" />
     <Compile Include="Profiles\DenonAvrProfile.cs" />
     <Compile Include="Profiles\DirectTvProfile.cs" />
     <Compile Include="Profiles\DishHopperJoeyProfile.cs" />
     <Compile Include="Profiles\Foobar2000Profile.cs" />
-    <Compile Include="Profiles\KodiProfile.cs" />
     <Compile Include="Profiles\LgTvProfile.cs" />
     <Compile Include="Profiles\LinksysDMA2100Profile.cs" />
     <Compile Include="Profiles\MediaMonkeyProfile.cs" />
@@ -105,7 +103,6 @@
     <Compile Include="Profiles\SonyBravia2014Profile.cs" />
     <Compile Include="Profiles\SonyPs3Profile.cs" />
     <Compile Include="Profiles\SonyPs4Profile.cs" />
-    <Compile Include="Profiles\VlcProfile.cs" />
     <Compile Include="Profiles\WdtvLiveProfile.cs" />
     <Compile Include="Profiles\Xbox360Profile.cs" />
     <Compile Include="Profiles\XboxOneProfile.cs" />
@@ -153,13 +150,11 @@
     <EmbeddedResource Include="Profiles\Xml\Sharp Smart TV.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\BubbleUPnp.xml" />
     <EmbeddedResource Include="Profiles\Xml\Default.xml" />
     <EmbeddedResource Include="Profiles\Xml\Denon AVR.xml" />
     <EmbeddedResource Include="Profiles\Xml\DirecTV HD-DVR.xml" />
     <EmbeddedResource Include="Profiles\Xml\Dish Hopper-Joey.xml" />
     <EmbeddedResource Include="Profiles\Xml\foobar2000.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Kodi.xml" />
     <EmbeddedResource Include="Profiles\Xml\LG Smart TV.xml" />
     <EmbeddedResource Include="Profiles\Xml\Linksys DMA2100.xml" />
     <EmbeddedResource Include="Profiles\Xml\MediaMonkey.xml" />
@@ -178,7 +173,6 @@
     <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282014%29.xml" />
     <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 3.xml" />
     <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 4.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Vlc.xml" />
     <EmbeddedResource Include="Profiles\Xml\WDTV Live.xml" />
     <EmbeddedResource Include="Profiles\Xml\Xbox 360.xml" />
     <EmbeddedResource Include="Profiles\Xml\Xbox One.xml" />

@@ -22,6 +22,7 @@ using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.Logging;
 using Emby.Common.Implementations.Networking;
 using Emby.Common.Implementations.Security;
+using Emby.Drawing;
 using Emby.Server.Core;
 using Emby.Server.Core.Logging;
 using Emby.Server.Implementations;
@@ -335,8 +336,6 @@ namespace MediaBrowser.ServerApplication
 
             var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), environmentInfo, appPaths.TempDirectory);
 
-            var imageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => _appHost.HttpClient, appPaths);
-
             FileSystem = fileSystem;
 
             _appHost = new WindowsAppHost(appPaths,
@@ -346,7 +345,7 @@ namespace MediaBrowser.ServerApplication
                 new PowerManagement(),
                 "emby.windows.zip",
                 environmentInfo,
-                imageEncoder,
+                new NullImageEncoder(),
                 new Server.Startup.Common.SystemEvents(logManager.GetLogger("SystemEvents")),
                 new RecyclableMemoryStreamProvider(),
                 new Networking.NetworkManager(logManager.GetLogger("NetworkManager")),
@@ -367,6 +366,19 @@ namespace MediaBrowser.ServerApplication
             var task = _appHost.Init(initProgress);
             Task.WaitAll(task);
 
+            if (!runService)
+            {
+                task = InstallVcredist2013IfNeeded(_appHost, _logger);
+                Task.WaitAll(task);
+
+                // needed by skia
+                task = InstallVcredist2015IfNeeded(_appHost, _logger);
+                Task.WaitAll(task);
+            }
+
+            // set image encoder here
+            _appHost.ImageProcessor.ImageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => _appHost.HttpClient, appPaths);
+
             task = task.ContinueWith(new Action<Task>(a => _appHost.RunStartupTasks()), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
 
             if (runService)
@@ -375,12 +387,6 @@ namespace MediaBrowser.ServerApplication
             }
             else
             {
-                Task.WaitAll(task);
-
-                task = InstallVcredist2013IfNeeded(_appHost, _logger);
-                Task.WaitAll(task);
-
-                task = InstallVcredist2015IfNeeded(_appHost, _logger);
                 Task.WaitAll(task);
 
                 Microsoft.Win32.SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
