@@ -148,6 +148,11 @@ namespace MediaBrowser.Api.Reports
         /// <returns> The localized header. </returns>
         protected static string GetLocalizedHeader(HeaderMetadata internalHeader)
         {
+            if (internalHeader == HeaderMetadata.EpisodeNumber)
+            {
+                return "Episode";
+            }
+
             string headerName = "";
             if (internalHeader != HeaderMetadata.None)
             {

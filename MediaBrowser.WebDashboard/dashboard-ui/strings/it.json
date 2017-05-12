@@ -1978,6 +1978,6 @@
     "HeaderNewDevices": "Nuovi Dispositivi",
     "HeaderOnNow": "In onda ora",
     "Downloading": "In scaricamento",
-    "LabelCertificatePassword": "Certificate password:",
-    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
+    "LabelCertificatePassword": "Password Certificato:",
+    "LabelCertificatePasswordHelp": "Se il tuo certificato richiede una password, per favore inseriscila qui"
 }

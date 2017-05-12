@@ -26,11 +26,11 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 try
                 {
-                    return new SkiaEncoder(logManager.GetLogger("ImageMagick"), appPaths, httpClient, fileSystem);
+                    return new SkiaEncoder(logManager.GetLogger("Skia"), appPaths, httpClient, fileSystem);
                 }
                 catch
                 {
-                    logger.Error("Error loading ImageMagick. Will revert to GDI.");
+                    logger.Error("Error loading Skia. Will revert to ImageMagick.");
                 }
 
                 try
