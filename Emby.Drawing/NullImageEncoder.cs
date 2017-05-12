@@ -57,6 +57,11 @@ namespace Emby.Drawing
             get { return false; }
         }
 
+        public ImageSize GetImageSize(string path)
+        {
+            throw new NotImplementedException();
+        }
+
         public void Dispose()
         {
         }
