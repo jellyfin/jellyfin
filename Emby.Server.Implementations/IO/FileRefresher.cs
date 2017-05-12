@@ -34,8 +34,9 @@ namespace Emby.Server.Implementations.IO
 
         public event EventHandler<EventArgs> Completed;
         private readonly IEnvironmentInfo _environmentInfo;
+        private readonly ILibraryManager _libraryManager;
 
-        public FileRefresher(string path, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ITaskManager taskManager, ILogger logger, ITimerFactory timerFactory, IEnvironmentInfo environmentInfo)
+        public FileRefresher(string path, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ITaskManager taskManager, ILogger logger, ITimerFactory timerFactory, IEnvironmentInfo environmentInfo, ILibraryManager libraryManager1)
         {
             logger.Debug("New file refresher created for {0}", path);
             Path = path;
@@ -47,6 +48,7 @@ namespace Emby.Server.Implementations.IO
             Logger = logger;
             _timerFactory = timerFactory;
             _environmentInfo = environmentInfo;
+            _libraryManager = libraryManager1;
             AddPath(path);
         }
 
@@ -232,6 +234,12 @@ namespace Emby.Server.Implementations.IO
             if (_environmentInfo.OperatingSystem != OperatingSystem.Windows)
             {
                 // Causing lockups on linux
+                return false;
+            }
+
+            // Only try to open video files
+            if (!_libraryManager.IsVideoFile(path))
+            {
                 return false;
             }
 
