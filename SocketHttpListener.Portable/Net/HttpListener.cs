@@ -8,6 +8,7 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
 using SocketHttpListener.Primitives;
 
@@ -22,6 +23,7 @@ namespace SocketHttpListener.Net
         internal ITextEncoding TextEncoding { get; private set; }
         internal IMemoryStreamFactory MemoryStreamFactory { get; private set; }
         internal INetworkManager NetworkManager { get; private set; }
+        internal IEnvironmentInfo EnvironmentInfo { get; private set; }
 
         public bool EnableDualMode { get; set; }
 
@@ -40,7 +42,7 @@ namespace SocketHttpListener.Net
 
         public Action<HttpListenerContext> OnContext { get; set; }
 
-        public HttpListener(ILogger logger, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem)
+        public HttpListener(ILogger logger, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
         {
             _logger = logger;
             CryptoProvider = cryptoProvider;
@@ -50,19 +52,20 @@ namespace SocketHttpListener.Net
             TextEncoding = textEncoding;
             MemoryStreamFactory = memoryStreamFactory;
             FileSystem = fileSystem;
+            EnvironmentInfo = environmentInfo;
             prefixes = new HttpListenerPrefixCollection(logger, this);
             registry = new Dictionary<HttpListenerContext, HttpListenerContext>();
             connections = new Dictionary<HttpConnection, HttpConnection>();
             auth_schemes = AuthenticationSchemes.Anonymous;
         }
 
-        public HttpListener(ICertificate certificate, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem)
-            :this(new NullLogger(), certificate, cryptoProvider, streamFactory, socketFactory, networkManager, textEncoding, memoryStreamFactory, fileSystem)
+        public HttpListener(ICertificate certificate, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
+            :this(new NullLogger(), certificate, cryptoProvider, streamFactory, socketFactory, networkManager, textEncoding, memoryStreamFactory, fileSystem, environmentInfo)
         {
         }
 
-        public HttpListener(ILogger logger, ICertificate certificate, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem)
-            : this(logger, cryptoProvider, streamFactory, socketFactory, networkManager, textEncoding, memoryStreamFactory, fileSystem)
+        public HttpListener(ILogger logger, ICertificate certificate, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
+            : this(logger, cryptoProvider, streamFactory, socketFactory, networkManager, textEncoding, memoryStreamFactory, fileSystem, environmentInfo)
         {
             _certificate = certificate;
         }

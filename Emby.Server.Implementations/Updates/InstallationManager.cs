@@ -664,9 +664,19 @@ namespace Emby.Server.Implementations.Updates
             // Remove it the quick way for now
             _applicationHost.RemovePlugin(plugin);
 
-            _logger.Info("Deleting plugin file {0}", plugin.AssemblyFilePath);
+            var path = plugin.AssemblyFilePath;
+            _logger.Info("Deleting plugin file {0}", path);
 
-            _fileSystem.DeleteFile(plugin.AssemblyFilePath);
+            // Make this case-insensitive to account for possible incorrect assembly naming
+            var file = _fileSystem.GetFilePaths(path)
+                .FirstOrDefault(i => string.Equals(i, path, StringComparison.OrdinalIgnoreCase));
+
+            if (!string.IsNullOrWhiteSpace(file))
+            {
+                path = file;
+            }
+
+            _fileSystem.DeleteFile(path);
 
             OnPluginUninstalled(plugin);
 

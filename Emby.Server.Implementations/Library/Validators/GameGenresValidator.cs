@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 catch (OperationCanceledException)
                 {
                     // Don't clutter the log
-                    break;
+                    throw;
                 }
                 catch (Exception ex)
                 {

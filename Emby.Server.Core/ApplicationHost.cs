@@ -187,7 +187,7 @@ namespace Emby.Server.Core
         /// <value>The HTTP server.</value>
         private IHttpServer HttpServer { get; set; }
         private IDtoService DtoService { get; set; }
-        private IImageProcessor ImageProcessor { get; set; }
+        public IImageProcessor ImageProcessor { get; set; }
 
         /// <summary>
         /// Gets or sets the media encoder.
@@ -761,7 +761,10 @@ namespace Emby.Server.Core
                     return null;
                 }
 
-                X509Certificate2 localCert = new X509Certificate2(certificateLocation, info.Password);
+                // Don't use an empty string password
+                var password = string.IsNullOrWhiteSpace(info.Password) ? null : info.Password;
+
+                X509Certificate2 localCert = new X509Certificate2(certificateLocation, password);
                 //localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
                 if (!localCert.HasPrivateKey)
                 {
@@ -780,14 +783,7 @@ namespace Emby.Server.Core
 
         private IImageProcessor GetImageProcessor()
         {
-            var maxConcurrentImageProcesses = Math.Max(Environment.ProcessorCount, 4);
-
-            if (StartupOptions.ContainsOption("-imagethreads"))
-            {
-                int.TryParse(StartupOptions.GetOption("-imagethreads"), NumberStyles.Any, CultureInfo.InvariantCulture, out maxConcurrentImageProcesses);
-            }
-
-            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, ImageEncoder, maxConcurrentImageProcesses, () => LibraryManager, TimerFactory);
+            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, ImageEncoder, () => LibraryManager, TimerFactory);
         }
 
         protected virtual FFMpegInstallInfo GetFfmpegInstallInfo()
@@ -1132,7 +1128,8 @@ namespace Emby.Server.Core
                 // Custom cert
                 return new CertificateInfo
                 {
-                    Path = ServerConfigurationManager.Configuration.CertificatePath
+                    Path = ServerConfigurationManager.Configuration.CertificatePath,
+                    Password = ServerConfigurationManager.Configuration.CertificatePassword
                 };
             }
 

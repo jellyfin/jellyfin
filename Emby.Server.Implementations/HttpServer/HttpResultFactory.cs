@@ -353,31 +353,28 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Pres the process optimized result.
         /// </summary>
-        /// <param name="requestContext">The request context.</param>
-        /// <param name="responseHeaders">The responseHeaders.</param>
-        /// <param name="cacheKey">The cache key.</param>
-        /// <param name="cacheKeyString">The cache key string.</param>
-        /// <param name="lastDateModified">The last date modified.</param>
-        /// <param name="cacheDuration">Duration of the cache.</param>
-        /// <param name="contentType">Type of the content.</param>
-        /// <returns>System.Object.</returns>
         private object GetCachedResult(IRequest requestContext, IDictionary<string, string> responseHeaders, Guid cacheKey, string cacheKeyString, DateTime? lastDateModified, TimeSpan? cacheDuration, string contentType)
         {
             responseHeaders["ETag"] = string.Format("\"{0}\"", cacheKeyString);
 
-            if (IsNotModified(requestContext, cacheKey, lastDateModified, cacheDuration))
+            var noCache = (requestContext.Headers.Get("Cache-Control") ?? string.Empty).IndexOf("no-cache", StringComparison.OrdinalIgnoreCase) != -1;
+
+            if (!noCache)
             {
-                AddAgeHeader(responseHeaders, lastDateModified);
-                AddExpiresHeader(responseHeaders, cacheKeyString, cacheDuration);
+                if (IsNotModified(requestContext, cacheKey, lastDateModified, cacheDuration))
+                {
+                    AddAgeHeader(responseHeaders, lastDateModified);
+                    AddExpiresHeader(responseHeaders, cacheKeyString, cacheDuration, noCache);
 
-                var result = new HttpResult(new byte[] { }, contentType ?? "text/html", HttpStatusCode.NotModified);
+                    var result = new HttpResult(new byte[] { }, contentType ?? "text/html", HttpStatusCode.NotModified);
 
-                AddResponseHeaders(result, responseHeaders);
+                    AddResponseHeaders(result, responseHeaders);
 
-                return result;
+                    return result;
+                }
             }
 
-            AddCachingHeaders(responseHeaders, cacheKeyString, lastDateModified, cacheDuration);
+            AddCachingHeaders(responseHeaders, cacheKeyString, lastDateModified, cacheDuration, noCache);
 
             return null;
         }
@@ -673,11 +670,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Adds the caching responseHeaders.
         /// </summary>
-        /// <param name="responseHeaders">The responseHeaders.</param>
-        /// <param name="cacheKey">The cache key.</param>
-        /// <param name="lastDateModified">The last date modified.</param>
-        /// <param name="cacheDuration">Duration of the cache.</param>
-        private void AddCachingHeaders(IDictionary<string, string> responseHeaders, string cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration)
+        private void AddCachingHeaders(IDictionary<string, string> responseHeaders, string cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, bool noCache)
         {
             // Don't specify both last modified and Etag, unless caching unconditionally. They are redundant
             // https://developers.google.com/speed/docs/best-practices/caching#LeverageBrowserCaching
@@ -687,11 +680,11 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders["Last-Modified"] = lastDateModified.Value.ToString("r");
             }
 
-            if (cacheDuration.HasValue)
+            if (!noCache && cacheDuration.HasValue)
             {
                 responseHeaders["Cache-Control"] = "public, max-age=" + Convert.ToInt32(cacheDuration.Value.TotalSeconds);
             }
-            else if (!string.IsNullOrEmpty(cacheKey))
+            else if (!noCache && !string.IsNullOrEmpty(cacheKey))
             {
                 responseHeaders["Cache-Control"] = "public";
             }
@@ -701,18 +694,15 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders["pragma"] = "no-cache, no-store, must-revalidate";
             }
 
-            AddExpiresHeader(responseHeaders, cacheKey, cacheDuration);
+            AddExpiresHeader(responseHeaders, cacheKey, cacheDuration, noCache);
         }
 
         /// <summary>
         /// Adds the expires header.
         /// </summary>
-        /// <param name="responseHeaders">The responseHeaders.</param>
-        /// <param name="cacheKey">The cache key.</param>
-        /// <param name="cacheDuration">Duration of the cache.</param>
-        private void AddExpiresHeader(IDictionary<string, string> responseHeaders, string cacheKey, TimeSpan? cacheDuration)
+        private void AddExpiresHeader(IDictionary<string, string> responseHeaders, string cacheKey, TimeSpan? cacheDuration, bool noCache)
         {
-            if (cacheDuration.HasValue)
+            if (!noCache && cacheDuration.HasValue)
             {
                 responseHeaders["Expires"] = DateTime.UtcNow.Add(cacheDuration.Value).ToString("r");
             }

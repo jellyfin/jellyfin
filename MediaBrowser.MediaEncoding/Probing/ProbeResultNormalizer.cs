@@ -176,6 +176,14 @@ namespace MediaBrowser.MediaEncoding.Probing
                     info.Video3DFormat = Video3DFormat.FullSideBySide;
                 }
 
+                foreach (var mediaStream in info.MediaStreams)
+                {
+                    if (mediaStream.Type == MediaStreamType.Audio && !mediaStream.BitRate.HasValue)
+                    {
+                        mediaStream.BitRate = GetEstimatedAudioBitrate(mediaStream.Codec, mediaStream.Channels);
+                    }
+                }
+
                 var videoStreamsBitrate = info.MediaStreams.Where(i => i.Type == MediaStreamType.Video).Select(i => i.BitRate ?? 0).Sum();
                 // If ffprobe reported the container bitrate as being the same as the video stream bitrate, then it's wrong
                 if (videoStreamsBitrate == (info.Bitrate ?? 0))
@@ -185,6 +193,32 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             return info;
+        }
+
+        private int? GetEstimatedAudioBitrate(string codec, int? channels)
+        {
+            if (!channels.HasValue)
+            {
+                return null;
+            }
+
+            var channelsValue = channels.Value;
+
+            if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(codec, "mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                if (channelsValue <= 2)
+                {
+                    return 192000;
+                }
+
+                if (channelsValue >= 5)
+                {
+                    return 320000;
+                }
+            }
+
+            return null;
         }
 
         private void FetchFromItunesInfo(string xml, MediaInfo info)

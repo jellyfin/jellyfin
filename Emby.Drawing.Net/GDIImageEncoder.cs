@@ -75,27 +75,24 @@ namespace Emby.Drawing.Net
             }
         }
 
-        public void CropWhiteSpace(string inputPath, string outputPath)
+        private Image GetImage(string path, bool cropWhitespace)
         {
-            using (var image = (Bitmap)Image.FromFile(inputPath))
+            if (cropWhitespace)
             {
-                using (var croppedImage = image.CropWhitespace())
+                using (var originalImage = (Bitmap)Image.FromFile(path))
                 {
-                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
-
-                    using (var outputStream = _fileSystem.GetFileStream(outputPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, false))
-                    {
-                        croppedImage.Save(System.Drawing.Imaging.ImageFormat.Png, outputStream, 100);
-                    }
+                    return originalImage.CropWhitespace();
                 }
             }
+
+            return Image.FromFile(path);
         }
 
         public void EncodeImage(string inputPath, string cacheFilePath, bool autoOrient, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
             var hasPostProcessing = !string.IsNullOrEmpty(options.BackgroundColor) || options.UnplayedCount.HasValue || options.AddPlayedIndicator || options.PercentPlayed > 0;
 
-            using (var originalImage = Image.FromFile(inputPath))
+            using (var originalImage = GetImage(inputPath, options.CropWhiteSpace))
             {
                 var newWidth = Convert.ToInt32(width);
                 var newHeight = Convert.ToInt32(height);
