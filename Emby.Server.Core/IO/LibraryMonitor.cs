@@ -537,7 +537,7 @@ namespace Emby.Server.Core.IO
                     }
                 }
 
-                var newRefresher = new FileRefresher(path, _fileSystem, ConfigurationManager, LibraryManager, TaskManager, Logger, _timerFactory, _environmentInfo);
+                var newRefresher = new FileRefresher(path, _fileSystem, ConfigurationManager, LibraryManager, TaskManager, Logger, _timerFactory, _environmentInfo, LibraryManager);
                 newRefresher.Completed += NewRefresher_Completed;
                 _activeRefreshers.Add(newRefresher);
             }

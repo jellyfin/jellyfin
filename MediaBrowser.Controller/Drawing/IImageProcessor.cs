@@ -112,5 +112,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <value><c>true</c> if [supports image collage creation]; otherwise, <c>false</c>.</value>
         bool SupportsImageCollageCreation { get; }
+
+        IImageEncoder ImageEncoder { get; set; }
     }
 }

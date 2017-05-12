@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "On Now",
-    "Downloading": "Downloading",
     "LabelPrevious": "\u041f\u0440\u0435\u0434\u0438\u0448\u0435\u043d",
     "LabelFinish": "\u041a\u0440\u0430\u0439",
     "LabelNext": "\u0421\u043b\u0435\u0434\u0432\u0430\u0449",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "\u0421\u043a\u0440\u0438\u0439 \u0433\u043b\u0435\u0434\u0430\u043d\u043e\u0442\u043e \u0441\u044a\u0434\u044a\u0440\u0436\u0430\u043d\u0438\u0435 \u043e\u0442 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0430\u0442\u0430 \u043c\u0435\u0434\u0438\u044f",
     "DeleteMedia": "\u0418\u0437\u0442\u0440\u0438\u0439 \u043c\u0435\u0434\u0438\u044f",
     "HeaderSync": "\u0421\u0438\u043d\u0445\u0440\u043e\u043d\u0438\u0437.",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "\u041e\u043a",
     "ButtonCancel": "\u041e\u0442\u043c\u0435\u043d\u0438",
     "ButtonExit": "\u0418\u0437\u0445\u043e\u0434",
     "ButtonNew": "\u041d\u043e\u0432",
+    "All": "All",
     "OptionDev": "Dev",
     "OptionBeta": "\u0411\u0435\u0442\u0430",
     "HeaderTaskTriggers": "Task Triggers",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "\u041b\u0438\u043f\u0441\u0432\u0430\u0449\u0438 \u0435\u043f\u0438\u0437\u043e\u0434\u0438",
     "OptionUnairedEpisode": "\u041d\u0435\u0438\u0437\u043b\u044a\u0447\u0435\u043d\u0438 \u0435\u043f\u0438\u0437\u043e\u0434\u0438",
     "OptionEpisodeSortName": "Episode Sort Name",
-    "OptionSeriesSortName": "Series Name",
     "OptionTvdbRating": "Tvdb Rating",
     "HeaderAddTitles": "\u0414\u043e\u0431\u0430\u0432\u0438 \u0437\u0430\u0433\u043b\u0430\u0432\u0438\u044f",
     "LabelEnableDlnaPlayTo": "\u0410\u043a\u0442\u0438\u0432\u0438\u0440\u0430\u0439 DLNA Play To",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "New Devices"
+    "HeaderNewDevices": "New Devices",
+    "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

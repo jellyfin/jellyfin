@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Services;
 using SocketHttpListener.Net;
 using HttpListenerResponse = SocketHttpListener.Net.HttpListenerResponse;
 using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
@@ -64,6 +65,14 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             }
 
             _response.AddHeader(name, value);
+        }
+
+        public QueryParamCollection Headers
+        {
+            get
+            {
+                return _response.Headers;
+            }
         }
 
         public string GetHeader(string name)

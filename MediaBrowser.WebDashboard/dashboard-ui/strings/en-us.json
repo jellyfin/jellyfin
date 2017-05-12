@@ -26,6 +26,7 @@
   "OptionHideWatchedContentFromLatestMedia": "Hide watched content from latest media",
   "DeleteMedia": "Delete media",
   "HeaderSync": "Sync",
+  "HeaderUpcomingNews": "Upcoming News",
   "ButtonOk": "Ok",
   "ButtonCancel": "Cancel",
   "ButtonExit": "Exit",
@@ -1976,5 +1977,7 @@
   "EveryNDays": "Every {0} days",
   "HeaderNewDevices": "New Devices",
   "HeaderOnNow": "On Now",
-  "Downloading": "Downloading"
+  "Downloading": "Downloading",
+  "LabelCertificatePassword": "Certificate password:",
+  "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

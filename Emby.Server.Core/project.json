@@ -68,7 +68,7 @@
         "System.AppDomain": "2.0.11",
         "System.Globalization.Extensions": "4.3.0",
         "System.IO.FileSystem.Watcher": "4.3.0",
-        "System.Net.Security": "4.3.0",
+        "System.Net.Security": "4.3.1",
         "System.Security.Cryptography.X509Certificates": "4.3.0",
         "System.Runtime.Extensions": "4.3.0",
         "MediaBrowser.Model": {

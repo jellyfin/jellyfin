@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "On Now",
-    "Downloading": "Downloading",
     "LabelPrevious": "Prethodni",
     "LabelFinish": "Kraj",
     "LabelNext": "Sljede\u0107i",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "Sakrij pregledani sadr\u017eaj iz najnovijih medija",
     "DeleteMedia": "Delete media",
     "HeaderSync": "Sink.",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "U redu",
     "ButtonCancel": "Odustani",
     "ButtonExit": "Izlaz",
     "ButtonNew": "Novo",
+    "All": "All",
     "OptionDev": "Dev",
     "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Okida\u010di zadataka",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "Epizode koje nedostaju",
     "OptionUnairedEpisode": "Ne emitirane epizode",
     "OptionEpisodeSortName": "Slo\u017ei epizode po",
-    "OptionSeriesSortName": "Nazivu serijala",
     "OptionTvdbRating": "Ocjeni Tvdb",
     "HeaderAddTitles": "Dodaj naslove",
     "LabelEnableDlnaPlayTo": "Omogu\u0107i DLNA izvo\u0111enje na",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "New Devices"
+    "HeaderNewDevices": "New Devices",
+    "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

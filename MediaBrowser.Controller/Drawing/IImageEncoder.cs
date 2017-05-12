@@ -16,12 +16,6 @@ namespace MediaBrowser.Controller.Drawing
         /// <value>The supported output formats.</value>
         ImageFormat[] SupportedOutputFormats { get; }
         /// <summary>
-        /// Crops the white space.
-        /// </summary>
-        /// <param name="inputPath">The input path.</param>
-        /// <param name="outputPath">The output path.</param>
-        void CropWhiteSpace(string inputPath, string outputPath);
-        /// <summary>
         /// Encodes the image.
         /// </summary>
         /// <param name="inputPath">The input path.</param>
@@ -56,5 +50,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <value><c>true</c> if [supports image encoding]; otherwise, <c>false</c>.</value>
         bool SupportsImageEncoding { get; }
+
+        ImageSize GetImageSize(string path);
     }
 }

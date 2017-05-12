@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "On Now",
-    "Downloading": "Downloading",
     "LabelPrevious": "P\u0159edchoz\u00ed",
     "LabelFinish": "Dokon\u010dit",
     "LabelNext": "Dal\u0161\u00ed",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "Skr\u00fdt p\u0159ehran\u00e9 polo\u017eky ze seznamu naposledy p\u0159idan\u00fdch m\u00e9di\u00ed",
     "DeleteMedia": "Odstranit m\u00e9dia",
     "HeaderSync": "Synchronizace",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "Ok",
     "ButtonCancel": "Zru\u0161it",
     "ButtonExit": "Zav\u0159\u00edt",
     "ButtonNew": "Nov\u00e9",
+    "All": "All",
     "OptionDev": "V\u00fdvoj\u00e1\u0159sk\u00e1",
     "OptionBeta": "Betaverze",
     "HeaderTaskTriggers": "Spou\u0161t\u011b\u010de \u00faloh",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "Chyb\u011bj\u00edc\u00ed episody",
     "OptionUnairedEpisode": "Neodvys\u00edlan\u00e9 epizody",
     "OptionEpisodeSortName": "Se\u0159azen\u00ed n\u00e1zvu epizod",
-    "OptionSeriesSortName": "Jm\u00e9no serie",
     "OptionTvdbRating": "Tvdb hodnocen\u00ed",
     "HeaderAddTitles": "P\u0159idat n\u00e1zvy",
     "LabelEnableDlnaPlayTo": "Povolit DLNA p\u0159ehr\u00e1v\u00e1n\u00ed",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "New Devices"
+    "HeaderNewDevices": "New Devices",
+    "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

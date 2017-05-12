@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "On Now",
-    "Downloading": "Downloading",
     "LabelPrevious": "\u4e0a\u4e00\u500b",
     "LabelFinish": "\u5b8c\u6210",
     "LabelNext": "\u4e0b\u4e00\u500b",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "Hide watched content from latest media",
     "DeleteMedia": "Delete media",
     "HeaderSync": "\u540c\u6b65",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "OK",
     "ButtonCancel": "\u53d6\u6d88",
     "ButtonExit": "Exit",
     "ButtonNew": "\u5efa\u7acb",
+    "All": "All",
     "OptionDev": "Dev",
     "OptionBeta": "\u516c\u6e2c\u7248\u672c",
     "HeaderTaskTriggers": "Task Triggers",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "\u7f3a\u5c11\u4e86\u7684\u55ae\u5143",
     "OptionUnairedEpisode": "\u9084\u672a\u767c\u4f48\u7684\u55ae\u5143",
     "OptionEpisodeSortName": "\u55ae\u5143\u6392\u5e8f\u540d\u7a31",
-    "OptionSeriesSortName": "\u96fb\u8996\u5287\u540d\u7a31",
     "OptionTvdbRating": "Tvdb\u8a55\u5206",
     "HeaderAddTitles": "\u6dfb\u52a0\u6a19\u984c",
     "LabelEnableDlnaPlayTo": "\u64ad\u653e\u5230DLNA\u8a2d\u5099",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "New Devices"
+    "HeaderNewDevices": "New Devices",
+    "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

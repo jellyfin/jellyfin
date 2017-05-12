@@ -24,7 +24,7 @@ RUN apt-get dist-upgrade -qy && apt-get -q update
 # Install MediaBrowser run dependencies
 RUN apt-get install -qy --force-yes libmono-cil-dev Libgdiplus mediainfo wget libwebp-dev
 
-# Download latest release from Dropbox
+# Download latest release
 RUN wget https://github.com/MediaBrowser/MediaBrowser.Releases/raw/master/Server/mediabrowser.deb && dpkg -i mediabrowser.deb && apt-get install -f
 
 # Uncomment for unRAID

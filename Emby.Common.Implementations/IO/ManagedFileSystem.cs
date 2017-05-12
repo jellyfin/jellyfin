@@ -392,10 +392,27 @@ namespace Emby.Common.Implementations.IO
 
             if (_supportsAsyncFileStreams && isAsync)
             {
-                return new FileStream(path, GetFileMode(mode), GetFileAccess(access), GetFileShare(share), 262144, true);
+                return GetFileStream(path, mode, access, share, FileOpenOptions.Asynchronous);
             }
 
-            return new FileStream(path, GetFileMode(mode), GetFileAccess(access), GetFileShare(share), 262144);
+            return GetFileStream(path, mode, access, share, FileOpenOptions.None);
+        }
+
+        public Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, FileOpenOptions fileOpenOptions)
+        {
+            if (_sharpCifsFileSystem.IsEnabledForPath(path))
+            {
+                return _sharpCifsFileSystem.GetFileStream(path, mode, access, share);
+            }
+
+            var defaultBufferSize = 4096;
+            return new FileStream(path, GetFileMode(mode), GetFileAccess(access), GetFileShare(share), defaultBufferSize, GetFileOptions(fileOpenOptions));
+        }
+
+        private FileOptions GetFileOptions(FileOpenOptions mode)
+        {
+            var val = (int)mode;
+            return (FileOptions)val;
         }
 
         private FileMode GetFileMode(FileOpenMode mode)
@@ -499,6 +516,49 @@ namespace Emby.Common.Implementations.IO
                     File.SetAttributes(path, attributes);
                 }
             }
+        }
+
+        public void SetAttributes(string path, bool isHidden, bool isReadOnly)
+        {
+            if (_sharpCifsFileSystem.IsEnabledForPath(path))
+            {
+                _sharpCifsFileSystem.SetAttributes(path, isHidden, isReadOnly);
+                return;
+            }
+
+            var info = GetFileInfo(path);
+
+            if (!info.Exists)
+            {
+                return;
+            }
+
+            if (info.IsReadOnly == isReadOnly && info.IsHidden == isHidden)
+            {
+                return;
+            }
+
+            var attributes = File.GetAttributes(path);
+
+            if (isReadOnly)
+            {
+                attributes = attributes | FileAttributes.ReadOnly;
+            }
+            else
+            {
+                attributes = RemoveAttribute(attributes, FileAttributes.ReadOnly);
+            }
+
+            if (isHidden)
+            {
+                attributes = attributes | FileAttributes.Hidden;
+            }
+            else
+            {
+                attributes = RemoveAttribute(attributes, FileAttributes.Hidden);
+            }
+
+            File.SetAttributes(path, attributes);
         }
 
         private static FileAttributes RemoveAttribute(FileAttributes attributes, FileAttributes attributesToRemove)
@@ -673,20 +733,7 @@ namespace Emby.Common.Implementations.IO
                 return;
             }
 
-            var fileInfo = GetFileInfo(path);
-
-            if (fileInfo.Exists)
-            {
-                if (fileInfo.IsHidden)
-                {
-                    SetHidden(path, false);
-                }
-                if (fileInfo.IsReadOnly)
-                {
-                    SetReadOnly(path, false);
-                }
-            }
-
+            SetAttributes(path, false, false);
             File.Delete(path);
         }
 

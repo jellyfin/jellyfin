@@ -53,6 +53,11 @@ namespace Emby.Common.Implementations.IO
             if (separator == '/')
             {
                 result = result.Replace('\\', '/');
+
+                if (result.StartsWith("smb:/", StringComparison.OrdinalIgnoreCase) && !result.StartsWith("smb://", StringComparison.OrdinalIgnoreCase))
+                {
+                    result = result.Replace("smb:/", "smb://");
+                }
             }
 
             return result;
@@ -161,23 +166,38 @@ namespace Emby.Common.Implementations.IO
         public void SetHidden(string path, bool isHidden)
         {
             var file = CreateSmbFile(path);
-
-            var isCurrentlyHidden = file.IsHidden();
-
-            if (isCurrentlyHidden && !isHidden)
-            {
-                file.SetAttributes(file.GetAttributes() & ~SmbFile.AttrReadonly);
-            }
-            else if (!isCurrentlyHidden && isHidden)
-            {
-                file.SetAttributes(file.GetAttributes() | SmbFile.AttrReadonly);
-            }
+            SetHidden(file, isHidden);
         }
 
         public void SetReadOnly(string path, bool isReadOnly)
         {
             var file = CreateSmbFile(path);
+            SetReadOnly(file, isReadOnly);
+        }
 
+        public void SetAttributes(string path, bool isHidden, bool isReadOnly)
+        {
+            var file = CreateSmbFile(path);
+            SetHidden(file, isHidden);
+            SetReadOnly(file, isReadOnly);
+        }
+
+        private void SetHidden(SmbFile file, bool isHidden)
+        {
+            var isCurrentlyHidden = file.IsHidden();
+
+            if (isCurrentlyHidden && !isHidden)
+            {
+                file.SetAttributes(file.GetAttributes() & ~SmbFile.AttrHidden);
+            }
+            else if (!isCurrentlyHidden && isHidden)
+            {
+                file.SetAttributes(file.GetAttributes() | SmbFile.AttrHidden);
+            }
+        }
+
+        private void SetReadOnly(SmbFile file, bool isReadOnly)
+        {
             var isCurrentlyReadOnly = !file.CanWrite();
 
             if (isCurrentlyReadOnly && !isReadOnly)

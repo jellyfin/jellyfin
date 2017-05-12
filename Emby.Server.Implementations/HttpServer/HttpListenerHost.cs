@@ -228,7 +228,8 @@ namespace Emby.Server.Implementations.HttpServer
                 _streamFactory,
                 _enableDualModeSockets,
                 GetRequest,
-                _fileSystem);
+                _fileSystem,
+                _environment);
         }
 
         private IHttpRequest GetRequest(HttpListenerContext httpContext)
@@ -452,6 +453,7 @@ namespace Emby.Server.Implementations.HttpServer
             var date = DateTime.Now;
             var httpRes = httpReq.Response;
             bool enableLog = false;
+            bool logHeaders = false;
             string urlToLog = null;
             string remoteIp = null;
 
@@ -490,13 +492,14 @@ namespace Emby.Server.Implementations.HttpServer
                 var urlString = url.OriginalString;
                 enableLog = EnableLogging(urlString, localPath);
                 urlToLog = urlString;
+                 logHeaders = enableLog && urlToLog.IndexOf("/videos/", StringComparison.OrdinalIgnoreCase) != -1;
 
                 if (enableLog)
                 {
                     urlToLog = GetUrlToLog(urlString);
                     remoteIp = httpReq.RemoteIp;
 
-                    LoggerUtils.LogRequest(_logger, urlToLog, httpReq.HttpMethod, httpReq.UserAgent);
+                    LoggerUtils.LogRequest(_logger, urlToLog, httpReq.HttpMethod, httpReq.UserAgent, logHeaders ? httpReq.Headers : null);
                 }
 
                 if (string.Equals(localPath, "/emby/", StringComparison.OrdinalIgnoreCase) ||
@@ -611,7 +614,7 @@ namespace Emby.Server.Implementations.HttpServer
 
                     var duration = DateTime.Now - date;
 
-                    LoggerUtils.LogResponse(_logger, statusCode, urlToLog, remoteIp, duration);
+                    LoggerUtils.LogResponse(_logger, statusCode, urlToLog, remoteIp, duration, logHeaders ? httpRes.Headers : null);
                 }
             }
         }

@@ -1306,7 +1306,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 filters.Add("format=nv12|vaapi");
                 filters.Add("hwupload");
             }
-            else if (state.DeInterlace && !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+
+            if (state.DeInterlace && !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 filters.Add("yadif=0:-1:0");
             }
@@ -1533,13 +1534,25 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var flags = new List<string>();
-            if (state.IgnoreDts)
+            if (state.IgnoreInputDts)
             {
                 flags.Add("+igndts");
             }
-            if (state.IgnoreIndex)
+            if (state.IgnoreInputIndex)
             {
                 flags.Add("+ignidx");
+            }
+            if (state.GenPtsInput)
+            {
+                flags.Add("+genpts");
+            }
+            if (state.DiscardCorruptFramesInput)
+            {
+                flags.Add("+discardcorrupt");
+            }
+            if (state.EnableFastSeekInput)
+            {
+                flags.Add("+fastseek");
             }
 
             if (flags.Count > 0)
@@ -1864,6 +1877,22 @@ namespace MediaBrowser.Controller.MediaEncoding
                 ).Trim();
         }
 
+        public string GetOutputFFlags(EncodingJobInfo state)
+        {
+            var flags = new List<string>();
+            if (state.GenPtsOutput)
+            {
+                flags.Add("+genpts");
+            }
+
+            if (flags.Count > 0)
+            {
+                return " -fflags " + string.Join("", flags.ToArray());
+            }
+
+            return string.Empty;
+        }
+
         public string GetProgressiveVideoArguments(EncodingJobInfo state, EncodingOptions encodingOptions, string videoCodec, string defaultH264Preset)
         {
             var args = "-codec:v:0 " + videoCodec;
@@ -1942,6 +1971,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 args += " -vsync " + state.OutputVideoSync;
             }
+
+            args += GetOutputFFlags(state);
 
             return args;
         }

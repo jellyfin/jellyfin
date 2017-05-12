@@ -56,7 +56,7 @@ namespace Emby.Drawing
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationPaths _appPaths;
-        private readonly IImageEncoder _imageEncoder;
+        private IImageEncoder _imageEncoder;
         private readonly Func<ILibraryManager> _libraryManager;
 
         public ImageProcessor(ILogger logger,
@@ -64,7 +64,7 @@ namespace Emby.Drawing
             IFileSystem fileSystem,
             IJsonSerializer jsonSerializer,
             IImageEncoder imageEncoder,
-            int maxConcurrentImageProcesses, Func<ILibraryManager> libraryManager, ITimerFactory timerFactory)
+            Func<ILibraryManager> libraryManager, ITimerFactory timerFactory)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -103,6 +103,20 @@ namespace Emby.Drawing
             _cachedImagedSizes = new ConcurrentDictionary<Guid, ImageSize>(sizeDictionary);
         }
 
+        public IImageEncoder ImageEncoder
+        {
+            get { return _imageEncoder; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+
+                _imageEncoder = value;
+            }
+        }
+
         public string[] SupportedInputFormats
         {
             get
@@ -133,14 +147,6 @@ namespace Emby.Drawing
             get
             {
                 return Path.Combine(_appPaths.ImageCachePath, "enhanced-images");
-            }
-        }
-
-        private string CroppedWhitespaceImageCachePath
-        {
-            get
-            {
-                return Path.Combine(_appPaths.ImageCachePath, "cropped-images");
             }
         }
 
@@ -186,14 +192,6 @@ namespace Emby.Drawing
                 return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
-            if (options.CropWhiteSpace && _imageEncoder.SupportsImageEncoding)
-            {
-                var tuple = await GetWhitespaceCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
-
-                originalImagePath = tuple.Item1;
-                dateModified = tuple.Item2;
-            }
-
             if (options.Enhancers.Count > 0)
             {
                 var tuple = await GetEnhancedImage(new ItemImageInfo
@@ -214,7 +212,7 @@ namespace Emby.Drawing
                 return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
-            ImageSize? originalImageSize;
+            ImageSize? originalImageSize = null;
             try
             {
                 originalImageSize = GetImageSize(originalImagePath, dateModified, true);
@@ -241,8 +239,8 @@ namespace Emby.Drawing
 
                 if (!_fileSystem.FileExists(cacheFilePath))
                 {
-                    var newWidth = Convert.ToInt32(newSize.Width);
-                    var newHeight = Convert.ToInt32(newSize.Height);
+                    var newWidth = Convert.ToInt32(Math.Round(newSize.Width));
+                    var newHeight = Convert.ToInt32(Math.Round(newSize.Height));
 
                     _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(cacheFilePath));
                     var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(cacheFilePath));
@@ -349,22 +347,22 @@ namespace Emby.Drawing
                 return new ImageSize(options.Width.Value, options.Height.Value);
             }
 
-            var aspect = GetEstimatedAspectRatio(options.Image.Type);
+            var aspect = GetEstimatedAspectRatio(options.Image.Type, options.Item);
 
             var width = options.Width ?? options.MaxWidth;
 
             if (width.HasValue)
             {
-                var heightValue = aspect / width.Value;
-                return new ImageSize(width.Value, Convert.ToInt32(heightValue));
+                var heightValue = width.Value / aspect;
+                return new ImageSize(width.Value, heightValue);
             }
 
             var height = options.Height ?? options.MaxHeight ?? 200;
             var widthValue = aspect * height;
-            return new ImageSize(Convert.ToInt32(widthValue), height);
+            return new ImageSize(widthValue, height);
         }
 
-        private double GetEstimatedAspectRatio(ImageType type)
+        private double GetEstimatedAspectRatio(ImageType type, IHasImages item)
         {
             switch (type)
             {
@@ -384,7 +382,7 @@ namespace Emby.Drawing
                 case ImageType.Logo:
                     return 2.58;
                 case ImageType.Primary:
-                    return .667;
+                    return item.GetDefaultPrimaryImageAspectRatio() ?? .667;
                 default:
                     return 1;
             }
@@ -398,46 +396,6 @@ namespace Emby.Drawing
             }
 
             return requestedFormat;
-        }
-
-        /// <summary>
-        /// Crops whitespace from an image, caches the result, and returns the cached path
-        /// </summary>
-        private async Task<Tuple<string, DateTime>> GetWhitespaceCroppedImage(string originalImagePath, DateTime dateModified)
-        {
-            var name = originalImagePath;
-            name += "datemodified=" + dateModified.Ticks;
-
-            var croppedImagePath = GetCachePath(CroppedWhitespaceImageCachePath, name, Path.GetExtension(originalImagePath));
-
-            // Check again in case of contention
-            if (_fileSystem.FileExists(croppedImagePath))
-            {
-                return GetResult(croppedImagePath);
-            }
-
-            try
-            {
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(croppedImagePath));
-                var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(croppedImagePath));
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(tmpPath));
-
-                _imageEncoder.CropWhiteSpace(originalImagePath, tmpPath);
-                CopyFile(tmpPath, croppedImagePath);
-                return GetResult(tmpPath);
-            }
-            catch (NotImplementedException)
-            {
-                // No need to spam the log with an error message
-                return new Tuple<string, DateTime>(originalImagePath, dateModified);
-            }
-            catch (Exception ex)
-            {
-                // We have to have a catch-all here because some of the .net image methods throw a plain old Exception
-                _logger.ErrorException("Error cropping image {0}", ex, originalImagePath);
-
-                return new Tuple<string, DateTime>(originalImagePath, dateModified);
-            }
         }
 
         private Tuple<string, DateTime> GetResult(string path)
@@ -555,26 +513,39 @@ namespace Emby.Drawing
         /// <returns>ImageSize.</returns>
         private ImageSize GetImageSizeInternal(string path, bool allowSlowMethod)
         {
+            // Can't use taglib because it keeps a lock on the file
+            //try
+            //{
+            //    using (var file = TagLib.File.Create(new StreamFileAbstraction(Path.GetFileName(path), _fileSystem.OpenRead(path), null)))
+            //    {
+            //        var image = file as TagLib.Image.File;
+
+            //        var properties = image.Properties;
+
+            //        return new ImageSize
+            //        {
+            //            Height = properties.PhotoHeight,
+            //            Width = properties.PhotoWidth
+            //        };
+            //    }
+            //}
+            //catch
+            //{
+            //}
+
             try
             {
-                using (var file = TagLib.File.Create(new StreamFileAbstraction(Path.GetFileName(path), _fileSystem.OpenRead(path), null)))
-                {
-                    var image = file as TagLib.Image.File;
-
-                    var properties = image.Properties;
-
-                    return new ImageSize
-                    {
-                        Height = properties.PhotoHeight,
-                        Width = properties.PhotoWidth
-                    };
-                }
+                return ImageHeader.GetDimensions(path, _logger, _fileSystem);
             }
             catch
             {
-            }
+                if (allowSlowMethod)
+                {
+                    return _imageEncoder.GetImageSize(path);
+                }
 
-            return ImageHeader.GetDimensions(path, _logger, _fileSystem);
+                throw;
+            }
         }
 
         private readonly ITimer _saveImageSizeTimer;

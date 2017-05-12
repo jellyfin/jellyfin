@@ -1,6 +1,4 @@
 {
-    "HeaderOnNow": "On Now",
-    "Downloading": "Downloading",
     "LabelPrevious": "\u041f\u0430\u043f\u044f\u0440\u044d\u0434\u043d\u044f\u0435",
     "LabelFinish": "\u0413\u0430\u0442\u043e\u0432\u0430",
     "LabelNext": "\u041d\u0430\u0441\u0442\u0443\u043f\u043d\u0430\u0435",
@@ -28,10 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "\u0421\u0445\u0430\u0432\u0430\u0446\u044c \u043f\u0440\u0430\u0433\u043b\u0435\u0434\u0436\u0430\u043d\u0430\u0435 \u045e\u0442\u0440\u044b\u043c\u0430\u043d\u043d\u0435 \u0437 \u0410\u043f\u043e\u0448\u043d\u0456\u0445 \u043c\u0435\u0434\u044b\u044f\u0434\u0430\u0434\u0437\u0435\u043d\u044b\u0445",
     "DeleteMedia": "Delete media",
     "HeaderSync": "\u0421\u0456\u043d\u0445\u0440\u0430\u043d\u0456\u0437\u0430\u0446\u044b\u044f",
+    "HeaderUpcomingNews": "Upcoming News",
     "ButtonOk": "\u041e\u041a",
     "ButtonCancel": "\u0410\u0434\u043c\u044f\u043d\u0456\u0446\u044c",
     "ButtonExit": "\u0412\u044b\u0439\u0441\u0446\u0456",
     "ButtonNew": "\u041d\u043e\u0432\u0430\u0435",
+    "All": "All",
     "OptionDev": "Dev",
     "OptionBeta": "Beta",
     "HeaderTaskTriggers": "\u0422\u0440\u044b\u0433\u0435\u0440\u044b \u0437\u0430\u0434\u0430\u0447\u044b",
@@ -429,7 +429,6 @@
     "OptionMissingEpisode": "Missing Episodes",
     "OptionUnairedEpisode": "Unaired Episodes",
     "OptionEpisodeSortName": "Episode Sort Name",
-    "OptionSeriesSortName": "Series Name",
     "OptionTvdbRating": "Tvdb Rating",
     "HeaderAddTitles": "Add Titles",
     "LabelEnableDlnaPlayTo": "Enable DLNA Play To",
@@ -1976,5 +1975,9 @@
     "LabelAutomaticallyRefreshInternetMetadataEvery": "Automatically refresh metadata from the internet:",
     "Never": "Never",
     "EveryNDays": "Every {0} days",
-    "HeaderNewDevices": "New Devices"
+    "HeaderNewDevices": "New Devices",
+    "HeaderOnNow": "On Now",
+    "Downloading": "Downloading",
+    "LabelCertificatePassword": "Certificate password:",
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
 }

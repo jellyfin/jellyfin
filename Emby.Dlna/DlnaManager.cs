@@ -587,10 +587,7 @@ namespace Emby.Dlna
                 new DirectTvProfile(),
                 new DishHopperJoeyProfile(),
                 new DefaultProfile(),
-                new PopcornHourProfile(),
-                new VlcProfile(),
-                new BubbleUpnpProfile(),
-                new KodiProfile(),
+                new PopcornHourProfile()
             };
 
             foreach (var item in list)

@@ -99,12 +99,16 @@
       <HintPath>..\packages\SimpleInjector.3.3.2\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="SkiaSharp, Version=1.57.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\SkiaSharp.1.57.1\lib\net45\SkiaSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="SQLitePCLRaw.core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.core.1.1.2\lib\net45\SQLitePCLRaw.core.dll</HintPath>
+      <HintPath>..\packages\SQLitePCLRaw.core.1.1.5\lib\net45\SQLitePCLRaw.core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SQLitePCLRaw.provider.sqlite3, Version=1.0.0.0, Culture=neutral, PublicKeyToken=62684c7b4f184e3f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.provider.sqlite3.net45.1.1.2\lib\net45\SQLitePCLRaw.provider.sqlite3.dll</HintPath>
+      <HintPath>..\packages\SQLitePCLRaw.provider.sqlite3.net45.1.1.5\lib\net45\SQLitePCLRaw.provider.sqlite3.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -185,6 +189,14 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\packages\SkiaSharp.1.57.1\runtimes\win7-x64\native\libSkiaSharp.dll">
+      <Link>x64\libSkiaSharp.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\packages\SkiaSharp.1.57.1\runtimes\win7-x86\native\libSkiaSharp.dll">
+      <Link>x86\libSkiaSharp.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\Tools\Installation\MediaBrowser.InstallUtil.dll">
       <Link>MediaBrowser.InstallUtil.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -1099,6 +1111,10 @@
     <ProjectReference Include="..\Emby.Drawing.Net\Emby.Drawing.Net.csproj">
       <Project>{c97a239e-a96c-4d64-a844-ccf8cc30aecb}</Project>
       <Name>Emby.Drawing.Net</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Drawing.Skia\Emby.Drawing.Skia.csproj">
+      <Project>{2312da6d-ff86-4597-9777-bceec32d96dd}</Project>
+      <Name>Emby.Drawing.Skia</Name>
     </ProjectReference>
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj">
       <Project>{08fff49b-f175-4807-a2b5-73b0ebd9f716}</Project>
