@@ -32,6 +32,7 @@ using Mono.Unix.Native;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.IO;
 using Emby.Server.Core.Logging;
+using Emby.Drawing;
 using Emby.Drawing.Skia;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
@@ -148,7 +149,7 @@ namespace MediaBrowser.Server.Mac
             }
             catch (Exception ex)
 	        {
-	            return new GDIImageEncoder(fileSystem, logManager.GetLogger("GDI"));
+	            return new NullImageEncoder();
 	        }
 	    }
 
