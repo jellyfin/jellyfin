@@ -406,12 +406,6 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            var hasAwards = item as IHasAwards;
-            if (hasAwards != null && !string.IsNullOrEmpty(result.Awards))
-            {
-                hasAwards.AwardSummary = WebUtility.HtmlDecode(result.Awards);
-            }
-
             if (isConfiguredForEnglish)
             {
                 // Omdb is currently english only, so for other languages skip this and let secondary providers fill it in
