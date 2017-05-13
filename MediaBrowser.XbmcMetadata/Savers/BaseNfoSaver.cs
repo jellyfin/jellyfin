@@ -81,7 +81,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "country",
                     "audiodbalbumid",
                     "audiodbartistid",
-                    "awardsummary",
                     "enddate",
                     "lockedfields",
                     "zap2itid",
@@ -709,12 +708,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             foreach (var tag in item.Keywords)
             {
                 writer.WriteElementString("plotkeyword", tag);
-            }
-
-            var hasAwards = item as IHasAwards;
-            if (hasAwards != null && !string.IsNullOrEmpty(hasAwards.AwardSummary))
-            {
-                writer.WriteElementString("awardsummary", hasAwards.AwardSummary);
             }
 
             var externalId = item.GetProviderId(MetadataProviders.AudioDbArtist);

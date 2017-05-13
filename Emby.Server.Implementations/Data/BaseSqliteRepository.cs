@@ -124,19 +124,13 @@ namespace Emby.Server.Implementations.Data
 
                 if (CacheSize.HasValue)
                 {
-                    queries.Add("PRAGMA cache_size=-" + CacheSize.Value.ToString(CultureInfo.InvariantCulture));
+                    queries.Add("PRAGMA cache_size=" + CacheSize.Value.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (EnableTempStoreMemory)
                 {
                     queries.Add("PRAGMA temp_store = memory");
                 }
-
-                //var cacheSize = CacheSize;
-                //if (cacheSize.HasValue)
-                //{
-
-                //}
 
                 ////foreach (var query in queries)
                 ////{

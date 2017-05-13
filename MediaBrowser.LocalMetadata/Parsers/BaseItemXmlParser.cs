@@ -207,21 +207,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         break;
                     }
 
-                case "AwardSummary":
-                    {
-                        var text = reader.ReadElementContentAsString();
-                        var hasAwards = item as IHasAwards;
-                        if (hasAwards != null)
-                        {
-                            if (!string.IsNullOrWhiteSpace(text))
-                            {
-                                hasAwards.AwardSummary = text;
-                            }
-                        }
-
-                        break;
-                    }
-
                 case "SortTitle":
                     {
                         var val = reader.ReadElementContentAsString();

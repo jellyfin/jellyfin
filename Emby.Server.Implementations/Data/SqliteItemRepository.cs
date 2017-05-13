@@ -142,7 +142,7 @@ namespace Emby.Server.Implementations.Data
                    = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
 
                 string[] queries = {
-                                "PRAGMA locking_mode=NORMAL",
+                                "PRAGMA locking_mode=EXCLUSIVE",
 
                                 "create table if not exists TypedBaseItems (guid GUID primary key NOT NULL, type TEXT NOT NULL, data BLOB NULL, ParentId GUID NULL, Path TEXT NULL)",
 
@@ -1258,22 +1258,6 @@ namespace Emby.Server.Implementations.Data
         {
             if (_config.Configuration.SkipDeserializationForBasicTypes)
             {
-                if (type == typeof(MusicGenre))
-                {
-                    return false;
-                }
-                if (type == typeof(GameGenre))
-                {
-                    return false;
-                }
-                if (type == typeof(Genre))
-                {
-                    return false;
-                }
-                if (type == typeof(Studio))
-                {
-                    return false;
-                }
                 if (type == typeof(Person))
                 {
                     return false;
@@ -1282,23 +1266,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     return false;
                 }
-                if (type == typeof(ManualCollectionsFolder))
-                {
-                    return false;
-                }
-                if (type == typeof(CameraUploadsFolder))
-                {
-                    return false;
-                }
-                if (type == typeof(PlaylistsFolder))
-                {
-                    return false;
-                }
                 if (type == typeof(UserRootFolder))
-                {
-                    return false;
-                }
-                if (type == typeof(PhotoAlbum))
                 {
                     return false;
                 }
@@ -1310,6 +1278,41 @@ namespace Emby.Server.Implementations.Data
                 {
                     return false;
                 }
+            }
+
+            if (type == typeof(MusicGenre))
+            {
+                return false;
+            }
+            if (type == typeof(GameGenre))
+            {
+                return false;
+            }
+            if (type == typeof(Genre))
+            {
+                return false;
+            }
+            if (type == typeof(Studio))
+            {
+                return false;
+            }
+
+            if (type == typeof(ManualCollectionsFolder))
+            {
+                return false;
+            }
+            if (type == typeof(CameraUploadsFolder))
+            {
+                return false;
+            }
+            if (type == typeof(PlaylistsFolder))
+            {
+                return false;
+            }
+
+            if (type == typeof(PhotoAlbum))
+            {
+                return false;
             }
 
             if (type == typeof(Year))

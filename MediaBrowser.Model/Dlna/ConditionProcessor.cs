@@ -76,7 +76,7 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        public bool IsAudioConditionSatisfied(ProfileCondition condition, int? audioChannels, int? audioBitrate)
+        public bool IsAudioConditionSatisfied(ProfileCondition condition, int? audioChannels, int? audioBitrate, int? audioSampleRate)
         {
             switch (condition.Property)
             {
@@ -84,6 +84,8 @@ namespace MediaBrowser.Model.Dlna
                     return IsConditionSatisfied(condition, audioBitrate);
                 case ProfileConditionValue.AudioChannels:
                     return IsConditionSatisfied(condition, audioChannels);
+                case ProfileConditionValue.AudioSampleRate:
+                    return IsConditionSatisfied(condition, audioSampleRate);
                 default:
                     throw new ArgumentException("Unexpected condition on audio file: " + condition.Property);
             }
@@ -92,6 +94,7 @@ namespace MediaBrowser.Model.Dlna
         public bool IsVideoAudioConditionSatisfied(ProfileCondition condition,
             int? audioChannels,
             int? audioBitrate,
+            int? audioSampleRate,
             string audioProfile,
             bool? isSecondaryTrack)
         {
@@ -105,6 +108,8 @@ namespace MediaBrowser.Model.Dlna
                     return IsConditionSatisfied(condition, audioChannels);
                 case ProfileConditionValue.IsSecondaryAudio:
                     return IsConditionSatisfied(condition, isSecondaryTrack);
+                case ProfileConditionValue.AudioSampleRate:
+                    return IsConditionSatisfied(condition, audioSampleRate);
                 default:
                     throw new ArgumentException("Unexpected condition on audio file: " + condition.Property);
             }
