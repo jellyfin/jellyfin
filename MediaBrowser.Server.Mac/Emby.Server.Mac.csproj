@@ -2704,11 +2704,15 @@
     </BundleResource>
   </ItemGroup>
   <ItemGroup>
-    <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.0.dylib">
+    <NativeReference Include="..\packages\SkiaSharp.1.57.1\runtimes\osx\native\libSkiaSharp.dylib">
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
     <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.dylib">
+      <Kind>Dynamic</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.0.dylib">
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
