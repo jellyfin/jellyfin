@@ -79,8 +79,6 @@ namespace MediaBrowser.Model.Dto
         public string PreferredMetadataLanguage { get; set; }
         public string PreferredMetadataCountryCode { get; set; }
 
-        public string AwardSummary { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether [supports synchronize].
         /// </summary>

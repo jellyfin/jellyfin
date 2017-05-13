@@ -341,21 +341,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                case "awardsummary":
-                    {
-                        var text = reader.ReadElementContentAsString();
-                        var hasAwards = item as IHasAwards;
-                        if (hasAwards != null)
-                        {
-                            if (!string.IsNullOrWhiteSpace(text))
-                            {
-                                hasAwards.AwardSummary = text;
-                            }
-                        }
-
-                        break;
-                    }
-
                 case "sorttitle":
                     {
                         var val = reader.ReadElementContentAsString();
