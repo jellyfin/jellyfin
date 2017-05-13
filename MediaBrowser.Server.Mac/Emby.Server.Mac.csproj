@@ -232,10 +232,6 @@
       <Project>{2312da6d-ff86-4597-9777-bceec32d96dd}</Project>
       <Name>Emby.Drawing.Skia</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Emby.Drawing.ImageMagick\Emby.Drawing.ImageMagick.csproj">
-      <Project>{6CFEE013-6E7C-432B-AC37-CABF0880C69A}</Project>
-      <Name>Emby.Drawing.ImageMagick</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj">
       <Project>{08FFF49B-F175-4807-A2B5-73B0EBD9F716}</Project>
       <Name>Emby.Drawing</Name>
