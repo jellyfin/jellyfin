@@ -883,15 +883,6 @@ namespace Emby.Server.Implementations.Dto
                 dto.AspectRatio = hasAspectRatio.AspectRatio;
             }
 
-            if (fields.Contains(ItemFields.AwardSummary))
-            {
-                var hasAwards = item as IHasAwards;
-                if (hasAwards != null)
-                {
-                    dto.AwardSummary = hasAwards.AwardSummary;
-                }
-            }
-
             var backdropLimit = options.GetImageLimit(ImageType.Backdrop);
             if (backdropLimit > 0)
             {

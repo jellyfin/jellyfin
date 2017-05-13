@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasSpecialFeatures, IHasTrailers, IHasAwards, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
+    public class Movie : Video, IHasSpecialFeatures, IHasTrailers, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
@@ -28,8 +28,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             LocalTrailerIds = new List<Guid>();
             RemoteTrailerIds = new List<Guid>();
         }
-
-        public string AwardSummary { get; set; }
 
         public List<Guid> LocalTrailerIds { get; set; }
         public List<Guid> RemoteTrailerIds { get; set; }

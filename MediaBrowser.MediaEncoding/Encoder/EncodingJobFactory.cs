@@ -263,7 +263,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var outputContainer = state.Options.OutputContainer;
 
             var mediaProfile = state.IsVideoRequest ?
-                profile.GetAudioMediaProfile(outputContainer, audioCodec, state.OutputAudioChannels, state.OutputAudioBitrate) :
+                profile.GetAudioMediaProfile(outputContainer, audioCodec, state.OutputAudioChannels, state.OutputAudioBitrate, state.OutputAudioSampleRate) :
                 profile.GetVideoMediaProfile(outputContainer,
                 audioCodec,
                 videoCodec,

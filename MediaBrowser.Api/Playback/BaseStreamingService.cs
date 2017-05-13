@@ -866,7 +866,7 @@ namespace MediaBrowser.Api.Playback
             var videoCodec = state.ActualOutputVideoCodec;
 
             var mediaProfile = state.VideoRequest == null ?
-                profile.GetAudioMediaProfile(state.OutputContainer, audioCodec, state.OutputAudioChannels, state.OutputAudioBitrate) :
+                profile.GetAudioMediaProfile(state.OutputContainer, audioCodec, state.OutputAudioChannels, state.OutputAudioBitrate, state.OutputAudioSampleRate) :
                 profile.GetVideoMediaProfile(state.OutputContainer,
                 audioCodec,
                 videoCodec,

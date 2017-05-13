@@ -131,7 +131,6 @@
     <Compile Include="Entities\ItemImageInfo.cs" />
     <Compile Include="Entities\LinkedChild.cs" />
     <Compile Include="Entities\MusicVideo.cs" />
-    <Compile Include="Entities\IHasAwards.cs" />
     <Compile Include="Entities\PeopleHelper.cs" />
     <Compile Include="Entities\Photo.cs" />
     <Compile Include="Entities\PhotoAlbum.cs" />

@@ -32,7 +32,10 @@ using Mono.Unix.Native;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.IO;
 using Emby.Server.Core.Logging;
-using Emby.Drawing.Net;
+using Emby.Drawing;
+using Emby.Drawing.Skia;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Model.Drawing;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -112,7 +115,7 @@ namespace MediaBrowser.Server.Mac
 
 			_fileSystem = fileSystem;
 
-			var imageEncoder = new GDIImageEncoder(fileSystem, logManager.GetLogger("GDI"));
+			var imageEncoder = GetImageEncoder(appPaths, fileSystem, logManager);
 
 			AppHost = new MacAppHost(appPaths,
 									 logManager,
@@ -137,6 +140,18 @@ namespace MediaBrowser.Server.Mac
 
 			Task.Run (() => StartServer(CancellationToken.None));
         }
+
+	    private static IImageEncoder GetImageEncoder(ServerApplicationPaths appPaths, IFileSystem fileSystem, ILogManager logManager)
+	    {
+	        try
+	        {
+                return new SkiaEncoder(logManager.GetLogger("Skia"), appPaths, () => AppHost.HttpClient, fileSystem);
+            }
+            catch (Exception ex)
+	        {
+	            return new NullImageEncoder();
+	        }
+	    }
 
         private static void GenerateCertificate(string certPath, string certHost, string certPassword)
         {

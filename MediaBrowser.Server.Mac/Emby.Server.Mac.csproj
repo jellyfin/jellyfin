@@ -121,6 +121,9 @@
     <Reference Include="TagLib.Portable">
       <HintPath>..\ThirdParty\taglib\TagLib.Portable.dll</HintPath>
     </Reference>
+    <Reference Include="SkiaSharp">
+      <HintPath>..\packages\SkiaSharp.1.57.1\lib\net45\SkiaSharp.dll</HintPath>
+    </Reference>
     <Reference Include="SQLitePCLRaw.core">
       <HintPath>..\packages\SQLitePCLRaw.core.1.1.5\lib\net45\SQLitePCLRaw.core.dll</HintPath>
     </Reference>
@@ -221,13 +224,9 @@
       <Project>{89AB4548-770D-41FD-A891-8DAFF44F452C}</Project>
       <Name>Emby.Photos</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Emby.Drawing.Net\Emby.Drawing.Net.csproj">
-      <Project>{C97A239E-A96C-4D64-A844-CCF8CC30AECB}</Project>
-      <Name>Emby.Drawing.Net</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Emby.Drawing.ImageMagick\Emby.Drawing.ImageMagick.csproj">
-      <Project>{6CFEE013-6E7C-432B-AC37-CABF0880C69A}</Project>
-      <Name>Emby.Drawing.ImageMagick</Name>
+    <ProjectReference Include="..\Emby.Drawing.Skia\Emby.Drawing.Skia.csproj">
+      <Project>{2312da6d-ff86-4597-9777-bceec32d96dd}</Project>
+      <Name>Emby.Drawing.Skia</Name>
     </ProjectReference>
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj">
       <Project>{08FFF49B-F175-4807-A2B5-73B0EBD9F716}</Project>
@@ -923,12 +922,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-textarea\emby-textarea.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-textarea\emby-textarea.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-toggle\emby-toggle.css">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-toggle\emby-toggle.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-toggle\emby-toggle.js">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-toggle\emby-toggle.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\fonts\material-icons\2fcryfnatjcs6g4u3t-y5ewrjpiaoeww8aihgqwrjao.woff">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\fonts\material-icons\2fcryfnatjcs6g4u3t-y5ewrjpiaoeww8aihgqwrjao.woff</Link>
     </BundleResource>
@@ -1039,6 +1032,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-intersectionobserver.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-intersectionobserver.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyedgehack.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyedgehack.css</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-scroll.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-scroll.js</Link>
@@ -2704,11 +2700,15 @@
     </BundleResource>
   </ItemGroup>
   <ItemGroup>
-    <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.0.dylib">
+    <NativeReference Include="..\packages\SkiaSharp.1.57.1\runtimes\osx\native\libSkiaSharp.dylib">
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
     <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.dylib">
+      <Kind>Dynamic</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.0.dylib">
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
