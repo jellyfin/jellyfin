@@ -224,10 +224,6 @@
       <Project>{89AB4548-770D-41FD-A891-8DAFF44F452C}</Project>
       <Name>Emby.Photos</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Emby.Drawing.Net\Emby.Drawing.Net.csproj">
-      <Project>{C97A239E-A96C-4D64-A844-CCF8CC30AECB}</Project>
-      <Name>Emby.Drawing.Net</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Emby.Drawing.Skia\Emby.Drawing.Skia.csproj">
       <Project>{2312da6d-ff86-4597-9777-bceec32d96dd}</Project>
       <Name>Emby.Drawing.Skia</Name>
