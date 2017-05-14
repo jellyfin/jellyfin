@@ -513,20 +513,25 @@ namespace Emby.Drawing
         /// <returns>ImageSize.</returns>
         private ImageSize GetImageSizeInternal(string path, bool allowSlowMethod)
         {
-            // Can't use taglib because it keeps a lock on the file
             //try
             //{
-            //    using (var file = TagLib.File.Create(new StreamFileAbstraction(Path.GetFileName(path), _fileSystem.OpenRead(path), null)))
+            //    using (var fileStream = _fileSystem.OpenRead(path))
             //    {
-            //        var image = file as TagLib.Image.File;
-
-            //        var properties = image.Properties;
-
-            //        return new ImageSize
+            //        using (var file = TagLib.File.Create(new StreamFileAbstraction(Path.GetFileName(path), fileStream, null)))
             //        {
-            //            Height = properties.PhotoHeight,
-            //            Width = properties.PhotoWidth
-            //        };
+            //            var image = file as TagLib.Image.File;
+
+            //            if (image != null)
+            //            {
+            //                var properties = image.Properties;
+
+            //                return new ImageSize
+            //                {
+            //                    Height = properties.PhotoHeight,
+            //                    Width = properties.PhotoWidth
+            //                };
+            //            }
+            //        }
             //    }
             //}
             //catch

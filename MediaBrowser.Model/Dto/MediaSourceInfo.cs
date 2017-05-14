@@ -31,6 +31,7 @@ namespace MediaBrowser.Model.Dto
         public bool ReadAtNativeFramerate { get; set; }
         public bool IgnoreDts { get; set; }
         public bool IgnoreIndex { get; set; }
+        public bool GenPtsInput { get; set; }
         public bool SupportsTranscoding { get; set; }
         public bool SupportsDirectStream { get; set; }
         public bool SupportsDirectPlay { get; set; }
