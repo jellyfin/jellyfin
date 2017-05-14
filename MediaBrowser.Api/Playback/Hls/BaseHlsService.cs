@@ -234,11 +234,11 @@ namespace MediaBrowser.Api.Playback.Hls
 
             try
             {
-                return FileSystem.GetFileStream(tmpPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
+                return FileSystem.GetFileStream(tmpPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, FileOpenOptions.Asynchronous | FileOpenOptions.SequentialScan);
             }
             catch (IOException)
             {
-                return FileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
+                return FileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, FileOpenOptions.Asynchronous | FileOpenOptions.SequentialScan);
             }
         }
 
