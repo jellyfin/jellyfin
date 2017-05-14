@@ -668,7 +668,7 @@ namespace Emby.Server.Implementations.Updates
             _logger.Info("Deleting plugin file {0}", path);
 
             // Make this case-insensitive to account for possible incorrect assembly naming
-            var file = _fileSystem.GetFilePaths(path)
+            var file = _fileSystem.GetFilePaths(_fileSystem.GetDirectoryName(path))
                 .FirstOrDefault(i => string.Equals(i, path, StringComparison.OrdinalIgnoreCase));
 
             if (!string.IsNullOrWhiteSpace(file))
