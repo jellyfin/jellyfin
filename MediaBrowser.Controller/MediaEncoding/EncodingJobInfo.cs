@@ -59,7 +59,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                return false;
+                return MediaSource.GenPtsInput;
             }
         }
 
