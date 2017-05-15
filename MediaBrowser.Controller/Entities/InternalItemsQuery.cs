@@ -251,7 +251,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (policy.MaxParentalRating.HasValue)
                 {
-                    BlockUnratedItems = policy.BlockUnratedItems;
+                    BlockUnratedItems = policy.BlockUnratedItems.Where(i => i != UnratedItem.Other).ToArray();
                 }
 
                 ExcludeInheritedTags = policy.BlockedTags;

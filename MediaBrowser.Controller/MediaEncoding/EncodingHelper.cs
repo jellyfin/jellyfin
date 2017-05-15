@@ -1749,7 +1749,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (!string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
                 {
-                    return "-hwaccel auto";
+                    // causing unpredictable results
+                    //return "-hwaccel auto";
                 }
 
                 if (string.Equals(encodingOptions.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
