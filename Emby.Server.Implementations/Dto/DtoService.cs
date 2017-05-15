@@ -1582,24 +1582,30 @@ namespace Emby.Server.Implementations.Dto
 
             ImageSize size;
 
-            if (supportedEnhancers.Count == 0)
-            {
-                var defaultAspectRatio = item.GetDefaultPrimaryImageAspectRatio();
+            var defaultAspectRatio = item.GetDefaultPrimaryImageAspectRatio();
 
-                if (defaultAspectRatio.HasValue)
+            if (defaultAspectRatio.HasValue)
+            {
+                if (supportedEnhancers.Count == 0)
                 {
                     return defaultAspectRatio.Value;
                 }
-            }
 
-            try
-            {
-                size = _imageProcessor.GetImageSize(imageInfo);
+                double dummyWidth = 200;
+                double dummyHeight = dummyWidth / defaultAspectRatio.Value;
+                size = new ImageSize(dummyWidth, dummyHeight);
             }
-            catch
+            else
             {
-                //_logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
-                return null;
+                try
+                {
+                    size = _imageProcessor.GetImageSize(imageInfo);
+                }
+                catch
+                {
+                    //_logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
+                    return null;
+                }
             }
 
             foreach (var enhancer in supportedEnhancers)
