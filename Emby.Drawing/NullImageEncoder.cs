@@ -32,7 +32,7 @@ namespace Emby.Drawing
             throw new NotImplementedException();
         }
 
-        public void EncodeImage(string inputPath, string outputPath, bool autoOrient, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
+        public void EncodeImage(string inputPath, ImageSize? originalImageSize, string outputPath, bool autoOrient, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
             throw new NotImplementedException();
         }

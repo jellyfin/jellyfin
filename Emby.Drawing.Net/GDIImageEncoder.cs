@@ -11,6 +11,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using ImageFormat = MediaBrowser.Model.Drawing.ImageFormat;
+using Emby.Drawing;
 
 namespace Emby.Drawing.Net
 {
@@ -88,14 +89,19 @@ namespace Emby.Drawing.Net
             return Image.FromFile(path);
         }
 
-        public void EncodeImage(string inputPath, string cacheFilePath, bool autoOrient, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
+        public void EncodeImage(string inputPath, ImageSize? originalImageSize, string outputPath, bool autoOrient, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
-            var hasPostProcessing = !string.IsNullOrEmpty(options.BackgroundColor) || options.UnplayedCount.HasValue || options.AddPlayedIndicator || options.PercentPlayed > 0;
-
             using (var originalImage = GetImage(inputPath, options.CropWhiteSpace))
             {
-                var newWidth = Convert.ToInt32(width);
-                var newHeight = Convert.ToInt32(height);
+                if (options.CropWhiteSpace || !originalImageSize.HasValue)
+                {
+                    originalImageSize = new ImageSize(originalImage.Width, originalImage.Height);
+                }
+
+                var newImageSize = ImageHelper.GetNewImageSize(options, originalImageSize);
+
+                var newWidth = Convert.ToInt32(Math.Round(newImageSize.Width));
+                var newHeight = Convert.ToInt32(Math.Round(newImageSize.Height));
 
                 // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
                 // Also, Webp only supports Format32bppArgb and Format32bppRgb
@@ -132,10 +138,8 @@ namespace Emby.Drawing.Net
 
                         var outputFormat = GetOutputFormat(originalImage, selectedOutputFormat);
 
-                        _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(cacheFilePath));
-
                         // Save to the cache location
-                        using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, false))
+                        using (var cacheFileStream = _fileSystem.GetFileStream(outputPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, false))
                         {
                             // Save to the memory stream
                             thumbnail.Save(outputFormat, cacheFileStream, quality);
