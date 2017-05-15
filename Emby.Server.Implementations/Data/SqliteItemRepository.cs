@@ -2854,7 +2854,7 @@ namespace Emby.Server.Implementations.Data
             }
             if (string.Equals(name, ItemSortBy.SeriesSortName, StringComparison.OrdinalIgnoreCase))
             {
-                return new Tuple<string, bool>("(Select SortName from TypedBaseItems where B.Guid=A.SeriesId)", false);
+                return new Tuple<string, bool>("SeriesName", false);
             }
 
             return new Tuple<string, bool>(name, false);

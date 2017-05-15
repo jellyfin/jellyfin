@@ -775,8 +775,6 @@ namespace MediaBrowser.ServerApplication
                 return;
             }
 
-            MessageBox.Show("The Visual C++ 2013 Runtime will now be installed.", "Install Visual C++ Runtime", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
             try
             {
                 await InstallVcredist(GetVcredist2013Url()).ConfigureAwait(false);
@@ -828,8 +826,6 @@ namespace MediaBrowser.ServerApplication
                 logger.ErrorException("Error getting .NET Framework version", ex);
                 return;
             }
-
-            MessageBox.Show("The Visual C++ 2015 Runtime will now be installed.", "Install Visual C++ Runtime", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             try
             {
