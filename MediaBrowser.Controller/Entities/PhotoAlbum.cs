@@ -1,7 +1,4 @@
-﻿using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Users;
-using System.Linq;
-using MediaBrowser.Model.Serialization;
+﻿using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -23,11 +20,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
-        }
-
-        protected override bool GetBlockUnratedValue(UserPolicy config)
-        {
-            return config.BlockUnratedItems.Contains(UnratedItem.Other);
         }
     }
 }

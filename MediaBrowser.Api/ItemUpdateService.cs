@@ -335,12 +335,6 @@ namespace MediaBrowser.Api
                 video.Video3DFormat = request.Video3DFormat;
             }
 
-            var hasAwards = item as IHasAwards;
-            if (hasAwards != null)
-            {
-                hasAwards.AwardSummary = request.AwardSummary;
-            }
-
             var game = item as Game;
 
             if (game != null)

@@ -488,7 +488,8 @@ namespace Emby.Dlna.Didl
             var mediaProfile = _profile.GetAudioMediaProfile(streamInfo.Container,
                 streamInfo.TargetAudioCodec,
                 targetChannels,
-                targetAudioBitrate);
+                targetAudioBitrate,
+                targetSampleRate);
 
             var filename = url.Substring(0, url.IndexOf('?'));
 

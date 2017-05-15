@@ -198,7 +198,6 @@ namespace MediaBrowser.Providers.Manager
 
             MergeAlbumArtist(source, target, lockedFields, replaceData);
             MergeCriticRating(source, target, lockedFields, replaceData);
-            MergeAwards(source, target, lockedFields, replaceData);
             MergeTrailers(source, target, lockedFields, replaceData);
             MergeVideoInfo(source, target, lockedFields, replaceData);
 
@@ -269,20 +268,6 @@ namespace MediaBrowser.Providers.Manager
                 if (replaceData || targetHasAlbumArtist.AlbumArtists.Count == 0)
                 {
                     targetHasAlbumArtist.AlbumArtists = sourceHasAlbumArtist.AlbumArtists;
-                }
-            }
-        }
-
-        private static void MergeAwards(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
-        {
-            var sourceCast = source as IHasAwards;
-            var targetCast = target as IHasAwards;
-
-            if (sourceCast != null && targetCast != null)
-            {
-                if (replaceData || string.IsNullOrEmpty(targetCast.AwardSummary))
-                {
-                    targetCast.AwardSummary = sourceCast.AwardSummary;
                 }
             }
         }

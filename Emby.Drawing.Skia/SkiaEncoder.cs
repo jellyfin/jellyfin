@@ -226,7 +226,7 @@ namespace Emby.Drawing.Skia
             return Decode(path);
         }
 
-        public void EncodeImage(string inputPath, string outputPath, bool autoOrient, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
+        public void EncodeImage(string inputPath, ImageSize? originalImageSize, string outputPath, bool autoOrient, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
             if (string.IsNullOrWhiteSpace(inputPath))
             {
@@ -246,6 +246,16 @@ namespace Emby.Drawing.Skia
 
             using (var bitmap = GetBitmap(inputPath, options.CropWhiteSpace))
             {
+                if (options.CropWhiteSpace || !originalImageSize.HasValue)
+                {
+                    originalImageSize = new ImageSize(bitmap.Width, bitmap.Height);
+                }
+
+                var newImageSize = ImageHelper.GetNewImageSize(options, originalImageSize);
+
+                var width = Convert.ToInt32(Math.Round(newImageSize.Width));
+                var height = Convert.ToInt32(Math.Round(newImageSize.Height));
+
                 using (var resizedBitmap = new SKBitmap(width, height))//, bitmap.ColorType, bitmap.AlphaType))
                 {
                     // scale image

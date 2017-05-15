@@ -85,7 +85,8 @@ namespace MediaBrowser.Model.Dlna
             ResponseProfile mediaProfile = _profile.GetAudioMediaProfile(container,
                 audioCodec,
                 audioChannels,
-                audioBitrate);
+                audioBitrate,
+                audioSampleRate);
 
             string orgPn = mediaProfile == null ? null : mediaProfile.OrgPn;
 

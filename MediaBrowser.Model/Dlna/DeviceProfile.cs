@@ -185,7 +185,7 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        public ResponseProfile GetAudioMediaProfile(string container, string audioCodec, int? audioChannels, int? audioBitrate)
+        public ResponseProfile GetAudioMediaProfile(string container, string audioCodec, int? audioChannels, int? audioBitrate, int? audioSampleRate)
         {
             container = StringHelper.TrimStart(container ?? string.Empty, '.');
 
@@ -213,7 +213,7 @@ namespace MediaBrowser.Model.Dlna
                 var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
                 {
-                    if (!conditionProcessor.IsAudioConditionSatisfied(GetModelProfileCondition(c), audioChannels, audioBitrate))
+                    if (!conditionProcessor.IsAudioConditionSatisfied(GetModelProfileCondition(c), audioChannels, audioBitrate, audioSampleRate))
                     {
                         anyOff = true;
                         break;

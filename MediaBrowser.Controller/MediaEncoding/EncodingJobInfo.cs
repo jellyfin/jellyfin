@@ -59,7 +59,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                return false;
+                return MediaSource.GenPtsInput;
             }
         }
 
@@ -93,11 +93,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                // For live tv + recordings
-                if (string.Equals(InputContainer, "mpegts", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(InputContainer, "ts", StringComparison.OrdinalIgnoreCase))
+                // For live tv + in progress recordings
+                if (string.Equals(InputContainer, "mpegts", StringComparison.OrdinalIgnoreCase) || string.Equals(InputContainer, "ts", StringComparison.OrdinalIgnoreCase))
                 {
-                    return "cfr";
+                    if (!MediaSource.RunTimeTicks.HasValue)
+                    {
+                        return "cfr";
+                    }
                 }
 
                 return "-1";
