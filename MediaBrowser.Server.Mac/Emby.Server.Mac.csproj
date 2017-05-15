@@ -2224,6 +2224,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\encodingsettings.js">
       <Link>Resources\dashboard-ui\scripts\encodingsettings.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\episodes.js">
+      <Link>Resources\dashboard-ui\scripts\episodes.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\forgotpassword.js">
       <Link>Resources\dashboard-ui\scripts\forgotpassword.js</Link>
     </BundleResource>
