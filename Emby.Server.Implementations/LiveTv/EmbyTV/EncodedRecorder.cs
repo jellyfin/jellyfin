@@ -21,6 +21,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Library;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -64,6 +65,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     return "mkv";
                 }
+                if (string.Equals(format, "ts", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "ts";
+                }
 
                 return "mp4";
             }
@@ -90,7 +95,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return Path.ChangeExtension(targetFile, "." + extension);
         }
 
-        public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        public async Task Record(IDirectStreamProvider directStreamProvider, MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             //var durationToken = new CancellationTokenSource(duration);
             //cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
@@ -177,6 +182,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 videoArgs = "-codec:v:0 copy";
             }
 
+            videoArgs += " -fflags +genpts";
+
             var durationParam = " -t " + _mediaEncoder.GetTimeParameter(duration.Ticks);
 
             var flags = new List<string>();
@@ -187,6 +194,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             if (mediaSource.IgnoreIndex)
             {
                 flags.Add("+ignidx");
+            }
+            if (mediaSource.GenPtsInput)
+            {
+                flags.Add("+genpts");
             }
 
             var inputModifiers = "-async 1 -vsync -1";
