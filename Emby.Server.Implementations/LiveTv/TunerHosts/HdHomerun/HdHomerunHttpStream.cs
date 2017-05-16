@@ -137,7 +137,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
         {
-            return _multicastStream.CopyToAsync(stream);
+            return _multicastStream.CopyToAsync(stream , cancellationToken);
         }
     }
 }
