@@ -1,4 +1,0 @@
-Linux Build Script
-==================
-
-2014-01-22 Initial version
