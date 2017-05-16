@@ -1,6 +1,5 @@
 ﻿using System;
 using Emby.Drawing;
-using Emby.Drawing.Net;
 using Emby.Drawing.ImageMagick;
 using Emby.Server.Core;
 using Emby.Server.Implementations;
@@ -31,15 +30,6 @@ namespace MediaBrowser.Server.Startup.Common
                 {
                     logger.Error("Error loading ImageMagick. Will revert to GDI.");
                 }
-            }
-
-            try
-            {
-                return new GDIImageEncoder(fileSystem, logManager.GetLogger("GDI"));
-            }
-            catch
-            {
-                logger.Error("Error loading GDI. Will revert to NullImageEncoder.");
             }
 
             return new NullImageEncoder();
