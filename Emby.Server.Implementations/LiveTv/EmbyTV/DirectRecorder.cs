@@ -6,6 +6,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
 
@@ -29,7 +30,35 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return targetFile;
         }
 
-        public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        public Task Record(IDirectStreamProvider directStreamProvider, MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        {
+            if (directStreamProvider != null)
+            {
+                return RecordFromDirectStreamProvider(directStreamProvider, targetFile, duration, onStarted, cancellationToken);
+            }
+
+            return RecordFromMediaSource(mediaSource, targetFile, duration, onStarted, cancellationToken);
+        }
+
+        private async Task RecordFromDirectStreamProvider(IDirectStreamProvider directStreamProvider, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        {
+            using (var output = _fileSystem.GetFileStream(targetFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+            {
+                onStarted();
+
+                _logger.Info("Copying recording stream to file {0}", targetFile);
+
+                // The media source if infinite so we need to handle stopping ourselves
+                var durationToken = new CancellationTokenSource(duration);
+                cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+
+                await directStreamProvider.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
+            }
+
+            _logger.Info("Recording completed to file {0}", targetFile);
+        }
+
+        private async Task RecordFromMediaSource(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             var httpRequestOptions = new HttpRequestOptions
             {

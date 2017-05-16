@@ -1517,7 +1517,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     EnforceKeepUpTo(timer, seriesPath);
                 };
 
-                await recorder.Record(mediaStreamInfo, recordPath, duration, onStarted, cancellationToken).ConfigureAwait(false);
+                await recorder.Record(liveStreamInfo.Item1 as IDirectStreamProvider, mediaStreamInfo, recordPath, duration, onStarted, cancellationToken).ConfigureAwait(false);
 
                 recordingStatus = RecordingStatus.Completed;
                 _logger.Info("Recording completed: {0}", recordPath);
@@ -1759,17 +1759,27 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             var config = GetConfiguration();
 
-            if (config.EnableRecordingEncoding)
-            {
-                var regInfo = await _liveTvManager.GetRegistrationInfo("embytvrecordingconversion").ConfigureAwait(false);
+            var regInfo = await _liveTvManager.GetRegistrationInfo("embytvrecordingconversion").ConfigureAwait(false);
 
-                if (regInfo.IsValid)
+            if (regInfo.IsValid)
+            {
+                if (config.EnableRecordingEncoding)
                 {
                     return new EncodedRecorder(_logger, _fileSystem, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, config, _httpClient, _processFactory, _config);
                 }
+
+                return new DirectRecorder(_logger, _httpClient, _fileSystem);
+
+                //var options = new LiveTvOptions
+                //{
+                //    EnableOriginalAudioWithEncodedRecordings = true,
+                //    RecordedVideoCodec = "copy",
+                //    RecordingEncodingFormat = "ts"
+                //};
+                //return new EncodedRecorder(_logger, _fileSystem, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, options, _httpClient, _processFactory, _config);
             }
 
-            return new DirectRecorder(_logger, _httpClient, _fileSystem);
+            throw new InvalidOperationException("Emby DVR Requires an active Emby Premiere subscription.");
         }
 
         private async void OnSuccessfulRecording(TimerInfo timer, string path)
