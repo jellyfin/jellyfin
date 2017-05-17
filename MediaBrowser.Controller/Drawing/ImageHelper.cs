@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 
@@ -16,6 +17,13 @@ namespace MediaBrowser.Controller.Drawing
                 return newSize;
             }
             return GetSizeEstimate(options);
+        }
+
+        public static IImageProcessor ImageProcessor { get; set; }
+
+        public static void SaveImageSize(string path, DateTime dateModified, ImageSize size)
+        {
+            ImageProcessor.SaveImageSize(path, dateModified, size);
         }
 
         private static ImageSize GetSizeEstimate(ImageProcessingOptions options)
