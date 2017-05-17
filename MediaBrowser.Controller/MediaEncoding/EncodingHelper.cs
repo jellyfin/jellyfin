@@ -968,7 +968,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (bitrate.HasValue && videoStream.BitRate.HasValue)
                     {
-                        bitrate = Math.Min(bitrate.Value, videoStream.BitRate.Value);
+                        bitrate = GetMinBitrate(bitrate.Value, videoStream.BitRate.Value);
                     }
                 }
             }
@@ -981,9 +981,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // If a max bitrate was requested, don't let the scaled bitrate exceed it
                 if (request.VideoBitRate.HasValue)
                 {
-                    bitrate = Math.Min(bitrate.Value, request.VideoBitRate.Value);
+                    bitrate = GetMinBitrate(bitrate.Value, request.VideoBitRate.Value);
                 }
             }
+
+            return bitrate;
+        }
+
+        private int GetMinBitrate(int sourceBitrate, int requestedBitrate)
+        {
+            if (sourceBitrate <= 2000000)
+            {
+                sourceBitrate *= 2;
+            }
+
+            var bitrate = Math.Min(sourceBitrate, requestedBitrate);
 
             return bitrate;
         }

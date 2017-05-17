@@ -75,6 +75,7 @@ namespace Emby.Drawing
 
             ImageEnhancers = new List<IImageEnhancer>();
             _saveImageSizeTimer = timerFactory.Create(SaveImageSizeCallback, null, Timeout.Infinite, Timeout.Infinite);
+            ImageHelper.ImageProcessor = this;
 
             Dictionary<Guid, ImageSize> sizeDictionary;
 
@@ -212,19 +213,12 @@ namespace Emby.Drawing
                 return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
-            ImageSize? originalImageSize = null;
-            try
+            ImageSize? originalImageSize = GetSavedImageSize(originalImagePath, dateModified);
+            if (originalImageSize.HasValue && options.HasDefaultOptions(originalImagePath, originalImageSize.Value))
             {
-                originalImageSize = GetImageSize(originalImagePath, dateModified, true);
-                if (options.HasDefaultOptions(originalImagePath, originalImageSize.Value))
-                {
-                    // Just spit out the original file if all the options are default
-                    return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
-                }
-            }
-            catch
-            {
-                originalImageSize = null;
+                // Just spit out the original file if all the options are default
+                _logger.Info("Returning original image {0}", originalImagePath);
+                return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
             var newSize = ImageHelper.GetNewImageSize(options, originalImageSize);
@@ -243,7 +237,13 @@ namespace Emby.Drawing
                     var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(cacheFilePath));
                     _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(tmpPath));
 
-                    _imageEncoder.EncodeImage(originalImagePath, originalImageSize, tmpPath, AutoOrient(options.Item), quality, options, outputFormat);
+                    var resultPath =_imageEncoder.EncodeImage(originalImagePath, dateModified, tmpPath, AutoOrient(options.Item), quality, options, outputFormat);
+
+                    if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
+                    }
+
                     CopyFile(tmpPath, cacheFilePath);
 
                     return new Tuple<string, string, DateTime>(tmpPath, GetMimeType(outputFormat, cacheFilePath), _fileSystem.GetLastWriteTimeUtc(tmpPath));
@@ -422,24 +422,70 @@ namespace Emby.Drawing
                 throw new ArgumentNullException("path");
             }
 
-            var name = path + "datemodified=" + imageDateModified.Ticks;
-
             ImageSize size;
 
-            var cacheHash = name.GetMD5();
+            var cacheHash = GetImageSizeKey(path, imageDateModified);
 
             if (!_cachedImagedSizes.TryGetValue(cacheHash, out size))
             {
                 size = GetImageSizeInternal(path, allowSlowMethod);
 
-                if (size.Width > 0 && size.Height > 0)
-                {
-                    StartSaveImageSizeTimer();
-                    _cachedImagedSizes.AddOrUpdate(cacheHash, size, (keyName, oldValue) => size);
-                }
+                SaveImageSize(size, cacheHash, false);
             }
 
             return size;
+        }
+
+        public void SaveImageSize(string path, DateTime imageDateModified, ImageSize size)
+        {
+            var cacheHash = GetImageSizeKey(path, imageDateModified);
+            SaveImageSize(size, cacheHash, true);
+        }
+
+        private void SaveImageSize(ImageSize size, Guid cacheHash, bool checkExists)
+        {
+            if (size.Width <= 0 || size.Height <= 0)
+            {
+                return;
+            }
+
+            if (checkExists && _cachedImagedSizes.ContainsKey(cacheHash))
+            {
+                return;
+            }
+
+            if (checkExists)
+            {
+                if (_cachedImagedSizes.TryAdd(cacheHash, size))
+                {
+                    StartSaveImageSizeTimer();
+                }
+            }
+            else
+            {
+                StartSaveImageSizeTimer();
+                _cachedImagedSizes.AddOrUpdate(cacheHash, size, (keyName, oldValue) => size);
+            }
+        }
+
+        private Guid GetImageSizeKey(string path, DateTime imageDateModified)
+        {
+            var name = path + "datemodified=" + imageDateModified.Ticks;
+            return name.GetMD5();
+        }
+
+        public ImageSize? GetSavedImageSize(string path, DateTime imageDateModified)
+        {
+            ImageSize size;
+
+            var cacheHash = GetImageSizeKey(path, imageDateModified);
+
+            if (_cachedImagedSizes.TryGetValue(cacheHash, out size))
+            {
+                return size;
+            }
+
+            return null;
         }
 
         /// <summary>

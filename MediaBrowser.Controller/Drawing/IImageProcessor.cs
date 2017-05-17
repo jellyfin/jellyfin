@@ -114,5 +114,7 @@ namespace MediaBrowser.Controller.Drawing
         bool SupportsImageCollageCreation { get; }
 
         IImageEncoder ImageEncoder { get; set; }
+
+        void SaveImageSize(string path, DateTime imageDateModified, ImageSize size);
     }
 }
