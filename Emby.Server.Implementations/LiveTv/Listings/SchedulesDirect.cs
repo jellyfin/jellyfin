@@ -167,10 +167,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                             {
                                 var programEntry = programDict[schedule.programID];
 
-                                var data = images[imageIndex].data ?? new List<ScheduleDirect.ImageData>();
-                                data = data.OrderByDescending(GetSizeOrder).ToList();
+                                var allImages = (images[imageIndex].data ?? new List<ScheduleDirect.ImageData>()).OrderByDescending(GetSizeOrder).ToList();
+                                var imagesWithText = allImages.Where(i => string.Equals(i.text, "yes", StringComparison.OrdinalIgnoreCase)).ToList();
 
-                                programEntry.primaryImage = GetProgramImage(ApiUrl, data, "Logo", true, 600);
+                                programEntry.primaryImage = GetProgramImage(ApiUrl, imagesWithText, "Logo", true, 600) ??
+                                    GetProgramImage(ApiUrl, allImages, "Logo", true, 600);
+
                                 //programEntry.thumbImage = GetProgramImage(ApiUrl, data, "Iconic", false);
                                 //programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
