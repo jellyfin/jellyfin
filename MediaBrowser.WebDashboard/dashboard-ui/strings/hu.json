@@ -1347,7 +1347,7 @@
     "LabelNoUnreadNotifications": "No unread notifications.",
     "MessageInvalidUser": "Invalid username or password. Please try again.",
     "HeaderLoginFailure": "Login Failure",
-    "RecommendationBecauseYouLike": "Ami\u00e9rt tettszett {0}",
+    "RecommendationBecauseYouLike": "Mert tetszett a(z) {0}",
     "RecommendationBecauseYouWatched": "Ha m\u00e1r megn\u00e9zted a(z) {0}",
     "RecommendationDirectedBy": "Rendezte:  {0}",
     "RecommendationStarring": "F\u0151szerepben:  {0}",
