@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Api.Playback.Hls;
@@ -35,8 +36,6 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "DeviceId", Description = "The device id of the client requesting. Used to stop encoding processes when needed.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string DeviceId { get; set; }
 
-        public string Token { get; set; }
-
         public string UserId { get; set; }
         public string AudioCodec { get; set; }
         public string Container { get; set; }
@@ -47,6 +46,10 @@ namespace MediaBrowser.Api.Playback
 
         [ApiMember(Name = "StartTimeTicks", Description = "Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public long? StartTimeTicks { get; set; }
+
+        public string TranscodingContainer { get; set; }
+        public string TranscodingProtocol { get; set; }
+        public int? MaxAudioSampleRate { get; set; }
     }
 
     [Route("/Audio/{Id}/universal.{Container}", "GET", Summary = "Gets an audio stream")]
@@ -125,11 +128,51 @@ namespace MediaBrowser.Api.Playback
                 {
                     Type = DlnaProfileType.Audio,
                     Context = EncodingContext.Streaming,
-                    Container = "ts",
-                    AudioCodec = "aac",
-                    Protocol = "hls"
+                    Container = request.TranscodingContainer,
+                    AudioCodec = request.AudioCodec,
+                    Protocol = request.TranscodingProtocol
                 }
             };
+
+            var codecProfiles = new List<CodecProfile>();
+            var conditions = new List<ProfileCondition>();
+
+            if (request.MaxAudioSampleRate.HasValue)
+            {
+                // codec profile
+                conditions.Add(new ProfileCondition
+                {
+                    Condition = ProfileConditionType.LessThanEqual,
+                    IsRequired = false,
+                    Property = ProfileConditionValue.AudioSampleRate,
+                    Value = request.MaxAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture)
+                });
+            }
+
+            if (request.MaxAudioChannels.HasValue)
+            {
+                // codec profile
+                conditions.Add(new ProfileCondition
+                {
+                    Condition = ProfileConditionType.LessThanEqual,
+                    IsRequired = false,
+                    Property = ProfileConditionValue.AudioChannels,
+                    Value = request.MaxAudioChannels.Value.ToString(CultureInfo.InvariantCulture)
+                });
+            }
+
+            if (conditions.Count > 0)
+            {
+                // codec profile
+                codecProfiles.Add(new CodecProfile
+                {
+                    Type = CodecType.Audio,
+                    Container = request.Container,
+                    Conditions = conditions.ToArray()
+                });
+            }
+
+            deviceProfile.CodecProfiles = codecProfiles.ToArray();
 
             return deviceProfile;
         }
@@ -194,7 +237,9 @@ namespace MediaBrowser.Api.Playback
                     MediaSourceId = mediaSource.Id,
                     PlaySessionId = playbackInfoResult.PlaySessionId,
                     StartTimeTicks = request.StartTimeTicks,
-                    Static = isStatic
+                    Static = isStatic,
+                    SegmentContainer = request.TranscodingContainer,
+                    AudioSampleRate = request.MaxAudioSampleRate
                 };
 
                 if (isHeadRequest)
@@ -226,7 +271,7 @@ namespace MediaBrowser.Api.Playback
                 var newRequest = new GetAudioStream
                 {
                     AudioBitRate = isStatic ? (int?)null : Convert.ToInt32(Math.Min(request.MaxStreamingBitrate ?? 192000, int.MaxValue)),
-                    //AudioCodec = request.AudioCodec,
+                    AudioCodec = request.AudioCodec,
                     Container = isStatic ? null : ("." + mediaSource.TranscodingContainer),
                     DeviceId = request.DeviceId,
                     Id = request.Id,
@@ -234,7 +279,8 @@ namespace MediaBrowser.Api.Playback
                     MediaSourceId = mediaSource.Id,
                     PlaySessionId = playbackInfoResult.PlaySessionId,
                     StartTimeTicks = request.StartTimeTicks,
-                    Static = isStatic
+                    Static = isStatic,
+                    AudioSampleRate = request.MaxAudioSampleRate
                 };
 
                 if (isHeadRequest)
