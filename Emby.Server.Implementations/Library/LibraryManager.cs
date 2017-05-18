@@ -895,6 +895,26 @@ namespace Emby.Server.Implementations.Library
             return CreateItemByName<Studio>(Studio.GetPath, name);
         }
 
+        public Guid GetStudioId(string name)
+        {
+            return GetItemByNameId<Studio>(Studio.GetPath, name);
+        }
+
+        public Guid GetGenreId(string name)
+        {
+            return GetItemByNameId<Genre>(Genre.GetPath, name);
+        }
+
+        public Guid GetMusicGenreId(string name)
+        {
+            return GetItemByNameId<MusicGenre>(MusicGenre.GetPath, name);
+        }
+
+        public Guid GetGameGenreId(string name)
+        {
+            return GetItemByNameId<GameGenre>(GameGenre.GetPath, name);
+        }
+
         /// <summary>
         /// Gets a Genre
         /// </summary>
@@ -974,14 +994,13 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var path = getPathFn(name);
-            var forceCaseInsensitiveId = ConfigurationManager.Configuration.EnableNormalizedItemByNameIds;
-            var id = GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
+            var id = GetItemByNameId<T>(getPathFn, name);
 
             var item = GetItemById(id) as T;
 
             if (item == null)
             {
+                var path = getPathFn(name);
                 item = new T
                 {
                     Name = name,
@@ -996,6 +1015,14 @@ namespace Emby.Server.Implementations.Library
             }
 
             return item;
+        }
+
+        private Guid GetItemByNameId<T>(Func<string, string> getPathFn, string name)
+              where T : BaseItem, new()
+        {
+            var path = getPathFn(name);
+            var forceCaseInsensitiveId = ConfigurationManager.Configuration.EnableNormalizedItemByNameIds;
+            return GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
         }
 
         public IEnumerable<MusicArtist> GetAlbumArtists(IEnumerable<IHasAlbumArtist> items)
