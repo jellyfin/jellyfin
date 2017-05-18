@@ -557,6 +557,14 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         bool IgnoreFile(FileSystemMetadata file, BaseItem parent);
 
+        Guid GetStudioId(string name);
+
+        Guid GetGenreId(string name);
+
+        Guid GetMusicGenreId(string name);
+
+        Guid GetGameGenreId(string name);
+
         void AddVirtualFolder(string name, string collectionType, LibraryOptions options, bool refreshLibrary);
         void RemoveVirtualFolder(string name, bool refreshLibrary);
         void AddMediaPath(string virtualFolderName, MediaPathInfo path);

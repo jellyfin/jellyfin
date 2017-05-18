@@ -212,6 +212,11 @@ namespace Emby.Drawing.Skia
 
             var resultBitmap = SKBitmap.Decode(path);
 
+            if (resultBitmap == null)
+            {
+                return Decode(path, true);
+            }
+
             // If we have to resize these they often end up distorted
             if (resultBitmap.ColorType == SKColorType.Gray8)
             {
