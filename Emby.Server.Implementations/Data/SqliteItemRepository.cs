@@ -241,7 +241,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "InheritedTags", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "CleanName", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "PresentationUniqueKey", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "SlugName", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "OriginalTitle", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "PrimaryVersionId", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "DateLastMediaAdded", "DATETIME", existingColumnNames);
@@ -573,7 +572,6 @@ namespace Emby.Server.Implementations.Data
                 "InheritedTags",
                 "CleanName",
                 "PresentationUniqueKey",
-                "SlugName",
                 "OriginalTitle",
                 "PrimaryVersionId",
                 "DateLastMediaAdded",
@@ -950,7 +948,6 @@ namespace Emby.Server.Implementations.Data
             }
 
             saveItemStatement.TryBind("@PresentationUniqueKey", item.PresentationUniqueKey);
-            saveItemStatement.TryBind("@SlugName", item.SlugName);
             saveItemStatement.TryBind("@OriginalTitle", item.OriginalTitle);
 
             var video = item as Video;
@@ -3665,10 +3662,10 @@ namespace Emby.Server.Implementations.Data
 
             if (!string.IsNullOrWhiteSpace(query.SlugName))
             {
-                whereClauses.Add("SlugName=@SlugName");
+                whereClauses.Add("CleanName=@SlugName");
                 if (statement != null)
                 {
-                    statement.TryBind("@SlugName", query.SlugName);
+                    statement.TryBind("@SlugName", GetCleanValue(query.SlugName));
                 }
             }
 

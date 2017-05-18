@@ -82,6 +82,8 @@
         /// </summary>
         Genres,
 
+        GenreItems,
+
         /// <summary>
         /// The home page URL
         /// </summary>
