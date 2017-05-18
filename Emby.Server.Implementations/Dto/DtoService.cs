@@ -897,10 +897,6 @@ namespace Emby.Server.Implementations.Dto
             if (fields.Contains(ItemFields.Genres))
             {
                 dto.Genres = item.Genres;
-            }
-
-            if (fields.Contains(ItemFields.GenreItems))
-            {
                 AttachGenreItems(dto, item);
             }
 
