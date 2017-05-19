@@ -339,9 +339,10 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteElementString("LocalTitle", item.Name);
             }
 
-            if (!string.IsNullOrEmpty(item.ForcedSortName))
+            var forcedSortName = item.ForcedSortName;
+            if (!string.IsNullOrEmpty(forcedSortName))
             {
-                writer.WriteElementString("SortTitle", item.ForcedSortName);
+                writer.WriteElementString("SortTitle", forcedSortName);
             }
 
             if (item.PremiereDate.HasValue)

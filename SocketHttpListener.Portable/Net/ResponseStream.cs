@@ -76,40 +76,43 @@ namespace SocketHttpListener.Net
             if (disposed == false)
             {
                 disposed = true;
-                byte[] bytes = null;
-                MemoryStream ms = GetHeaders(response, _memoryStreamFactory, false);
-                bool chunked = response.SendChunked;
-                if (stream.CanWrite)
+                using (var ms = GetHeaders(response, _memoryStreamFactory, false))
                 {
-                    try
+                    if (stream.CanWrite)
                     {
-                        if (ms != null)
+                        try
                         {
-                            long start = ms.Position;
-                            if (chunked && !trailer_sent)
+                            bool chunked = response.SendChunked;
+
+                            if (ms != null)
                             {
-                                bytes = GetChunkSizeBytes(0, true);
-                                ms.Position = ms.Length;
-                                ms.Write(bytes, 0, bytes.Length);
+                                var start = ms.Position;
+                                if (chunked && !trailer_sent)
+                                {
+                                    trailer_sent = true;
+                                    var bytes = GetChunkSizeBytes(0, true);
+                                    ms.Position = ms.Length;
+                                    ms.Write(bytes, 0, bytes.Length);
+                                    ms.Position = start;
+                                }
+
+                                ms.CopyTo(stream);
                             }
-                            byte[] msBuffer;
-                            _memoryStreamFactory.TryGetBuffer(ms, out msBuffer);
-                            InternalWrite(msBuffer, (int)start, (int)(ms.Length - start));
-                            trailer_sent = true;
+                            else if (chunked && !trailer_sent)
+                            {
+                                trailer_sent = true;
+
+                                var bytes = GetChunkSizeBytes(0, true);
+                                stream.Write(bytes, 0, bytes.Length);
+                            }
                         }
-                        else if (chunked && !trailer_sent)
+                        catch (IOException ex)
                         {
-                            bytes = GetChunkSizeBytes(0, true);
-                            InternalWrite(bytes, 0, bytes.Length);
-                            trailer_sent = true;
+                            // Ignore error due to connection reset by peer
                         }
                     }
-                    catch (IOException ex)
-                    {
-                        // Ignore error due to connection reset by peer
-                    }
+                    response.Close();
                 }
-                response.Close();
             }
 
             base.Dispose(disposing);
@@ -122,7 +125,7 @@ namespace SocketHttpListener.Net
             {
                 if (response.HeadersSent)
                     return null;
-                MemoryStream ms = memoryStreamFactory.CreateNew();
+                var ms = memoryStreamFactory.CreateNew();
                 response.SendHeaders(closing, ms);
                 return ms;
             }
@@ -144,6 +147,7 @@ namespace SocketHttpListener.Net
             stream.Write(buffer, offset, count);
         }
 
+        const int MsCopyBufferSize = 81920;
         public override void Write(byte[] buffer, int offset, int count)
         {
             if (disposed)
@@ -151,42 +155,46 @@ namespace SocketHttpListener.Net
 
             if (count == 0)
             {
-                //return;
+                return;
             }
 
-            byte[] bytes = null;
-            MemoryStream ms = GetHeaders(response, _memoryStreamFactory, false);
-            bool chunked = response.SendChunked;
-            if (ms != null)
+            using (var ms = GetHeaders(response, _memoryStreamFactory, false))
             {
-                long start = ms.Position; // After the possible preamble for the encoding
-                ms.Position = ms.Length;
-                if (chunked)
+                bool chunked = response.SendChunked;
+                if (ms != null)
                 {
-                    bytes = GetChunkSizeBytes(count, false);
-                    ms.Write(bytes, 0, bytes.Length);
+                    long start = ms.Position; // After the possible preamble for the encoding
+                    ms.Position = ms.Length;
+                    if (chunked)
+                    {
+                        var bytes = GetChunkSizeBytes(count, false);
+                        ms.Write(bytes, 0, bytes.Length);
+                    }
+
+                    ms.Write(buffer, offset, count);
+
+                    if (chunked)
+                    {
+                        ms.Write(crlf, 0, 2);
+                    }
+
+                    ms.Position = start;
+                    ms.CopyTo(stream, MsCopyBufferSize);
+
+                    return;
                 }
 
-                int new_count = Math.Min(count, 16384 - (int)ms.Position + (int)start);
-                ms.Write(buffer, offset, new_count);
-                count -= new_count;
-                offset += new_count;
-                byte[] msBuffer;
-                _memoryStreamFactory.TryGetBuffer(ms, out msBuffer);
-                InternalWrite(msBuffer, (int)start, (int)(ms.Length - start));
-                ms.SetLength(0);
-                ms.Capacity = 0; // 'dispose' the buffer in ms.
-            }
-            else if (chunked)
-            {
-                bytes = GetChunkSizeBytes(count, false);
-                InternalWrite(bytes, 0, bytes.Length);
-            }
+                if (chunked)
+                {
+                    var bytes = GetChunkSizeBytes(count, false);
+                    stream.Write(bytes, 0, bytes.Length);
+                }
 
-            if (count > 0)
-                InternalWrite(buffer, offset, count);
-            if (chunked)
-                InternalWrite(crlf, 0, 2);
+                stream.Write(buffer, offset, count);
+
+                if (chunked)
+                    stream.Write(crlf, 0, 2);
+            }
         }
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -196,112 +204,52 @@ namespace SocketHttpListener.Net
 
             if (count == 0)
             {
-                //return;
+                return;
             }
 
-            byte[] bytes = null;
-            MemoryStream ms = GetHeaders(response, _memoryStreamFactory, false);
-            bool chunked = response.SendChunked;
-            if (ms != null)
+            using (var ms = GetHeaders(response, _memoryStreamFactory, false))
             {
-                long start = ms.Position;
-                ms.Position = ms.Length;
+                bool chunked = response.SendChunked;
+                if (ms != null)
+                {
+                    long start = ms.Position; // After the possible preamble for the encoding
+                    ms.Position = ms.Length;
+                    if (chunked)
+                    {
+                        var bytes = GetChunkSizeBytes(count, false);
+                        ms.Write(bytes, 0, bytes.Length);
+                    }
+
+                    ms.Write(buffer, offset, count);
+
+                    if (chunked)
+                    {
+                        ms.Write(crlf, 0, 2);
+                    }
+
+                    ms.Position = start;
+                    await ms.CopyToAsync(stream, MsCopyBufferSize, cancellationToken).ConfigureAwait(false);
+
+                    return;
+                }
+
                 if (chunked)
                 {
-                    bytes = GetChunkSizeBytes(count, false);
-                    ms.Write(bytes, 0, bytes.Length);
+                    var bytes = GetChunkSizeBytes(count, false);
+                    stream.Write(bytes, 0, bytes.Length);
                 }
-                ms.Write(buffer, offset, count);
-                byte[] msBuffer;
-                _memoryStreamFactory.TryGetBuffer(ms, out msBuffer);
-                buffer = msBuffer;
-                offset = (int)start;
-                count = (int)(ms.Position - start);
-            }
-            else if (chunked)
-            {
-                bytes = GetChunkSizeBytes(count, false);
-                InternalWrite(bytes, 0, bytes.Length);
-            }
 
-            if (count > 0)
-            {
                 await stream.WriteAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+
+                if (chunked)
+                    stream.Write(crlf, 0, 2);
             }
-
-            if (chunked)
-                stream.Write(crlf, 0, 2);
         }
-
-        //public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count,
-        //                    AsyncCallback cback, object state)
-        //{
-        //    if (disposed)
-        //        throw new ObjectDisposedException(GetType().ToString());
-
-        //    byte[] bytes = null;
-        //    MemoryStream ms = GetHeaders(false);
-        //    bool chunked = response.SendChunked;
-        //    if (ms != null)
-        //    {
-        //        long start = ms.Position;
-        //        ms.Position = ms.Length;
-        //        if (chunked)
-        //        {
-        //            bytes = GetChunkSizeBytes(count, false);
-        //            ms.Write(bytes, 0, bytes.Length);
-        //        }
-        //        ms.Write(buffer, offset, count);
-        //        buffer = ms.ToArray();
-        //        offset = (int)start;
-        //        count = (int)(ms.Position - start);
-        //    }
-        //    else if (chunked)
-        //    {
-        //        bytes = GetChunkSizeBytes(count, false);
-        //        InternalWrite(bytes, 0, bytes.Length);
-        //    }
-
-        //    return stream.BeginWrite(buffer, offset, count, cback, state);
-        //}
-
-        //public override void EndWrite(IAsyncResult ares)
-        //{
-        //    if (disposed)
-        //        throw new ObjectDisposedException(GetType().ToString());
-
-        //    if (ignore_errors)
-        //    {
-        //        try
-        //        {
-        //            stream.EndWrite(ares);
-        //            if (response.SendChunked)
-        //                stream.Write(crlf, 0, 2);
-        //        }
-        //        catch { }
-        //    }
-        //    else {
-        //        stream.EndWrite(ares);
-        //        if (response.SendChunked)
-        //            stream.Write(crlf, 0, 2);
-        //    }
-        //}
 
         public override int Read([In, Out] byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException();
         }
-
-        //public override IAsyncResult BeginRead(byte[] buffer, int offset, int count,
-        //                    AsyncCallback cback, object state)
-        //{
-        //    throw new NotSupportedException();
-        //}
-
-        //public override int EndRead(IAsyncResult ares)
-        //{
-        //    throw new NotSupportedException();
-        //}
 
         public override long Seek(long offset, SeekOrigin origin)
         {
@@ -313,27 +261,35 @@ namespace SocketHttpListener.Net
             throw new NotSupportedException();
         }
 
+        private bool EnableSendFileWithSocket
+        {
+            get { return false; }
+        }
+
         public Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
-            //if (_supportsDirectSocketAccess && offset == 0 && count == 0 && !response.SendChunked && response.ContentLength64 > 8192)
-            //{
-            //    return TransmitFileOverSocket(path, offset, count, fileShareMode, cancellationToken);
-            //}
+            if (_supportsDirectSocketAccess && offset == 0 && count == 0 && !response.SendChunked && response.ContentLength64 > 8192)
+            {
+                if (EnableSendFileWithSocket)
+                {
+                    return TransmitFileOverSocket(path, offset, count, fileShareMode, cancellationToken);
+                }
+            }
             return TransmitFileManaged(path, offset, count, fileShareMode, cancellationToken);
         }
 
         private readonly byte[] _emptyBuffer = new byte[] { };
         private Task TransmitFileOverSocket(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
-            MemoryStream ms = GetHeaders(response, _memoryStreamFactory, false);
+            var ms = GetHeaders(response, _memoryStreamFactory, false);
 
-            byte[] buffer;
+            byte[] preBuffer;
             if (ms != null)
             {
                 using (var msCopy = new MemoryStream())
                 {
                     ms.CopyTo(msCopy);
-                    buffer = msCopy.ToArray();
+                    preBuffer = msCopy.ToArray();
                 }
             }
             else
@@ -342,7 +298,7 @@ namespace SocketHttpListener.Net
             }
 
             _logger.Info("Socket sending file {0} {1}", path, response.ContentLength64);
-            return _socket.SendFile(path, buffer, _emptyBuffer, cancellationToken);
+            return _socket.SendFile(path, preBuffer, _emptyBuffer, cancellationToken);
         }
 
         private async Task TransmitFileManaged(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
