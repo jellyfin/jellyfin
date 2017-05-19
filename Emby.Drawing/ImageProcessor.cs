@@ -670,7 +670,7 @@ namespace Emby.Drawing
                 var ehnancedImagePath = await GetEnhancedImageInternal(originalImagePath, item, imageType, imageIndex, enhancers, cacheGuid).ConfigureAwait(false);
 
                 // If the path changed update dateModified
-                if (!ehnancedImagePath.Equals(originalImagePath, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(ehnancedImagePath, originalImagePath, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetResult(ehnancedImagePath);
                 }
@@ -829,7 +829,7 @@ namespace Emby.Drawing
             return Path.Combine(path, filename);
         }
 
-        public async Task CreateImageCollage(ImageCollageOptions options)
+        public void CreateImageCollage(ImageCollageOptions options)
         {
             _logger.Info("Creating image collage and saving to {0}", options.OutputPath);
 

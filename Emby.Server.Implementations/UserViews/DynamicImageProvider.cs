@@ -159,7 +159,7 @@ namespace Emby.Server.Implementations.UserViews
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
         }
 
-        protected override async Task<string> CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override string CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             if (itemsWithImages.Count == 0)
             {
@@ -168,7 +168,7 @@ namespace Emby.Server.Implementations.UserViews
 
             var outputPath = Path.ChangeExtension(outputPathWithoutExtension, ".png");
 
-            return await CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540).ConfigureAwait(false);
+            return CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540);
         }
     }
 }
