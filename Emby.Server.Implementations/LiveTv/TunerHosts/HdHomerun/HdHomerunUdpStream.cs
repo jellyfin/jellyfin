@@ -70,9 +70,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             OpenedMediaSource.Path = _appHost.GetLocalApiUrl("127.0.0.1") + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             OpenedMediaSource.Protocol = MediaProtocol.Http;
-            OpenedMediaSource.SupportsDirectPlay = false;
-            OpenedMediaSource.SupportsDirectStream = true;
-            OpenedMediaSource.SupportsTranscoding = true;
+            //OpenedMediaSource.SupportsDirectPlay = false;
+            //OpenedMediaSource.SupportsDirectStream = true;
+            //OpenedMediaSource.SupportsTranscoding = true;
 
             await taskCompletionSource.Task.ConfigureAwait(false);
 

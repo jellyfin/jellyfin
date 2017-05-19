@@ -421,7 +421,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 SupportsDirectStream = true,
                 SupportsTranscoding = true,
                 IsInfiniteStream = true,
-                IgnoreDts = true
+                IgnoreDts = true,
+                IgnoreIndex = true,
+                GenPtsInput = true
             };
 
             mediaSource.InferTotalBitrate();

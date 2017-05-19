@@ -538,9 +538,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("year", item.ProductionYear.Value.ToString(UsCulture));
             }
 
-            if (!string.IsNullOrEmpty(item.ForcedSortName))
+            var forcedSortName = item.ForcedSortName;
+            if (!string.IsNullOrEmpty(forcedSortName))
             {
-                writer.WriteElementString("sorttitle", item.ForcedSortName);
+                writer.WriteElementString("sorttitle", forcedSortName);
             }
 
             if (!string.IsNullOrEmpty(item.OfficialRating))

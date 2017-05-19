@@ -98,7 +98,7 @@ namespace Emby.Server.Implementations.UserViews
             return item is CollectionFolder;
         }
 
-        protected override async Task<string> CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override string CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             var outputPath = Path.ChangeExtension(outputPathWithoutExtension, ".png");
 
@@ -109,10 +109,10 @@ namespace Emby.Server.Implementations.UserViews
                     return null;
                 }
 
-                return await CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540).ConfigureAwait(false);
+                return CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540);
             }
 
-            return await base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex).ConfigureAwait(false);
+            return base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex);
         }
     }
 
@@ -155,7 +155,7 @@ namespace Emby.Server.Implementations.UserViews
             return item is ManualCollectionsFolder;
         }
 
-        protected override async Task<string> CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override string CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             var outputPath = Path.ChangeExtension(outputPathWithoutExtension, ".png");
 
@@ -166,10 +166,10 @@ namespace Emby.Server.Implementations.UserViews
                     return null;
                 }
 
-                return await CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540).ConfigureAwait(false);
+                return CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540);
             }
 
-            return await base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex).ConfigureAwait(false);
+            return base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex);
         }
     }
 
