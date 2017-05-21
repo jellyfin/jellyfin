@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -672,7 +673,8 @@ namespace MediaBrowser.Controller.Entities
             return ItemRepository.GetItemList(new InternalItemsQuery
             {
                 ParentId = Id,
-                GroupByPresentationUniqueKey = false
+                GroupByPresentationUniqueKey = false,
+                DtoOptions = new DtoOptions(true)
             });
         }
 
@@ -690,7 +692,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 Recursive = false,
                 Limit = 0,
-                ParentId = Id
+                ParentId = Id,
+                DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                }
 
             }).Result;
 
@@ -705,7 +711,11 @@ namespace MediaBrowser.Controller.Entities
                 IsFolder = false,
                 IsVirtualItem = false,
                 EnableTotalRecordCount = true,
-                Limit = 0
+                Limit = 0,
+                DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                }
 
             }).Result.TotalRecordCount;
         }
@@ -1481,7 +1491,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override async Task FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, List<ItemFields> itemFields)
+        public override async Task FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, List<ItemFields> fields)
         {
             if (!SupportsUserDataFromChildren)
             {
@@ -1490,7 +1500,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (itemDto != null)
             {
-                if (itemFields.Contains(ItemFields.RecursiveItemCount))
+                if (fields.Contains(ItemFields.RecursiveItemCount))
                 {
                     itemDto.RecursiveItemCount = GetRecursiveChildCount(user);
                 }
@@ -1505,7 +1515,11 @@ namespace MediaBrowser.Controller.Entities
                     IsVirtualItem = false,
                     EnableTotalRecordCount = true,
                     Limit = 0,
-                    IsPlayed = false
+                    IsPlayed = false,
+                    DtoOptions = new DtoOptions(false)
+                    {
+                        EnableImages = false
+                    }
 
                 }).ConfigureAwait(false);
 

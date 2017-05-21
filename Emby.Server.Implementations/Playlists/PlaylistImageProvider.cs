@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Images;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
@@ -89,7 +90,8 @@ namespace Emby.Server.Implementations.Playlists
                 SortBy = new[] { ItemSortBy.Random },
                 Limit = 4,
                 Recursive = true,
-                ImageTypes = new[] { ImageType.Primary }
+                ImageTypes = new[] { ImageType.Primary },
+                DtoOptions = new DtoOptions(false)
 
             }).ToList();
 
@@ -120,7 +122,8 @@ namespace Emby.Server.Implementations.Playlists
                 SortBy = new[] { ItemSortBy.Random },
                 Limit = 4,
                 Recursive = true,
-                ImageTypes = new[] { ImageType.Primary }
+                ImageTypes = new[] { ImageType.Primary },
+                DtoOptions = new DtoOptions(false)
 
             }).ToList();
 

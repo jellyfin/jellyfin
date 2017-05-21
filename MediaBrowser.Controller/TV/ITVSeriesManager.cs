@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
+using MediaBrowser.Controller.Dto;
 
 namespace MediaBrowser.Controller.TV
 {
@@ -9,16 +10,11 @@ namespace MediaBrowser.Controller.TV
         /// <summary>
         /// Gets the next up.
         /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
-        QueryResult<BaseItem> GetNextUp(NextUpQuery query);
+        QueryResult<BaseItem> GetNextUp(NextUpQuery query, DtoOptions options);
 
         /// <summary>
         /// Gets the next up.
         /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="parentsFolders">The parents folders.</param>
-        /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
-        QueryResult<BaseItem> GetNextUp(NextUpQuery request, List<Folder> parentsFolders);
+        QueryResult<BaseItem> GetNextUp(NextUpQuery request, List<Folder> parentsFolders, DtoOptions options);
     }
 }

@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
@@ -958,7 +959,11 @@ namespace MediaBrowser.Providers.Manager
                 .GetItemList(new InternalItemsQuery
                 {
                     IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
-                    ArtistIds = new[] { item.Id.ToString("N") }
+                    ArtistIds = new[] { item.Id.ToString("N") },
+                    DtoOptions = new DtoOptions(false)
+                    {
+                        EnableImages = false
+                    }
                 })
                 .OfType<MusicAlbum>()
                 .ToList();

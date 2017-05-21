@@ -30,6 +30,7 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
@@ -1232,7 +1233,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     RequiresClosing = false,
                     Protocol = MediaBrowser.Model.MediaInfo.MediaProtocol.Http,
                     BufferMs = 0,
-                    IgnoreDts = true
+                    IgnoreDts = true,
+                    IgnoreIndex = true,
+                    GenPtsInput = true
                 };
 
                 var isAudio = false;
@@ -1640,7 +1643,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     SortOrder = SortOrder.Descending,
                     IsVirtualItem = false,
                     IsFolder = false,
-                    Recursive = true
+                    Recursive = true,
+                    DtoOptions = new DtoOptions(true)
 
                 }).ConfigureAwait(false))
                     .Items
@@ -1977,7 +1981,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                     Limit = 1,
-                    ExternalId = timer.ProgramId
+                    ExternalId = timer.ProgramId,
+                    DtoOptions = new DtoOptions(true)
 
                 }).FirstOrDefault() as LiveTvProgram;
 
@@ -2511,16 +2516,17 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (program.EpisodeNumber.HasValue && program.SeasonNumber.HasValue)
                 {
-                    var result = _libraryManager.GetItemsResult(new InternalItemsQuery
+                    var result = _libraryManager.GetItemIds(new InternalItemsQuery
                     {
                         IncludeItemTypes = new[] { typeof(Episode).Name },
                         ParentIndexNumber = program.SeasonNumber.Value,
                         IndexNumber = program.EpisodeNumber.Value,
                         AncestorIds = seriesIds,
-                        IsVirtualItem = false
+                        IsVirtualItem = false,
+                        Limit = 1
                     });
 
-                    if (result.TotalRecordCount > 0)
+                    if (result.Count > 0)
                     {
                         return true;
                     }

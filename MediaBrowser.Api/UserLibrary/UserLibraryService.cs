@@ -308,6 +308,8 @@ namespace MediaBrowser.Api.UserLibrary
                 }
             }
 
+            var dtoOptions = GetDtoOptions(_authContext, request);
+
             var list = _userViewManager.GetLatestItems(new LatestItemsQuery
             {
                 GroupItems = request.GroupItems,
@@ -315,10 +317,8 @@ namespace MediaBrowser.Api.UserLibrary
                 IsPlayed = request.IsPlayed,
                 Limit = request.Limit,
                 ParentId = request.ParentId,
-                UserId = request.UserId
-            });
-
-            var dtoOptions = GetDtoOptions(_authContext, request);
+                UserId = request.UserId,
+            }, dtoOptions);
 
             var dtos = list.Select(i =>
             {
@@ -360,7 +360,7 @@ namespace MediaBrowser.Api.UserLibrary
                 var currentUser = user;
 
                 var dtos = series
-                    .GetEpisodes(user)
+                    .GetEpisodes(user, dtoOptions)
                     .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
                     .OrderBy(i =>
                     {

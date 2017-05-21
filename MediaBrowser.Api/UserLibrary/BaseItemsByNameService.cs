@@ -129,7 +129,8 @@ namespace MediaBrowser.Api.UserLibrary
                 PersonIds = request.GetPersonIds(),
                 PersonTypes = request.GetPersonTypes(),
                 Years = request.GetYears(),
-                MinCommunityRating = request.MinCommunityRating
+                MinCommunityRating = request.MinCommunityRating,
+                DtoOptions = dtoOptions
             };
 
             if (!string.IsNullOrWhiteSpace(request.ParentId))

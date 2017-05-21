@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using MediaBrowser.Model.Serialization;
 using System.Threading.Tasks;
 using System.Linq;
+using MediaBrowser.Controller.Dto;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -75,7 +76,8 @@ namespace MediaBrowser.Controller.Entities
             var result = GetItems(new InternalItemsQuery
             {
                 User = user,
-                EnableTotalRecordCount = false
+                EnableTotalRecordCount = false,
+                DtoOptions = new DtoOptions(true)
 
             }).Result;
 
@@ -100,7 +102,9 @@ namespace MediaBrowser.Controller.Entities
                 Recursive = true,
                 EnableTotalRecordCount = false,
 
-                ForceDirect = true
+                ForceDirect = true,
+
+                DtoOptions = query.DtoOptions
 
             }).Result;
 
