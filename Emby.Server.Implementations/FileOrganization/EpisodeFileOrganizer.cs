@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
@@ -588,7 +589,8 @@ namespace Emby.Server.Implementations.FileOrganization
             var series = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
-                Recursive = true
+                Recursive = true,
+                DtoOptions = new DtoOptions(true)
             })
                 .Cast<Series>()
                 .Select(i => NameUtils.GetMatchScore(nameWithoutYear, yearInName, i))
@@ -607,7 +609,8 @@ namespace Emby.Server.Implementations.FileOrganization
                     {
                         IncludeItemTypes = new[] { typeof(Series).Name },
                         Recursive = true,
-                        Name = info.ItemName
+                        Name = info.ItemName,
+                        DtoOptions = new DtoOptions(true)
 
                     }).Cast<Series>().FirstOrDefault();
                 }

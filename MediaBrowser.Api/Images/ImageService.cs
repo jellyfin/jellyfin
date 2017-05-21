@@ -617,6 +617,8 @@ namespace MediaBrowser.Api.Images
                 ImageIndex = request.Index ?? 0,
                 Image = image,
                 Item = item,
+                ItemId = item.Id.ToString("N"),
+                ItemType = item.GetType().Name,
                 MaxHeight = request.MaxHeight,
                 MaxWidth = request.MaxWidth,
                 Quality = request.Quality ?? 100,

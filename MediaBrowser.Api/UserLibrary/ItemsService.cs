@@ -330,7 +330,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var requestedLocationTypes =
                     request.LocationTypes.Split(',')
-                        .Select(d => (LocationType) Enum.Parse(typeof (LocationType), d, true))
+                        .Select(d => (LocationType)Enum.Parse(typeof(LocationType), d, true))
                         .ToList();
 
                 if (requestedLocationTypes.Count > 0 && requestedLocationTypes.Count < 4)
@@ -381,15 +381,15 @@ namespace MediaBrowser.Api.UserLibrary
             // Albums
             if (!string.IsNullOrEmpty(request.Albums))
             {
-                query.AlbumIds = request.Albums.Split('|').Select(i =>
+                query.AlbumIds = request.Albums.Split('|').SelectMany(i =>
                 {
-                    return _libraryManager.GetItemList(new InternalItemsQuery
+                    return _libraryManager.GetItemIds(new InternalItemsQuery
                     {
                         IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
                         Name = i,
                         Limit = 1
 
-                    }).Select(album => album.Id.ToString("N")).FirstOrDefault();
+                    }).Select(albumId => albumId.ToString("N"));
 
                 }).ToArray();
             }

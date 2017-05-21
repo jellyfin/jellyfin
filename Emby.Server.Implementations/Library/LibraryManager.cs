@@ -41,6 +41,7 @@ using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = MediaBrowser.Naming.Video.VideoResolver;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Tasks;
 
@@ -313,7 +314,8 @@ namespace Emby.Server.Implementations.Library
             {
                 IncludeItemTypes = new[] { typeof(Season).Name },
                 Recursive = true,
-                IndexNumber = 0
+                IndexNumber = 0,
+                DtoOptions = new DtoOptions(true)
 
             }).Cast<Season>()
                 .Where(i => !string.Equals(i.Name, newName, StringComparison.Ordinal))
@@ -342,7 +344,7 @@ namespace Emby.Server.Implementations.Library
             }
             if (item is IItemByName)
             {
-                if (!(item is MusicArtist) && !(item is Studio))
+                if (!(item is MusicArtist))
                 {
                     return;
                 }
@@ -868,7 +870,8 @@ namespace Emby.Server.Implementations.Library
                 IsFolder = isFolder,
                 SortBy = new[] { ItemSortBy.DateCreated },
                 SortOrder = SortOrder.Descending,
-                Limit = 1
+                Limit = 1,
+                DtoOptions = new DtoOptions(true)
             };
 
             return GetItemList(query)
@@ -981,7 +984,8 @@ namespace Emby.Server.Implementations.Library
                 var existing = GetItemList(new InternalItemsQuery
                 {
                     IncludeItemTypes = new[] { typeof(T).Name },
-                    Name = name
+                    Name = name,
+                    DtoOptions = new DtoOptions(true)
 
                 }).Cast<MusicArtist>()
                 .OrderBy(i => i.IsAccessedByName ? 1 : 0)

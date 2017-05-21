@@ -154,11 +154,6 @@
         RecursiveItemCount,
 
         /// <summary>
-        /// The season name
-        /// </summary>
-        SeasonName,
-
-        /// <summary>
         /// The settings
         /// </summary>
         Settings,
@@ -236,6 +231,10 @@
         /// </summary>
         ServiceName,
         ThemeSongIds,
-        ThemeVideoIds
+        ThemeVideoIds,
+        ExternalEtag,
+        PresentationUniqueKey,
+        InheritedParentalRatingValue,
+        ExternalSeriesId
     }
 }

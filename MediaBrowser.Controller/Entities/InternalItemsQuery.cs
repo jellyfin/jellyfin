@@ -166,26 +166,31 @@ namespace MediaBrowser.Controller.Entities
 
             switch (name)
             {
-                case ItemFields.ThemeSongIds:
-                case ItemFields.ThemeVideoIds:
-                case ItemFields.ProductionLocations:
-                case ItemFields.Keywords:
-                case ItemFields.Taglines:
-                case ItemFields.CustomRating:
-                case ItemFields.DateCreated:
-                case ItemFields.SortName:
-                case ItemFields.Overview:
                 case ItemFields.HomePageUrl:
-                case ItemFields.VoteCount:
+                case ItemFields.Keywords:
                 case ItemFields.DisplayMediaType:
-                //case ItemFields.ServiceName:
-                case ItemFields.Genres:
-                case ItemFields.Studios:
+                case ItemFields.VoteCount:
+                case ItemFields.CustomRating:
+                case ItemFields.ProductionLocations:
                 case ItemFields.Settings:
                 case ItemFields.OriginalTitle:
+                case ItemFields.Taglines:
+                case ItemFields.SortName:
+                case ItemFields.Studios:
                 case ItemFields.Tags:
+                case ItemFields.ThemeSongIds:
+                case ItemFields.ThemeVideoIds:
+                case ItemFields.DateCreated:
+                case ItemFields.Overview:
+                case ItemFields.Genres:
                 case ItemFields.DateLastMediaAdded:
-                    return fields.Count == 0 || fields.Contains(name);
+                case ItemFields.ExternalEtag:
+                case ItemFields.PresentationUniqueKey:
+                case ItemFields.InheritedParentalRatingValue:
+                case ItemFields.ExternalSeriesId:
+                    return fields.Contains(name);
+                case ItemFields.ServiceName:
+                    return true;
                 default:
                     return true;
             }

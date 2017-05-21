@@ -460,12 +460,12 @@ namespace Emby.Server.Implementations.Channels
 
         public IEnumerable<ChannelFeatures> GetAllChannelFeatures()
         {
-            return _libraryManager.GetItemList(new InternalItemsQuery
+            return _libraryManager.GetItemIds(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Channel).Name },
                 SortBy = new[] { ItemSortBy.SortName }
 
-            }).Select(i => GetChannelFeatures(i.Id.ToString("N")));
+            }).Select(i => GetChannelFeatures(i.ToString("N")));
         }
 
         public ChannelFeatures GetChannelFeatures(string id)
