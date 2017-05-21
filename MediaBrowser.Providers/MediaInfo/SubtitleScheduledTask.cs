@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 
@@ -82,7 +83,8 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 MediaTypes = new string[] { MediaType.Video },
                 IsVirtualItem = false,
-                IncludeItemTypes = types.ToArray()
+                IncludeItemTypes = types.ToArray(),
+                DtoOptions = new DtoOptions(true)
 
             }).OfType<Video>()
                 .Where(i => i.LocationType != LocationType.Remote)

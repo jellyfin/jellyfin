@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Dto;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -16,6 +17,6 @@ namespace MediaBrowser.Controller.Library
 
         Task<UserView> GetUserSubView(string category, string type, string sortName, CancellationToken cancellationToken);
 
-        List<Tuple<BaseItem, List<BaseItem>>> GetLatestItems(LatestItemsQuery request);
+        List<Tuple<BaseItem, List<BaseItem>>> GetLatestItems(LatestItemsQuery request, DtoOptions options);
     }
 }

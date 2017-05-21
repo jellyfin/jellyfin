@@ -17,6 +17,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.Entities
@@ -83,7 +84,7 @@ namespace MediaBrowser.Controller.Entities
                             Limit = query.Limit,
                             StartIndex = query.StartIndex
 
-                        }, CancellationToken.None).ConfigureAwait(false);
+                        }, new DtoOptions(), CancellationToken.None).ConfigureAwait(false);
 
                         return GetResult(result);
                     }
@@ -110,7 +111,7 @@ namespace MediaBrowser.Controller.Entities
                             Limit = query.Limit,
                             StartIndex = query.StartIndex
 
-                        }, CancellationToken.None).ConfigureAwait(false);
+                        }, new DtoOptions(), CancellationToken.None).ConfigureAwait(false);
 
                         return GetResult(result);
                     }
@@ -394,7 +395,7 @@ namespace MediaBrowser.Controller.Entities
                 ParentId = parent == null ? null : parent.Id.ToString("N"),
                 GroupItems = true
 
-            }).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null);
+            }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null);
 
             query.SortBy = new string[] { };
 
@@ -662,7 +663,7 @@ namespace MediaBrowser.Controller.Entities
                 StartIndex = query.StartIndex,
                 UserId = query.User.Id.ToString("N")
 
-            }, parentFolders);
+            }, parentFolders, query.DtoOptions);
 
             return result;
         }
@@ -1783,7 +1784,7 @@ namespace MediaBrowser.Controller.Entities
                     Status = RecordingStatus.Completed,
                     UserId = user.Id.ToString("N")
 
-                }, CancellationToken.None).ConfigureAwait(false);
+                }, new DtoOptions(), CancellationToken.None).ConfigureAwait(false);
             }
 
             var list = new List<BaseItem>();

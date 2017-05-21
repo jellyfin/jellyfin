@@ -889,6 +889,8 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetChannels request)
         {
+            var options = GetDtoOptions(_authContext, request);
+
             var channelResult = await _liveTvManager.GetInternalChannels(new LiveTvChannelQuery
             {
                 ChannelType = request.Type,
@@ -908,11 +910,10 @@ namespace MediaBrowser.Api.LiveTv
                 SortOrder = request.SortOrder ?? SortOrder.Ascending,
                 AddCurrentProgram = request.AddCurrentProgram
 
-            }, CancellationToken.None).ConfigureAwait(false);
+            }, options, CancellationToken.None).ConfigureAwait(false);
 
             var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(request.UserId);
 
-            var options = GetDtoOptions(_authContext, request);
             RemoveFields(options);
 
             options.AddCurrentProgram = request.AddCurrentProgram;

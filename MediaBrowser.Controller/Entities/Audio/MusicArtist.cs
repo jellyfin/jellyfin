@@ -266,20 +266,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             return info;
         }
 
-        public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
-        {
-            return inputItems.Where(GetItemFilter());
-        }
-
-        public Func<BaseItem, bool> GetItemFilter()
-        {
-            return i =>
-            {
-                var hasArtist = i as IHasArtist;
-                return hasArtist != null && hasArtist.HasAnyArtist(Name);
-            };
-        }
-
         [IgnoreDataMember]
         public override bool SupportsPeople
         {

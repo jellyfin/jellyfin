@@ -149,7 +149,11 @@ namespace Emby.Server.Implementations.LiveTv
                 IncludeItemTypes = new string[] { typeof(Series).Name },
                 Name = seriesName,
                 Limit = 1,
-                ImageTypes = new ImageType[] { ImageType.Thumb }
+                ImageTypes = new ImageType[] { ImageType.Thumb },
+                DtoOptions = new DtoOptions
+                {
+                    Fields = new List<MediaBrowser.Model.Querying.ItemFields>()
+                }
 
             }).FirstOrDefault();
 
@@ -191,7 +195,11 @@ namespace Emby.Server.Implementations.LiveTv
                     IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
                     ExternalSeriesId = programSeriesId,
                     Limit = 1,
-                    ImageTypes = new ImageType[] { ImageType.Primary }
+                    ImageTypes = new ImageType[] { ImageType.Primary },
+                    DtoOptions = new DtoOptions
+                    {
+                        Fields = new List<MediaBrowser.Model.Querying.ItemFields>()
+                    }
 
                 }).FirstOrDefault();
 
@@ -239,7 +247,11 @@ namespace Emby.Server.Implementations.LiveTv
                 IncludeItemTypes = new string[] { typeof(Series).Name },
                 Name = seriesName,
                 Limit = 1,
-                ImageTypes = new ImageType[] { ImageType.Thumb }
+                ImageTypes = new ImageType[] { ImageType.Thumb },
+                DtoOptions = new DtoOptions
+                {
+                    Fields = new List<MediaBrowser.Model.Querying.ItemFields>()
+                }
 
             }).FirstOrDefault();
 
@@ -281,14 +293,22 @@ namespace Emby.Server.Implementations.LiveTv
                     IncludeItemTypes = new string[] { typeof(Series).Name },
                     Name = seriesName,
                     Limit = 1,
-                    ImageTypes = new ImageType[] { ImageType.Primary }
+                    ImageTypes = new ImageType[] { ImageType.Primary },
+                    DtoOptions = new DtoOptions
+                    {
+                        Fields = new List<MediaBrowser.Model.Querying.ItemFields>()
+                    }
 
                 }).FirstOrDefault() ?? _libraryManager.GetItemList(new InternalItemsQuery
                 {
                     IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
                     ExternalSeriesId = programSeriesId,
                     Limit = 1,
-                    ImageTypes = new ImageType[] { ImageType.Primary }
+                    ImageTypes = new ImageType[] { ImageType.Primary },
+                    DtoOptions = new DtoOptions
+                    {
+                        Fields = new List<MediaBrowser.Model.Querying.ItemFields>()
+                    }
 
                 }).FirstOrDefault();
 

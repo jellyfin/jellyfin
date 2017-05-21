@@ -179,10 +179,15 @@ namespace Emby.Drawing
             }
 
             var originalImage = options.Image;
+            IHasImages item = options.Item;
 
             if (!originalImage.IsLocalFile)
             {
-                originalImage = await _libraryManager().ConvertImageToLocal(options.Item, originalImage, options.ImageIndex).ConfigureAwait(false);
+                if (item == null)
+                {
+                    item = _libraryManager().GetItemById(options.ItemId);
+                }
+                originalImage = await _libraryManager().ConvertImageToLocal(item, originalImage, options.ImageIndex).ConfigureAwait(false);
             }
 
             var originalImagePath = originalImage.Path;
@@ -195,13 +200,18 @@ namespace Emby.Drawing
 
             if (options.Enhancers.Count > 0)
             {
+                if (item == null)
+                {
+                    item = _libraryManager().GetItemById(options.ItemId);
+                }
+
                 var tuple = await GetEnhancedImage(new ItemImageInfo
                 {
                     DateModified = dateModified,
                     Type = originalImage.Type,
                     Path = originalImagePath
 
-                }, options.Item, options.ImageIndex, options.Enhancers).ConfigureAwait(false);
+                }, item, options.ImageIndex, options.Enhancers).ConfigureAwait(false);
 
                 originalImagePath = tuple.Item1;
                 dateModified = tuple.Item2;
@@ -237,7 +247,12 @@ namespace Emby.Drawing
                     var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(cacheFilePath));
                     _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(tmpPath));
 
-                    var resultPath =_imageEncoder.EncodeImage(originalImagePath, dateModified, tmpPath, AutoOrient(options.Item), quality, options, outputFormat);
+                    if (item == null && string.Equals(options.ItemType, typeof(Photo).Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        item = _libraryManager().GetItemById(options.ItemId);
+                    }
+
+                    var resultPath =_imageEncoder.EncodeImage(originalImagePath, dateModified, tmpPath, AutoOrient(item), quality, options, outputFormat);
 
                     if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))
                     {

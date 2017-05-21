@@ -200,27 +200,32 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 flags.Add("+genpts");
             }
 
-            var inputModifiers = "-async 1 -vsync -1";
+            var inputModifier = "-async 1 -vsync -1";
 
             if (flags.Count > 0)
             {
-                inputModifiers += " -fflags " + string.Join("", flags.ToArray());
+                inputModifier += " -fflags " + string.Join("", flags.ToArray());
             }
 
             if (!string.IsNullOrWhiteSpace(GetEncodingOptions().HardwareAccelerationType))
             {
-                inputModifiers += " -hwaccel auto";
+                inputModifier += " -hwaccel auto";
             }
 
             if (mediaSource.ReadAtNativeFramerate)
             {
-                inputModifiers += " -re";
+                inputModifier += " -re";
+            }
+
+            if (mediaSource.RequiresLooping)
+            {
+                inputModifier += " -stream_loop -1";
             }
 
             var analyzeDurationSeconds = 5;
             var analyzeDuration = " -analyzeduration " +
                   (analyzeDurationSeconds * 1000000).ToString(CultureInfo.InvariantCulture);
-            inputModifiers += analyzeDuration;
+            inputModifier += analyzeDuration;
 
             var subtitleArgs = CopySubtitles ? " -codec:s copy" : " -sn";
 
@@ -239,7 +244,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 durationParam, 
                 outputParam);
 
-            return inputModifiers + " " + commandLineArgs;
+            return inputModifier + " " + commandLineArgs;
         }
 
         private string GetAudioArgs(MediaSourceInfo mediaSource)

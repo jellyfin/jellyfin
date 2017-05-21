@@ -427,7 +427,11 @@ namespace MediaBrowser.Api.Library
         {
             var series = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(Series).Name }
+                IncludeItemTypes = new[] { typeof(Series).Name },
+                DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                }
 
             }).Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
 
@@ -448,7 +452,11 @@ namespace MediaBrowser.Api.Library
         {
             var movies = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(Movie).Name }
+                IncludeItemTypes = new[] { typeof(Movie).Name },
+                DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                }
 
             }).ToArray();
 
@@ -668,7 +676,11 @@ namespace MediaBrowser.Api.Library
                 Recursive = true,
                 IsVirtualItem = false,
                 SourceTypes = new[] { SourceType.Library },
-                IsFavorite = request.IsFavorite
+                IsFavorite = request.IsFavorite,
+                DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                }
             };
 
             return _libraryManager.GetItemsResult(query).TotalRecordCount;
@@ -898,7 +910,11 @@ namespace MediaBrowser.Api.Library
             var query = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = includeTypes,
-                Recursive = true
+                Recursive = true,
+                DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                }
             };
 
             var items = _libraryManager.GetItemList(query);

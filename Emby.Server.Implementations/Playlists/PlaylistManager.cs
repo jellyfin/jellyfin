@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
@@ -135,7 +136,10 @@ namespace Emby.Server.Implementations.Playlists
 
                 if (options.ItemIdList.Count > 0)
                 {
-                    await AddToPlaylistInternal(playlist.Id.ToString("N"), options.ItemIdList, user);
+                    await AddToPlaylistInternal(playlist.Id.ToString("N"), options.ItemIdList, user, new DtoOptions(false)
+                    {
+                        EnableImages = true
+                    });
                 }
 
                 return new PlaylistCreationResult
@@ -160,21 +164,24 @@ namespace Emby.Server.Implementations.Playlists
             return path;
         }
 
-        private Task<IEnumerable<BaseItem>> GetPlaylistItems(IEnumerable<string> itemIds, string playlistMediaType, User user)
+        private Task<IEnumerable<BaseItem>> GetPlaylistItems(IEnumerable<string> itemIds, string playlistMediaType, User user, DtoOptions options)
         {
             var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null);
 
-            return Playlist.GetPlaylistItems(playlistMediaType, items, user);
+            return Playlist.GetPlaylistItems(playlistMediaType, items, user, options);
         }
 
         public Task AddToPlaylist(string playlistId, IEnumerable<string> itemIds, string userId)
         {
             var user = string.IsNullOrWhiteSpace(userId) ? null : _userManager.GetUserById(userId);
 
-            return AddToPlaylistInternal(playlistId, itemIds, user);
+            return AddToPlaylistInternal(playlistId, itemIds, user, new DtoOptions(false)
+            {
+                EnableImages = true
+            });
         }
 
-        private async Task AddToPlaylistInternal(string playlistId, IEnumerable<string> itemIds, User user)
+        private async Task AddToPlaylistInternal(string playlistId, IEnumerable<string> itemIds, User user, DtoOptions options)
         {
             var playlist = _libraryManager.GetItemById(playlistId) as Playlist;
 
@@ -185,7 +192,7 @@ namespace Emby.Server.Implementations.Playlists
 
             var list = new List<LinkedChild>();
 
-            var items = (await GetPlaylistItems(itemIds, playlist.MediaType, user).ConfigureAwait(false))
+            var items = (await GetPlaylistItems(itemIds, playlist.MediaType, user, options).ConfigureAwait(false))
                 .Where(i => i.SupportsAddingToPlaylist)
                 .ToList();
 

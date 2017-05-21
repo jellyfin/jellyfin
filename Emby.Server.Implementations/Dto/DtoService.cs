@@ -127,7 +127,11 @@ namespace Emby.Server.Implementations.Dto
                     {
                         var libraryItems = byName.GetTaggedItems(new InternalItemsQuery(user)
                         {
-                            Recursive = true
+                            Recursive = true,
+                            DtoOptions = new DtoOptions(false)
+                            {
+                                EnableImages = false
+                            }
                         });
 
                         SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
@@ -177,7 +181,11 @@ namespace Emby.Server.Implementations.Dto
             {
                 if (options.Fields.Contains(ItemFields.ItemCounts))
                 {
-                    SetItemByNameInfo(item, dto, GetTaggedItems(byName, user), user);
+                    SetItemByNameInfo(item, dto, GetTaggedItems(byName, user, new DtoOptions(false)
+                    {
+                        EnableImages = false
+
+                    }), user);
                 }
 
                 FillSyncInfo(dto, item, options, user, syncDictionary);
@@ -189,11 +197,12 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private List<BaseItem> GetTaggedItems(IItemByName byName, User user)
+        private List<BaseItem> GetTaggedItems(IItemByName byName, User user, DtoOptions options)
         {
             var items = byName.GetTaggedItems(new InternalItemsQuery(user)
             {
-                Recursive = true
+                Recursive = true,
+                DtoOptions = options
 
             }).ToList();
 
@@ -595,16 +604,17 @@ namespace Emby.Server.Implementations.Dto
         {
             if (!string.IsNullOrEmpty(item.Album))
             {
-                var parentAlbum = _libraryManager.GetItemList(new InternalItemsQuery
+                var parentAlbumIds = _libraryManager.GetItemIds(new InternalItemsQuery
                 {
                     IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
-                    Name = item.Album
+                    Name = item.Album,
+                    Limit = 1
 
-                }).FirstOrDefault();
+                });
 
-                if (parentAlbum != null)
+                if (parentAlbumIds.Count > 0)
                 {
-                    dto.AlbumId = GetDtoId(parentAlbum);
+                    dto.AlbumId = parentAlbumIds[0].ToString("N");
                 }
             }
 
