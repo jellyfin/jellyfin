@@ -188,7 +188,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Episode> GetEpisodes()
         {
-            return Series.GetSeasonEpisodes(this, null, null);
+            return Series.GetSeasonEpisodes(this, null, null, new DtoOptions(true));
         }
 
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
