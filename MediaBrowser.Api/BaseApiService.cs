@@ -151,16 +151,6 @@ namespace MediaBrowser.Api
                 options.Fields.Add(Model.Querying.ItemFields.ChildCount);
             }
 
-            if (client.IndexOf("web", StringComparison.OrdinalIgnoreCase) == -1 &&
-
-                // covers both emby mobile and emby for android mobile
-                client.IndexOf("mobile", StringComparison.OrdinalIgnoreCase) == -1 &&
-                client.IndexOf("ios", StringComparison.OrdinalIgnoreCase) == -1 &&
-                client.IndexOf("theater", StringComparison.OrdinalIgnoreCase) == -1)
-            {
-                options.Fields.Add(Model.Querying.ItemFields.ChildCount);
-            }
-
             var hasDtoOptions = request as IHasDtoOptions;
             if (hasDtoOptions != null)
             {

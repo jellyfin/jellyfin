@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 
@@ -27,7 +28,8 @@ namespace Emby.Server.Implementations.Library
             var items = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(BoxSet).Name, typeof(Game).Name, typeof(Movie).Name, typeof(Series).Name },
-                Recursive = true
+                Recursive = true,
+                DtoOptions = new DtoOptions(true)
 
             }).OfType<IHasTrailers>().ToList();
 
@@ -40,7 +42,8 @@ namespace Emby.Server.Implementations.Library
             {
                 IncludeItemTypes = new[] { typeof(Trailer).Name },
                 TrailerTypes = trailerTypes,
-                Recursive = true
+                Recursive = true,
+                DtoOptions = new DtoOptions(false)
 
             }).ToArray();
 

@@ -22,6 +22,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Sorting;
@@ -186,10 +187,15 @@ namespace MediaBrowser.Controller.Entities
             }
             set
             {
+                var isSortNameDefault = IsSortNameDefault(SortName);
+
                 _name = value;
 
-                // lazy load this again
-                _sortName = null;
+                if (isSortNameDefault)
+                {
+                    // lazy load this again
+                    SortName = null;
+                }
             }
         }
 
@@ -580,7 +586,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private string _forcedSortName;
         /// <summary>
         /// Gets or sets the name of the forced sort.
         /// </summary>
@@ -588,8 +593,42 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public string ForcedSortName
         {
-            get { return _forcedSortName; }
-            set { _forcedSortName = value; _sortName = null; }
+            get
+            {
+                var sortName = SortName;
+
+                if (string.IsNullOrWhiteSpace(sortName))
+                {
+                    return null;
+                }
+
+                if (string.Equals(sortName, CreateSortName(), StringComparison.OrdinalIgnoreCase))
+                {
+                    return null;
+                }
+
+                return sortName;
+            }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    SortName = null;
+                }
+                else
+                {
+                    var newValue = CreateSortNameFromCustomValue(value);
+
+                    if (string.Equals(newValue, CreateSortName(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        SortName = null;
+                    }
+                    else
+                    {
+                        SortName = newValue;
+                    }
+                }
+            }
         }
 
         private string _sortName;
@@ -604,15 +643,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (_sortName == null)
                 {
-                    if (!string.IsNullOrWhiteSpace(ForcedSortName))
-                    {
-                        // Need the ToLower because that's what CreateSortName does
-                        _sortName = ModifySortChunks(ForcedSortName).ToLower();
-                    }
-                    else
-                    {
-                        _sortName = CreateSortName();
-                    }
+                    _sortName = CreateSortName();
                 }
                 return _sortName;
             }
@@ -620,6 +651,21 @@ namespace MediaBrowser.Controller.Entities
             {
                 _sortName = value;
             }
+        }
+
+        private string CreateSortNameFromCustomValue(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : ModifySortChunks(value).ToLower();
+        }
+
+        public bool IsSortNameDefault(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return true;
+            }
+
+            return string.Equals(CreateSortNameFromCustomValue(value), CreateSortName(), StringComparison.OrdinalIgnoreCase);
         }
 
         public string GetInternalMetadataPath()
@@ -1303,7 +1349,6 @@ namespace MediaBrowser.Controller.Entities
 
         public void AfterMetadataRefresh()
         {
-            _sortName = null;
         }
 
         /// <summary>
@@ -2187,8 +2232,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public virtual bool BeforeMetadataRefresh()
         {
-            _sortName = null;
-
             var hasChanges = false;
 
             if (string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Path))
@@ -2210,7 +2253,7 @@ namespace MediaBrowser.Controller.Entities
             return path;
         }
 
-        public virtual Task FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, List<ItemFields> itemFields)
+        public virtual Task FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, List<ItemFields> fields)
         {
             if (RunTimeTicks.HasValue)
             {

@@ -14,6 +14,7 @@ using Emby.Server.Implementations.Images;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -46,7 +47,8 @@ namespace Emby.Server.Implementations.UserViews
             {
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
-                ExcludeItemTypes = new[] { "UserView", "CollectionFolder", "Playlist" }
+                ExcludeItemTypes = new[] { "UserView", "CollectionFolder", "Playlist" },
+                DtoOptions = new DtoOptions(false)
 
             }).ConfigureAwait(false);
 
@@ -144,7 +146,8 @@ namespace Emby.Server.Implementations.UserViews
                 Recursive = recursive,
                 IncludeItemTypes = new[] { typeof(BoxSet).Name },
                 Limit = 20,
-                SortBy = new[] { ItemSortBy.Random }
+                SortBy = new[] { ItemSortBy.Random },
+                DtoOptions = new DtoOptions(false)
             });
 
             return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)).ToList(), 8);

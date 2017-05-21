@@ -1022,7 +1022,10 @@ namespace Emby.Server.Implementations.Session
                     var series = episode.Series;
                     if (series != null)
                     {
-                        var episodes = series.GetEpisodes(user)
+                        var episodes = series.GetEpisodes(user, new DtoOptions(false)
+                        {
+                            EnableImages = false
+                        })
                             .Where(i => !i.IsVirtualItem)
                             .SkipWhile(i => i.Id != episode.Id)
                             .ToList();
@@ -1065,7 +1068,11 @@ namespace Emby.Server.Implementations.Session
                 var items = byName.GetTaggedItems(new InternalItemsQuery(user)
                 {
                     IsFolder = false,
-                    Recursive = true
+                    Recursive = true,
+                    DtoOptions = new DtoOptions(false)
+                    {
+                        EnableImages = false
+                    }
                 });
 
                 return FilterToSingleMediaType(items)
@@ -1080,7 +1087,11 @@ namespace Emby.Server.Implementations.Session
                 var itemsResult = await folder.GetItems(new InternalItemsQuery(user)
                 {
                     Recursive = true,
-                    IsFolder = false
+                    IsFolder = false,
+                    DtoOptions = new DtoOptions(false)
+                    {
+                        EnableImages = false
+                    }
 
                 }).ConfigureAwait(false);
 
@@ -1111,7 +1122,7 @@ namespace Emby.Server.Implementations.Session
                 return new List<BaseItem>();
             }
 
-            return _musicManager.GetInstantMixFromItem(item, user);
+            return _musicManager.GetInstantMixFromItem(item, user, new DtoOptions(false) { EnableImages = false });
         }
 
         public Task SendBrowseCommand(string controllingSessionId, string sessionId, BrowseRequest command, CancellationToken cancellationToken)

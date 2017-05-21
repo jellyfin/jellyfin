@@ -93,22 +93,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
-        {
-            var itemsWithPerson = LibraryManager.GetItemIds(new InternalItemsQuery
-            {
-                PersonIds = new[] { Id.ToString("N") }
-            });
-
-            return inputItems.Where(i => itemsWithPerson.Contains(i.Id));
-        }
-
-
-        public Func<BaseItem, bool> GetItemFilter()
-        {
-            return i => LibraryManager.GetPeople(i).Any(p => string.Equals(p.Name, Name, StringComparison.OrdinalIgnoreCase));
-        }
-
         [IgnoreDataMember]
         public override bool SupportsPeople
         {
