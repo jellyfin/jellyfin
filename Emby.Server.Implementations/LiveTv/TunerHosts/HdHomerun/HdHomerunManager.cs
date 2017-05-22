@@ -46,10 +46,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
     public class HdHomerunChannelCommands : IHdHomerunChannelCommands
     {
         private string _channel;
+        private string _profile;
 
-        public HdHomerunChannelCommands(string channel)
+        public HdHomerunChannelCommands(string channel, string profile)
         {
             _channel = channel;
+            _profile = profile;
         }
 
         public IEnumerable<Tuple<string, string>> GetCommands()
@@ -57,7 +59,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var commands = new List<Tuple<string, string>>();
 
             if (!String.IsNullOrEmpty(_channel))
-                commands.Add(Tuple.Create("vchannel", _channel));
+            {
+                if (!string.IsNullOrWhiteSpace(_profile) && !string.Equals(_profile, "native", StringComparison.OrdinalIgnoreCase))
+                {
+                    commands.Add(Tuple.Create("vchannel", String.Format("{0} transcode={1}", _channel, _profile)));
+                }
+                else
+                {
+                    commands.Add(Tuple.Create("vchannel", _channel));
+                }
+            }
 
             return commands;
         }

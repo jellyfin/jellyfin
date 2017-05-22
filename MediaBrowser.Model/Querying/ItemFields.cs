@@ -235,6 +235,9 @@
         ExternalEtag,
         PresentationUniqueKey,
         InheritedParentalRatingValue,
-        ExternalSeriesId
+        ExternalSeriesId,
+        SeriesPresentationUniqueKey,
+        DateLastRefreshed,
+        DateLastSaved
     }
 }

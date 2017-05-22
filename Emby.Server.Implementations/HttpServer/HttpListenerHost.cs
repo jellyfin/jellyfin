@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.SocketSharp;
@@ -445,10 +446,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
-        /// <param name="httpReq">The HTTP req.</param>
-        /// <param name="url">The URL.</param>
-        /// <returns>Task.</returns>
-        protected async Task RequestHandler(IHttpRequest httpReq, Uri url)
+        protected async Task RequestHandler(IHttpRequest httpReq, Uri url, CancellationToken cancellationToken)
         {
             var date = DateTime.Now;
             var httpRes = httpReq.Response;
@@ -589,7 +587,7 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (handler != null)
                 {
-                    await handler.ProcessRequestAsync(this, httpReq, httpRes, Logger, operationName).ConfigureAwait(false);
+                    await handler.ProcessRequestAsync(this, httpReq, httpRes, Logger, operationName, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
