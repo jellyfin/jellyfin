@@ -885,7 +885,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Person}.</returns>
         public Person GetPerson(string name)
         {
-            return CreateItemByName<Person>(Person.GetPath, name);
+            return CreateItemByName<Person>(Person.GetPath, name, new DtoOptions(true));
         }
 
         /// <summary>
@@ -895,7 +895,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Studio}.</returns>
         public Studio GetStudio(string name)
         {
-            return CreateItemByName<Studio>(Studio.GetPath, name);
+            return CreateItemByName<Studio>(Studio.GetPath, name, new DtoOptions(true));
         }
 
         public Guid GetStudioId(string name)
@@ -925,7 +925,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Genre}.</returns>
         public Genre GetGenre(string name)
         {
-            return CreateItemByName<Genre>(Genre.GetPath, name);
+            return CreateItemByName<Genre>(Genre.GetPath, name, new DtoOptions(true));
         }
 
         /// <summary>
@@ -935,7 +935,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{MusicGenre}.</returns>
         public MusicGenre GetMusicGenre(string name)
         {
-            return CreateItemByName<MusicGenre>(MusicGenre.GetPath, name);
+            return CreateItemByName<MusicGenre>(MusicGenre.GetPath, name, new DtoOptions(true));
         }
 
         /// <summary>
@@ -945,7 +945,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{GameGenre}.</returns>
         public GameGenre GetGameGenre(string name)
         {
-            return CreateItemByName<GameGenre>(GameGenre.GetPath, name);
+            return CreateItemByName<GameGenre>(GameGenre.GetPath, name, new DtoOptions(true));
         }
 
         /// <summary>
@@ -963,7 +963,7 @@ namespace Emby.Server.Implementations.Library
 
             var name = value.ToString(CultureInfo.InvariantCulture);
 
-            return CreateItemByName<Year>(Year.GetPath, name);
+            return CreateItemByName<Year>(Year.GetPath, name, new DtoOptions(true));
         }
 
         /// <summary>
@@ -973,10 +973,15 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Genre}.</returns>
         public MusicArtist GetArtist(string name)
         {
-            return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name);
+            return GetArtist(name, new DtoOptions(true));
         }
 
-        private T CreateItemByName<T>(Func<string, string> getPathFn, string name)
+        public MusicArtist GetArtist(string name, DtoOptions options)
+        {
+            return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name, options);
+        }
+
+        private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options)
             where T : BaseItem, new()
         {
             if (typeof(T) == typeof(MusicArtist))
@@ -985,7 +990,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     IncludeItemTypes = new[] { typeof(T).Name },
                     Name = name,
-                    DtoOptions = new DtoOptions(true)
+                    DtoOptions = options
 
                 }).Cast<MusicArtist>()
                 .OrderBy(i => i.IsAccessedByName ? 1 : 0)
@@ -1027,54 +1032,6 @@ namespace Emby.Server.Implementations.Library
             var path = getPathFn(name);
             var forceCaseInsensitiveId = ConfigurationManager.Configuration.EnableNormalizedItemByNameIds;
             return GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
-        }
-
-        public IEnumerable<MusicArtist> GetAlbumArtists(IEnumerable<IHasAlbumArtist> items)
-        {
-            var names = items
-                .SelectMany(i => i.AlbumArtists)
-                .DistinctNames()
-                .Select(i =>
-                {
-                    try
-                    {
-                        var artist = GetArtist(i);
-
-                        return artist;
-                    }
-                    catch
-                    {
-                        // Already logged at lower levels
-                        return null;
-                    }
-                })
-                .Where(i => i != null);
-
-            return names;
-        }
-
-        public IEnumerable<MusicArtist> GetArtists(IEnumerable<IHasArtist> items)
-        {
-            var names = items
-                .SelectMany(i => i.AllArtists)
-                .DistinctNames()
-                .Select(i =>
-                {
-                    try
-                    {
-                        var artist = GetArtist(i);
-
-                        return artist;
-                    }
-                    catch
-                    {
-                        // Already logged at lower levels
-                        return null;
-                    }
-                })
-                .Where(i => i != null);
-
-            return names;
         }
 
         /// <summary>

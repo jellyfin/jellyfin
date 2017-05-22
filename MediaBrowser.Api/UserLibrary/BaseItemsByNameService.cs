@@ -267,7 +267,8 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 ExcludeItemTypes = excludeItemTypes,
                 IncludeItemTypes = includeItemTypes,
-                MediaTypes = mediaTypes
+                MediaTypes = mediaTypes,
+                DtoOptions = dtoOptions
             };
 
             Func<BaseItem, bool> filter = i => FilterItem(request, i, excludeItemTypes, includeItemTypes, mediaTypes);

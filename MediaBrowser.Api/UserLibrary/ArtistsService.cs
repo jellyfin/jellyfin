@@ -68,10 +68,10 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{BaseItemDto}.</returns>
         private BaseItemDto GetItem(GetArtist request)
         {
-            var item = GetArtist(request.Name, LibraryManager);
-            
             var dtoOptions = GetDtoOptions(AuthorizationContext, request);
 
+            var item = GetArtist(request.Name, LibraryManager, dtoOptions);
+            
             if (!string.IsNullOrWhiteSpace(request.UserId))
             {
                 var user = UserManager.GetUserById(request.UserId);

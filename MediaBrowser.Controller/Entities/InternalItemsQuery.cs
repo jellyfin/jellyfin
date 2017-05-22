@@ -160,42 +160,6 @@ namespace MediaBrowser.Controller.Entities
         public DtoOptions DtoOptions { get; set; }
         public int MinSimilarityScore { get; set; }
 
-        public bool HasField(ItemFields name)
-        {
-            var fields = DtoOptions.Fields;
-
-            switch (name)
-            {
-                case ItemFields.HomePageUrl:
-                case ItemFields.Keywords:
-                case ItemFields.DisplayMediaType:
-                case ItemFields.VoteCount:
-                case ItemFields.CustomRating:
-                case ItemFields.ProductionLocations:
-                case ItemFields.Settings:
-                case ItemFields.OriginalTitle:
-                case ItemFields.Taglines:
-                case ItemFields.SortName:
-                case ItemFields.Studios:
-                case ItemFields.Tags:
-                case ItemFields.ThemeSongIds:
-                case ItemFields.ThemeVideoIds:
-                case ItemFields.DateCreated:
-                case ItemFields.Overview:
-                case ItemFields.Genres:
-                case ItemFields.DateLastMediaAdded:
-                case ItemFields.ExternalEtag:
-                case ItemFields.PresentationUniqueKey:
-                case ItemFields.InheritedParentalRatingValue:
-                case ItemFields.ExternalSeriesId:
-                    return fields.Contains(name);
-                case ItemFields.ServiceName:
-                    return true;
-                default:
-                    return true;
-            }
-        }
-
         public InternalItemsQuery()
         {
             MinSimilarityScore = 20;
