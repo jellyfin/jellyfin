@@ -1234,8 +1234,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     Protocol = MediaBrowser.Model.MediaInfo.MediaProtocol.Http,
                     BufferMs = 0,
                     IgnoreDts = true,
-                    IgnoreIndex = true,
-                    GenPtsInput = true
+                    IgnoreIndex = true
                 };
 
                 var isAudio = false;

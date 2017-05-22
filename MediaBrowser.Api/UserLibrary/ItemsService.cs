@@ -358,7 +358,7 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     try
                     {
-                        return _libraryManager.GetArtist(i);
+                        return _libraryManager.GetArtist(i, new DtoOptions(false));
                     }
                     catch
                     {
