@@ -18,6 +18,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.System;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -63,7 +64,7 @@ namespace MediaBrowser.Api.Playback
     //[Authenticated]
     public class UniversalAudioService : BaseApiService
     {
-        public UniversalAudioService(IServerConfigurationManager serverConfigurationManager, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, IDeviceManager deviceManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext, IImageProcessor imageProcessor, INetworkManager networkManager)
+        public UniversalAudioService(IServerConfigurationManager serverConfigurationManager, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, IDeviceManager deviceManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext, IImageProcessor imageProcessor, INetworkManager networkManager, IEnvironmentInfo environmentInfo)
         {
             ServerConfigurationManager = serverConfigurationManager;
             UserManager = userManager;
@@ -80,6 +81,7 @@ namespace MediaBrowser.Api.Playback
             AuthorizationContext = authorizationContext;
             ImageProcessor = imageProcessor;
             NetworkManager = networkManager;
+            EnvironmentInfo = environmentInfo;
         }
 
         protected IServerConfigurationManager ServerConfigurationManager { get; private set; }
@@ -97,6 +99,7 @@ namespace MediaBrowser.Api.Playback
         protected IAuthorizationContext AuthorizationContext { get; private set; }
         protected IImageProcessor ImageProcessor { get; private set; }
         protected INetworkManager NetworkManager { get; private set; }
+        protected IEnvironmentInfo EnvironmentInfo { get; private set; }
 
         public Task<object> Get(GetUniversalAudioStream request)
         {
@@ -263,7 +266,8 @@ namespace MediaBrowser.Api.Playback
                     ZipClient,
                     JsonSerializer,
                     AuthorizationContext,
-                    ImageProcessor)
+                    ImageProcessor,
+                    EnvironmentInfo)
                 {
                     Request = Request
                 };

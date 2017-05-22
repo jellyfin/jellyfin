@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Net;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 
@@ -18,7 +19,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// Gets or sets the request handler.
         /// </summary>
         /// <value>The request handler.</value>
-        Func<IHttpRequest, Uri, Task> RequestHandler { get; set; }
+        Func<IHttpRequest, Uri, CancellationToken, Task> RequestHandler { get; set; }
 
         /// <summary>
         /// Gets or sets the web socket handler.

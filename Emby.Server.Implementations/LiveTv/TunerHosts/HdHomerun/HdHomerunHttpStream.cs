@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -17,24 +18,22 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
     {
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
-        private readonly IFileSystem _fileSystem;
-        private readonly IServerApplicationPaths _appPaths;
         private readonly IServerApplicationHost _appHost;
 
         private readonly CancellationTokenSource _liveStreamCancellationTokenSource = new CancellationTokenSource();
         private readonly TaskCompletionSource<bool> _liveStreamTaskCompletionSource = new TaskCompletionSource<bool>();
-        private readonly MulticastStream _multicastStream;
 
-        public HdHomerunHttpStream(MediaSourceInfo mediaSource, string originalStreamId, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost)
-            : base(mediaSource)
+        private readonly string _tempFilePath;
+
+        public HdHomerunHttpStream(MediaSourceInfo mediaSource, string originalStreamId, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, IEnvironmentInfo environment)
+            : base(mediaSource, environment, fileSystem)
         {
-            _fileSystem = fileSystem;
             _httpClient = httpClient;
             _logger = logger;
-            _appPaths = appPaths;
             _appHost = appHost;
             OriginalStreamId = originalStreamId;
-            _multicastStream = new MulticastStream(_logger);
+
+            _tempFilePath = Path.Combine(appPaths.TranscodingTempPath, UniqueId + ".ts");
         }
 
         protected override async Task OpenInternal(CancellationToken openCancellationToken)
@@ -74,9 +73,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return _liveStreamTaskCompletionSource.Task;
         }
 
-        private async Task StartStreaming(string url, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        private Task StartStreaming(string url, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
-            await Task.Run(async () =>
+            return Task.Run(async () =>
             {
                 var isFirstAttempt = true;
 
@@ -101,13 +100,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                             {
                                 _logger.Info("Beginning multicastStream.CopyUntilCancelled");
 
-                                Action onStarted = null;
-                                if (isFirstAttempt)
+                                FileSystem.CreateDirectory(FileSystem.GetDirectoryName(_tempFilePath));
+                                using (var fileStream = FileSystem.GetFileStream(_tempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.Asynchronous | FileOpenOptions.SequentialScan))
                                 {
-                                    onStarted = () => openTaskCompletionSource.TrySetResult(true);
-                                }
+                                    ResolveAfterDelay(2000, openTaskCompletionSource);
 
-                                await _multicastStream.CopyUntilCancelled(response.Content, onStarted, cancellationToken).ConfigureAwait(false);
+                                    await response.Content.CopyToAsync(fileStream, 81920, cancellationToken).ConfigureAwait(false);
+                                }
                             }
                         }
                     }
@@ -131,13 +130,22 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
 
                 _liveStreamTaskCompletionSource.TrySetResult(true);
+                await DeleteTempFile(_tempFilePath).ConfigureAwait(false);
+            });
+        }
 
-            }).ConfigureAwait(false);
+        private void ResolveAfterDelay(int delayMs, TaskCompletionSource<bool> openTaskCompletionSource)
+        {
+            Task.Run(async () =>
+            {
+                await Task.Delay(delayMs).ConfigureAwait(false);
+                openTaskCompletionSource.TrySetResult(true);
+            });
         }
 
         public Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
         {
-            return _multicastStream.CopyToAsync(stream , cancellationToken);
+            return CopyFileTo(_tempFilePath, false, stream, cancellationToken);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Emby.Server.Implementations.Services
 {
     public static class ResponseHelper
     {
-        public static Task WriteToResponse(IResponse httpRes, IRequest httpReq, object result)
+        public static Task WriteToResponse(IResponse httpRes, IRequest httpReq, object result, CancellationToken cancellationToken)
         {
             if (result == null)
             {
@@ -30,21 +30,17 @@ namespace Emby.Server.Implementations.Services
             {
                 httpResult.RequestContext = httpReq;
                 httpReq.ResponseContentType = httpResult.ContentType ?? httpReq.ResponseContentType;
-                return WriteToResponseInternal(httpRes, httpResult, httpReq);
+                return WriteToResponseInternal(httpRes, httpResult, httpReq, cancellationToken);
             }
 
-            return WriteToResponseInternal(httpRes, result, httpReq);
+            return WriteToResponseInternal(httpRes, result, httpReq, cancellationToken);
         }
 
         /// <summary>
         /// Writes to response.
         /// Response headers are customizable by implementing IHasHeaders an returning Dictionary of Http headers.
         /// </summary>
-        /// <param name="response">The response.</param>
-        /// <param name="result">Whether or not it was implicity handled by ServiceStack's built-in handlers.</param>
-        /// <param name="request">The serialization context.</param>
-        /// <returns></returns>
-        private static async Task WriteToResponseInternal(IResponse response, object result, IRequest request)
+        private static async Task WriteToResponseInternal(IResponse response, object result, IRequest request, CancellationToken cancellationToken)
         {
             var defaultContentType = request.ResponseContentType;
 
@@ -105,7 +101,7 @@ namespace Emby.Server.Implementations.Services
             var asyncStreamWriter = result as IAsyncStreamWriter;
             if (asyncStreamWriter != null)
             {
-                await asyncStreamWriter.WriteToAsync(response.OutputStream, CancellationToken.None).ConfigureAwait(false);
+                await asyncStreamWriter.WriteToAsync(response.OutputStream, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -119,7 +115,7 @@ namespace Emby.Server.Implementations.Services
             var fileWriter = result as FileWriter;
             if (fileWriter != null)
             {
-                await fileWriter.WriteToAsync(response, CancellationToken.None).ConfigureAwait(false);
+                await fileWriter.WriteToAsync(response, cancellationToken).ConfigureAwait(false);
                 return;
             }
 

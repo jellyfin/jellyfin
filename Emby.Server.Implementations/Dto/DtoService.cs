@@ -1137,7 +1137,10 @@ namespace Emby.Server.Implementations.Dto
                             return null;
                         }
 
-                        var artist = _libraryManager.GetArtist(i);
+                        var artist = _libraryManager.GetArtist(i, new DtoOptions(false)
+                        {
+                            EnableImages = false
+                        });
                         if (artist != null)
                         {
                             return new NameIdPair
@@ -1186,7 +1189,10 @@ namespace Emby.Server.Implementations.Dto
                             return null;
                         }
 
-                        var artist = _libraryManager.GetArtist(i);
+                        var artist = _libraryManager.GetArtist(i, new DtoOptions(false)
+                        {
+                            EnableImages = false
+                        });
                         if (artist != null)
                         {
                             return new NameIdPair
@@ -1456,7 +1462,7 @@ namespace Emby.Server.Implementations.Dto
             var musicAlbum = item as MusicAlbum;
             if (musicAlbum != null)
             {
-                var artist = musicAlbum.MusicArtist;
+                var artist = musicAlbum.GetMusicArtist(new DtoOptions(false));
                 if (artist != null)
                 {
                     return artist;

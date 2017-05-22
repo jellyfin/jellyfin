@@ -148,6 +148,7 @@ namespace SocketHttpListener.Net
         }
 
         const int MsCopyBufferSize = 81920;
+        const int StreamCopyToBufferSize = 81920;
         public override void Write(byte[] buffer, int offset, int count)
         {
             if (disposed)
@@ -340,11 +341,11 @@ namespace SocketHttpListener.Net
                 {
                     if (allowAsync)
                     {
-                        await fs.CopyToAsync(targetStream, 81920, cancellationToken).ConfigureAwait(false);
+                        await fs.CopyToAsync(targetStream, StreamCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                     }
                     else
                     {
-                        fs.CopyTo(targetStream, 81920);
+                        fs.CopyTo(targetStream, StreamCopyToBufferSize);
                     }
                 }
             }
@@ -352,16 +353,11 @@ namespace SocketHttpListener.Net
 
         private static async Task CopyToInternalAsyncWithSyncRead(Stream source, Stream destination, long copyLength, CancellationToken cancellationToken)
         {
-            var array = new byte[81920];
+            var array = new byte[StreamCopyToBufferSize];
             int bytesRead;
 
             while ((bytesRead = source.Read(array, 0, array.Length)) != 0)
             {
-                if (bytesRead == 0)
-                {
-                    break;
-                }
-
                 var bytesToWrite = Math.Min(bytesRead, copyLength);
 
                 if (bytesToWrite > 0)
@@ -380,16 +376,11 @@ namespace SocketHttpListener.Net
 
         private static async Task CopyToInternalAsync(Stream source, Stream destination, long copyLength, CancellationToken cancellationToken)
         {
-            var array = new byte[81920];
+            var array = new byte[StreamCopyToBufferSize];
             int bytesRead;
 
             while ((bytesRead = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
             {
-                if (bytesRead == 0)
-                {
-                    break;
-                }
-
                 var bytesToWrite = Math.Min(bytesRead, copyLength);
 
                 if (bytesToWrite > 0)

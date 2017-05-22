@@ -171,7 +171,7 @@ namespace MediaBrowser.Api.Music
         public Task<object> Get(GetInstantMixFromArtist request)
         {
             var user = _userManager.GetUserById(request.UserId);
-            var artist = _libraryManager.GetArtist(request.Name);
+            var artist = _libraryManager.GetArtist(request.Name, new DtoOptions(false));
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 

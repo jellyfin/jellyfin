@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
@@ -68,18 +69,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name.</param>
         /// <returns>Task{Artist}.</returns>
         MusicArtist GetArtist(string name);
-        /// <summary>
-        /// Gets the album artists.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <returns>IEnumerable&lt;MusicArtist&gt;.</returns>
-        IEnumerable<MusicArtist> GetAlbumArtists(IEnumerable<IHasAlbumArtist> items);
-        /// <summary>
-        /// Gets the artists.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <returns>IEnumerable&lt;MusicArtist&gt;.</returns>
-        IEnumerable<MusicArtist> GetArtists(IEnumerable<IHasArtist> items);
+        MusicArtist GetArtist(string name, DtoOptions options);
         /// <summary>
         /// Gets a Studio
         /// </summary>

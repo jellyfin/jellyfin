@@ -4,6 +4,7 @@ using SocketHttpListener.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Cryptography;
@@ -50,7 +51,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         }
 
         public Action<Exception, IRequest, bool> ErrorHandler { get; set; }
-        public Func<IHttpRequest, Uri, Task> RequestHandler { get; set; }
+        public Func<IHttpRequest, Uri, CancellationToken, Task> RequestHandler { get; set; }
 
         public Action<WebSocketConnectingEventArgs> WebSocketConnecting { get; set; }
 
@@ -82,10 +83,10 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         private void ProcessContext(HttpListenerContext context)
         {
             //Task.Factory.StartNew(() => InitTask(context), TaskCreationOptions.DenyChildAttach | TaskCreationOptions.PreferFairness);
-            Task.Run(() => InitTask(context));
+            Task.Run(() => InitTask(context, CancellationToken.None));
         }
 
-        private Task InitTask(HttpListenerContext context)
+        private Task InitTask(HttpListenerContext context, CancellationToken cancellationToken)
         {
             IHttpRequest httpReq = null;
             var request = context.Request;
@@ -111,7 +112,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
                 return Task.FromResult(true);
             }
 
-            return RequestHandler(httpReq, request.Url);
+            return RequestHandler(httpReq, request.Url, cancellationToken);
         }
 
         private void ProcessWebSocketRequest(HttpListenerContext ctx)
