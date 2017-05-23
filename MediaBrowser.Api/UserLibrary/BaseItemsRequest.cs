@@ -85,6 +85,12 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "MinPremiereDate", Description = "Optional. The minimum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string MinPremiereDate { get; set; }
 
+        [ApiMember(Name = "MinDateLastSaved", Description = "Optional. The minimum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MinDateLastSaved { get; set; }
+
+        [ApiMember(Name = "MinDateLastSavedForUser", Description = "Optional. The minimum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MinDateLastSavedForUser { get; set; }
+
         [ApiMember(Name = "MaxPremiereDate", Description = "Optional. The maximum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string MaxPremiereDate { get; set; }
 

@@ -130,7 +130,7 @@ namespace MediaBrowser.Controller.Entities
                         if (query.Recursive)
                         {
                             query.Recursive = true;
-                            query.ParentId = queryParent.Id;
+                            query.Parent = queryParent;
                             query.SetUser(user);
 
                             return _libraryManager.GetItemsResult(query);
@@ -355,7 +355,7 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMusicPlaylists(Folder parent, User user, InternalItemsQuery query)
         {
-            query.ParentId = null;
+            query.Parent = null;
             query.IncludeItemTypes = new[] { typeof(Playlist).Name };
             query.SetUser(user);
             query.Recursive = true;
@@ -366,7 +366,7 @@ namespace MediaBrowser.Controller.Entities
         private QueryResult<BaseItem> GetMusicAlbums(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
-            query.ParentId = parent.Id;
+            query.Parent = parent;
             query.SetUser(user);
 
             query.IncludeItemTypes = new[] { typeof(MusicAlbum).Name };
@@ -377,7 +377,7 @@ namespace MediaBrowser.Controller.Entities
         private QueryResult<BaseItem> GetMusicSongs(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
-            query.ParentId = parent.Id;
+            query.Parent = parent;
             query.SetUser(user);
 
             query.IncludeItemTypes = new[] { typeof(Audio.Audio).Name };
@@ -405,7 +405,7 @@ namespace MediaBrowser.Controller.Entities
         private QueryResult<BaseItem> GetFavoriteSongs(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
-            query.ParentId = parent.Id;
+            query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
             query.IncludeItemTypes = new[] { typeof(Audio.Audio).Name };
@@ -416,7 +416,7 @@ namespace MediaBrowser.Controller.Entities
         private QueryResult<BaseItem> GetFavoriteAlbums(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
-            query.ParentId = parent.Id;
+            query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
             query.IncludeItemTypes = new[] { typeof(MusicAlbum).Name };
@@ -466,7 +466,7 @@ namespace MediaBrowser.Controller.Entities
         private QueryResult<BaseItem> GetFavoriteMovies(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
-            query.ParentId = parent.Id;
+            query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
             query.IncludeItemTypes = new[] { typeof(Movie).Name };
@@ -477,7 +477,7 @@ namespace MediaBrowser.Controller.Entities
         private QueryResult<BaseItem> GetFavoriteSeries(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
-            query.ParentId = parent.Id;
+            query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
             query.IncludeItemTypes = new[] { typeof(Series).Name };
@@ -488,7 +488,7 @@ namespace MediaBrowser.Controller.Entities
         private QueryResult<BaseItem> GetFavoriteEpisodes(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
-            query.ParentId = parent.Id;
+            query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
             query.IncludeItemTypes = new[] { typeof(Episode).Name };
@@ -499,7 +499,7 @@ namespace MediaBrowser.Controller.Entities
         private QueryResult<BaseItem> GetMovieMovies(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
-            query.ParentId = parent.Id;
+            query.Parent = parent;
             query.SetUser(user);
 
             query.IncludeItemTypes = new[] { typeof(Movie).Name };
@@ -518,7 +518,7 @@ namespace MediaBrowser.Controller.Entities
             query.SortOrder = SortOrder.Descending;
 
             query.Recursive = true;
-            query.ParentId = parent.Id;
+            query.Parent = parent;
             query.SetUser(user);
             query.Limit = GetSpecialItemsLimit();
             query.IncludeItemTypes = new[] { typeof(Movie).Name };
@@ -532,7 +532,7 @@ namespace MediaBrowser.Controller.Entities
             query.SortOrder = SortOrder.Descending;
             query.IsResumable = true;
             query.Recursive = true;
-            query.ParentId = parent.Id;
+            query.Parent = parent;
             query.SetUser(user);
             query.Limit = GetSpecialItemsLimit();
             query.IncludeItemTypes = new[] { typeof(Movie).Name };
@@ -586,7 +586,7 @@ namespace MediaBrowser.Controller.Entities
         private async Task<QueryResult<BaseItem>> GetMovieGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
-            query.ParentId = queryParent.Id;
+            query.Parent = queryParent;
             query.GenreIds = new[] { displayParent.Id.ToString("N") };
             query.SetUser(user);
 
@@ -602,7 +602,7 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetBoxsetView(Folder parent, User user, InternalItemsQuery query)
         {
-            query.ParentId = null;
+            query.Parent = null;
             query.IncludeItemTypes = new[] { typeof(BoxSet).Name };
             query.SetUser(user);
             query.Recursive = true;
@@ -644,7 +644,7 @@ namespace MediaBrowser.Controller.Entities
             query.SortOrder = SortOrder.Descending;
 
             query.Recursive = true;
-            query.ParentId = parent.Id;
+            query.Parent = parent;
             query.SetUser(user);
             query.Limit = GetSpecialItemsLimit();
             query.IncludeItemTypes = new[] { typeof(Episode).Name };
@@ -674,7 +674,7 @@ namespace MediaBrowser.Controller.Entities
             query.SortOrder = SortOrder.Descending;
             query.IsResumable = true;
             query.Recursive = true;
-            query.ParentId = parent.Id;
+            query.Parent = parent;
             query.SetUser(user);
             query.Limit = GetSpecialItemsLimit();
             query.IncludeItemTypes = new[] { typeof(Episode).Name };
@@ -685,7 +685,7 @@ namespace MediaBrowser.Controller.Entities
         private QueryResult<BaseItem> GetTvSeries(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
-            query.ParentId = parent.Id;
+            query.Parent = parent;
             query.SetUser(user);
 
             query.IncludeItemTypes = new[] { typeof(Series).Name };
@@ -729,7 +729,7 @@ namespace MediaBrowser.Controller.Entities
         private QueryResult<BaseItem> GetTvGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
-            query.ParentId = queryParent.Id;
+            query.Parent = queryParent;
             query.GenreIds = new[] { displayParent.Id.ToString("N") };
             query.SetUser(user);
 
