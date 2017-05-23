@@ -46,7 +46,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         {
             if (!_hasChildren.HasValue)
             {
-                _hasChildren = LibraryManager.GetItemIds(new InternalItemsQuery { ParentId = Id }).Count > 0;
+                _hasChildren = LibraryManager.GetItemIds(new InternalItemsQuery { Parent = this }).Count > 0;
             }
 
             return _hasChildren.Value;

@@ -1546,7 +1546,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            query.ParentId = null;
+            query.Parent = null;
         }
 
         private void AddUserToQuery(InternalItemsQuery query, User user)

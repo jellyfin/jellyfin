@@ -126,8 +126,26 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsVirtualItem { get; set; }
 
         public Guid? ParentId { get; set; }
+        public string ParentType { get; set; }
         public string[] AncestorIds { get; set; }
         public string[] TopParentIds { get; set; }
+
+        public BaseItem Parent
+        {
+            set
+            {
+                if (value == null)
+                {
+                    ParentId = null;
+                    ParentType = null;
+                }
+                else
+                {
+                    ParentId = value.Id;
+                    ParentType = value.GetType().Name;
+                }
+            }
+        }
 
         public string[] PresetViews { get; set; }
         public SourceType[] SourceTypes { get; set; }
@@ -156,6 +174,7 @@ namespace MediaBrowser.Controller.Entities
 
         public DateTime? MinDateCreated { get; set; }
         public DateTime? MinDateLastSaved { get; set; }
+        public DateTime? MinDateLastSavedForUser { get; set; }
 
         public DtoOptions DtoOptions { get; set; }
         public int MinSimilarityScore { get; set; }
