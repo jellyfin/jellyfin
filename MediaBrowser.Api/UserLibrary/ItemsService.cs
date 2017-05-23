@@ -294,6 +294,16 @@ namespace MediaBrowser.Api.UserLibrary
                 }
             }
 
+            if (!string.IsNullOrEmpty(request.MinDateLastSaved))
+            {
+                query.MinDateLastSaved = DateTime.Parse(request.MinDateLastSaved, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
+            }
+
+            if (!string.IsNullOrEmpty(request.MinDateLastSavedForUser))
+            {
+                query.MinDateLastSavedForUser = DateTime.Parse(request.MinDateLastSavedForUser, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
+            }
+
             if (!string.IsNullOrEmpty(request.MinPremiereDate))
             {
                 query.MinPremiereDate = DateTime.Parse(request.MinPremiereDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();

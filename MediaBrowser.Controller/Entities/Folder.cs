@@ -672,7 +672,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return ItemRepository.GetItemList(new InternalItemsQuery
             {
-                ParentId = Id,
+                Parent = this,
                 GroupByPresentationUniqueKey = false,
                 DtoOptions = new DtoOptions(true)
             });
@@ -692,7 +692,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 Recursive = false,
                 Limit = 0,
-                ParentId = Id,
+                Parent = this,
                 DtoOptions = new DtoOptions(false)
                 {
                     EnableImages = false
@@ -743,7 +743,10 @@ namespace MediaBrowser.Controller.Entities
 
             if (!(this is UserRootFolder) && !(this is AggregateFolder))
             {
-                query.ParentId = query.ParentId ?? Id;
+                if (!query.ParentId.HasValue)
+                {
+                    query.Parent = this;
+                }
             }
 
             if (RequiresPostFiltering2(query))

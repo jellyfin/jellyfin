@@ -121,11 +121,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 if (!cancellationToken.IsCancellationRequested)
                                 {
                                     FileSystem.CreateDirectory(FileSystem.GetDirectoryName(_tempFilePath));
-                                    using (var fileStream = FileSystem.GetFileStream(_tempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.Asynchronous | FileOpenOptions.SequentialScan))
+                                    using (var fileStream = FileSystem.GetFileStream(_tempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.Asynchronous))
                                     {
-                                        ResolveAfterDelay(2000, openTaskCompletionSource);
-
-                                        await new UdpClientStream(udpClient).CopyToAsync(fileStream, 81920, cancellationToken).ConfigureAwait(false);
+                                        await CopyTo(udpClient, fileStream, openTaskCompletionSource, cancellationToken).ConfigureAwait(false);
                                     }
                                 }
                             }
@@ -159,18 +157,35 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             });
         }
 
-        private void ResolveAfterDelay(int delayMs, TaskCompletionSource<bool> openTaskCompletionSource)
+        private void Resolve(TaskCompletionSource<bool> openTaskCompletionSource)
         {
-            Task.Run(async () =>
-            {
-                await Task.Delay(delayMs).ConfigureAwait(false);
-                openTaskCompletionSource.TrySetResult(true);
-            });
+            Task.Run(() =>
+           {
+               openTaskCompletionSource.TrySetResult(true);
+           });
         }
 
         public Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
         {
             return CopyFileTo(_tempFilePath, false, stream, cancellationToken);
+        }
+
+        private static int RtpHeaderBytes = 12;
+        private async Task CopyTo(ISocket udpClient, Stream outputStream, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                var data = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                var bytesRead = data.ReceivedBytes - RtpHeaderBytes;
+
+                await outputStream.WriteAsync(data.Buffer, RtpHeaderBytes, bytesRead, cancellationToken).ConfigureAwait(false);
+
+                if (openTaskCompletionSource != null)
+                {
+                    Resolve(openTaskCompletionSource);
+                    openTaskCompletionSource = null;
+                }
+            }
         }
     }
 
