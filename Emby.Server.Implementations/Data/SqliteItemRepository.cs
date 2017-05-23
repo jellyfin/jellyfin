@@ -1348,6 +1348,11 @@ namespace Emby.Server.Implementations.Data
 
         private BaseItem GetItem(IReadOnlyList<IResultSetValue> reader, InternalItemsQuery query)
         {
+            return GetItem(reader, query, HasProgramAttributes(query), HasEpisodeAttributes(query), HasStartDate(query), HasTrailerTypes(query), HasArtistFields(query));
+        }
+
+        private BaseItem GetItem(IReadOnlyList<IResultSetValue> reader, InternalItemsQuery query, bool enableProgramAttributes, bool hasEpisodeAttributes, bool queryHasStartDate, bool hasTrailerTypes, bool hasArtistFields)
+        {
             var typeString = reader.GetString(0);
 
             var type = _typeMapper.GetType(typeString);
@@ -1394,28 +1399,34 @@ namespace Emby.Server.Implementations.Data
                 return null;
             }
 
-            if (!reader.IsDBNull(2))
+            var index = 2;
+
+            if (queryHasStartDate)
             {
-                var hasStartDate = item as IHasStartDate;
-                if (hasStartDate != null)
+                if (!reader.IsDBNull(index))
                 {
-                    hasStartDate.StartDate = reader[2].ReadDateTime();
+                    var hasStartDate = item as IHasStartDate;
+                    if (hasStartDate != null)
+                    {
+                        hasStartDate.StartDate = reader[index].ReadDateTime();
+                    }
                 }
+                index++;
             }
 
-            if (!reader.IsDBNull(3))
+            if (!reader.IsDBNull(index))
             {
-                item.EndDate = reader[3].ReadDateTime();
+                item.EndDate = reader[index].ReadDateTime();
             }
+            index++;
 
-            if (!reader.IsDBNull(4))
+            if (!reader.IsDBNull(index))
             {
-                item.ChannelId = reader.GetString(4);
+                item.ChannelId = reader.GetString(index);
             }
+            index++;
 
-            var index = 5;
-
-            if (HasProgramAttributes(query))
+            if (enableProgramAttributes)
             {
                 var hasProgramAttributes = item as IHasProgramAttributes;
                 if (hasProgramAttributes != null)
@@ -1728,15 +1739,18 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            var trailer = item as Trailer;
-            if (trailer != null)
+            if (hasTrailerTypes)
             {
-                if (!reader.IsDBNull(index))
+                var trailer = item as Trailer;
+                if (trailer != null)
                 {
-                    trailer.TrailerTypes = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => (TrailerType)Enum.Parse(typeof(TrailerType), i, true)).ToList();
+                    if (!reader.IsDBNull(index))
+                    {
+                        trailer.TrailerTypes = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => (TrailerType)Enum.Parse(typeof(TrailerType), i, true)).ToList();
+                    }
                 }
+                index++;
             }
-            index++;
 
             if (HasField(query, ItemFields.OriginalTitle))
             {
@@ -1795,24 +1809,27 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            var episode = item as Episode;
-            if (episode != null)
+            if (hasEpisodeAttributes)
             {
-                if (!reader.IsDBNull(index))
+                var episode = item as Episode;
+                if (episode != null)
                 {
-                    episode.SeasonName = reader.GetString(index);
+                    if (!reader.IsDBNull(index))
+                    {
+                        episode.SeasonName = reader.GetString(index);
+                    }
+                    index++;
+                    if (!reader.IsDBNull(index))
+                    {
+                        episode.SeasonId = reader.GetGuid(index);
+                    }
+                }
+                else
+                {
+                    index++;
                 }
                 index++;
-                if (!reader.IsDBNull(index))
-                {
-                    episode.SeasonId = reader.GetGuid(index);
-                }
             }
-            else
-            {
-                index++;
-            }
-            index++;
 
             if (hasSeries != null)
             {
@@ -1931,19 +1948,22 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            var hasArtists = item as IHasArtist;
-            if (hasArtists != null && !reader.IsDBNull(index))
+            if (hasArtistFields)
             {
-                hasArtists.Artists = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
-            }
-            index++;
+                var hasArtists = item as IHasArtist;
+                if (hasArtists != null && !reader.IsDBNull(index))
+                {
+                    hasArtists.Artists = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+                }
+                index++;
 
-            var hasAlbumArtists = item as IHasAlbumArtist;
-            if (hasAlbumArtists != null && !reader.IsDBNull(index))
-            {
-                hasAlbumArtists.AlbumArtists = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+                var hasAlbumArtists = item as IHasAlbumArtist;
+                if (hasAlbumArtists != null && !reader.IsDBNull(index))
+                {
+                    hasAlbumArtists.AlbumArtists = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+                }
+                index++;
             }
-            index++;
 
             if (!reader.IsDBNull(index))
             {
@@ -2312,6 +2332,20 @@ namespace Emby.Server.Implementations.Data
 
         private bool HasProgramAttributes(InternalItemsQuery query)
         {
+            var excludeParentTypes = new string[]
+            {
+                "Series",
+                "Season",
+                "MusicAlbum",
+                "MusicArtist",
+                "PhotoAlbum"
+            };
+
+            if (excludeParentTypes.Contains(query.ParentType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
             if (query.IncludeItemTypes.Length == 0)
             {
                 return true;
@@ -2326,6 +2360,102 @@ namespace Emby.Server.Implementations.Data
                 "LiveTvVideoRecording",
                 "LiveTvProgram",
                 "LiveTvTvChannel"
+            };
+
+            return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
+        }
+
+        private bool HasStartDate(InternalItemsQuery query)
+        {
+            var excludeParentTypes = new string[]
+             {
+                "Series",
+                "Season",
+                "MusicAlbum",
+                "MusicArtist",
+                "PhotoAlbum"
+             };
+
+            if (excludeParentTypes.Contains(query.ParentType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (query.IncludeItemTypes.Length == 0)
+            {
+                return true;
+            }
+
+            var types = new string[]
+            {
+                "Program",
+                "Recording",
+                "LiveTvAudioRecording",
+                "LiveTvVideoRecording",
+                "LiveTvProgram"
+            };
+
+            return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
+        }
+
+        private bool HasEpisodeAttributes(InternalItemsQuery query)
+        {
+            if (query.IncludeItemTypes.Length == 0)
+            {
+                return true;
+            }
+
+            var types = new string[]
+            {
+                "Episode"
+            };
+
+            return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
+        }
+
+        private bool HasTrailerTypes(InternalItemsQuery query)
+        {
+            if (query.IncludeItemTypes.Length == 0)
+            {
+                return true;
+            }
+
+            var types = new string[]
+            {
+                "Trailer"
+            };
+
+            return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
+        }
+
+        private bool HasArtistFields(InternalItemsQuery query)
+        {
+            var excludeParentTypes = new string[]
+             {
+                "Series",
+                "Season",
+                "PhotoAlbum"
+             };
+
+            if (excludeParentTypes.Contains(query.ParentType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (query.IncludeItemTypes.Length == 0)
+            {
+                return true;
+            }
+
+            var types = new string[]
+            {
+                "Audio",
+                "MusicAlbum",
+                "MusicVideo",
+                "AudioBook",
+                "AudioPodcast",
+                "LiveTvAudioRecording",
+                "Recording"
             };
 
             return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
@@ -2357,6 +2487,34 @@ namespace Emby.Server.Implementations.Data
                 list.Remove("IsPremiere");
                 list.Remove("EpisodeTitle");
                 list.Remove("IsRepeat");
+            }
+
+            if (!HasEpisodeAttributes(query))
+            {
+                list.Remove("SeasonName");
+                list.Remove("SeasonId");
+            }
+
+            if (!HasStartDate(query))
+            {
+                list.Remove("StartDate");
+            }
+
+            if (!HasTrailerTypes(query))
+            {
+                list.Remove("TrailerTypes");
+            }
+
+            if (!HasArtistFields(query))
+            {
+                list.Remove("AlbumArtists");
+                list.Remove("Artists");
+            }
+
+            if (!HasEpisodeAttributes(query))
+            {
+                list.Remove("SeasonName");
+                list.Remove("SeasonId");
             }
 
             if (!query.DtoOptions.EnableImages)
@@ -2590,9 +2748,15 @@ namespace Emby.Server.Implementations.Data
                         // Running this again will bind the params
                         GetWhereClauses(query, statement);
 
+                        var hasEpisodeAttributes = HasEpisodeAttributes(query);
+                        var hasProgramAttributes = HasProgramAttributes(query);
+                        var hasStartDate = HasStartDate(query);
+                        var hasTrailerTypes = HasTrailerTypes(query);
+                        var hasArtistFields = HasArtistFields(query);
+
                         foreach (var row in statement.ExecuteQuery())
                         {
-                            var item = GetItem(row, query);
+                            var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasStartDate, hasTrailerTypes, hasArtistFields);
                             if (item != null)
                             {
                                 list.Add(item);
@@ -2792,9 +2956,15 @@ namespace Emby.Server.Implementations.Data
                                 // Running this again will bind the params
                                 GetWhereClauses(query, statement);
 
+                                var hasEpisodeAttributes = HasEpisodeAttributes(query);
+                                var hasProgramAttributes = HasProgramAttributes(query);
+                                var hasStartDate = HasStartDate(query);
+                                var hasTrailerTypes = HasTrailerTypes(query);
+                                var hasArtistFields = HasArtistFields(query);
+
                                 foreach (var row in statement.ExecuteQuery())
                                 {
-                                    var item = GetItem(row, query);
+                                    var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasStartDate, hasTrailerTypes, hasArtistFields);
                                     if (item != null)
                                     {
                                         list.Add(item);
@@ -3562,6 +3732,15 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
+            if (query.MinDateLastSavedForUser.HasValue)
+            {
+                whereClauses.Add("DateLastSaved>=@MinDateLastSaved");
+                if (statement != null)
+                {
+                    statement.TryBind("@MinDateLastSaved", query.MinDateLastSavedForUser.Value);
+                }
+            }
+
             //if (query.MinPlayers.HasValue)
             //{
             //    whereClauses.Add("Players>=@MinPlayers");
@@ -3756,7 +3935,6 @@ namespace Emby.Server.Implementations.Data
 
             if (!string.IsNullOrWhiteSpace(query.SlugName))
             {
-                Logger.Info("Searching by SlugName for {0}", query.SlugName);
                 whereClauses.Add("CleanName=@SlugName");
                 if (statement != null)
                 {
@@ -5137,9 +5315,15 @@ namespace Emby.Server.Implementations.Data
                                 GetWhereClauses(innerQuery, statement);
                                 GetWhereClauses(outerQuery, statement);
 
+                                var hasEpisodeAttributes = HasEpisodeAttributes(query);
+                                var hasProgramAttributes = HasProgramAttributes(query);
+                                var hasStartDate = HasStartDate(query);
+                                var hasTrailerTypes = HasTrailerTypes(query);
+                                var hasArtistFields = HasArtistFields(query);
+
                                 foreach (var row in statement.ExecuteQuery())
                                 {
-                                    var item = GetItem(row, query);
+                                    var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasStartDate, hasTrailerTypes, hasArtistFields);
                                     if (item != null)
                                     {
                                         var countStartColumn = columns.Count - 1;
