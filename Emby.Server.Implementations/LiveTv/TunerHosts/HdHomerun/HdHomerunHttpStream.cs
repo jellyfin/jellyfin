@@ -101,9 +101,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 _logger.Info("Beginning multicastStream.CopyUntilCancelled");
 
                                 FileSystem.CreateDirectory(FileSystem.GetDirectoryName(_tempFilePath));
-                                using (var fileStream = FileSystem.GetFileStream(_tempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.Asynchronous | FileOpenOptions.SequentialScan))
+                                using (var fileStream = FileSystem.GetFileStream(_tempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.Asynchronous))
                                 {
-                                    ResolveAfterDelay(2000, openTaskCompletionSource);
+                                    ResolveAfterDelay(3000, openTaskCompletionSource);
 
                                     await response.Content.CopyToAsync(fileStream, 81920, cancellationToken).ConfigureAwait(false);
                                 }
