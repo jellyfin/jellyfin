@@ -1086,12 +1086,6 @@ namespace Emby.Server.Implementations.Library
             try
             {
                 await PerformLibraryValidation(progress, cancellationToken).ConfigureAwait(false);
-
-                if (!ConfigurationManager.Configuration.EnableSeriesPresentationUniqueKey)
-                {
-                    ConfigurationManager.Configuration.EnableSeriesPresentationUniqueKey = true;
-                    ConfigurationManager.SaveConfiguration();
-                }
             }
             finally
             {

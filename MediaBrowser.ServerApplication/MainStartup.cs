@@ -21,9 +21,10 @@ using Emby.Common.Implementations.EnvironmentInfo;
 using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.Logging;
 using Emby.Common.Implementations.Networking;
-using Emby.Common.Implementations.Security;
+using Emby.Server.Core.Cryptography;
 using Emby.Drawing;
 using Emby.Server.Core;
+using Emby.Server.Core.IO;
 using Emby.Server.Core.Logging;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Browser;
@@ -32,7 +33,6 @@ using Emby.Server.Implementations.Logging;
 using ImageMagickSharp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Server.Startup.Common.IO;
 
 namespace MediaBrowser.ServerApplication
 {

@@ -826,30 +826,6 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            if (query.SortBy != null && query.SortBy.Length > 0)
-            {
-                if (query.SortBy.Contains(ItemSortBy.AiredEpisodeOrder, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.AiredEpisodeOrder");
-                    return true;
-                }
-                if (query.SortBy.Contains(ItemSortBy.GameSystem, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.GameSystem");
-                    return true;
-                }
-                if (query.SortBy.Contains(ItemSortBy.Players, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.Players");
-                    return true;
-                }
-                if (query.SortBy.Contains(ItemSortBy.VideoBitRate, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.VideoBitRate");
-                    return true;
-                }
-            }
-
             if (query.IsInBoxSet.HasValue)
             {
                 Logger.Debug("Query requires post-filtering due to IsInBoxSet");
@@ -907,18 +883,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.MinPlayers.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to MinPlayers");
-                return true;
-            }
-
-            if (query.MaxPlayers.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to MaxPlayers");
-                return true;
-            }
-
             if (UserViewBuilder.CollapseBoxSetItems(query, this, query.User, ConfigurationManager))
             {
                 Logger.Debug("Query requires post-filtering due to CollapseBoxSetItems");
@@ -946,12 +910,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.AiredDuringSeason.HasValue)
             {
                 Logger.Debug("Query requires post-filtering due to AiredDuringSeason");
-                return true;
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.AlbumArtistStartsWithOrGreater))
-            {
-                Logger.Debug("Query requires post-filtering due to AlbumArtistStartsWithOrGreater");
                 return true;
             }
 

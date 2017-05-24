@@ -10,9 +10,8 @@
     <RootNamespace>Emby.Server.Implementations</RootNamespace>
     <AssemblyName>Emby.Server.Implementations</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -291,9 +290,9 @@
       <Project>{2e781478-814d-4a48-9d80-bff206441a65}</Project>
       <Name>MediaBrowser.Server.Implementations</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SocketHttpListener.Portable\SocketHttpListener.Portable.csproj">
-      <Project>{4f26d5d8-a7b0-42b3-ba42-7cb7d245934e}</Project>
-      <Name>SocketHttpListener.Portable</Name>
+    <ProjectReference Include="..\SocketHttpListener\SocketHttpListener.csproj">
+      <Project>{1d74413b-e7cf-455b-b021-f52bdf881542}</Project>
+      <Name>SocketHttpListener</Name>
     </ProjectReference>
     <Reference Include="Emby.XmlTv, Version=1.0.6299.28292, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Emby.XmlTv.1.0.8\lib\portable-net45+win8\Emby.XmlTv.dll</HintPath>
@@ -311,6 +310,17 @@
       <HintPath>..\packages\SQLitePCLRaw.core.1.1.5\lib\portable-net45+netcore45+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\SQLitePCLRaw.core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Localization\Core\ar.json" />
@@ -410,7 +420,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Localization\Ratings\uk.txt" />
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

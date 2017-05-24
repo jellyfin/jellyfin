@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{776B9F0C-5195-45E3-9A36-1CC1F0D8E0B0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Emby.Server.Core</RootNamespace>
+    <AssemblyName>Emby.Server.Core</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=1.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.1.2.2\lib\net45\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ServiceStack.Text, Version=4.5.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.Text.4.5.8\lib\net45\ServiceStack.Text.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SimpleInjector, Version=4.0.7.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.4.0.7\lib\net45\SimpleInjector.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SharedVersion.cs">
+      <Link>Properties\SharedVersion.cs</Link>
+    </Compile>
+    <Compile Include="ApplicationHost.cs" />
+    <Compile Include="ApplicationPathHelper.cs" />
+    <Compile Include="Cryptography\ASN1.cs" />
+    <Compile Include="Cryptography\ASN1Convert.cs" />
+    <Compile Include="Cryptography\BitConverterLE.cs" />
+    <Compile Include="Cryptography\CertificateGenerator.cs" />
+    <Compile Include="Cryptography\CryptoConvert.cs" />
+    <Compile Include="Cryptography\PfxGenerator.cs" />
+    <Compile Include="Cryptography\PKCS1.cs" />
+    <Compile Include="Cryptography\PKCS12.cs" />
+    <Compile Include="Cryptography\PKCS7.cs" />
+    <Compile Include="Cryptography\PKCS8.cs" />
+    <Compile Include="Cryptography\X501Name.cs" />
+    <Compile Include="Cryptography\X509Builder.cs" />
+    <Compile Include="Cryptography\X509Certificate.cs" />
+    <Compile Include="Cryptography\X509CertificateBuilder.cs" />
+    <Compile Include="Cryptography\X509CertificateCollection.cs" />
+    <Compile Include="Cryptography\X509Extension.cs" />
+    <Compile Include="Cryptography\X509Extensions.cs" />
+    <Compile Include="Cryptography\X520Attributes.cs" />
+    <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
+    <Compile Include="HttpServerFactory.cs" />
+    <Compile Include="IO\LibraryMonitor.cs" />
+    <Compile Include="IO\MemoryStreamProvider.cs" />
+    <Compile Include="Localization\TextLocalizer.cs" />
+    <Compile Include="Logging\ConsoleLogger.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SystemEvents.cs" />
+    <Compile Include="UpdateLevelHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Emby.Common.Implementations\Emby.Common.Implementations.csproj">
+      <Project>{1e37a338-9f57-4b70-bd6d-bb9c591e319b}</Project>
+      <Name>Emby.Common.Implementations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj">
+      <Project>{805844ab-e92f-45e6-9d99-4f6d48d129a5}</Project>
+      <Name>Emby.Dlna</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj">
+      <Project>{08fff49b-f175-4807-a2b5-73b0ebd9f716}</Project>
+      <Name>Emby.Drawing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj">
+      <Project>{89ab4548-770d-41fd-a891-8daff44f452c}</Project>
+      <Name>Emby.Photos</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj">
+      <Project>{e383961b-9356-4d5d-8233-9a1079d03055}</Project>
+      <Name>Emby.Server.Implementations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj">
+      <Project>{4fd51ac5-2c16-4308-a993-c3a84f3b4582}</Project>
+      <Name>MediaBrowser.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
+      <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
+      <Name>MediaBrowser.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
+      <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
+      <Name>MediaBrowser.Controller</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj">
+      <Project>{7ef9f3e0-697d-42f3-a08f-19deb5f84392}</Project>
+      <Name>MediaBrowser.LocalMetadata</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj">
+      <Project>{0bd82fa6-eb8a-4452-8af5-74f9c3849451}</Project>
+      <Name>MediaBrowser.MediaEncoding</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
+      <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
+      <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
+      <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
+      <Name>MediaBrowser.Providers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
+      <Project>{2e781478-814d-4a48-9d80-bff206441a65}</Project>
+      <Name>MediaBrowser.Server.Implementations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj">
+      <Project>{5624b7b5-b5a7-41d8-9f10-cc5611109619}</Project>
+      <Name>MediaBrowser.WebDashboard</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj">
+      <Project>{23499896-b135-4527-8574-c26e926ea99e}</Project>
+      <Name>MediaBrowser.XbmcMetadata</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj">
+      <Project>{cb7f2326-6497-4a3d-ba03-48513b17a7be}</Project>
+      <Name>Mono.Nat</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj">
+      <Project>{4a4402d4-e910-443b-b8fc-2c18286a2ca0}</Project>
+      <Name>OpenSubtitlesHandler</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SocketHttpListener\SocketHttpListener.csproj">
+      <Project>{1d74413b-e7cf-455b-b021-f52bdf881542}</Project>
+      <Name>SocketHttpListener</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
