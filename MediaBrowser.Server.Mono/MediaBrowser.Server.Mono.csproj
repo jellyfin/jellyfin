@@ -10,7 +10,7 @@
     <RootNamespace>MediaBrowser.Server.Mono</RootNamespace>
     <AssemblyName>MediaBrowser.Server.Mono</AssemblyName>
     <StartupObject>MediaBrowser.Server.Mono.MainClass</StartupObject>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <TargetFrameworkProfile />
   </PropertyGroup>
