@@ -511,8 +511,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
 
             // The UDP method is not working reliably on OSX, and on BSD it hasn't been tested yet
-            var enableHttpStream = _environment.OperatingSystem == OperatingSystem.OSX 
-                || _environment.OperatingSystem == OperatingSystem.BSD;
+            var enableHttpStream = _environment.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.OSX 
+                || _environment.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.BSD;
             enableHttpStream = true;
             if (enableHttpStream)
             {
@@ -597,10 +597,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 // Need a way to set the Receive timeout on the socket otherwise this might never timeout?
                 try
                 {
-                    await udpClient.SendAsync(discBytes, discBytes.Length, new IpEndPointInfo(new IpAddressInfo("255.255.255.255", IpAddressFamily.InterNetwork), 65001), cancellationToken);
+                    await udpClient.SendToAsync(discBytes, 0, discBytes.Length, new IpEndPointInfo(new IpAddressInfo("255.255.255.255", IpAddressFamily.InterNetwork), 65001), cancellationToken);
+                    var receiveBuffer = new byte[8192];
+
                     while (!cancellationToken.IsCancellationRequested)
                     {
-                        var response = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                        var response = await udpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
                         var deviceIp = response.RemoteEndPoint.IpAddress.Address;
 
                         // check to make sure we have enough bytes received to be a valid message and make sure the 2nd byte is the discover reply byte

@@ -96,7 +96,6 @@ namespace MediaBrowser.Api
             config.EnableCaseSensitiveItemIds = true;
             config.SkipDeserializationForBasicTypes = true;
             config.SkipDeserializationForAudio = true;
-            config.EnableSeriesPresentationUniqueKey = true;
             config.EnableLocalizedGuids = true;
             config.EnableSimpleArtistDetection = true;
             config.EnableNormalizedItemByNameIds = true;
