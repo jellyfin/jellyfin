@@ -39,10 +39,6 @@ using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Threading;
 
-#if NETSTANDARD1_6
-using System.Runtime.Loader;
-#endif
-
 namespace Emby.Common.Implementations
 {
     /// <summary>
@@ -306,7 +302,6 @@ namespace Emby.Common.Implementations
 
             builder.AppendLine(string.Format("Command line: {0}", string.Join(" ", Environment.GetCommandLineArgs())));
 
-#if NET46
             builder.AppendLine(string.Format("Operating system: {0}", Environment.OSVersion));
             builder.AppendLine(string.Format("64-Bit OS: {0}", Environment.Is64BitOperatingSystem));
             builder.AppendLine(string.Format("64-Bit Process: {0}", Environment.Is64BitProcess));
@@ -320,7 +315,6 @@ namespace Emby.Common.Implementations
                     builder.AppendLine("Mono: " + displayName.Invoke(null, null));
                 }
             }
-#endif    
 
             builder.AppendLine(string.Format("Processor count: {0}", Environment.ProcessorCount));
             builder.AppendLine(string.Format("Program data path: {0}", appPaths.ProgramDataPath));
@@ -336,9 +330,7 @@ namespace Emby.Common.Implementations
             try
             {
                 // Increase the max http request limit
-#if NET46
                 ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
-#endif    
             }
             catch (Exception ex)
             {
@@ -436,7 +428,6 @@ namespace Emby.Common.Implementations
 
                 if (assemblyPlugin != null)
                 {
-#if NET46
                     var assembly = plugin.GetType().Assembly;
                     var assemblyName = assembly.GetName();
 
@@ -447,21 +438,7 @@ namespace Emby.Common.Implementations
                     var assemblyFilePath = Path.Combine(ApplicationPaths.PluginsPath, assemblyFileName);
 
                     assemblyPlugin.SetAttributes(assemblyFilePath, assemblyFileName, assemblyName.Version, assemblyId);
-#elif NETSTANDARD1_6
-                    var typeInfo = plugin.GetType().GetTypeInfo();
-                    var assembly = typeInfo.Assembly;
-                    var assemblyName = assembly.GetName();
-
-                    var attribute = (GuidAttribute)assembly.GetCustomAttribute(typeof(GuidAttribute));
-                    var assemblyId = new Guid(attribute.Value);
-
-                    var assemblyFileName = assemblyName.Name + ".dll";
-                    var assemblyFilePath = Path.Combine(ApplicationPaths.PluginsPath, assemblyFileName);
-
-                    assemblyPlugin.SetAttributes(assemblyFilePath, assemblyFileName, assemblyName.Version, assemblyId);
-#else
-return null;
-#endif
+                    return null;
                 }
 
                 var isFirstRun = !File.Exists(plugin.ConfigurationFilePath);
@@ -492,17 +469,7 @@ return null;
 
             AllConcreteTypes = assemblies
                 .SelectMany(GetTypes)
-                .Where(t =>
-                {
-#if NET46
-                    return t.IsClass && !t.IsAbstract && !t.IsInterface && !t.IsGenericType;
-#endif    
-#if NETSTANDARD1_6
-                    var typeInfo = t.GetTypeInfo();
-                    return typeInfo.IsClass && !typeInfo.IsAbstract && !typeInfo.IsInterface && !typeInfo.IsGenericType;
-#endif
-                    return false;
-                })
+                .Where(t => t.IsClass && !t.IsAbstract && !t.IsInterface && !t.IsGenericType)
                 .ToArray();
         }
 
@@ -717,13 +684,7 @@ return null;
         {
             try
             {
-#if NET46
                 return Assembly.Load(File.ReadAllBytes(file));
-#elif NETSTANDARD1_6
-                
-                return AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(File.ReadAllBytes(file)));
-#endif
-                return null;
             }
             catch (Exception ex)
             {
@@ -742,14 +703,7 @@ return null;
         {
             var currentType = typeof(T);
 
-#if NET46
             return AllConcreteTypes.Where(currentType.IsAssignableFrom);
-#elif NETSTANDARD1_6
-            var currentTypeInfo = currentType.GetTypeInfo();
-
-            return AllConcreteTypes.Where(currentTypeInfo.IsAssignableFrom);
-#endif
-            return new List<Type>();
         }
 
         /// <summary>

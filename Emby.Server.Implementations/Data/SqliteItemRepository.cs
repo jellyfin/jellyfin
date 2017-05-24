@@ -1245,10 +1245,6 @@ namespace Emby.Server.Implementations.Data
         {
             if (_config.Configuration.SkipDeserializationForBasicTypes)
             {
-                if (type == typeof(Person))
-                {
-                    return false;
-                }
                 if (type == typeof(Channel))
                 {
                     return false;
@@ -1267,6 +1263,10 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
+            if (type == typeof(Person))
+            {
+                return false;
+            }
             if (type == typeof(MusicGenre))
             {
                 return false;
@@ -5276,7 +5276,6 @@ namespace Emby.Server.Implementations.Data
                 NameLessThan = query.NameLessThan,
                 NameStartsWith = query.NameStartsWith,
                 NameStartsWithOrGreater = query.NameStartsWithOrGreater,
-                AlbumArtistStartsWithOrGreater = query.AlbumArtistStartsWithOrGreater,
                 Tags = query.Tags,
                 OfficialRatings = query.OfficialRatings,
                 GenreIds = query.GenreIds,

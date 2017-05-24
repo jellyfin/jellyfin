@@ -30,6 +30,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Threading;
 
 namespace Emby.Server.Implementations.Session
@@ -1071,7 +1072,11 @@ namespace Emby.Server.Implementations.Session
                     Recursive = true,
                     DtoOptions = new DtoOptions(false)
                     {
-                        EnableImages = false
+                        EnableImages = false,
+                        Fields = new List<ItemFields>
+                        {
+                            ItemFields.SortName
+                        }
                     }
                 });
 
@@ -1090,7 +1095,11 @@ namespace Emby.Server.Implementations.Session
                     IsFolder = false,
                     DtoOptions = new DtoOptions(false)
                     {
-                        EnableImages = false
+                        EnableImages = false,
+                        Fields = new List<ItemFields>
+                        {
+                            ItemFields.SortName
+                        }
                     }
 
                 }).ConfigureAwait(false);

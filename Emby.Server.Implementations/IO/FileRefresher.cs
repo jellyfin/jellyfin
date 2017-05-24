@@ -231,7 +231,7 @@ namespace Emby.Server.Implementations.IO
 
         private bool IsFileLocked(string path)
         {
-            if (_environmentInfo.OperatingSystem != OperatingSystem.Windows)
+            if (_environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
             {
                 // Causing lockups on linux
                 return false;
