@@ -181,7 +181,7 @@ namespace SocketHttpListener.Net
 
             if (String.Compare(Headers["Expect"], "100-continue", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                var output = (ResponseStream)context.Connection.GetResponseStream(true);
+                var output = (HttpResponseStream)context.Connection.GetResponseStream(true);
 
                 var _100continue = _textEncoding.GetASCIIEncoding().GetBytes("HTTP/1.1 100 Continue\r\n\r\n");
 

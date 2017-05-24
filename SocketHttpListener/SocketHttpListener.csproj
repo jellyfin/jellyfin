@@ -70,11 +70,12 @@
     <Compile Include="Net\HttpListenerResponse.cs" />
     <Compile Include="Net\HttpRequestStream.cs" />
     <Compile Include="Net\HttpRequestStream.Managed.cs" />
+    <Compile Include="Net\HttpResponseStream.cs" />
+    <Compile Include="Net\HttpResponseStream.Managed.cs" />
     <Compile Include="Net\HttpStatusCode.cs" />
     <Compile Include="Net\HttpStreamAsyncResult.cs" />
     <Compile Include="Net\HttpVersion.cs" />
     <Compile Include="Net\ListenerPrefix.cs" />
-    <Compile Include="Net\ResponseStream.cs" />
     <Compile Include="Net\WebHeaderCollection.cs" />
     <Compile Include="Net\WebSockets\HttpListenerWebSocketContext.cs" />
     <Compile Include="Net\WebSockets\WebSocketContext.cs" />
