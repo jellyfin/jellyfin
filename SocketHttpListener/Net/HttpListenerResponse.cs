@@ -519,7 +519,7 @@ namespace SocketHttpListener.Net
 
         public Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
-            return ((ResponseStream)OutputStream).TransmitFile(path, offset, count, fileShareMode, cancellationToken);
+            return ((HttpResponseStream)OutputStream).TransmitFile(path, offset, count, fileShareMode, cancellationToken);
         }
     }
 }
