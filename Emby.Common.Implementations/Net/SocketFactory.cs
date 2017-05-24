@@ -188,16 +188,7 @@ namespace Emby.Common.Implementations.Net
 
             try
             {
-#if NET46
-				retVal.ExclusiveAddressUse = false;
-#else
-                // The ExclusiveAddressUse acceptSocket option is a Windows-specific option that, when set to "true," tells Windows not to allow another acceptSocket to use the same local address as this acceptSocket
-                // See https://github.com/dotnet/corefx/pull/11509 for more details
-                if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
-				{
-					retVal.ExclusiveAddressUse = false;
-				}
-#endif
+                retVal.ExclusiveAddressUse = false;
                 //retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);

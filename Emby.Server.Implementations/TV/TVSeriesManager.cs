@@ -69,7 +69,7 @@ namespace Emby.Server.Implementations.TV
                 {
                     Fields = new List<ItemFields>
                     {
-
+                        ItemFields.PresentationUniqueKey
                     }
                 }
 
@@ -119,7 +119,7 @@ namespace Emby.Server.Implementations.TV
                 {
                     Fields = new List<ItemFields>
                     {
-
+                        ItemFields.PresentationUniqueKey
                     },
                     EnableImages = false
                 }
@@ -178,12 +178,10 @@ namespace Emby.Server.Implementations.TV
         /// <returns>Task{Episode}.</returns>
         private Tuple<DateTime, Func<Episode>> GetNextUp(string seriesKey, User user, DtoOptions dtoOptions)
         {
-            var enableSeriesPresentationKey = _config.Configuration.EnableSeriesPresentationUniqueKey;
-
             var lastWatchedEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                AncestorWithPresentationUniqueKey = enableSeriesPresentationKey ? null : seriesKey,
-                SeriesPresentationUniqueKey = enableSeriesPresentationKey ? seriesKey : null,
+                AncestorWithPresentationUniqueKey = null,
+                SeriesPresentationUniqueKey = seriesKey,
                 IncludeItemTypes = new[] { typeof(Episode).Name },
                 SortBy = new[] { ItemSortBy.SortName },
                 SortOrder = SortOrder.Descending,
@@ -194,7 +192,7 @@ namespace Emby.Server.Implementations.TV
                 {
                     Fields = new List<ItemFields>
                     {
-
+                        ItemFields.SortName
                     },
                     EnableImages = false
                 }
@@ -205,8 +203,8 @@ namespace Emby.Server.Implementations.TV
             {
                 return _libraryManager.GetItemList(new InternalItemsQuery(user)
                 {
-                    AncestorWithPresentationUniqueKey = enableSeriesPresentationKey ? null : seriesKey,
-                    SeriesPresentationUniqueKey = enableSeriesPresentationKey ? seriesKey : null,
+                    AncestorWithPresentationUniqueKey = null,
+                    SeriesPresentationUniqueKey = seriesKey,
                     IncludeItemTypes = new[] { typeof(Episode).Name },
                     SortBy = new[] { ItemSortBy.SortName },
                     SortOrder = SortOrder.Ascending,

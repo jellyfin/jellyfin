@@ -1,0 +1,381 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1E37A338-9F57-4B70-BD6D-BB9C591E319B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Emby.Common.Implementations</RootNamespace>
+    <AssemblyName>Emby.Common.Implementations</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.4.4.3\lib\net45\NLog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ServiceStack.Text, Version=4.5.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.Text.4.5.8\lib\net45\ServiceStack.Text.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SharpCompress, Version=0.14.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpCompress.0.14.0\lib\net45\SharpCompress.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SimpleInjector, Version=4.0.7.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.4.0.7\lib\net45\SimpleInjector.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SharedVersion.cs">
+      <Link>Properties\SharedVersion.cs</Link>
+    </Compile>
+    <Compile Include="Archiving\ZipClient.cs" />
+    <Compile Include="BaseApplicationHost.cs" />
+    <Compile Include="Cryptography\CryptographyProvider.cs" />
+    <Compile Include="Devices\DeviceId.cs" />
+    <Compile Include="Diagnostics\CommonProcess.cs" />
+    <Compile Include="Diagnostics\ProcessFactory.cs" />
+    <Compile Include="EnvironmentInfo\EnvironmentInfo.cs" />
+    <Compile Include="HttpClientManager\HttpClientInfo.cs" />
+    <Compile Include="HttpClientManager\HttpClientManager.cs" />
+    <Compile Include="IO\IsoManager.cs" />
+    <Compile Include="IO\LnkShortcutHandler.cs" />
+    <Compile Include="IO\ManagedFileSystem.cs" />
+    <Compile Include="IO\SharpCifsFileSystem.cs" />
+    <Compile Include="IO\SharpCifs\Config.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcBind.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcBinding.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcConstants.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcError.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcException.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcHandle.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcMessage.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcPipeHandle.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcSecurityProvider.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\LsaPolicyHandle.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\Lsarpc.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\LsarSidArrayX.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcDfsRootEnum.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcEnumerateAliasesInDomain.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcGetMembersInAlias.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcLookupSids.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcLsarOpenPolicy2.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcQueryInformationPolicy.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcSamrConnect2.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcSamrConnect4.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcSamrOpenAlias.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcSamrOpenDomain.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcShareEnum.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcShareGetInfo.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\Netdfs.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\Samr.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\SamrAliasHandle.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\SamrDomainHandle.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\SamrPolicyHandle.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\Srvsvc.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Ndr\NdrBuffer.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Ndr\NdrException.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Ndr\NdrHyper.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Ndr\NdrLong.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Ndr\NdrObject.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Ndr\NdrShort.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Ndr\NdrSmall.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\Rpc.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\UnicodeString.cs" />
+    <Compile Include="IO\SharpCifs\Dcerpc\UUID.cs" />
+    <Compile Include="IO\SharpCifs\Netbios\Lmhosts.cs" />
+    <Compile Include="IO\SharpCifs\Netbios\Name.cs" />
+    <Compile Include="IO\SharpCifs\Netbios\NameQueryRequest.cs" />
+    <Compile Include="IO\SharpCifs\Netbios\NameQueryResponse.cs" />
+    <Compile Include="IO\SharpCifs\Netbios\NameServiceClient.cs" />
+    <Compile Include="IO\SharpCifs\Netbios\NameServicePacket.cs" />
+    <Compile Include="IO\SharpCifs\Netbios\NbtAddress.cs" />
+    <Compile Include="IO\SharpCifs\Netbios\NbtException.cs" />
+    <Compile Include="IO\SharpCifs\Netbios\NodeStatusRequest.cs" />
+    <Compile Include="IO\SharpCifs\Netbios\NodeStatusResponse.cs" />
+    <Compile Include="IO\SharpCifs\Netbios\SessionRequestPacket.cs" />
+    <Compile Include="IO\SharpCifs\Netbios\SessionRetargetResponsePacket.cs" />
+    <Compile Include="IO\SharpCifs\Netbios\SessionServicePacket.cs" />
+    <Compile Include="IO\SharpCifs\Ntlmssp\NtlmFlags.cs" />
+    <Compile Include="IO\SharpCifs\Ntlmssp\NtlmMessage.cs" />
+    <Compile Include="IO\SharpCifs\Ntlmssp\Type1Message.cs" />
+    <Compile Include="IO\SharpCifs\Ntlmssp\Type2Message.cs" />
+    <Compile Include="IO\SharpCifs\Ntlmssp\Type3Message.cs" />
+    <Compile Include="IO\SharpCifs\Smb\ACE.cs" />
+    <Compile Include="IO\SharpCifs\Smb\AllocInfo.cs" />
+    <Compile Include="IO\SharpCifs\Smb\AndXServerMessageBlock.cs" />
+    <Compile Include="IO\SharpCifs\Smb\BufferCache.cs" />
+    <Compile Include="IO\SharpCifs\Smb\Dfs.cs" />
+    <Compile Include="IO\SharpCifs\Smb\DfsReferral.cs" />
+    <Compile Include="IO\SharpCifs\Smb\DosError.cs" />
+    <Compile Include="IO\SharpCifs\Smb\DosFileFilter.cs" />
+    <Compile Include="IO\SharpCifs\Smb\FileEntry.cs" />
+    <Compile Include="IO\SharpCifs\Smb\IInfo.cs" />
+    <Compile Include="IO\SharpCifs\Smb\NetServerEnum2.cs" />
+    <Compile Include="IO\SharpCifs\Smb\NetServerEnum2Response.cs" />
+    <Compile Include="IO\SharpCifs\Smb\NetShareEnum.cs" />
+    <Compile Include="IO\SharpCifs\Smb\NetShareEnumResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\NtlmAuthenticator.cs" />
+    <Compile Include="IO\SharpCifs\Smb\NtlmChallenge.cs" />
+    <Compile Include="IO\SharpCifs\Smb\NtlmContext.cs" />
+    <Compile Include="IO\SharpCifs\Smb\NtlmPasswordAuthentication.cs" />
+    <Compile Include="IO\SharpCifs\Smb\NtStatus.cs" />
+    <Compile Include="IO\SharpCifs\Smb\NtTransQuerySecurityDesc.cs" />
+    <Compile Include="IO\SharpCifs\Smb\NtTransQuerySecurityDescResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\Principal.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SecurityDescriptor.cs" />
+    <Compile Include="IO\SharpCifs\Smb\ServerMessageBlock.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SID.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SigningDigest.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbAuthException.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComBlankResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComClose.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComCreateDirectory.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComDelete.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComDeleteDirectory.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComFindClose2.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComLogoffAndX.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComNegotiate.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComNegotiateResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComNTCreateAndX.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComNTCreateAndXResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComNtTransaction.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComNtTransactionResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComOpenAndX.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComOpenAndXResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComQueryInformation.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComQueryInformationResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComReadAndX.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComReadAndXResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComRename.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComSessionSetupAndX.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComSessionSetupAndXResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComTransaction.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComTransactionResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComTreeConnectAndX.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComTreeConnectAndXResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComTreeDisconnect.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComWrite.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComWriteAndX.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComWriteAndXResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbComWriteResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbConstants.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbException.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbFile.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbFileExtensions.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbFileFilter.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbFileInputStream.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbFilenameFilter.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbFileOutputStream.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbNamedPipe.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbRandomAccessFile.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbSession.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbShareInfo.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbTransport.cs" />
+    <Compile Include="IO\SharpCifs\Smb\SmbTree.cs" />
+    <Compile Include="IO\SharpCifs\Smb\Trans2FindFirst2.cs" />
+    <Compile Include="IO\SharpCifs\Smb\Trans2FindFirst2Response.cs" />
+    <Compile Include="IO\SharpCifs\Smb\Trans2FindNext2.cs" />
+    <Compile Include="IO\SharpCifs\Smb\Trans2GetDfsReferral.cs" />
+    <Compile Include="IO\SharpCifs\Smb\Trans2GetDfsReferralResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\Trans2QueryFSInformation.cs" />
+    <Compile Include="IO\SharpCifs\Smb\Trans2QueryFSInformationResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\Trans2QueryPathInformation.cs" />
+    <Compile Include="IO\SharpCifs\Smb\Trans2QueryPathInformationResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\Trans2SetFileInformation.cs" />
+    <Compile Include="IO\SharpCifs\Smb\Trans2SetFileInformationResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\TransactNamedPipeInputStream.cs" />
+    <Compile Include="IO\SharpCifs\Smb\TransactNamedPipeOutputStream.cs" />
+    <Compile Include="IO\SharpCifs\Smb\TransCallNamedPipe.cs" />
+    <Compile Include="IO\SharpCifs\Smb\TransCallNamedPipeResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\TransPeekNamedPipe.cs" />
+    <Compile Include="IO\SharpCifs\Smb\TransPeekNamedPipeResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\TransTransactNamedPipe.cs" />
+    <Compile Include="IO\SharpCifs\Smb\TransTransactNamedPipeResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\TransWaitNamedPipe.cs" />
+    <Compile Include="IO\SharpCifs\Smb\TransWaitNamedPipeResponse.cs" />
+    <Compile Include="IO\SharpCifs\Smb\WinError.cs" />
+    <Compile Include="IO\SharpCifs\UniAddress.cs" />
+    <Compile Include="IO\SharpCifs\Util\Base64.cs" />
+    <Compile Include="IO\SharpCifs\Util\DES.cs" />
+    <Compile Include="IO\SharpCifs\Util\Encdec.cs" />
+    <Compile Include="IO\SharpCifs\Util\Hexdump.cs" />
+    <Compile Include="IO\SharpCifs\Util\HMACT64.cs" />
+    <Compile Include="IO\SharpCifs\Util\LogStream.cs" />
+    <Compile Include="IO\SharpCifs\Util\MD4.cs" />
+    <Compile Include="IO\SharpCifs\Util\RC4.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\AbstractMap.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\Arrays.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\BufferedReader.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\BufferedWriter.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\CharBuffer.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\CharSequence.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\Collections.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\ConcurrentHashMap.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\DateFormat.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\EnumeratorWrapper.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\Exceptions.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\Extensions.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\FileInputStream.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\FileOutputStream.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\FilePath.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\FileReader.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\FileWriter.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\FilterInputStream.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\FilterOutputStream.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\Hashtable.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\HttpURLConnection.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\ICallable.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\IConcurrentMap.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\IExecutor.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\IFilenameFilter.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\IFuture.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\InputStream.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\InputStreamReader.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\IPrivilegedAction.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\IRunnable.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\Iterator.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\LinkageError.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\Matcher.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\MD5.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\MD5Managed.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\MessageDigest.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\NetworkStream.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\ObjectInputStream.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\ObjectOutputStream.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\OutputStream.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\OutputStreamWriter.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\PipedInputStream.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\PipedOutputStream.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\PrintWriter.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\Properties.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\RandomAccessFile.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\ReentrantLock.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\Reference.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\Runtime.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\SimpleDateFormat.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\SocketEx.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\StringTokenizer.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\SynchronizedList.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\Thread.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\ThreadFactory.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\ThreadPoolExecutor.cs" />
+    <Compile Include="IO\SharpCifs\Util\Sharpen\WrappedSystemStream.cs" />
+    <Compile Include="IO\SharpCifs\Util\Transport\Request.cs" />
+    <Compile Include="IO\SharpCifs\Util\Transport\Response.cs" />
+    <Compile Include="IO\SharpCifs\Util\Transport\Transport.cs" />
+    <Compile Include="IO\SharpCifs\Util\Transport\TransportException.cs" />
+    <Compile Include="Logging\NLogger.cs" />
+    <Compile Include="Logging\NlogManager.cs" />
+    <Compile Include="Networking\NetworkManager.cs" />
+    <Compile Include="Net\DisposableManagedObjectBase.cs" />
+    <Compile Include="Net\NetAcceptSocket.cs" />
+    <Compile Include="Net\SocketAcceptor.cs" />
+    <Compile Include="Net\SocketFactory.cs" />
+    <Compile Include="Net\UdpSocket.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reflection\AssemblyInfo.cs" />
+    <Compile Include="ScheduledTasks\DailyTrigger.cs" />
+    <Compile Include="ScheduledTasks\IntervalTrigger.cs" />
+    <Compile Include="ScheduledTasks\ScheduledTaskWorker.cs" />
+    <Compile Include="ScheduledTasks\StartupTrigger.cs" />
+    <Compile Include="ScheduledTasks\SystemEventTrigger.cs" />
+    <Compile Include="ScheduledTasks\TaskManager.cs" />
+    <Compile Include="ScheduledTasks\Tasks\DeleteCacheFileTask.cs" />
+    <Compile Include="ScheduledTasks\Tasks\DeleteLogFileTask.cs" />
+    <Compile Include="ScheduledTasks\Tasks\ReloadLoggerFileTask.cs" />
+    <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />
+    <Compile Include="Serialization\JsonSerializer.cs" />
+    <Compile Include="Serialization\XmlSerializer.cs" />
+    <Compile Include="TextEncoding\TextEncoding.cs" />
+    <Compile Include="TextEncoding\TextEncodingDetect.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\CharsetDetector.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\Big5Prober.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\BitPackage.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\CharDistributionAnalyser.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\CharsetProber.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\Charsets.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\CodingStateMachine.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\EscCharsetProber.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\EscSM.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\EUCJPProber.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\EUCKRProber.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\EUCTWProber.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\GB18030Prober.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\HebrewProber.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\JapaneseContextAnalyser.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\LangBulgarianModel.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\LangCyrillicModel.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\LangGreekModel.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\LangHebrewModel.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\LangHungarianModel.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\LangThaiModel.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\Latin1Prober.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\MBCSGroupProber.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\MBCSSM.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\SBCharsetProber.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\SBCSGroupProber.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\SequenceModel.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\SJISProber.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\SMModel.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\UniversalDetector.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\Core\UTF8Prober.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\DetectionConfidence.cs" />
+    <Compile Include="TextEncoding\UniversalDetector\ICharsetDetector.cs" />
+    <Compile Include="Threading\CommonTimer.cs" />
+    <Compile Include="Threading\TimerFactory.cs" />
+    <Compile Include="Xml\XmlReaderSettingsFactory.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
+      <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
+      <Name>MediaBrowser.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
+      <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
+      <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -19,11 +19,17 @@ namespace MediaBrowser.Model.Net
         /// </summary>
         /// <returns></returns>
         Task<SocketReceiveResult> ReceiveAsync(CancellationToken cancellationToken);
+        Task<SocketReceiveResult> ReceiveAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+
+        IAsyncResult BeginReceive(byte[] buffer, int offset, int count, AsyncCallback callback);
+        SocketReceiveResult EndReceive(IAsyncResult result);
 
         /// <summary>
         /// Sends a UDP message to a particular end point (uni or multicast).
         /// </summary>
-        Task SendAsync(byte[] buffer, int bytes, IpEndPointInfo endPoint, CancellationToken cancellationToken);
-        Task SendWithLockAsync(byte[] buffer, int bytes, IpEndPointInfo endPoint, CancellationToken cancellationToken);
+        Task SendToAsync(byte[] buffer, int offset, int bytes, IpEndPointInfo endPoint, CancellationToken cancellationToken);
+
+        IAsyncResult BeginSendTo(byte[] buffer, int offset, int size, IpEndPointInfo endPoint, AsyncCallback callback, object state);
+        int EndSendTo(IAsyncResult result);
     }
 }
