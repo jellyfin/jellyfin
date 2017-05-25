@@ -8,7 +8,7 @@ namespace Emby.Server.Implementations.IO
     public class AsyncStreamCopier : IDisposable
     {
         // size in bytes of the buffers in the buffer pool
-        private const int DefaultBufferSize = 4096;
+        private const int DefaultBufferSize = 81920;
         private readonly int _bufferSize;
         // number of buffers in the pool
         private const int DefaultBufferCount = 4;
@@ -38,15 +38,16 @@ namespace Emby.Server.Implementations.IO
         // stored here for rethrow
         private Exception _exception;
 
-        public TaskCompletionSource<bool> TaskCompletionSource;
+        public TaskCompletionSource<long> TaskCompletionSource;
         private long _bytesToRead;
         private long _totalBytesWritten;
         private CancellationToken _cancellationToken;
+        public int IndividualReadOffset = 0;
 
         public AsyncStreamCopier(Stream source,
                                  Stream target,
-                                 long bytesToRead, 
-                                 CancellationToken cancellationToken, 
+                                 long bytesToRead,
+                                 CancellationToken cancellationToken,
                                  bool closeStreamsOnEnd = false,
                                  int bufferSize = DefaultBufferSize,
                                  int bufferCount = DefaultBufferCount)
@@ -77,15 +78,15 @@ namespace Emby.Server.Implementations.IO
             ThrowExceptionIfNeeded();
         }
 
-        public static Task CopyStream(Stream source, Stream target, int bufferSize, int bufferCount, CancellationToken cancellationToken)
+        public static Task<long> CopyStream(Stream source, Stream target, int bufferSize, int bufferCount, CancellationToken cancellationToken)
         {
             return CopyStream(source, target, 0, bufferSize, bufferCount, cancellationToken);
         }
 
-        public static Task CopyStream(Stream source, Stream target, long size, int bufferSize, int bufferCount, CancellationToken cancellationToken)
+        public static Task<long> CopyStream(Stream source, Stream target, long size, int bufferSize, int bufferCount, CancellationToken cancellationToken)
         {
             var copier = new AsyncStreamCopier(source, target, size, cancellationToken, false, bufferSize, bufferCount);
-            var taskCompletion = new TaskCompletionSource<bool>();
+            var taskCompletion = new TaskCompletionSource<long>();
 
             copier.TaskCompletionSource = taskCompletion;
 
@@ -109,7 +110,7 @@ namespace Emby.Server.Implementations.IO
             try
             {
                 copier.EndCopy(result);
-                taskCompletion.TrySetResult(true);
+                taskCompletion.TrySetResult(copier._totalBytesWritten);
             }
             catch (Exception ex)
             {
@@ -238,7 +239,7 @@ namespace Emby.Server.Implementations.IO
                     bytesToWrite = _sizes[bufferIndex];
                 }
 
-                _target.BeginWrite(_buffers[bufferIndex], 0, bytesToWrite, EndWrite, null);
+                _target.BeginWrite(_buffers[bufferIndex], IndividualReadOffset, bytesToWrite - IndividualReadOffset, EndWrite, null);
 
                 _totalBytesWritten += bytesToWrite;
             }

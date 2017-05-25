@@ -325,10 +325,7 @@ namespace SocketHttpListener.Net
             }
         }
 
-        private bool EnableSendFileWithSocket
-        {
-            get { return false; }
-        }
+        private bool EnableSendFileWithSocket = false;
 
         public Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {

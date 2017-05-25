@@ -53,6 +53,11 @@ namespace SocketHttpListener.Net
             }
         }
 
+        public bool ForceCloseChunked
+        {
+            get { return false; }
+        }
+
         public Encoding ContentEncoding
         {
             get
@@ -333,6 +338,48 @@ namespace SocketHttpListener.Net
             }
             disposed = true;
             context.Connection.Close(force);
+        }
+
+        public void Close(byte[] responseEntity, bool willBlock)
+        {
+            //CheckDisposed();
+
+            if (responseEntity == null)
+            {
+                throw new ArgumentNullException(nameof(responseEntity));
+            }
+
+            //if (_boundaryType != BoundaryType.Chunked)
+            {
+                ContentLength64 = responseEntity.Length;
+            }
+
+            if (willBlock)
+            {
+                try
+                {
+                    OutputStream.Write(responseEntity, 0, responseEntity.Length);
+                }
+                finally
+                {
+                    Close(false);
+                }
+            }
+            else
+            {
+                OutputStream.BeginWrite(responseEntity, 0, responseEntity.Length, iar =>
+                {
+                    var thisRef = (HttpListenerResponse)iar.AsyncState;
+                    try
+                    {
+                        thisRef.OutputStream.EndWrite(iar);
+                    }
+                    finally
+                    {
+                        thisRef.Close(false);
+                    }
+                }, this);
+            }
         }
 
         public void Close()
