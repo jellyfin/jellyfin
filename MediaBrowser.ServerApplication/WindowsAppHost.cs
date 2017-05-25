@@ -64,11 +64,6 @@ namespace MediaBrowser.ServerApplication
         {
             var list = new List<Assembly>();
 
-            if (!Environment.Is64BitProcess)
-            {
-                //list.Add(typeof(PismoIsoManager).Assembly);
-            }
-
             list.Add(typeof(DefaultIntroProvider).Assembly);
             list.Add(typeof(ConnectManager).Assembly);
             list.Add(typeof(SyncManager).Assembly);

@@ -102,6 +102,7 @@
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpResponse.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="Images\BaseDynamicImageProvider.cs" />
+    <Compile Include="IO\AsyncStreamCopier.cs" />
     <Compile Include="IO\FileRefresher.cs" />
     <Compile Include="IO\MbLinkShortcutHandler.cs" />
     <Compile Include="IO\ThrottledStream.cs" />
