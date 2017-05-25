@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 
@@ -54,7 +56,9 @@ namespace SocketHttpListener.Net
         private readonly bool _supportsDirectSocketAccess;
         private readonly IEnvironmentInfo _environment;
         private readonly IFileSystem _fileSystem;
-        internal HttpResponseStream(Stream stream, HttpListenerResponse response, bool ignore_errors, IMemoryStreamFactory memoryStreamFactory, IAcceptSocket socket, bool supportsDirectSocketAccess, IEnvironmentInfo environment, IFileSystem fileSystem)
+        private readonly ILogger _logger;
+
+        internal HttpResponseStream(Stream stream, HttpListenerResponse response, bool ignore_errors, IMemoryStreamFactory memoryStreamFactory, IAcceptSocket socket, bool supportsDirectSocketAccess, IEnvironmentInfo environment, IFileSystem fileSystem, ILogger logger)
         {
             _response = response;
             _ignore_errors = ignore_errors;
@@ -63,6 +67,7 @@ namespace SocketHttpListener.Net
             _supportsDirectSocketAccess = supportsDirectSocketAccess;
             _environment = environment;
             _fileSystem = fileSystem;
+            _logger = logger;
             _stream = stream;
         }
 
@@ -173,7 +178,7 @@ namespace SocketHttpListener.Net
                 {
                     _stream.Write(buffer, offset, count);
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
                     throw new HttpListenerException(ex.HResult, ex.Message);
                 }
@@ -265,7 +270,7 @@ namespace SocketHttpListener.Net
             {
                 return _stream.BeginWrite(buffer, offset, size, cback, state);
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
                 if (_ignore_errors)
                 {
@@ -305,12 +310,12 @@ namespace SocketHttpListener.Net
                     if (_response.SendChunked)
                         _stream.Write(s_crlf, 0, 2);
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
                     // NetworkStream wraps exceptions in IOExceptions; if the underlying socket operation
                     // failed because of invalid arguments or usage, propagate that error.  Otherwise
                     // wrap the whole thing in an HttpListenerException.  This is all to match Windows behavior.
-                    if (ex.InnerException is ArgumentException || ex.InnerException is InvalidOperationException)
+                    if (ex.InnerException is ArgumentException || ex.InnerException is InvalidOperationException || ex.InnerException is SocketException)
                     {
                         throw ex.InnerException;
                     }
@@ -364,6 +369,11 @@ namespace SocketHttpListener.Net
         private async Task TransmitFileManaged(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
             var allowAsync = _environment.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows;
+
+            //if (count <= 0)
+            //{
+            //    allowAsync = true;
+            //}
 
             var fileOpenOptions = offset > 0
                 ? FileOpenOptions.RandomAccess
