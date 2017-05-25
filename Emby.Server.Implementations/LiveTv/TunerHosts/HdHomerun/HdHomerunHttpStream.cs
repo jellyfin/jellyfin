@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -105,7 +106,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 {
                                     ResolveAfterDelay(3000, openTaskCompletionSource);
 
-                                    await response.Content.CopyToAsync(fileStream, 81920, cancellationToken).ConfigureAwait(false);
+                                    //await response.Content.CopyToAsync(fileStream, 81920, cancellationToken).ConfigureAwait(false);
+                                    await AsyncStreamCopier.CopyStream(response.Content, fileStream, 81920, 4, cancellationToken).ConfigureAwait(false);
                                 }
                             }
                         }

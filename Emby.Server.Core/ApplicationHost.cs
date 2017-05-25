@@ -1278,9 +1278,6 @@ namespace Emby.Server.Core
             // Emby.Server implementations
             list.Add(GetAssembly(typeof(InstallationManager)));
 
-            // Emby.Server.Core
-            list.Add(GetAssembly(typeof(ApplicationHost)));
-
             // MediaEncoding
             list.Add(GetAssembly(typeof(MediaEncoder)));
 
