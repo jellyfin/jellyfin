@@ -51,7 +51,7 @@ namespace MediaBrowser.Controller.LiveTv
             return Task.FromResult(true);
         }
 
-        private Stream GetInputStream(string path, long startPosition, bool allowAsyncFileRead)
+        protected Stream GetInputStream(string path, long startPosition, bool allowAsyncFileRead)
         {
             var fileOpenOptions = startPosition > 0
                 ? FileOpenOptions.RandomAccess
@@ -84,97 +84,6 @@ namespace MediaBrowser.Controller.LiveTv
 
             await Task.Delay(500).ConfigureAwait(false);
             await DeleteTempFile(path, retryCount + 1).ConfigureAwait(false);
-        }
-
-        protected async Task CopyFileTo(string path, bool allowEndOfFile, Stream outputStream, CancellationToken cancellationToken)
-        {
-            var eofCount = 0;
-
-            long startPosition = -25000;
-            if (startPosition < 0)
-            {
-                var length = FileSystem.GetFileInfo(path).Length;
-                startPosition = Math.Max(length - startPosition, 0);
-            }
-
-            // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
-            var allowAsyncFileRead = Environment.OperatingSystem != OperatingSystem.Windows;
-
-            using (var inputStream = GetInputStream(path, startPosition, allowAsyncFileRead))
-            {
-                if (startPosition > 0)
-                {
-                    inputStream.Position = startPosition;
-                }
-
-                while (eofCount < 20 || !allowEndOfFile)
-                {
-                    int bytesRead;
-                    if (allowAsyncFileRead)
-                    {
-                        bytesRead = await CopyToInternalAsync(inputStream, outputStream, cancellationToken).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        bytesRead = await CopyToInternalAsyncWithSyncRead(inputStream, outputStream, cancellationToken).ConfigureAwait(false);
-                    }
-
-                    //var position = fs.Position;
-                    //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
-
-                    if (bytesRead == 0)
-                    {
-                        eofCount++;
-                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        eofCount = 0;
-                    }
-                }
-            }
-        }
-
-        private async Task<int> CopyToInternalAsyncWithSyncRead(Stream source, Stream destination, CancellationToken cancellationToken)
-        {
-            var array = new byte[StreamCopyToBufferSize];
-            int bytesRead;
-            int totalBytesRead = 0;
-
-            while ((bytesRead = source.Read(array, 0, array.Length)) != 0)
-            {
-                var bytesToWrite = bytesRead;
-
-                if (bytesToWrite > 0)
-                {
-                    await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToWrite), cancellationToken).ConfigureAwait(false);
-
-                    totalBytesRead += bytesRead;
-                }
-            }
-
-            return totalBytesRead;
-        }
-
-        private async Task<int> CopyToInternalAsync(Stream source, Stream destination, CancellationToken cancellationToken)
-        {
-            var array = new byte[StreamCopyToBufferSize];
-            int bytesRead;
-            int totalBytesRead = 0;
-
-            while ((bytesRead = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
-            {
-                var bytesToWrite = bytesRead;
-
-                if (bytesToWrite > 0)
-                {
-                    await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToWrite), cancellationToken).ConfigureAwait(false);
-
-                    totalBytesRead += bytesRead;
-                }
-            }
-
-            return totalBytesRead;
         }
     }
 }

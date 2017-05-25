@@ -14,10 +14,15 @@ namespace Emby.Common.Implementations.Net
     // THIS IS A LINKED FILE - SHARED AMONGST MULTIPLE PLATFORMS	
     // Be careful to check any changes compile and work for all platform projects it is shared in.
 
-    internal sealed class UdpSocket : DisposableManagedObjectBase, ISocket
+    public sealed class UdpSocket : DisposableManagedObjectBase, ISocket
     {
         private Socket _Socket;
         private int _LocalPort;
+
+        public Socket Socket
+        {
+            get { return _Socket; }
+        }
 
         private readonly SocketAsyncEventArgs _receiveSocketAsyncEventArgs = new SocketAsyncEventArgs()
         {
