@@ -438,7 +438,6 @@ namespace Emby.Common.Implementations
                     var assemblyFilePath = Path.Combine(ApplicationPaths.PluginsPath, assemblyFileName);
 
                     assemblyPlugin.SetAttributes(assemblyFilePath, assemblyFileName, assemblyName.Version, assemblyId);
-                    return null;
                 }
 
                 var isFirstRun = !File.Exists(plugin.ConfigurationFilePath);
