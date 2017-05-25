@@ -97,7 +97,6 @@ namespace Emby.Common.Implementations.Net
             _acceptor.StartAccept();
         }
 
-#if NET46
         public Task SendFile(string path, byte[] preBuffer, byte[] postBuffer, CancellationToken cancellationToken)
         {
             var options = TransmitFileOptions.UseDefaultWorkerThread;
@@ -117,25 +116,23 @@ namespace Emby.Common.Implementations.Net
             var client = data.Item1;
             var path = data.Item2;
             var taskCompletion = data.Item3;
-        
+
             // Complete sending the data to the remote device.
-        try {
-            client.EndSendFile(ar);
-        taskCompletion.TrySetResult(true);
-}
-        catch(SocketException ex){
-        _logger.Info("Socket.SendFile failed for {0}. error code {1}", path, ex.SocketErrorCode);
-        taskCompletion.TrySetException(ex);
-}catch(Exception ex){
-        taskCompletion.TrySetException(ex);
-}
+            try
+            {
+                client.EndSendFile(ar);
+                taskCompletion.TrySetResult(true);
+            }
+            catch (SocketException ex)
+            {
+                _logger.Info("Socket.SendFile failed for {0}. error code {1}", path, ex.SocketErrorCode);
+                taskCompletion.TrySetException(ex);
+            }
+            catch (Exception ex)
+            {
+                taskCompletion.TrySetException(ex);
+            }
         }
-#else
-        public Task SendFile(string path, byte[] preBuffer, byte[] postBuffer, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-#endif
 
         public void Dispose()
         {
