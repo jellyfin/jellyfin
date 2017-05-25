@@ -171,24 +171,92 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return CopyFileTo(_tempFilePath, false, stream, cancellationToken);
         }
 
-        private static int RtpHeaderBytes = 12;
-        private async Task CopyTo(ISocket udpClient, Stream outputStream, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        protected async Task CopyFileTo(string path, bool allowEndOfFile, Stream outputStream, CancellationToken cancellationToken)
         {
-            var receiveBuffer = new byte[8192];
+            var eofCount = 0;
 
-            while (true)
+            long startPosition = -25000;
+            if (startPosition < 0)
             {
-                var data = await udpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
-                var bytesRead = data.ReceivedBytes - RtpHeaderBytes;
-                
-                await outputStream.WriteAsync(data.Buffer, RtpHeaderBytes, bytesRead, cancellationToken).ConfigureAwait(false);
+                var length = FileSystem.GetFileInfo(path).Length;
+                startPosition = Math.Max(length - startPosition, 0);
+            }
 
-                if (openTaskCompletionSource != null)
+            using (var inputStream = GetInputStream(path, startPosition, true))
+            {
+                if (startPosition > 0)
                 {
-                    Resolve(openTaskCompletionSource);
-                    openTaskCompletionSource = null;
+                    inputStream.Position = startPosition;
+                }
+
+                while (eofCount < 20 || !allowEndOfFile)
+                {
+                    var bytesRead = await AsyncStreamCopier.CopyStream(inputStream, outputStream, 81920, 4, cancellationToken).ConfigureAwait(false);
+
+                    //var position = fs.Position;
+                    //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
+
+                    if (bytesRead == 0)
+                    {
+                        eofCount++;
+                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        eofCount = 0;
+                    }
                 }
             }
         }
+
+        private static int RtpHeaderBytes = 12;
+        private Task CopyTo(ISocket udpClient, Stream outputStream, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        {
+            return CopyStream(_socketFactory.CreateNetworkStream(udpClient, false), outputStream, 81920, 4, openTaskCompletionSource, cancellationToken);
+        }
+
+        private Task CopyStream(Stream source, Stream target, int bufferSize, int bufferCount, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        {
+            var copier = new AsyncStreamCopier(source, target, 0, cancellationToken, false, bufferSize, bufferCount);
+            copier.IndividualReadOffset = RtpHeaderBytes;
+
+            var taskCompletion = new TaskCompletionSource<long>();
+
+            copier.TaskCompletionSource = taskCompletion;
+
+            var result = copier.BeginCopy(StreamCopyCallback, copier);
+
+            if (openTaskCompletionSource != null)
+            {
+                Resolve(openTaskCompletionSource);
+                openTaskCompletionSource = null;
+            }
+
+            if (result.CompletedSynchronously)
+            {
+                StreamCopyCallback(result);
+            }
+
+            cancellationToken.Register(() => taskCompletion.TrySetCanceled());
+
+            return taskCompletion.Task;
+        }
+
+        private void StreamCopyCallback(IAsyncResult result)
+        {
+            var copier = (AsyncStreamCopier)result.AsyncState;
+            var taskCompletion = copier.TaskCompletionSource;
+
+            try
+            {
+                copier.EndCopy(result);
+                taskCompletion.TrySetResult(0);
+            }
+            catch (Exception ex)
+            {
+                taskCompletion.TrySetException(ex);
+            }
+        }
+
     }
 }
