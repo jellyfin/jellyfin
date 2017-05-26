@@ -20,7 +20,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
@@ -556,6 +556,7 @@ namespace MediaBrowser.Providers.Manager
                 new MetadataOptions();
         }
 
+        private Task _completedTask = Task.FromResult(true);
         /// <summary>
         /// Saves the metadata.
         /// </summary>
@@ -564,7 +565,8 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task.</returns>
         public Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType)
         {
-            return SaveMetadata(item, updateType, _savers);
+            SaveMetadata(item, updateType, _savers);
+            return _completedTask;
         }
 
         /// <summary>
@@ -576,7 +578,8 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task.</returns>
         public Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType, IEnumerable<string> savers)
         {
-            return SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
+            SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
+            return _completedTask;
         }
 
         /// <summary>
@@ -586,7 +589,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="updateType">Type of the update.</param>
         /// <param name="savers">The savers.</param>
         /// <returns>Task.</returns>
-        private async Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType, IEnumerable<IMetadataSaver> savers)
+        private void SaveMetadata(IHasMetadata item, ItemUpdateType updateType, IEnumerable<IMetadataSaver> savers)
         {
             foreach (var saver in savers.Where(i => IsSaverEnabledForItem(i, item, updateType, false)))
             {

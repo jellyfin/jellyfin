@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.Collections
             return base.Supports(item);
         }
 
-        protected override Task<List<BaseItem>> GetItemsWithImages(IHasImages item)
+        protected override List<BaseItem> GetItemsWithImages(IHasImages item)
         {
             var playlist = (BoxSet)item;
 
@@ -73,10 +73,10 @@ namespace Emby.Server.Implementations.Collections
                 .DistinctBy(i => i.Id)
                 .ToList();
 
-            return Task.FromResult(GetFinalItems(items, 2));
+            return GetFinalItems(items, 2);
         }
 
-        protected string CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override string CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             return CreateSingleImage(itemsWithImages, outputPathWithoutExtension, ImageType.Primary);
         }

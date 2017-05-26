@@ -23,7 +23,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -120,7 +120,7 @@ namespace Emby.Server.Implementations.Channels
             if (query.IsFavorite.HasValue)
             {
                 var val = query.IsFavorite.Value;
-                channels = channels.Where(i => _userDataManager.GetUserData(user,  i).IsFavorite == val)
+                channels = channels.Where(i => _userDataManager.GetUserData(user, i).IsFavorite == val)
                     .ToList();
             }
 
@@ -263,7 +263,7 @@ namespace Emby.Server.Implementations.Channels
                 }
                 catch
                 {
-                    
+
                 }
                 return;
             }
@@ -273,7 +273,7 @@ namespace Emby.Server.Implementations.Channels
             _jsonSerializer.SerializeToFile(mediaSources, path);
         }
 
-        public async Task<IEnumerable<MediaSourceInfo>> GetStaticMediaSources(BaseItem item, CancellationToken cancellationToken)
+        public IEnumerable<MediaSourceInfo> GetStaticMediaSources(BaseItem item, CancellationToken cancellationToken)
         {
             IEnumerable<ChannelMediaInfo> results = GetSavedMediaSources(item);
 
@@ -963,7 +963,7 @@ namespace Emby.Server.Implementations.Channels
                 }
             }
 
-            return await GetReturnItems(internalItems, providerTotalRecordCount, user, query).ConfigureAwait(false);
+            return GetReturnItems(internalItems, providerTotalRecordCount, user, query);
         }
 
         public async Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken)
@@ -1154,7 +1154,7 @@ namespace Emby.Server.Implementations.Channels
                 filename + ".json");
         }
 
-        private async Task<QueryResult<BaseItem>> GetReturnItems(IEnumerable<BaseItem> items,
+        private QueryResult<BaseItem> GetReturnItems(IEnumerable<BaseItem> items,
             int? totalCountFromProvider,
             User user,
             ChannelItemQuery query)

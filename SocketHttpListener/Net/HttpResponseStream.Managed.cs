@@ -174,14 +174,7 @@ namespace SocketHttpListener.Net
             }
             else
             {
-                try
-                {
-                    _stream.Write(buffer, offset, count);
-                }
-                catch (Exception ex)
-                {
-                    throw new HttpListenerException(ex.HResult, ex.Message);
-                }
+                _stream.Write(buffer, offset, count);
             }
         }
 
@@ -266,25 +259,7 @@ namespace SocketHttpListener.Net
                 InternalWrite(bytes, 0, bytes.Length);
             }
 
-            try
-            {
-                return _stream.BeginWrite(buffer, offset, size, cback, state);
-            }
-            catch (Exception ex)
-            {
-                if (_ignore_errors)
-                {
-                    HttpStreamAsyncResult ares = new HttpStreamAsyncResult(this);
-                    ares._callback = cback;
-                    ares._state = state;
-                    ares.Complete();
-                    return ares;
-                }
-                else
-                {
-                    throw new HttpListenerException(ex.HResult, ex.Message);
-                }
-            }
+            return _stream.BeginWrite(buffer, offset, size, cback, state);
         }
 
         private void EndWriteCore(IAsyncResult asyncResult)
@@ -304,24 +279,9 @@ namespace SocketHttpListener.Net
             }
             else
             {
-                try
-                {
-                    _stream.EndWrite(asyncResult);
-                    if (_response.SendChunked)
-                        _stream.Write(s_crlf, 0, 2);
-                }
-                catch (Exception ex)
-                {
-                    // NetworkStream wraps exceptions in IOExceptions; if the underlying socket operation
-                    // failed because of invalid arguments or usage, propagate that error.  Otherwise
-                    // wrap the whole thing in an HttpListenerException.  This is all to match Windows behavior.
-                    if (ex.InnerException is ArgumentException || ex.InnerException is InvalidOperationException || ex.InnerException is SocketException)
-                    {
-                        throw ex.InnerException;
-                    }
-
-                    throw new HttpListenerException(ex.HResult, ex.Message);
-                }
+                _stream.EndWrite(asyncResult);
+                if (_response.SendChunked)
+                    _stream.Write(s_crlf, 0, 2);
             }
         }
 
@@ -359,7 +319,32 @@ namespace SocketHttpListener.Net
             }
 
             //_logger.Info("Socket sending file {0} {1}", path, response.ContentLength64);
-            return _socket.SendFile(path, preBuffer, _emptyBuffer, cancellationToken);
+
+            var taskCompletion = new TaskCompletionSource<bool>();
+
+            Action<IAsyncResult> callback = callbackResult =>
+            {
+                try
+                {
+                    _socket.EndSendFile(callbackResult);
+                    taskCompletion.TrySetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    taskCompletion.TrySetException(ex);
+                }
+            };
+
+            var result = _socket.BeginSendFile(path, preBuffer, _emptyBuffer, new AsyncCallback(callback), null);
+
+            if (result.CompletedSynchronously)
+            {
+                callback(result);
+            }
+
+            cancellationToken.Register(() => taskCompletion.TrySetCanceled());
+
+            return taskCompletion.Task;
         }
 
         const int StreamCopyToBufferSize = 81920;

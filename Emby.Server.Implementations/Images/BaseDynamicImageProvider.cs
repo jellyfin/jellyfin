@@ -12,7 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
@@ -59,33 +59,6 @@ namespace Emby.Server.Implementations.Images
             //return GetSupportedImages(item).Where(i => IsEnabled(options, i, item)).ToList();
         }
 
-        private bool IsEnabled(MetadataOptions options, ImageType type, IHasImages item)
-        {
-            if (type == ImageType.Backdrop)
-            {
-                if (item.LockedFields.Contains(MetadataFields.Backdrops))
-                {
-                    return false;
-                }
-            }
-            else if (type == ImageType.Screenshot)
-            {
-                if (item.LockedFields.Contains(MetadataFields.Screenshots))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (item.LockedFields.Contains(MetadataFields.Images))
-                {
-                    return false;
-                }
-            }
-
-            return options.IsEnabled(type);
-        }
-
         public async Task<ItemUpdateType> FetchAsync(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             if (!Supports(item))
@@ -128,7 +101,7 @@ namespace Emby.Server.Implementations.Images
                 }
             }
 
-            var items = await GetItemsWithImages(item).ConfigureAwait(false);
+            var items = GetItemsWithImages(item);
 
             return await FetchToFileInternal(item, items, imageType, cancellationToken).ConfigureAwait(false);
         }
@@ -159,7 +132,7 @@ namespace Emby.Server.Implementations.Images
             return ItemUpdateType.ImageUpdate;
         }
 
-        protected abstract Task<List<BaseItem>> GetItemsWithImages(IHasImages item);
+        protected abstract List<BaseItem> GetItemsWithImages(IHasImages item);
 
         protected string CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
         {

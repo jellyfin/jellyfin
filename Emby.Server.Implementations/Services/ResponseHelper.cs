@@ -124,7 +124,7 @@ namespace Emby.Server.Implementations.Services
                 response.ContentType = "application/octet-stream";
                 response.SetContentLength(bytes.Length);
 
-                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -133,7 +133,7 @@ namespace Emby.Server.Implementations.Services
             {
                 bytes = Encoding.UTF8.GetBytes(responseText);
                 response.SetContentLength(bytes.Length);
-                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
                 return;
             }
 

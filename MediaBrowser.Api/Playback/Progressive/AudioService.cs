@@ -9,8 +9,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;

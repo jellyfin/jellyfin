@@ -115,7 +115,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var lockkeyMsg = CreateGetMessage(tuner, "lockkey");
             await socket.SendToAsync(lockkeyMsg, 0, lockkeyMsg.Length, ipEndPoint, cancellationToken);
-            var response = await socket.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+
+            var receiveBuffer = new byte[8192];
+            var response = await socket.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
+
             string returnVal;
             ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal);
 

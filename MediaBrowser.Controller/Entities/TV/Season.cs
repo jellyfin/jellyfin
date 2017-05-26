@@ -150,7 +150,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return IndexNumber != null ? IndexNumber.Value.ToString("0000") : Name;
         }
 
-        protected override Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
+        protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
             if (query.User == null)
             {
@@ -165,7 +165,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var result = PostFilterAndSort(items, query, false, false);
 
-            return Task.FromResult(result);
+            return result;
         }
 
         /// <summary>

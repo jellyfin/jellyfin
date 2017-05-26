@@ -142,7 +142,7 @@ namespace MediaBrowser.Controller.Entities
                     return GetResult(user.RootFolder.GetChildren(user, true), queryParent, query);
 
                 case CollectionType.Playlists:
-                    return await GetPlaylistsView(queryParent, user, query).ConfigureAwait(false);
+                    return  GetPlaylistsView(queryParent, user, query);
 
                 case CollectionType.BoxSets:
                     return GetBoxsetView(queryParent, user, query);
@@ -181,7 +181,7 @@ namespace MediaBrowser.Controller.Entities
                     return await GetMovieGenres(queryParent, user, query).ConfigureAwait(false);
 
                 case SpecialFolder.MovieGenre:
-                    return await GetMovieGenreItems(queryParent, displayParent, user, query).ConfigureAwait(false);
+                    return  GetMovieGenreItems(queryParent, displayParent, user, query);
 
                 case SpecialFolder.MovieResume:
                     return GetMovieResume(queryParent, user, query);
@@ -424,13 +424,6 @@ namespace MediaBrowser.Controller.Entities
             return _libraryManager.GetItemsResult(query);
         }
 
-        private async Task<QueryResult<BaseItem>> FindPlaylists(Folder parent, User user, InternalItemsQuery query)
-        {
-            var list = _playlistManager.GetPlaylists(user.Id.ToString("N"));
-
-            return GetResult(list, parent, query);
-        }
-
         private int GetSpecialItemsLimit()
         {
             return 50;
@@ -583,7 +576,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(genres, parent, query);
         }
 
-        private async Task<QueryResult<BaseItem>> GetMovieGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetMovieGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = queryParent;
@@ -595,7 +588,7 @@ namespace MediaBrowser.Controller.Entities
             return _libraryManager.GetItemsResult(query);
         }
 
-        private async Task<QueryResult<BaseItem>> GetPlaylistsView(Folder parent, User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetPlaylistsView(Folder parent, User user, InternalItemsQuery query)
         {
             return GetResult(_playlistManager.GetPlaylists(user.Id.ToString("N")), parent, query);
         }

@@ -182,21 +182,21 @@ namespace Emby.Server.Implementations.Library
             return GetUserData(userId, item.Id, item.GetUserDataKeys());
         }
 
-        public async Task<UserItemDataDto> GetUserDataDto(IHasUserData item, User user)
+        public UserItemDataDto GetUserDataDto(IHasUserData item, User user)
         {
             var userData = GetUserData(user.Id, item);
             var dto = GetUserItemDataDto(userData);
 
-            await item.FillUserDataDtoValues(dto, userData, null, user, new List<ItemFields>()).ConfigureAwait(false);
+            item.FillUserDataDtoValues(dto, userData, null, user, new List<ItemFields>());
             return dto;
         }
 
-        public async Task<UserItemDataDto> GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, List<ItemFields> fields)
+        public UserItemDataDto GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, List<ItemFields> fields)
         {
             var userData = GetUserData(user.Id, item);
             var dto = GetUserItemDataDto(userData);
 
-            await item.FillUserDataDtoValues(dto, userData, itemDto, user, fields).ConfigureAwait(false);
+            item.FillUserDataDtoValues(dto, userData, itemDto, user, fields);
             return dto;
         }
 
