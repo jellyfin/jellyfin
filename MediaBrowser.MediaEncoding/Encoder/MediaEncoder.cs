@@ -252,7 +252,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        public async Task UpdateEncoderPath(string path, string pathType)
+        public void UpdateEncoderPath(string path, string pathType)
         {
             if (_hasExternalEncoder)
             {
@@ -786,7 +786,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     timeoutMs = DefaultImageExtractionTimeoutMs;
                 }
 
-                ranToCompletion = process.WaitForExit(timeoutMs);
+                ranToCompletion = await process.WaitForExitAsync(timeoutMs).ConfigureAwait(false);
 
                 if (!ranToCompletion)
                 {
@@ -892,7 +892,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     while (isResponsive)
                     {
-                        if (process.WaitForExit(30000))
+                        if (await process.WaitForExitAsync(30000).ConfigureAwait(false))
                         {
                             ranToCompletion = true;
                             break;

@@ -187,7 +187,7 @@ namespace Emby.Server.Implementations.Services
             return null;
         }
 
-        public async Task<object> Execute(HttpListenerHost appHost, object requestDto, IRequest req)
+        public Task<object> Execute(HttpListenerHost appHost, object requestDto, IRequest req)
         {
             req.Dto = requestDto;
             var requestType = requestDto.GetType();
@@ -209,9 +209,7 @@ namespace Emby.Server.Implementations.Services
                 req.Dto = requestDto;
 
             //Executes the service and returns the result
-            var response = await ServiceExecGeneral.Execute(serviceType, req, service, requestDto, requestType.GetMethodName()).ConfigureAwait(false);
-
-            return response;
+            return ServiceExecGeneral.Execute(serviceType, req, service, requestDto, requestType.GetMethodName());
         }
     }
 

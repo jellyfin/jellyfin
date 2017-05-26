@@ -427,7 +427,7 @@ namespace MediaBrowser.Api.UserLibrary
                 await item.MarkUnplayed(user).ConfigureAwait(false);
             }
 
-            return await _userDataRepository.GetUserDataDto(item, user).ConfigureAwait(false);
+            return _userDataRepository.GetUserDataDto(item, user);
         }
     }
 }

@@ -289,7 +289,7 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
-        protected override Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
+        protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
             if (query.User == null)
             {
@@ -313,12 +313,12 @@ namespace MediaBrowser.Controller.Entities.TV
                     query.IncludeItemTypes = new[] { typeof(Episode).Name, typeof(Season).Name };
                 }
                 query.IsVirtualItem = false;
-                return Task.FromResult(LibraryManager.GetItemsResult(query));
+                return LibraryManager.GetItemsResult(query);
             }
 
             SetSeasonQueryOptions(query, user);
 
-            return Task.FromResult(LibraryManager.GetItemsResult(query));
+            return LibraryManager.GetItemsResult(query);
         }
 
         public IEnumerable<Episode> GetEpisodes(User user, DtoOptions options)

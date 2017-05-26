@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Images;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
@@ -37,20 +36,20 @@ namespace Emby.Server.Implementations.UserViews
                 };
         }
 
-        protected override async Task<List<BaseItem>> GetItemsWithImages(IHasImages item)
+        protected override List<BaseItem> GetItemsWithImages(IHasImages item)
         {
             var view = (CollectionFolder)item;
 
             var recursive = !new[] { CollectionType.Playlists, CollectionType.Channels }.Contains(view.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
-            var result = await view.GetItems(new InternalItemsQuery
+            var result = view.GetItems(new InternalItemsQuery
             {
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
                 ExcludeItemTypes = new[] { "UserView", "CollectionFolder", "Playlist" },
                 DtoOptions = new DtoOptions(false)
 
-            }).ConfigureAwait(false);
+            });
 
             var items = result.Items.Select(i =>
             {
@@ -135,7 +134,7 @@ namespace Emby.Server.Implementations.UserViews
                 };
         }
 
-        protected override async Task<List<BaseItem>> GetItemsWithImages(IHasImages item)
+        protected override List<BaseItem> GetItemsWithImages(IHasImages item)
         {
             var view = (ManualCollectionsFolder)item;
 

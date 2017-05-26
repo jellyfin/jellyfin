@@ -103,7 +103,7 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(result);
         }
 
-        public async Task<object> Get(GetGroupingOptions request)
+        public object Get(GetGroupingOptions request)
         {
             var user = _userManager.GetUserById(request.UserId);
 

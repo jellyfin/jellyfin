@@ -98,6 +98,11 @@ namespace Emby.Common.Implementations.Diagnostics
             return _process.WaitForExit(timeMs);
         }
 
+        public Task<bool> WaitForExitAsync(int timeMs)
+        {
+            return Task.FromResult(_process.WaitForExit(timeMs));
+        }
+
         public void Dispose()
         {
             _process.Dispose();

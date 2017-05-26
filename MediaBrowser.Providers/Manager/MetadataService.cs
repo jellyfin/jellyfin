@@ -53,8 +53,8 @@ namespace MediaBrowser.Providers.Manager
                 requiresRefresh = item.RequiresRefresh();
             }
 
-            if (!requiresRefresh && 
-                libraryOptions.AutomaticRefreshIntervalDays > 0 && 
+            if (!requiresRefresh &&
+                libraryOptions.AutomaticRefreshIntervalDays > 0 &&
                 (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= libraryOptions.AutomaticRefreshIntervalDays)
             {
                 requiresRefresh = true;
@@ -142,7 +142,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            var beforeSaveResult = await BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || requiresRefresh, updateType).ConfigureAwait(false);
+            var beforeSaveResult = BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || requiresRefresh, updateType);
             updateType = updateType | beforeSaveResult;
 
             if (item.LocationType == LocationType.FileSystem)
@@ -281,7 +281,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="isFullRefresh">if set to <c>true</c> [is full refresh].</param>
         /// <param name="currentUpdateType">Type of the current update.</param>
         /// <returns>ItemUpdateType.</returns>
-        protected virtual async Task<ItemUpdateType> BeforeSave(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected virtual ItemUpdateType BeforeSave(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
             var updateType = ItemUpdateType.None;
 
@@ -368,7 +368,7 @@ namespace MediaBrowser.Providers.Manager
 
             // Run all if either of these flags are true
             var runAllProviders = options.ReplaceAllMetadata ||
-                metadataRefreshMode == MetadataRefreshMode.FullRefresh || 
+                metadataRefreshMode == MetadataRefreshMode.FullRefresh ||
                 (isFirstRefresh && metadataRefreshMode >= MetadataRefreshMode.Default) ||
                 (requiresRefresh && metadataRefreshMode >= MetadataRefreshMode.Default);
 

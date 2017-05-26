@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Fills the user data dto values.
         /// </summary>
-        Task FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, List<ItemFields> fields);
+        void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, List<ItemFields> fields);
 
         bool EnableRememberingTrackSelections { get; }
 
