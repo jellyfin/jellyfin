@@ -43,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
             get { return MediaBrowser.Model.Entities.CollectionType.Playlists; }
         }
 
-        protected override Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
+        protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
             query.Recursive = false;
             return base.GetItemsInternal(query);

@@ -105,7 +105,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var result = await GetQueryResult(request, dtoOptions, user).ConfigureAwait(false);
+            var result = GetQueryResult(request, dtoOptions, user);
 
             if (result == null)
             {
@@ -134,7 +134,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <summary>
         /// Gets the items to serialize.
         /// </summary>
-        private async Task<QueryResult<BaseItem>> GetQueryResult(GetItems request, DtoOptions dtoOptions, User user)
+        private QueryResult<BaseItem> GetQueryResult(GetItems request, DtoOptions dtoOptions, User user)
         {
             var item = string.IsNullOrEmpty(request.ParentId) ?
                 null :
@@ -169,14 +169,14 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.Recursive || !string.IsNullOrEmpty(request.Ids) || user == null)
             {
-                return await folder.GetItems(GetItemsQuery(request, dtoOptions, user)).ConfigureAwait(false);
+                return folder.GetItems(GetItemsQuery(request, dtoOptions, user));
             }
 
             var userRoot = item as UserRootFolder;
 
             if (userRoot == null)
             {
-                return await folder.GetItems(GetItemsQuery(request, dtoOptions, user)).ConfigureAwait(false);
+                return folder.GetItems(GetItemsQuery(request, dtoOptions, user));
             }
 
             IEnumerable<BaseItem> items = folder.GetChildren(user, true);

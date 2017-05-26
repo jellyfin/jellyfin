@@ -72,6 +72,7 @@
     <Compile Include="IO\IsoManager.cs" />
     <Compile Include="IO\LnkShortcutHandler.cs" />
     <Compile Include="IO\ManagedFileSystem.cs" />
+    <Compile Include="IO\ProgressStream.cs" />
     <Compile Include="IO\SharpCifsFileSystem.cs" />
     <Compile Include="IO\SharpCifs\Config.cs" />
     <Compile Include="IO\SharpCifs\Dcerpc\DcerpcBind.cs" />

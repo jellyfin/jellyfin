@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
@@ -542,7 +541,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             await _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None).ConfigureAwait(false);
 
-            return await _userDataRepository.GetUserDataDto(item, user).ConfigureAwait(false);
+            return _userDataRepository.GetUserDataDto(item, user);
         }
 
         /// <summary>
@@ -587,7 +586,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             await _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None).ConfigureAwait(false);
 
-            return await _userDataRepository.GetUserDataDto(item, user).ConfigureAwait(false);
+            return _userDataRepository.GetUserDataDto(item, user);
         }
     }
 }

@@ -54,7 +54,7 @@ namespace MediaBrowser.Controller.Entities
             return GetChildren(user, true).Count();
         }
 
-        protected override Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
+        protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
             var parent = this as Folder;
 
@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return new UserViewBuilder(UserViewManager, LiveTvManager, ChannelManager, LibraryManager, Logger, UserDataManager, TVSeriesManager, ConfigurationManager, PlaylistManager)
-                .GetUserItems(parent, this, ViewType, query);
+                .GetUserItems(parent, this, ViewType, query).Result;
         }
 
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.Entities
                 EnableTotalRecordCount = false,
                 DtoOptions = new DtoOptions(true)
 
-            }).Result;
+            });
 
             return result.Items;
         }
@@ -106,7 +106,7 @@ namespace MediaBrowser.Controller.Entities
 
                 DtoOptions = query.DtoOptions
 
-            }).Result;
+            });
 
             return result.Items.Where(i => UserViewBuilder.FilterItem(i, query));
         }

@@ -16,7 +16,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
@@ -48,14 +48,14 @@ namespace MediaBrowser.Providers.TV
             Current = this;
         }
 
-        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
             var list = new List<RemoteSearchResult>();
 
             // The search query must either provide an episode number or date
             if (!searchInfo.IndexNumber.HasValue && !searchInfo.PremiereDate.HasValue)
             {
-                return list;
+                return Task.FromResult((IEnumerable<RemoteSearchResult>)list);
             }
 
             if (TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds))
@@ -103,7 +103,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            return list;
+            return Task.FromResult((IEnumerable<RemoteSearchResult>)list);
         }
 
         public string Name

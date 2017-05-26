@@ -14,11 +14,6 @@ namespace MediaBrowser.Model.Net
     {
         IpAddressInfo LocalIPAddress { get; }
 
-        /// <summary>
-        /// Waits for and returns the next UDP message sent to this socket (uni or multicast).
-        /// </summary>
-        /// <returns></returns>
-        Task<SocketReceiveResult> ReceiveAsync(CancellationToken cancellationToken);
         Task<SocketReceiveResult> ReceiveAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken);
 
         IAsyncResult BeginReceive(byte[] buffer, int offset, int count, AsyncCallback callback);

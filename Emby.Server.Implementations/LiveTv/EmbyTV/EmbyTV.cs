@@ -28,7 +28,7 @@ using System.Xml;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -1636,7 +1636,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     return;
                 }
 
-                var episodesToDelete = (await librarySeries.GetItems(new InternalItemsQuery
+                var episodesToDelete = (librarySeries.GetItems(new InternalItemsQuery
                 {
                     SortBy = new[] { ItemSortBy.DateCreated },
                     SortOrder = SortOrder.Descending,
@@ -1645,7 +1645,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     Recursive = true,
                     DtoOptions = new DtoOptions(true)
 
-                }).ConfigureAwait(false))
+                }))
                     .Items
                     .Where(i => i.LocationType == LocationType.FileSystem && _fileSystem.FileExists(i.Path))
                     .Skip(seriesTimer.KeepUpTo - 1)
@@ -1785,7 +1785,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             throw new InvalidOperationException("Emby DVR Requires an active Emby Premiere subscription.");
         }
 
-        private async void OnSuccessfulRecording(TimerInfo timer, string path)
+        private void OnSuccessfulRecording(TimerInfo timer, string path)
         {
             //if (timer.IsProgramSeries && GetConfiguration().EnableAutoOrganize)
             //{

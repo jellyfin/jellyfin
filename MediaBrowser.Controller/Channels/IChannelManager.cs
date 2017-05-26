@@ -110,7 +110,7 @@ namespace MediaBrowser.Controller.Channels
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{MediaSourceInfo}}.</returns>
-        Task<IEnumerable<MediaSourceInfo>> GetStaticMediaSources(BaseItem item, CancellationToken cancellationToken);
+        IEnumerable<MediaSourceInfo> GetStaticMediaSources(BaseItem item, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the channel folder.

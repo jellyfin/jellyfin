@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.MediaEncoding;
@@ -113,8 +113,7 @@ namespace MediaBrowser.Api
 
         public void Post(UpdateMediaEncoderPath request)
         {
-            var task = _mediaEncoder.UpdateEncoderPath(request.Path, request.PathType);
-            Task.WaitAll(task);
+            _mediaEncoder.UpdateEncoderPath(request.Path, request.PathType);
         }
 
         /// <summary>

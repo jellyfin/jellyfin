@@ -21,7 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.IO;
@@ -2253,7 +2253,7 @@ namespace MediaBrowser.Controller.Entities
             return path;
         }
 
-        public virtual Task FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, List<ItemFields> fields)
+        public virtual void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, List<ItemFields> fields)
         {
             if (RunTimeTicks.HasValue)
             {
@@ -2269,8 +2269,6 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
             }
-
-            return Task.FromResult(true);
         }
 
         protected Task RefreshMetadataForOwnedItem(BaseItem ownedItem, bool copyTitleMetadata, MetadataRefreshOptions options, CancellationToken cancellationToken)

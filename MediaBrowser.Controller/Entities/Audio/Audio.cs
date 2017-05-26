@@ -209,7 +209,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             if (SourceType == SourceType.Channel)
             {
                 var sources = ChannelManager.GetStaticMediaSources(this, CancellationToken.None)
-                           .Result.ToList();
+                           .ToList();
 
                 if (sources.Count > 0)
                 {

@@ -12,7 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
@@ -164,7 +164,7 @@ namespace Emby.Server.Implementations.Playlists
             return path;
         }
 
-        private Task<IEnumerable<BaseItem>> GetPlaylistItems(IEnumerable<string> itemIds, string playlistMediaType, User user, DtoOptions options)
+        private IEnumerable<BaseItem> GetPlaylistItems(IEnumerable<string> itemIds, string playlistMediaType, User user, DtoOptions options)
         {
             var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null);
 
@@ -192,7 +192,7 @@ namespace Emby.Server.Implementations.Playlists
 
             var list = new List<LinkedChild>();
 
-            var items = (await GetPlaylistItems(itemIds, playlist.MediaType, user, options).ConfigureAwait(false))
+            var items = (GetPlaylistItems(itemIds, playlist.MediaType, user, options))
                 .Where(i => i.SupportsAddingToPlaylist)
                 .ToList();
 
@@ -278,7 +278,7 @@ namespace Emby.Server.Implementations.Playlists
         {
             var typeName = "PlaylistsFolder";
 
-            return _libraryManager.RootFolder.Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, typeName, StringComparison.Ordinal)) ?? 
+            return _libraryManager.RootFolder.Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, typeName, StringComparison.Ordinal)) ??
                 _libraryManager.GetUserRootFolder().Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, typeName, StringComparison.Ordinal));
         }
     }

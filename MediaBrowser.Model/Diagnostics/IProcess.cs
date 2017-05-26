@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Model.Diagnostics
 {
@@ -9,6 +10,7 @@ namespace MediaBrowser.Model.Diagnostics
 
         void Kill();
         bool WaitForExit(int timeMs);
+        Task<bool> WaitForExitAsync(int timeMs);
         int ExitCode { get; }
         void Start();
         StreamWriter StandardInput { get; }

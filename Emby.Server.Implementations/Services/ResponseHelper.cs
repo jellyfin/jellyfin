@@ -12,39 +12,28 @@ namespace Emby.Server.Implementations.Services
 {
     public static class ResponseHelper
     {
-        public static Task WriteToResponse(IResponse httpRes, IRequest httpReq, object result, CancellationToken cancellationToken)
+        public static async Task WriteToResponse(IResponse response, IRequest request, object result, CancellationToken cancellationToken)
         {
             if (result == null)
             {
-                if (httpRes.StatusCode == (int)HttpStatusCode.OK)
+                if (response.StatusCode == (int)HttpStatusCode.OK)
                 {
-                    httpRes.StatusCode = (int)HttpStatusCode.NoContent;
+                    response.StatusCode = (int)HttpStatusCode.NoContent;
                 }
 
-                httpRes.SetContentLength(0);
-                return Task.FromResult(true);
+                response.SetContentLength(0);
+                return;
             }
 
             var httpResult = result as IHttpResult;
             if (httpResult != null)
             {
-                httpResult.RequestContext = httpReq;
-                httpReq.ResponseContentType = httpResult.ContentType ?? httpReq.ResponseContentType;
-                return WriteToResponseInternal(httpRes, httpResult, httpReq, cancellationToken);
+                httpResult.RequestContext = request;
+                request.ResponseContentType = httpResult.ContentType ?? request.ResponseContentType;
             }
 
-            return WriteToResponseInternal(httpRes, result, httpReq, cancellationToken);
-        }
-
-        /// <summary>
-        /// Writes to response.
-        /// Response headers are customizable by implementing IHasHeaders an returning Dictionary of Http headers.
-        /// </summary>
-        private static async Task WriteToResponseInternal(IResponse response, object result, IRequest request, CancellationToken cancellationToken)
-        {
             var defaultContentType = request.ResponseContentType;
 
-            var httpResult = result as IHttpResult;
             if (httpResult != null)
             {
                 if (httpResult.RequestContext == null)
@@ -135,7 +124,7 @@ namespace Emby.Server.Implementations.Services
                 response.ContentType = "application/octet-stream";
                 response.SetContentLength(bytes.Length);
 
-                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -144,7 +133,7 @@ namespace Emby.Server.Implementations.Services
             {
                 bytes = Encoding.UTF8.GetBytes(responseText);
                 response.SetContentLength(bytes.Length);
-                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
                 return;
             }
 

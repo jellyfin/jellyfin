@@ -47,7 +47,6 @@
     <Compile Include="Extensions\BaseExtensions.cs" />
     <Compile Include="Extensions\ResourceNotFoundException.cs" />
     <Compile Include="IDependencyContainer.cs" />
-    <Compile Include="IO\ProgressStream.cs" />
     <Compile Include="Configuration\IApplicationPaths.cs" />
     <Compile Include="Net\HttpRequestOptions.cs" />
     <Compile Include="Net\HttpResponseInfo.cs" />
@@ -76,6 +75,7 @@
   <ItemGroup>
     <None Include="project.json" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent />

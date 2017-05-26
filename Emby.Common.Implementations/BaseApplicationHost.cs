@@ -31,7 +31,6 @@ using Emby.Common.Implementations.Net;
 using Emby.Common.Implementations.EnvironmentInfo;
 using Emby.Common.Implementations.Threading;
 using MediaBrowser.Common;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Net;
