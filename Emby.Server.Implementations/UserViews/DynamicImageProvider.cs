@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.UserViews
             };
         }
 
-        protected override async Task<List<BaseItem>> GetItemsWithImages(IHasImages item)
+        protected override List<BaseItem> GetItemsWithImages(IHasImages item)
         {
             var view = (UserView)item;
 
@@ -70,7 +70,7 @@ namespace Emby.Server.Implementations.UserViews
             if (string.Equals(view.ViewType, SpecialFolder.MovieGenre, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(view.ViewType, SpecialFolder.TvGenre, StringComparison.OrdinalIgnoreCase))
             {
-                var userItemsResult = await view.GetItems(new InternalItemsQuery
+                var userItemsResult = view.GetItems(new InternalItemsQuery
                 {
                     CollapseBoxSetItems = false,
                     DtoOptions = new DtoOptions(false)
@@ -82,15 +82,14 @@ namespace Emby.Server.Implementations.UserViews
             var isUsingCollectionStrip = IsUsingCollectionStrip(view);
             var recursive = isUsingCollectionStrip && !new[] { CollectionType.Channels, CollectionType.BoxSets, CollectionType.Playlists }.Contains(view.ViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
-            var result = await view.GetItems(new InternalItemsQuery
+            var result = view.GetItems(new InternalItemsQuery
             {
                 User = view.UserId.HasValue ? _userManager.GetUserById(view.UserId.Value) : null,
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
                 ExcludeItemTypes = new[] { "UserView", "CollectionFolder", "Person" },
                 DtoOptions = new DtoOptions(false)
-
-            }).ConfigureAwait(false);
+            });
 
             var items = result.Items.Select(i =>
             {

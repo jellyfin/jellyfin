@@ -1,7 +1,6 @@
 ﻿using System.Net.Sockets;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -17,6 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Common.Implementations.HttpClientManager;
+using Emby.Common.Implementations.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Common;
 

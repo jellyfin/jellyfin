@@ -125,7 +125,7 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            var url = await OmdbProvider.GetOmdbUrl(urlQuery, cancellationToken).ConfigureAwait(false);
+            var url =  OmdbProvider.GetOmdbUrl(urlQuery, cancellationToken);
 
             using (var stream = await OmdbProvider.GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {

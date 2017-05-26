@@ -985,7 +985,7 @@ namespace Emby.Server.Implementations.Session
                 var list = new List<BaseItem>();
                 foreach (var itemId in command.ItemIds)
                 {
-                    var subItems = await TranslateItemForPlayback(itemId, user).ConfigureAwait(false);
+                    var subItems = TranslateItemForPlayback(itemId, user);
                     list.AddRange(subItems);
                 }
 
@@ -1052,7 +1052,7 @@ namespace Emby.Server.Implementations.Session
             await session.SessionController.SendPlayCommand(command, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<List<BaseItem>> TranslateItemForPlayback(string id, User user)
+        private List<BaseItem> TranslateItemForPlayback(string id, User user)
         {
             var item = _libraryManager.GetItemById(id);
 
@@ -1089,7 +1089,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var folder = (Folder)item;
 
-                var itemsResult = await folder.GetItems(new InternalItemsQuery(user)
+                var itemsResult = folder.GetItems(new InternalItemsQuery(user)
                 {
                     Recursive = true,
                     IsFolder = false,
@@ -1102,7 +1102,7 @@ namespace Emby.Server.Implementations.Session
                         }
                     }
 
-                }).ConfigureAwait(false);
+                });
 
                 return FilterToSingleMediaType(itemsResult.Items)
                     .OrderBy(i => i.SortName)

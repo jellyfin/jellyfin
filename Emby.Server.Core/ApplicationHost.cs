@@ -589,7 +589,7 @@ namespace Emby.Server.Core
             FileOrganizationRepository = GetFileOrganizationRepository();
             RegisterSingleInstance(FileOrganizationRepository);
 
-            AuthenticationRepository = await GetAuthenticationRepository().ConfigureAwait(false);
+            AuthenticationRepository = GetAuthenticationRepository();
             RegisterSingleInstance(AuthenticationRepository);
 
             UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this, JsonSerializer, FileSystemManager, CryptographyProvider, _defaultUserNameFactory());
@@ -948,7 +948,7 @@ namespace Emby.Server.Core
             return repo;
         }
 
-        private async Task<IAuthenticationRepository> GetAuthenticationRepository()
+        private IAuthenticationRepository GetAuthenticationRepository()
         {
             var repo = new AuthenticationRepository(LogManager.GetLogger("AuthenticationRepository"), ServerConfigurationManager.ApplicationPaths);
 

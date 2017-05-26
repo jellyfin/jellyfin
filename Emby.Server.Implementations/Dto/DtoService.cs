@@ -24,7 +24,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Extensions;
@@ -107,7 +107,7 @@ namespace Emby.Server.Implementations.Dto
 
             foreach (var item in items)
             {
-                var dto = await GetBaseItemDtoInternal(item, options, user, owner).ConfigureAwait(false);
+                var dto = GetBaseItemDtoInternal(item, options, user, owner);
 
                 var tvChannel = item as LiveTvChannel;
                 if (tvChannel != null)
@@ -160,7 +160,7 @@ namespace Emby.Server.Implementations.Dto
         {
             var syncDictionary = GetSyncedItemProgress(options);
 
-            var dto = GetBaseItemDtoInternal(item, options, user, owner).Result;
+            var dto = GetBaseItemDtoInternal(item, options, user, owner);
             var tvChannel = item as LiveTvChannel;
             if (tvChannel != null)
             {
@@ -292,7 +292,7 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private async Task<BaseItemDto> GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
         {
             var fields = options.Fields;
 
@@ -341,7 +341,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (user != null)
             {
-                await AttachUserSpecificInfo(dto, item, user, options).ConfigureAwait(false);
+                AttachUserSpecificInfo(dto, item, user, options);
             }
 
             var hasMediaSources = item as IHasMediaSources;
@@ -402,7 +402,7 @@ namespace Emby.Server.Implementations.Dto
 
         public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, Dictionary<string, SyncedItemProgress> syncProgress, User user = null)
         {
-            var dto = GetBaseItemDtoInternal(item, options, user).Result;
+            var dto = GetBaseItemDtoInternal(item, options, user);
 
             if (taggedItems != null && options.Fields.Contains(ItemFields.ItemCounts))
             {
@@ -455,7 +455,7 @@ namespace Emby.Server.Implementations.Dto
         /// <summary>
         /// Attaches the user specific info.
         /// </summary>
-        private async Task AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, DtoOptions dtoOptions)
+        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, DtoOptions dtoOptions)
         {
             var fields = dtoOptions.Fields;
 
@@ -465,7 +465,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (dtoOptions.EnableUserData)
                 {
-                    dto.UserData = await _userDataRepository.GetUserDataDto(item, dto, user, dtoOptions.Fields).ConfigureAwait(false);
+                    dto.UserData = _userDataRepository.GetUserDataDto(item, dto, user, dtoOptions.Fields);
                 }
 
                 if (!dto.ChildCount.HasValue && item.SourceType == SourceType.Library)
@@ -497,7 +497,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 if (dtoOptions.EnableUserData)
                 {
-                    dto.UserData = await _userDataRepository.GetUserDataDto(item, user).ConfigureAwait(false);
+                    dto.UserData = _userDataRepository.GetUserDataDto(item, user);
                 }
             }
 

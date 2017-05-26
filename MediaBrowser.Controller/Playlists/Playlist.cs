@@ -82,7 +82,7 @@ namespace MediaBrowser.Controller.Playlists
 
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
-            return GetPlayableItems(user, new DtoOptions(true)).Result;
+            return GetPlayableItems(user, new DtoOptions(true));
         }
 
         protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
@@ -92,7 +92,7 @@ namespace MediaBrowser.Controller.Playlists
 
         public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
-            var items = GetPlayableItems(user, query.DtoOptions).Result;
+            var items = GetPlayableItems(user, query.DtoOptions);
 
             if (query != null)
             {
@@ -107,12 +107,12 @@ namespace MediaBrowser.Controller.Playlists
             return GetLinkedChildrenInfos();
         }
 
-        private Task<IEnumerable<BaseItem>> GetPlayableItems(User user, DtoOptions options)
+        private IEnumerable<BaseItem> GetPlayableItems(User user, DtoOptions options)
         {
             return GetPlaylistItems(MediaType, base.GetChildren(user, true), user, options);
         }
 
-        public static async Task<IEnumerable<BaseItem>> GetPlaylistItems(string playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
+        public static IEnumerable<BaseItem> GetPlaylistItems(string playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
         {
             if (user != null)
             {
@@ -123,14 +123,14 @@ namespace MediaBrowser.Controller.Playlists
 
             foreach (var item in inputItems)
             {
-                var playlistItems = await GetPlaylistItems(item, user, playlistMediaType, options).ConfigureAwait(false);
+                var playlistItems = GetPlaylistItems(item, user, playlistMediaType, options);
                 list.AddRange(playlistItems);
             }
 
             return list;
         }
 
-        private static async Task<IEnumerable<BaseItem>> GetPlaylistItems(BaseItem item, User user, string mediaType, DtoOptions options)
+        private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem item, User user, string mediaType, DtoOptions options)
         {
             var musicGenre = item as MusicGenre;
             if (musicGenre != null)
@@ -173,7 +173,7 @@ namespace MediaBrowser.Controller.Playlists
                     DtoOptions = options
                 };
 
-                var itemsResult = await folder.GetItems(query).ConfigureAwait(false);
+                var itemsResult = folder.GetItems(query);
                 var items = itemsResult.Items;
 
                 return items;

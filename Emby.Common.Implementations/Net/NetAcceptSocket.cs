@@ -108,6 +108,18 @@ namespace Emby.Common.Implementations.Net
             return completionSource.Task;
         }
 
+        public IAsyncResult BeginSendFile(string path, byte[] preBuffer, byte[] postBuffer, AsyncCallback callback, object state)
+        {
+            var options = TransmitFileOptions.UseDefaultWorkerThread;
+
+            return Socket.BeginSendFile(path, preBuffer, postBuffer, options, new AsyncCallback(FileSendCallback), state);
+        }
+
+        public void EndSendFile(IAsyncResult result)
+        {
+            Socket.EndSendFile(result);
+        }
+
         private void FileSendCallback(IAsyncResult ar)
         {
             // Retrieve the socket from the state object.

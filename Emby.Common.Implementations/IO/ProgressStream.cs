@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace MediaBrowser.Common.IO
+namespace Emby.Common.Implementations.IO
 {
     /// <summary>
     /// Measures progress when reading from a stream or writing to one
@@ -155,6 +155,21 @@ namespace MediaBrowser.Common.IO
             return read;
         }
 
+        public override int EndRead(IAsyncResult asyncResult)
+        {
+            var read = base.EndRead(asyncResult);
+
+            BytesProcessed += read;
+
+            double percent = BytesProcessed;
+            percent /= ReadLength ?? BaseStream.Length;
+            percent *= 100;
+
+            ProgressAction(percent);
+
+            return read;
+        }
+
         /// <summary>
         /// When overridden in a derived class, sets the position within the current stream.
         /// </summary>
@@ -192,6 +207,21 @@ namespace MediaBrowser.Common.IO
             percent *= 100;
 
             ProgressAction(percent);
+        }
+
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        {
+            var result = base.BeginWrite(buffer, offset, count, callback, state);
+
+            BytesProcessed += count;
+
+            double percent = BytesProcessed;
+            percent /= WriteLength;
+            percent *= 100;
+
+            ProgressAction(percent);
+
+            return result;
         }
 
         /// <summary>
