@@ -1854,10 +1854,13 @@ namespace MediaBrowser.Controller.Entities
         /// Do whatever refreshing is necessary when the filesystem pertaining to this item has changed.
         /// </summary>
         /// <returns>Task.</returns>
-        public virtual Task ChangedExternally()
+        public virtual void ChangedExternally()
         {
-            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(FileSystem), RefreshPriority.High);
-            return Task.FromResult(true);
+            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(FileSystem)
+            {
+                ValidateChildren = true,
+
+            }, RefreshPriority.High);
         }
 
         /// <summary>

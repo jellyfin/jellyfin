@@ -87,8 +87,9 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
 
         private void ProcessContext(HttpListenerContext context)
         {
-            //Task.Factory.StartNew(() => InitTask(context), TaskCreationOptions.DenyChildAttach | TaskCreationOptions.PreferFairness);
-            Task.Run(() => InitTask(context, _disposeCancellationToken));
+            _logger.Info("thread id {0}", Thread.CurrentThread.ManagedThreadId);
+            InitTask(context, _disposeCancellationToken);
+            //Task.Run(() => InitTask(context, _disposeCancellationToken));
         }
 
         private Task InitTask(HttpListenerContext context, CancellationToken cancellationToken)
