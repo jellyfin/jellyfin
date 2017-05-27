@@ -1326,19 +1326,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Folders need to validate and refresh
-        /// </summary>
-        /// <returns>Task.</returns>
-        public override async Task ChangedExternally()
-        {
-            var progress = new Progress<double>();
-
-            await ValidateChildren(progress, CancellationToken.None).ConfigureAwait(false);
-
-            await base.ChangedExternally().ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Marks the played.
         /// </summary>
         /// <param name="user">The user.</param>
