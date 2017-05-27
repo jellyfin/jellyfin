@@ -61,7 +61,7 @@ namespace MediaBrowser.Api.Playback
     {
     }
 
-    //[Authenticated]
+    [Authenticated]
     public class UniversalAudioService : BaseApiService
     {
         public UniversalAudioService(IServerConfigurationManager serverConfigurationManager, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, IDeviceManager deviceManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext, IImageProcessor imageProcessor, INetworkManager networkManager, IEnvironmentInfo environmentInfo)
