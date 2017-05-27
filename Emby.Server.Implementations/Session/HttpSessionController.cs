@@ -66,19 +66,19 @@ namespace Emby.Server.Implementations.Session
             return SendMessage(name, new Dictionary<string, string>(), cancellationToken);
         }
 
-        private async Task SendMessage(string name,
+        private Task SendMessage(string name,
             Dictionary<string, string> args,
             CancellationToken cancellationToken)
         {
             var url = PostUrl + "/" + name + ToQueryString(args);
 
-            await _httpClient.Post(new HttpRequestOptions
+            return _httpClient.Post(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
                 BufferContent = false
 
-            }).ConfigureAwait(false);
+            });
         }
 
         public Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
@@ -159,8 +159,24 @@ namespace Emby.Server.Implementations.Session
 
         public Task SendMessage<T>(string name, T data, CancellationToken cancellationToken)
         {
-            // Not supported or needed right now
-            return Task.FromResult(true);
+            var url = PostUrl + "/" + name;
+
+            var options = new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                BufferContent = false
+            };
+
+            options.RequestContent = _json.SerializeToString(data);
+            options.RequestContentType = "application/json";
+
+            return _httpClient.Post(new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                BufferContent = false
+            });
         }
 
         private string ToQueryString(Dictionary<string, string> nvc)

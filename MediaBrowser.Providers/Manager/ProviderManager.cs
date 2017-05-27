@@ -872,7 +872,7 @@ namespace MediaBrowser.Providers.Manager
                 if (!_isProcessingRefreshQueue)
                 {
                     _isProcessingRefreshQueue = true;
-                    Task.Run(() => StartProcessingRefreshQueue());
+                    Task.Run(StartProcessingRefreshQueue);
                 }
             }
         }
@@ -896,6 +896,15 @@ namespace MediaBrowser.Providers.Manager
                     {
                         // Try to throttle this a little bit.
                         await Task.Delay(100).ConfigureAwait(false);
+
+                        if (refreshItem.Item2.ValidateChildren)
+                        {
+                            var folder = item as Folder;
+                            if (folder != null)
+                            {
+                                await folder.ValidateChildren(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                            }
+                        }
 
                         var artist = item as MusicArtist;
                         var task = artist == null
