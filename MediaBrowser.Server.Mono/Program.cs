@@ -42,7 +42,6 @@ namespace MediaBrowser.Server.Mono
             var applicationPath = Assembly.GetEntryAssembly().Location;
             var appFolderPath = Path.GetDirectoryName(applicationPath);
 
-            TryCopySqliteConfigFile(appFolderPath);
             SetSqliteProvider();
 
             var options = new StartupOptions(Environment.GetCommandLineArgs());
@@ -71,20 +70,6 @@ namespace MediaBrowser.Server.Mono
                 logger.Info("Shutting down");
 
                 _appHost.Dispose();
-            }
-        }
-
-        private static void TryCopySqliteConfigFile(string appFolderPath)
-        {
-            try
-            {
-                File.Copy(Path.Combine(appFolderPath, "System.Data.SQLite.dll.config"),
-                    Path.Combine(appFolderPath, "SQLitePCLRaw.provider.sqlite3.dll.config"),
-                    true);
-            }
-            catch
-            {
-                
             }
         }
 
@@ -260,7 +245,8 @@ namespace MediaBrowser.Server.Mono
             {
                 var message = LogHelper.GetLogMessage(exception).ToString();
 
-                if (message.IndexOf("InotifyWatcher", StringComparison.OrdinalIgnoreCase) == -1)
+                if (message.IndexOf("InotifyWatcher", StringComparison.OrdinalIgnoreCase) == -1 &&
+                    message.IndexOf("_IOCompletionCallback", StringComparison.OrdinalIgnoreCase) == -1)
                 {
                     Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
                 }
