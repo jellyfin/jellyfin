@@ -20,6 +20,7 @@ namespace MediaBrowser.Model.Dlna
             int? packetLength,
             TransportStreamTimestamp? timestamp,
             bool? isAnamorphic,
+            bool? isInterlaced,
             int? refFrames,
             int? numVideoStreams,
             int? numAudioStreams,
@@ -28,6 +29,8 @@ namespace MediaBrowser.Model.Dlna
         {
             switch (condition.Property)
             {
+                case ProfileConditionValue.IsInterlaced:
+                    return IsConditionSatisfied(condition, isInterlaced);
                 case ProfileConditionValue.IsAnamorphic:
                     return IsConditionSatisfied(condition, isAnamorphic);
                 case ProfileConditionValue.IsAvc:
