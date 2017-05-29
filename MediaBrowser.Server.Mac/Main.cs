@@ -18,6 +18,8 @@ using MonoMac.AppKit;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 using Emby.Server.Core;
+using Emby.Server.Core.Cryptography;
+using Emby.Server.Core.IO;
 using Emby.Server.Implementations;
 using Emby.Common.Implementations.Logging;
 using Emby.Server.Implementations.Logging;
