@@ -105,7 +105,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
             else
             {
-                name += " " + info.StartDate.ToString("yyyy-MM-dd") + " " + info.Id;
+                name += " " + info.StartDate.ToString("yyyy-MM-dd");
             }
 
             return name;
