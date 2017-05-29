@@ -293,6 +293,7 @@ namespace MediaBrowser.Model.Dlna
             int? packetLength,
             TransportStreamTimestamp timestamp,
             bool? isAnamorphic,
+            bool? isInterlaced,
             int? refFrames,
             int? numVideoStreams,
             int? numAudioStreams,
@@ -331,7 +332,7 @@ namespace MediaBrowser.Model.Dlna
                 var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
                 {
-                    if (!conditionProcessor.IsVideoConditionSatisfied(GetModelProfileCondition(c), width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
+                    if (!conditionProcessor.IsVideoConditionSatisfied(GetModelProfileCondition(c), width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                     {
                         anyOff = true;
                         break;

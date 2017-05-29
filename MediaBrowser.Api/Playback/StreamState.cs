@@ -367,6 +367,37 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
+        public bool? IsTargetAnamorphic
+        {
+            get
+            {
+                if (Request.Static)
+                {
+                    return VideoStream == null ? null : VideoStream.IsAnamorphic;
+                }
+
+                return false;
+            }
+        }
+
+        public bool? IsTargetInterlaced
+        {
+            get
+            {
+                if (Request.Static)
+                {
+                    return VideoStream == null ? (bool?)null : VideoStream.IsInterlaced;
+                }
+
+                if (DeInterlace)
+                {
+                    return false;
+                }
+
+                return VideoStream == null ? (bool?)null : VideoStream.IsInterlaced;
+            }
+        }
+
         private int? GetMediaStreamCount(MediaStreamType type, int limit)
         {
             var count = MediaSource.GetStreamCount(type);
@@ -445,19 +476,6 @@ namespace MediaBrowser.Api.Playback
                 return !Request.Static
                     ? null
                     : stream == null ? null : stream.CodecTag;
-            }
-        }
-
-        public bool? IsTargetAnamorphic
-        {
-            get
-            {
-                if (Request.Static)
-                {
-                    return VideoStream == null ? null : VideoStream.IsAnamorphic;
-                }
-
-                return false;
             }
         }
 
