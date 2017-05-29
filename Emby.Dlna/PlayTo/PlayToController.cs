@@ -556,6 +556,7 @@ namespace Emby.Dlna.PlayTo
                     streamInfo.TargetPacketLength,
                     streamInfo.TranscodeSeekInfo,
                     streamInfo.IsTargetAnamorphic,
+                    streamInfo.IsTargetInterlaced,
                     streamInfo.TargetRefFrames,
                     streamInfo.TargetVideoStreamCount,
                     streamInfo.TargetAudioStreamCount,
