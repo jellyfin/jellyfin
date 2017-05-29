@@ -1,6 +1,4 @@
 ﻿using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Startup.Common;
-using MediaBrowser.Server.Startup.Common.IO;
 using MediaBrowser.Server.Implementations;
 using System;
 using System.Diagnostics;
@@ -27,7 +25,7 @@ using Emby.Common.Implementations.EnvironmentInfo;
 using Emby.Server.Mac.Native;
 using Emby.Server.Implementations.IO;
 using Emby.Common.Implementations.Networking;
-using Emby.Common.Implementations.Security;
+using Emby.Common.Implementations.Cryptography;
 using Mono.Unix.Native;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.IO;
