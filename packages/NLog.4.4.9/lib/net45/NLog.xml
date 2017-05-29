@@ -1959,6 +1959,22 @@
             Gets the XML element name.
             </summary>
         </member>
+        <member name="T:NLog.Config.AssemblyLoadingEventArgs">
+            <summary>
+            An assembly is trying to load. 
+            </summary>
+        </member>
+        <member name="M:NLog.Config.AssemblyLoadingEventArgs.#ctor(System.Reflection.Assembly)">
+            <summary>
+            New event args
+            </summary>
+            <param name="assembly"></param>
+        </member>
+        <member name="P:NLog.Config.AssemblyLoadingEventArgs.Assembly">
+            <summary>
+            The assembly that is trying to load.
+            </summary>
+        </member>
         <member name="T:NLog.Config.ConfigSectionHandler">
             <summary>
             NLog configuration section handler class for configuring NLog from App.config.
@@ -1983,6 +1999,8 @@
         <member name="T:NLog.Config.ConfigurationItemFactory">
             <summary>
             Provides registration information for named items (targets, layouts, layout renderers, etc.) managed by NLog.
+            
+            Everything of an assembly could be loaded by <see cref="M:NLog.Config.ConfigurationItemFactory.RegisterItemsFromAssembly(System.Reflection.Assembly)"/>
             </summary>
         </member>
         <member name="M:NLog.Config.ConfigurationItemFactory.#ctor(System.Reflection.Assembly[])">
@@ -2011,6 +2029,22 @@
             <param name="assembly">The assembly.</param>
             <param name="itemNamePrefix">Item name prefix.</param>
         </member>
+        <member name="M:NLog.Config.ConfigurationItemFactory.PreloadAssembly(System.Type[])">
+            <summary>
+            Call Preload for NLogPackageLoader
+            </summary>
+            <remarks>
+            Every package could implement a class "NLogPackageLoader" (namespace not important) with the public static method "Preload" (no arguments)
+            This method will be called just before registering all items in the assembly.
+            </remarks>
+            <param name="typesToScan"></param>
+        </member>
+        <member name="M:NLog.Config.ConfigurationItemFactory.CallPreload(System.Type)">
+            <summary>
+            Call the Preload method for <paramref name="type"/>. The Preload method must be static.
+            </summary>
+            <param name="type"></param>
+        </member>
         <member name="M:NLog.Config.ConfigurationItemFactory.Clear">
             <summary>
             Clears the contents of all factories.
@@ -2032,6 +2066,11 @@
         <member name="M:NLog.Config.ConfigurationItemFactory.RegisterExtendedItems">
             <summary>
             Registers items in NLog.Extended.dll using late-bound types, so that we don't need a reference to NLog.Extended.dll.
+            </summary>
+        </member>
+        <member name="E:NLog.Config.ConfigurationItemFactory.AssemblyLoading">
+            <summary>
+            Called before the assembly will be loaded.
             </summary>
         </member>
         <member name="P:NLog.Config.ConfigurationItemFactory.Default">
@@ -3051,19 +3090,24 @@
             </summary>
         </member>
         <member name="T:NLog.Config.ThreadAgnosticAttribute">
-            <summary>
-            Marks the layout or layout renderer as producing correct results regardless of the thread
-            it's running on.
-            </summary>
-            <remarks>
-            This is important because some layout renders should use the main thread. E.g. for using <c>HttpContext.Current</c> etc.
+             <summary>
+             Marks the layout or layout renderer as thread independent - it producing correct results 
+             regardless of the thread it's running on. 
             
-            If set to <c>true</c> then a layout will be render in the main thread, so for example in the AsyncTargetWrapper and BufferTargetWrapper with the <see cref="M:NLog.Targets.Target.PrecalculateVolatileLayouts(NLog.LogEventInfo)"/> , using <see cref="M:NLog.Layouts.Layout.Precalculate(NLog.LogEventInfo)"/>
+             Without this attribute everything is rendered on the main thread.
+             </summary>
+             <remarks>
+             If this attribute is set on a layout, it could be rendered on the another thread. 
+             This could be more efficient as it's skipped when not needed.
+             
+             If context like <c>HttpContext.Current</c> is needed, which is only available on the main thread, this attribute should not be applied.
             
-            Apply this attribute when:
-            - The result can we rendered in another thread. Delaying this could be more efficient. And/Or,
-            - The result should not be precalculated, for example the target sends some extra context information. 
-            </remarks>
+             See the AsyncTargetWrapper and BufferTargetWrapper with the <see cref="M:NLog.Targets.Target.PrecalculateVolatileLayouts(NLog.LogEventInfo)"/> , using <see cref="M:NLog.Layouts.Layout.Precalculate(NLog.LogEventInfo)"/>
+             
+             Apply this attribute when:
+             - The result can we rendered in another thread. Delaying this could be more efficient. And/Or,
+             - The result should not be precalculated, for example the target sends some extra context information. 
+             </remarks>
         </member>
         <member name="T:NLog.Config.XmlLoggingConfiguration">
              <summary>
@@ -3072,7 +3116,10 @@
              
              Parsing of the XML file is also implemented in this class.
              </summary>
-            <remarks>This class is thread-safe.<c>.ToList()</c> is used for that purpose.</remarks>
+            <remarks>
+             - This class is thread-safe.<c>.ToList()</c> is used for that purpose.
+             - Update TemplateXSD.xml for changes outside targets
+             </remarks>
         </member>
         <member name="M:NLog.Config.XmlLoggingConfiguration.#ctor(System.String)">
             <summary>
@@ -3546,6 +3593,61 @@
             </summary>
             <docgen category='Filtering Options' order='10' />
         </member>
+        <member name="T:NLog.Fluent.Log">
+            <summary>
+            A global logging class using caller info to find the logger.
+            </summary>
+        </member>
+        <member name="M:NLog.Fluent.Log.Level(NLog.LogLevel,System.String)">
+            <summary>
+            Starts building a log event with the specified <see cref="T:NLog.LogLevel"/>.
+            </summary>
+            <param name="logLevel">The log level.</param>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Trace(System.String)">
+            <summary>
+            Starts building a log event at the <c>Trace</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Debug(System.String)">
+            <summary>
+            Starts building a log event at the <c>Debug</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Info(System.String)">
+            <summary>
+            Starts building a log event at the <c>Info</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Warn(System.String)">
+            <summary>
+            Starts building a log event at the <c>Warn</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Error(System.String)">
+            <summary>
+            Starts building a log event at the <c>Error</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Fatal(System.String)">
+            <summary>
+            Starts building a log event at the <c>Fatal</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
         <member name="T:NLog.Fluent.LogBuilder">
             <summary>
             A fluent class to build log events for NLog.
@@ -3677,22 +3779,31 @@
             <param name="userStackFrame">Index of the first user stack frame within the stack trace.</param>
             <returns>current <see cref="T:NLog.Fluent.LogBuilder"/> for chaining calls.</returns>
         </member>
-        <member name="M:NLog.Fluent.LogBuilder.Write">
+        <member name="M:NLog.Fluent.LogBuilder.Write(System.String,System.String,System.Int32)">
             <summary>
             Writes the log event to the underlying logger.
             </summary>
+            <param name="callerMemberName">The method or property name of the caller to the method. This is set at by the compiler.</param>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is set at by the compiler.</param>
+            <param name="callerLineNumber">The line number in the source file at which the method is called. This is set at by the compiler.</param>
         </member>
-        <member name="M:NLog.Fluent.LogBuilder.WriteIf(System.Func{System.Boolean})">
+        <member name="M:NLog.Fluent.LogBuilder.WriteIf(System.Func{System.Boolean},System.String,System.String,System.Int32)">
             <summary>
-            Writes the log event to the underlying logger.
+            Writes the log event to the underlying logger if the condition delegate is true.
             </summary>
             <param name="condition">If condition is true, write log event; otherwise ignore event.</param>
+            <param name="callerMemberName">The method or property name of the caller to the method. This is set at by the compiler.</param>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is set at by the compiler.</param>
+            <param name="callerLineNumber">The line number in the source file at which the method is called. This is set at by the compiler.</param>
         </member>
-        <member name="M:NLog.Fluent.LogBuilder.WriteIf(System.Boolean)">
+        <member name="M:NLog.Fluent.LogBuilder.WriteIf(System.Boolean,System.String,System.String,System.Int32)">
             <summary>
-            Writes the log event to the underlying logger.
+            Writes the log event to the underlying logger if the condition is true.
             </summary>
             <param name="condition">If condition is true, write log event; otherwise ignore event.</param>
+            <param name="callerMemberName">The method or property name of the caller to the method. This is set at by the compiler.</param>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is set at by the compiler.</param>
+            <param name="callerLineNumber">The line number in the source file at which the method is called. This is set at by the compiler.</param>
         </member>
         <member name="P:NLog.Fluent.LogBuilder.LogEventInfo">
             <summary>
@@ -4368,6 +4479,46 @@
             <param name="func">Function to run.</param>
             <param name="fallback">Fallback value to return in case of exception.</param>
             <returns>Result returned by the provided function or fallback value in case of exception.</returns>
+        </member>
+        <member name="M:NLog.ISuppress.Swallow(System.Threading.Tasks.Task)">
+            <summary>
+            Logs an exception is logged at <c>Error</c> level if the provided task does not run to completion.
+            </summary>
+            <param name="task">The task for which to log an error if it does not run to completion.</param>
+            <remarks>This method is useful in fire-and-forget situations, where application logic does not depend on completion of task. This method is avoids C# warning CS4014 in such situations.</remarks>
+        </member>
+        <member name="M:NLog.ISuppress.SwallowAsync(System.Threading.Tasks.Task)">
+            <summary>
+            Returns a task that completes when a specified task to completes. If the task does not run to completion, an exception is logged at <c>Error</c> level. The returned task always runs to completion.
+            </summary>
+            <param name="task">The task for which to log an error if it does not run to completion.</param>
+            <returns>A task that completes in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state when <paramref name="task"/> completes.</returns>
+        </member>
+        <member name="M:NLog.ISuppress.SwallowAsync(System.Func{System.Threading.Tasks.Task})">
+            <summary>
+            Runs async action. If the action throws, the exception is logged at <c>Error</c> level. The exception is not propagated outside of this method.
+            </summary>
+            <param name="asyncAction">Async action to execute.</param>
+            <returns>A task that completes in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state when <paramref name="asyncAction"/> completes.</returns>
+        </member>
+        <member name="M:NLog.ISuppress.SwallowAsync``1(System.Func{System.Threading.Tasks.Task{``0}})">
+            <summary>
+            Runs the provided async function and returns its result. If the task does not run to completion, an exception is logged at <c>Error</c> level.
+            The exception is not propagated outside of this method; a default value is returned instead.
+            </summary>
+            <typeparam name="TResult">Return type of the provided function.</typeparam>
+            <param name="asyncFunc">Async function to run.</param>
+            <returns>A task that represents the completion of the supplied task. If the supplied task ends in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state, the result of the new task will be the result of the supplied task; otherwise, the result of the new task will be the default value of type <typeparamref name="TResult"/>.</returns>
+        </member>
+        <member name="M:NLog.ISuppress.SwallowAsync``1(System.Func{System.Threading.Tasks.Task{``0}},``0)">
+            <summary>
+            Runs the provided async function and returns its result. If the task does not run to completion, an exception is logged at <c>Error</c> level.
+            The exception is not propagated outside of this method; a fallback value is returned instead.
+            </summary>
+            <typeparam name="TResult">Return type of the provided function.</typeparam>
+            <param name="asyncFunc">Async function to run.</param>
+            <param name="fallback">Fallback value to return if the task does not end in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state.</param>
+            <returns>A task that represents the completion of the supplied task. If the supplied task ends in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state, the result of the new task will be the result of the supplied task; otherwise, the result of the new task will be the fallback value.</returns>
         </member>
         <member name="M:NLog.ILogger.Trace``1(``0)">
             <overloads>
@@ -6643,6 +6794,68 @@
             </summary>
             <returns>A value of <see langword="true" /> if logging is enabled for the <c>Fatal</c> level, otherwise it returns <see langword="false" />.</returns>
         </member>
+        <member name="T:NLog.ILoggerExtensions">
+            <summary>
+            Extensions for NLog <see cref="T:NLog.ILogger"/>.
+            </summary>
+        </member>
+        <member name="M:NLog.ILoggerExtensions.Log(NLog.ILogger,NLog.LogLevel,System.Exception,NLog.LogMessageGenerator)">
+            <summary>
+            Writes the diagnostic message and exception at the specified level.
+            </summary>
+            <param name="logger">A logger implementation that will handle the message.</param>
+            <param name="level">The log level.</param>
+            <param name="exception">An exception to be logged.</param>
+            <param name="messageFunc">A function returning message to be written. Function is not evaluated if logging is not enabled.</param>
+        </member>
+        <member name="M:NLog.ILoggerExtensions.Trace(NLog.ILogger,System.Exception,NLog.LogMessageGenerator)">
+            <summary>
+            Writes the diagnostic message and exception at the <c>Trace</c> level.
+            </summary>
+            <param name="logger">A logger implementation that will handle the message.</param>
+            <param name="exception">An exception to be logged.</param>
+            <param name="messageFunc">A function returning message to be written. Function is not evaluated if logging is not enabled.</param>
+        </member>
+        <member name="M:NLog.ILoggerExtensions.Debug(NLog.ILogger,System.Exception,NLog.LogMessageGenerator)">
+            <summary>
+            Writes the diagnostic message and exception at the <c>Debug</c> level.
+            </summary>
+            <param name="logger">A logger implementation that will handle the message.</param>
+            <param name="exception">An exception to be logged.</param>
+            <param name="messageFunc">A function returning message to be written. Function is not evaluated if logging is not enabled.</param>
+        </member>
+        <member name="M:NLog.ILoggerExtensions.Info(NLog.ILogger,System.Exception,NLog.LogMessageGenerator)">
+            <summary>
+            Writes the diagnostic message and exception at the <c>Info</c> level.
+            </summary>
+            <param name="logger">A logger implementation that will handle the message.</param>
+            <param name="exception">An exception to be logged.</param>
+            <param name="messageFunc">A function returning message to be written. Function is not evaluated if logging is not enabled.</param>
+        </member>
+        <member name="M:NLog.ILoggerExtensions.Warn(NLog.ILogger,System.Exception,NLog.LogMessageGenerator)">
+            <summary>
+            Writes the diagnostic message and exception at the <c>Warn</c> level.
+            </summary>
+            <param name="logger">A logger implementation that will handle the message.</param>
+            <param name="exception">An exception to be logged.</param>
+            <param name="messageFunc">A function returning message to be written. Function is not evaluated if logging is not enabled.</param>
+        </member>
+        <member name="M:NLog.ILoggerExtensions.Error(NLog.ILogger,System.Exception,NLog.LogMessageGenerator)">
+            <summary>
+            Writes the diagnostic message and exception at the <c>Error</c> level.
+            </summary>
+            <param name="logger">A logger implementation that will handle the message.</param>
+            <param name="exception">An exception to be logged.</param>
+            <param name="messageFunc">A function returning message to be written. Function is not evaluated if logging is not enabled.</param>
+        </member>
+        <member name="M:NLog.ILoggerExtensions.Fatal(NLog.ILogger,System.Exception,NLog.LogMessageGenerator)">
+            <summary>
+            Writes the diagnostic message and exception at the <c>Fatal</c> level.
+            </summary>
+            <param name="logger">A logger implementation that will handle the message.</param>
+            <param name="exception">An exception to be logged.</param>
+            <param name="messageFunc">A function returning message to be written. Function is not evaluated if logging is not enabled.</param>
+        </member>
         <member name="T:NLog.Internal.AppendBuilderCreator">
             <summary>
             Allocates new builder and appends to the provided target builder on dispose
@@ -8079,11 +8292,6 @@
              we strongly recommend you use https://github.com/jstedfast/MailKit and https://github.com/jstedfast/MimeKit instead'	
             </remarks>
         </member>
-        <member name="M:NLog.Internal.MySmtpClient.Dispose">
-            <summary>
-            Sends a QUIT message to the SMTP server, gracefully ends the TCP connection, and releases all resources used by the current instance of the <see cref="T:System.Net.Mail.SmtpClient"/> class.
-            </summary>
-        </member>
         <member name="T:NLog.Internal.NetworkSenders.HttpNetworkSender">
             <summary>
             Network sender which uses HTTP or HTTPS POST.
@@ -8612,18 +8820,23 @@
             Controls a single allocated AsyncLogEventInfo-List for reuse (only one active user)
             </summary>
         </member>
-        <member name="F:NLog.Internal.ReusableAsyncLogEventList.None">
+        <member name="T:NLog.Internal.ReusableObjectCreator`1">
+            <summary>
+            Controls a single allocated object for reuse (only one active user)
+            </summary>
+        </member>
+        <member name="F:NLog.Internal.ReusableObjectCreator`1.None">
             <summary>Empty handle when <see cref="P:NLog.Targets.Target.OptimizeBufferReuse"/> is disabled</summary>
         </member>
-        <member name="M:NLog.Internal.ReusableAsyncLogEventList.Allocate">
+        <member name="M:NLog.Internal.ReusableObjectCreator`1.Allocate">
             <summary>
-            Creates handle to the reusable AsyncLogEventInfo-List for active usage
+            Creates handle to the reusable char[]-buffer for active usage
             </summary>
             <returns>Handle to the reusable item, that can release it again</returns>
         </member>
-        <member name="F:NLog.Internal.ReusableAsyncLogEventList.LockList.Result">
+        <member name="F:NLog.Internal.ReusableObjectCreator`1.LockOject.Result">
             <summary>
-            Access the AsyncLogEventInfo[]-buffer acquired
+            Access the MemoryStream acquired
             </summary>
         </member>
         <member name="T:NLog.Internal.ReusableBufferCreator">
@@ -8631,56 +8844,14 @@
             Controls a single allocated char[]-buffer for reuse (only one active user)
             </summary>
         </member>
-        <member name="F:NLog.Internal.ReusableBufferCreator.None">
-            <summary>Empty handle when <see cref="P:NLog.Targets.Target.OptimizeBufferReuse"/> is disabled</summary>
-        </member>
-        <member name="M:NLog.Internal.ReusableBufferCreator.Allocate">
-            <summary>
-            Creates handle to the reusable char[]-buffer for active usage
-            </summary>
-            <returns>Handle to the reusable item, that can release it again</returns>
-        </member>
-        <member name="F:NLog.Internal.ReusableBufferCreator.LockBuffer.Result">
-            <summary>
-            Access the char[]-buffer acquired
-            </summary>
-        </member>
         <member name="T:NLog.Internal.ReusableBuilderCreator">
             <summary>
             Controls a single allocated StringBuilder for reuse (only one active user)
             </summary>
         </member>
-        <member name="F:NLog.Internal.ReusableBuilderCreator.None">
-            <summary>Empty handle when <see cref="P:NLog.Targets.Target.OptimizeBufferReuse"/> is disabled</summary>
-        </member>
-        <member name="M:NLog.Internal.ReusableBuilderCreator.Allocate">
-            <summary>
-            Creates handle to the reusable StringBuilder for active usage
-            </summary>
-            <returns>Handle to the reusable item, that can release it again</returns>
-        </member>
-        <member name="F:NLog.Internal.ReusableBuilderCreator.LockBuilder.Result">
-            <summary>
-            Access the StringBuilder acquired
-            </summary>
-        </member>
         <member name="T:NLog.Internal.ReusableStreamCreator">
             <summary>
             Controls a single allocated MemoryStream for reuse (only one active user)
-            </summary>
-        </member>
-        <member name="F:NLog.Internal.ReusableStreamCreator.None">
-            <summary>Empty handle when <see cref="P:NLog.Targets.Target.OptimizeBufferReuse"/> is disabled</summary>
-        </member>
-        <member name="M:NLog.Internal.ReusableStreamCreator.Allocate">
-            <summary>
-            Creates handle to the reusable MemoryStream for active usage
-            </summary>
-            <returns>Handle to the reusable item, that can release it again</returns>
-        </member>
-        <member name="F:NLog.Internal.ReusableStreamCreator.LockStream.Result">
-            <summary>
-            Access the MemoryStream acquired
             </summary>
         </member>
         <member name="T:NLog.Internal.RuntimeOS">
@@ -9063,12 +9234,13 @@
             </summary>
             <returns>Allocated slot key.</returns>
         </member>
-        <member name="M:NLog.Internal.ThreadLocalStorageHelper.GetDataForSlot``1(System.Object)">
+        <member name="M:NLog.Internal.ThreadLocalStorageHelper.GetDataForSlot``1(System.Object,System.Boolean)">
             <summary>
             Gets the data for a slot in thread-local storage.
             </summary>
             <typeparam name="T">Type of the data.</typeparam>
             <param name="slot">The slot to get data for.</param>
+            <param name="create">Automatically create the object if it doesn't exist.</param>
             <returns>
             Slot data (will create T if null).
             </returns>
@@ -9174,6 +9346,35 @@
             <summary>
             removes any unusual unicode characters that can't be encoded into XML
             </summary>
+        </member>
+        <member name="M:NLog.Internal.XmlHelper.CreateValidXmlString(System.String)">
+            <summary>
+            Cleans string of any invalid XML chars found
+            </summary>
+            <param name="text">unclean string</param>
+            <returns>string with only valid XML chars</returns>
+        </member>
+        <member name="M:NLog.Internal.XmlHelper.XmlConvertToStringSafe(System.Object)">
+            <summary>
+            Converts object value to invariant format, and strips any invalid xml-characters
+            </summary>
+            <param name="value">Object value</param>
+            <returns>Object value converted to string</returns>
+        </member>
+        <member name="M:NLog.Internal.XmlHelper.XmlConvertToString(System.Object)">
+            <summary>
+            Converts object value to invariant format (understood by JavaScript)
+            </summary>
+            <param name="value">Object value</param>
+            <returns>Object value converted to string</returns>
+        </member>
+        <member name="M:NLog.Internal.XmlHelper.XmlConvertToString(System.Object,System.TypeCode@)">
+            <summary>
+            Converts object value to invariant format (understood by JavaScript)
+            </summary>
+            <param name="value">Object value</param>
+            <param name="objTypeCode">Object TypeCode</param>
+            <returns>Object value converted to string</returns>
         </member>
         <member name="M:NLog.Internal.XmlHelper.WriteAttributeSafeString(System.Xml.XmlWriter,System.String,System.String,System.String,System.String)">
             <summary>
@@ -9358,11 +9559,32 @@
             <param name="builder">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
             <param name="logEvent">Logging event.</param>
         </member>
+        <member name="F:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.CallerInformationAttributeNames">
+            <summary>
+            The names of caller information attributes.
+            https://msdn.microsoft.com/en-us/library/hh534540.aspx
+            </summary>
+        </member>
+        <member name="M:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.GetProperties(NLog.LogEventInfo)">
+             <summary>
+             Also render the call attributes? (<see cref="T:System.Runtime.CompilerServices.CallerMemberNameAttribute"/>,
+             <see cref="T:System.Runtime.CompilerServices.CallerFilePathAttribute"/>, <see cref="T:System.Runtime.CompilerServices.CallerLineNumberAttribute"/>). 
+             </summary>
+            
+        </member>
         <member name="P:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.Separator">
             <summary>
             Gets or sets string that will be used to separate key/value pairs.
             </summary>
             <docgen category='Rendering Options' order='10' />
+        </member>
+        <member name="P:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.IncludeCallerInformation">
+            <summary>
+            Also render the caller information attributes? (<see cref="T:System.Runtime.CompilerServices.CallerMemberNameAttribute"/>,
+            <see cref="T:System.Runtime.CompilerServices.CallerFilePathAttribute"/>, <see cref="T:System.Runtime.CompilerServices.CallerLineNumberAttribute"/>). 
+            
+            See https://msdn.microsoft.com/en-us/library/hh534540.aspx
+            </summary>
         </member>
         <member name="P:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.Format">
             <summary>
@@ -10082,6 +10304,26 @@
             </summary>
             <param name="name">Name of the layout renderer, without the `${ }`</param>
         </member>
+        <member name="T:NLog.LayoutRenderers.LevelFormat">
+            <summary>
+            Format of the ${level} layout renderer output.
+            </summary>
+        </member>
+        <member name="F:NLog.LayoutRenderers.LevelFormat.Name">
+            <summary>
+            Render the full level name.
+            </summary>
+        </member>
+        <member name="F:NLog.LayoutRenderers.LevelFormat.FirstCharacter">
+            <summary>
+            Render the first character of the level.
+            </summary>
+        </member>
+        <member name="F:NLog.LayoutRenderers.LevelFormat.Ordinal">
+            <summary>
+            Render the ordinal (aka number) for the level.
+            </summary>
+        </member>
         <member name="T:NLog.LayoutRenderers.LevelLayoutRenderer">
             <summary>
             The log level.
@@ -10093,6 +10335,11 @@
             </summary>
             <param name="builder">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
             <param name="logEvent">Logging event.</param>
+        </member>
+        <member name="P:NLog.LayoutRenderers.LevelLayoutRenderer.Format">
+            <summary>
+            Gets or sets a value indicating the output format of the level.
+            </summary>
         </member>
         <member name="T:NLog.LayoutRenderers.LiteralLayoutRenderer">
             <summary>
@@ -10186,6 +10433,18 @@
             </summary>
             <docgen category="Payload Options" order="10"/>
         </member>
+        <member name="P:NLog.LayoutRenderers.Log4JXmlEventLayoutRenderer.IncludeMdlc">
+            <summary>
+            Gets or sets a value indicating whether to include contents of the <see cref="T:NLog.MappedDiagnosticsLogicalContext"/> dictionary.
+            </summary>
+            <docgen category="Payload Options" order="10"/>
+        </member>
+        <member name="P:NLog.LayoutRenderers.Log4JXmlEventLayoutRenderer.IncludeAllProperties">
+            <summary>
+            Gets or sets the option to include all properties from the log events
+            </summary>
+            <docgen category='Payload Options' order='10' />
+        </member>
         <member name="P:NLog.LayoutRenderers.Log4JXmlEventLayoutRenderer.IncludeNdc">
             <summary>
             Gets or sets a value indicating whether to include contents of the <see cref="T:NLog.NestedDiagnosticsContext"/> stack.
@@ -10269,6 +10528,24 @@
             <param name="logEvent">Logging event.</param>
         </member>
         <member name="P:NLog.LayoutRenderers.MdcLayoutRenderer.Item">
+            <summary>
+            Gets or sets the name of the item.
+            </summary>
+            <docgen category='Rendering Options' order='10' />
+        </member>
+        <member name="T:NLog.LayoutRenderers.MdlcLayoutRenderer">
+            <summary>
+            Mapped Diagnostic Logical Context item (based on CallContext).
+            </summary>
+        </member>
+        <member name="M:NLog.LayoutRenderers.MdlcLayoutRenderer.Append(System.Text.StringBuilder,NLog.LogEventInfo)">
+            <summary>
+            Renders the specified MDLC item and appends it to the specified <see cref="T:System.Text.StringBuilder"/>.
+            </summary>
+            <param name="builder">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
+            <param name="logEvent">Logging event.</param>
+        </member>
+        <member name="P:NLog.LayoutRenderers.MdlcLayoutRenderer.Item">
             <summary>
             Gets or sets the name of the item.
             </summary>
@@ -10822,6 +11099,12 @@
             </summary>
             <remarks>Default value wasn't a Layout before and needed an escape of the slash</remarks>
         </member>
+        <member name="P:NLog.LayoutRenderers.RegistryLayoutRenderer.View">
+            <summary>
+            Gets or sets the registry view (see: https://msdn.microsoft.com/de-de/library/microsoft.win32.registryview.aspx). 
+            Allowed values: Registry32, Registry64, Default 
+            </summary>
+        </member>
         <member name="P:NLog.LayoutRenderers.RegistryLayoutRenderer.Key">
              <summary>
              Gets or sets the registry key.
@@ -11340,6 +11623,12 @@
             </summary>
             <docgen category="Transformation Options" order="10"/>
         </member>
+        <member name="P:NLog.LayoutRenderers.Wrappers.JsonEncodeLayoutRendererWrapper.EscapeUnicode">
+            <summary>
+            Gets or sets a value indicating whether to escape non-ascii characters
+            </summary>
+            <docgen category="Transformation Options" order="10"/>
+        </member>
         <member name="T:NLog.LayoutRenderers.Wrappers.LowercaseLayoutRendererWrapper">
             <summary>
             Converts the result of another layout output to lower case.
@@ -11802,12 +12091,6 @@
             Is this layout initialized? See <see cref="M:NLog.Layouts.Layout.Initialize(NLog.Config.LoggingConfiguration)"/>
             </summary>
         </member>
-        <member name="F:NLog.Layouts.Layout.threadAgnostic">
-            <summary>
-            Does the layout contains threadAgnostic layout renders? If contains non-threadAgnostic-layoutrendender, then this layout is also not threadAgnostic. 
-            See <see cref="P:NLog.Layouts.Layout.IsThreadAgnostic"/> and <see cref="M:NLog.Layouts.Layout.Initialize(NLog.Config.LoggingConfiguration)"/>.
-            </summary>
-        </member>
         <member name="M:NLog.Layouts.Layout.op_Implicit(System.String)~NLog.Layouts.Layout">
             <summary>
             Converts a given text to a <see cref="T:NLog.Layouts.Layout"/>.
@@ -11930,15 +12213,21 @@
             <param name="layoutType"> Type of the Layout.</param>
             <param name="name"> Name of the Layout.</param>
         </member>
-        <member name="P:NLog.Layouts.Layout.IsThreadAgnostic">
+        <member name="P:NLog.Layouts.Layout.ThreadAgnostic">
             <summary>
             Gets a value indicating whether this layout is thread-agnostic (can be rendered on any thread).
             </summary>
             <remarks>
             Layout is thread-agnostic if it has been marked with [ThreadAgnostic] attribute and all its children are
             like that as well.
+            
             Thread-agnostic layouts only use contents of <see cref="T:NLog.LogEventInfo"/> for its output.
             </remarks>
+        </member>
+        <member name="P:NLog.Layouts.Layout.StackTraceUsage">
+            <summary>
+            Gets the level of stack trace information required for rendering.
+            </summary>
         </member>
         <member name="P:NLog.Layouts.Layout.LoggingConfiguration">
             <summary>
@@ -12245,6 +12534,11 @@
             Determines wether or not this attribute will be Json encoded.
             </summary>
         </member>
+        <member name="P:NLog.Layouts.JsonAttribute.EscapeUnicode">
+            <summary>
+            Gets or sets a value indicating whether to escape non-ascii characters
+            </summary>
+        </member>
         <member name="T:NLog.Layouts.JsonLayout">
             <summary>
             A specialized layout that renders JSON-formatted events.
@@ -12342,6 +12636,24 @@
             <summary>
             Gets the <see cref="T:NLog.LayoutRenderers.Log4JXmlEventLayoutRenderer"/> instance that renders log events.
             </summary>
+        </member>
+        <member name="P:NLog.Layouts.Log4JXmlEventLayout.IncludeMdc">
+            <summary>
+            Gets or sets a value indicating whether to include contents of the <see cref="T:NLog.MappedDiagnosticsContext"/> dictionary.
+            </summary>
+            <docgen category="Payload Options" order="10"/>
+        </member>
+        <member name="P:NLog.Layouts.Log4JXmlEventLayout.IncludeMdlc">
+            <summary>
+            Gets or sets a value indicating whether to include contents of the <see cref="T:NLog.MappedDiagnosticsLogicalContext"/> dictionary.
+            </summary>
+            <docgen category="Payload Options" order="10"/>
+        </member>
+        <member name="P:NLog.Layouts.Log4JXmlEventLayout.IncludeAllProperties">
+            <summary>
+            Gets or sets the option to include all properties from the log events
+            </summary>
+            <docgen category='Payload Options' order='10' />
         </member>
         <member name="T:NLog.Layouts.SimpleLayout">
             <summary>
@@ -12468,7 +12780,6 @@
             <summary>
             Gets the level of stack trace information required for rendering.
             </summary>
-            <remarks>Calculated when setting <see cref="P:NLog.Layouts.SimpleLayout.Renderers"/>.</remarks>
         </member>
         <member name="T:NLog.LogEventInfo">
             <summary>
@@ -13070,9 +13381,6 @@
             Provides logging interface and utility functions.
             </summary>
             <summary>
-            Provides logging interface and utility functions.
-            </summary>
-            <summary>
             Logging methods which only are executed when the DEBUG conditional compilation symbol is set.
             </summary>
             <remarks>
@@ -13083,6 +13391,9 @@
             
             See: https://msdn.microsoft.com/en-us/library/4xssyw96%28v=vs.90%29.aspx
             </remarks>
+            <summary>
+            Provides logging interface and utility functions.
+            </summary>
             <content>
             Auto-generated Logger members for binary compatibility with NLog 1.0.
             </content>
@@ -13294,11 +13605,660 @@
             <param name="fallback">Fallback value to return in case of exception.</param>
             <returns>Result returned by the provided function or fallback value in case of exception.</returns>
         </member>
+        <member name="M:NLog.Logger.Swallow(System.Threading.Tasks.Task)">
+            <summary>
+            Logs an exception is logged at <c>Error</c> level if the provided task does not run to completion.
+            </summary>
+            <param name="task">The task for which to log an error if it does not run to completion.</param>
+            <remarks>This method is useful in fire-and-forget situations, where application logic does not depend on completion of task. This method is avoids C# warning CS4014 in such situations.</remarks>
+        </member>
+        <member name="M:NLog.Logger.SwallowAsync(System.Threading.Tasks.Task)">
+            <summary>
+            Returns a task that completes when a specified task to completes. If the task does not run to completion, an exception is logged at <c>Error</c> level. The returned task always runs to completion.
+            </summary>
+            <param name="task">The task for which to log an error if it does not run to completion.</param>
+            <returns>A task that completes in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state when <paramref name="task"/> completes.</returns>
+        </member>
+        <member name="M:NLog.Logger.SwallowAsync(System.Func{System.Threading.Tasks.Task})">
+            <summary>
+            Runs async action. If the action throws, the exception is logged at <c>Error</c> level. The exception is not propagated outside of this method.
+            </summary>
+            <param name="asyncAction">Async action to execute.</param>
+        </member>
+        <member name="M:NLog.Logger.SwallowAsync``1(System.Func{System.Threading.Tasks.Task{``0}})">
+            <summary>
+            Runs the provided async function and returns its result. If the task does not run to completion, an exception is logged at <c>Error</c> level.
+            The exception is not propagated outside of this method; a default value is returned instead.
+            </summary>
+            <typeparam name="TResult">Return type of the provided function.</typeparam>
+            <param name="asyncFunc">Async function to run.</param>
+            <returns>A task that represents the completion of the supplied task. If the supplied task ends in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state, the result of the new task will be the result of the supplied task; otherwise, the result of the new task will be the default value of type <typeparamref name="TResult"/>.</returns>
+        </member>
+        <member name="M:NLog.Logger.SwallowAsync``1(System.Func{System.Threading.Tasks.Task{``0}},``0)">
+            <summary>
+            Runs the provided async function and returns its result. If the task does not run to completion, an exception is logged at <c>Error</c> level.
+            The exception is not propagated outside of this method; a fallback value is returned instead.
+            </summary>
+            <typeparam name="TResult">Return type of the provided function.</typeparam>
+            <param name="asyncFunc">Async function to run.</param>
+            <param name="fallback">Fallback value to return if the task does not end in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state.</param>
+            <returns>A task that represents the completion of the supplied task. If the supplied task ends in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state, the result of the new task will be the result of the supplied task; otherwise, the result of the new task will be the fallback value.</returns>
+        </member>
         <member name="M:NLog.Logger.OnLoggerReconfigured(System.EventArgs)">
             <summary>
             Raises the event when the logger is reconfigured. 
             </summary>
             <param name="e">Event arguments</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug``1(``0)">
+            <overloads>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified format provider and format parameters.
+            </overloads>
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="T">Type of the value.</typeparam>
+            <param name="value">The value to be written.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug``1(System.IFormatProvider,``0)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="T">Type of the value.</typeparam>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="value">The value to be written.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(NLog.LogMessageGenerator)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="messageFunc">A function returning message to be written. Function is not evaluated if logging is not enabled.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.Exception,System.String,System.Object[])">
+            <summary>
+            Writes the diagnostic message and exception at the <c>Debug</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> to be written.</param>
+            <param name="exception">An exception to be logged.</param>
+            <param name="args">Arguments to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.Exception,System.IFormatProvider,System.String,System.Object[])">
+            <summary>
+            Writes the diagnostic message and exception at the <c>Debug</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> to be written.</param>
+            <param name="exception">An exception to be logged.</param>
+            <param name="args">Arguments to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Object[])">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified parameters and formatting them with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing format items.</param>
+            <param name="args">Arguments to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.String)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">Log message.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Object[])">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified parameters.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing format items.</param>
+            <param name="args">Arguments to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug``1(System.IFormatProvider,System.String,``0)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="TArgument">The type of the argument.</typeparam>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug``1(System.String,``0)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="TArgument">The type of the argument.</typeparam>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug``2(System.IFormatProvider,System.String,``0,``1)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified arguments formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="TArgument1">The type of the first argument.</typeparam>
+            <typeparam name="TArgument2">The type of the second argument.</typeparam>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument1">The first argument to format.</param>
+            <param name="argument2">The second argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug``2(System.String,``0,``1)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified parameters.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="TArgument1">The type of the first argument.</typeparam>
+            <typeparam name="TArgument2">The type of the second argument.</typeparam>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument1">The first argument to format.</param>
+            <param name="argument2">The second argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug``3(System.IFormatProvider,System.String,``0,``1,``2)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified arguments formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="TArgument1">The type of the first argument.</typeparam>
+            <typeparam name="TArgument2">The type of the second argument.</typeparam>
+            <typeparam name="TArgument3">The type of the third argument.</typeparam>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument1">The first argument to format.</param>
+            <param name="argument2">The second argument to format.</param>
+            <param name="argument3">The third argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug``3(System.String,``0,``1,``2)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified parameters.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="TArgument1">The type of the first argument.</typeparam>
+            <typeparam name="TArgument2">The type of the second argument.</typeparam>
+            <typeparam name="TArgument3">The type of the third argument.</typeparam>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument1">The first argument to format.</param>
+            <param name="argument2">The second argument to format.</param>
+            <param name="argument3">The third argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.Object)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="value">A <see langword="object" /> to be written.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.Object)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="value">A <see langword="object" /> to be written.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Object,System.Object)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified parameters.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing format items.</param>
+            <param name="arg1">First argument to format.</param>
+            <param name="arg2">Second argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Object,System.Object,System.Object)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified parameters.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing format items.</param>
+            <param name="arg1">First argument to format.</param>
+            <param name="arg2">Second argument to format.</param>
+            <param name="arg3">Third argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Boolean)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Boolean)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Char)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Char)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Byte)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Byte)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.String)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.String)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Int32)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Int32)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Int64)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Int64)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Single)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Single)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Double)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Double)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Decimal)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Decimal)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Object)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Object)">
+            <summary>
+            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace``1(``0)">
+            <overloads>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified format provider and format parameters.
+            </overloads>
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="T">Type of the value.</typeparam>
+            <param name="value">The value to be written.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace``1(System.IFormatProvider,``0)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="T">Type of the value.</typeparam>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="value">The value to be written.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(NLog.LogMessageGenerator)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="messageFunc">A function returning message to be written. Function is not evaluated if logging is not enabled.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.Exception,System.String,System.Object[])">
+            <summary>
+            Writes the diagnostic message and exception at the <c>Trace</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> to be written.</param>
+            <param name="exception">An exception to be logged.</param>
+            <param name="args">Arguments to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.Exception,System.IFormatProvider,System.String,System.Object[])">
+            <summary>
+            Writes the diagnostic message and exception at the <c>Trace</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> to be written.</param>
+            <param name="exception">An exception to be logged.</param>
+            <param name="args">Arguments to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Object[])">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified parameters and formatting them with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing format items.</param>
+            <param name="args">Arguments to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.String)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">Log message.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Object[])">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified parameters.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing format items.</param>
+            <param name="args">Arguments to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace``1(System.IFormatProvider,System.String,``0)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="TArgument">The type of the argument.</typeparam>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace``1(System.String,``0)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="TArgument">The type of the argument.</typeparam>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace``2(System.IFormatProvider,System.String,``0,``1)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified arguments formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="TArgument1">The type of the first argument.</typeparam>
+            <typeparam name="TArgument2">The type of the second argument.</typeparam>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument1">The first argument to format.</param>
+            <param name="argument2">The second argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace``2(System.String,``0,``1)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified parameters.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="TArgument1">The type of the first argument.</typeparam>
+            <typeparam name="TArgument2">The type of the second argument.</typeparam>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument1">The first argument to format.</param>
+            <param name="argument2">The second argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace``3(System.IFormatProvider,System.String,``0,``1,``2)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified arguments formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="TArgument1">The type of the first argument.</typeparam>
+            <typeparam name="TArgument2">The type of the second argument.</typeparam>
+            <typeparam name="TArgument3">The type of the third argument.</typeparam>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument1">The first argument to format.</param>
+            <param name="argument2">The second argument to format.</param>
+            <param name="argument3">The third argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace``3(System.String,``0,``1,``2)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified parameters.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <typeparam name="TArgument1">The type of the first argument.</typeparam>
+            <typeparam name="TArgument2">The type of the second argument.</typeparam>
+            <typeparam name="TArgument3">The type of the third argument.</typeparam>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument1">The first argument to format.</param>
+            <param name="argument2">The second argument to format.</param>
+            <param name="argument3">The third argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.Object)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="value">A <see langword="object" /> to be written.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.Object)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="value">A <see langword="object" /> to be written.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Object,System.Object)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified parameters.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing format items.</param>
+            <param name="arg1">First argument to format.</param>
+            <param name="arg2">Second argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Object,System.Object,System.Object)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified parameters.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing format items.</param>
+            <param name="arg1">First argument to format.</param>
+            <param name="arg2">Second argument to format.</param>
+            <param name="arg3">Third argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Boolean)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Boolean)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Char)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Char)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Byte)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Byte)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.String)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.String)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Int32)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Int32)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Int64)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Int64)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Single)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Single)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Double)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Double)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Decimal)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Decimal)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Object)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
+        </member>
+        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Object)">
+            <summary>
+            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
+            Only executed when the DEBUG conditional compilation symbol is set.</summary>
+            <param name="message">A <see langword="string" /> containing one format item.</param>
+            <param name="argument">The argument to format.</param>
         </member>
         <member name="M:NLog.Logger.Trace``1(``0)">
             <overloads>
@@ -14187,616 +15147,6 @@
             <param name="argument1">The first argument to format.</param>
             <param name="argument2">The second argument to format.</param>
             <param name="argument3">The third argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug``1(``0)">
-            <overloads>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified format provider and format parameters.
-            </overloads>
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="T">Type of the value.</typeparam>
-            <param name="value">The value to be written.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug``1(System.IFormatProvider,``0)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="T">Type of the value.</typeparam>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="value">The value to be written.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(NLog.LogMessageGenerator)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="messageFunc">A function returning message to be written. Function is not evaluated if logging is not enabled.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.Exception,System.String,System.Object[])">
-            <summary>
-            Writes the diagnostic message and exception at the <c>Debug</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> to be written.</param>
-            <param name="exception">An exception to be logged.</param>
-            <param name="args">Arguments to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.Exception,System.IFormatProvider,System.String,System.Object[])">
-            <summary>
-            Writes the diagnostic message and exception at the <c>Debug</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> to be written.</param>
-            <param name="exception">An exception to be logged.</param>
-            <param name="args">Arguments to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Object[])">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified parameters and formatting them with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing format items.</param>
-            <param name="args">Arguments to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.String)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">Log message.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Object[])">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified parameters.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing format items.</param>
-            <param name="args">Arguments to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug``1(System.IFormatProvider,System.String,``0)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="TArgument">The type of the argument.</typeparam>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug``1(System.String,``0)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="TArgument">The type of the argument.</typeparam>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug``2(System.IFormatProvider,System.String,``0,``1)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified arguments formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="TArgument1">The type of the first argument.</typeparam>
-            <typeparam name="TArgument2">The type of the second argument.</typeparam>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument1">The first argument to format.</param>
-            <param name="argument2">The second argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug``2(System.String,``0,``1)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified parameters.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="TArgument1">The type of the first argument.</typeparam>
-            <typeparam name="TArgument2">The type of the second argument.</typeparam>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument1">The first argument to format.</param>
-            <param name="argument2">The second argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug``3(System.IFormatProvider,System.String,``0,``1,``2)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified arguments formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="TArgument1">The type of the first argument.</typeparam>
-            <typeparam name="TArgument2">The type of the second argument.</typeparam>
-            <typeparam name="TArgument3">The type of the third argument.</typeparam>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument1">The first argument to format.</param>
-            <param name="argument2">The second argument to format.</param>
-            <param name="argument3">The third argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug``3(System.String,``0,``1,``2)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified parameters.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="TArgument1">The type of the first argument.</typeparam>
-            <typeparam name="TArgument2">The type of the second argument.</typeparam>
-            <typeparam name="TArgument3">The type of the third argument.</typeparam>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument1">The first argument to format.</param>
-            <param name="argument2">The second argument to format.</param>
-            <param name="argument3">The third argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.Object)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="value">A <see langword="object" /> to be written.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.Object)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="value">A <see langword="object" /> to be written.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Object,System.Object)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified parameters.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing format items.</param>
-            <param name="arg1">First argument to format.</param>
-            <param name="arg2">Second argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Object,System.Object,System.Object)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified parameters.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing format items.</param>
-            <param name="arg1">First argument to format.</param>
-            <param name="arg2">Second argument to format.</param>
-            <param name="arg3">Third argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Boolean)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Boolean)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Char)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Char)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Byte)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Byte)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.String)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.String)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Int32)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Int32)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Int64)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Int64)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Single)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Single)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Double)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Double)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Decimal)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Decimal)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.IFormatProvider,System.String,System.Object)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalDebug(System.String,System.Object)">
-            <summary>
-            Writes the diagnostic message at the <c>Debug</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace``1(``0)">
-            <overloads>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified format provider and format parameters.
-            </overloads>
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="T">Type of the value.</typeparam>
-            <param name="value">The value to be written.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace``1(System.IFormatProvider,``0)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="T">Type of the value.</typeparam>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="value">The value to be written.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(NLog.LogMessageGenerator)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="messageFunc">A function returning message to be written. Function is not evaluated if logging is not enabled.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.Exception,System.String,System.Object[])">
-            <summary>
-            Writes the diagnostic message and exception at the <c>Trace</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> to be written.</param>
-            <param name="exception">An exception to be logged.</param>
-            <param name="args">Arguments to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.Exception,System.IFormatProvider,System.String,System.Object[])">
-            <summary>
-            Writes the diagnostic message and exception at the <c>Trace</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> to be written.</param>
-            <param name="exception">An exception to be logged.</param>
-            <param name="args">Arguments to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Object[])">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified parameters and formatting them with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing format items.</param>
-            <param name="args">Arguments to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.String)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">Log message.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Object[])">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified parameters.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing format items.</param>
-            <param name="args">Arguments to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace``1(System.IFormatProvider,System.String,``0)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="TArgument">The type of the argument.</typeparam>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace``1(System.String,``0)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="TArgument">The type of the argument.</typeparam>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace``2(System.IFormatProvider,System.String,``0,``1)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified arguments formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="TArgument1">The type of the first argument.</typeparam>
-            <typeparam name="TArgument2">The type of the second argument.</typeparam>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument1">The first argument to format.</param>
-            <param name="argument2">The second argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace``2(System.String,``0,``1)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified parameters.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="TArgument1">The type of the first argument.</typeparam>
-            <typeparam name="TArgument2">The type of the second argument.</typeparam>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument1">The first argument to format.</param>
-            <param name="argument2">The second argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace``3(System.IFormatProvider,System.String,``0,``1,``2)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified arguments formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="TArgument1">The type of the first argument.</typeparam>
-            <typeparam name="TArgument2">The type of the second argument.</typeparam>
-            <typeparam name="TArgument3">The type of the third argument.</typeparam>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument1">The first argument to format.</param>
-            <param name="argument2">The second argument to format.</param>
-            <param name="argument3">The third argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace``3(System.String,``0,``1,``2)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified parameters.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <typeparam name="TArgument1">The type of the first argument.</typeparam>
-            <typeparam name="TArgument2">The type of the second argument.</typeparam>
-            <typeparam name="TArgument3">The type of the third argument.</typeparam>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument1">The first argument to format.</param>
-            <param name="argument2">The second argument to format.</param>
-            <param name="argument3">The third argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.Object)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="value">A <see langword="object" /> to be written.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.Object)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="value">A <see langword="object" /> to be written.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Object,System.Object)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified parameters.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing format items.</param>
-            <param name="arg1">First argument to format.</param>
-            <param name="arg2">Second argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Object,System.Object,System.Object)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified parameters.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing format items.</param>
-            <param name="arg1">First argument to format.</param>
-            <param name="arg2">Second argument to format.</param>
-            <param name="arg3">Third argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Boolean)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Boolean)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Char)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Char)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Byte)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Byte)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.String)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.String)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Int32)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Int32)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Int64)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Int64)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Single)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Single)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Double)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Double)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Decimal)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Decimal)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.IFormatProvider,System.String,System.Object)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter and formatting it with the supplied format provider.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="formatProvider">An IFormatProvider that supplies culture-specific formatting information.</param>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
-        </member>
-        <member name="M:NLog.Logger.ConditionalTrace(System.String,System.Object)">
-            <summary>
-            Writes the diagnostic message at the <c>Trace</c> level using the specified value as a parameter.
-            Only executed when the DEBUG conditional compilation symbol is set.</summary>
-            <param name="message">A <see langword="string" /> containing one format item.</param>
-            <param name="argument">The argument to format.</param>
         </member>
         <member name="M:NLog.Logger.Log(NLog.LogLevel,System.Object)">
             <summary>
@@ -17121,6 +17471,12 @@
             Gets the target endpoint for the service to which the WCF client can connect.
             </summary>
         </member>
+        <member name="P:NLog.LogReceiverService.IWcfLogReceiverClient.CookieContainer">
+            <summary>
+            Gets or sets the cookie container.
+            </summary>
+            <value>The cookie container.</value>
+        </member>
         <member name="T:NLog.LogReceiverService.LogReceiverForwardingService">
             <summary>
             Implementation of <see cref="T:NLog.LogReceiverService.ILogReceiverServer"/> which forwards received logs through <see cref="T:NLog.LogManager"/> or a given <see cref="T:NLog.LogFactory"/>.
@@ -17392,6 +17748,12 @@
             Occurs when Close operation has completed.
             </summary>
         </member>
+        <member name="P:NLog.LogReceiverService.WcfLogReceiverClientBase`1.CookieContainer">
+            <summary>
+            Gets or sets the cookie container.
+            </summary>
+            <value>The cookie container.</value>
+        </member>
         <member name="M:NLog.LogReceiverService.WcfILogReceiverClient.#ctor">
             <summary>
             Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfILogReceiverClient"/> class.
@@ -17660,6 +18022,12 @@
             Occurs when the communication object first enters the closing state.
             </summary>
         </member>
+        <member name="P:NLog.LogReceiverService.WcfLogReceiverClient.CookieContainer">
+            <summary>
+            Gets or sets the cookie container.
+            </summary>
+            <value>The cookie container.</value>
+        </member>
         <member name="P:NLog.LogReceiverService.WcfLogReceiverClient.Endpoint">
             <summary>
             Gets the target endpoint for the service to which the WCF client can connect.
@@ -17818,6 +18186,13 @@
             Mostly for compatibility with log4net.
             </summary>
         </member>
+        <member name="M:NLog.MappedDiagnosticsContext.GetThreadDictionary(System.Boolean)">
+            <summary>
+            Gets the thread-local dictionary
+            </summary>
+            <param name="create">Must be true for any subsequent dictionary modification operation</param>
+            <returns></returns>
+        </member>
         <member name="M:NLog.MappedDiagnosticsContext.Set(System.String,System.String)">
             <summary>
             Sets the current thread MDC item to the specified value.
@@ -17879,6 +18254,93 @@
             <summary>
             Clears the content of current thread MDC.
             </summary>
+        </member>
+        <member name="T:NLog.MappedDiagnosticsLogicalContext">
+            <summary>
+            Async version of Mapped Diagnostics Context - a logical context structure that keeps a dictionary
+            of strings and provides methods to output them in layouts.  Allows for maintaining state across
+            asynchronous tasks and call contexts.
+            </summary>
+            <remarks>
+            Ideally, these changes should be incorporated as a new version of the MappedDiagnosticsContext class in the original
+            NLog library so that state can be maintained for multiple threads in asynchronous situations.
+            </remarks>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.GetLogicalThreadDictionary(System.Boolean)">
+            <summary>
+            Simulate ImmutableDictionary behavior (which is not yet part of all .NET frameworks).
+            In future the real ImmutableDictionary could be used here to minimize memory usage and copying time.
+            </summary>
+            <param name="clone">Must be true for any subsequent dictionary modification operation</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Get(System.String)">
+            <summary>
+            Gets the current logical context named item, as <see cref="T:System.String"/>.
+            </summary>
+            <param name="item">Item name.</param>
+            <returns>The value of <paramref name="item"/>, if defined; otherwise <see cref="F:System.String.Empty"/>.</returns>
+            <remarks>If the value isn't a <see cref="T:System.String"/> already, this call locks the <see cref="T:NLog.LogFactory"/> for reading the <see cref="P:NLog.Config.LoggingConfiguration.DefaultCultureInfo"/> needed for converting to <see cref="T:System.String"/>. </remarks>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Get(System.String,System.IFormatProvider)">
+            <summary>
+            Gets the current logical context named item, as <see cref="T:System.String"/>.
+            </summary>
+            <param name="item">Item name.</param>
+            <param name="formatProvider">The <see cref="T:System.IFormatProvider"/> to use when converting a value to a string.</param>
+            <returns>The value of <paramref name="item"/>, if defined; otherwise <see cref="F:System.String.Empty"/>.</returns>
+            <remarks>If <paramref name="formatProvider"/> is <c>null</c> and the value isn't a <see cref="T:System.String"/> already, this call locks the <see cref="T:NLog.LogFactory"/> for reading the <see cref="P:NLog.Config.LoggingConfiguration.DefaultCultureInfo"/> needed for converting to <see cref="T:System.String"/>. </remarks>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.GetObject(System.String)">
+            <summary>
+            Gets the current logical context named item, as <see cref="T:System.Object"/>.
+            </summary>
+            <param name="item">Item name.</param>
+            <returns>The value of <paramref name="item"/>, if defined; otherwise <c>null</c>.</returns>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Set(System.String,System.String)">
+            <summary>
+            Sets the current logical context item to the specified value.
+            </summary>
+            <param name="item">Item name.</param>
+            <param name="value">Item value.</param>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Set(System.String,System.Object)">
+            <summary>
+            Sets the current logical context item to the specified value.
+            </summary>
+            <param name="item">Item name.</param>
+            <param name="value">Item value.</param>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.GetNames">
+            <summary>
+            Returns all item names
+            </summary>
+            <returns>A collection of the names of all items in current logical context.</returns>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Contains(System.String)">
+            <summary>
+            Checks whether the specified <paramref name="item"/> exists in current logical context.
+            </summary>
+            <param name="item">Item name.</param>
+            <returns>A boolean indicating whether the specified <paramref name="item"/> exists in current logical context.</returns>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Remove(System.String)">
+            <summary>
+            Removes the specified <paramref name="item"/> from current logical context.
+            </summary>
+            <param name="item">Item name.</param>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Clear">
+            <summary>
+            Clears the content of current logical context.
+            </summary>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Clear(System.Boolean)">
+            <summary>
+            Clears the content of current logical context.
+            </summary>
+            <param name="free">Free the full slot.</param>
         </member>
         <member name="T:NLog.MDC">
             <summary>
@@ -18373,6 +18835,316 @@
             The most recent archive has the highest number (in combination with the date).
             </summary>
         </member>
+        <member name="T:NLog.Targets.AsyncTaskTarget">
+            <summary>
+            Abstract Target with async Task support
+            </summary>
+        </member>
+        <member name="T:NLog.Targets.Target">
+            <summary>
+            Represents logging target.
+            </summary>
+        </member>
+        <member name="F:NLog.Targets.Target.allLayoutsAreThreadAgnostic">
+            <summary> Are all layouts in this target thread-agnostic, if so we don't precalculate the layouts </summary>
+        </member>
+        <member name="F:NLog.Targets.Target.ReusableLayoutBuilder">
+            <summary>
+            Can be used if <see cref="P:NLog.Targets.Target.OptimizeBufferReuse"/> has been enabled.
+            </summary>
+        </member>
+        <member name="M:NLog.Targets.Target.NLog#Internal#ISupportsInitialize#Initialize(NLog.Config.LoggingConfiguration)">
+            <summary>
+            Initializes this instance.
+            </summary>
+            <param name="configuration">The configuration.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.NLog#Internal#ISupportsInitialize#Close">
+            <summary>
+            Closes this instance.
+            </summary>
+        </member>
+        <member name="M:NLog.Targets.Target.Dispose">
+            <summary>
+            Closes the target.
+            </summary>
+        </member>
+        <member name="M:NLog.Targets.Target.Flush(NLog.Common.AsyncContinuation)">
+            <summary>
+            Flush any pending log messages (in case of asynchronous targets).
+            </summary>
+            <param name="asyncContinuation">The asynchronous continuation.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.PrecalculateVolatileLayouts(NLog.LogEventInfo)">
+            <summary>
+            Calls the <see cref="M:NLog.Layouts.Layout.Precalculate(NLog.LogEventInfo)"/> on each volatile layout
+            used by this target.
+            This method won't prerender if all layouts in this target are thread-agnostic.
+            </summary>
+            <param name="logEvent">
+            The log event.
+            </param>
+        </member>
+        <member name="M:NLog.Targets.Target.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents this instance.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents this instance.
+            </returns>
+        </member>
+        <member name="M:NLog.Targets.Target.WriteAsyncLogEvent(NLog.Common.AsyncLogEventInfo)">
+            <summary>
+            Writes the log to the target.
+            </summary>
+            <param name="logEvent">Log event to write.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.WriteAsyncLogEvents(NLog.Common.AsyncLogEventInfo[])">
+            <summary>
+            Writes the array of log events.
+            </summary>
+            <param name="logEvents">The log events.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.WriteAsyncLogEvents(System.Collections.Generic.IList{NLog.Common.AsyncLogEventInfo})">
+            <summary>
+            Writes the array of log events.
+            </summary>
+            <param name="logEvents">The log events.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.Initialize(NLog.Config.LoggingConfiguration)">
+            <summary>
+            Initializes this instance.
+            </summary>
+            <param name="configuration">The configuration.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.Close">
+            <summary>
+            Closes this instance.
+            </summary>
+        </member>
+        <member name="M:NLog.Targets.Target.Dispose(System.Boolean)">
+            <summary>
+            Releases unmanaged and - optionally - managed resources.
+            </summary>
+            <param name="disposing">True to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.InitializeTarget">
+            <summary>
+            Initializes the target. Can be used by inheriting classes
+            to initialize logging.
+            </summary>
+        </member>
+        <member name="M:NLog.Targets.Target.CloseTarget">
+            <summary>
+            Closes the target and releases any unmanaged resources.
+            </summary>
+        </member>
+        <member name="M:NLog.Targets.Target.FlushAsync(NLog.Common.AsyncContinuation)">
+            <summary>
+            Flush any pending log messages asynchronously (in case of asynchronous targets).
+            </summary>
+            <param name="asyncContinuation">The asynchronous continuation.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.Write(NLog.LogEventInfo)">
+            <summary>
+            Writes logging event to the log target. Must be overridden in inheriting
+            classes.
+            </summary>
+            <param name="logEvent">Logging event to be written out.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.Write(NLog.Common.AsyncLogEventInfo)">
+            <summary>
+            Writes async log event to the log target.
+            </summary>
+            <param name="logEvent">Async Log event to be written out.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.WriteAsyncThreadSafe(NLog.Common.AsyncLogEventInfo)">
+            <summary>
+            Writes a log event to the log target, in a thread safe manner.
+            </summary>
+            <param name="logEvent">Log event to be written out.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.Write(NLog.Common.AsyncLogEventInfo[])">
+            <summary>
+            NOTE! Will soon be marked obsolete. Instead override Write(IList{AsyncLogEventInfo} logEvents)
+            
+            Writes an array of logging events to the log target. By default it iterates on all
+            events and passes them to "Write" method. Inheriting classes can use this method to
+            optimize batch writes.
+            </summary>
+            <param name="logEvents">Logging events to be written out.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.Write(System.Collections.Generic.IList{NLog.Common.AsyncLogEventInfo})">
+            <summary>
+            Writes an array of logging events to the log target. By default it iterates on all
+            events and passes them to "Write" method. Inheriting classes can use this method to
+            optimize batch writes.
+            </summary>
+            <param name="logEvents">Logging events to be written out.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.WriteAsyncThreadSafe(NLog.Common.AsyncLogEventInfo[])">
+            <summary>
+            NOTE! Will soon be marked obsolete. Instead override Write(IList{AsyncLogEventInfo} logEvents)
+            
+            Writes an array of logging events to the log target, in a thread safe manner.
+            </summary>
+            <param name="logEvents">Logging events to be written out.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.WriteAsyncThreadSafe(System.Collections.Generic.IList{NLog.Common.AsyncLogEventInfo})">
+            <summary>
+            Writes an array of logging events to the log target, in a thread safe manner.
+            </summary>
+            <param name="logEvents">Logging events to be written out.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.MergeEventProperties(NLog.LogEventInfo)">
+            <summary>
+            Merges (copies) the event context properties from any event info object stored in
+            parameters of the given event info object.
+            </summary>
+            <param name="logEvent">The event info object to perform the merge to.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.RenderLogEvent(NLog.Layouts.Layout,NLog.LogEventInfo)">
+            <summary>
+            Renders the event info in layout.
+            </summary>
+            <param name="layout">The layout.</param>
+            <param name="logEvent">The event info.</param>
+            <returns>String representing log event.</returns>
+        </member>
+        <member name="M:NLog.Targets.Target.Register``1(System.String)">
+            <summary>
+            Register a custom Target.
+            </summary>
+            <remarks>Short-cut for registing to default <see cref="T:NLog.Config.ConfigurationItemFactory"/></remarks>
+            <typeparam name="T"> Type of the Target.</typeparam>
+            <param name="name"> Name of the Target.</param>
+        </member>
+        <member name="M:NLog.Targets.Target.Register(System.String,System.Type)">
+            <summary>
+            Register a custom Target.
+            </summary>
+            <remarks>Short-cut for registing to default <see cref="T:NLog.Config.ConfigurationItemFactory"/></remarks>
+            <param name="targetType"> Type of the Target.</param>
+            <param name="name"> Name of the Target.</param>
+        </member>
+        <member name="P:NLog.Targets.Target.StackTraceUsage">
+            <summary>
+            The Max StackTraceUsage of all the <see cref="T:NLog.Layouts.Layout"/> in this Target
+            </summary>
+        </member>
+        <member name="P:NLog.Targets.Target.Name">
+            <summary>
+            Gets or sets the name of the target.
+            </summary>
+            <docgen category='General Options' order='10' />
+        </member>
+        <member name="P:NLog.Targets.Target.OptimizeBufferReuse">
+            <summary>
+            Target supports reuse of internal buffers, and doesn't have to constantly allocate new buffers
+            Required for legacy NLog-targets, that expects buffers to remain stable after Write-method exit
+            </summary>
+            <docgen category='Performance Tuning Options' order='10' />
+        </member>
+        <member name="P:NLog.Targets.Target.SyncRoot">
+            <summary>
+            Gets the object which can be used to synchronize asynchronous operations that must rely on the .
+            </summary>
+        </member>
+        <member name="P:NLog.Targets.Target.LoggingConfiguration">
+            <summary>
+            Gets the logging configuration this target is part of.
+            </summary>
+        </member>
+        <member name="P:NLog.Targets.Target.IsInitialized">
+            <summary>
+            Gets a value indicating whether the target has been initialized.
+            </summary>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.#ctor">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.WriteAsyncTask(NLog.LogEventInfo,System.Threading.CancellationToken)">
+            <summary>
+            Override this to create the actual logging task
+            <example>
+            Example of how to override this method, and call custom async method
+            <code>
+            protected override Task WriteAsyncTask(LogEventInfo logEvent, CancellationToken token)
+            {
+               return CustomWriteAsync(logEvent, token);
+            }
+            
+            private async Task CustomWriteAsync(LogEventInfo logEvent, CancellationToken token)
+            {
+                await MyLogMethodAsync(logEvent, token).ConfigureAwait(false);
+            }
+            </code></example>
+            </summary>
+            <param name="logEvent">The log event.</param>
+            <param name="cancellationToken">The cancellation token</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.Write(NLog.Common.AsyncLogEventInfo)">
+            <summary>
+            Schedules the LogEventInfo for async writing
+            </summary>
+            <param name="logEvent">The log event.</param>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.FlushAsync(NLog.Common.AsyncContinuation)">
+            <summary>
+            Schedules notification of when all messages has been written
+            </summary>
+            <param name="asyncContinuation"></param>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.CloseTarget">
+            <summary>
+            Closes Target by updating CancellationToken 
+            </summary>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.Dispose(System.Boolean)">
+            <summary>
+            Releases any managed resources
+            </summary>
+            <param name="disposing"></param>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.TaskStartNext(System.Threading.Tasks.Task)">
+            <summary>
+            Checks the internal queue for the next <see cref="T:NLog.LogEventInfo"/> to create a new task for
+            </summary>
+            <param name="previousTask">Used for race-condition validation betweewn task-completion and timeout</param>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.TaskCreation(NLog.Common.AsyncLogEventInfo)">
+            <summary>
+            Creates new task to handle the writing of the input <see cref="T:NLog.LogEventInfo"/>
+            </summary>
+            <param name="logEvent">LogEvent to write</param>
+            <returns>New Task created [true / false]</returns>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.TaskCompletion(System.Threading.Tasks.Task,System.Object)">
+            <summary>
+            Handles that scheduled task has completed (succesfully or failed), and starts the next pending task
+            </summary>
+            <param name="completedTask">Task just completed</param>
+            <param name="continuation">AsyncContinuation to notify of success or failure</param>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.TaskTimeout(System.Object)">
+            <summary>
+            Timer method, that is fired when pending task fails to complete within timeout
+            </summary>
+            <param name="state"></param>
+        </member>
+        <member name="P:NLog.Targets.AsyncTaskTarget.TaskTimeoutSeconds">
+            <summary>
+            How many seconds a Task is allowed to run before it is cancelled.
+            </summary>
+        </member>
+        <member name="P:NLog.Targets.AsyncTaskTarget.TaskScheduler">
+            <summary>
+            Task Scheduler used for processing async Tasks
+            </summary>
+        </member>
         <member name="T:NLog.Targets.ChainsawTarget">
             <summary>
             Sends log messages to the remote instance of Chainsaw application from log4j. 
@@ -18469,226 +19241,6 @@
         <member name="T:NLog.Targets.TargetWithLayout">
             <summary>
             Represents target that supports string formatting using layouts.
-            </summary>
-        </member>
-        <member name="T:NLog.Targets.Target">
-            <summary>
-            Represents logging target.
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Target.ReusableLayoutBuilder">
-            <summary>
-            Can be used if <see cref="P:NLog.Targets.Target.OptimizeBufferReuse"/> has been enabled.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.Target.GetAllLayouts">
-            <summary>
-            Get all used layouts in this target.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:NLog.Targets.Target.NLog#Internal#ISupportsInitialize#Initialize(NLog.Config.LoggingConfiguration)">
-            <summary>
-            Initializes this instance.
-            </summary>
-            <param name="configuration">The configuration.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.NLog#Internal#ISupportsInitialize#Close">
-            <summary>
-            Closes this instance.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.Target.Dispose">
-            <summary>
-            Closes the target.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.Target.Flush(NLog.Common.AsyncContinuation)">
-            <summary>
-            Flush any pending log messages (in case of asynchronous targets).
-            </summary>
-            <param name="asyncContinuation">The asynchronous continuation.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.PrecalculateVolatileLayouts(NLog.LogEventInfo)">
-            <summary>
-            Calls the <see cref="M:NLog.Layouts.Layout.Precalculate(NLog.LogEventInfo)"/> on each volatile layout
-            used by this target.
-            </summary>
-            <param name="logEvent">
-            The log event.
-            </param>
-        </member>
-        <member name="M:NLog.Targets.Target.ToString">
-            <summary>
-            Returns a <see cref="T:System.String"/> that represents this instance.
-            </summary>
-            <returns>
-            A <see cref="T:System.String"/> that represents this instance.
-            </returns>
-        </member>
-        <member name="M:NLog.Targets.Target.WriteAsyncLogEvent(NLog.Common.AsyncLogEventInfo)">
-            <summary>
-            Writes the log to the target.
-            </summary>
-            <param name="logEvent">Log event to write.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.WriteAsyncLogEvents(NLog.Common.AsyncLogEventInfo[])">
-            <summary>
-            Writes the array of log events.
-            </summary>
-            <param name="logEvents">The log events.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.WriteAsyncLogEvents(System.Collections.Generic.IList{NLog.Common.AsyncLogEventInfo})">
-            <summary>
-            Writes the array of log events.
-            </summary>
-            <param name="logEvents">The log events.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.Initialize(NLog.Config.LoggingConfiguration)">
-            <summary>
-            Initializes this instance.
-            </summary>
-            <param name="configuration">The configuration.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.Close">
-            <summary>
-            Closes this instance.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.Target.Dispose(System.Boolean)">
-            <summary>
-            Releases unmanaged and - optionally - managed resources.
-            </summary>
-            <param name="disposing">True to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.InitializeTarget">
-            <summary>
-            Initializes the target. Can be used by inheriting classes
-            to initialize logging.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.Target.CloseTarget">
-            <summary>
-            Closes the target and releases any unmanaged resources.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.Target.FlushAsync(NLog.Common.AsyncContinuation)">
-            <summary>
-            Flush any pending log messages asynchronously (in case of asynchronous targets).
-            </summary>
-            <param name="asyncContinuation">The asynchronous continuation.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.Write(NLog.LogEventInfo)">
-            <summary>
-            Writes logging event to the log target.
-            classes.
-            </summary>
-            <param name="logEvent">
-            Logging event to be written out.
-            </param>
-        </member>
-        <member name="M:NLog.Targets.Target.Write(NLog.Common.AsyncLogEventInfo)">
-            <summary>
-            Writes log event to the log target. Must be overridden in inheriting
-            classes.
-            </summary>
-            <param name="logEvent">Log event to be written out.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.WriteAsyncThreadSafe(NLog.Common.AsyncLogEventInfo)">
-            <summary>
-            Writes a log event to the log target, in a thread safe manner.
-            </summary>
-            <param name="logEvent">Log event to be written out.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.Write(NLog.Common.AsyncLogEventInfo[])">
-            <summary>
-            NOTE! Will soon be marked obsolete. Instead override Write(IList{AsyncLogEventInfo} logEvents)
-            
-            Writes an array of logging events to the log target. By default it iterates on all
-            events and passes them to "Write" method. Inheriting classes can use this method to
-            optimize batch writes.
-            </summary>
-            <param name="logEvents">Logging events to be written out.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.Write(System.Collections.Generic.IList{NLog.Common.AsyncLogEventInfo})">
-            <summary>
-            Writes an array of logging events to the log target. By default it iterates on all
-            events and passes them to "Write" method. Inheriting classes can use this method to
-            optimize batch writes.
-            </summary>
-            <param name="logEvents">Logging events to be written out.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.WriteAsyncThreadSafe(NLog.Common.AsyncLogEventInfo[])">
-            <summary>
-            NOTE! Will soon be marked obsolete. Instead override Write(IList{AsyncLogEventInfo} logEvents)
-            
-            Writes an array of logging events to the log target, in a thread safe manner.
-            </summary>
-            <param name="logEvents">Logging events to be written out.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.WriteAsyncThreadSafe(System.Collections.Generic.IList{NLog.Common.AsyncLogEventInfo})">
-            <summary>
-            Writes an array of logging events to the log target, in a thread safe manner.
-            </summary>
-            <param name="logEvents">Logging events to be written out.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.MergeEventProperties(NLog.LogEventInfo)">
-            <summary>
-            Merges (copies) the event context properties from any event info object stored in
-            parameters of the given event info object.
-            </summary>
-            <param name="logEvent">The event info object to perform the merge to.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.RenderLogEvent(NLog.Layouts.Layout,NLog.LogEventInfo)">
-            <summary>
-            Renders the event info in layout.
-            </summary>
-            <param name="layout">The layout.</param>
-            <param name="logEvent">The event info.</param>
-            <returns>String representing log event.</returns>
-        </member>
-        <member name="M:NLog.Targets.Target.Register``1(System.String)">
-            <summary>
-            Register a custom Target.
-            </summary>
-            <remarks>Short-cut for registing to default <see cref="T:NLog.Config.ConfigurationItemFactory"/></remarks>
-            <typeparam name="T"> Type of the Target.</typeparam>
-            <param name="name"> Name of the Target.</param>
-        </member>
-        <member name="M:NLog.Targets.Target.Register(System.String,System.Type)">
-            <summary>
-            Register a custom Target.
-            </summary>
-            <remarks>Short-cut for registing to default <see cref="T:NLog.Config.ConfigurationItemFactory"/></remarks>
-            <param name="targetType"> Type of the Target.</param>
-            <param name="name"> Name of the Target.</param>
-        </member>
-        <member name="P:NLog.Targets.Target.Name">
-            <summary>
-            Gets or sets the name of the target.
-            </summary>
-            <docgen category='General Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.Target.OptimizeBufferReuse">
-            <summary>
-            Target supports reuse of internal buffers, and doesn't have to constantly allocate new buffers
-            Required for legacy NLog-targets, that expects buffers to remain stable after Write-method exit
-            </summary>
-            <docgen category='Performance Tuning Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.Target.SyncRoot">
-            <summary>
-            Gets the object which can be used to synchronize asynchronous operations that must rely on the .
-            </summary>
-        </member>
-        <member name="P:NLog.Targets.Target.LoggingConfiguration">
-            <summary>
-            Gets the logging configuration this target is part of.
-            </summary>
-        </member>
-        <member name="P:NLog.Targets.Target.IsInitialized">
-            <summary>
-            Gets a value indicating whether the target has been initialized.
             </summary>
         </member>
         <member name="M:NLog.Targets.TargetWithLayout.#ctor">
@@ -18880,6 +19432,12 @@
         <member name="P:NLog.Targets.NLogViewerTarget.IncludeMdc">
             <summary>
             Gets or sets a value indicating whether to include <see cref="T:NLog.MappedDiagnosticsContext"/> dictionary contents.
+            </summary>
+            <docgen category="Payload Options" order="10"/>
+        </member>
+        <member name="P:NLog.Targets.NLogViewerTarget.IncludeMdlc">
+            <summary>
+            Gets or sets a value indicating whether to include <see cref="T:NLog.MappedDiagnosticsLogicalContext"/> dictionary contents.
             </summary>
             <docgen category="Payload Options" order="10"/>
         </member>
@@ -19941,17 +20499,35 @@
             <param name="value">The object to serialize to JSON.</param>
             <returns>Serialized value.</returns>
         </member>
-        <member name="M:NLog.Targets.DefaultJsonSerializer.SerializeObject(System.Object,System.Collections.Generic.HashSet{System.Object},System.Int32)">
+        <member name="M:NLog.Targets.DefaultJsonSerializer.SerializeObject(System.Object,System.Boolean,System.Collections.Generic.HashSet{System.Object},System.Int32)">
             <summary>
             Returns a serialization of an object
             int JSON format.
             </summary>
             <param name="value">The object to serialize to JSON.</param>
+            <param name="escapeUnicode">Should non-ascii characters be encoded</param>
             <param name="objectsInPath">The objects in path.</param>
             <param name="depth">The current depth (level) of recursion.</param>
             <returns>
             Serialized value.
             </returns>
+        </member>
+        <member name="M:NLog.Targets.DefaultJsonSerializer.JsonStringEncode(System.Object,System.Boolean,System.Boolean@)">
+            <summary>
+            Converts object value into JSON escaped string
+            </summary>
+            <param name="value">Object value</param>
+            <param name="escapeUnicode">Should non-ascii characters be encoded</param>
+            <param name="encodeString">Should string be JSON encoded with quotes</param>
+            <returns>Object value converted to JSON escaped string</returns>
+        </member>
+        <member name="M:NLog.Targets.DefaultJsonSerializer.JsonStringEscape(System.String,System.Boolean)">
+            <summary>
+            Checks input string if it needs JSON escaping, and makes necessary conversion
+            </summary>
+            <param name="text">Input string</param>
+            <param name="escapeUnicode">Should non-ascii characters be encoded</param>
+            <returns>JSON escaped string</returns>
         </member>
         <member name="P:NLog.Targets.DefaultJsonSerializer.Instance">
             <summary>
@@ -20160,6 +20736,41 @@
         <member name="F:NLog.Targets.FileArchivePeriod.Minute">
             <summary>
             AddToArchive every minute.
+            </summary>
+        </member>
+        <member name="F:NLog.Targets.FileArchivePeriod.Sunday">
+            <summary>
+            AddToArchive every Sunday.
+            </summary>
+        </member>
+        <member name="F:NLog.Targets.FileArchivePeriod.Monday">
+            <summary>
+            AddToArchive every Monday.
+            </summary>
+        </member>
+        <member name="F:NLog.Targets.FileArchivePeriod.Tuesday">
+            <summary>
+            AddToArchive every Tuesday.
+            </summary>
+        </member>
+        <member name="F:NLog.Targets.FileArchivePeriod.Wednesday">
+            <summary>
+            AddToArchive every Wednesday.
+            </summary>
+        </member>
+        <member name="F:NLog.Targets.FileArchivePeriod.Thursday">
+            <summary>
+            AddToArchive every Thursday.
+            </summary>
+        </member>
+        <member name="F:NLog.Targets.FileArchivePeriod.Friday">
+            <summary>
+            AddToArchive every Friday.
+            </summary>
+        </member>
+        <member name="F:NLog.Targets.FileArchivePeriod.Saturday">
+            <summary>
+            AddToArchive every Saturday.
             </summary>
         </member>
         <member name="T:NLog.Targets.FilePathKind">
@@ -20573,6 +21184,16 @@
             </summary>
             <param name="defaultFormat">Date format to used irrespectively of <see cref="P:ArchiveEvery"/> value.</param>
             <returns>Formatting <see langword="String"/> for dates.</returns>
+        </member>
+        <member name="M:NLog.Targets.FileTarget.CalculateNextWeekday(System.DateTime,System.DayOfWeek)">
+            <summary>
+            Calculate the DateTime of the requested day of the week.
+            </summary>
+            <param name="previousLogEventTimestamp">The DateTime of the previous log event.</param>
+            <param name="dayOfWeek">The next occuring day of the week to return a DateTime for.</param>
+            <returns>The DateTime of the next occuring dayOfWeek.</returns>
+            <remarks>For example: if previousLogEventTimestamp is Thursday 2017-03-02 and dayOfWeek is Sunday, this will return
+             Sunday 2017-03-05. If dayOfWeek is Thursday, this will return *next* Thursday 2017-03-09.</remarks>
         </member>
         <member name="M:NLog.Targets.FileTarget.DoAutoArchive(System.String,NLog.LogEventInfo)">
             <summary>
@@ -21722,6 +22343,12 @@
         </member>
         <member name="P:NLog.Targets.MethodCallParameter.Type">
             <summary>
+            Gets or sets the type of the parameter. Obsolete alias for <see cref="P:NLog.Targets.MethodCallParameter.ParameterType"/>
+            </summary>
+            <docgen category="Parameter Options" order="10"/>
+        </member>
+        <member name="P:NLog.Targets.MethodCallParameter.ParameterType">
+            <summary>
             Gets or sets the type of the parameter.
             </summary>
             <docgen category='Parameter Options' order='10' />
@@ -22777,6 +23404,11 @@
             </summary>
             <param name="wrappedTarget">The wrapped target.</param>
         </member>
+        <member name="M:NLog.Targets.Wrappers.AutoFlushTargetWrapper.InitializeTarget">
+            <summary>
+            Initializes the target.
+            </summary>
+        </member>
         <member name="M:NLog.Targets.Wrappers.AutoFlushTargetWrapper.Write(NLog.Common.AsyncLogEventInfo)">
             <summary>
             Forwards the call to the <see cref="P:NLog.Targets.Wrappers.WrapperTargetBase.WrappedTarget"/>.Write()
@@ -22800,6 +23432,11 @@
             <summary>
             Gets or sets the condition expression. Log events who meet this condition will cause
             a flush on the wrapped target.
+            </summary>
+        </member>
+        <member name="P:NLog.Targets.Wrappers.AutoFlushTargetWrapper.AsyncFlush">
+            <summary>
+            Delay the flush until the LogEvent has been confirmed as written
             </summary>
         </member>
         <member name="T:NLog.Targets.Wrappers.BufferingTargetWrapper">
@@ -23733,6 +24370,19 @@
             optimize batch writes.
             </summary>
             <param name="logEvents">Logging events to be written out.</param>
+        </member>
+        <member name="T:NLog.Targets.ZipArchiveFileCompressor">
+            <summary>
+            Builtin IFileCompressor implementation utilizing the .Net4.5 specific <see cref="T:System.IO.Compression.ZipArchive"/> 
+            and is used as the default value for <see cref="P:NLog.Targets.FileTarget.FileCompressor"/> on .Net4.5.
+            So log files created via <see cref="T:NLog.Targets.FileTarget"/> can be zipped when archived
+            w/o 3rd party zip library when run on .Net4.5 or higher.
+            </summary>
+        </member>
+        <member name="M:NLog.Targets.ZipArchiveFileCompressor.CompressFile(System.String,System.String)">
+            <summary>
+            Implements <see cref="M:NLog.Targets.IFileCompressor.CompressFile(System.String,System.String)"/> using the .Net4.5 specific <see cref="T:System.IO.Compression.ZipArchive"/>
+            </summary>
         </member>
         <member name="T:NLog.Time.AccurateLocalTimeSource">
             <summary>
