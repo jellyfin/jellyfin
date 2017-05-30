@@ -55,11 +55,6 @@ namespace MediaBrowser.ServerApplication
             LoopUtil.Run(appName);
         }
 
-        public override PackageVersionClass SystemUpdateLevel
-        {
-            get { return UpdateLevelHelper.GetSystemUpdateLevel(ConfigurationManager); }
-        }
-
         protected override List<Assembly> GetAssembliesWithPartsInternal()
         {
             var list = new List<Assembly>();
