@@ -492,7 +492,6 @@ namespace Emby.Server.Core
         {
             var migrations = new List<IVersionMigration>
             {
-                new UpdateLevelMigration(ServerConfigurationManager, this, HttpClient, JsonSerializer, _releaseAssetFilename, Logger)
             };
 
             foreach (var task in migrations)

@@ -87,7 +87,6 @@
     <Compile Include="Logging\ConsoleLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SystemEvents.cs" />
-    <Compile Include="UpdateLevelHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Emby.Common.Implementations\Emby.Common.Implementations.csproj">
