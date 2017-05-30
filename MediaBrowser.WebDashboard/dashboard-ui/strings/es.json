@@ -26,12 +26,12 @@
     "OptionHideWatchedContentFromLatestMedia": "Esconder medios vistos de los medios m\u00e1s recientes",
     "DeleteMedia": "Eliminar medios",
     "HeaderSync": "Sincronizar",
-    "HeaderUpcomingNews": "Upcoming News",
+    "HeaderUpcomingNews": "Pr\u00f3ximas Noticias",
     "ButtonOk": "OK",
     "ButtonCancel": "Cancelar",
     "ButtonExit": "Salir",
     "ButtonNew": "Nuevo",
-    "All": "All",
+    "All": "Todo",
     "OptionDev": "Desarrollo",
     "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Tareas de activaci\u00f3n",
@@ -1977,7 +1977,7 @@
     "EveryNDays": "Cada {0} d\u00edas",
     "HeaderNewDevices": "Nuevos dispositivos",
     "HeaderOnNow": "En directo ahora",
-    "Downloading": "Downloading",
-    "LabelCertificatePassword": "Certificate password:",
-    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
+    "Downloading": "Descargando",
+    "LabelCertificatePassword": "Contrase\u00f1a del certificado",
+    "LabelCertificatePasswordHelp": "Si tu certificado requiere una contrase\u00f1a, por favor introducela aqui"
 }
