@@ -689,14 +689,22 @@ namespace MediaBrowser.Controller.Entities
             return System.IO.Path.Combine(basePath, idString.Substring(0, 2), idString);
         }
 
+        protected string CreateSortName()
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                return null;
+            }
+
+            return CreateSortNameInternal();
+        }
+
         /// <summary>
         /// Creates the name of the sort.
         /// </summary>
         /// <returns>System.String.</returns>
-        protected virtual string CreateSortName()
+        protected virtual string CreateSortNameInternal()
         {
-            if (Name == null) return null; //some items may not have name filled in properly
-
             if (!EnableAlphaNumericSorting)
             {
                 return Name.TrimStart();
