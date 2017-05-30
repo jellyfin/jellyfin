@@ -198,6 +198,11 @@ namespace Emby.Server.Implementations.Playlists
 
             foreach (var item in items)
             {
+                if (string.IsNullOrWhiteSpace(item.Path))
+                {
+                    continue;
+                }
+
                 list.Add(LinkedChild.Create(item));
             }
 

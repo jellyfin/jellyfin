@@ -1733,7 +1733,7 @@ namespace MediaBrowser.Controller.Entities
 
         private BaseItem FindLinkedChild(LinkedChild info)
         {
-            if (!string.IsNullOrEmpty(info.Path))
+            if (!string.IsNullOrWhiteSpace(info.Path))
             {
                 var itemByPath = LibraryManager.FindByPath(info.Path, null);
 
