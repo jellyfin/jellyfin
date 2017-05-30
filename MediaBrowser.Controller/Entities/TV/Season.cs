@@ -145,7 +145,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// Creates the name of the sort.
         /// </summary>
         /// <returns>System.String.</returns>
-        protected override string CreateSortName()
+        protected override string CreateSortNameInternal()
         {
             return IndexNumber != null ? IndexNumber.Value.ToString("0000") : Name;
         }
