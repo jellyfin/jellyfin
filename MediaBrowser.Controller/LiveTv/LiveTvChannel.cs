@@ -89,7 +89,7 @@ namespace MediaBrowser.Controller.LiveTv
             }
         }
 
-        protected override string CreateSortName()
+        protected override string CreateSortNameInternal()
         {
             if (!string.IsNullOrEmpty(Number))
             {
