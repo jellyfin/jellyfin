@@ -100,6 +100,7 @@ namespace MediaBrowser.Api
             config.EnableSimpleArtistDetection = true;
             config.EnableNormalizedItemByNameIds = true;
             config.DisableLiveTvChannelUserDataName = true;
+            config.EnableSimpleSortNameHandling = true;
         }
 
         public void Post(UpdateStartupConfiguration request)
