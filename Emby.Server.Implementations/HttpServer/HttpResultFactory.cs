@@ -58,6 +58,18 @@ namespace Emby.Server.Implementations.HttpServer
             return GetHttpResult(content, contentType, true, responseHeaders);
         }
 
+        public object GetRedirectResult(string url)
+        {
+            var responseHeaders = new Dictionary<string, string>();
+            responseHeaders["Location"] = url;
+
+            var result = new HttpResult(new byte[] { }, "text/plain", HttpStatusCode.Redirect);
+
+            AddResponseHeaders(result, responseHeaders);
+
+            return result;
+        }
+
         /// <summary>
         /// Gets the HTTP result.
         /// </summary>
@@ -599,9 +611,9 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private async Task<IHasHeaders> GetCompressedResult(Stream stream, 
-            string requestedCompressionType, 
-            IDictionary<string,string> responseHeaders,
+        private async Task<IHasHeaders> GetCompressedResult(Stream stream,
+            string requestedCompressionType,
+            IDictionary<string, string> responseHeaders,
             bool isHeadRequest,
             string contentType)
         {
