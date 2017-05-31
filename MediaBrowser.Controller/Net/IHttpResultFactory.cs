@@ -22,6 +22,8 @@ namespace MediaBrowser.Controller.Net
         /// <returns>System.Object.</returns>
         object GetResult(object content, string contentType, IDictionary<string,string> responseHeaders = null);
 
+        object GetRedirectResult(string url);
+
         /// <summary>
         /// Gets the optimized result.
         /// </summary>

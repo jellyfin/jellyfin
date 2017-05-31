@@ -655,7 +655,17 @@ namespace MediaBrowser.Controller.Entities
 
         private string CreateSortNameFromCustomValue(string value)
         {
-            return string.IsNullOrWhiteSpace(value) ? null : ModifySortChunks(value).ToLower();
+            return string.IsNullOrWhiteSpace(value) ? null : NormalizeCustomSortName(value);
+        }
+
+        protected virtual string NormalizeCustomSortName(string value)
+        {
+            if (ConfigurationManager.Configuration.EnableSimpleSortNameHandling)
+            {
+                return value.RemoveDiacritics().ToLower();
+            }
+
+            return ModifySortChunks(value).ToLower();
         }
 
         public bool IsSortNameDefault(string value)
