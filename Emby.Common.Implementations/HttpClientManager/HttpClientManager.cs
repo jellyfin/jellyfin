@@ -1,7 +1,6 @@
 ﻿using System.Net.Sockets;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -17,6 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Common.Implementations.HttpClientManager;
+using Emby.Common.Implementations.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Common;
 
@@ -66,13 +66,11 @@ namespace Emby.Common.Implementations.HttpClientManager
             _appPaths = appPaths;
             _defaultUserAgentFn = defaultUserAgentFn;
 
-#if NET46
             // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
             ServicePointManager.Expect100Continue = false;
 
             // Trakt requests sometimes fail without this
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls;
-#endif    
         }
 
         /// <summary>
@@ -129,7 +127,6 @@ namespace Emby.Common.Implementations.HttpClientManager
 
         private void AddIpv4Option(HttpWebRequest request, HttpRequestOptions options)
         {
-#if NET46
             request.ServicePoint.BindIPEndPointDelegate = (servicePount, remoteEndPoint, retryCount) =>
             {
                 if (remoteEndPoint.AddressFamily == AddressFamily.InterNetwork)
@@ -138,7 +135,6 @@ namespace Emby.Common.Implementations.HttpClientManager
                 }
                 throw new InvalidOperationException("no IPv4 address");
             };
-#endif    
         }
 
         private WebRequest GetRequest(HttpRequestOptions options, string method)
@@ -165,7 +161,6 @@ namespace Emby.Common.Implementations.HttpClientManager
 
                 AddRequestHeaders(httpWebRequest, options);
 
-#if NET46
                 if (options.EnableHttpCompression)
                 {
                     if (options.DecompressionMethod.HasValue)
@@ -183,48 +178,33 @@ namespace Emby.Common.Implementations.HttpClientManager
                 {
                     httpWebRequest.AutomaticDecompression = DecompressionMethods.None;
                 }
-#endif    
             }
 
 
 
-#if NET46
             request.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
-#endif    
 
             if (httpWebRequest != null)
             {
                 if (options.EnableKeepAlive)
                 {
-#if NET46
                     httpWebRequest.KeepAlive = true;
-#endif    
                 }
             }
 
             request.Method = method;
-#if NET46
             request.Timeout = options.TimeoutMs;
-#endif
 
             if (httpWebRequest != null)
             {
                 if (!string.IsNullOrEmpty(options.Host))
                 {
-#if NET46
                     httpWebRequest.Host = options.Host;
-#elif NETSTANDARD1_6
-                    httpWebRequest.Headers["Host"] = options.Host;
-#endif
                 }
 
                 if (!string.IsNullOrEmpty(options.Referer))
                 {
-#if NET46
                     httpWebRequest.Referer = options.Referer;
-#elif NETSTANDARD1_6
-                    httpWebRequest.Headers["Referer"] = options.Referer;
-#endif
                 }
             }
 
@@ -235,9 +215,7 @@ namespace Emby.Common.Implementations.HttpClientManager
                 {
                     request.Credentials = GetCredential(url, parts[0], parts[1]);
                     // TODO: .net core ??
-#if NET46
                     request.PreAuthenticate = true;
-#endif
                 }
             }
 
@@ -269,11 +247,7 @@ namespace Emby.Common.Implementations.HttpClientManager
                 }
                 else
                 {
-#if NET46
                     request.Headers.Set(header.Key, header.Value);
-#elif NETSTANDARD1_6
-                    request.Headers[header.Key] = header.Value;
-#endif
                 }
             }
 
@@ -285,11 +259,7 @@ namespace Emby.Common.Implementations.HttpClientManager
 
         private void SetUserAgent(HttpWebRequest request, string userAgent)
         {
-#if NET46
             request.UserAgent = userAgent;
-#elif NETSTANDARD1_6
-                    request.Headers["User-Agent"] = userAgent;
-#endif
         }
 
         /// <summary>
@@ -465,9 +435,7 @@ namespace Emby.Common.Implementations.HttpClientManager
 
                     httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
 
-#if NET46
                     httpWebRequest.ContentLength = bytes.Length;
-#endif
                     (await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false)).Write(bytes, 0, bytes.Length);
                 }
                 catch (Exception ex)
@@ -950,7 +918,6 @@ namespace Emby.Common.Implementations.HttpClientManager
 
         private Task<WebResponse> GetResponseAsync(WebRequest request, TimeSpan timeout)
         {
-#if NET46
             var taskCompletion = new TaskCompletionSource<WebResponse>();
 
             Task<WebResponse> asyncTask = Task.Factory.FromAsync<WebResponse>(request.BeginGetResponse, request.EndGetResponse, null);
@@ -963,9 +930,6 @@ namespace Emby.Common.Implementations.HttpClientManager
             asyncTask.ContinueWith(callback.OnError, TaskContinuationOptions.OnlyOnFaulted);
 
             return taskCompletion.Task;
-#endif
-
-            return request.GetResponseAsync();
         }
 
         private static void TimeoutCallback(object state, bool timedOut)

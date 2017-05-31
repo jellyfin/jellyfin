@@ -57,7 +57,6 @@ namespace Emby.Server.Implementations.Session
             _json = json;
             _httpServer = httpServer;
             _serverManager = serverManager;
-            httpServer.WebSocketConnecting += _httpServer_WebSocketConnecting;
             serverManager.WebSocketConnected += _serverManager_WebSocketConnected;
         }
 
@@ -84,27 +83,6 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
-        async void _httpServer_WebSocketConnecting(object sender, WebSocketConnectingEventArgs e)
-        {
-            //var token = e.QueryString["api_key"];
-            //if (!string.IsNullOrWhiteSpace(token))
-            //{
-            //    try
-            //    {
-            //        var session = await GetSession(e.QueryString, e.Endpoint).ConfigureAwait(false);
-
-            //        if (session == null)
-            //        {
-            //            e.AllowConnection = false;
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        _logger.ErrorException("Error getting session info", ex);
-            //    }
-            //}
-        }
-
         private Task<SessionInfo> GetSession(QueryParamCollection queryString, string remoteEndpoint)
         {
             if (queryString == null)
@@ -123,7 +101,6 @@ namespace Emby.Server.Implementations.Session
 
         public void Dispose()
         {
-            _httpServer.WebSocketConnecting -= _httpServer_WebSocketConnecting;
             _serverManager.WebSocketConnected -= _serverManager_WebSocketConnected;
         }
 

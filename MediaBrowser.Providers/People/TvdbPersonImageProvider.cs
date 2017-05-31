@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
 
@@ -65,7 +66,11 @@ namespace MediaBrowser.Providers.People
             var seriesWithPerson = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
-                PersonIds = new[] { item.Id.ToString("N") }
+                PersonIds = new[] { item.Id.ToString("N") },
+                DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                }
 
             }).Cast<Series>()
                 .Where(i => TvdbSeriesProvider.IsValidSeries(i.ProviderIds))

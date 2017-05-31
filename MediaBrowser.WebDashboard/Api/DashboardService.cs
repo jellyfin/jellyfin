@@ -305,8 +305,6 @@ namespace MediaBrowser.WebDashboard.Api
                 }
             }
 
-            path = path.Replace("scripts/jquery.mobile-1.4.5.min.map", "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.map", StringComparison.OrdinalIgnoreCase);
-
             var localizationCulture = GetLocalizationCulture();
 
             // Don't cache if not configured to do so
@@ -330,7 +328,13 @@ namespace MediaBrowser.WebDashboard.Api
 
             var cacheKey = (_appHost.ApplicationVersion + (localizationCulture ?? string.Empty) + path).GetMD5();
 
-            return await _resultFactory.GetStaticResult(Request, cacheKey, null, cacheDuration, contentType, () => GetResourceStream(basePath, path, localizationCulture)).ConfigureAwait(false);
+            // html gets modified on the fly
+            if (contentType.StartsWith("text/html", StringComparison.OrdinalIgnoreCase))
+            {
+                return await _resultFactory.GetStaticResult(Request, cacheKey, null, cacheDuration, contentType, () => GetResourceStream(basePath, path, localizationCulture)).ConfigureAwait(false);
+            }
+
+            return await _resultFactory.GetStaticFileResult(Request, GetPackageCreator(basePath).GetResourcePath(path));
         }
 
         private string GetLocalizationCulture()

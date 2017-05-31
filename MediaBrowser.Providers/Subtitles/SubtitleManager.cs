@@ -16,7 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
@@ -163,7 +163,7 @@ namespace MediaBrowser.Providers.Subtitles
                     Provider = provider.Name
 
                 }, _logger);
-                
+
                 throw;
             }
         }
@@ -256,7 +256,8 @@ namespace MediaBrowser.Providers.Subtitles
                 _monitor.ReportFileSystemChangeComplete(path, false);
             }
 
-            return _libraryManager.GetItemById(itemId).ChangedExternally();
+            _libraryManager.GetItemById(itemId).ChangedExternally();
+            return Task.FromResult(true);
         }
 
         public Task<SubtitleResponse> GetRemoteSubtitles(string id, CancellationToken cancellationToken)

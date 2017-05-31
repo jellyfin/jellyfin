@@ -110,7 +110,11 @@ namespace MediaBrowser.Api
             var user = request.UserId == null ? null : _userManager.GetUserById(request.UserId);
             var query = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { typeof(GameSystem).Name }
+                IncludeItemTypes = new[] { typeof(GameSystem).Name },
+                DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                }
             };
             var gameSystems = _libraryManager.GetItemList(query)
                 .Cast<GameSystem>()
@@ -130,7 +134,11 @@ namespace MediaBrowser.Api
             var user = request.UserId == null ? null : _userManager.GetUserById(request.UserId);
             var query = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { typeof(Game).Name }
+                IncludeItemTypes = new[] { typeof(Game).Name },
+                DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                }
             };
             var games = _libraryManager.GetItemList(query)
                 .Cast<Game>()
@@ -167,7 +175,11 @@ namespace MediaBrowser.Api
                 system.GetRecursiveChildren(i => i is Game) :
                 system.GetRecursiveChildren(user, new InternalItemsQuery(user)
                 {
-                    IncludeItemTypes = new[] { typeof(Game).Name }
+                    IncludeItemTypes = new[] { typeof(Game).Name },
+                    DtoOptions = new DtoOptions(false)
+                    {
+                        EnableImages = false
+                    }
                 });
 
             var games = items.Cast<Game>().ToList();

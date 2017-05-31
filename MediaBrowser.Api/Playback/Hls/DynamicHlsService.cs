@@ -542,6 +542,12 @@ namespace MediaBrowser.Api.Playback.Hls
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
 
+            // from universal audio service
+            if (queryString.IndexOf("SegmentContainer", StringComparison.OrdinalIgnoreCase) == -1 && !string.IsNullOrWhiteSpace(state.Request.SegmentContainer))
+            {
+                queryString += "&SegmentContainer=" + state.Request.SegmentContainer;
+            }
+
             // Main stream
             var playlistUrl = isLiveStream ? "live.m3u8" : "main.m3u8";
 
@@ -918,60 +924,43 @@ namespace MediaBrowser.Api.Playback.Hls
             var startNumberParam = isEncoding ? startNumber.ToString(UsCulture) : "0";
 
             var mapArgs = state.IsOutputVideo ? EncodingHelper.GetMapArgs(state) : string.Empty;
-            var useGenericSegmenter = true;
 
-            if (useGenericSegmenter)
+            var outputTsArg = Path.Combine(FileSystem.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request);
+
+            var timeDeltaParam = String.Empty;
+
+            if (isEncoding && startNumber > 0)
             {
-                var outputTsArg = Path.Combine(FileSystem.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request);
-
-                var timeDeltaParam = String.Empty;
-
-                if (isEncoding && startNumber > 0)
-                {
-                    var startTime = state.SegmentLength * startNumber;
-                    timeDeltaParam = string.Format("-segment_time_delta -{0}", startTime);
-                }
-
-                var segmentFormat = GetSegmentFileExtension(state.Request).TrimStart('.');
-                if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
-                {
-                    segmentFormat = "mpegts";
-                }
-
-                var videoCodec = EncodingHelper.GetVideoEncoder(state, ApiEntryPoint.Instance.GetEncodingOptions());
-                var breakOnNonKeyFrames = state.EnableBreakOnNonKeyFrames(videoCodec);
-
-                var breakOnNonKeyFramesArg = breakOnNonKeyFrames ? " -break_non_keyframes 1" : "";
-
-                return string.Format("{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f segment -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -segment_time {6} {10} -individual_header_trailer 0{12} -segment_format {11} -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
-                    inputModifier,
-                    EncodingHelper.GetInputArgument(state, encodingOptions),
-                    threads,
-                    mapArgs,
-                    GetVideoArguments(state),
-                    GetAudioArguments(state),
-                    state.SegmentLength.ToString(UsCulture),
-                    startNumberParam,
-                    outputPath,
-                    outputTsArg,
-                    timeDeltaParam,
-                    segmentFormat,
-                    breakOnNonKeyFramesArg
-                ).Trim();
+                var startTime = state.SegmentLength * startNumber;
+                timeDeltaParam = string.Format("-segment_time_delta -{0}", startTime);
             }
 
-            return string.Format("{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -hls_time {6} -individual_header_trailer 0 -start_number {7} -hls_list_size {8} -y \"{9}\"",
-                            inputModifier,
-                            EncodingHelper.GetInputArgument(state, encodingOptions),
-                            threads,
-                            mapArgs,
-                            GetVideoArguments(state),
-                            GetAudioArguments(state),
-                            state.SegmentLength.ToString(UsCulture),
-                            startNumberParam,
-                            state.HlsListSize.ToString(UsCulture),
-                            outputPath
-                            ).Trim();
+            var segmentFormat = GetSegmentFileExtension(state.Request).TrimStart('.');
+            if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
+            {
+                segmentFormat = "mpegts";
+            }
+
+            var videoCodec = EncodingHelper.GetVideoEncoder(state, ApiEntryPoint.Instance.GetEncodingOptions());
+            var breakOnNonKeyFrames = state.EnableBreakOnNonKeyFrames(videoCodec);
+
+            var breakOnNonKeyFramesArg = breakOnNonKeyFrames ? " -break_non_keyframes 1" : "";
+
+            return string.Format("{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f segment -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -segment_time {6} {10} -individual_header_trailer 0{12} -segment_format {11} -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
+                inputModifier,
+                EncodingHelper.GetInputArgument(state, encodingOptions),
+                threads,
+                mapArgs,
+                GetVideoArguments(state),
+                GetAudioArguments(state),
+                state.SegmentLength.ToString(UsCulture),
+                startNumberParam,
+                outputPath,
+                outputTsArg,
+                timeDeltaParam,
+                segmentFormat,
+                breakOnNonKeyFramesArg
+            ).Trim();
         }
     }
 }

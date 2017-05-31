@@ -85,9 +85,11 @@ namespace MediaBrowser.Api.Music
 
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = _musicManager.GetInstantMixFromItem(item, user);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
-            return GetResult(items, user, request);
+            var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
+
+            return GetResult(items, user, request, dtoOptions);
         }
 
         public Task<object> Get(GetInstantMixFromArtistId request)
@@ -96,9 +98,11 @@ namespace MediaBrowser.Api.Music
 
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = _musicManager.GetInstantMixFromItem(item, user);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
-            return GetResult(items, user, request);
+            var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
+
+            return GetResult(items, user, request, dtoOptions);
         }
 
         public Task<object> Get(GetInstantMixFromMusicGenreId request)
@@ -107,9 +111,11 @@ namespace MediaBrowser.Api.Music
 
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = _musicManager.GetInstantMixFromItem(item, user);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
-            return GetResult(items, user, request);
+            var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
+
+            return GetResult(items, user, request, dtoOptions);
         }
 
         public Task<object> Get(GetInstantMixFromSong request)
@@ -118,9 +124,11 @@ namespace MediaBrowser.Api.Music
 
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = _musicManager.GetInstantMixFromItem(item, user);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
-            return GetResult(items, user, request);
+            var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
+
+            return GetResult(items, user, request, dtoOptions);
         }
 
         public Task<object> Get(GetInstantMixFromAlbum request)
@@ -129,9 +137,11 @@ namespace MediaBrowser.Api.Music
 
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = _musicManager.GetInstantMixFromItem(album, user);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
-            return GetResult(items, user, request);
+            var items = _musicManager.GetInstantMixFromItem(album, user, dtoOptions);
+
+            return GetResult(items, user, request, dtoOptions);
         }
 
         public Task<object> Get(GetInstantMixFromPlaylist request)
@@ -140,31 +150,37 @@ namespace MediaBrowser.Api.Music
 
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = _musicManager.GetInstantMixFromItem(playlist, user);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
-            return GetResult(items, user, request);
+            var items = _musicManager.GetInstantMixFromItem(playlist, user, dtoOptions);
+
+            return GetResult(items, user, request, dtoOptions);
         }
 
         public Task<object> Get(GetInstantMixFromMusicGenre request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = _musicManager.GetInstantMixFromGenres(new[] { request.Name }, user);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
-            return GetResult(items, user, request);
+            var items = _musicManager.GetInstantMixFromGenres(new[] { request.Name }, user, dtoOptions);
+
+            return GetResult(items, user, request, dtoOptions);
         }
 
         public Task<object> Get(GetInstantMixFromArtist request)
         {
             var user = _userManager.GetUserById(request.UserId);
-            var artist = _libraryManager.GetArtist(request.Name);
+            var artist = _libraryManager.GetArtist(request.Name, new DtoOptions(false));
 
-            var items = _musicManager.GetInstantMixFromArtist(artist, user);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
-            return GetResult(items, user, request);
+            var items = _musicManager.GetInstantMixFromArtist(artist, user, dtoOptions);
+
+            return GetResult(items, user, request, dtoOptions);
         }
 
-        private async Task<object> GetResult(IEnumerable<Audio> items, User user, BaseGetSimilarItems request)
+        private async Task<object> GetResult(IEnumerable<Audio> items, User user, BaseGetSimilarItems request, DtoOptions dtoOptions)
         {
             var list = items.ToList();
 
@@ -172,8 +188,6 @@ namespace MediaBrowser.Api.Music
             {
                 TotalRecordCount = list.Count
             };
-
-            var dtoOptions = GetDtoOptions(_authContext, request);
 
             result.Items = (await _dtoService.GetBaseItemDtos(list.Take(request.Limit ?? list.Count), dtoOptions, user).ConfigureAwait(false)).ToArray();
 

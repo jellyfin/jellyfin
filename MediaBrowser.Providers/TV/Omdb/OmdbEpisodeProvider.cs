@@ -12,7 +12,7 @@ using MediaBrowser.Providers.Omdb;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Providers.TV

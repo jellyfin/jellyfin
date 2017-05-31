@@ -22,11 +22,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableAutoUpdate { get; set; }
 
         /// <summary>
-        /// Gets of sets a value indicating the level of system updates (Release, Beta, Dev)
-        /// </summary>
-        public PackageVersionClass SystemUpdateLevel { get; set; }
-
-        /// <summary>
         /// The number of days we should retain log files
         /// </summary>
         /// <value>The log file retention days.</value>

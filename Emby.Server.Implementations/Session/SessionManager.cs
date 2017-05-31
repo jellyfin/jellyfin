@@ -30,6 +30,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Threading;
 
 namespace Emby.Server.Implementations.Session
@@ -984,7 +985,7 @@ namespace Emby.Server.Implementations.Session
                 var list = new List<BaseItem>();
                 foreach (var itemId in command.ItemIds)
                 {
-                    var subItems = await TranslateItemForPlayback(itemId, user).ConfigureAwait(false);
+                    var subItems = TranslateItemForPlayback(itemId, user);
                     list.AddRange(subItems);
                 }
 
@@ -1022,7 +1023,10 @@ namespace Emby.Server.Implementations.Session
                     var series = episode.Series;
                     if (series != null)
                     {
-                        var episodes = series.GetEpisodes(user)
+                        var episodes = series.GetEpisodes(user, new DtoOptions(false)
+                        {
+                            EnableImages = false
+                        })
                             .Where(i => !i.IsVirtualItem)
                             .SkipWhile(i => i.Id != episode.Id)
                             .ToList();
@@ -1048,7 +1052,7 @@ namespace Emby.Server.Implementations.Session
             await session.SessionController.SendPlayCommand(command, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<List<BaseItem>> TranslateItemForPlayback(string id, User user)
+        private List<BaseItem> TranslateItemForPlayback(string id, User user)
         {
             var item = _libraryManager.GetItemById(id);
 
@@ -1065,7 +1069,15 @@ namespace Emby.Server.Implementations.Session
                 var items = byName.GetTaggedItems(new InternalItemsQuery(user)
                 {
                     IsFolder = false,
-                    Recursive = true
+                    Recursive = true,
+                    DtoOptions = new DtoOptions(false)
+                    {
+                        EnableImages = false,
+                        Fields = new List<ItemFields>
+                        {
+                            ItemFields.SortName
+                        }
+                    }
                 });
 
                 return FilterToSingleMediaType(items)
@@ -1077,12 +1089,20 @@ namespace Emby.Server.Implementations.Session
             {
                 var folder = (Folder)item;
 
-                var itemsResult = await folder.GetItems(new InternalItemsQuery(user)
+                var itemsResult = folder.GetItems(new InternalItemsQuery(user)
                 {
                     Recursive = true,
-                    IsFolder = false
+                    IsFolder = false,
+                    DtoOptions = new DtoOptions(false)
+                    {
+                        EnableImages = false,
+                        Fields = new List<ItemFields>
+                        {
+                            ItemFields.SortName
+                        }
+                    }
 
-                }).ConfigureAwait(false);
+                });
 
                 return FilterToSingleMediaType(itemsResult.Items)
                     .OrderBy(i => i.SortName)
@@ -1111,7 +1131,7 @@ namespace Emby.Server.Implementations.Session
                 return new List<BaseItem>();
             }
 
-            return _musicManager.GetInstantMixFromItem(item, user);
+            return _musicManager.GetInstantMixFromItem(item, user, new DtoOptions(false) { EnableImages = false });
         }
 
         public Task SendBrowseCommand(string controllingSessionId, string sessionId, BrowseRequest command, CancellationToken cancellationToken)

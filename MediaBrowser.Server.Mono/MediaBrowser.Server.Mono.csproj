@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{175A9388-F352-4586-A6B4-070DED62B644}</ProjectGuid>
@@ -14,61 +14,33 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <TargetFrameworkProfile />
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
-    <Externalconsole>true</Externalconsole>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Externalconsole>true</Externalconsole>
     <Prefer32Bit>false</Prefer32Bit>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Mono|AnyCPU' ">
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Release Mono</OutputPath>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release Mono|x86'">
-    <Prefer32Bit>false</Prefer32Bit>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Emby.Common.Implementations">
-      <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
-    </Reference>
     <Reference Include="Emby.Server.CinemaMode">
       <HintPath>..\ThirdParty\emby\Emby.Server.CinemaMode.dll</HintPath>
     </Reference>
     <Reference Include="Emby.Server.Connect">
       <HintPath>..\ThirdParty\emby\Emby.Server.Connect.dll</HintPath>
-    </Reference>
-    <Reference Include="Emby.Server.Core">
-      <HintPath>..\ThirdParty\emby\Emby.Server.Core.dll</HintPath>
     </Reference>
     <Reference Include="Emby.Server.Sync">
       <HintPath>..\ThirdParty\emby\Emby.Server.Sync.dll</HintPath>
@@ -78,19 +50,18 @@
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.4.3\lib\net45\NLog.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\NLog.4.4.9\lib\net45\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Text, Version=4.5.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ServiceStack.Text.4.5.4\lib\net45\ServiceStack.Text.dll</HintPath>
+    <Reference Include="ServiceStack.Text, Version=4.5.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.Text.4.5.8\lib\net45\ServiceStack.Text.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SharpCompress, Version=0.14.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpCompress.0.14.0\lib\net45\SharpCompress.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SimpleInjector, Version=3.3.2.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
-      <HintPath>..\packages\SimpleInjector.3.3.2\lib\net45\SimpleInjector.dll</HintPath>
+    <Reference Include="SimpleInjector, Version=4.0.7.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.4.0.7\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SQLitePCLRaw.core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
@@ -109,8 +80,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -134,6 +103,10 @@
       <Project>{713f42b5-878e-499d-a878-e4c652b1d5e8}</Project>
       <Name>DvdLib</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Emby.Common.Implementations\Emby.Common.Implementations.csproj">
+      <Project>{1e37a338-9f57-4b70-bd6d-bb9c591e319b}</Project>
+      <Name>Emby.Common.Implementations</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj">
       <Project>{805844ab-e92f-45e6-9d99-4f6d48d129a5}</Project>
       <Name>Emby.Dlna</Name>
@@ -141,10 +114,6 @@
     <ProjectReference Include="..\Emby.Drawing.ImageMagick\Emby.Drawing.ImageMagick.csproj">
       <Project>{6cfee013-6e7c-432b-ac37-cabf0880c69a}</Project>
       <Name>Emby.Drawing.ImageMagick</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Emby.Drawing.Net\Emby.Drawing.Net.csproj">
-      <Project>{c97a239e-a96c-4d64-a844-ccf8cc30aecb}</Project>
-      <Name>Emby.Drawing.Net</Name>
     </ProjectReference>
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj">
       <Project>{08fff49b-f175-4807-a2b5-73b0ebd9f716}</Project>
@@ -154,13 +123,13 @@
       <Project>{89ab4548-770d-41fd-a891-8daff44f452c}</Project>
       <Name>Emby.Photos</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Emby.Server.Core\Emby.Server.Core.csproj">
+      <Project>{776b9f0c-5195-45e3-9a36-1cc1f0d8e0b0}</Project>
+      <Name>Emby.Server.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj">
       <Project>{e383961b-9356-4d5d-8233-9a1079d03055}</Project>
       <Name>Emby.Server.Implementations</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Server.Startup.Common\MediaBrowser.Server.Startup.Common.csproj">
-      <Project>{b90ab8f2-1bff-4568-a3fd-2a338a435a75}</Project>
-      <Name>MediaBrowser.Server.Startup.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj">
       <Project>{5624B7B5-B5A7-41D8-9F10-CC5611109619}</Project>
@@ -202,6 +171,10 @@
       <Project>{23499896-B135-4527-8574-C26E926EA99E}</Project>
       <Name>MediaBrowser.XbmcMetadata</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj">
+      <Project>{cb7f2326-6497-4a3d-ba03-48513b17a7be}</Project>
+      <Name>Mono.Nat</Name>
+    </ProjectReference>
     <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj">
       <Project>{4a4402d4-e910-443b-b8fc-2c18286a2ca0}</Project>
       <Name>OpenSubtitlesHandler</Name>
@@ -209,10 +182,6 @@
     <ProjectReference Include="..\RSSDP\RSSDP.csproj">
       <Project>{21002819-c39a-4d3e-be83-2a276a77fb1f}</Project>
       <Name>RSSDP</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SocketHttpListener.Portable\SocketHttpListener.Portable.csproj">
-      <Project>{4f26d5d8-a7b0-42b3-ba42-7cb7d245934e}</Project>
-      <Name>SocketHttpListener.Portable</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

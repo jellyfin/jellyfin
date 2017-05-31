@@ -17,9 +17,9 @@ namespace MediaBrowser.Providers.Music
             return MovieDbProvider.Current.GetItemMetadata<MusicVideo>(info, cancellationToken);
         }
 
-        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MusicVideoInfo searchInfo, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MusicVideoInfo searchInfo, CancellationToken cancellationToken)
         {
-            return new List<RemoteSearchResult>();
+            return Task.FromResult((IEnumerable<RemoteSearchResult>)new List<RemoteSearchResult>());
         }
 
         public string Name

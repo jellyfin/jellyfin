@@ -57,10 +57,10 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{BaseItemDto}.</returns>
         private BaseItemDto GetItem(GetMusicGenre request)
         {
-            var item = GetMusicGenre(request.Name, LibraryManager);
-            
             var dtoOptions = GetDtoOptions(AuthorizationContext, request);
 
+            var item = GetMusicGenre(request.Name, LibraryManager, dtoOptions);
+            
             if (!string.IsNullOrWhiteSpace(request.UserId))
             {
                 var user = UserManager.GetUserById(request.UserId);

@@ -55,19 +55,9 @@ namespace MediaBrowser.ServerApplication
             LoopUtil.Run(appName);
         }
 
-        public override PackageVersionClass SystemUpdateLevel
-        {
-            get { return UpdateLevelHelper.GetSystemUpdateLevel(ConfigurationManager); }
-        }
-
         protected override List<Assembly> GetAssembliesWithPartsInternal()
         {
             var list = new List<Assembly>();
-
-            if (!Environment.Is64BitProcess)
-            {
-                //list.Add(typeof(PismoIsoManager).Assembly);
-            }
 
             list.Add(typeof(DefaultIntroProvider).Assembly);
             list.Add(typeof(ConnectManager).Assembly);

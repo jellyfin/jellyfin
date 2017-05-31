@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
@@ -114,7 +114,11 @@ namespace MediaBrowser.Providers.TV
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
                 Recursive = true,
-                GroupByPresentationUniqueKey = false
+                GroupByPresentationUniqueKey = false,
+                DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                }
 
             }).Cast<Series>()
             .ToList();
@@ -325,7 +329,11 @@ namespace MediaBrowser.Providers.TV
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
                 Recursive = true,
-                GroupByPresentationUniqueKey = false
+                GroupByPresentationUniqueKey = false,
+                DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                }
 
             }).Cast<Series>();
 

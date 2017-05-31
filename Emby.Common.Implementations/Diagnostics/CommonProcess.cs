@@ -31,14 +31,12 @@ namespace Emby.Common.Implementations.Diagnostics
                 RedirectStandardOutput = options.RedirectStandardOutput
             };
 
-#if NET46
             startInfo.ErrorDialog = options.ErrorDialog;
 
             if (options.IsHidden)
             {
                 startInfo.WindowStyle = ProcessWindowStyle.Hidden;
             }
-#endif    
 
             _process = new Process
             {
@@ -98,6 +96,11 @@ namespace Emby.Common.Implementations.Diagnostics
         public bool WaitForExit(int timeMs)
         {
             return _process.WaitForExit(timeMs);
+        }
+
+        public Task<bool> WaitForExitAsync(int timeMs)
+        {
+            return Task.FromResult(_process.WaitForExit(timeMs));
         }
 
         public void Dispose()

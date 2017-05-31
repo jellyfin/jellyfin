@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 
@@ -21,6 +21,8 @@ namespace MediaBrowser.Controller.Net
         /// <param name="responseHeaders">The response headers.</param>
         /// <returns>System.Object.</returns>
         object GetResult(object content, string contentType, IDictionary<string,string> responseHeaders = null);
+
+        object GetRedirectResult(string url);
 
         /// <summary>
         /// Gets the optimized result.

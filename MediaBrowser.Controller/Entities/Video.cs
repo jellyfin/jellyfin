@@ -11,7 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
@@ -282,12 +282,10 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<Video> GetLinkedAlternateVersions()
         {
-            var linkedVersions = LinkedAlternateVersions
+            return LinkedAlternateVersions
                 .Select(GetLinkedChild)
                 .Where(i => i != null)
-                .OfType<Video>();
-
-            return linkedVersions
+                .OfType<Video>()
                 .OrderBy(i => i.SortName);
         }
 
@@ -554,7 +552,7 @@ namespace MediaBrowser.Controller.Entities
             if (SourceType == SourceType.Channel)
             {
                 var sources = ChannelManager.GetStaticMediaSources(this, CancellationToken.None)
-                           .Result.ToList();
+                           .ToList();
 
                 if (sources.Count > 0)
                 {
@@ -630,21 +628,24 @@ namespace MediaBrowser.Controller.Entities
             {
                 info.Path = media.ShortcutPath;
 
-                if (info.Path.StartsWith("Http", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(info.Path))
                 {
-                    info.Protocol = MediaProtocol.Http;
-                }
-                else if (info.Path.StartsWith("Rtmp", StringComparison.OrdinalIgnoreCase))
-                {
-                    info.Protocol = MediaProtocol.Rtmp;
-                }
-                else if (info.Path.StartsWith("Rtsp", StringComparison.OrdinalIgnoreCase))
-                {
-                    info.Protocol = MediaProtocol.Rtsp;
-                }
-                else
-                {
-                    info.Protocol = MediaProtocol.File;
+                    if (info.Path.StartsWith("Http", StringComparison.OrdinalIgnoreCase))
+                    {
+                        info.Protocol = MediaProtocol.Http;
+                    }
+                    else if (info.Path.StartsWith("Rtmp", StringComparison.OrdinalIgnoreCase))
+                    {
+                        info.Protocol = MediaProtocol.Rtmp;
+                    }
+                    else if (info.Path.StartsWith("Rtsp", StringComparison.OrdinalIgnoreCase))
+                    {
+                        info.Protocol = MediaProtocol.Rtsp;
+                    }
+                    else
+                    {
+                        info.Protocol = MediaProtocol.File;
+                    }
                 }
             }
 

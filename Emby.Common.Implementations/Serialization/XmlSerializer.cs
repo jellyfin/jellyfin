@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 
@@ -78,18 +77,11 @@ namespace Emby.Common.Implementations.Serialization
         /// <param name="stream">The stream.</param>
         public void SerializeToStream(object obj, Stream stream)
         {
-#if NET46
-            using (var writer = new XmlTextWriter(stream, null))            
+            using (var writer = new XmlTextWriter(stream, null))
             {
                 writer.Formatting = Formatting.Indented;
                 SerializeToWriter(obj, writer);
             }
-#else
-            using (var writer = XmlWriter.Create(stream))
-            {
-                SerializeToWriter(obj, writer);
-            }
-#endif
         }
 
         /// <summary>

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Extensions;
 
 namespace Emby.Server.Implementations.Library
@@ -175,7 +176,17 @@ namespace Emby.Server.Implementations.Library
                 IsNews = query.IsNews,
                 IsSeries = query.IsSeries,
                 IsSports = query.IsSports,
-                MediaTypes = query.MediaTypes
+                MediaTypes = query.MediaTypes,
+
+                DtoOptions = new DtoOptions
+                {
+                    Fields = new List<ItemFields>
+                    {
+                         ItemFields.AirTime,
+                         ItemFields.DateCreated,
+                         ItemFields.ChannelInfo
+                    }
+                }
             });
 
             // Add search hints based on item name

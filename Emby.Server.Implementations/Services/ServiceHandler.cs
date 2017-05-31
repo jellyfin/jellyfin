@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.Logging;
@@ -123,7 +124,7 @@ namespace Emby.Server.Implementations.Services
         // Set from SSHHF.GetHandlerForPathInfo()
         public string ResponseContentType { get; set; }
 
-        public async Task ProcessRequestAsync(HttpListenerHost appHost, IRequest httpReq, IResponse httpRes, ILogger logger, string operationName)
+        public async Task ProcessRequestAsync(HttpListenerHost appHost, IRequest httpReq, IResponse httpRes, ILogger logger, string operationName, CancellationToken cancellationToken)
         {
             var restPath = GetRestPath(httpReq.Verb, httpReq.PathInfo);
             if (restPath == null)
@@ -142,7 +143,8 @@ namespace Emby.Server.Implementations.Services
 
             var rawResponse = await appHost.ServiceController.Execute(appHost, request, httpReq).ConfigureAwait(false);
 
-            var response = await HandleResponseAsync(rawResponse).ConfigureAwait(false);
+            //var response = await HandleResponseAsync(rawResponse).ConfigureAwait(false);
+            var response = rawResponse;
 
             // Apply response filters
             foreach (var responseFilter in appHost.ResponseFilters)
@@ -150,7 +152,7 @@ namespace Emby.Server.Implementations.Services
                 responseFilter(httpReq, httpRes, response);
             }
 
-            await ResponseHelper.WriteToResponse(httpRes, httpReq, response).ConfigureAwait(false);
+            await ResponseHelper.WriteToResponse(httpRes, httpReq, response, cancellationToken).ConfigureAwait(false);
         }
 
         public static object CreateRequest(HttpListenerHost host, IRequest httpReq, RestPath restPath, ILogger logger)

@@ -15,7 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Diagnostics;
@@ -399,7 +399,7 @@ namespace MediaBrowser.Api
             }
         }
 
-        private async void PingTimer(TranscodingJob job, bool isProgressCheckIn)
+        private void PingTimer(TranscodingJob job, bool isProgressCheckIn)
         {
             if (job.HasExited)
             {

@@ -5,6 +5,7 @@ using MediaBrowser.Model.Users;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 
@@ -144,12 +145,12 @@ namespace MediaBrowser.Controller.Entities.TV
         /// Creates the name of the sort.
         /// </summary>
         /// <returns>System.String.</returns>
-        protected override string CreateSortName()
+        protected override string CreateSortNameInternal()
         {
             return IndexNumber != null ? IndexNumber.Value.ToString("0000") : Name;
         }
 
-        protected override Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
+        protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
             if (query.User == null)
             {
@@ -160,41 +161,39 @@ namespace MediaBrowser.Controller.Entities.TV
 
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
-            var items = GetEpisodes(user).Where(filter);
+            var items = GetEpisodes(user, query.DtoOptions).Where(filter);
 
             var result = PostFilterAndSort(items, query, false, false);
 
-            return Task.FromResult(result);
+            return result;
         }
 
         /// <summary>
         /// Gets the episodes.
         /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{Episode}.</returns>
-        public IEnumerable<Episode> GetEpisodes(User user)
+        public IEnumerable<Episode> GetEpisodes(User user, DtoOptions options)
         {
-            return GetEpisodes(Series, user);
+            return GetEpisodes(Series, user, options);
         }
 
-        public IEnumerable<Episode> GetEpisodes(Series series, User user)
+        public IEnumerable<Episode> GetEpisodes(Series series, User user, DtoOptions options)
         {
-            return GetEpisodes(series, user, null);
+            return GetEpisodes(series, user, null, options);
         }
 
-        public IEnumerable<Episode> GetEpisodes(Series series, User user, IEnumerable<Episode> allSeriesEpisodes)
+        public IEnumerable<Episode> GetEpisodes(Series series, User user, IEnumerable<Episode> allSeriesEpisodes, DtoOptions options)
         {
-            return series.GetSeasonEpisodes(this, user, allSeriesEpisodes);
+            return series.GetSeasonEpisodes(this, user, allSeriesEpisodes, options);
         }
 
         public IEnumerable<Episode> GetEpisodes()
         {
-            return Series.GetSeasonEpisodes(this, null, null);
+            return Series.GetSeasonEpisodes(this, null, null, new DtoOptions(true));
         }
 
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
-            return GetEpisodes(user);
+            return GetEpisodes(user, new DtoOptions(true));
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)

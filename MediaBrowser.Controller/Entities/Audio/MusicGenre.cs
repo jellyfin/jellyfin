@@ -91,16 +91,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
-        public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
-        {
-            return inputItems.Where(GetItemFilter());
-        }
-
-        public Func<BaseItem, bool> GetItemFilter()
-        {
-            return i => i is IHasMusicGenres && i.Genres.Contains(Name, StringComparer.OrdinalIgnoreCase);
-        }
-
         [IgnoreDataMember]
         public override bool SupportsPeople
         {

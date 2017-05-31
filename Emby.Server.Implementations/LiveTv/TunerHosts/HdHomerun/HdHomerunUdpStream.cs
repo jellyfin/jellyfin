@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
@@ -14,39 +15,35 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
     public class HdHomerunUdpStream : LiveStream, IDirectStreamProvider
     {
         private readonly ILogger _logger;
-        private readonly IHttpClient _httpClient;
-        private readonly IFileSystem _fileSystem;
-        private readonly IServerApplicationPaths _appPaths;
         private readonly IServerApplicationHost _appHost;
         private readonly ISocketFactory _socketFactory;
 
         private readonly CancellationTokenSource _liveStreamCancellationTokenSource = new CancellationTokenSource();
         private readonly TaskCompletionSource<bool> _liveStreamTaskCompletionSource = new TaskCompletionSource<bool>();
-        private readonly MulticastStream _multicastStream;
         private readonly IHdHomerunChannelCommands _channelCommands;
         private readonly int _numTuners;
         private readonly INetworkManager _networkManager;
 
-        public HdHomerunUdpStream(MediaSourceInfo mediaSource, string originalStreamId, IHdHomerunChannelCommands channelCommands, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager)
-            : base(mediaSource)
+        private readonly string _tempFilePath;
+
+        public HdHomerunUdpStream(MediaSourceInfo mediaSource, string originalStreamId, IHdHomerunChannelCommands channelCommands, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager, IEnvironmentInfo environment)
+            : base(mediaSource, environment, fileSystem)
         {
-            _fileSystem = fileSystem;
-            _httpClient = httpClient;
             _logger = logger;
-            _appPaths = appPaths;
             _appHost = appHost;
             _socketFactory = socketFactory;
             _networkManager = networkManager;
             OriginalStreamId = originalStreamId;
-            _multicastStream = new MulticastStream(_logger);
             _channelCommands = channelCommands;
             _numTuners = numTuners;
+            _tempFilePath = Path.Combine(appPaths.TranscodingTempPath, UniqueId + ".ts");
         }
 
         protected override async Task OpenInternal(CancellationToken openCancellationToken)
@@ -70,9 +67,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             OpenedMediaSource.Path = _appHost.GetLocalApiUrl("127.0.0.1") + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             OpenedMediaSource.Protocol = MediaProtocol.Http;
-            OpenedMediaSource.SupportsDirectPlay = false;
-            OpenedMediaSource.SupportsDirectStream = true;
-            OpenedMediaSource.SupportsTranscoding = true;
+            //OpenedMediaSource.SupportsDirectPlay = false;
+            //OpenedMediaSource.SupportsDirectStream = true;
+            //OpenedMediaSource.SupportsTranscoding = true;
 
             await taskCompletionSource.Task.ConfigureAwait(false);
 
@@ -87,9 +84,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return _liveStreamTaskCompletionSource.Task;
         }
 
-        private async Task StartStreaming(string remoteIp, int localPort, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        private Task StartStreaming(string remoteIp, int localPort, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
-            await Task.Run(async () =>
+            return Task.Run(async () =>
             {
                 var isFirstAttempt = true;
                 using (var udpClient = _socketFactory.CreateUdpSocket(localPort))
@@ -124,13 +121,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                                 if (!cancellationToken.IsCancellationRequested)
                                 {
-                                    Action onStarted = null;
-                                    if (isFirstAttempt)
+                                    FileSystem.CreateDirectory(FileSystem.GetDirectoryName(_tempFilePath));
+                                    using (var fileStream = FileSystem.GetFileStream(_tempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.Asynchronous))
                                     {
-                                        onStarted = () => openTaskCompletionSource.TrySetResult(true);
+                                        await CopyTo(udpClient, fileStream, openTaskCompletionSource, cancellationToken).ConfigureAwait(false);
                                     }
-
-                                    await _multicastStream.CopyUntilCancelled(new UdpClientStream(udpClient), onStarted, cancellationToken).ConfigureAwait(false);
                                 }
                             }
                             catch (OperationCanceledException ex)
@@ -159,135 +154,109 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     }
                 }
 
-            }).ConfigureAwait(false);
+                await DeleteTempFile(_tempFilePath).ConfigureAwait(false);
+            });
+        }
+
+        private void Resolve(TaskCompletionSource<bool> openTaskCompletionSource)
+        {
+            Task.Run(() =>
+           {
+               openTaskCompletionSource.TrySetResult(true);
+           });
         }
 
         public Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
         {
-            return _multicastStream.CopyToAsync(stream);
+            return CopyFileTo(_tempFilePath, false, stream, cancellationToken);
         }
-    }
 
-    // This handles the ReadAsync function only of a Stream object
-    // This is used to wrap a UDP socket into a stream for MulticastStream which only uses ReadAsync
-    public class UdpClientStream : Stream
-    {
+        protected async Task CopyFileTo(string path, bool allowEndOfFile, Stream outputStream, CancellationToken cancellationToken)
+        {
+            var eofCount = 0;
+
+            long startPosition = -25000;
+            if (startPosition < 0)
+            {
+                var length = FileSystem.GetFileInfo(path).Length;
+                startPosition = Math.Max(length - startPosition, 0);
+            }
+
+            using (var inputStream = GetInputStream(path, startPosition, true))
+            {
+                if (startPosition > 0)
+                {
+                    inputStream.Position = startPosition;
+                }
+
+                while (eofCount < 20 || !allowEndOfFile)
+                {
+                    var bytesRead = await AsyncStreamCopier.CopyStream(inputStream, outputStream, 81920, 4, cancellationToken).ConfigureAwait(false);
+
+                    //var position = fs.Position;
+                    //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
+
+                    if (bytesRead == 0)
+                    {
+                        eofCount++;
+                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        eofCount = 0;
+                    }
+                }
+            }
+        }
+
         private static int RtpHeaderBytes = 12;
-        private static int PacketSize = 1316;
-        private readonly ISocket _udpClient;
-        bool disposed;
-
-        public UdpClientStream(ISocket udpClient) : base()
+        private Task CopyTo(ISocket udpClient, Stream outputStream, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
-            _udpClient = udpClient;
+            return CopyStream(_socketFactory.CreateNetworkStream(udpClient, false), outputStream, 81920, 4, openTaskCompletionSource, cancellationToken);
         }
 
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        private Task CopyStream(Stream source, Stream target, int bufferSize, int bufferCount, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
-            if (buffer == null)
-                throw new ArgumentNullException("buffer");
+            var copier = new AsyncStreamCopier(source, target, 0, cancellationToken, false, bufferSize, bufferCount);
+            copier.IndividualReadOffset = RtpHeaderBytes;
 
-            if (offset + count < 0)
-                throw new ArgumentOutOfRangeException("offset + count must not be negative", "offset+count");
+            var taskCompletion = new TaskCompletionSource<long>();
 
-            if (offset + count > buffer.Length)
-                throw new ArgumentException("offset + count must not be greater than the length of buffer", "offset+count");
+            copier.TaskCompletionSource = taskCompletion;
 
-            if (disposed)
-                throw new ObjectDisposedException(typeof(UdpClientStream).ToString());
+            var result = copier.BeginCopy(StreamCopyCallback, copier);
 
-            // This will always receive a 1328 packet size (PacketSize + RtpHeaderSize)
-            // The RTP header will be stripped so see how many reads we need to make to fill the buffer.
-            int numReads = count / PacketSize;
-            int totalBytesRead = 0;
-
-            for (int i = 0; i < numReads; ++i)
+            if (openTaskCompletionSource != null)
             {
-                var data = await _udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-
-                var bytesRead = data.ReceivedBytes - RtpHeaderBytes;
-                
-                // remove rtp header
-                Buffer.BlockCopy(data.Buffer, RtpHeaderBytes, buffer, offset, bytesRead);
-                offset += bytesRead;
-                totalBytesRead += bytesRead;
+                Resolve(openTaskCompletionSource);
+                openTaskCompletionSource = null;
             }
-            return totalBytesRead;
-        }
 
-        protected override void Dispose(bool disposing)
-        {
-            disposed = true;
-        }
-
-        public override bool CanRead
-        {
-            get
+            if (result.CompletedSynchronously)
             {
-                throw new NotImplementedException();
+                StreamCopyCallback(result);
+            }
+
+            cancellationToken.Register(() => taskCompletion.TrySetCanceled());
+
+            return taskCompletion.Task;
+        }
+
+        private void StreamCopyCallback(IAsyncResult result)
+        {
+            var copier = (AsyncStreamCopier)result.AsyncState;
+            var taskCompletion = copier.TaskCompletionSource;
+
+            try
+            {
+                copier.EndCopy(result);
+                taskCompletion.TrySetResult(0);
+            }
+            catch (Exception ex)
+            {
+                taskCompletion.TrySetException(ex);
             }
         }
 
-        public override bool CanSeek
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public override bool CanWrite
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public override long Length
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public override long Position
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public override void Flush()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void SetLength(long value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -325,6 +325,24 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        public bool? IsTargetInterlaced
+        {
+            get
+            {
+                if (Options.Static)
+                {
+                    return VideoStream == null ? (bool?)null : VideoStream.IsInterlaced;
+                }
+
+                if (DeInterlace)
+                {
+                    return false;
+                }
+
+                return VideoStream == null ? (bool?)null : VideoStream.IsInterlaced;
+            }
+        }
+
         public bool? IsTargetAVC
         {
             get

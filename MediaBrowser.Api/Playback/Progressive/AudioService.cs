@@ -9,11 +9,10 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.System;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -35,6 +34,10 @@ namespace MediaBrowser.Api.Playback.Progressive
     //[Authenticated]
     public class AudioService : BaseProgressiveStreamingService
     {
+        public AudioService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext, IImageProcessor imageProcessor, IEnvironmentInfo environmentInfo) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, jsonSerializer, authorizationContext, imageProcessor, environmentInfo)
+        {
+        }
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -60,10 +63,6 @@ namespace MediaBrowser.Api.Playback.Progressive
             var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
 
             return EncodingHelper.GetProgressiveAudioFullCommandLine(state, encodingOptions, outputPath);
-        }
-
-        public AudioService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext, IImageProcessor imageProcessor) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, jsonSerializer, authorizationContext, imageProcessor)
-        {
         }
     }
 }

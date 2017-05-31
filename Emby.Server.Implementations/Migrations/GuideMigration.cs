@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.Migrations
             _taskManager = taskManager;
         }
 
-        public async Task Run()
+        public Task Run()
         {
             var name = "GuideRefresh3";
 
@@ -42,6 +42,8 @@ namespace Emby.Server.Implementations.Migrations
                 _config.Configuration.Migrations = list.ToArray();
                 _config.SaveConfiguration();
             }
+
+            return Task.FromResult(true);
         }
     }
 }

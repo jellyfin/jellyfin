@@ -5,9 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Serialization;
 
@@ -46,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         {
             if (!_hasChildren.HasValue)
             {
-                _hasChildren = LibraryManager.GetItemIds(new InternalItemsQuery { ParentId = Id }).Count > 0;
+                _hasChildren = LibraryManager.GetItemIds(new InternalItemsQuery { Parent = this }).Count > 0;
             }
 
             return _hasChildren.Value;

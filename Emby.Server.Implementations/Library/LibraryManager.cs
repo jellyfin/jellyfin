@@ -40,7 +40,8 @@ using MediaBrowser.Model.Net;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = MediaBrowser.Naming.Video.VideoResolver;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.IO;
+
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Tasks;
 
@@ -313,7 +314,8 @@ namespace Emby.Server.Implementations.Library
             {
                 IncludeItemTypes = new[] { typeof(Season).Name },
                 Recursive = true,
-                IndexNumber = 0
+                IndexNumber = 0,
+                DtoOptions = new DtoOptions(true)
 
             }).Cast<Season>()
                 .Where(i => !string.Equals(i.Name, newName, StringComparison.Ordinal))
@@ -342,7 +344,7 @@ namespace Emby.Server.Implementations.Library
             }
             if (item is IItemByName)
             {
-                if (!(item is MusicArtist) && !(item is Studio))
+                if (!(item is MusicArtist))
                 {
                     return;
                 }
@@ -862,13 +864,19 @@ namespace Emby.Server.Implementations.Library
             // If this returns multiple items it could be tricky figuring out which one is correct. 
             // In most cases, the newest one will be and the others obsolete but not yet cleaned up
 
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             var query = new InternalItemsQuery
             {
                 Path = path,
                 IsFolder = isFolder,
                 SortBy = new[] { ItemSortBy.DateCreated },
                 SortOrder = SortOrder.Descending,
-                Limit = 1
+                Limit = 1,
+                DtoOptions = new DtoOptions(true)
             };
 
             return GetItemList(query)
@@ -882,7 +890,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Person}.</returns>
         public Person GetPerson(string name)
         {
-            return CreateItemByName<Person>(Person.GetPath, name);
+            return CreateItemByName<Person>(Person.GetPath, name, new DtoOptions(true));
         }
 
         /// <summary>
@@ -892,7 +900,27 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Studio}.</returns>
         public Studio GetStudio(string name)
         {
-            return CreateItemByName<Studio>(Studio.GetPath, name);
+            return CreateItemByName<Studio>(Studio.GetPath, name, new DtoOptions(true));
+        }
+
+        public Guid GetStudioId(string name)
+        {
+            return GetItemByNameId<Studio>(Studio.GetPath, name);
+        }
+
+        public Guid GetGenreId(string name)
+        {
+            return GetItemByNameId<Genre>(Genre.GetPath, name);
+        }
+
+        public Guid GetMusicGenreId(string name)
+        {
+            return GetItemByNameId<MusicGenre>(MusicGenre.GetPath, name);
+        }
+
+        public Guid GetGameGenreId(string name)
+        {
+            return GetItemByNameId<GameGenre>(GameGenre.GetPath, name);
         }
 
         /// <summary>
@@ -902,7 +930,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Genre}.</returns>
         public Genre GetGenre(string name)
         {
-            return CreateItemByName<Genre>(Genre.GetPath, name);
+            return CreateItemByName<Genre>(Genre.GetPath, name, new DtoOptions(true));
         }
 
         /// <summary>
@@ -912,7 +940,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{MusicGenre}.</returns>
         public MusicGenre GetMusicGenre(string name)
         {
-            return CreateItemByName<MusicGenre>(MusicGenre.GetPath, name);
+            return CreateItemByName<MusicGenre>(MusicGenre.GetPath, name, new DtoOptions(true));
         }
 
         /// <summary>
@@ -922,7 +950,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{GameGenre}.</returns>
         public GameGenre GetGameGenre(string name)
         {
-            return CreateItemByName<GameGenre>(GameGenre.GetPath, name);
+            return CreateItemByName<GameGenre>(GameGenre.GetPath, name, new DtoOptions(true));
         }
 
         /// <summary>
@@ -940,7 +968,7 @@ namespace Emby.Server.Implementations.Library
 
             var name = value.ToString(CultureInfo.InvariantCulture);
 
-            return CreateItemByName<Year>(Year.GetPath, name);
+            return CreateItemByName<Year>(Year.GetPath, name, new DtoOptions(true));
         }
 
         /// <summary>
@@ -950,10 +978,15 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Genre}.</returns>
         public MusicArtist GetArtist(string name)
         {
-            return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name);
+            return GetArtist(name, new DtoOptions(true));
         }
 
-        private T CreateItemByName<T>(Func<string, string> getPathFn, string name)
+        public MusicArtist GetArtist(string name, DtoOptions options)
+        {
+            return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name, options);
+        }
+
+        private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options)
             where T : BaseItem, new()
         {
             if (typeof(T) == typeof(MusicArtist))
@@ -961,7 +994,8 @@ namespace Emby.Server.Implementations.Library
                 var existing = GetItemList(new InternalItemsQuery
                 {
                     IncludeItemTypes = new[] { typeof(T).Name },
-                    Name = name
+                    Name = name,
+                    DtoOptions = options
 
                 }).Cast<MusicArtist>()
                 .OrderBy(i => i.IsAccessedByName ? 1 : 0)
@@ -974,14 +1008,13 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var path = getPathFn(name);
-            var forceCaseInsensitiveId = ConfigurationManager.Configuration.EnableNormalizedItemByNameIds;
-            var id = GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
+            var id = GetItemByNameId<T>(getPathFn, name);
 
             var item = GetItemById(id) as T;
 
             if (item == null)
             {
+                var path = getPathFn(name);
                 item = new T
                 {
                     Name = name,
@@ -998,52 +1031,12 @@ namespace Emby.Server.Implementations.Library
             return item;
         }
 
-        public IEnumerable<MusicArtist> GetAlbumArtists(IEnumerable<IHasAlbumArtist> items)
+        private Guid GetItemByNameId<T>(Func<string, string> getPathFn, string name)
+              where T : BaseItem, new()
         {
-            var names = items
-                .SelectMany(i => i.AlbumArtists)
-                .DistinctNames()
-                .Select(i =>
-                {
-                    try
-                    {
-                        var artist = GetArtist(i);
-
-                        return artist;
-                    }
-                    catch
-                    {
-                        // Already logged at lower levels
-                        return null;
-                    }
-                })
-                .Where(i => i != null);
-
-            return names;
-        }
-
-        public IEnumerable<MusicArtist> GetArtists(IEnumerable<IHasArtist> items)
-        {
-            var names = items
-                .SelectMany(i => i.AllArtists)
-                .DistinctNames()
-                .Select(i =>
-                {
-                    try
-                    {
-                        var artist = GetArtist(i);
-
-                        return artist;
-                    }
-                    catch
-                    {
-                        // Already logged at lower levels
-                        return null;
-                    }
-                })
-                .Where(i => i != null);
-
-            return names;
+            var path = getPathFn(name);
+            var forceCaseInsensitiveId = ConfigurationManager.Configuration.EnableNormalizedItemByNameIds;
+            return GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
         }
 
         /// <summary>
@@ -1098,12 +1091,6 @@ namespace Emby.Server.Implementations.Library
             try
             {
                 await PerformLibraryValidation(progress, cancellationToken).ConfigureAwait(false);
-
-                if (!ConfigurationManager.Configuration.EnableSeriesPresentationUniqueKey)
-                {
-                    ConfigurationManager.Configuration.EnableSeriesPresentationUniqueKey = true;
-                    ConfigurationManager.SaveConfiguration();
-                }
             }
             finally
             {
@@ -1558,7 +1545,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            query.ParentId = null;
+            query.Parent = null;
         }
 
         private void AddUserToQuery(InternalItemsQuery query, User user)

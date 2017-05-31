@@ -191,18 +191,18 @@ namespace Emby.Drawing.Skia
         }
 
         private string[] TransparentImageTypes = new string[] { ".png", ".gif", ".webp" };
-        private SKBitmap Decode(string path)
+        private SKBitmap Decode(string path, bool forceCleanBitmap = false)
         {
             var requiresTransparencyHack = TransparentImageTypes.Contains(Path.GetExtension(path) ?? string.Empty);
 
-            if (requiresTransparencyHack)
+            if (requiresTransparencyHack || forceCleanBitmap)
             {
                 using (var stream = new SKFileStream(path))
                 {
                     var codec = SKCodec.Create(stream);
 
                     // create the bitmap
-                    var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height);
+                    var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
                     // decode
                     codec.GetPixels(bitmap.Info, bitmap.GetPixels());
 
@@ -210,7 +210,23 @@ namespace Emby.Drawing.Skia
                 }
             }
 
-            return SKBitmap.Decode(path);
+            var resultBitmap = SKBitmap.Decode(path);
+
+            if (resultBitmap == null)
+            {
+                return Decode(path, true);
+            }
+
+            // If we have to resize these they often end up distorted
+            if (resultBitmap.ColorType == SKColorType.Gray8)
+            {
+                using (resultBitmap)
+                {
+                    return Decode(path, true);
+                }
+            }
+
+            return resultBitmap;
         }
 
         private SKBitmap GetBitmap(string path, bool cropWhitespace)
@@ -226,7 +242,7 @@ namespace Emby.Drawing.Skia
             return Decode(path);
         }
 
-        public void EncodeImage(string inputPath, ImageSize? originalImageSize, string outputPath, bool autoOrient, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
+        public string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
             if (string.IsNullOrWhiteSpace(inputPath))
             {
@@ -246,9 +262,20 @@ namespace Emby.Drawing.Skia
 
             using (var bitmap = GetBitmap(inputPath, options.CropWhiteSpace))
             {
-                if (options.CropWhiteSpace || !originalImageSize.HasValue)
+                if (bitmap == null)
                 {
-                    originalImageSize = new ImageSize(bitmap.Width, bitmap.Height);
+                    throw new Exception(string.Format("Skia unable to read image {0}", inputPath));
+                }
+
+                //_logger.Info("Color type {0}", bitmap.Info.ColorType);
+
+                var originalImageSize = new ImageSize(bitmap.Width, bitmap.Height);
+                ImageHelper.SaveImageSize(inputPath, dateModified, originalImageSize);
+
+                if (!options.CropWhiteSpace && options.HasDefaultOptions(inputPath, originalImageSize))
+                {
+                    // Just spit out the original file if all the options are default
+                    return inputPath;
                 }
 
                 var newImageSize = ImageHelper.GetNewImageSize(options, originalImageSize);
@@ -269,7 +296,7 @@ namespace Emby.Drawing.Skia
                         using (var outputStream = new SKFileWStream(outputPath))
                         {
                             resizedBitmap.Encode(outputStream, skiaOutputFormat, quality);
-                            return;
+                            return outputPath;
                         }
                     }
 
@@ -326,6 +353,7 @@ namespace Emby.Drawing.Skia
                     }
                 }
             }
+            return outputPath;
         }
 
         public void CreateImageCollage(ImageCollageOptions options)
