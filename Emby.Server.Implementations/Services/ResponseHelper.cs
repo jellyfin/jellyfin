@@ -12,43 +12,28 @@ namespace Emby.Server.Implementations.Services
 {
     public static class ResponseHelper
     {
-        public static Task WriteToResponse(IResponse httpRes, IRequest httpReq, object result)
+        public static async Task WriteToResponse(IResponse response, IRequest request, object result, CancellationToken cancellationToken)
         {
             if (result == null)
             {
-                if (httpRes.StatusCode == (int)HttpStatusCode.OK)
+                if (response.StatusCode == (int)HttpStatusCode.OK)
                 {
-                    httpRes.StatusCode = (int)HttpStatusCode.NoContent;
+                    response.StatusCode = (int)HttpStatusCode.NoContent;
                 }
 
-                httpRes.SetContentLength(0);
-                return Task.FromResult(true);
+                response.SetContentLength(0);
+                return;
             }
 
             var httpResult = result as IHttpResult;
             if (httpResult != null)
             {
-                httpResult.RequestContext = httpReq;
-                httpReq.ResponseContentType = httpResult.ContentType ?? httpReq.ResponseContentType;
-                return WriteToResponseInternal(httpRes, httpResult, httpReq);
+                httpResult.RequestContext = request;
+                request.ResponseContentType = httpResult.ContentType ?? request.ResponseContentType;
             }
 
-            return WriteToResponseInternal(httpRes, result, httpReq);
-        }
-
-        /// <summary>
-        /// Writes to response.
-        /// Response headers are customizable by implementing IHasHeaders an returning Dictionary of Http headers.
-        /// </summary>
-        /// <param name="response">The response.</param>
-        /// <param name="result">Whether or not it was implicity handled by ServiceStack's built-in handlers.</param>
-        /// <param name="request">The serialization context.</param>
-        /// <returns></returns>
-        private static async Task WriteToResponseInternal(IResponse response, object result, IRequest request)
-        {
             var defaultContentType = request.ResponseContentType;
 
-            var httpResult = result as IHttpResult;
             if (httpResult != null)
             {
                 if (httpResult.RequestContext == null)
@@ -105,7 +90,7 @@ namespace Emby.Server.Implementations.Services
             var asyncStreamWriter = result as IAsyncStreamWriter;
             if (asyncStreamWriter != null)
             {
-                await asyncStreamWriter.WriteToAsync(response.OutputStream, CancellationToken.None).ConfigureAwait(false);
+                await asyncStreamWriter.WriteToAsync(response.OutputStream, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -119,7 +104,7 @@ namespace Emby.Server.Implementations.Services
             var fileWriter = result as FileWriter;
             if (fileWriter != null)
             {
-                await fileWriter.WriteToAsync(response, CancellationToken.None).ConfigureAwait(false);
+                await fileWriter.WriteToAsync(response, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -139,7 +124,7 @@ namespace Emby.Server.Implementations.Services
                 response.ContentType = "application/octet-stream";
                 response.SetContentLength(bytes.Length);
 
-                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -148,7 +133,7 @@ namespace Emby.Server.Implementations.Services
             {
                 bytes = Encoding.UTF8.GetBytes(responseText);
                 response.SetContentLength(bytes.Length);
-                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
                 return;
             }
 

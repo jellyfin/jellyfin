@@ -11,9 +11,7 @@ namespace Emby.Common.Implementations.Xml
 
             if (!enableValidation)
             {
-#if NET46
                 settings.ValidationType = ValidationType.None;
-#endif
             }
 
             return settings;

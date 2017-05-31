@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -188,16 +189,7 @@ namespace Emby.Common.Implementations.Net
 
             try
             {
-#if NET46
-				retVal.ExclusiveAddressUse = false;
-#else
-                // The ExclusiveAddressUse acceptSocket option is a Windows-specific option that, when set to "true," tells Windows not to allow another acceptSocket to use the same local address as this acceptSocket
-                // See https://github.com/dotnet/corefx/pull/11509 for more details
-                if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
-				{
-					retVal.ExclusiveAddressUse = false;
-				}
-#endif
+                retVal.ExclusiveAddressUse = false;
                 //retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
@@ -217,5 +209,89 @@ namespace Emby.Common.Implementations.Net
                 throw;
             }
         }
+
+        public Stream CreateNetworkStream(ISocket socket, bool ownsSocket)
+        {
+            var netSocket = (UdpSocket)socket;
+
+            return new SocketStream(netSocket.Socket, ownsSocket);
+        }
     }
+
+    public class SocketStream : Stream
+    {
+        private readonly Socket _socket;
+
+        public SocketStream(Socket socket, bool ownsSocket)
+        {
+            _socket = socket;
+        }
+
+        public override void Flush()
+        {
+        }
+
+        public override bool CanRead
+        {
+            get { return true; }
+        }
+        public override bool CanSeek
+        {
+            get { return false; }
+        }
+        public override bool CanWrite
+        {
+            get { return true; }
+        }
+        public override long Length
+        {
+            get { throw new NotImplementedException(); }
+        }
+        public override long Position
+        {
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            _socket.Send(buffer, offset, count, SocketFlags.None);
+        }
+
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        {
+            return _socket.BeginSend(buffer, offset, count, SocketFlags.None, callback, state);
+        }
+
+        public override void EndWrite(IAsyncResult asyncResult)
+        {
+            _socket.EndSend(asyncResult);
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            return _socket.Receive(buffer, offset, count, SocketFlags.None);
+        }
+
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        {
+            return _socket.BeginReceive(buffer, offset, count, SocketFlags.None, callback, state);
+        }
+
+        public override int EndRead(IAsyncResult asyncResult)
+        {
+            return _socket.EndReceive(asyncResult);
+        }
+    }
+
 }

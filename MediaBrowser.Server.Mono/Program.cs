@@ -14,15 +14,15 @@ using System.Threading.Tasks;
 using Emby.Common.Implementations.EnvironmentInfo;
 using Emby.Common.Implementations.Logging;
 using Emby.Common.Implementations.Networking;
-using Emby.Common.Implementations.Security;
+using Emby.Server.Core.Cryptography;
 using Emby.Server.Core;
+using Emby.Server.Core.IO;
 using Emby.Server.Core.Logging;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Logging;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
-using MediaBrowser.Server.Startup.Common.IO;
 using Mono.Unix.Native;
 using NLog;
 using ILogger = MediaBrowser.Model.Logging.ILogger;
@@ -42,7 +42,6 @@ namespace MediaBrowser.Server.Mono
             var applicationPath = Assembly.GetEntryAssembly().Location;
             var appFolderPath = Path.GetDirectoryName(applicationPath);
 
-            TryCopySqliteConfigFile(appFolderPath);
             SetSqliteProvider();
 
             var options = new StartupOptions(Environment.GetCommandLineArgs());
@@ -71,20 +70,6 @@ namespace MediaBrowser.Server.Mono
                 logger.Info("Shutting down");
 
                 _appHost.Dispose();
-            }
-        }
-
-        private static void TryCopySqliteConfigFile(string appFolderPath)
-        {
-            try
-            {
-                File.Copy(Path.Combine(appFolderPath, "System.Data.SQLite.dll.config"),
-                    Path.Combine(appFolderPath, "SQLitePCLRaw.provider.sqlite3.dll.config"),
-                    true);
-            }
-            catch
-            {
-                
             }
         }
 
@@ -260,7 +245,8 @@ namespace MediaBrowser.Server.Mono
             {
                 var message = LogHelper.GetLogMessage(exception).ToString();
 
-                if (message.IndexOf("InotifyWatcher", StringComparison.OrdinalIgnoreCase) == -1)
+                if (message.IndexOf("InotifyWatcher", StringComparison.OrdinalIgnoreCase) == -1 &&
+                    message.IndexOf("_IOCompletionCallback", StringComparison.OrdinalIgnoreCase) == -1)
                 {
                     Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
                 }

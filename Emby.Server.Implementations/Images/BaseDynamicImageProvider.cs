@@ -12,7 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
@@ -59,33 +59,6 @@ namespace Emby.Server.Implementations.Images
             //return GetSupportedImages(item).Where(i => IsEnabled(options, i, item)).ToList();
         }
 
-        private bool IsEnabled(MetadataOptions options, ImageType type, IHasImages item)
-        {
-            if (type == ImageType.Backdrop)
-            {
-                if (item.LockedFields.Contains(MetadataFields.Backdrops))
-                {
-                    return false;
-                }
-            }
-            else if (type == ImageType.Screenshot)
-            {
-                if (item.LockedFields.Contains(MetadataFields.Screenshots))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (item.LockedFields.Contains(MetadataFields.Images))
-                {
-                    return false;
-                }
-            }
-
-            return options.IsEnabled(type);
-        }
-
         public async Task<ItemUpdateType> FetchAsync(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             if (!Supports(item))
@@ -128,7 +101,7 @@ namespace Emby.Server.Implementations.Images
                 }
             }
 
-            var items = await GetItemsWithImages(item).ConfigureAwait(false);
+            var items = GetItemsWithImages(item);
 
             return await FetchToFileInternal(item, items, imageType, cancellationToken).ConfigureAwait(false);
         }
@@ -140,7 +113,7 @@ namespace Emby.Server.Implementations.Images
         {
             var outputPathWithoutExtension = Path.Combine(ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
             FileSystem.CreateDirectory(FileSystem.GetDirectoryName(outputPathWithoutExtension));
-            string outputPath = await CreateImage(item, itemsWithImages, outputPathWithoutExtension, imageType, 0).ConfigureAwait(false);
+            string outputPath = CreateImage(item, itemsWithImages, outputPathWithoutExtension, imageType, 0);
 
             if (string.IsNullOrWhiteSpace(outputPath))
             {
@@ -159,9 +132,9 @@ namespace Emby.Server.Implementations.Images
             return ItemUpdateType.ImageUpdate;
         }
 
-        protected abstract Task<List<BaseItem>> GetItemsWithImages(IHasImages item);
+        protected abstract List<BaseItem> GetItemsWithImages(IHasImages item);
 
-        protected Task<string> CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
+        protected string CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 640, 360);
         }
@@ -188,22 +161,22 @@ namespace Emby.Server.Implementations.Images
                 .Where(i => !string.IsNullOrWhiteSpace(i));
         }
 
-        protected Task<string> CreatePosterCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
+        protected string CreatePosterCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 400, 600);
         }
 
-        protected Task<string> CreateSquareCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
+        protected string CreateSquareCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 600, 600);
         }
 
-        protected Task<string> CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height)
+        protected string CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height)
         {
             return CreateCollage(primaryItem, items, outputPath, width, height);
         }
 
-        private async Task<string> CreateCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height)
+        private string CreateCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height)
         {
             FileSystem.CreateDirectory(FileSystem.GetDirectoryName(outputPath));
 
@@ -225,7 +198,7 @@ namespace Emby.Server.Implementations.Images
                 return null;
             }
 
-            await ImageProcessor.CreateImageCollage(options).ConfigureAwait(false);
+            ImageProcessor.CreateImageCollage(options);
             return outputPath;
         }
 
@@ -234,7 +207,7 @@ namespace Emby.Server.Implementations.Images
             get { return "Dynamic Image Provider"; }
         }
 
-        protected virtual async Task<string> CreateImage(IHasImages item,
+        protected virtual string CreateImage(IHasImages item,
             List<BaseItem> itemsWithImages,
             string outputPathWithoutExtension,
             ImageType imageType,
@@ -249,20 +222,20 @@ namespace Emby.Server.Implementations.Images
 
             if (imageType == ImageType.Thumb)
             {
-                return await CreateThumbCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
+                return CreateThumbCollage(item, itemsWithImages, outputPath);
             }
 
             if (imageType == ImageType.Primary)
             {
                 if (item is UserView)
                 {
-                    return await CreateSquareCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
+                    return CreateSquareCollage(item, itemsWithImages, outputPath);
                 }
                 if (item is Playlist || item is MusicGenre || item is Genre || item is GameGenre || item is PhotoAlbum)
                 {
-                    return await CreateSquareCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
+                    return CreateSquareCollage(item, itemsWithImages, outputPath);
                 }
-                return await CreatePosterCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
+                return CreatePosterCollage(item, itemsWithImages, outputPath);
             }
 
             throw new ArgumentException("Unexpected image type");
@@ -346,7 +319,7 @@ namespace Emby.Server.Implementations.Images
             }
         }
 
-        protected async Task<string> CreateSingleImage(List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType)
+        protected string CreateSingleImage(List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType)
         {
             var image = itemsWithImages
                 .Where(i => i.HasImage(imageType) && i.GetImageInfo(imageType, 0).IsLocalFile && Path.HasExtension(i.GetImagePath(imageType)))

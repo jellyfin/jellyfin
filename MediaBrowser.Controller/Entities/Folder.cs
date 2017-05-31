@@ -10,8 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -671,8 +672,9 @@ namespace MediaBrowser.Controller.Entities
         {
             return ItemRepository.GetItemList(new InternalItemsQuery
             {
-                ParentId = Id,
-                GroupByPresentationUniqueKey = false
+                Parent = this,
+                GroupByPresentationUniqueKey = false,
+                DtoOptions = new DtoOptions(true)
             });
         }
 
@@ -690,9 +692,13 @@ namespace MediaBrowser.Controller.Entities
             {
                 Recursive = false,
                 Limit = 0,
-                ParentId = Id
+                Parent = this,
+                DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                }
 
-            }).Result;
+            });
 
             return result.TotalRecordCount;
         }
@@ -705,9 +711,13 @@ namespace MediaBrowser.Controller.Entities
                 IsFolder = false,
                 IsVirtualItem = false,
                 EnableTotalRecordCount = true,
-                Limit = 0
+                Limit = 0,
+                DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                }
 
-            }).Result.TotalRecordCount;
+            }).TotalRecordCount;
         }
 
         public QueryResult<BaseItem> QueryRecursive(InternalItemsQuery query)
@@ -733,7 +743,10 @@ namespace MediaBrowser.Controller.Entities
 
             if (!(this is UserRootFolder) && !(this is AggregateFolder))
             {
-                query.ParentId = query.ParentId ?? Id;
+                if (!query.ParentId.HasValue)
+                {
+                    query.Parent = this;
+                }
             }
 
             if (RequiresPostFiltering2(query))
@@ -813,30 +826,6 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            if (query.SortBy != null && query.SortBy.Length > 0)
-            {
-                if (query.SortBy.Contains(ItemSortBy.AiredEpisodeOrder, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.AiredEpisodeOrder");
-                    return true;
-                }
-                if (query.SortBy.Contains(ItemSortBy.GameSystem, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.GameSystem");
-                    return true;
-                }
-                if (query.SortBy.Contains(ItemSortBy.Players, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.Players");
-                    return true;
-                }
-                if (query.SortBy.Contains(ItemSortBy.VideoBitRate, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.VideoBitRate");
-                    return true;
-                }
-            }
-
             if (query.IsInBoxSet.HasValue)
             {
                 Logger.Debug("Query requires post-filtering due to IsInBoxSet");
@@ -894,18 +883,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.MinPlayers.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to MinPlayers");
-                return true;
-            }
-
-            if (query.MaxPlayers.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to MaxPlayers");
-                return true;
-            }
-
             if (UserViewBuilder.CollapseBoxSetItems(query, this, query.User, ConfigurationManager))
             {
                 Logger.Debug("Query requires post-filtering due to CollapseBoxSetItems");
@@ -936,12 +913,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (!string.IsNullOrWhiteSpace(query.AlbumArtistStartsWithOrGreater))
-            {
-                Logger.Debug("Query requires post-filtering due to AlbumArtistStartsWithOrGreater");
-                return true;
-            }
-
             if (query.IsPlayed.HasValue)
             {
                 if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(typeof(Series).Name))
@@ -954,7 +925,7 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-        public Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
+        public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
         {
             if (query.ItemIds.Length > 0)
             {
@@ -967,20 +938,20 @@ namespace MediaBrowser.Controller.Entities
                     // Try to preserve order
                     result.Items = result.Items.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToArray();
                 }
-                return Task.FromResult(result);
+                return result;
             }
 
             return GetItemsInternal(query);
         }
 
-        protected virtual async Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
+        protected virtual QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
             if (SourceType == SourceType.Channel)
             {
                 try
                 {
                     // Don't blow up here because it could cause parent screens with other content to fail
-                    return await ChannelManager.GetChannelItemsInternal(new ChannelItemQuery
+                    return ChannelManager.GetChannelItemsInternal(new ChannelItemQuery
                     {
                         ChannelId = ChannelId,
                         FolderId = Id.ToString("N"),
@@ -990,7 +961,7 @@ namespace MediaBrowser.Controller.Entities
                         SortBy = query.SortBy,
                         SortOrder = query.SortOrder
 
-                    }, new Progress<double>(), CancellationToken.None);
+                    }, new Progress<double>(), CancellationToken.None).Result;
                 }
                 catch
                 {
@@ -1355,19 +1326,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Folders need to validate and refresh
-        /// </summary>
-        /// <returns>Task.</returns>
-        public override async Task ChangedExternally()
-        {
-            var progress = new Progress<double>();
-
-            await ValidateChildren(progress, CancellationToken.None).ConfigureAwait(false);
-
-            await base.ChangedExternally().ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Marks the played.
         /// </summary>
         /// <param name="user">The user.</param>
@@ -1391,7 +1349,7 @@ namespace MediaBrowser.Controller.Entities
                 query.IsVirtualItem = false;
             }
 
-            var itemsResult = await GetItems(query).ConfigureAwait(false);
+            var itemsResult = GetItems(query);
 
             // Sweep through recursively and update status
             var tasks = itemsResult.Items.Select(c => c.MarkPlayed(user, datePlayed, resetPosition));
@@ -1406,14 +1364,14 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public override async Task MarkUnplayed(User user)
         {
-            var itemsResult = await GetItems(new InternalItemsQuery
+            var itemsResult = GetItems(new InternalItemsQuery
             {
                 User = user,
                 Recursive = true,
                 IsFolder = false,
                 EnableTotalRecordCount = false
 
-            }).ConfigureAwait(false);
+            });
 
             // Sweep through recursively and update status
             var tasks = itemsResult.Items.Select(c => c.MarkUnplayed(user));
@@ -1430,7 +1388,7 @@ namespace MediaBrowser.Controller.Entities
                 IsVirtualItem = false,
                 EnableTotalRecordCount = false
 
-            }).Result;
+            });
 
             return itemsResult.Items
                 .All(i => i.IsPlayed(user));
@@ -1481,7 +1439,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override async Task FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, List<ItemFields> itemFields)
+        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, List<ItemFields> fields)
         {
             if (!SupportsUserDataFromChildren)
             {
@@ -1490,7 +1448,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (itemDto != null)
             {
-                if (itemFields.Contains(ItemFields.RecursiveItemCount))
+                if (fields.Contains(ItemFields.RecursiveItemCount))
                 {
                     itemDto.RecursiveItemCount = GetRecursiveChildCount(user);
                 }
@@ -1498,16 +1456,20 @@ namespace MediaBrowser.Controller.Entities
 
             if (SupportsPlayedStatus)
             {
-                var unplayedQueryResult = await GetItems(new InternalItemsQuery(user)
+                var unplayedQueryResult = GetItems(new InternalItemsQuery(user)
                 {
                     Recursive = true,
                     IsFolder = false,
                     IsVirtualItem = false,
                     EnableTotalRecordCount = true,
                     Limit = 0,
-                    IsPlayed = false
+                    IsPlayed = false,
+                    DtoOptions = new DtoOptions(false)
+                    {
+                        EnableImages = false
+                    }
 
-                }).ConfigureAwait(false);
+                });
 
                 double unplayedCount = unplayedQueryResult.TotalRecordCount;
 

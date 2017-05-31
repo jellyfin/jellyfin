@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Globalization;
 using System.Threading.Tasks;
 using MediaBrowser.Api.Playback.Hls;
 using MediaBrowser.Api.Playback.Progressive;
@@ -17,6 +17,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.System;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -35,18 +36,30 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "DeviceId", Description = "The device id of the client requesting. Used to stop encoding processes when needed.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string DeviceId { get; set; }
 
-        public string Token { get; set; }
-
         public string UserId { get; set; }
         public string AudioCodec { get; set; }
         public string Container { get; set; }
 
         public int? MaxAudioChannels { get; set; }
+        public int? TranscodingAudioChannels { get; set; }
 
         public long? MaxStreamingBitrate { get; set; }
 
         [ApiMember(Name = "StartTimeTicks", Description = "Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public long? StartTimeTicks { get; set; }
+
+        public string TranscodingContainer { get; set; }
+        public string TranscodingProtocol { get; set; }
+        public int? MaxAudioSampleRate { get; set; }
+
+        public bool EnableRedirection { get; set; }
+        public bool EnableRemoteMedia { get; set; }
+        public bool BreakOnNonKeyFrames { get; set; }
+
+        public BaseUniversalRequest()
+        {
+            EnableRedirection = true;
+        }
     }
 
     [Route("/Audio/{Id}/universal.{Container}", "GET", Summary = "Gets an audio stream")]
@@ -57,10 +70,10 @@ namespace MediaBrowser.Api.Playback
     {
     }
 
-    //[Authenticated]
+    [Authenticated]
     public class UniversalAudioService : BaseApiService
     {
-        public UniversalAudioService(IServerConfigurationManager serverConfigurationManager, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, IDeviceManager deviceManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext, IImageProcessor imageProcessor, INetworkManager networkManager)
+        public UniversalAudioService(IServerConfigurationManager serverConfigurationManager, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, IDeviceManager deviceManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext, IImageProcessor imageProcessor, INetworkManager networkManager, IEnvironmentInfo environmentInfo)
         {
             ServerConfigurationManager = serverConfigurationManager;
             UserManager = userManager;
@@ -77,6 +90,7 @@ namespace MediaBrowser.Api.Playback
             AuthorizationContext = authorizationContext;
             ImageProcessor = imageProcessor;
             NetworkManager = networkManager;
+            EnvironmentInfo = environmentInfo;
         }
 
         protected IServerConfigurationManager ServerConfigurationManager { get; private set; }
@@ -94,6 +108,7 @@ namespace MediaBrowser.Api.Playback
         protected IAuthorizationContext AuthorizationContext { get; private set; }
         protected IImageProcessor ImageProcessor { get; private set; }
         protected INetworkManager NetworkManager { get; private set; }
+        protected IEnvironmentInfo EnvironmentInfo { get; private set; }
 
         public Task<object> Get(GetUniversalAudioStream request)
         {
@@ -125,11 +140,53 @@ namespace MediaBrowser.Api.Playback
                 {
                     Type = DlnaProfileType.Audio,
                     Context = EncodingContext.Streaming,
-                    Container = "ts",
-                    AudioCodec = "aac",
-                    Protocol = "hls"
+                    Container = request.TranscodingContainer,
+                    AudioCodec = request.AudioCodec,
+                    Protocol = request.TranscodingProtocol,
+                    BreakOnNonKeyFrames = request.BreakOnNonKeyFrames,
+                    MaxAudioChannels = request.TranscodingAudioChannels.HasValue ? request.TranscodingAudioChannels.Value.ToString(CultureInfo.InvariantCulture) : null
                 }
             };
+
+            var codecProfiles = new List<CodecProfile>();
+            var conditions = new List<ProfileCondition>();
+
+            if (request.MaxAudioSampleRate.HasValue)
+            {
+                // codec profile
+                conditions.Add(new ProfileCondition
+                {
+                    Condition = ProfileConditionType.LessThanEqual,
+                    IsRequired = false,
+                    Property = ProfileConditionValue.AudioSampleRate,
+                    Value = request.MaxAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture)
+                });
+            }
+
+            if (request.MaxAudioChannels.HasValue)
+            {
+                // codec profile
+                conditions.Add(new ProfileCondition
+                {
+                    Condition = ProfileConditionType.LessThanEqual,
+                    IsRequired = false,
+                    Property = ProfileConditionValue.AudioChannels,
+                    Value = request.MaxAudioChannels.Value.ToString(CultureInfo.InvariantCulture)
+                });
+            }
+
+            if (conditions.Count > 0)
+            {
+                // codec profile
+                codecProfiles.Add(new CodecProfile
+                {
+                    Type = CodecType.Audio,
+                    Container = request.Container,
+                    Conditions = conditions.ToArray()
+                });
+            }
+
+            deviceProfile.CodecProfiles = codecProfiles.ToArray();
 
             return deviceProfile;
         }
@@ -158,6 +215,17 @@ namespace MediaBrowser.Api.Playback
             }).ConfigureAwait(false);
 
             var mediaSource = playbackInfoResult.MediaSources[0];
+
+            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == MediaProtocol.Http)
+            {
+                if (request.EnableRedirection)
+                {
+                    if (mediaSource.IsRemote && request.EnableRemoteMedia)
+                    {
+                        return ResultFactory.GetRedirectResult(mediaSource.Path);
+                    }
+                }
+            }
 
             var isStatic = mediaSource.SupportsDirectStream;
 
@@ -194,7 +262,10 @@ namespace MediaBrowser.Api.Playback
                     MediaSourceId = mediaSource.Id,
                     PlaySessionId = playbackInfoResult.PlaySessionId,
                     StartTimeTicks = request.StartTimeTicks,
-                    Static = isStatic
+                    Static = isStatic,
+                    SegmentContainer = request.TranscodingContainer,
+                    AudioSampleRate = request.MaxAudioSampleRate,
+                    BreakOnNonKeyFrames = transcodingProfile.BreakOnNonKeyFrames
                 };
 
                 if (isHeadRequest)
@@ -218,7 +289,8 @@ namespace MediaBrowser.Api.Playback
                     ZipClient,
                     JsonSerializer,
                     AuthorizationContext,
-                    ImageProcessor)
+                    ImageProcessor,
+                    EnvironmentInfo)
                 {
                     Request = Request
                 };
@@ -226,7 +298,7 @@ namespace MediaBrowser.Api.Playback
                 var newRequest = new GetAudioStream
                 {
                     AudioBitRate = isStatic ? (int?)null : Convert.ToInt32(Math.Min(request.MaxStreamingBitrate ?? 192000, int.MaxValue)),
-                    //AudioCodec = request.AudioCodec,
+                    AudioCodec = request.AudioCodec,
                     Container = isStatic ? null : ("." + mediaSource.TranscodingContainer),
                     DeviceId = request.DeviceId,
                     Id = request.Id,
@@ -234,7 +306,8 @@ namespace MediaBrowser.Api.Playback
                     MediaSourceId = mediaSource.Id,
                     PlaySessionId = playbackInfoResult.PlaySessionId,
                     StartTimeTicks = request.StartTimeTicks,
-                    Static = isStatic
+                    Static = isStatic,
+                    AudioSampleRate = request.MaxAudioSampleRate
                 };
 
                 if (isHeadRequest)

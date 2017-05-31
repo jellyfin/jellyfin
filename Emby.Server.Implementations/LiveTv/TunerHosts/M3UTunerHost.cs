@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -19,6 +19,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
@@ -27,13 +28,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
+        private readonly IEnvironmentInfo _environment;
 
-        public M3UTunerHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost)
+        public M3UTunerHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost, IEnvironmentInfo environment)
             : base(config, logger, jsonSerializer, mediaEncoder)
         {
             _fileSystem = fileSystem;
             _httpClient = httpClient;
             _appHost = appHost;
+            _environment = environment;
         }
 
         public override string Type
@@ -73,7 +76,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             var sources = await GetChannelStreamMediaSources(info, channelId, cancellationToken).ConfigureAwait(false);
 
-            var liveStream = new LiveStream(sources.First());
+            var liveStream = new LiveStream(sources.First(), _environment, _fileSystem);
             return liveStream;
         }
 

@@ -68,7 +68,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets the dashboard resource path.
         /// </summary>
         /// <returns>System.String.</returns>
-        private string GetDashboardResourcePath(string virtualPath)
+        public string GetResourcePath(string virtualPath)
         {
             var fullPath = Path.Combine(_basePath, virtualPath.Replace('/', _fileSystem.DirectorySeparatorChar));
 
@@ -97,7 +97,7 @@ namespace MediaBrowser.WebDashboard.Api
                 return false;
             }
 
-            path = GetDashboardResourcePath(path);
+            path = GetResourcePath(path);
             var parent = _fileSystem.GetDirectoryName(path);
             
             return string.Equals(_basePath, parent, StringComparison.OrdinalIgnoreCase) ||
@@ -140,7 +140,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 html = html.Substring(0, index);
                             }
                         }
-                        var mainFile = _fileSystem.ReadAllText(GetDashboardResourcePath("index.html"));
+                        var mainFile = _fileSystem.ReadAllText(GetResourcePath("index.html"));
 
                         html = ReplaceFirst(mainFile, "<div class=\"mainAnimatedPages skinBody\"></div>", "<div class=\"mainAnimatedPages skinBody hide\">" + html + "</div>");
                     }
@@ -299,7 +299,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         private Stream GetRawResourceStream(string virtualPath)
         {
-            return _fileSystem.GetFileStream(GetDashboardResourcePath(virtualPath), FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
+            return _fileSystem.GetFileStream(GetResourcePath(virtualPath), FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
         }
 
     }

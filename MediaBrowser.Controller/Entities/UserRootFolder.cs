@@ -50,23 +50,23 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        protected override async Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
+        protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
             if (query.Recursive)
             {
                 return QueryRecursive(query);
             }
 
-            var result = await UserViewManager.GetUserViews(new UserViewQuery
+            var result = UserViewManager.GetUserViews(new UserViewQuery
             {
                 UserId = query.User.Id.ToString("N"),
                 PresetViews = query.PresetViews
 
-            }, CancellationToken.None).ConfigureAwait(false);
+            }, CancellationToken.None).Result;
 
             var user = query.User;
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
-            
+
             return PostFilterAndSort(result.Where(filter), query, true, true);
         }
 

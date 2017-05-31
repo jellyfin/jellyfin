@@ -23,6 +23,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Globalization;
@@ -85,7 +86,7 @@ namespace Emby.Dlna.ContentDirectory
                 return HandleGetSystemUpdateID();
 
             if (string.Equals(methodName, "Browse", StringComparison.OrdinalIgnoreCase))
-                return HandleBrowse(methodParams, user, deviceId).Result;
+                return HandleBrowse(methodParams, user, deviceId);
 
             if (string.Equals(methodName, "X_GetFeatureList", StringComparison.OrdinalIgnoreCase))
                 return HandleXGetFeatureList();
@@ -97,10 +98,10 @@ namespace Emby.Dlna.ContentDirectory
                 return HandleXSetBookmark(methodParams, user);
 
             if (string.Equals(methodName, "Search", StringComparison.OrdinalIgnoreCase))
-                return HandleSearch(methodParams, user, deviceId).Result;
+                return HandleSearch(methodParams, user, deviceId);
 
             if (string.Equals(methodName, "X_BrowseByLetter", StringComparison.OrdinalIgnoreCase))
-                return HandleX_BrowseByLetter(methodParams, user, deviceId).Result;
+                return HandleX_BrowseByLetter(methodParams, user, deviceId);
 
             throw new ResourceNotFoundException("Unexpected control request name: " + methodName);
         }
@@ -202,7 +203,7 @@ namespace Emby.Dlna.ContentDirectory
             return defaultValue;
         }
 
-        private async Task<IEnumerable<KeyValuePair<string, string>>> HandleBrowse(IDictionary<string, string> sparams, User user, string deviceId)
+        private IEnumerable<KeyValuePair<string, string>> HandleBrowse(IDictionary<string, string> sparams, User user, string deviceId)
         {
             var id = sparams["ObjectID"];
             var flag = sparams["BrowseFlag"];
@@ -262,7 +263,7 @@ namespace Emby.Dlna.ContentDirectory
 
                     if (item.IsDisplayedAsFolder || serverItem.StubType.HasValue)
                     {
-                        var childrenResult = (await GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount).ConfigureAwait(false));
+                        var childrenResult = (GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount));
 
                         _didlBuilder.WriteFolderElement(writer, item, serverItem.StubType, null, childrenResult.TotalRecordCount, filter, id);
                     }
@@ -275,7 +276,7 @@ namespace Emby.Dlna.ContentDirectory
                 }
                 else
                 {
-                    var childrenResult = (await GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount).ConfigureAwait(false));
+                    var childrenResult = (GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount));
                     totalCount = childrenResult.TotalRecordCount;
 
                     provided = childrenResult.Items.Length;
@@ -287,7 +288,7 @@ namespace Emby.Dlna.ContentDirectory
 
                         if (childItem.IsDisplayedAsFolder || displayStubType.HasValue)
                         {
-                            var childCount = (await GetUserItems(childItem, displayStubType, user, sortCriteria, null, 0).ConfigureAwait(false))
+                            var childCount = (GetUserItems(childItem, displayStubType, user, sortCriteria, null, 0))
                                 .TotalRecordCount;
 
                             _didlBuilder.WriteFolderElement(writer, childItem, displayStubType, item, childCount, filter);
@@ -313,13 +314,13 @@ namespace Emby.Dlna.ContentDirectory
                 };
         }
 
-        private Task<IEnumerable<KeyValuePair<string, string>>> HandleX_BrowseByLetter(IDictionary<string, string> sparams, User user, string deviceId)
+        private IEnumerable<KeyValuePair<string, string>> HandleX_BrowseByLetter(IDictionary<string, string> sparams, User user, string deviceId)
         {
             // TODO: Implement this method
             return HandleSearch(sparams, user, deviceId);
         }
 
-        private async Task<IEnumerable<KeyValuePair<string, string>>> HandleSearch(IDictionary<string, string> sparams, User user, string deviceId)
+        private IEnumerable<KeyValuePair<string, string>> HandleSearch(IDictionary<string, string> sparams, User user, string deviceId)
         {
             var searchCriteria = new SearchCriteria(GetValueOrDefault(sparams, "SearchCriteria", ""));
             var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", ""));
@@ -373,7 +374,7 @@ namespace Emby.Dlna.ContentDirectory
 
                 var item = serverItem.Item;
 
-                var childrenResult = (await GetChildrenSorted(item, user, searchCriteria, sortCriteria, start, requestedCount).ConfigureAwait(false));
+                var childrenResult = (GetChildrenSorted(item, user, searchCriteria, sortCriteria, start, requestedCount));
 
                 totalCount = childrenResult.TotalRecordCount;
 
@@ -383,7 +384,7 @@ namespace Emby.Dlna.ContentDirectory
                 {
                     if (i.IsDisplayedAsFolder)
                     {
-                        var childCount = (await GetChildrenSorted(i, user, searchCriteria, sortCriteria, null, 0).ConfigureAwait(false))
+                        var childCount = (GetChildrenSorted(i, user, searchCriteria, sortCriteria, null, 0))
                             .TotalRecordCount;
 
                         _didlBuilder.WriteFolderElement(writer, i, null, item, childCount, filter);
@@ -409,7 +410,7 @@ namespace Emby.Dlna.ContentDirectory
                 };
         }
 
-        private Task<QueryResult<BaseItem>> GetChildrenSorted(BaseItem item, User user, SearchCriteria search, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<BaseItem> GetChildrenSorted(BaseItem item, User user, SearchCriteria search, SortCriteria sort, int? startIndex, int? limit)
         {
             var folder = (Folder)item;
 
@@ -459,11 +460,17 @@ namespace Emby.Dlna.ContentDirectory
                 IsMissing = false,
                 ExcludeItemTypes = new[] { typeof(Game).Name, typeof(Book).Name },
                 IsFolder = isFolder,
-                MediaTypes = mediaTypes.ToArray()
+                MediaTypes = mediaTypes.ToArray(),
+                DtoOptions = GetDtoOptions()
             });
         }
 
-        private async Task<QueryResult<ServerItem>> GetUserItems(BaseItem item, StubType? stubType, User user, SortCriteria sort, int? startIndex, int? limit)
+        private DtoOptions GetDtoOptions()
+        {
+            return new DtoOptions(true);
+        }
+
+        private QueryResult<ServerItem> GetUserItems(BaseItem item, StubType? stubType, User user, SortCriteria sort, int? startIndex, int? limit)
         {
             if (item is MusicGenre)
             {
@@ -511,14 +518,15 @@ namespace Emby.Dlna.ContentDirectory
                 StartIndex = startIndex,
                 User = user,
                 IsMissing = false,
-                PresetViews = new[] {CollectionType.Movies, CollectionType.TvShows, CollectionType.Music},
-                ExcludeItemTypes = new[] {typeof (Game).Name, typeof (Book).Name},
-                IsPlaceHolder = false
+                PresetViews = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Music },
+                ExcludeItemTypes = new[] { typeof(Game).Name, typeof(Book).Name },
+                IsPlaceHolder = false,
+                DtoOptions = GetDtoOptions()
             };
 
             SetSorting(query, sort, folder.IsPreSorted);
 
-            var queryResult = await folder.GetItems(query).ConfigureAwait(false);
+            var queryResult = folder.GetItems(query);
 
             return ToResult(queryResult);
         }
@@ -532,7 +540,8 @@ namespace Emby.Dlna.ContentDirectory
                 ArtistIds = new[] { item.Id.ToString("N") },
                 IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
                 Limit = limit,
-                StartIndex = startIndex
+                StartIndex = startIndex,
+                DtoOptions = GetDtoOptions()
             };
 
             SetSorting(query, sort, false);
@@ -548,10 +557,11 @@ namespace Emby.Dlna.ContentDirectory
             {
                 Recursive = true,
                 ParentId = parentId,
-                GenreIds = new[] {item.Id.ToString("N")},
-                IncludeItemTypes = new[] {typeof (MusicAlbum).Name},
+                GenreIds = new[] { item.Id.ToString("N") },
+                IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
                 Limit = limit,
-                StartIndex = startIndex
+                StartIndex = startIndex,
+                DtoOptions = GetDtoOptions()
             };
 
             SetSorting(query, sort, false);
@@ -595,8 +605,8 @@ namespace Emby.Dlna.ContentDirectory
                 IncludeItemTypes = new[] { typeof(Movie).Name, typeof(Series).Name, typeof(Trailer).Name },
                 SortBy = new[] { ItemSortBy.SortName },
                 Limit = limit,
-                StartIndex = startIndex
-
+                StartIndex = startIndex,
+                DtoOptions = GetDtoOptions()
             });
 
             var serverItems = itemsResult.Items.Select(i => new ServerItem(i))

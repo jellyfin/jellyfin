@@ -85,6 +85,12 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "MinPremiereDate", Description = "Optional. The minimum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string MinPremiereDate { get; set; }
 
+        [ApiMember(Name = "MinDateLastSaved", Description = "Optional. The minimum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MinDateLastSaved { get; set; }
+
+        [ApiMember(Name = "MinDateLastSavedForUser", Description = "Optional. The minimum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MinDateLastSavedForUser { get; set; }
+
         [ApiMember(Name = "MaxPremiereDate", Description = "Optional. The maximum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string MaxPremiereDate { get; set; }
 
@@ -347,9 +353,6 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "NameLessThan", Description = "Optional filter by items whose name is equally or lesser than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string NameLessThan { get; set; }
-
-        [ApiMember(Name = "AlbumArtistStartsWithOrGreater", Description = "Optional filter by items whose album artist is sorted equally or greater than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string AlbumArtistStartsWithOrGreater { get; set; }
 
         public string[] GetGenres()
         {

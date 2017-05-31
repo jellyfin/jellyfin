@@ -69,16 +69,6 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-        public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
-        {
-            return inputItems.Where(GetItemFilter());
-        }
-
-        public Func<BaseItem, bool> GetItemFilter()
-        {
-            return i => i is Game && i.Genres.Contains(Name, StringComparer.OrdinalIgnoreCase);
-        }
-
         public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
             query.GenreIds = new[] { Id.ToString("N") };

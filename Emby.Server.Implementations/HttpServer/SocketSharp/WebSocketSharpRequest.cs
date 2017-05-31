@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Text;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.SocketSharp;
@@ -374,7 +373,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
                         this.pathInfo = request.RawUrl;
                     }
 
-                    this.pathInfo = WebUtility.UrlDecode(pathInfo);
+                    this.pathInfo = System.Net.WebUtility.UrlDecode(pathInfo);
                     this.pathInfo = NormalizePathInfo(pathInfo, mode);
                 }
                 return this.pathInfo;
@@ -440,7 +439,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
                     cookies = new Dictionary<string, System.Net.Cookie>();
                     foreach (var cookie in this.request.Cookies)
                     {
-                        var httpCookie = (Cookie) cookie;
+                        var httpCookie = (System.Net.Cookie) cookie;
                         cookies[httpCookie.Name] = new System.Net.Cookie(httpCookie.Name, httpCookie.Value, httpCookie.Path, httpCookie.Domain);
                     }
                 }

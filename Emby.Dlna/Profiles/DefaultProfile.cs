@@ -135,6 +135,18 @@ namespace Emby.Dlna.Profiles
                 {
                     Format = "sub",
                     Method = SubtitleDeliveryMethod.Embed
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "subrip",
+                    Method = SubtitleDeliveryMethod.Embed
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "vtt",
+                    Method = SubtitleDeliveryMethod.Embed
                 }
             };
 

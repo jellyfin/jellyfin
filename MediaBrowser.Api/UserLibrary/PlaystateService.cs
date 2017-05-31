@@ -279,6 +279,20 @@ namespace MediaBrowser.Api.UserLibrary
             return dto;
         }
 
+        private PlayMethod ValidatePlayMethod(PlayMethod method, string playSessionId)
+        {
+            if (method == PlayMethod.Transcode)
+            {
+                var job = string.IsNullOrWhiteSpace(playSessionId) ? null : ApiEntryPoint.Instance.GetTranscodingJob(playSessionId);
+                if (job == null)
+                {
+                    return PlayMethod.DirectPlay;
+                }
+            }
+
+            return method;
+        }
+
         /// <summary>
         /// Posts the specified request.
         /// </summary>
@@ -300,6 +314,8 @@ namespace MediaBrowser.Api.UserLibrary
 
         public void Post(ReportPlaybackStart request)
         {
+            request.PlayMethod = ValidatePlayMethod(request.PlayMethod, request.PlaySessionId);
+
             request.SessionId = GetSession(_sessionContext).Result.Id;
 
             var task = _sessionManager.OnPlaybackStart(request);
@@ -332,6 +348,8 @@ namespace MediaBrowser.Api.UserLibrary
 
         public void Post(ReportPlaybackProgress request)
         {
+            request.PlayMethod = ValidatePlayMethod(request.PlayMethod, request.PlaySessionId);
+
             request.SessionId = GetSession(_sessionContext).Result.Id;
 
             var task = _sessionManager.OnPlaybackProgress(request);
@@ -427,7 +445,7 @@ namespace MediaBrowser.Api.UserLibrary
                 await item.MarkUnplayed(user).ConfigureAwait(false);
             }
 
-            return await _userDataRepository.GetUserDataDto(item, user).ConfigureAwait(false);
+            return _userDataRepository.GetUserDataDto(item, user);
         }
     }
 }

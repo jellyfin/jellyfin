@@ -14,7 +14,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
@@ -406,7 +407,7 @@ namespace MediaBrowser.Api.Images
         {
             var type = GetPathValue(0);
 
-            var item = GetItemByName(request.Name, type, _libraryManager);
+            var item = GetItemByName(request.Name, type, _libraryManager, new DtoOptions(false));
 
             return GetImage(request, item, false);
         }
@@ -415,7 +416,7 @@ namespace MediaBrowser.Api.Images
         {
             var type = GetPathValue(0);
 
-            var item = GetItemByName(request.Name, type, _libraryManager);
+            var item = GetItemByName(request.Name, type, _libraryManager, new DtoOptions(false));
 
             return GetImage(request, item, true);
         }
@@ -617,6 +618,8 @@ namespace MediaBrowser.Api.Images
                 ImageIndex = request.Index ?? 0,
                 Image = image,
                 Item = item,
+                ItemId = item.Id.ToString("N"),
+                ItemType = item.GetType().Name,
                 MaxHeight = request.MaxHeight,
                 MaxWidth = request.MaxWidth,
                 Quality = request.Quality ?? 100,

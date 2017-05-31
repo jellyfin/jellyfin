@@ -105,7 +105,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var result = await GetQueryResult(request, dtoOptions, user).ConfigureAwait(false);
+            var result = GetQueryResult(request, dtoOptions, user);
 
             if (result == null)
             {
@@ -134,7 +134,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <summary>
         /// Gets the items to serialize.
         /// </summary>
-        private async Task<QueryResult<BaseItem>> GetQueryResult(GetItems request, DtoOptions dtoOptions, User user)
+        private QueryResult<BaseItem> GetQueryResult(GetItems request, DtoOptions dtoOptions, User user)
         {
             var item = string.IsNullOrEmpty(request.ParentId) ?
                 null :
@@ -169,14 +169,14 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.Recursive || !string.IsNullOrEmpty(request.Ids) || user == null)
             {
-                return await folder.GetItems(GetItemsQuery(request, dtoOptions, user)).ConfigureAwait(false);
+                return folder.GetItems(GetItemsQuery(request, dtoOptions, user));
             }
 
             var userRoot = item as UserRootFolder;
 
             if (userRoot == null)
             {
-                return await folder.GetItems(GetItemsQuery(request, dtoOptions, user)).ConfigureAwait(false);
+                return folder.GetItems(GetItemsQuery(request, dtoOptions, user));
             }
 
             IEnumerable<BaseItem> items = folder.GetChildren(user, true);
@@ -249,7 +249,6 @@ namespace MediaBrowser.Api.UserLibrary
                 ParentId = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId),
                 ParentIndexNumber = request.ParentIndexNumber,
                 AiredDuringSeason = request.AiredDuringSeason,
-                AlbumArtistStartsWithOrGreater = request.AlbumArtistStartsWithOrGreater,
                 EnableTotalRecordCount = request.EnableTotalRecordCount,
                 ExcludeItemIds = request.GetExcludeItemIds(),
                 DtoOptions = dtoOptions
@@ -294,6 +293,16 @@ namespace MediaBrowser.Api.UserLibrary
                 }
             }
 
+            if (!string.IsNullOrEmpty(request.MinDateLastSaved))
+            {
+                query.MinDateLastSaved = DateTime.Parse(request.MinDateLastSaved, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
+            }
+
+            if (!string.IsNullOrEmpty(request.MinDateLastSavedForUser))
+            {
+                query.MinDateLastSavedForUser = DateTime.Parse(request.MinDateLastSavedForUser, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
+            }
+
             if (!string.IsNullOrEmpty(request.MinPremiereDate))
             {
                 query.MinPremiereDate = DateTime.Parse(request.MinPremiereDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
@@ -330,7 +339,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var requestedLocationTypes =
                     request.LocationTypes.Split(',')
-                        .Select(d => (LocationType) Enum.Parse(typeof (LocationType), d, true))
+                        .Select(d => (LocationType)Enum.Parse(typeof(LocationType), d, true))
                         .ToList();
 
                 if (requestedLocationTypes.Count > 0 && requestedLocationTypes.Count < 4)
@@ -358,7 +367,7 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     try
                     {
-                        return _libraryManager.GetArtist(i);
+                        return _libraryManager.GetArtist(i, new DtoOptions(false));
                     }
                     catch
                     {
@@ -381,15 +390,15 @@ namespace MediaBrowser.Api.UserLibrary
             // Albums
             if (!string.IsNullOrEmpty(request.Albums))
             {
-                query.AlbumIds = request.Albums.Split('|').Select(i =>
+                query.AlbumIds = request.Albums.Split('|').SelectMany(i =>
                 {
-                    return _libraryManager.GetItemList(new InternalItemsQuery
+                    return _libraryManager.GetItemIds(new InternalItemsQuery
                     {
                         IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
                         Name = i,
                         Limit = 1
 
-                    }).Select(album => album.Id.ToString("N")).FirstOrDefault();
+                    }).Select(albumId => albumId.ToString("N"));
 
                 }).ToArray();
             }

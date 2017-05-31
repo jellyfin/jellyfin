@@ -42,11 +42,6 @@ namespace MediaBrowser.Server.Mono
             return new SyncManager();
         }
 
-        public override PackageVersionClass SystemUpdateLevel
-        {
-            get { return UpdateLevelHelper.GetSystemUpdateLevel(ConfigurationManager); }
-        }
-
         protected override void RestartInternal()
         {
             MainClass.Restart(StartupOptions);

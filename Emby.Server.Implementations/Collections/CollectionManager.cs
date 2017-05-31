@@ -170,6 +170,11 @@ namespace Emby.Server.Implementations.Collections
             {
                 var item = _libraryManager.GetItemById(itemId);
 
+                if (string.IsNullOrWhiteSpace(item.Path))
+                {
+                    continue;
+                }
+
                 if (item == null)
                 {
                     throw new ArgumentException("No item exists with the supplied Id");

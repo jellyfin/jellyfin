@@ -746,6 +746,24 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
+        public bool? IsTargetInterlaced
+        {
+            get
+            {
+                if (IsDirectStream)
+                {
+                    return TargetVideoStream == null ? (bool?)null : TargetVideoStream.IsInterlaced;
+                }
+
+                if (DeInterlace)
+                {
+                    return false;
+                }
+
+                return TargetVideoStream == null ? (bool?)null : TargetVideoStream.IsInterlaced;
+            }
+        }
+
         public bool? IsTargetAVC
         {
             get

@@ -12,8 +12,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.TV

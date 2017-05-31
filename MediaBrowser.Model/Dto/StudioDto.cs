@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
-using MediaBrowser.Model.Serialization;
+﻿using System.Diagnostics;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -27,23 +25,5 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The primary image tag.</value>
         public string PrimaryImageTag { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has primary image.
-        /// </summary>
-        /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool HasPrimaryImage
-        {
-            get
-            {
-                return PrimaryImageTag != null;
-            }
-        }
-
-        /// <summary>
-        /// Occurs when [property changed].
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

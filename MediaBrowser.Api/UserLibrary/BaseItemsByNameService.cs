@@ -119,7 +119,6 @@ namespace MediaBrowser.Api.UserLibrary
                 NameLessThan = request.NameLessThan,
                 NameStartsWith = request.NameStartsWith,
                 NameStartsWithOrGreater = request.NameStartsWithOrGreater,
-                AlbumArtistStartsWithOrGreater = request.AlbumArtistStartsWithOrGreater,
                 Tags = request.GetTags(),
                 OfficialRatings = request.GetOfficialRatings(),
                 Genres = request.GetGenres(),
@@ -129,7 +128,8 @@ namespace MediaBrowser.Api.UserLibrary
                 PersonIds = request.GetPersonIds(),
                 PersonTypes = request.GetPersonTypes(),
                 Years = request.GetYears(),
-                MinCommunityRating = request.MinCommunityRating
+                MinCommunityRating = request.MinCommunityRating,
+                DtoOptions = dtoOptions
             };
 
             if (!string.IsNullOrWhiteSpace(request.ParentId))
@@ -266,7 +266,8 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 ExcludeItemTypes = excludeItemTypes,
                 IncludeItemTypes = includeItemTypes,
-                MediaTypes = mediaTypes
+                MediaTypes = mediaTypes,
+                DtoOptions = dtoOptions
             };
 
             Func<BaseItem, bool> filter = i => FilterItem(request, i, excludeItemTypes, includeItemTypes, mediaTypes);

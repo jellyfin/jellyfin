@@ -8,7 +8,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MediaBrowser.Tests</RootNamespace>
     <AssemblyName>MediaBrowser.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -37,9 +37,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Emby.Common.Implementations">
-      <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.XML" />
   </ItemGroup>
@@ -68,6 +65,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Emby.Common.Implementations\Emby.Common.Implementations.csproj">
+      <Project>{1e37a338-9f57-4b70-bd6d-bb9c591e319b}</Project>
+      <Name>Emby.Common.Implementations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Server.Core\Emby.Server.Core.csproj">
+      <Project>{776b9f0c-5195-45e3-9a36-1cc1f0d8e0b0}</Project>
+      <Name>Emby.Server.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj">
       <Project>{e383961b-9356-4d5d-8233-9a1079d03055}</Project>
       <Name>Emby.Server.Implementations</Name>

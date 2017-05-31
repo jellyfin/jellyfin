@@ -8,7 +8,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
@@ -16,9 +16,9 @@ namespace MediaBrowser.Providers.TV
 {
     public class EpisodeMetadataService : MetadataService<Episode, EpisodeInfo>
     {
-        protected override async Task<ItemUpdateType> BeforeSave(Episode item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected override ItemUpdateType BeforeSave(Episode item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
-            var updateType = await base.BeforeSave(item, isFullRefresh, currentUpdateType).ConfigureAwait(false);
+            var updateType = base.BeforeSave(item, isFullRefresh, currentUpdateType);
 
             var seriesName = item.FindSeriesName();
             if (!string.Equals(item.SeriesName, seriesName, StringComparison.Ordinal))

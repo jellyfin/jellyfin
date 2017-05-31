@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -226,7 +226,6 @@ namespace MediaBrowser.Providers.Manager
             return retryPath;
         }
 
-        private SemaphoreSlim _imageSaveSemaphore = new SemaphoreSlim(1, 1);
         /// <summary>
         /// Saves the image to location.
         /// </summary>
@@ -239,8 +238,6 @@ namespace MediaBrowser.Providers.Manager
             _logger.Info("Saving image to {0}", path);
 
             var parentFolder = _fileSystem.GetDirectoryName(path);
-
-            await _imageSaveSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -263,8 +260,6 @@ namespace MediaBrowser.Providers.Manager
             }
             finally
             {
-                _imageSaveSemaphore.Release();
-
                 _libraryMonitor.ReportFileSystemChangeComplete(path, false);
                 _libraryMonitor.ReportFileSystemChangeComplete(parentFolder, false);
             }

@@ -127,7 +127,7 @@ namespace MediaBrowser.Api.Playback
 
                 SetDeviceSpecificData(item, result.MediaSource, profile, authInfo, request.MaxStreamingBitrate,
                     request.StartTimeTicks ?? 0, result.MediaSource.Id, request.AudioStreamIndex,
-                    request.SubtitleStreamIndex, request.MaxAudioChannels, request.PlaySessionId, request.UserId, true, true, true, true, true, true);
+                    request.SubtitleStreamIndex, request.MaxAudioChannels, request.PlaySessionId, request.UserId, request.EnableDirectPlay, request.ForceDirectPlayRemoteMediaSource, request.EnableDirectStream, true, true, true);
             }
             else
             {

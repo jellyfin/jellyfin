@@ -38,9 +38,9 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the user data dto.
         /// </summary>
-        Task<UserItemDataDto> GetUserDataDto(IHasUserData item, User user);
+        UserItemDataDto GetUserDataDto(IHasUserData item, User user);
 
-        Task<UserItemDataDto> GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, List<ItemFields> fields);
+        UserItemDataDto GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, List<ItemFields> fields);
 
         /// <summary>
         /// Get all user data for the given user

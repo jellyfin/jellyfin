@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -58,7 +59,8 @@ namespace Emby.Server.Implementations.TV
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
                 Recursive = true,
-                GroupByPresentationUniqueKey = false
+                GroupByPresentationUniqueKey = false,
+                DtoOptions = new DtoOptions(true)
 
             }).Cast<Series>().ToList();
 
@@ -188,7 +190,8 @@ namespace Emby.Server.Implementations.TV
                 {
                     IncludeItemTypes = new[] { typeof(Series).Name },
                     Recursive = true,
-                    GroupByPresentationUniqueKey = false
+                    GroupByPresentationUniqueKey = false,
+                    DtoOptions = new DtoOptions(true)
 
                 }).Cast<Series>().ToList();
 

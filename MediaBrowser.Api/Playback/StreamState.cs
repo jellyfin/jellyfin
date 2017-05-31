@@ -68,15 +68,18 @@ namespace MediaBrowser.Api.Playback
                 if (string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     var userAgent = UserAgent ?? string.Empty;
-                    if (userAgent.IndexOf("AppleTV", StringComparison.OrdinalIgnoreCase) != -1)
-                    {
-                        return 10;
-                    }
-                    if (userAgent.IndexOf("cfnetwork", StringComparison.OrdinalIgnoreCase) != -1 ||
+
+                    if (userAgent.IndexOf("AppleTV", StringComparison.OrdinalIgnoreCase) != -1 ||
+                        userAgent.IndexOf("cfnetwork", StringComparison.OrdinalIgnoreCase) != -1 ||
                         userAgent.IndexOf("ipad", StringComparison.OrdinalIgnoreCase) != -1 ||
                         userAgent.IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
                         userAgent.IndexOf("ipod", StringComparison.OrdinalIgnoreCase) != -1)
                     {
+                        if (IsSegmentedLiveStream)
+                        {
+                            return 6;
+                        }
+
                         return 10;
                     }
 
@@ -364,6 +367,37 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
+        public bool? IsTargetAnamorphic
+        {
+            get
+            {
+                if (Request.Static)
+                {
+                    return VideoStream == null ? null : VideoStream.IsAnamorphic;
+                }
+
+                return false;
+            }
+        }
+
+        public bool? IsTargetInterlaced
+        {
+            get
+            {
+                if (Request.Static)
+                {
+                    return VideoStream == null ? (bool?)null : VideoStream.IsInterlaced;
+                }
+
+                if (DeInterlace)
+                {
+                    return false;
+                }
+
+                return VideoStream == null ? (bool?)null : VideoStream.IsInterlaced;
+            }
+        }
+
         private int? GetMediaStreamCount(MediaStreamType type, int limit)
         {
             var count = MediaSource.GetStreamCount(type);
@@ -442,19 +476,6 @@ namespace MediaBrowser.Api.Playback
                 return !Request.Static
                     ? null
                     : stream == null ? null : stream.CodecTag;
-            }
-        }
-
-        public bool? IsTargetAnamorphic
-        {
-            get
-            {
-                if (Request.Static)
-                {
-                    return VideoStream == null ? null : VideoStream.IsAnamorphic;
-                }
-
-                return false;
             }
         }
 

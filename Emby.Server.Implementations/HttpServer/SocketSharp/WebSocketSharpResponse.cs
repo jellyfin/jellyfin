@@ -114,15 +114,9 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
                 var outputStream = response.OutputStream;
 
                 // This is needed with compression
-                if (outputStream is ResponseStream)
-                {
-                    //if (!string.IsNullOrWhiteSpace(GetHeader("Content-Encoding")))
-                    {
-                        outputStream.Flush();
-                    }
+                outputStream.Flush();
+                outputStream.Dispose();
 
-                    outputStream.Dispose();
-                }
                 response.Close();
             }
             catch (Exception ex)

@@ -8,6 +8,7 @@ using System.Linq;
 using MediaBrowser.Model.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 
@@ -42,20 +43,22 @@ namespace MediaBrowser.Controller.Entities.Audio
         [IgnoreDataMember]
         public MusicArtist MusicArtist
         {
-            get
-            {
-                var artist = GetParents().OfType<MusicArtist>().FirstOrDefault();
+            get { return GetMusicArtist(new DtoOptions(true)); }
+        }
 
-                if (artist == null)
+        public MusicArtist GetMusicArtist(DtoOptions options)
+        {
+            var artist = GetParents().OfType<MusicArtist>().FirstOrDefault();
+
+            if (artist == null)
+            {
+                var name = AlbumArtist;
+                if (!string.IsNullOrWhiteSpace(name))
                 {
-                    var name = AlbumArtist;
-                    if (!string.IsNullOrWhiteSpace(name))
-                    {
-                        artist = LibraryManager.GetArtist(name);
-                    }
+                    artist = LibraryManager.GetArtist(name, options);
                 }
-                return artist;
             }
+            return artist;
         }
 
         [IgnoreDataMember]
@@ -171,7 +174,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             id.AlbumArtists = AlbumArtists;
 
-            var artist = MusicArtist;
+            var artist = GetMusicArtist(new DtoOptions(false));
 
             if (artist != null)
             {

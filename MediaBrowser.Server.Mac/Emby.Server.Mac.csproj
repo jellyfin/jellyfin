@@ -93,36 +93,27 @@
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.4.0-betaV15\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.4.4.9\lib\net45\NLog.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ServiceStack.Text, Version=4.5.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ServiceStack.Text.4.5.4\lib\net45\ServiceStack.Text.dll</HintPath>
+    <Reference Include="ServiceStack.Text, Version=4.5.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.Text.4.5.8\lib\net45\ServiceStack.Text.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SharpCompress, Version=0.14.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpCompress.0.14.0\lib\net45\SharpCompress.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SimpleInjector, Version=3.2.4.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
-      <HintPath>..\packages\SimpleInjector.3.2.4\lib\net45\SimpleInjector.dll</HintPath>
+    <Reference Include="SimpleInjector, Version=4.0.7.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.4.0.7\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Data" />
-    <Reference Include="Emby.Common.Implementations">
-      <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
-    </Reference>
-    <Reference Include="Emby.Server.Core">
-      <HintPath>..\ThirdParty\emby\Emby.Server.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Nat">
-      <HintPath>..\ThirdParty\emby\Mono.Nat.dll</HintPath>
-    </Reference>
     <Reference Include="TagLib.Portable">
       <HintPath>..\ThirdParty\taglib\TagLib.Portable.dll</HintPath>
     </Reference>
     <Reference Include="SkiaSharp">
-      <HintPath>..\packages\SkiaSharp.1.57.1\lib\net45\SkiaSharp.dll</HintPath>
+      <HintPath>..\packages\SkiaSharp.1.58.0\lib\net45\SkiaSharp.dll</HintPath>
     </Reference>
     <Reference Include="SQLitePCLRaw.core">
       <HintPath>..\packages\SQLitePCLRaw.core.1.1.5\lib\net45\SQLitePCLRaw.core.dll</HintPath>
@@ -175,10 +166,6 @@
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
       <Project>{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}</Project>
       <Name>MediaBrowser.Controller</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Server.Startup.Common\MediaBrowser.Server.Startup.Common.csproj">
-      <Project>{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}</Project>
-      <Name>MediaBrowser.Server.Startup.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142EEFA-7570-41E1-BFCC-468BB571AF2F}</Project>
@@ -244,13 +231,25 @@
       <Project>{88AE38DF-19D7-406F-A6A9-09527719A21E}</Project>
       <Name>BDInfo</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SocketHttpListener.Portable\SocketHttpListener.Portable.csproj">
-      <Project>{4F26D5D8-A7B0-42B3-BA42-7CB7D245934E}</Project>
-      <Name>SocketHttpListener.Portable</Name>
-    </ProjectReference>
     <ProjectReference Include="..\RSSDP\RSSDP.csproj">
       <Project>{21002819-C39A-4D3E-BE83-2A276A77FB1F}</Project>
       <Name>RSSDP</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Common.Implementations\Emby.Common.Implementations.csproj">
+      <Project>{1E37A338-9F57-4B70-BD6D-BB9C591E319B}</Project>
+      <Name>Emby.Common.Implementations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SocketHttpListener\SocketHttpListener.csproj">
+      <Project>{1D74413B-E7CF-455B-B021-F52BDF881542}</Project>
+      <Name>SocketHttpListener</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Server.Core\Emby.Server.Core.csproj">
+      <Project>{776B9F0C-5195-45E3-9A36-1CC1F0D8E0B0}</Project>
+      <Name>Emby.Server.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj">
+      <Project>{CB7F2326-6497-4A3D-BA03-48513B17A7BE}</Project>
+      <Name>Mono.Nat</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -979,6 +978,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\htmlaudioplayer\plugin.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\htmlaudioplayer\plugin.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\htmlvideoplayer\htmlmediahelper.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\htmlvideoplayer\htmlmediahelper.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\htmlvideoplayer\plugin.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\htmlvideoplayer\plugin.js</Link>
     </BundleResource>
@@ -1105,6 +1107,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\pagejs\page.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\pagejs\page.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\photoplayer\plugin.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\photoplayer\plugin.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\autoplaydetect.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\autoplaydetect.js</Link>
     </BundleResource>
@@ -1134,6 +1139,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\playersettingsmenu.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\playersettingsmenu.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\playqueuemanager.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\playqueuemanager.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\remotecontrolautoplay.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\remotecontrolautoplay.js</Link>
@@ -2709,7 +2717,7 @@
     </BundleResource>
   </ItemGroup>
   <ItemGroup>
-    <NativeReference Include="..\packages\SkiaSharp.1.57.1\runtimes\osx\native\libSkiaSharp.dylib">
+    <NativeReference Include="..\packages\SkiaSharp.1.58.0\runtimes\osx\native\libSkiaSharp.dylib">
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>

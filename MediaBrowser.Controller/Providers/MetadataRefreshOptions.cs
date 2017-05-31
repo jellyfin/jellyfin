@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using MediaBrowser.Common.IO;
+
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -15,6 +15,7 @@ namespace MediaBrowser.Controller.Providers
         public bool ReplaceAllMetadata { get; set; }
 
         public bool IsPostRecursiveRefresh { get; set; }
+        public bool ValidateChildren { get; set; }
 
         public MetadataRefreshMode MetadataRefreshMode { get; set; }
         public RemoteSearchResult SearchResult { get; set; }

@@ -131,7 +131,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Creates the name of the sort.
         /// </summary>
         /// <returns>System.String.</returns>
-        protected override string CreateSortName()
+        protected override string CreateSortNameInternal()
         {
             return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
                     + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
@@ -209,7 +209,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             if (SourceType == SourceType.Channel)
             {
                 var sources = ChannelManager.GetStaticMediaSources(this, CancellationToken.None)
-                           .Result.ToList();
+                           .ToList();
 
                 if (sources.Count > 0)
                 {
