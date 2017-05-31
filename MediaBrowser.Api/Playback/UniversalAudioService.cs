@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Api.Playback.Hls;
 using MediaBrowser.Api.Playback.Progressive;
@@ -42,6 +41,7 @@ namespace MediaBrowser.Api.Playback
         public string Container { get; set; }
 
         public int? MaxAudioChannels { get; set; }
+        public int? TranscodingAudioChannels { get; set; }
 
         public long? MaxStreamingBitrate { get; set; }
 
@@ -51,6 +51,15 @@ namespace MediaBrowser.Api.Playback
         public string TranscodingContainer { get; set; }
         public string TranscodingProtocol { get; set; }
         public int? MaxAudioSampleRate { get; set; }
+
+        public bool EnableRedirection { get; set; }
+        public bool EnableRemoteMedia { get; set; }
+        public bool BreakOnNonKeyFrames { get; set; }
+
+        public BaseUniversalRequest()
+        {
+            EnableRedirection = true;
+        }
     }
 
     [Route("/Audio/{Id}/universal.{Container}", "GET", Summary = "Gets an audio stream")]
@@ -133,7 +142,9 @@ namespace MediaBrowser.Api.Playback
                     Context = EncodingContext.Streaming,
                     Container = request.TranscodingContainer,
                     AudioCodec = request.AudioCodec,
-                    Protocol = request.TranscodingProtocol
+                    Protocol = request.TranscodingProtocol,
+                    BreakOnNonKeyFrames = request.BreakOnNonKeyFrames,
+                    MaxAudioChannels = request.TranscodingAudioChannels.HasValue ? request.TranscodingAudioChannels.Value.ToString(CultureInfo.InvariantCulture) : null
                 }
             };
 
@@ -205,6 +216,17 @@ namespace MediaBrowser.Api.Playback
 
             var mediaSource = playbackInfoResult.MediaSources[0];
 
+            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == MediaProtocol.Http)
+            {
+                if (request.EnableRedirection)
+                {
+                    if (mediaSource.IsRemote && request.EnableRemoteMedia)
+                    {
+                        return ResultFactory.GetRedirectResult(mediaSource.Path);
+                    }
+                }
+            }
+
             var isStatic = mediaSource.SupportsDirectStream;
 
             if (!isStatic && string.Equals(mediaSource.TranscodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
@@ -242,7 +264,8 @@ namespace MediaBrowser.Api.Playback
                     StartTimeTicks = request.StartTimeTicks,
                     Static = isStatic,
                     SegmentContainer = request.TranscodingContainer,
-                    AudioSampleRate = request.MaxAudioSampleRate
+                    AudioSampleRate = request.MaxAudioSampleRate,
+                    BreakOnNonKeyFrames = transcodingProfile.BreakOnNonKeyFrames
                 };
 
                 if (isHeadRequest)

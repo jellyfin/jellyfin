@@ -17,6 +17,8 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if [enable u pn p]; otherwise, <c>false</c>.</value>
         public bool EnableUPnP { get; set; }
 
+        public bool EnableSimpleSortNameHandling { get; set; }
+
         /// <summary>
         /// Gets or sets the public mapped port.
         /// </summary>
@@ -76,8 +78,6 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The metadata path.</value>
         public string MetadataPath { get; set; }
         public string MetadataNetworkPath { get; set; }
-
-        public string LastVersion { get; set; }
 
         /// <summary>
         /// Gets or sets the display name of the season zero.

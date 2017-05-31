@@ -55,5 +55,7 @@
     <SubtitleProfile format="pgs" method="Embed" />
     <SubtitleProfile format="pgssub" method="Embed" />
     <SubtitleProfile format="sub" method="Embed" />
+    <SubtitleProfile format="subrip" method="Embed" />
+    <SubtitleProfile format="vtt" method="Embed" />
   </SubtitleProfiles>
 </Profile>

@@ -101,7 +101,7 @@ namespace MediaBrowser.Controller.LiveTv
                 }
             }
 
-            return Number + "-" + (Name ?? string.Empty);
+            return (Number ?? string.Empty) + "-" + (Name ?? string.Empty);
         }
 
         [IgnoreDataMember]
