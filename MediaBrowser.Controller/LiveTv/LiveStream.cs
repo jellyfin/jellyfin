@@ -53,9 +53,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         protected Stream GetInputStream(string path, long startPosition, bool allowAsyncFileRead)
         {
-            var fileOpenOptions = startPosition > 0
-                ? FileOpenOptions.RandomAccess
-                : FileOpenOptions.SequentialScan;
+            var fileOpenOptions = FileOpenOptions.SequentialScan;
 
             if (allowAsyncFileRead)
             {
