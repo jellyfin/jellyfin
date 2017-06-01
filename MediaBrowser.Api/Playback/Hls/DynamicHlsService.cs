@@ -423,7 +423,7 @@ namespace MediaBrowser.Api.Playback.Hls
             return Path.Combine(folder, filename + index.ToString(UsCulture) + GetSegmentFileExtension(state.Request));
         }
 
-        private async Task<object> GetSegmentResult(StreamState state, 
+        private async Task<object> GetSegmentResult(StreamState state,
             string playlistPath,
             string segmentPath,
             string segmentExtension,
@@ -456,26 +456,20 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 try
                 {
-                    using (var fileStream = GetPlaylistFileStream(playlistPath))
-                    {
-                        using (var reader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
-                        {
-                            var text = await reader.ReadToEndAsync().ConfigureAwait(false);
+                    var text = FileSystem.ReadAllText(playlistPath, Encoding.UTF8);
 
-                            // If it appears in the playlist, it's done
-                            if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
-                            {
-                                if (!segmentFileExists)
-                                {
-                                    segmentFileExists = FileSystem.FileExists(segmentPath);
-                                }
-                                if (segmentFileExists)
-                                {
-                                    return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
-                                }
-                                //break;
-                            }
+                    // If it appears in the playlist, it's done
+                    if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        if (!segmentFileExists)
+                        {
+                            segmentFileExists = FileSystem.FileExists(segmentPath);
                         }
+                        if (segmentFileExists)
+                        {
+                            return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
+                        }
+                        //break;
                     }
                 }
                 catch (IOException)
