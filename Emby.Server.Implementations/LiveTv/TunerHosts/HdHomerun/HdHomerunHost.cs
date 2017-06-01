@@ -513,7 +513,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             // The UDP method is not working reliably on OSX, and on BSD it hasn't been tested yet
             var enableHttpStream = _environment.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.OSX 
                 || _environment.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.BSD;
-            //enableHttpStream = true;
+            enableHttpStream = true;
             if (enableHttpStream)
             {
                 mediaSource.Protocol = MediaProtocol.Http;
