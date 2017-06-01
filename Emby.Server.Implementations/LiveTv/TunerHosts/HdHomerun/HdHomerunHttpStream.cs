@@ -106,10 +106,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 FileSystem.CreateDirectory(FileSystem.GetDirectoryName(_tempFilePath));
                                 using (var fileStream = FileSystem.GetFileStream(_tempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
                                 {
-                                    ResolveAfterDelay(3000, openTaskCompletionSource);
-
                                     //await response.Content.CopyToAsync(fileStream, 81920, cancellationToken).ConfigureAwait(false);
-                                    StreamHelper.CopyTo(response.Content, fileStream, 81920, cancellationToken);
+                                    StreamHelper.CopyTo(response.Content, fileStream, 81920, () => Resolve(openTaskCompletionSource), cancellationToken);
 
                                     //await AsyncStreamCopier.CopyStream(response.Content, fileStream, 81920, 4, cancellationToken).ConfigureAwait(false);
                                 }
@@ -140,11 +138,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             });
         }
 
-        private void ResolveAfterDelay(int delayMs, TaskCompletionSource<bool> openTaskCompletionSource)
+        private void Resolve(TaskCompletionSource<bool> openTaskCompletionSource)
         {
-            Task.Run(async () =>
+            Task.Run(() =>
             {
-                await Task.Delay(delayMs).ConfigureAwait(false);
                 openTaskCompletionSource.TrySetResult(true);
             });
         }
