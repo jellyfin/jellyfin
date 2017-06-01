@@ -14,7 +14,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
     {
         private readonly Stream _outputStream;
         private readonly ConcurrentQueue<Tuple<byte[], int, int>> _queue = new ConcurrentQueue<Tuple<byte[], int, int>>();
-        private CancellationToken _cancellationToken;
         public TaskCompletionSource<bool> TaskCompletion { get; private set; }
 
         public Action<QueueStream> OnFinished { get; set; }
@@ -35,8 +34,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public void Start(CancellationToken cancellationToken)
         {
-            _cancellationToken = cancellationToken;
-            Task.Run(() => StartInternal());
+            Task.Run(() => StartInternal(cancellationToken));
         }
 
         private Tuple<byte[], int, int> Dequeue()
@@ -59,10 +57,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
         }
 
-        public async Task WriteAsync(byte[] bytes, int offset, int count)
+        public async Task WriteAsync(byte[] bytes, int offset, int count, CancellationToken cancellationToken)
         {
             //return _outputStream.WriteAsync(bytes, offset, count, cancellationToken);
-            var cancellationToken = _cancellationToken;
 
             try
             {
@@ -82,18 +79,18 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
         }
 
-        private async Task StartInternal()
+        private async Task StartInternal(CancellationToken cancellationToken)
         {
-            var cancellationToken = _cancellationToken;
-
             try
             {
                 while (true)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     var result = Dequeue();
                     if (result != null)
                     {
-                        await _outputStream.WriteAsync(result.Item1, result.Item2, result.Item3, cancellationToken).ConfigureAwait(false);
+                        _outputStream.Write(result.Item1, result.Item2, result.Item3);
                     }
                     else
                     {
