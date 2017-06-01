@@ -12,6 +12,8 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
+using System.Globalization;
+using MediaBrowser.Controller.IO;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -24,7 +26,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly CancellationTokenSource _liveStreamCancellationTokenSource = new CancellationTokenSource();
         private readonly TaskCompletionSource<bool> _liveStreamTaskCompletionSource = new TaskCompletionSource<bool>();
 
+        private readonly MulticastStream _multicastStream;
+
         private readonly string _tempFilePath;
+        private bool _enableFileBuffer = false;
 
         public HdHomerunHttpStream(MediaSourceInfo mediaSource, string originalStreamId, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, IEnvironmentInfo environment)
             : base(mediaSource, environment, fileSystem)
@@ -34,6 +39,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _appHost = appHost;
             OriginalStreamId = originalStreamId;
 
+            _multicastStream = new MulticastStream(_logger);
             _tempFilePath = Path.Combine(appPaths.TranscodingTempPath, UniqueId + ".ts");
         }
 
@@ -101,13 +107,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                             {
                                 _logger.Info("Beginning multicastStream.CopyUntilCancelled");
 
-                                FileSystem.CreateDirectory(FileSystem.GetDirectoryName(_tempFilePath));
-                                using (var fileStream = FileSystem.GetFileStream(_tempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.Asynchronous))
+                                if (_enableFileBuffer)
                                 {
-                                    ResolveAfterDelay(3000, openTaskCompletionSource);
-
-                                    //await response.Content.CopyToAsync(fileStream, 81920, cancellationToken).ConfigureAwait(false);
-                                    await AsyncStreamCopier.CopyStream(response.Content, fileStream, 81920, 4, cancellationToken).ConfigureAwait(false);
+                                    FileSystem.CreateDirectory(FileSystem.GetDirectoryName(_tempFilePath));
+                                    using (var fileStream = FileSystem.GetFileStream(_tempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
+                                    {
+                                        StreamHelper.CopyTo(response.Content, fileStream, 81920, () => Resolve(openTaskCompletionSource), cancellationToken);
+                                    }
+                                }
+                                else
+                                {
+                                    await _multicastStream.CopyUntilCancelled(response.Content, () => Resolve(openTaskCompletionSource), cancellationToken).ConfigureAwait(false);
                                 }
                             }
                         }
@@ -132,57 +142,69 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
 
                 _liveStreamTaskCompletionSource.TrySetResult(true);
-                await DeleteTempFile(_tempFilePath).ConfigureAwait(false);
+                //await DeleteTempFile(_tempFilePath).ConfigureAwait(false);
             });
         }
 
-        private void ResolveAfterDelay(int delayMs, TaskCompletionSource<bool> openTaskCompletionSource)
+        private void Resolve(TaskCompletionSource<bool> openTaskCompletionSource)
         {
-            Task.Run(async () =>
+            Task.Run(() =>
             {
-                await Task.Delay(delayMs).ConfigureAwait(false);
                 openTaskCompletionSource.TrySetResult(true);
             });
         }
 
         public Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
         {
-            return CopyFileTo(_tempFilePath, false, stream, cancellationToken);
+            if (_enableFileBuffer)
+            {
+                return CopyFileTo(_tempFilePath, stream, cancellationToken);
+            }
+            return _multicastStream.CopyToAsync(stream, cancellationToken);
+            //return CopyFileTo(_tempFilePath, stream, cancellationToken);
         }
 
-        protected async Task CopyFileTo(string path, bool allowEndOfFile, Stream outputStream, CancellationToken cancellationToken)
+        protected async Task CopyFileTo(string path, Stream outputStream, CancellationToken cancellationToken)
         {
-            var eofCount = 0;
-
-            long startPosition = -25000;
+            long startPosition = -20000;
             if (startPosition < 0)
             {
                 var length = FileSystem.GetFileInfo(path).Length;
                 startPosition = Math.Max(length - startPosition, 0);
             }
 
-            using (var inputStream = GetInputStream(path, startPosition, true))
+            _logger.Info("Live stream starting position is {0} bytes", startPosition.ToString(CultureInfo.InvariantCulture));
+
+            var allowAsync = Environment.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows;
+            // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
+
+            using (var inputStream = GetInputStream(path, startPosition, allowAsync))
             {
                 if (startPosition > 0)
                 {
                     inputStream.Position = startPosition;
                 }
 
-                while (eofCount < 20 || !allowEndOfFile)
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    var bytesRead = await AsyncStreamCopier.CopyStream(inputStream, outputStream, 81920, 4, cancellationToken).ConfigureAwait(false);
+                    long bytesRead;
+
+                    if (allowAsync)
+                    {
+                        bytesRead = await AsyncStreamCopier.CopyStream(inputStream, outputStream, 81920, 2, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        StreamHelper.CopyTo(inputStream, outputStream, 81920, cancellationToken);
+                        bytesRead = 1;
+                    }
 
                     //var position = fs.Position;
                     //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
 
                     if (bytesRead == 0)
                     {
-                        eofCount++;
                         await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        eofCount = 0;
                     }
                 }
             }

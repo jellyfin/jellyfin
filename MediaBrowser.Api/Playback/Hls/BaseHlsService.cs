@@ -202,7 +202,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
                             while (!reader.EndOfStream)
                             {
-                                var line = await reader.ReadLineAsync().ConfigureAwait(false);
+                                var line =  reader.ReadLine();
 
                                 if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
                                 {
@@ -234,11 +234,11 @@ namespace MediaBrowser.Api.Playback.Hls
 
             try
             {
-                return FileSystem.GetFileStream(tmpPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, FileOpenOptions.Asynchronous | FileOpenOptions.SequentialScan);
+                return FileSystem.GetFileStream(tmpPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, FileOpenOptions.SequentialScan);
             }
             catch (IOException)
             {
-                return FileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, FileOpenOptions.Asynchronous | FileOpenOptions.SequentialScan);
+                return FileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, FileOpenOptions.SequentialScan);
             }
         }
 

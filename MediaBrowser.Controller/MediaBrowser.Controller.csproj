@@ -134,6 +134,7 @@
     <Compile Include="Entities\UserViewBuilder.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="FileOrganization\IFileOrganizationService.cs" />
+    <Compile Include="IO\StreamHelper.cs" />
     <Compile Include="Library\DeleteOptions.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
     <Compile Include="Library\IMediaSourceManager.cs" />
