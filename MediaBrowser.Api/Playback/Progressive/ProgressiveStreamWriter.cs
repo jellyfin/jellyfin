@@ -63,9 +63,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
         private Stream GetInputStream(bool allowAsyncFileRead)
         {
-            var fileOpenOptions = StartPosition > 0
-                ? FileOpenOptions.RandomAccess
-                : FileOpenOptions.SequentialScan;
+            var fileOpenOptions = FileOpenOptions.SequentialScan;
 
             if (allowAsyncFileRead)
             {

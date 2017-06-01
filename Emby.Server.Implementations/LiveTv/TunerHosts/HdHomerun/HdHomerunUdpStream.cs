@@ -16,6 +16,8 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
+using System.Globalization;
+using MediaBrowser.Controller.IO;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -122,9 +124,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 if (!cancellationToken.IsCancellationRequested)
                                 {
                                     FileSystem.CreateDirectory(FileSystem.GetDirectoryName(_tempFilePath));
-                                    using (var fileStream = FileSystem.GetFileStream(_tempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.Asynchronous))
+                                    using (var fileStream = FileSystem.GetFileStream(_tempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
                                     {
-                                        await CopyTo(udpClient, fileStream, openTaskCompletionSource, cancellationToken).ConfigureAwait(false);
+                                        ResolveAfterDelay(3000, openTaskCompletionSource);
+
+                                        CopyTo(udpClient, fileStream, openTaskCompletionSource, cancellationToken);
                                     }
                                 }
                             }
@@ -168,78 +172,107 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
         {
-            return CopyFileTo(_tempFilePath, false, stream, cancellationToken);
+            return CopyFileTo(_tempFilePath, stream, cancellationToken);
         }
 
-        protected async Task CopyFileTo(string path, bool allowEndOfFile, Stream outputStream, CancellationToken cancellationToken)
+        protected async Task CopyFileTo(string path, Stream outputStream, CancellationToken cancellationToken)
         {
-            var eofCount = 0;
-
-            long startPosition = -25000;
+            long startPosition = -20000;
             if (startPosition < 0)
             {
                 var length = FileSystem.GetFileInfo(path).Length;
                 startPosition = Math.Max(length - startPosition, 0);
             }
 
-            using (var inputStream = GetInputStream(path, startPosition, true))
+            _logger.Info("Live stream starting position is {0} bytes", startPosition.ToString(CultureInfo.InvariantCulture));
+
+            var allowAsync = Environment.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows;
+            // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
+
+            using (var inputStream = GetInputStream(path, startPosition, allowAsync))
             {
                 if (startPosition > 0)
                 {
                     inputStream.Position = startPosition;
                 }
 
-                while (eofCount < 20 || !allowEndOfFile)
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    var bytesRead = await AsyncStreamCopier.CopyStream(inputStream, outputStream, 81920, 4, cancellationToken).ConfigureAwait(false);
+                    long bytesRead;
+
+                    if (allowAsync)
+                    {
+                        bytesRead = await AsyncStreamCopier.CopyStream(inputStream, outputStream, 81920, 2, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        StreamHelper.CopyTo(inputStream, outputStream, 81920, cancellationToken);
+                        bytesRead = 1;
+                    }
 
                     //var position = fs.Position;
                     //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
 
                     if (bytesRead == 0)
                     {
-                        eofCount++;
                         await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        eofCount = 0;
                     }
                 }
             }
         }
 
-        private static int RtpHeaderBytes = 12;
-        private Task CopyTo(ISocket udpClient, Stream outputStream, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        private void ResolveAfterDelay(int delayMs, TaskCompletionSource<bool> openTaskCompletionSource)
         {
-            return CopyStream(_socketFactory.CreateNetworkStream(udpClient, false), outputStream, 81920, 4, openTaskCompletionSource, cancellationToken);
+            Task.Run(async () =>
+            {
+                await Task.Delay(delayMs).ConfigureAwait(false);
+                openTaskCompletionSource.TrySetResult(true);
+            });
         }
 
-        private Task CopyStream(Stream source, Stream target, int bufferSize, int bufferCount, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        private static int RtpHeaderBytes = 12;
+        private void CopyTo(ISocket udpClient, Stream target, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
-            var copier = new AsyncStreamCopier(source, target, 0, cancellationToken, false, bufferSize, bufferCount);
-            copier.IndividualReadOffset = RtpHeaderBytes;
+            var source = _socketFactory.CreateNetworkStream(udpClient, false);
+            var bufferSize = 81920;
 
-            var taskCompletion = new TaskCompletionSource<long>();
-
-            copier.TaskCompletionSource = taskCompletion;
-
-            var result = copier.BeginCopy(StreamCopyCallback, copier);
-
-            if (openTaskCompletionSource != null)
+            byte[] buffer = new byte[bufferSize];
+            int read;
+            while ((read = source.Read(buffer, 0, buffer.Length)) != 0)
             {
-                Resolve(openTaskCompletionSource);
-                openTaskCompletionSource = null;
+                cancellationToken.ThrowIfCancellationRequested();
+
+                read -= RtpHeaderBytes;
+
+                if (read > 0)
+                {
+                    target.Write(buffer, RtpHeaderBytes, read);
+                }
             }
 
-            if (result.CompletedSynchronously)
-            {
-                StreamCopyCallback(result);
-            }
+            //var copier = new AsyncStreamCopier(source, target, 0, cancellationToken, false, bufferSize, bufferCount);
+            //copier.IndividualReadOffset = RtpHeaderBytes;
 
-            cancellationToken.Register(() => taskCompletion.TrySetCanceled());
+            //var taskCompletion = new TaskCompletionSource<long>();
 
-            return taskCompletion.Task;
+            //copier.TaskCompletionSource = taskCompletion;
+
+            //var result = copier.BeginCopy(StreamCopyCallback, copier);
+
+            //if (openTaskCompletionSource != null)
+            //{
+            //    Resolve(openTaskCompletionSource);
+            //    openTaskCompletionSource = null;
+            //}
+
+            //if (result.CompletedSynchronously)
+            //{
+            //    StreamCopyCallback(result);
+            //}
+
+            //cancellationToken.Register(() => taskCompletion.TrySetCanceled());
+
+            //return taskCompletion.Task;
         }
 
         private void StreamCopyCallback(IAsyncResult result)

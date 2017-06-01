@@ -357,9 +357,7 @@ namespace SocketHttpListener.Net
             //    allowAsync = true;
             //}
 
-            var fileOpenOptions = offset > 0
-                ? FileOpenOptions.RandomAccess
-                : FileOpenOptions.SequentialScan;
+            var fileOpenOptions = FileOpenOptions.SequentialScan;
 
             if (allowAsync)
             {
