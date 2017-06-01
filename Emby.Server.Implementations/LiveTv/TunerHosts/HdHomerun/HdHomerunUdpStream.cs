@@ -126,8 +126,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                     FileSystem.CreateDirectory(FileSystem.GetDirectoryName(_tempFilePath));
                                     using (var fileStream = FileSystem.GetFileStream(_tempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
                                     {
-                                        ResolveAfterDelay(3000, openTaskCompletionSource);
-
                                         CopyTo(udpClient, fileStream, openTaskCompletionSource, cancellationToken);
                                     }
                                 }
@@ -170,13 +168,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
            });
         }
 
-        public Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
+        public async Task CopyToAsync(Stream outputStream, CancellationToken cancellationToken)
         {
-            return CopyFileTo(_tempFilePath, stream, cancellationToken);
-        }
+            var path = _tempFilePath;
 
-        protected async Task CopyFileTo(string path, Stream outputStream, CancellationToken cancellationToken)
-        {
             long startPosition = -20000;
             if (startPosition < 0)
             {
@@ -221,15 +216,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
         }
 
-        private void ResolveAfterDelay(int delayMs, TaskCompletionSource<bool> openTaskCompletionSource)
-        {
-            Task.Run(async () =>
-            {
-                await Task.Delay(delayMs).ConfigureAwait(false);
-                openTaskCompletionSource.TrySetResult(true);
-            });
-        }
-
         private static int RtpHeaderBytes = 12;
         private void CopyTo(ISocket udpClient, Stream target, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
@@ -238,6 +224,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             byte[] buffer = new byte[bufferSize];
             int read;
+            var resolved = false;
+
             while ((read = source.Read(buffer, 0, buffer.Length)) != 0)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -247,6 +235,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 if (read > 0)
                 {
                     target.Write(buffer, RtpHeaderBytes, read);
+                }
+
+                if (!resolved)
+                {
+                    resolved = true;
+                    Resolve(openTaskCompletionSource);
                 }
             }
 
