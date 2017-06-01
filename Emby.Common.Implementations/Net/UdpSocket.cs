@@ -128,6 +128,11 @@ namespace Emby.Common.Implementations.Net
             return _Socket.BeginReceiveFrom(buffer, offset, count, SocketFlags.None, ref receivedFromEndPoint, callback, buffer);
         }
 
+        public int Receive(byte[] buffer, int offset, int count)
+        {
+            return _Socket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
+        }
+
         public SocketReceiveResult EndReceive(IAsyncResult result)
         {
             IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
