@@ -34,6 +34,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly INetworkManager _networkManager;
 
         private readonly string _tempFilePath;
+        private bool _enableFileBuffer = false;
+        private readonly MulticastStream _multicastStream;
 
         public HdHomerunUdpStream(MediaSourceInfo mediaSource, string originalStreamId, IHdHomerunChannelCommands channelCommands, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager, IEnvironmentInfo environment)
             : base(mediaSource, environment, fileSystem)
@@ -46,6 +48,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _channelCommands = channelCommands;
             _numTuners = numTuners;
             _tempFilePath = Path.Combine(appPaths.TranscodingTempPath, UniqueId + ".ts");
+            _multicastStream = new MulticastStream(_logger);
         }
 
         protected override async Task OpenInternal(CancellationToken openCancellationToken)
@@ -123,10 +126,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                                 if (!cancellationToken.IsCancellationRequested)
                                 {
-                                    FileSystem.CreateDirectory(FileSystem.GetDirectoryName(_tempFilePath));
-                                    using (var fileStream = FileSystem.GetFileStream(_tempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
+                                    if (_enableFileBuffer)
                                     {
-                                        CopyTo(udpClient, fileStream, openTaskCompletionSource, cancellationToken);
+                                        FileSystem.CreateDirectory(FileSystem.GetDirectoryName(_tempFilePath));
+                                        using (var fileStream = FileSystem.GetFileStream(_tempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
+                                        {
+                                            CopyTo(udpClient, fileStream, openTaskCompletionSource, cancellationToken);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        await _multicastStream.CopyUntilCancelled(new UdpClientStream(udpClient), () => Resolve(openTaskCompletionSource), cancellationToken).ConfigureAwait(false);
                                     }
                                 }
                             }
@@ -170,6 +180,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task CopyToAsync(Stream outputStream, CancellationToken cancellationToken)
         {
+            if (!_enableFileBuffer)
+            {
+                await _multicastStream.CopyToAsync(outputStream, cancellationToken).ConfigureAwait(false);
+                return;
+            }
+
             var path = _tempFilePath;
 
             long startPosition = -20000;
@@ -285,5 +301,155 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
         }
 
+        public class UdpClientStream : Stream
+        {
+            private static int RtpHeaderBytes = 12;
+            private static int PacketSize = 1316;
+            private readonly ISocket _udpClient;
+            bool disposed;
+
+            public UdpClientStream(ISocket udpClient) : base()
+            {
+                _udpClient = udpClient;
+            }
+
+            public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                if (buffer == null)
+                    throw new ArgumentNullException("buffer");
+
+                if (offset + count < 0)
+                    throw new ArgumentOutOfRangeException("offset + count must not be negative", "offset+count");
+
+                if (offset + count > buffer.Length)
+                    throw new ArgumentException("offset + count must not be greater than the length of buffer", "offset+count");
+
+                if (disposed)
+                    throw new ObjectDisposedException(typeof(UdpClientStream).ToString());
+
+                // This will always receive a 1328 packet size (PacketSize + RtpHeaderSize)
+                // The RTP header will be stripped so see how many reads we need to make to fill the buffer.
+                int numReads = count / PacketSize;
+                int totalBytesRead = 0;
+                byte[] receiveBuffer = new byte[81920];
+
+                for (int i = 0; i < numReads; ++i)
+                {
+                    var data = await _udpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
+
+                    var bytesRead = data.ReceivedBytes - RtpHeaderBytes;
+
+                    // remove rtp header
+                    Buffer.BlockCopy(data.Buffer, RtpHeaderBytes, buffer, offset, bytesRead);
+                    offset += bytesRead;
+                    totalBytesRead += bytesRead;
+                }
+                return totalBytesRead;
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                if (buffer == null)
+                    throw new ArgumentNullException("buffer");
+
+                if (offset + count < 0)
+                    throw new ArgumentOutOfRangeException("offset + count must not be negative", "offset+count");
+
+                if (offset + count > buffer.Length)
+                    throw new ArgumentException("offset + count must not be greater than the length of buffer", "offset+count");
+
+                if (disposed)
+                    throw new ObjectDisposedException(typeof(UdpClientStream).ToString());
+
+                // This will always receive a 1328 packet size (PacketSize + RtpHeaderSize)
+                // The RTP header will be stripped so see how many reads we need to make to fill the buffer.
+                int numReads = count / PacketSize;
+                int totalBytesRead = 0;
+                byte[] receiveBuffer = new byte[81920];
+
+                for (int i = 0; i < numReads; ++i)
+                {
+                    var receivedBytes = _udpClient.Receive(receiveBuffer, 0, receiveBuffer.Length);
+
+                    var bytesRead = receivedBytes - RtpHeaderBytes;
+
+                    // remove rtp header
+                    Buffer.BlockCopy(receiveBuffer, RtpHeaderBytes, buffer, offset, bytesRead);
+                    offset += bytesRead;
+                    totalBytesRead += bytesRead;
+                }
+                return totalBytesRead;
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                disposed = true;
+            }
+
+            public override bool CanRead
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override bool CanSeek
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override bool CanWrite
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override long Length
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override long Position
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override void Flush()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void SetLength(long value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }

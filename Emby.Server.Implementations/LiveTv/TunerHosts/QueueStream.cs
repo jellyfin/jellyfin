@@ -57,13 +57,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
         }
 
-        public async Task WriteAsync(byte[] bytes, int offset, int count, CancellationToken cancellationToken)
+        public void Write(byte[] bytes, int offset, int count)
         {
             //return _outputStream.WriteAsync(bytes, offset, count, cancellationToken);
 
             try
             {
-                await _outputStream.WriteAsync(bytes, offset, count, cancellationToken).ConfigureAwait(false);
+                _outputStream.Write(bytes, offset, count);
             }
             catch (OperationCanceledException)
             {
