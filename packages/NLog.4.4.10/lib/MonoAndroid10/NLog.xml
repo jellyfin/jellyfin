@@ -610,18 +610,6 @@
             <param name="logLevel">The <see cref="P:NLog.Common.InternalLogger.LogLevel"/> for the log event.</param>
             <returns><c>true</c> if logging is enabled; otherwise, <c>false</c>.</returns>
         </member>
-        <member name="M:NLog.Common.InternalLogger.WriteToTrace(System.String)">
-            <summary>
-            Write internal messages to the <see cref="T:System.Diagnostics.Trace"/>.
-            </summary>
-            <param name="message">A message to write.</param>
-            <remarks>
-            Works when property <see cref="P:NLog.Common.InternalLogger.LogToTrace"/> set to true.
-            The <see cref="T:System.Diagnostics.Trace"/> is used in Debug and Relese configuration. 
-            The <see cref="T:System.Diagnostics.Debug"/> works only in Debug configuration and this is reason why is replaced by <see cref="T:System.Diagnostics.Trace"/>.
-            in DEBUG 
-            </remarks>
-        </member>
         <member name="M:NLog.Common.InternalLogger.LogAssemblyVersion(System.Reflection.Assembly)">
             <summary>
             Logs the assembly version and file version of the given Assembly.
@@ -1083,11 +1071,6 @@
             Gets or sets a value indicating whether internal messages should be written to the console error stream.
             </summary>
             <remarks>Your application must be a console application.</remarks>
-        </member>
-        <member name="P:NLog.Common.InternalLogger.LogToTrace">
-            <summary>
-            Gets or sets a value indicating whether internal messages should be written to the <see cref="T:System.Diagnostics.Trace"/>.
-            </summary>
         </member>
         <member name="P:NLog.Common.InternalLogger.LogFile">
             <summary>
@@ -1975,20 +1958,6 @@
             The assembly that is trying to load.
             </summary>
         </member>
-        <member name="T:NLog.Config.ConfigSectionHandler">
-            <summary>
-            NLog configuration section handler class for configuring NLog from App.config.
-            </summary>
-        </member>
-        <member name="M:NLog.Config.ConfigSectionHandler.System#Configuration#IConfigurationSectionHandler#Create(System.Object,System.Object,System.Xml.XmlNode)">
-            <summary>
-            Creates a configuration section handler.
-            </summary>
-            <param name="parent">Parent object.</param>
-            <param name="configContext">Configuration context object.</param>
-            <param name="section">Section XML node.</param>
-            <returns>The created section handler object.</returns>
-        </member>
         <member name="T:NLog.Config.ConfigurationItemCreator">
             <summary>
             Constructs a new instance the configuration item (target, layout, layout renderer, etc.) given its type.
@@ -2685,36 +2654,6 @@
             </summary>
             <value>The new configuration.</value>
         </member>
-        <member name="T:NLog.Config.LoggingConfigurationReloadedEventArgs">
-            <summary>
-            Arguments for <see cref="E:NLog.LogFactory.ConfigurationReloaded"/>.
-            </summary>
-        </member>
-        <member name="M:NLog.Config.LoggingConfigurationReloadedEventArgs.#ctor(System.Boolean)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Config.LoggingConfigurationReloadedEventArgs"/> class.
-            </summary>
-            <param name="succeeded">Whether configuration reload has succeeded.</param>
-        </member>
-        <member name="M:NLog.Config.LoggingConfigurationReloadedEventArgs.#ctor(System.Boolean,System.Exception)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Config.LoggingConfigurationReloadedEventArgs"/> class.
-            </summary>
-            <param name="succeeded">Whether configuration reload has succeeded.</param>
-            <param name="exception">The exception during configuration reload.</param>
-        </member>
-        <member name="P:NLog.Config.LoggingConfigurationReloadedEventArgs.Succeeded">
-            <summary>
-            Gets a value indicating whether configuration reload has succeeded.
-            </summary>
-            <value>A value of <c>true</c> if succeeded; otherwise, <c>false</c>.</value>
-        </member>
-        <member name="P:NLog.Config.LoggingConfigurationReloadedEventArgs.Exception">
-            <summary>
-            Gets the exception which occurred during configuration reload.
-            </summary>
-            <value>The exception.</value>
-        </member>
         <member name="T:NLog.Config.LoggingRule">
             <summary>
             Represents a logging rule. An equivalent of &lt;logger /&gt; configuration element.
@@ -3121,6 +3060,11 @@
              - Update TemplateXSD.xml for changes outside targets
              </remarks>
         </member>
+        <member name="F:NLog.Config.XmlLoggingConfiguration.AssetsPrefix">
+            <summary>
+            Prefix for assets in Xamarin Android
+            </summary>
+        </member>
         <member name="M:NLog.Config.XmlLoggingConfiguration.#ctor(System.String)">
             <summary>
             Initializes a new instance of the <see cref="T:NLog.Config.XmlLoggingConfiguration"/> class.
@@ -3328,12 +3272,6 @@
             </summary>
             <param name="input"></param>
             <returns></returns>
-        </member>
-        <member name="P:NLog.Config.XmlLoggingConfiguration.AppConfig">
-            <summary>
-            Gets the default <see cref="T:NLog.Config.LoggingConfiguration"/> object by parsing 
-            the application configuration file (<c>app.exe.config</c>).
-            </summary>
         </member>
         <member name="P:NLog.Config.XmlLoggingConfiguration.InitializeSucceeded">
             <summary>
@@ -6790,28 +6728,6 @@
             Clear o
             </summary>
         </member>
-        <member name="T:NLog.Internal.ConfigurationManager">
-            <summary>
-            Internal configuration manager used to read .NET configuration files.
-            Just a wrapper around the BCL ConfigurationManager, but used to enable
-            unit testing.
-            </summary>
-        </member>
-        <member name="T:NLog.Internal.IConfigurationManager">
-            <summary>
-            Interface for the wrapper around System.Configuration.ConfigurationManager.
-            </summary>
-        </member>
-        <member name="P:NLog.Internal.IConfigurationManager.AppSettings">
-            <summary>
-            Gets the wrapper around ConfigurationManager.AppSettings.
-            </summary>
-        </member>
-        <member name="P:NLog.Internal.ConfigurationManager.AppSettings">
-            <summary>
-            Gets the wrapper around ConfigurationManager.AppSettings.
-            </summary>
-        </member>
         <member name="T:NLog.Internal.DictionaryAdapter`2">
             <summary>
             Provides untyped IDictionary interface on top of generic IDictionary.
@@ -7305,31 +7221,6 @@
             <param name="fileName">Name of the file.</param>
             <param name="createParameters">The create parameters.</param>
         </member>
-        <member name="M:NLog.Internal.FileAppenders.BaseMutexFileAppender.CreateArchiveMutex">
-            <summary>
-            Creates a mutually-exclusive lock for archiving files.
-            </summary>
-            <returns>A <see cref="T:System.Threading.Mutex"/> object which can be used for controlling the archiving of files.</returns>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.BaseMutexFileAppender.CreateSharableArchiveMutex">
-            <summary>
-            Creates a mutex for archiving that is sharable by more than one process.
-            </summary>
-            <returns>A <see cref="T:System.Threading.Mutex"/> object which can be used for controlling the archiving of files.</returns>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.BaseMutexFileAppender.CreateSharableMutex(System.String)">
-            <summary>
-            Creates a mutex that is sharable by more than one process.
-            </summary>
-            <param name="mutexNamePrefix">The prefix to use for the name of the mutex.</param>
-            <returns>A <see cref="T:System.Threading.Mutex"/> object which is sharable by multiple processes.</returns>
-        </member>
-        <member name="P:NLog.Internal.FileAppenders.BaseMutexFileAppender.ArchiveMutex">
-            <summary>
-            Gets the mutually-exclusive lock for archiving files.
-            </summary>
-            <value>The mutex for archiving.</value>
-        </member>
         <member name="T:NLog.Internal.FileAppenders.CountingSingleProcessFileAppender">
             <summary>
             Implementation of <see cref="T:NLog.Internal.FileAppenders.BaseFileAppender"/> which caches 
@@ -7437,11 +7328,6 @@
             <param name="appenderFactory">Factory used to create each appender.</param>
             <param name="createFileParams">Parameters used for creating a file.</param>
         </member>
-        <member name="M:NLog.Internal.FileAppenders.FileAppenderCache.InvalidateAppendersForInvalidFiles">
-            <summary>
-            Invalidates appenders for all files that were archived.
-            </summary>
-        </member>
         <member name="M:NLog.Internal.FileAppenders.FileAppenderCache.AllocateAppender(System.String)">
             <summary>
             It allocates the first slot in the list when the file name does not already in the list and clean up any
@@ -7474,11 +7360,6 @@
             Closes the specified appender and removes it from the list. 
             </summary>
             <param name="filePath">File name of the appender to be closed.</param>
-        </member>
-        <member name="P:NLog.Internal.FileAppenders.FileAppenderCache.ArchiveFilePatternToWatch">
-            <summary>
-            The archive file path pattern that is used to detect when archiving occurs.
-            </summary>
         </member>
         <member name="P:NLog.Internal.FileAppenders.FileAppenderCache.CreateFileParameters">
             <summary>
@@ -7549,94 +7430,10 @@
             Gets or set a value indicating whether a managed file stream is forced, instead of using the native implementation.
             </summary>
         </member>
-        <member name="P:NLog.Internal.FileAppenders.ICreateFileParameters.FileAttributes">
-            <summary>
-            Gets or sets the file attributes (Windows only).
-            </summary>
-        </member>
         <member name="P:NLog.Internal.FileAppenders.ICreateFileParameters.CaptureLastWriteTime">
             <summary>
             Should we capture the last write time of a file?
             </summary>
-        </member>
-        <member name="T:NLog.Internal.FileAppenders.MutexMultiProcessFileAppender">
-            <summary>
-            Provides a multiprocess-safe atomic file appends while
-            keeping the files open.
-            </summary>
-            <remarks>
-            On Unix you can get all the appends to be atomic, even when multiple 
-            processes are trying to write to the same file, because setting the file
-            pointer to the end of the file and appending can be made one operation.
-            On Win32 we need to maintain some synchronization between processes
-            (global named mutex is used for this)
-            </remarks>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.MutexMultiProcessFileAppender.#ctor(System.String,NLog.Internal.FileAppenders.ICreateFileParameters)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Internal.FileAppenders.MutexMultiProcessFileAppender"/> class.
-            </summary>
-            <param name="fileName">Name of the file.</param>
-            <param name="parameters">The parameters.</param>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.MutexMultiProcessFileAppender.Write(System.Byte[],System.Int32,System.Int32)">
-            <summary>
-            Writes the specified bytes.
-            </summary>
-            <param name="bytes">The bytes array.</param>
-            <param name="offset">The bytes array offset.</param>
-            <param name="count">The number of bytes.</param>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.MutexMultiProcessFileAppender.Close">
-            <summary>
-            Closes this instance.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.MutexMultiProcessFileAppender.Flush">
-            <summary>
-            Flushes this instance.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.MutexMultiProcessFileAppender.GetFileCreationTimeUtc">
-            <summary>
-            Gets the creation time for a file associated with the appender. The time returned is in Coordinated Universal 
-            Time [UTC] standard.
-            </summary>
-            <returns>The file creation time.</returns>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.MutexMultiProcessFileAppender.GetFileLastWriteTimeUtc">
-            <summary>
-            Gets the last time the file associated with the appeander is written. The time returned is in Coordinated 
-            Universal Time [UTC] standard.
-            </summary>
-            <returns>The time the file was last written to.</returns>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.MutexMultiProcessFileAppender.GetFileLength">
-            <summary>
-            Gets the length in bytes of the file associated with the appeander.
-            </summary>
-            <returns>A long value representing the length of the file in bytes.</returns>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.MutexMultiProcessFileAppender.CreateArchiveMutex">
-            <summary>
-            Creates a mutually-exclusive lock for archiving files.
-            </summary>
-            <returns>A <see cref="T:System.Threading.Mutex"/> object which can be used for controlling the archiving of files.</returns>
-        </member>
-        <member name="T:NLog.Internal.FileAppenders.MutexMultiProcessFileAppender.Factory">
-            <summary>
-            Factory class.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.MutexMultiProcessFileAppender.Factory.NLog#Internal#FileAppenders#IFileAppenderFactory#Open(System.String,NLog.Internal.FileAppenders.ICreateFileParameters)">
-            <summary>
-            Opens the appender for given file name and parameters.
-            </summary>
-            <param name="fileName">Name of the file.</param>
-            <param name="parameters">Creation parameters.</param>
-            <returns>
-            Instance of <see cref="T:NLog.Internal.FileAppenders.BaseFileAppender"/> which can be used to write to the file.
-            </returns>
         </member>
         <member name="T:NLog.Internal.FileAppenders.NullAppender">
             <summary>
@@ -7711,12 +7508,6 @@
             </summary>
             <returns>A long value representing the length of the file in bytes.</returns>
         </member>
-        <member name="M:NLog.Internal.FileAppenders.RetryingMultiProcessFileAppender.CreateArchiveMutex">
-            <summary>
-            Creates a mutually-exclusive lock for archiving files.
-            </summary>
-            <returns>A <see cref="T:System.Threading.Mutex"/> object which can be used for controlling the archiving of files.</returns>
-        </member>
         <member name="T:NLog.Internal.FileAppenders.RetryingMultiProcessFileAppender.Factory">
             <summary>
             Factory class.
@@ -7788,72 +7579,6 @@
             </summary>
         </member>
         <member name="M:NLog.Internal.FileAppenders.SingleProcessFileAppender.Factory.NLog#Internal#FileAppenders#IFileAppenderFactory#Open(System.String,NLog.Internal.FileAppenders.ICreateFileParameters)">
-            <summary>
-            Opens the appender for given file name and parameters.
-            </summary>
-            <param name="fileName">Name of the file.</param>
-            <param name="parameters">Creation parameters.</param>
-            <returns>
-            Instance of <see cref="T:NLog.Internal.FileAppenders.BaseFileAppender"/> which can be used to write to the file.
-            </returns>
-        </member>
-        <member name="T:NLog.Internal.FileAppenders.WindowsMultiProcessFileAppender">
-            <summary>
-            Provides a multiprocess-safe atomic file append while
-            keeping the files open.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.WindowsMultiProcessFileAppender.#ctor(System.String,NLog.Internal.FileAppenders.ICreateFileParameters)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Internal.FileAppenders.WindowsMultiProcessFileAppender"/> class.
-            </summary>
-            <param name="fileName">Name of the file.</param>
-            <param name="parameters">The parameters.</param>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.WindowsMultiProcessFileAppender.CreateAppendOnlyFile(System.String)">
-            <summary>
-            Creates or opens a file in a special mode, so that writes are automatically
-            as atomic writes at the file end.
-            See also "UnixMultiProcessFileAppender" which does a similar job on *nix platforms.
-            </summary>
-            <param name="fileName">File to create or open</param>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.WindowsMultiProcessFileAppender.CreateArchiveMutex">
-            <summary>
-            Creates a mutually-exclusive lock for archiving files.
-            </summary>
-            <returns>A <see cref="T:System.Threading.Mutex"/> object which can be used for controlling the archiving of files.</returns>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.WindowsMultiProcessFileAppender.Write(System.Byte[],System.Int32,System.Int32)">
-            <summary>
-            Writes the specified bytes.
-            </summary>
-            <param name="bytes">The bytes array.</param>
-            <param name="offset">The bytes array offset.</param>
-            <param name="count">The number of bytes.</param>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.WindowsMultiProcessFileAppender.Close">
-            <summary>
-            Closes this instance.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.WindowsMultiProcessFileAppender.Flush">
-            <summary>
-            Flushes this instance.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.WindowsMultiProcessFileAppender.GetFileLength">
-            <summary>
-            Gets the length in bytes of the file associated with the appeander.
-            </summary>
-            <returns>A long value representing the length of the file in bytes.</returns>
-        </member>
-        <member name="T:NLog.Internal.FileAppenders.WindowsMultiProcessFileAppender.Factory">
-            <summary>
-            Factory class.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.FileAppenders.WindowsMultiProcessFileAppender.Factory.NLog#Internal#FileAppenders#IFileAppenderFactory#Open(System.String,NLog.Internal.FileAppenders.ICreateFileParameters)">
             <summary>
             Opens the appender for given file name and parameters.
             </summary>
@@ -8006,6 +7731,16 @@
             If <paramref name="formatProvider"/> is <c>null</c> and <paramref name="o"/> isn't a <see cref="T:System.String"/> already, then the <see cref="T:NLog.LogFactory"/> will get a locked by <see cref="P:NLog.LogManager.Configuration"/>
             </remarks>
         </member>
+        <member name="T:NLog.Internal.IConfigurationManager">
+            <summary>
+            Interface for the wrapper around System.Configuration.ConfigurationManager.
+            </summary>
+        </member>
+        <member name="P:NLog.Internal.IConfigurationManager.AppSettings">
+            <summary>
+            Gets the wrapper around ConfigurationManager.AppSettings.
+            </summary>
+        </member>
         <member name="T:NLog.Internal.ISmtpClient">
             <summary>
             Supports mocking of SMTP Client code.
@@ -8141,44 +7876,6 @@
             </summary>
             <remarks>This method was marked as obsolete before NLog 4.3.11 and it  will be removed in NLog 5.</remarks>
         </member>
-        <member name="T:NLog.Internal.MultiFileWatcher">
-            <summary>
-            Watches multiple files at the same time and raises an event whenever 
-            a single change is detected in any of those files.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MultiFileWatcher.Dispose">
-            <summary>
-            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MultiFileWatcher.StopWatching">
-            <summary>
-            Stops watching all files.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MultiFileWatcher.StopWatching(System.String)">
-            <summary>
-            Stops watching the specified file.
-            </summary>
-            <param name="fileName"></param>
-        </member>
-        <member name="M:NLog.Internal.MultiFileWatcher.Watch(System.Collections.Generic.IEnumerable{System.String})">
-            <summary>
-            Watches the specified files for changes.
-            </summary>
-            <param name="fileNames">The file names.</param>
-        </member>
-        <member name="P:NLog.Internal.MultiFileWatcher.NotifyFilters">
-            <summary>
-            The types of changes to watch for.
-            </summary>
-        </member>
-        <member name="E:NLog.Internal.MultiFileWatcher.FileChanged">
-            <summary>
-            Occurs when a change is detected in one of the monitored files.
-            </summary>
-        </member>
         <member name="T:NLog.Internal.MySmtpClient">
             <summary>
             Supports mocking of SMTP Client code.
@@ -8187,11 +7884,6 @@
             Disabled Error CS0618  'SmtpClient' is obsolete: 'SmtpClient and its network of types are poorly designed,
              we strongly recommend you use https://github.com/jstedfast/MailKit and https://github.com/jstedfast/MimeKit instead'	
             </remarks>
-        </member>
-        <member name="M:NLog.Internal.MySmtpClient.Dispose">
-            <summary>
-            Sends a QUIT message to the SMTP server, gracefully ends the TCP connection, and releases all resources used by the current instance of the <see cref="T:System.Net.Mail.SmtpClient"/> class.
-            </summary>
         </member>
         <member name="T:NLog.Internal.NetworkSenders.HttpNetworkSender">
             <summary>
@@ -9197,47 +8889,6 @@
         <member name="F:NLog.Internal.UrlHelper.EscapeEncodingFlag.NLogLegacy">
             <summary>Skip UTF8 encoding, and prefix special characters with '%u'</summary>
         </member>
-        <member name="T:NLog.Internal.Win32FileCharacteristicsHelper">
-            <summary>
-            Win32-optimized implementation of <see cref="T:NLog.Internal.FileCharacteristicsHelper"/>.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.Win32FileCharacteristicsHelper.GetFileCharacteristics(System.String,System.IO.FileStream)">
-            <summary>
-            Gets the information about a file.
-            </summary>
-            <param name="fileName">Name of the file.</param>
-            <param name="fileStream">The file stream.</param>
-            <returns>The file characteristics, if the file information was retrieved successfully, otherwise null.</returns>
-        </member>
-        <member name="T:NLog.Internal.Win32ThreadIDHelper">
-            <summary>
-            Win32-optimized implementation of <see cref="T:NLog.Internal.ThreadIDHelper"/>.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.Win32ThreadIDHelper.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Internal.Win32ThreadIDHelper"/> class.
-            </summary>
-        </member>
-        <member name="P:NLog.Internal.Win32ThreadIDHelper.CurrentProcessID">
-            <summary>
-            Gets current process ID.
-            </summary>
-            <value></value>
-        </member>
-        <member name="P:NLog.Internal.Win32ThreadIDHelper.CurrentProcessName">
-            <summary>
-            Gets current process name.
-            </summary>
-            <value></value>
-        </member>
-        <member name="P:NLog.Internal.Win32ThreadIDHelper.CurrentProcessBaseName">
-            <summary>
-            Gets current process name (excluding filename extension, if any).
-            </summary>
-            <value></value>
-        </member>
         <member name="T:NLog.Internal.XmlHelper">
             <summary>
              Helper class for XML
@@ -9247,6 +8898,13 @@
             <summary>
             removes any unusual unicode characters that can't be encoded into XML
             </summary>
+        </member>
+        <member name="M:NLog.Internal.XmlHelper.CreateValidXmlString(System.String)">
+            <summary>
+            Cleans string of any invalid XML chars found
+            </summary>
+            <param name="text">unclean string</param>
+            <returns>string with only valid XML chars</returns>
         </member>
         <member name="M:NLog.Internal.XmlHelper.XmlConvertToStringSafe(System.Object)">
             <summary>
@@ -9262,7 +8920,7 @@
             <param name="value">Object value</param>
             <returns>Object value converted to string</returns>
         </member>
-        <member name="M:NLog.Internal.XmlHelper.XmlConvertToString(System.Object,System.TypeCode@)">
+        <member name="M:NLog.Internal.XmlHelper.XmlConvertToString(System.Object,System.TypeCode)">
             <summary>
             Converts object value to invariant format (understood by JavaScript)
             </summary>
@@ -10505,52 +10163,6 @@
             </summary>
             <docgen category='Advanced Options' order='10' />
         </member>
-        <member name="T:NLog.LayoutRenderers.PerformanceCounterLayoutRenderer">
-            <summary>
-            The performance counter.
-            </summary>
-        </member>
-        <member name="M:NLog.LayoutRenderers.PerformanceCounterLayoutRenderer.InitializeLayoutRenderer">
-            <summary>
-            Initializes the layout renderer.
-            </summary>
-        </member>
-        <member name="M:NLog.LayoutRenderers.PerformanceCounterLayoutRenderer.CloseLayoutRenderer">
-            <summary>
-            Closes the layout renderer.
-            </summary>
-        </member>
-        <member name="M:NLog.LayoutRenderers.PerformanceCounterLayoutRenderer.Append(System.Text.StringBuilder,NLog.LogEventInfo)">
-            <summary>
-            Renders the specified environment variable and appends it to the specified <see cref="T:System.Text.StringBuilder"/>.
-            </summary>
-            <param name="builder">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
-            <param name="logEvent">Logging event.</param>
-        </member>
-        <member name="P:NLog.LayoutRenderers.PerformanceCounterLayoutRenderer.Category">
-            <summary>
-            Gets or sets the name of the counter category.
-            </summary>
-            <docgen category='Performance Counter Options' order='10' />
-        </member>
-        <member name="P:NLog.LayoutRenderers.PerformanceCounterLayoutRenderer.Counter">
-            <summary>
-            Gets or sets the name of the performance counter.
-            </summary>
-            <docgen category='Performance Counter Options' order='10' />
-        </member>
-        <member name="P:NLog.LayoutRenderers.PerformanceCounterLayoutRenderer.Instance">
-            <summary>
-            Gets or sets the name of the performance counter instance (e.g. this.Global_).
-            </summary>
-            <docgen category='Performance Counter Options' order='10' />
-        </member>
-        <member name="P:NLog.LayoutRenderers.PerformanceCounterLayoutRenderer.MachineName">
-            <summary>
-            Gets or sets the name of the machine to read the performance counter from.
-            </summary>
-            <docgen category='Performance Counter Options' order='10' />
-        </member>
         <member name="T:NLog.LayoutRenderers.ProcessIdLayoutRenderer">
             <summary>
             The identifier of the current process.
@@ -10839,142 +10451,6 @@
             <param name="builder"></param>
             <param name="ts"></param>
             <param name="culture"></param>
-        </member>
-        <member name="T:NLog.LayoutRenderers.QueryPerformanceCounterLayoutRenderer">
-            <summary>
-            High precision timer, based on the value returned from QueryPerformanceCounter() optionally converted to seconds.
-            </summary>
-        </member>
-        <member name="M:NLog.LayoutRenderers.QueryPerformanceCounterLayoutRenderer.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LayoutRenderers.QueryPerformanceCounterLayoutRenderer"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.LayoutRenderers.QueryPerformanceCounterLayoutRenderer.InitializeLayoutRenderer">
-            <summary>
-            Initializes the layout renderer.
-            </summary>
-        </member>
-        <member name="M:NLog.LayoutRenderers.QueryPerformanceCounterLayoutRenderer.Append(System.Text.StringBuilder,NLog.LogEventInfo)">
-            <summary>
-            Renders the ticks value of current time and appends it to the specified <see cref="T:System.Text.StringBuilder"/>.
-            </summary>
-            <param name="builder">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
-            <param name="logEvent">Logging event.</param>
-        </member>
-        <member name="P:NLog.LayoutRenderers.QueryPerformanceCounterLayoutRenderer.Normalize">
-            <summary>
-            Gets or sets a value indicating whether to normalize the result by subtracting 
-            it from the result of the first call (so that it's effectively zero-based).
-            </summary>
-            <docgen category='Rendering Options' order='10' />
-        </member>
-        <member name="P:NLog.LayoutRenderers.QueryPerformanceCounterLayoutRenderer.Difference">
-            <summary>
-            Gets or sets a value indicating whether to output the difference between the result 
-            of QueryPerformanceCounter and the previous one.
-            </summary>
-            <docgen category='Rendering Options' order='10' />
-        </member>
-        <member name="P:NLog.LayoutRenderers.QueryPerformanceCounterLayoutRenderer.Seconds">
-            <summary>
-            Gets or sets a value indicating whether to convert the result to seconds by dividing 
-            by the result of QueryPerformanceFrequency().
-            </summary>
-            <docgen category='Rendering Options' order='10' />
-        </member>
-        <member name="P:NLog.LayoutRenderers.QueryPerformanceCounterLayoutRenderer.Precision">
-            <summary>
-            Gets or sets the number of decimal digits to be included in output.
-            </summary>
-            <docgen category='Rendering Options' order='10' />
-        </member>
-        <member name="P:NLog.LayoutRenderers.QueryPerformanceCounterLayoutRenderer.AlignDecimalPoint">
-            <summary>
-            Gets or sets a value indicating whether to align decimal point (emit non-significant zeros).
-            </summary>
-            <docgen category='Rendering Options' order='10' />
-        </member>
-        <member name="T:NLog.LayoutRenderers.RegistryLayoutRenderer">
-            <summary>
-            A value from the Registry.
-            </summary>
-        </member>
-        <member name="M:NLog.LayoutRenderers.RegistryLayoutRenderer.#ctor">
-            <summary>
-            Create new renderer
-            </summary>
-        </member>
-        <member name="M:NLog.LayoutRenderers.RegistryLayoutRenderer.Append(System.Text.StringBuilder,NLog.LogEventInfo)">
-            <summary>
-            Reads the specified registry key and value and appends it to
-            the passed <see cref="T:System.Text.StringBuilder"/>.
-            </summary>
-            <param name="builder">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
-            <param name="logEvent">Logging event. Ignored.</param>
-        </member>
-        <member name="M:NLog.LayoutRenderers.RegistryLayoutRenderer.ParseKey(System.String)">
-            <summary>
-            Parse key to <see cref="T:Microsoft.Win32.RegistryHive"/> and subkey.
-            </summary>
-            <param name="key">full registry key name</param>
-            <returns>Result of parsing, never <c>null</c>.</returns>
-        </member>
-        <member name="F:NLog.LayoutRenderers.RegistryLayoutRenderer.HiveAliases">
-            <summary>
-            Aliases for the hives. See https://msdn.microsoft.com/en-us/library/ctb3kd86(v=vs.110).aspx
-            </summary>
-        </member>
-        <member name="P:NLog.LayoutRenderers.RegistryLayoutRenderer.Value">
-            <summary>
-            Gets or sets the registry value name.
-            </summary>
-            <docgen category='Registry Options' order='10' />
-        </member>
-        <member name="P:NLog.LayoutRenderers.RegistryLayoutRenderer.DefaultValue">
-            <summary>
-            Gets or sets the value to be output when the specified registry key or value is not found.
-            </summary>
-            <docgen category='Registry Options' order='10' />
-        </member>
-        <member name="P:NLog.LayoutRenderers.RegistryLayoutRenderer.RequireEscapingSlashesInDefaultValue">
-            <summary>
-            Require escaping backward slashes in <see cref="P:NLog.LayoutRenderers.RegistryLayoutRenderer.DefaultValue"/>. Need to be backwardscompatible.
-            
-            When true:
-            
-            `\` in value should be configured as `\\`
-            `\\` in value should be configured as `\\\\`.
-            </summary>
-            <remarks>Default value wasn't a Layout before and needed an escape of the slash</remarks>
-        </member>
-        <member name="P:NLog.LayoutRenderers.RegistryLayoutRenderer.Key">
-             <summary>
-             Gets or sets the registry key.
-             </summary>
-             <example>
-             HKCU\Software\NLogTest
-             </example>
-             <remarks>
-             Possible keys:
-             <ul>
-            <li>HKEY_LOCAL_MACHINE</li>
-            <li>HKLM</li>
-            <li>HKEY_CURRENT_USER</li>
-            <li>HKCU</li>
-            <li>HKEY_CLASSES_ROOT</li>
-            <li>HKEY_USERS</li>
-            <li>HKEY_CURRENT_CONFIG</li>
-            <li>HKEY_DYN_DATA</li>
-            <li>HKEY_PERFORMANCE_DATA</li>
-             </ul>
-             </remarks>
-             <docgen category='Registry Options' order='10' />
-        </member>
-        <member name="P:NLog.LayoutRenderers.RegistryLayoutRenderer.ParseResult.HasSubKey">
-            <summary>
-            Has <see cref="P:NLog.LayoutRenderers.RegistryLayoutRenderer.ParseResult.SubKey"/>?
-            </summary>
         </member>
         <member name="T:NLog.LayoutRenderers.ShortDateLayoutRenderer">
             <summary>
@@ -12422,6 +11898,11 @@
             Gets or sets the option to render the empty object value {}
             </summary>
         </member>
+        <member name="P:NLog.Layouts.JsonLayout.IncludeMdc">
+            <summary>
+            Gets or sets a value indicating whether to include contents of the <see cref="T:NLog.MappedDiagnosticsContext"/> dictionary.
+            </summary>
+        </member>
         <member name="P:NLog.Layouts.JsonLayout.IncludeAllProperties">
             <summary>
             Gets or sets the option to include all properties from the log events
@@ -12853,11 +12334,6 @@
             When this property is <c>null</c>, the default file paths (<see cref="M:NLog.LogFactory.GetCandidateConfigFilePaths"/> are used.
             </summary>
         </member>
-        <member name="M:NLog.LogFactory.#cctor">
-            <summary>
-            Initializes static members of the LogManager class.
-            </summary>
-        </member>
         <member name="M:NLog.LogFactory.#ctor">
             <summary>
             Initializes a new instance of the <see cref="T:NLog.LogFactory"/> class.
@@ -13037,12 +12513,6 @@
             </summary>
             <param name="e">Event arguments.</param>
         </member>
-        <member name="M:NLog.LogFactory.OnConfigurationReloaded(NLog.Config.LoggingConfigurationReloadedEventArgs)">
-            <summary>
-            Raises the event when the configuration is reloaded. 
-            </summary>
-            <param name="e">Event arguments</param>
-        </member>
         <member name="F:NLog.LogFactory.IsDisposing">
             <summary>
             Currently this logfactory is disposing?
@@ -13080,11 +12550,6 @@
         <member name="E:NLog.LogFactory.ConfigurationChanged">
             <summary>
             Occurs when logging <see cref="P:NLog.LogFactory.Configuration"/> changes.
-            </summary>
-        </member>
-        <member name="E:NLog.LogFactory.ConfigurationReloaded">
-            <summary>
-            Occurs when logging <see cref="P:NLog.LogFactory.Configuration"/> gets reloaded.
             </summary>
         </member>
         <member name="P:NLog.LogFactory.CurrentAppDomain">
@@ -17002,11 +16467,6 @@
             Occurs when logging <see cref="P:NLog.LogManager.Configuration"/> changes.
             </summary>
         </member>
-        <member name="E:NLog.LogManager.ConfigurationReloaded">
-            <summary>
-            Occurs when logging <see cref="P:NLog.LogManager.Configuration"/> gets reloaded.
-            </summary>
-        </member>
         <member name="P:NLog.LogManager.ThrowExceptions">
             <summary>
             Gets or sets a value indicating whether NLog should throw exceptions. 
@@ -17060,34 +16520,6 @@
             </summary>
             <returns>Log message.</returns>
         </member>
-        <member name="T:NLog.LogReceiverService.BaseLogReceiverForwardingService">
-            <summary>
-            Base implementation of a log receiver server which forwards received logs through <see cref="T:NLog.LogManager"/> or a given <see cref="T:NLog.LogFactory"/>.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.BaseLogReceiverForwardingService.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.BaseLogReceiverForwardingService"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.BaseLogReceiverForwardingService.#ctor(NLog.LogFactory)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.BaseLogReceiverForwardingService"/> class.
-            </summary>
-            <param name="logFactory">The log factory.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.BaseLogReceiverForwardingService.ProcessLogMessages(NLog.LogReceiverService.NLogEvents)">
-            <summary>
-            Processes the log messages.
-            </summary>
-            <param name="events">The events to process.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.BaseLogReceiverForwardingService.ProcessLogMessages(NLog.LogEventInfo[])">
-            <summary>
-            Processes the log messages.
-            </summary>
-            <param name="logEvents">The log events.</param>
-        </member>
         <member name="T:NLog.LogReceiverService.ILogReceiverClient">
             <summary>
             Service contract for Log Receiver client.
@@ -17133,28 +16565,6 @@
             </summary>
             <param name="result">The result.</param>
         </member>
-        <member name="T:NLog.LogReceiverService.ILogReceiverOneWayServer">
-            <summary>
-            Service contract for Log Receiver server.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.ILogReceiverOneWayServer.ProcessLogMessages(NLog.LogReceiverService.NLogEvents)">
-            <summary>
-            Processes the log messages.
-            </summary>
-            <param name="events">The events.</param>
-        </member>
-        <member name="T:NLog.LogReceiverService.ILogReceiverServer">
-            <summary>
-            Service contract for Log Receiver server.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.ILogReceiverServer.ProcessLogMessages(NLog.LogReceiverService.NLogEvents)">
-            <summary>
-            Processes the log messages.
-            </summary>
-            <param name="events">The events.</param>
-        </member>
         <member name="T:NLog.LogReceiverService.ILogReceiverTwoWayClient">
             <summary>
             Service contract for Log Receiver client.
@@ -17176,130 +16586,6 @@
             Ends asynchronous processing of log messages.
             </summary>
             <param name="result">The result.</param>
-        </member>
-        <member name="T:NLog.LogReceiverService.IWcfLogReceiverClient">
-            <summary>
-            Client of <see cref="T:NLog.LogReceiverService.ILogReceiverServer"/>
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.IWcfLogReceiverClient.OpenAsync">
-            <summary>
-            Opens the client asynchronously.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.IWcfLogReceiverClient.OpenAsync(System.Object)">
-            <summary>
-            Opens the client asynchronously.
-            </summary>
-            <param name="userState">User-specific state.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.IWcfLogReceiverClient.CloseAsync">
-            <summary>
-            Closes the client asynchronously.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.IWcfLogReceiverClient.CloseAsync(System.Object)">
-            <summary>
-            Closes the client asynchronously.
-            </summary>
-            <param name="userState">User-specific state.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.IWcfLogReceiverClient.ProcessLogMessagesAsync(NLog.LogReceiverService.NLogEvents)">
-            <summary>
-            Processes the log messages asynchronously.
-            </summary>
-            <param name="events">The events to send.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.IWcfLogReceiverClient.ProcessLogMessagesAsync(NLog.LogReceiverService.NLogEvents,System.Object)">
-            <summary>
-            Processes the log messages asynchronously.
-            </summary>
-            <param name="events">The events to send.</param>
-            <param name="userState">User-specific state.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.IWcfLogReceiverClient.BeginProcessLogMessages(NLog.LogReceiverService.NLogEvents,System.AsyncCallback,System.Object)">
-            <summary>
-            Begins processing of log messages.
-            </summary>
-            <param name="events">The events to send.</param>
-            <param name="callback">The callback.</param>
-            <param name="asyncState">Asynchronous state.</param>
-            <returns>
-            IAsyncResult value which can be passed to <see cref="M:NLog.LogReceiverService.ILogReceiverOneWayClient.EndProcessLogMessages(System.IAsyncResult)"/>.
-            </returns>
-        </member>
-        <member name="M:NLog.LogReceiverService.IWcfLogReceiverClient.EndProcessLogMessages(System.IAsyncResult)">
-            <summary>
-            Ends asynchronous processing of log messages.
-            </summary>
-            <param name="result">The result.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.IWcfLogReceiverClient.DisplayInitializationUI">
-            <summary>
-            Instructs the inner channel to display a user interface if one is required to initialize the channel prior to using it.
-            </summary>
-        </member>
-        <member name="E:NLog.LogReceiverService.IWcfLogReceiverClient.ProcessLogMessagesCompleted">
-            <summary>
-            Occurs when the log message processing has completed.
-            </summary>
-        </member>
-        <member name="E:NLog.LogReceiverService.IWcfLogReceiverClient.OpenCompleted">
-            <summary>
-            Occurs when Open operation has completed.
-            </summary>
-        </member>
-        <member name="E:NLog.LogReceiverService.IWcfLogReceiverClient.CloseCompleted">
-            <summary>
-            Occurs when Close operation has completed.
-            </summary>
-        </member>
-        <member name="P:NLog.LogReceiverService.IWcfLogReceiverClient.ClientCredentials">
-            <summary>
-            Enables the user to configure client and service credentials as well as service credential authentication settings for use on the client side of communication.
-            </summary>
-        </member>
-        <member name="P:NLog.LogReceiverService.IWcfLogReceiverClient.InnerChannel">
-            <summary>
-            Gets the underlying <see cref="T:System.ServiceModel.IClientChannel"/> implementation.
-            </summary>
-        </member>
-        <member name="P:NLog.LogReceiverService.IWcfLogReceiverClient.Endpoint">
-            <summary>
-            Gets the target endpoint for the service to which the WCF client can connect.
-            </summary>
-        </member>
-        <member name="T:NLog.LogReceiverService.LogReceiverForwardingService">
-            <summary>
-            Implementation of <see cref="T:NLog.LogReceiverService.ILogReceiverServer"/> which forwards received logs through <see cref="T:NLog.LogManager"/> or a given <see cref="T:NLog.LogFactory"/>.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.LogReceiverForwardingService.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.LogReceiverForwardingService"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.LogReceiverForwardingService.#ctor(NLog.LogFactory)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.LogReceiverForwardingService"/> class.
-            </summary>
-            <param name="logFactory">The log factory.</param>
-        </member>
-        <member name="T:NLog.LogReceiverService.LogReceiverOneWayForwardingService">
-            <summary>
-            Implementation of <see cref="T:NLog.LogReceiverService.ILogReceiverOneWayServer"/> which forwards received logs through <see cref="T:NLog.LogManager"/> or a given <see cref="T:NLog.LogFactory"/>.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.LogReceiverOneWayForwardingService.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.LogReceiverOneWayForwardingService"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.LogReceiverOneWayForwardingService.#ctor(NLog.LogFactory)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.LogReceiverOneWayForwardingService"/> class.
-            </summary>
-            <param name="logFactory">The log factory.</param>
         </member>
         <member name="T:NLog.LogReceiverService.LogReceiverServiceConfig">
             <summary>
@@ -17421,543 +16707,6 @@
             <summary>
             Initializes a new instance of the <see cref="T:NLog.LogReceiverService.StringCollection"/> class.
             </summary>
-        </member>
-        <member name="T:NLog.LogReceiverService.WcfILogReceiverClient">
-            <summary>
-            Log Receiver Client using WCF.
-            </summary>
-            <remarks>
-            This class marked as obsolete before NLog 4.3.11 and it will be removed in a future release.  
-            
-            It provides an implementation of the legacy interface and it will be completely obsolete when the 
-            ILogReceiverClient is removed.
-            </remarks>
-        </member>
-        <member name="T:NLog.LogReceiverService.WcfLogReceiverClientBase`1">
-            <summary>
-            Abstract base class for the WcfLogReceiverXXXWay classes.  It can only be
-            used internally (see internal constructor).  It passes off any Channel usage
-            to the inheriting class.
-            </summary>
-            <typeparam name="TService">Type of the WCF service.</typeparam>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClientBase`1.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverClientBase`1"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClientBase`1.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverClientBase`1"/> class.
-            </summary>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClientBase`1.#ctor(System.String,System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverClientBase`1"/> class.
-            </summary>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClientBase`1.#ctor(System.String,System.ServiceModel.EndpointAddress)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverClientBase`1"/> class.
-            </summary>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClientBase`1.#ctor(System.ServiceModel.Channels.Binding,System.ServiceModel.EndpointAddress)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverClientBase`1"/> class.
-            </summary>
-            <param name="binding">The binding.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClientBase`1.OpenAsync">
-            <summary>
-            Opens the client asynchronously.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClientBase`1.OpenAsync(System.Object)">
-            <summary>
-            Opens the client asynchronously.
-            </summary>
-            <param name="userState">User-specific state.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClientBase`1.CloseAsync">
-            <summary>
-            Closes the client asynchronously.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClientBase`1.CloseAsync(System.Object)">
-            <summary>
-            Closes the client asynchronously.
-            </summary>
-            <param name="userState">User-specific state.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClientBase`1.ProcessLogMessagesAsync(NLog.LogReceiverService.NLogEvents)">
-            <summary>
-            Processes the log messages asynchronously.
-            </summary>
-            <param name="events">The events to send.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClientBase`1.ProcessLogMessagesAsync(NLog.LogReceiverService.NLogEvents,System.Object)">
-            <summary>
-            Processes the log messages asynchronously.
-            </summary>
-            <param name="events">The events to send.</param>
-            <param name="userState">User-specific state.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClientBase`1.BeginProcessLogMessages(NLog.LogReceiverService.NLogEvents,System.AsyncCallback,System.Object)">
-            <summary>
-            Begins processing of log messages.
-            </summary>
-            <param name="events">The events to send.</param>
-            <param name="callback">The callback.</param>
-            <param name="asyncState">Asynchronous state.</param>
-            <returns>
-            IAsyncResult value which can be passed to <see cref="M:NLog.LogReceiverService.ILogReceiverOneWayClient.EndProcessLogMessages(System.IAsyncResult)"/>.
-            </returns>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClientBase`1.EndProcessLogMessages(System.IAsyncResult)">
-            <summary>
-            Ends asynchronous processing of log messages.
-            </summary>
-            <param name="result">The result.</param>
-        </member>
-        <member name="E:NLog.LogReceiverService.WcfLogReceiverClientBase`1.ProcessLogMessagesCompleted">
-            <summary>
-            Occurs when the log message processing has completed.
-            </summary>
-        </member>
-        <member name="E:NLog.LogReceiverService.WcfLogReceiverClientBase`1.OpenCompleted">
-            <summary>
-            Occurs when Open operation has completed.
-            </summary>
-        </member>
-        <member name="E:NLog.LogReceiverService.WcfLogReceiverClientBase`1.CloseCompleted">
-            <summary>
-            Occurs when Close operation has completed.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfILogReceiverClient.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfILogReceiverClient"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfILogReceiverClient.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfILogReceiverClient"/> class.
-            </summary>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfILogReceiverClient.#ctor(System.String,System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfILogReceiverClient"/> class.
-            </summary>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfILogReceiverClient.#ctor(System.String,System.ServiceModel.EndpointAddress)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverOneWayClient"/> class.
-            </summary>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfILogReceiverClient.#ctor(System.ServiceModel.Channels.Binding,System.ServiceModel.EndpointAddress)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverOneWayClient"/> class.
-            </summary>
-            <param name="binding">The binding.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfILogReceiverClient.BeginProcessLogMessages(NLog.LogReceiverService.NLogEvents,System.AsyncCallback,System.Object)">
-            <summary>
-            Begins processing of log messages.
-            </summary>
-            <param name="events">The events to send.</param>
-            <param name="callback">The callback.</param>
-            <param name="asyncState">Asynchronous state.</param>
-            <returns>
-            IAsyncResult value which can be passed to <see cref="M:NLog.LogReceiverService.ILogReceiverOneWayClient.EndProcessLogMessages(System.IAsyncResult)"/>.
-            </returns>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfILogReceiverClient.EndProcessLogMessages(System.IAsyncResult)">
-            <summary>
-            Ends asynchronous processing of log messages.
-            </summary>
-            <param name="result">The result.</param>
-        </member>
-        <member name="T:NLog.LogReceiverService.WcfLogReceiverClient">
-            <summary>
-            Log Receiver Client facade. It allows the use either of the one way or two way 
-            service contract using WCF through its unified interface.
-            </summary>
-            <remarks>
-            Delegating methods are generated with Resharper.
-            1. change ProxiedClient to private field (instead of public property)
-            2. delegate members
-            3. change ProxiedClient back to public property.
-            
-            </remarks>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.#ctor(System.Boolean)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverClient"/> class.
-            </summary>
-            <param name="useOneWay">Whether to use the one way or two way WCF client.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.#ctor(System.Boolean,System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverClient"/> class.
-            </summary>
-            <param name="useOneWay">Whether to use the one way or two way WCF client.</param>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.#ctor(System.Boolean,System.String,System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverClient"/> class.
-            </summary>
-            <param name="useOneWay">Whether to use the one way or two way WCF client.</param>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.#ctor(System.Boolean,System.String,System.ServiceModel.EndpointAddress)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverClient"/> class.
-            </summary>
-            <param name="useOneWay">Whether to use the one way or two way WCF client.</param>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.#ctor(System.Boolean,System.ServiceModel.Channels.Binding,System.ServiceModel.EndpointAddress)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverClient"/> class.
-            </summary>
-            <param name="useOneWay">Whether to use the one way or two way WCF client.</param>
-            <param name="binding">The binding.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.Abort">
-            <summary>
-            Causes a communication object to transition immediately from its current state into the closed state.  
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.BeginClose(System.AsyncCallback,System.Object)">
-            <summary>
-            Begins an asynchronous operation to close a communication object.
-            </summary>
-            <returns>
-            The <see cref="T:System.IAsyncResult"/> that references the asynchronous close operation. 
-            </returns>
-            <param name="callback">The <see cref="T:System.AsyncCallback"/> delegate that receives notification of the completion of the asynchronous close operation.</param><param name="state">An object, specified by the application, that contains state information associated with the asynchronous close operation.</param><exception cref="T:System.ServiceModel.CommunicationObjectFaultedException"><see cref="M:System.ServiceModel.ICommunicationObject.BeginClose"/> was called on an object in the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception><exception cref="T:System.TimeoutException">The default timeout elapsed before the <see cref="T:System.ServiceModel.ICommunicationObject"/> was able to close gracefully.</exception>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.BeginClose(System.TimeSpan,System.AsyncCallback,System.Object)">
-            <summary>
-            Begins an asynchronous operation to close a communication object with a specified timeout.
-            </summary>
-            <returns>
-            The <see cref="T:System.IAsyncResult"/> that references the asynchronous close operation.
-            </returns>
-            <param name="timeout">The <see cref="T:System.Timespan"/> that specifies how long the send operation has to complete before timing out.</param><param name="callback">The <see cref="T:System.AsyncCallback"/> delegate that receives notification of the completion of the asynchronous close operation.</param><param name="state">An object, specified by the application, that contains state information associated with the asynchronous close operation.</param><exception cref="T:System.ServiceModel.CommunicationObjectFaultedException"><see cref="M:System.ServiceModel.ICommunicationObject.BeginClose"/> was called on an object in the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception><exception cref="T:System.TimeoutException">The specified timeout elapsed before the <see cref="T:System.ServiceModel.ICommunicationObject"/> was able to close gracefully.</exception>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.BeginOpen(System.AsyncCallback,System.Object)">
-            <summary>
-            Begins an asynchronous operation to open a communication object.
-            </summary>
-            <returns>
-            The <see cref="T:System.IAsyncResult"/> that references the asynchronous open operation. 
-            </returns>
-            <param name="callback">The <see cref="T:System.AsyncCallback"/> delegate that receives notification of the completion of the asynchronous open operation.</param><param name="state">An object, specified by the application, that contains state information associated with the asynchronous open operation.</param><exception cref="T:System.ServiceModel.CommunicationException">The <see cref="T:System.ServiceModel.ICommunicationObject"/> was unable to be opened and has entered the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception><exception cref="T:System.TimeoutException">The default open timeout elapsed before the <see cref="T:System.ServiceModel.ICommunicationObject"/> was able to enter the <see cref="F:System.ServiceModel.CommunicationState.Opened"/> state and has entered the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.BeginOpen(System.TimeSpan,System.AsyncCallback,System.Object)">
-            <summary>
-            Begins an asynchronous operation to open a communication object within a specified interval of time.
-            </summary>
-            <returns>
-            The <see cref="T:System.IAsyncResult"/> that references the asynchronous open operation. 
-            </returns>
-            <param name="timeout">The <see cref="T:System.Timespan"/> that specifies how long the send operation has to complete before timing out.</param><param name="callback">The <see cref="T:System.AsyncCallback"/> delegate that receives notification of the completion of the asynchronous open operation.</param><param name="state">An object, specified by the application, that contains state information associated with the asynchronous open operation.</param><exception cref="T:System.ServiceModel.CommunicationException">The <see cref="T:System.ServiceModel.ICommunicationObject"/> was unable to be opened and has entered the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception><exception cref="T:System.TimeoutException">The specified timeout elapsed before the <see cref="T:System.ServiceModel.ICommunicationObject"/> was able to enter the <see cref="F:System.ServiceModel.CommunicationState.Opened"/> state and has entered the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.BeginProcessLogMessages(NLog.LogReceiverService.NLogEvents,System.AsyncCallback,System.Object)">
-            <summary>
-            Begins processing of log messages.
-            </summary>
-            <param name="events">The events to send.</param>
-            <param name="callback">The callback.</param>
-            <param name="asyncState">Asynchronous state.</param>
-            <returns>
-            IAsyncResult value which can be passed to <see cref="M:NLog.LogReceiverService.ILogReceiverOneWayClient.EndProcessLogMessages(System.IAsyncResult)"/>.
-            </returns>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.Close(System.TimeSpan)">
-            <summary>
-            Causes a communication object to transition from its current state into the closed state.  
-            </summary>
-            <param name="timeout">The <see cref="T:System.Timespan"/> that specifies how long the send operation has to complete before timing out.</param><exception cref="T:System.ServiceModel.CommunicationObjectFaultedException"><see cref="M:System.ServiceModel.ICommunicationObject.Close"/> was called on an object in the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception><exception cref="T:System.TimeoutException">The timeout elapsed before the <see cref="T:System.ServiceModel.ICommunicationObject"/> was able to close gracefully.</exception>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.Close">
-            <summary>
-            Causes a communication object to transition from its current state into the closed state.  
-            </summary>
-            <exception cref="T:System.ServiceModel.CommunicationObjectFaultedException"><see cref="M:System.ServiceModel.ICommunicationObject.Close"/> was called on an object in the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception><exception cref="T:System.TimeoutException">The default close timeout elapsed before the <see cref="T:System.ServiceModel.ICommunicationObject"/> was able to close gracefully.</exception>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.CloseAsync(System.Object)">
-            <summary>
-            Closes the client asynchronously.
-            </summary>
-            <param name="userState">User-specific state.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.CloseAsync">
-            <summary>
-            Closes the client asynchronously.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.DisplayInitializationUI">
-            <summary>
-            Instructs the inner channel to display a user interface if one is required to initialize the channel prior to using it.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.EndClose(System.IAsyncResult)">
-            <summary>
-            Completes an asynchronous operation to close a communication object.
-            </summary>
-            <param name="result">The <see cref="T:System.IAsyncResult"/> that is returned by a call to the <see cref="M:System.ServiceModel.ICommunicationObject.BeginClose"/> method.</param><exception cref="T:System.ServiceModel.CommunicationObjectFaultedException"><see cref="M:System.ServiceModel.ICommunicationObject.BeginClose"/> was called on an object in the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception><exception cref="T:System.TimeoutException">The timeout elapsed before the <see cref="T:System.ServiceModel.ICommunicationObject"/> was able to close gracefully.</exception>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.EndOpen(System.IAsyncResult)">
-            <summary>
-            Completes an asynchronous operation to open a communication object.
-            </summary>
-            <param name="result">The <see cref="T:System.IAsyncResult"/> that is returned by a call to the <see cref="M:System.ServiceModel.ICommunicationObject.BeginOpen"/> method.</param><exception cref="T:System.ServiceModel.CommunicationException">The <see cref="T:System.ServiceModel.ICommunicationObject"/> was unable to be opened and has entered the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception><exception cref="T:System.TimeoutException">The timeout elapsed before the <see cref="T:System.ServiceModel.ICommunicationObject"/> was able to enter the <see cref="F:System.ServiceModel.CommunicationState.Opened"/> state and has entered the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.EndProcessLogMessages(System.IAsyncResult)">
-            <summary>
-            Ends asynchronous processing of log messages.
-            </summary>
-            <param name="result">The result.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.Open">
-            <summary>
-            Causes a communication object to transition from the created state into the opened state.  
-            </summary>
-            <exception cref="T:System.ServiceModel.CommunicationException">The <see cref="T:System.ServiceModel.ICommunicationObject"/> was unable to be opened and has entered the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception><exception cref="T:System.TimeoutException">The default open timeout elapsed before the <see cref="T:System.ServiceModel.ICommunicationObject"/> was able to enter the <see cref="F:System.ServiceModel.CommunicationState.Opened"/> state and has entered the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.Open(System.TimeSpan)">
-            <summary>
-            Causes a communication object to transition from the created state into the opened state within a specified interval of time.
-            </summary>
-            <param name="timeout">The <see cref="T:System.Timespan"/> that specifies how long the send operation has to complete before timing out.</param><exception cref="T:System.ServiceModel.CommunicationException">The <see cref="T:System.ServiceModel.ICommunicationObject"/> was unable to be opened and has entered the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception><exception cref="T:System.TimeoutException">The specified timeout elapsed before the <see cref="T:System.ServiceModel.ICommunicationObject"/> was able to enter the <see cref="F:System.ServiceModel.CommunicationState.Opened"/> state and has entered the <see cref="F:System.ServiceModel.CommunicationState.Faulted"/> state.</exception>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.OpenAsync">
-            <summary>
-            Opens the client asynchronously.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.OpenAsync(System.Object)">
-            <summary>
-            Opens the client asynchronously.
-            </summary>
-            <param name="userState">User-specific state.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.ProcessLogMessagesAsync(NLog.LogReceiverService.NLogEvents)">
-            <summary>
-            Processes the log messages asynchronously.
-            </summary>
-            <param name="events">The events to send.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.ProcessLogMessagesAsync(NLog.LogReceiverService.NLogEvents,System.Object)">
-            <summary>
-            Processes the log messages asynchronously.
-            </summary>
-            <param name="events">The events to send.</param>
-            <param name="userState">User-specific state.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverClient.CloseCommunicationObject">
-            <summary>
-            Causes a communication object to transition from its current state into the closed state.
-            </summary>
-        </member>
-        <member name="P:NLog.LogReceiverService.WcfLogReceiverClient.ProxiedClient">
-            <summary>
-            The client getting proxied
-            </summary>
-        </member>
-        <member name="P:NLog.LogReceiverService.WcfLogReceiverClient.UseOneWay">
-            <summary>
-            Do we use one-way or two-way messaging?
-            </summary>
-        </member>
-        <member name="P:NLog.LogReceiverService.WcfLogReceiverClient.ClientCredentials">
-            <summary>
-            Enables the user to configure client and service credentials as well as service credential authentication settings for use on the client side of communication.
-            </summary>
-        </member>
-        <member name="E:NLog.LogReceiverService.WcfLogReceiverClient.CloseCompleted">
-            <summary>
-            Occurs when Close operation has completed.
-            </summary>
-        </member>
-        <member name="E:NLog.LogReceiverService.WcfLogReceiverClient.Closed">
-            <summary>
-            Occurs when the communication object completes its transition from the closing state into the closed state.
-            </summary>
-        </member>
-        <member name="E:NLog.LogReceiverService.WcfLogReceiverClient.Closing">
-            <summary>
-            Occurs when the communication object first enters the closing state.
-            </summary>
-        </member>
-        <member name="P:NLog.LogReceiverService.WcfLogReceiverClient.Endpoint">
-            <summary>
-            Gets the target endpoint for the service to which the WCF client can connect.
-            </summary>
-        </member>
-        <member name="E:NLog.LogReceiverService.WcfLogReceiverClient.Faulted">
-            <summary>
-            Occurs when the communication object first enters the faulted state.
-            </summary>
-        </member>
-        <member name="P:NLog.LogReceiverService.WcfLogReceiverClient.InnerChannel">
-            <summary>
-            Gets the underlying <see cref="T:System.ServiceModel.IClientChannel"/> implementation.
-            </summary>
-        </member>
-        <member name="E:NLog.LogReceiverService.WcfLogReceiverClient.OpenCompleted">
-            <summary>
-            Occurs when Open operation has completed.
-            </summary>
-        </member>
-        <member name="E:NLog.LogReceiverService.WcfLogReceiverClient.Opened">
-            <summary>
-            Occurs when the communication object completes its transition from the opening state into the opened state.
-            </summary>
-        </member>
-        <member name="E:NLog.LogReceiverService.WcfLogReceiverClient.Opening">
-            <summary>
-            Occurs when the communication object first enters the opening state.
-            </summary>
-        </member>
-        <member name="E:NLog.LogReceiverService.WcfLogReceiverClient.ProcessLogMessagesCompleted">
-            <summary>
-            Occurs when the log message processing has completed.
-            </summary>
-        </member>
-        <member name="P:NLog.LogReceiverService.WcfLogReceiverClient.State">
-            <summary>
-            Gets the current state of the communication-oriented object.
-            </summary>
-            <returns>
-            The value of the <see cref="T:System.ServiceModel.CommunicationState"/> of the object.
-            </returns>
-        </member>
-        <member name="T:NLog.LogReceiverService.WcfLogReceiverOneWayClient">
-            <summary>
-            Log Receiver Client using WCF.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverOneWayClient.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverOneWayClient"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverOneWayClient.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverOneWayClient"/> class.
-            </summary>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverOneWayClient.#ctor(System.String,System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverOneWayClient"/> class.
-            </summary>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverOneWayClient.#ctor(System.String,System.ServiceModel.EndpointAddress)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverOneWayClient"/> class.
-            </summary>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverOneWayClient.#ctor(System.ServiceModel.Channels.Binding,System.ServiceModel.EndpointAddress)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverOneWayClient"/> class.
-            </summary>
-            <param name="binding">The binding.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverOneWayClient.BeginProcessLogMessages(NLog.LogReceiverService.NLogEvents,System.AsyncCallback,System.Object)">
-            <summary>
-            Begins processing of log messages.
-            </summary>
-            <param name="events">The events to send.</param>
-            <param name="callback">The callback.</param>
-            <param name="asyncState">Asynchronous state.</param>
-            <returns>
-            IAsyncResult value which can be passed to <see cref="M:NLog.LogReceiverService.ILogReceiverOneWayClient.EndProcessLogMessages(System.IAsyncResult)"/>.
-            </returns>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverOneWayClient.EndProcessLogMessages(System.IAsyncResult)">
-            <summary>
-            Ends asynchronous processing of log messages.
-            </summary>
-            <param name="result">The result.</param>
-        </member>
-        <member name="T:NLog.LogReceiverService.WcfLogReceiverTwoWayClient">
-            <summary>
-            Log Receiver Client using WCF.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverTwoWayClient.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverTwoWayClient"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverTwoWayClient.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverTwoWayClient"/> class.
-            </summary>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverTwoWayClient.#ctor(System.String,System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverTwoWayClient"/> class.
-            </summary>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverTwoWayClient.#ctor(System.String,System.ServiceModel.EndpointAddress)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverTwoWayClient"/> class.
-            </summary>
-            <param name="endpointConfigurationName">Name of the endpoint configuration.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverTwoWayClient.#ctor(System.ServiceModel.Channels.Binding,System.ServiceModel.EndpointAddress)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfLogReceiverTwoWayClient"/> class.
-            </summary>
-            <param name="binding">The binding.</param>
-            <param name="remoteAddress">The remote address.</param>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverTwoWayClient.BeginProcessLogMessages(NLog.LogReceiverService.NLogEvents,System.AsyncCallback,System.Object)">
-            <summary>
-            Begins processing of log messages.
-            </summary>
-            <param name="events">The events to send.</param>
-            <param name="callback">The callback.</param>
-            <param name="asyncState">Asynchronous state.</param>
-            <returns>
-            IAsyncResult value which can be passed to <see cref="M:NLog.LogReceiverService.ILogReceiverOneWayClient.EndProcessLogMessages(System.IAsyncResult)"/>.
-            </returns>
-        </member>
-        <member name="M:NLog.LogReceiverService.WcfLogReceiverTwoWayClient.EndProcessLogMessages(System.IAsyncResult)">
-            <summary>
-            Ends asynchronous processing of log messages.
-            </summary>
-            <param name="result">The result.</param>
         </member>
         <member name="T:NLog.MappedDiagnosticsContext">
             <summary>
@@ -18322,170 +17071,6 @@
             The class name is null or <see cref="P:System.Exception.HResult"/> is zero (0).
             </exception>
         </member>
-        <member name="T:NLog.NLogTraceListener">
-            <summary>
-            TraceListener which routes all messages through NLog.
-            </summary>
-        </member>
-        <member name="M:NLog.NLogTraceListener.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.NLogTraceListener"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.NLogTraceListener.Write(System.String)">
-            <summary>
-            When overridden in a derived class, writes the specified message to the listener you create in the derived class.
-            </summary>
-            <param name="message">A message to write.</param>
-        </member>
-        <member name="M:NLog.NLogTraceListener.WriteLine(System.String)">
-            <summary>
-            When overridden in a derived class, writes a message to the listener you create in the derived class, followed by a line terminator.
-            </summary>
-            <param name="message">A message to write.</param>
-        </member>
-        <member name="M:NLog.NLogTraceListener.Close">
-            <summary>
-            When overridden in a derived class, closes the output stream so it no longer receives tracing or debugging output.
-            </summary>
-        </member>
-        <member name="M:NLog.NLogTraceListener.Fail(System.String)">
-            <summary>
-            Emits an error message.
-            </summary>
-            <param name="message">A message to emit.</param>
-        </member>
-        <member name="M:NLog.NLogTraceListener.Fail(System.String,System.String)">
-            <summary>
-            Emits an error message and a detailed error message.
-            </summary>
-            <param name="message">A message to emit.</param>
-            <param name="detailMessage">A detailed message to emit.</param>
-        </member>
-        <member name="M:NLog.NLogTraceListener.Flush">
-            <summary>
-            Flushes the output (if <see cref="P:NLog.NLogTraceListener.DisableFlush"/> is not <c>true</c>) buffer with the default timeout of 15 seconds.
-            </summary>
-        </member>
-        <member name="M:NLog.NLogTraceListener.TraceData(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.Object)">
-            <summary>
-            Writes trace information, a data object and event information to the listener specific output.
-            </summary>
-            <param name="eventCache">A <see cref="T:System.Diagnostics.TraceEventCache"/> object that contains the current process ID, thread ID, and stack trace information.</param>
-            <param name="source">A name used to identify the output, typically the name of the application that generated the trace event.</param>
-            <param name="eventType">One of the <see cref="T:System.Diagnostics.TraceEventType"/> values specifying the type of event that has caused the trace.</param>
-            <param name="id">A numeric identifier for the event.</param>
-            <param name="data">The trace data to emit.</param>
-        </member>
-        <member name="M:NLog.NLogTraceListener.TraceData(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.Object[])">
-            <summary>
-            Writes trace information, an array of data objects and event information to the listener specific output.
-            </summary>
-            <param name="eventCache">A <see cref="T:System.Diagnostics.TraceEventCache"/> object that contains the current process ID, thread ID, and stack trace information.</param>
-            <param name="source">A name used to identify the output, typically the name of the application that generated the trace event.</param>
-            <param name="eventType">One of the <see cref="T:System.Diagnostics.TraceEventType"/> values specifying the type of event that has caused the trace.</param>
-            <param name="id">A numeric identifier for the event.</param>
-            <param name="data">An array of objects to emit as data.</param>
-        </member>
-        <member name="M:NLog.NLogTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32)">
-            <summary>
-            Writes trace and event information to the listener specific output.
-            </summary>
-            <param name="eventCache">A <see cref="T:System.Diagnostics.TraceEventCache"/> object that contains the current process ID, thread ID, and stack trace information.</param>
-            <param name="source">A name used to identify the output, typically the name of the application that generated the trace event.</param>
-            <param name="eventType">One of the <see cref="T:System.Diagnostics.TraceEventType"/> values specifying the type of event that has caused the trace.</param>
-            <param name="id">A numeric identifier for the event.</param>
-        </member>
-        <member name="M:NLog.NLogTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.String,System.Object[])">
-            <summary>
-            Writes trace information, a formatted array of objects and event information to the listener specific output.
-            </summary>
-            <param name="eventCache">A <see cref="T:System.Diagnostics.TraceEventCache"/> object that contains the current process ID, thread ID, and stack trace information.</param>
-            <param name="source">A name used to identify the output, typically the name of the application that generated the trace event.</param>
-            <param name="eventType">One of the <see cref="T:System.Diagnostics.TraceEventType"/> values specifying the type of event that has caused the trace.</param>
-            <param name="id">A numeric identifier for the event.</param>
-            <param name="format">A format string that contains zero or more format items, which correspond to objects in the <paramref name="args"/> array.</param>
-            <param name="args">An object array containing zero or more objects to format.</param>
-        </member>
-        <member name="M:NLog.NLogTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.String)">
-            <summary>
-            Writes trace information, a message, and event information to the listener specific output.
-            </summary>
-            <param name="eventCache">A <see cref="T:System.Diagnostics.TraceEventCache"/> object that contains the current process ID, thread ID, and stack trace information.</param>
-            <param name="source">A name used to identify the output, typically the name of the application that generated the trace event.</param>
-            <param name="eventType">One of the <see cref="T:System.Diagnostics.TraceEventType"/> values specifying the type of event that has caused the trace.</param>
-            <param name="id">A numeric identifier for the event.</param>
-            <param name="message">A message to write.</param>
-        </member>
-        <member name="M:NLog.NLogTraceListener.TraceTransfer(System.Diagnostics.TraceEventCache,System.String,System.Int32,System.String,System.Guid)">
-            <summary>
-            Writes trace information, a message, a related activity identity and event information to the listener specific output.
-            </summary>
-            <param name="eventCache">A <see cref="T:System.Diagnostics.TraceEventCache"/> object that contains the current process ID, thread ID, and stack trace information.</param>
-            <param name="source">A name used to identify the output, typically the name of the application that generated the trace event.</param>
-            <param name="id">A numeric identifier for the event.</param>
-            <param name="message">A message to write.</param>
-            <param name="relatedActivityId">A <see cref="T:System.Guid"/>  object identifying a related activity.</param>
-        </member>
-        <member name="M:NLog.NLogTraceListener.GetSupportedAttributes">
-            <summary>
-            Gets the custom attributes supported by the trace listener.
-            </summary>
-            <returns>
-            A string array naming the custom attributes supported by the trace listener, or null if there are no custom attributes.
-            </returns>
-        </member>
-        <member name="M:NLog.NLogTraceListener.TranslateLogLevel(System.Diagnostics.TraceEventType)">
-            <summary>
-            Translates the event type to level from <see cref="T:System.Diagnostics.TraceEventType"/>.
-            </summary>
-            <param name="eventType">Type of the event.</param>
-            <returns>Translated log level.</returns>
-        </member>
-        <member name="M:NLog.NLogTraceListener.ProcessLogEventInfo(NLog.LogLevel,System.String,System.String,System.Object[],System.Nullable{System.Int32},System.Nullable{System.Diagnostics.TraceEventType},System.Nullable{System.Guid})">
-            <summary>
-            Process the log event
-            <param name="logLevel">The log level.</param>
-            <param name="loggerName">The name of the logger.</param>
-            <param name="message">The log message.</param>
-            <param name="arguments">The log parameters.</param>
-            <param name="eventId">The event id.</param>
-            <param name="eventType">The event type.</param>
-            <param name="relatedActiviyId">The related activity id.</param>
-            </summary>
-        </member>
-        <member name="P:NLog.NLogTraceListener.LogFactory">
-            <summary>
-            Gets or sets the log factory to use when outputting messages (null - use LogManager).
-            </summary>
-        </member>
-        <member name="P:NLog.NLogTraceListener.DefaultLogLevel">
-            <summary>
-            Gets or sets the default log level.
-            </summary>
-        </member>
-        <member name="P:NLog.NLogTraceListener.ForceLogLevel">
-            <summary>
-            Gets or sets the log which should be always used regardless of source level.
-            </summary>
-        </member>
-        <member name="P:NLog.NLogTraceListener.DisableFlush">
-            <summary>
-            Gets or sets a value indicating whether flush calls from trace sources should be ignored.
-            </summary>
-        </member>
-        <member name="P:NLog.NLogTraceListener.IsThreadSafe">
-            <summary>
-            Gets a value indicating whether the trace listener is thread safe.
-            </summary>
-            <value></value>
-            <returns>true if the trace listener is thread safe; otherwise, false. The default is false.</returns>
-        </member>
-        <member name="P:NLog.NLogTraceListener.AutoLoggerName">
-            <summary>
-            Gets or sets a value indicating whether to use auto logger name detected from the stack trace.
-            </summary>
-        </member>
         <member name="T:NLog.NullLogger">
             <summary>
             It works as a normal <see cref="T:NLog.Logger" /> but it discards all messages which an application requests 
@@ -18528,102 +17113,9 @@
             The most recent archive has the highest number (in combination with the date).
             </summary>
         </member>
-        <member name="T:NLog.Targets.ChainsawTarget">
+        <member name="T:NLog.Targets.AsyncTaskTarget">
             <summary>
-            Sends log messages to the remote instance of Chainsaw application from log4j. 
-            </summary>
-            <seealso href="https://github.com/nlog/nlog/wiki/Chainsaw-target">Documentation on NLog Wiki</seealso>
-            <example>
-            <p>
-            To set up the target in the <a href="config.html">configuration file</a>, 
-            use the following syntax:
-            </p>
-            <code lang="XML" source="examples/targets/Configuration File/Chainsaw/NLog.config" />
-            <p>
-            This assumes just one target and a single rule. More configuration
-            options are described <a href="config.html">here</a>.
-            </p>
-            <p>
-            To set up the log target programmatically use code like this:
-            </p>
-            <code lang="C#" source="examples/targets/Configuration API/Chainsaw/Simple/Example.cs" />
-            <p>
-            NOTE: If your receiver application is ever likely to be off-line, don't use TCP protocol
-            or you'll get TCP timeouts and your application will crawl. 
-            Either switch to UDP transport or use <a href="target.AsyncWrapper.html">AsyncWrapper</a> target
-            so that your application threads will not be blocked by the timing-out connection attempts.
-            </p>
-            </example>
-        </member>
-        <member name="T:NLog.Targets.NLogViewerTarget">
-            <summary>
-            Sends log messages to the remote instance of NLog Viewer. 
-            </summary>
-            <seealso href="https://github.com/nlog/nlog/wiki/NLogViewer-target">Documentation on NLog Wiki</seealso>
-            <example>
-            <p>
-            To set up the target in the <a href="config.html">configuration file</a>, 
-            use the following syntax:
-            </p>
-            <code lang="XML" source="examples/targets/Configuration File/NLogViewer/NLog.config" />
-            <p>
-            This assumes just one target and a single rule. More configuration
-            options are described <a href="config.html">here</a>.
-            </p>
-            <p>
-            To set up the log target programmatically use code like this:
-            </p>
-            <code lang="C#" source="examples/targets/Configuration API/NLogViewer/Simple/Example.cs" />
-            <p>
-            NOTE: If your receiver application is ever likely to be off-line, don't use TCP protocol
-            or you'll get TCP timeouts and your application will crawl. 
-            Either switch to UDP transport or use <a href="target.AsyncWrapper.html">AsyncWrapper</a> target
-            so that your application threads will not be blocked by the timing-out connection attempts.
-            </p>
-            </example>
-        </member>
-        <member name="T:NLog.Targets.NetworkTarget">
-            <summary>
-            Sends log messages over the network.
-            </summary>
-            <seealso href="https://github.com/nlog/nlog/wiki/Network-target">Documentation on NLog Wiki</seealso>
-            <example>
-            <p>
-            To set up the target in the <a href="config.html">configuration file</a>, 
-            use the following syntax:
-            </p>
-            <code lang="XML" source="examples/targets/Configuration File/Network/NLog.config" />
-            <p>
-            This assumes just one target and a single rule. More configuration
-            options are described <a href="config.html">here</a>.
-            </p>
-            <p>
-            To set up the log target programmatically use code like this:
-            </p>
-            <code lang="C#" source="examples/targets/Configuration API/Network/Simple/Example.cs" />
-            <p>
-            To print the results, use any application that's able to receive messages over
-            TCP or UDP. <a href="http://m.nu/program/util/netcat/netcat.html">NetCat</a> is
-            a simple but very powerful command-line tool that can be used for that. This image
-            demonstrates the NetCat tool receiving log messages from Network target.
-            </p>
-            <img src="examples/targets/Screenshots/Network/Output.gif" />
-            <p>
-            NOTE: If your receiver application is ever likely to be off-line, don't use TCP protocol
-            or you'll get TCP timeouts and your application will be very slow. 
-            Either switch to UDP transport or use <a href="target.AsyncWrapper.html">AsyncWrapper</a> target
-            so that your application threads will not be blocked by the timing-out connection attempts.
-            </p>
-            <p>
-            There are two specialized versions of the Network target: <a href="target.Chainsaw.html">Chainsaw</a>
-            and <a href="target.NLogViewer.html">NLogViewer</a> which write to instances of Chainsaw log4j viewer
-            or NLogViewer application respectively.
-            </p>
-            </example>
-        </member>
-        <member name="T:NLog.Targets.TargetWithLayout">
-            <summary>
-            Represents target that supports string formatting using layouts.
+            Abstract Target with async Task support
             </summary>
         </member>
         <member name="T:NLog.Targets.Target">
@@ -18844,6 +17336,189 @@
         <member name="P:NLog.Targets.Target.IsInitialized">
             <summary>
             Gets a value indicating whether the target has been initialized.
+            </summary>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.#ctor">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.WriteAsyncTask(NLog.LogEventInfo,System.Threading.CancellationToken)">
+            <summary>
+            Override this to create the actual logging task
+            <example>
+            Example of how to override this method, and call custom async method
+            <code>
+            protected override Task WriteAsyncTask(LogEventInfo logEvent, CancellationToken token)
+            {
+               return CustomWriteAsync(logEvent, token);
+            }
+            
+            private async Task CustomWriteAsync(LogEventInfo logEvent, CancellationToken token)
+            {
+                await MyLogMethodAsync(logEvent, token).ConfigureAwait(false);
+            }
+            </code></example>
+            </summary>
+            <param name="logEvent">The log event.</param>
+            <param name="cancellationToken">The cancellation token</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.Write(NLog.Common.AsyncLogEventInfo)">
+            <summary>
+            Schedules the LogEventInfo for async writing
+            </summary>
+            <param name="logEvent">The log event.</param>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.FlushAsync(NLog.Common.AsyncContinuation)">
+            <summary>
+            Schedules notification of when all messages has been written
+            </summary>
+            <param name="asyncContinuation"></param>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.CloseTarget">
+            <summary>
+            Closes Target by updating CancellationToken 
+            </summary>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.Dispose(System.Boolean)">
+            <summary>
+            Releases any managed resources
+            </summary>
+            <param name="disposing"></param>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.TaskStartNext(System.Threading.Tasks.Task)">
+            <summary>
+            Checks the internal queue for the next <see cref="T:NLog.LogEventInfo"/> to create a new task for
+            </summary>
+            <param name="previousTask">Used for race-condition validation betweewn task-completion and timeout</param>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.TaskCreation(NLog.Common.AsyncLogEventInfo)">
+            <summary>
+            Creates new task to handle the writing of the input <see cref="T:NLog.LogEventInfo"/>
+            </summary>
+            <param name="logEvent">LogEvent to write</param>
+            <returns>New Task created [true / false]</returns>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.TaskCompletion(System.Threading.Tasks.Task,System.Object)">
+            <summary>
+            Handles that scheduled task has completed (succesfully or failed), and starts the next pending task
+            </summary>
+            <param name="completedTask">Task just completed</param>
+            <param name="continuation">AsyncContinuation to notify of success or failure</param>
+        </member>
+        <member name="M:NLog.Targets.AsyncTaskTarget.TaskTimeout(System.Object)">
+            <summary>
+            Timer method, that is fired when pending task fails to complete within timeout
+            </summary>
+            <param name="state"></param>
+        </member>
+        <member name="P:NLog.Targets.AsyncTaskTarget.TaskTimeoutSeconds">
+            <summary>
+            How many seconds a Task is allowed to run before it is cancelled.
+            </summary>
+        </member>
+        <member name="P:NLog.Targets.AsyncTaskTarget.TaskScheduler">
+            <summary>
+            Task Scheduler used for processing async Tasks
+            </summary>
+        </member>
+        <member name="T:NLog.Targets.ChainsawTarget">
+            <summary>
+            Sends log messages to the remote instance of Chainsaw application from log4j. 
+            </summary>
+            <seealso href="https://github.com/nlog/nlog/wiki/Chainsaw-target">Documentation on NLog Wiki</seealso>
+            <example>
+            <p>
+            To set up the target in the <a href="config.html">configuration file</a>, 
+            use the following syntax:
+            </p>
+            <code lang="XML" source="examples/targets/Configuration File/Chainsaw/NLog.config" />
+            <p>
+            This assumes just one target and a single rule. More configuration
+            options are described <a href="config.html">here</a>.
+            </p>
+            <p>
+            To set up the log target programmatically use code like this:
+            </p>
+            <code lang="C#" source="examples/targets/Configuration API/Chainsaw/Simple/Example.cs" />
+            <p>
+            NOTE: If your receiver application is ever likely to be off-line, don't use TCP protocol
+            or you'll get TCP timeouts and your application will crawl. 
+            Either switch to UDP transport or use <a href="target.AsyncWrapper.html">AsyncWrapper</a> target
+            so that your application threads will not be blocked by the timing-out connection attempts.
+            </p>
+            </example>
+        </member>
+        <member name="T:NLog.Targets.NLogViewerTarget">
+            <summary>
+            Sends log messages to the remote instance of NLog Viewer. 
+            </summary>
+            <seealso href="https://github.com/nlog/nlog/wiki/NLogViewer-target">Documentation on NLog Wiki</seealso>
+            <example>
+            <p>
+            To set up the target in the <a href="config.html">configuration file</a>, 
+            use the following syntax:
+            </p>
+            <code lang="XML" source="examples/targets/Configuration File/NLogViewer/NLog.config" />
+            <p>
+            This assumes just one target and a single rule. More configuration
+            options are described <a href="config.html">here</a>.
+            </p>
+            <p>
+            To set up the log target programmatically use code like this:
+            </p>
+            <code lang="C#" source="examples/targets/Configuration API/NLogViewer/Simple/Example.cs" />
+            <p>
+            NOTE: If your receiver application is ever likely to be off-line, don't use TCP protocol
+            or you'll get TCP timeouts and your application will crawl. 
+            Either switch to UDP transport or use <a href="target.AsyncWrapper.html">AsyncWrapper</a> target
+            so that your application threads will not be blocked by the timing-out connection attempts.
+            </p>
+            </example>
+        </member>
+        <member name="T:NLog.Targets.NetworkTarget">
+            <summary>
+            Sends log messages over the network.
+            </summary>
+            <seealso href="https://github.com/nlog/nlog/wiki/Network-target">Documentation on NLog Wiki</seealso>
+            <example>
+            <p>
+            To set up the target in the <a href="config.html">configuration file</a>, 
+            use the following syntax:
+            </p>
+            <code lang="XML" source="examples/targets/Configuration File/Network/NLog.config" />
+            <p>
+            This assumes just one target and a single rule. More configuration
+            options are described <a href="config.html">here</a>.
+            </p>
+            <p>
+            To set up the log target programmatically use code like this:
+            </p>
+            <code lang="C#" source="examples/targets/Configuration API/Network/Simple/Example.cs" />
+            <p>
+            To print the results, use any application that's able to receive messages over
+            TCP or UDP. <a href="http://m.nu/program/util/netcat/netcat.html">NetCat</a> is
+            a simple but very powerful command-line tool that can be used for that. This image
+            demonstrates the NetCat tool receiving log messages from Network target.
+            </p>
+            <img src="examples/targets/Screenshots/Network/Output.gif" />
+            <p>
+            NOTE: If your receiver application is ever likely to be off-line, don't use TCP protocol
+            or you'll get TCP timeouts and your application will be very slow. 
+            Either switch to UDP transport or use <a href="target.AsyncWrapper.html">AsyncWrapper</a> target
+            so that your application threads will not be blocked by the timing-out connection attempts.
+            </p>
+            <p>
+            There are two specialized versions of the Network target: <a href="target.Chainsaw.html">Chainsaw</a>
+            and <a href="target.NLogViewer.html">NLogViewer</a> which write to instances of Chainsaw log4j viewer
+            or NLogViewer application respectively.
+            </p>
+            </example>
+        </member>
+        <member name="T:NLog.Targets.TargetWithLayout">
+            <summary>
+            Represents target that supports string formatting using layouts.
             </summary>
         </member>
         <member name="M:NLog.Targets.TargetWithLayout.#ctor">
@@ -19079,182 +17754,6 @@
             </summary>
             <param name="name">Name of the target.</param>
         </member>
-        <member name="T:NLog.Targets.ColoredConsoleTarget">
-            <summary>
-            Writes log messages to the console with customizable coloring.
-            </summary>
-            <seealso href="https://github.com/nlog/nlog/wiki/ColoredConsole-target">Documentation on NLog Wiki</seealso>
-        </member>
-        <member name="T:NLog.Targets.TargetWithLayoutHeaderAndFooter">
-            <summary>
-            Represents target that supports string formatting using layouts.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.TargetWithLayoutHeaderAndFooter.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.TargetWithLayoutHeaderAndFooter"/> class.
-            </summary>
-            <remarks>
-            The default value of the layout is: <code>${longdate}|${level:uppercase=true}|${logger}|${message}</code>
-            </remarks>
-        </member>
-        <member name="P:NLog.Targets.TargetWithLayoutHeaderAndFooter.Layout">
-            <summary>
-            Gets or sets the text to be rendered.
-            </summary>
-            <docgen category='Layout Options' order='1' />
-        </member>
-        <member name="P:NLog.Targets.TargetWithLayoutHeaderAndFooter.Footer">
-            <summary>
-            Gets or sets the footer.
-            </summary>
-            <docgen category='Layout Options' order='3' />
-        </member>
-        <member name="P:NLog.Targets.TargetWithLayoutHeaderAndFooter.Header">
-            <summary>
-            Gets or sets the header.
-            </summary>
-            <docgen category='Layout Options' order='2' />
-        </member>
-        <member name="P:NLog.Targets.TargetWithLayoutHeaderAndFooter.LHF">
-            <summary>
-            Gets or sets the layout with header and footer.
-            </summary>
-            <value>The layout with header and footer.</value>
-        </member>
-        <member name="F:NLog.Targets.ColoredConsoleTarget.pauseLogging">
-            <summary>
-            Should logging being paused/stopped because of the race condition bug in Console.Writeline?
-            </summary>
-            <remarks>
-              Console.Out.Writeline / Console.Error.Writeline could throw 'IndexOutOfRangeException', which is a bug. 
-            See http://stackoverflow.com/questions/33915790/console-out-and-console-error-race-condition-error-in-a-windows-service-written
-            and https://connect.microsoft.com/VisualStudio/feedback/details/2057284/console-out-probable-i-o-race-condition-issue-in-multi-threaded-windows-service
-                        
-            Full error: 
-              Error during session close: System.IndexOutOfRangeException: Probable I/ O race condition detected while copying memory.
-              The I/ O package is not thread safe by default.In multithreaded applications, 
-              a stream must be accessed in a thread-safe way, such as a thread - safe wrapper returned by TextReader's or 
-              TextWriter's Synchronized methods.This also applies to classes like StreamWriter and StreamReader.
-            
-            </remarks>
-        </member>
-        <member name="M:NLog.Targets.ColoredConsoleTarget.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.ColoredConsoleTarget"/> class.
-            </summary>
-            <remarks>
-            The default value of the layout is: <code>${longdate}|${level:uppercase=true}|${logger}|${message}</code>
-            </remarks>
-        </member>
-        <member name="M:NLog.Targets.ColoredConsoleTarget.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.ColoredConsoleTarget"/> class.
-            </summary>
-            <remarks>
-            The default value of the layout is: <code>${longdate}|${level:uppercase=true}|${logger}|${message}</code>
-            </remarks>
-            <param name="name">Name of the target.</param>
-        </member>
-        <member name="M:NLog.Targets.ColoredConsoleTarget.InitializeTarget">
-            <summary>
-            Initializes the target.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.ColoredConsoleTarget.CloseTarget">
-            <summary>
-            Closes the target and releases any unmanaged resources.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.ColoredConsoleTarget.Write(NLog.LogEventInfo)">
-            <summary>
-            Writes the specified log event to the console highlighting entries
-            and words based on a set of defined rules.
-            </summary>
-            <param name="logEvent">Log event.</param>
-        </member>
-        <member name="P:NLog.Targets.ColoredConsoleTarget.ErrorStream">
-            <summary>
-            Gets or sets a value indicating whether the error stream (stderr) should be used instead of the output stream (stdout).
-            </summary>
-            <docgen category='Output Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.ColoredConsoleTarget.UseDefaultRowHighlightingRules">
-            <summary>
-            Gets or sets a value indicating whether to use default row highlighting rules.
-            </summary>
-            <remarks>
-            The default rules are:
-            <table>
-            <tr>
-            <th>Condition</th>
-            <th>Foreground Color</th>
-            <th>Background Color</th>
-            </tr>
-            <tr>
-            <td>level == LogLevel.Fatal</td>
-            <td>Red</td>
-            <td>NoChange</td>
-            </tr>
-            <tr>
-            <td>level == LogLevel.Error</td>
-            <td>Yellow</td>
-            <td>NoChange</td>
-            </tr>
-            <tr>
-            <td>level == LogLevel.Warn</td>
-            <td>Magenta</td>
-            <td>NoChange</td>
-            </tr>
-            <tr>
-            <td>level == LogLevel.Info</td>
-            <td>White</td>
-            <td>NoChange</td>
-            </tr>
-            <tr>
-            <td>level == LogLevel.Debug</td>
-            <td>Gray</td>
-            <td>NoChange</td>
-            </tr>
-            <tr>
-            <td>level == LogLevel.Trace</td>
-            <td>DarkGray</td>
-            <td>NoChange</td>
-            </tr>
-            </table>
-            </remarks>
-            <docgen category='Highlighting Rules' order='9' />
-        </member>
-        <member name="P:NLog.Targets.ColoredConsoleTarget.Encoding">
-            <summary>
-            The encoding for writing messages to the <see cref="T:System.Console"/>.
-             </summary>
-            <remarks>Has side effect</remarks>
-        </member>
-        <member name="P:NLog.Targets.ColoredConsoleTarget.DetectConsoleAvailable">
-            <summary>
-            Gets or sets a value indicating whether to auto-check if the console is available.
-             - Disables console writing if Environment.UserInteractive = False (Windows Service)
-             - Disables console writing if Console Standard Input is not available (Non-Console-App)
-            </summary>
-        </member>
-        <member name="P:NLog.Targets.ColoredConsoleTarget.RowHighlightingRules">
-            <summary>
-            Gets the row highlighting rules.
-            </summary>
-            <docgen category='Highlighting Rules' order='10' />
-        </member>
-        <member name="P:NLog.Targets.ColoredConsoleTarget.WordHighlightingRules">
-            <summary>
-            Gets the word highlighting rules.
-            </summary>
-            <docgen category='Highlighting Rules' order='11' />
-        </member>
-        <member name="T:NLog.Targets.ColoredConsoleTarget.ColorPair">
-            <summary>
-            Color pair (foreground and background).
-            </summary>
-        </member>
         <member name="T:NLog.Targets.ConsoleOutputColor">
             <summary>
             Colored console output color.
@@ -19428,6 +17927,43 @@
             <code lang="C#" source="examples/targets/Configuration API/Console/Simple/Example.cs" />
             </example>
         </member>
+        <member name="T:NLog.Targets.TargetWithLayoutHeaderAndFooter">
+            <summary>
+            Represents target that supports string formatting using layouts.
+            </summary>
+        </member>
+        <member name="M:NLog.Targets.TargetWithLayoutHeaderAndFooter.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:NLog.Targets.TargetWithLayoutHeaderAndFooter"/> class.
+            </summary>
+            <remarks>
+            The default value of the layout is: <code>${longdate}|${level:uppercase=true}|${logger}|${message}</code>
+            </remarks>
+        </member>
+        <member name="P:NLog.Targets.TargetWithLayoutHeaderAndFooter.Layout">
+            <summary>
+            Gets or sets the text to be rendered.
+            </summary>
+            <docgen category='Layout Options' order='1' />
+        </member>
+        <member name="P:NLog.Targets.TargetWithLayoutHeaderAndFooter.Footer">
+            <summary>
+            Gets or sets the footer.
+            </summary>
+            <docgen category='Layout Options' order='3' />
+        </member>
+        <member name="P:NLog.Targets.TargetWithLayoutHeaderAndFooter.Header">
+            <summary>
+            Gets or sets the header.
+            </summary>
+            <docgen category='Layout Options' order='2' />
+        </member>
+        <member name="P:NLog.Targets.TargetWithLayoutHeaderAndFooter.LHF">
+            <summary>
+            Gets or sets the layout with header and footer.
+            </summary>
+            <value>The layout with header and footer.</value>
+        </member>
         <member name="F:NLog.Targets.ConsoleTarget._pauseLogging">
             <summary>
             Should logging being paused/stopped because of the race condition bug in Console.Writeline?
@@ -19494,12 +18030,6 @@
             Gets or sets a value indicating whether to send the log messages to the standard error instead of the standard output.
             </summary>
             <docgen category='Console Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.ConsoleTarget.Encoding">
-            <summary>
-            The encoding for writing messages to the <see cref="T:System.Console"/>.
-             </summary>
-            <remarks>Has side effect</remarks>
         </member>
         <member name="P:NLog.Targets.ConsoleTarget.DetectConsoleAvailable">
             <summary>
@@ -19593,48 +18123,6 @@
             </summary>
             <remarks>Access this property will compile the Regex.</remarks>
         </member>
-        <member name="T:NLog.Targets.DatabaseCommandInfo">
-            <summary>
-            Information about database command + parameters.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.DatabaseCommandInfo.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.DatabaseCommandInfo"/> class.
-            </summary>
-        </member>
-        <member name="P:NLog.Targets.DatabaseCommandInfo.CommandType">
-            <summary>
-            Gets or sets the type of the command.
-            </summary>
-            <value>The type of the command.</value>
-            <docgen category='Command Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseCommandInfo.ConnectionString">
-            <summary>
-            Gets or sets the connection string to run the command against. If not provided, connection string from the target is used.
-            </summary>
-            <docgen category='Command Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseCommandInfo.Text">
-            <summary>
-            Gets or sets the command text.
-            </summary>
-            <docgen category='Command Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseCommandInfo.IgnoreFailures">
-            <summary>
-            Gets or sets a value indicating whether to ignore failures.
-            </summary>
-            <docgen category='Command Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseCommandInfo.Parameters">
-            <summary>
-            Gets the collection of parameters. Each parameter contains a mapping
-            between NLog layout and a database named or positional parameter.
-            </summary>
-            <docgen category='Command Options' order='10' />
-        </member>
         <member name="T:NLog.Targets.DatabaseParameterInfo">
             <summary>
             Represents a parameter to a Database target.
@@ -19681,252 +18169,6 @@
             Gets or sets the database parameter scale.
             </summary>
             <docgen category='Parameter Options' order='10' />
-        </member>
-        <member name="T:NLog.Targets.DatabaseTarget">
-            <summary>
-            Writes log messages to the database using an ADO.NET provider.
-            </summary>
-            <seealso href="https://github.com/nlog/nlog/wiki/Database-target">Documentation on NLog Wiki</seealso>
-            <example>
-            <para>
-            The configuration is dependent on the database type, because
-            there are differnet methods of specifying connection string, SQL
-            command and command parameters.
-            </para>
-            <para>MS SQL Server using System.Data.SqlClient:</para>
-            <code lang="XML" source="examples/targets/Configuration File/Database/MSSQL/NLog.config" height="450" />
-            <para>Oracle using System.Data.OracleClient:</para>
-            <code lang="XML" source="examples/targets/Configuration File/Database/Oracle.Native/NLog.config" height="350" />
-            <para>Oracle using System.Data.OleDBClient:</para>
-            <code lang="XML" source="examples/targets/Configuration File/Database/Oracle.OleDB/NLog.config" height="350" />
-            <para>To set up the log target programmatically use code like this (an equivalent of MSSQL configuration):</para>
-            <code lang="C#" source="examples/targets/Configuration API/Database/MSSQL/Example.cs" height="630" />
-            </example>
-        </member>
-        <member name="M:NLog.Targets.DatabaseTarget.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.DatabaseTarget"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.DatabaseTarget.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.DatabaseTarget"/> class.
-            </summary>
-            <param name="name">Name of the target.</param>
-        </member>
-        <member name="M:NLog.Targets.DatabaseTarget.Install(NLog.Config.InstallationContext)">
-            <summary>
-            Performs installation which requires administrative permissions.
-            </summary>
-            <param name="installationContext">The installation context.</param>
-        </member>
-        <member name="M:NLog.Targets.DatabaseTarget.Uninstall(NLog.Config.InstallationContext)">
-            <summary>
-            Performs uninstallation which requires administrative permissions.
-            </summary>
-            <param name="installationContext">The installation context.</param>
-        </member>
-        <member name="M:NLog.Targets.DatabaseTarget.IsInstalled(NLog.Config.InstallationContext)">
-            <summary>
-            Determines whether the item is installed.
-            </summary>
-            <param name="installationContext">The installation context.</param>
-            <returns>
-            Value indicating whether the item is installed or null if it is not possible to determine.
-            </returns>
-        </member>
-        <member name="M:NLog.Targets.DatabaseTarget.InitializeTarget">
-            <summary>
-            Initializes the target. Can be used by inheriting classes
-            to initialize logging.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.DatabaseTarget.CloseTarget">
-            <summary>
-            Closes the target and releases any unmanaged resources.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.DatabaseTarget.Write(NLog.LogEventInfo)">
-            <summary>
-            Writes the specified logging event to the database. It creates
-            a new database command, prepares parameters for it by calculating
-            layouts and executes the command.
-            </summary>
-            <param name="logEvent">The logging event.</param>
-        </member>
-        <member name="M:NLog.Targets.DatabaseTarget.Write(NLog.Common.AsyncLogEventInfo[])">
-            <summary>
-            NOTE! Will soon be marked obsolete. Instead override Write(IList{AsyncLogEventInfo} logEvents)
-            
-            Writes an array of logging events to the log target. By default it iterates on all
-            events and passes them to "Write" method. Inheriting classes can use this method to
-            optimize batch writes.
-            </summary>
-            <param name="logEvents">Logging events to be written out.</param>
-        </member>
-        <member name="M:NLog.Targets.DatabaseTarget.Write(System.Collections.Generic.IList{NLog.Common.AsyncLogEventInfo})">
-            <summary>
-            Writes an array of logging events to the log target. By default it iterates on all
-            events and passes them to "Write" method. Inheriting classes can use this method to
-            optimize batch writes.
-            </summary>
-            <param name="logEvents">Logging events to be written out.</param>
-        </member>
-        <member name="M:NLog.Targets.DatabaseTarget.BuildConnectionString(NLog.LogEventInfo)">
-            <summary>
-            Build the connectionstring from the properties. 
-            </summary>
-            <remarks>
-             Using <see cref="P:NLog.Targets.DatabaseTarget.ConnectionString"/> at first, and falls back to the properties <see cref="P:NLog.Targets.DatabaseTarget.DBHost"/>, 
-             <see cref="P:NLog.Targets.DatabaseTarget.DBUserName"/>, <see cref="P:NLog.Targets.DatabaseTarget.DBPassword"/> and <see cref="P:NLog.Targets.DatabaseTarget.DBDatabase"/>
-            </remarks>
-            <param name="logEvent">Event to render the layout inside the properties.</param>
-            <returns></returns>
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.DBProvider">
-            <summary>
-            Gets or sets the name of the database provider.
-            </summary>
-            <remarks>
-            <para>
-            The parameter name should be a provider invariant name as registered in machine.config or app.config. Common values are:
-            </para>
-            <ul>
-            <li><c>System.Data.SqlClient</c> - <see href="http://msdn.microsoft.com/en-us/library/system.data.sqlclient.aspx">SQL Sever Client</see></li>
-            <li><c>System.Data.SqlServerCe.3.5</c> - <see href="http://www.microsoft.com/sqlserver/2005/en/us/compact.aspx">SQL Sever Compact 3.5</see></li>
-            <li><c>System.Data.OracleClient</c> - <see href="http://msdn.microsoft.com/en-us/library/system.data.oracleclient.aspx">Oracle Client from Microsoft</see> (deprecated in .NET Framework 4)</li>
-            <li><c>Oracle.DataAccess.Client</c> - <see href="http://www.oracle.com/technology/tech/windows/odpnet/index.html">ODP.NET provider from Oracle</see></li>
-            <li><c>System.Data.SQLite</c> - <see href="http://sqlite.phxsoftware.com/">System.Data.SQLite driver for SQLite</see></li>
-            <li><c>Npgsql</c> - <see href="http://npgsql.projects.postgresql.org/">Npgsql driver for PostgreSQL</see></li>
-            <li><c>MySql.Data.MySqlClient</c> - <see href="http://www.mysql.com/downloads/connector/net/">MySQL Connector/Net</see></li>
-            </ul>
-            <para>(Note that provider invariant names are not supported on .NET Compact Framework).</para>
-            <para>
-            Alternatively the parameter value can be be a fully qualified name of the provider 
-            connection type (class implementing <see cref="T:System.Data.IDbConnection"/>) or one of the following tokens:
-            </para>
-            <ul>
-            <li><c>sqlserver</c>, <c>mssql</c>, <c>microsoft</c> or <c>msde</c> - SQL Server Data Provider</li>
-            <li><c>oledb</c> - OLEDB Data Provider</li>
-            <li><c>odbc</c> - ODBC Data Provider</li>
-            </ul>
-            </remarks>
-            <docgen category="Connection Options" order="10"/>
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.ConnectionStringName">
-            <summary>
-            Gets or sets the name of the connection string (as specified in <see href="http://msdn.microsoft.com/en-us/library/bf7sd233.aspx">&lt;connectionStrings&gt; configuration section</see>.
-            </summary>
-            <docgen category='Connection Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.ConnectionString">
-            <summary>
-            Gets or sets the connection string. When provided, it overrides the values
-            specified in DBHost, DBUserName, DBPassword, DBDatabase.
-            </summary>
-            <docgen category='Connection Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.InstallConnectionString">
-            <summary>
-            Gets or sets the connection string using for installation and uninstallation. If not provided, regular ConnectionString is being used.
-            </summary>
-            <docgen category='Installation Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.InstallDdlCommands">
-            <summary>
-            Gets the installation DDL commands.
-            </summary>
-            <docgen category='Installation Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.UninstallDdlCommands">
-            <summary>
-            Gets the uninstallation DDL commands.
-            </summary>
-            <docgen category='Installation Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.KeepConnection">
-            <summary>
-            Gets or sets a value indicating whether to keep the 
-            database connection open between the log events.
-            </summary>
-            <docgen category='Connection Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.UseTransactions">
-            <summary>
-            Obsolete - value will be ignored! The logging code always runs outside of transaction. 
-            
-            Gets or sets a value indicating whether to use database transactions. 
-            Some data providers require this.
-            </summary>
-            <docgen category='Connection Options' order='10' />
-            <remarks>
-            This option was removed in NLog 4.0 because the logging code always runs outside of transaction. 
-            This ensures that the log gets written to the database if you rollback the main transaction because of an error and want to log the error.
-            </remarks>
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.DBHost">
-            <summary>
-            Gets or sets the database host name. If the ConnectionString is not provided
-            this value will be used to construct the "Server=" part of the
-            connection string.
-            </summary>
-            <docgen category='Connection Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.DBUserName">
-            <summary>
-            Gets or sets the database user name. If the ConnectionString is not provided
-            this value will be used to construct the "User ID=" part of the
-            connection string.
-            </summary>
-            <docgen category='Connection Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.DBPassword">
-            <summary>
-            Gets or sets the database password. If the ConnectionString is not provided
-            this value will be used to construct the "Password=" part of the
-            connection string.
-            </summary>
-            <docgen category='Connection Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.DBDatabase">
-            <summary>
-            Gets or sets the database name. If the ConnectionString is not provided
-            this value will be used to construct the "Database=" part of the
-            connection string.
-            </summary>
-            <docgen category='Connection Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.CommandText">
-            <summary>
-            Gets or sets the text of the SQL command to be run on each log level.
-            </summary>
-            <remarks>
-            Typically this is a SQL INSERT statement or a stored procedure call. 
-            It should use the database-specific parameters (marked as <c>@parameter</c>
-            for SQL server or <c>:parameter</c> for Oracle, other data providers
-            have their own notation) and not the layout renderers, 
-            because the latter is prone to SQL injection attacks.
-            The layout renderers should be specified as &lt;parameter /&gt; elements instead.
-            </remarks>
-            <docgen category='SQL Statement' order='10' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.CommandType">
-            <summary>
-            Gets or sets the type of the SQL command to be run on each log level.
-            </summary>
-            <remarks>
-            This specifies how the command text is interpreted, as "Text" (default) or as "StoredProcedure".
-            When using the value StoredProcedure, the commandText-property would 
-            normally be the name of the stored procedure. TableDirect method is not supported in this context.
-            </remarks>
-            <docgen category='SQL Statement' order='11' />
-        </member>
-        <member name="P:NLog.Targets.DatabaseTarget.Parameters">
-            <summary>
-            Gets the collection of parameters. Each parameter contains a mapping
-            between NLog layout and a database named or positional parameter.
-            </summary>
-            <docgen category='SQL Statement' order='12' />
         </member>
         <member name="T:NLog.Targets.DateAndSequenceArchive">
             <summary>
@@ -20109,11 +18351,12 @@
             Serialized value.
             </returns>
         </member>
-        <member name="M:NLog.Targets.DefaultJsonSerializer.JsonStringEncode(System.Object,System.Boolean,System.Boolean@)">
+        <member name="M:NLog.Targets.DefaultJsonSerializer.JsonStringEncode(System.Object,System.TypeCode,System.Boolean,System.Boolean@)">
             <summary>
             Converts object value into JSON escaped string
             </summary>
             <param name="value">Object value</param>
+            <param name="objTypeCode">Object TypeCode</param>
             <param name="escapeUnicode">Should non-ascii characters be encoded</param>
             <param name="encodeString">Should string be JSON encoded with quotes</param>
             <returns>Object value converted to JSON escaped string</returns>
@@ -20130,154 +18373,6 @@
             <summary>
             Singleton instance of the serializer.
             </summary>
-        </member>
-        <member name="T:NLog.Targets.EventLogTarget">
-            <summary>
-            Writes log message to the Event Log.
-            </summary>
-            <seealso href="https://github.com/nlog/nlog/wiki/EventLog-target">Documentation on NLog Wiki</seealso>
-            <example>
-            <p>
-            To set up the target in the <a href="config.html">configuration file</a>, 
-            use the following syntax:
-            </p>
-            <code lang="XML" source="examples/targets/Configuration File/EventLog/NLog.config" />
-            <p>
-            This assumes just one target and a single rule. More configuration
-            options are described <a href="config.html">here</a>.
-            </p>
-            <p>
-            To set up the log target programmatically use code like this:
-            </p>
-            <code lang="C#" source="examples/targets/Configuration API/EventLog/Simple/Example.cs" />
-            </example>
-        </member>
-        <member name="M:NLog.Targets.EventLogTarget.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.EventLogTarget"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.EventLogTarget.#ctor(NLog.Internal.Fakeables.IAppDomain)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.EventLogTarget"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.EventLogTarget.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.EventLogTarget"/> class.
-            </summary>
-            <param name="name">Name of the target.</param>
-        </member>
-        <member name="M:NLog.Targets.EventLogTarget.Install(NLog.Config.InstallationContext)">
-            <summary>
-            Performs installation which requires administrative permissions.
-            </summary>
-            <param name="installationContext">The installation context.</param>
-        </member>
-        <member name="M:NLog.Targets.EventLogTarget.Uninstall(NLog.Config.InstallationContext)">
-            <summary>
-            Performs uninstallation which requires administrative permissions.
-            </summary>
-            <param name="installationContext">The installation context.</param>
-        </member>
-        <member name="M:NLog.Targets.EventLogTarget.IsInstalled(NLog.Config.InstallationContext)">
-            <summary>
-            Determines whether the item is installed.
-            </summary>
-            <param name="installationContext">The installation context.</param>
-            <returns>
-            Value indicating whether the item is installed or null if it is not possible to determine.
-            </returns>
-        </member>
-        <member name="M:NLog.Targets.EventLogTarget.InitializeTarget">
-            <summary>
-            Initializes the target.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.EventLogTarget.Write(NLog.LogEventInfo)">
-            <summary>
-            Writes the specified logging event to the event log. 
-            </summary>
-            <param name="logEvent">The logging event.</param>
-        </member>
-        <member name="M:NLog.Targets.EventLogTarget.GetEntryType(NLog.LogEventInfo)">
-            <summary>
-            Get the entry type for logging the message.
-            </summary>
-            <param name="logEvent">The logging event - for rendering the <see cref="P:NLog.Targets.EventLogTarget.EntryType"/></param>
-            <returns></returns>
-        </member>
-        <member name="M:NLog.Targets.EventLogTarget.GetFixedSource">
-            <summary>
-            Get the source, if and only if the source is fixed. 
-            </summary>
-            <returns><c>null</c> when not <see cref="P:NLog.Layouts.SimpleLayout.IsFixedText"/></returns>
-            <remarks>Internal for unit tests</remarks>
-        </member>
-        <member name="M:NLog.Targets.EventLogTarget.GetEventLog(NLog.LogEventInfo)">
-            <summary>
-            Get the eventlog to write to.
-            </summary>
-            <param name="logEvent">Event if the source needs to be rendered.</param>
-            <returns></returns>
-        </member>
-        <member name="M:NLog.Targets.EventLogTarget.CreateEventSourceIfNeeded(System.String,System.Boolean)">
-            <summary>
-            (re-)create a event source, if it isn't there. Works only with fixed sourcenames.
-            </summary>
-            <param name="fixedSource">sourcenaam. If source is not fixed (see <see cref="P:NLog.Layouts.SimpleLayout.IsFixedText"/>, then pass <c>null</c> or emptystring.</param>
-            <param name="alwaysThrowError">always throw an Exception when there is an error</param>
-        </member>
-        <member name="P:NLog.Targets.EventLogTarget.MachineName">
-            <summary>
-            Gets or sets the name of the machine on which Event Log service is running.
-            </summary>
-            <docgen category='Event Log Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.EventLogTarget.EventId">
-            <summary>
-            Gets or sets the layout that renders event ID.
-            </summary>
-            <docgen category='Event Log Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.EventLogTarget.Category">
-            <summary>
-            Gets or sets the layout that renders event Category.
-            </summary>
-            <docgen category='Event Log Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.EventLogTarget.EntryType">
-            <summary>
-            Optional entrytype. When not set, or when not convertable to <see cref="T:NLog.LogLevel"/> then determined by <see cref="T:NLog.LogLevel"/>
-            </summary>
-        </member>
-        <member name="P:NLog.Targets.EventLogTarget.Source">
-            <summary>
-            Gets or sets the value to be used as the event Source.
-            </summary>
-            <remarks>
-            By default this is the friendly name of the current AppDomain.
-            </remarks>
-            <docgen category='Event Log Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.EventLogTarget.Log">
-            <summary>
-            Gets or sets the name of the Event Log to write to. This can be System, Application or 
-            any user-defined name.
-            </summary>
-            <docgen category='Event Log Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.EventLogTarget.MaxMessageLength">
-            <summary>
-            Gets or sets the message length limit to write to the Event Log.
-            </summary>
-            <remarks><value>MaxMessageLength</value> cannot be zero or negative</remarks>
-        </member>
-        <member name="P:NLog.Targets.EventLogTarget.OnOverflow">
-            <summary>
-            Gets or sets the action to take if the message is larger than the <see cref="P:NLog.Targets.EventLogTarget.MaxMessageLength"/> option.
-            </summary>
-            <docgen category="Event Log Overflow Action" order="10"/>
         </member>
         <member name="T:NLog.Targets.EventLogTargetOverflowAction">
             <summary>
@@ -21005,12 +19100,6 @@
             </summary>
             <docgen category='Output Options' order='10' />
         </member>
-        <member name="P:NLog.Targets.FileTarget.FileAttributes">
-            <summary>
-            Gets or sets the file attributes (Windows only).
-            </summary>
-            <docgen category='Output Options' order='10' />
-        </member>
         <member name="P:NLog.Targets.FileTarget.NLog#Internal#FileAppenders#ICreateFileParameters#CaptureLastWriteTime">
             <summary>
             Should we capture the last write time of a file?
@@ -21211,11 +19300,6 @@
         <member name="P:NLog.Targets.FileTarget.ForceManaged">
             <summary>
             Gets or set a value indicating whether a managed file stream is forced, instead of using the native implementation.
-            </summary>
-        </member>
-        <member name="P:NLog.Targets.FileTarget.ForceMutexConcurrentWrites">
-            <summary>
-            Gets or sets a value indicationg whether file creation calls should be synchronized by a system global mutex.
             </summary>
         </member>
         <member name="P:NLog.Targets.FileTarget.WriteFooterOnArchivingOnly">
@@ -21459,127 +19543,6 @@
             </returns>
             <param name="context">An <see cref="T:System.ComponentModel.ITypeDescriptorContext"/> that provides a format context. </param><param name="culture">The <see cref="T:System.Globalization.CultureInfo"/> to use as the current culture. </param><param name="value">The <see cref="T:System.Object"/> to convert. </param><exception cref="T:System.NotSupportedException">The conversion cannot be performed. </exception>
         </member>
-        <member name="T:NLog.Targets.LogReceiverWebServiceTarget">
-            <summary>
-            Sends log messages to a NLog Receiver Service (using WCF or Web Services).
-            </summary>
-            <seealso href="https://github.com/nlog/nlog/wiki/LogReceiverService-target">Documentation on NLog Wiki</seealso>
-        </member>
-        <member name="M:NLog.Targets.LogReceiverWebServiceTarget.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.LogReceiverWebServiceTarget"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.LogReceiverWebServiceTarget.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.LogReceiverWebServiceTarget"/> class.
-            </summary>
-            <param name="name">Name of the target.</param>
-        </member>
-        <member name="M:NLog.Targets.LogReceiverWebServiceTarget.OnSend(NLog.LogReceiverService.NLogEvents,System.Collections.Generic.IEnumerable{NLog.Common.AsyncLogEventInfo})">
-            <summary>
-            Called when log events are being sent (test hook).
-            </summary>
-            <param name="events">The events.</param>
-            <param name="asyncContinuations">The async continuations.</param>
-            <returns>True if events should be sent, false to stop processing them.</returns>
-        </member>
-        <member name="M:NLog.Targets.LogReceiverWebServiceTarget.Write(NLog.Common.AsyncLogEventInfo)">
-            <summary>
-            Writes logging event to the log target. Must be overridden in inheriting
-            classes.
-            </summary>
-            <param name="logEvent">Logging event to be written out.</param>
-        </member>
-        <member name="M:NLog.Targets.LogReceiverWebServiceTarget.Write(NLog.Common.AsyncLogEventInfo[])">
-            <summary>
-            NOTE! Will soon be marked obsolete. Instead override Write(IList{AsyncLogEventInfo} logEvents)
-            
-            Writes an array of logging events to the log target. By default it iterates on all
-            events and passes them to "Write" method. Inheriting classes can use this method to
-            optimize batch writes.
-            </summary>
-            <param name="logEvents">Logging events to be written out.</param>
-        </member>
-        <member name="M:NLog.Targets.LogReceiverWebServiceTarget.Write(System.Collections.Generic.IList{NLog.Common.AsyncLogEventInfo})">
-            <summary>
-            Writes an array of logging events to the log target. By default it iterates on all
-            events and passes them to "Append" method. Inheriting classes can use this method to
-            optimize batch writes.
-            </summary>
-            <param name="logEvents">Logging events to be written out.</param>
-        </member>
-        <member name="M:NLog.Targets.LogReceiverWebServiceTarget.FlushAsync(NLog.Common.AsyncContinuation)">
-            <summary>
-            Flush any pending log messages asynchronously (in case of asynchronous targets).
-            </summary>
-            <param name="asyncContinuation">The asynchronous continuation.</param>
-        </member>
-        <member name="M:NLog.Targets.LogReceiverWebServiceTarget.CreateWcfLogReceiverClient">
-            <summary>
-            Creating a new instance of WcfLogReceiverClient
-            
-            Inheritors can override this method and provide their own 
-            service configuration - binding and endpoint address
-            </summary>
-            <remarks>This method marked as obsolete before NLog 4.3.11 and it may be removed in a future release.</remarks>
-        </member>
-        <member name="M:NLog.Targets.LogReceiverWebServiceTarget.CreateLogReceiver">
-            <summary>
-            Creating a new instance of IWcfLogReceiverClient
-            
-            Inheritors can override this method and provide their own 
-            service configuration - binding and endpoint address
-            </summary>
-            <returns></returns>
-            <remarks>virtual is used by endusers</remarks>
-        </member>
-        <member name="P:NLog.Targets.LogReceiverWebServiceTarget.EndpointAddress">
-            <summary>
-            Gets or sets the endpoint address.
-            </summary>
-            <value>The endpoint address.</value>
-            <docgen category='Connection Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.LogReceiverWebServiceTarget.EndpointConfigurationName">
-            <summary>
-            Gets or sets the name of the endpoint configuration in WCF configuration file.
-            </summary>
-            <value>The name of the endpoint configuration.</value>
-            <docgen category='Connection Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.LogReceiverWebServiceTarget.UseBinaryEncoding">
-            <summary>
-            Gets or sets a value indicating whether to use binary message encoding.
-            </summary>
-            <docgen category='Payload Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.LogReceiverWebServiceTarget.UseOneWayContract">
-            <summary>
-            Gets or sets a value indicating whether to use a WCF service contract that is one way (fire and forget) or two way (request-reply)
-            </summary>
-            <docgen category='Connection Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.LogReceiverWebServiceTarget.ClientId">
-            <summary>
-            Gets or sets the client ID.
-            </summary>
-            <value>The client ID.</value>
-            <docgen category='Payload Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.LogReceiverWebServiceTarget.Parameters">
-            <summary>
-            Gets the list of parameters.
-            </summary>
-            <value>The parameters.</value>
-            <docgen category='Payload Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.LogReceiverWebServiceTarget.IncludeEventProperties">
-            <summary>
-            Gets or sets a value indicating whether to include per-event properties in the payload sent to the server.
-            </summary>
-            <docgen category='Payload Options' order='10' />
-        </member>
         <member name="T:NLog.Targets.MailTarget">
             <summary>
             Sends log messages by email using SMTP protocol.
@@ -21717,13 +19680,6 @@
             <param name="layout">layout with addresses, ; separated</param>
             <param name="logEvent">event for rendering the <paramref name="layout"/></param>
             <returns>added a address?</returns>
-        </member>
-        <member name="P:NLog.Targets.MailTarget.SmtpSection">
-            <summary>
-            Gets the mailSettings/smtp configuration from app.config in cases when we need those configuration.
-            E.g when UseSystemNetMailSettings is enabled and we need to read the From attribute from system.net/mailSettings/smtp
-            </summary>
-            <remarks>Internal for mocking</remarks>
         </member>
         <member name="P:NLog.Targets.MailTarget.From">
             <summary>
@@ -22165,169 +20121,6 @@
             </summary>
             <docgen category='Layout Options' order='10' />
         </member>
-        <member name="T:NLog.Targets.OutputDebugStringTarget">
-            <summary>
-            Outputs log messages through the <c>OutputDebugString()</c> Win32 API.
-            </summary>
-            <seealso href="https://github.com/nlog/nlog/wiki/OutputDebugString-target">Documentation on NLog Wiki</seealso>
-            <example>
-            <p>
-            To set up the target in the <a href="config.html">configuration file</a>, 
-            use the following syntax:
-            </p>
-            <code lang="XML" source="examples/targets/Configuration File/OutputDebugString/NLog.config" />
-            <p>
-            This assumes just one target and a single rule. More configuration
-            options are described <a href="config.html">here</a>.
-            </p>
-            <p>
-            To set up the log target programmatically use code like this:
-            </p>
-            <code lang="C#" source="examples/targets/Configuration API/OutputDebugString/Simple/Example.cs" />
-            </example>
-        </member>
-        <member name="M:NLog.Targets.OutputDebugStringTarget.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.OutputDebugStringTarget"/> class.
-            </summary>
-            <remarks>
-            The default value of the layout is: <code>${longdate}|${level:uppercase=true}|${logger}|${message}</code>
-            </remarks>
-        </member>
-        <member name="M:NLog.Targets.OutputDebugStringTarget.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.OutputDebugStringTarget"/> class.
-            </summary>
-            <remarks>
-            The default value of the layout is: <code>${longdate}|${level:uppercase=true}|${logger}|${message}</code>
-            </remarks>
-            <param name="name">Name of the target.</param>
-        </member>
-        <member name="M:NLog.Targets.OutputDebugStringTarget.Write(NLog.LogEventInfo)">
-            <summary>
-            Outputs the rendered logging event through the <c>OutputDebugString()</c> Win32 API.
-            </summary>
-            <param name="logEvent">The logging event.</param>
-        </member>
-        <member name="T:NLog.Targets.PerformanceCounterTarget">
-            <summary>
-            Increments specified performance counter on each write.
-            </summary>
-            <seealso href="https://github.com/nlog/nlog/wiki/PerformanceCounter-target">Documentation on NLog Wiki</seealso>
-            <example>
-            <p>
-            To set up the target in the <a href="config.html">configuration file</a>, 
-            use the following syntax:
-            </p>
-            <code lang="XML" source="examples/targets/Configuration File/PerfCounter/NLog.config" />
-            <p>
-            This assumes just one target and a single rule. More configuration
-            options are described <a href="config.html">here</a>.
-            </p>
-            <p>
-            To set up the log target programmatically use code like this:
-            </p>
-            <code lang="C#" source="examples/targets/Configuration API/PerfCounter/Simple/Example.cs" />
-            </example>
-            <remarks>
-            TODO:
-            1. Unable to create a category allowing multiple counter instances (.Net 2.0 API only, probably)
-            2. Is there any way of adding new counters without deleting the whole category?
-            3. There should be some mechanism of resetting the counter (e.g every day starts from 0), or auto-switching to 
-               another counter instance (with dynamic creation of new instance). This could be done with layouts. 
-            </remarks>
-        </member>
-        <member name="M:NLog.Targets.PerformanceCounterTarget.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.PerformanceCounterTarget"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.PerformanceCounterTarget.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.PerformanceCounterTarget"/> class.
-            </summary>
-            <param name="name">Name of the target.</param>
-        </member>
-        <member name="M:NLog.Targets.PerformanceCounterTarget.Install(NLog.Config.InstallationContext)">
-            <summary>
-            Performs installation which requires administrative permissions.
-            </summary>
-            <param name="installationContext">The installation context.</param>
-        </member>
-        <member name="M:NLog.Targets.PerformanceCounterTarget.Uninstall(NLog.Config.InstallationContext)">
-            <summary>
-            Performs uninstallation which requires administrative permissions.
-            </summary>
-            <param name="installationContext">The installation context.</param>
-        </member>
-        <member name="M:NLog.Targets.PerformanceCounterTarget.IsInstalled(NLog.Config.InstallationContext)">
-            <summary>
-            Determines whether the item is installed.
-            </summary>
-            <param name="installationContext">The installation context.</param>
-            <returns>
-            Value indicating whether the item is installed or null if it is not possible to determine.
-            </returns>
-        </member>
-        <member name="M:NLog.Targets.PerformanceCounterTarget.Write(NLog.LogEventInfo)">
-            <summary>
-            Increments the configured performance counter.
-            </summary>
-            <param name="logEvent">Log event.</param>
-        </member>
-        <member name="M:NLog.Targets.PerformanceCounterTarget.CloseTarget">
-            <summary>
-            Closes the target and releases any unmanaged resources.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.PerformanceCounterTarget.EnsureInitialized">
-            <summary>
-            Ensures that the performance counter has been initialized.
-            </summary>
-            <returns>True if the performance counter is operational, false otherwise.</returns>
-        </member>
-        <member name="P:NLog.Targets.PerformanceCounterTarget.AutoCreate">
-            <summary>
-            Gets or sets a value indicating whether performance counter should be automatically created.
-            </summary>
-            <docgen category='Performance Counter Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.PerformanceCounterTarget.CategoryName">
-            <summary>
-            Gets or sets the name of the performance counter category.
-            </summary>
-            <docgen category='Performance Counter Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.PerformanceCounterTarget.CounterName">
-            <summary>
-            Gets or sets the name of the performance counter.
-            </summary>
-            <docgen category='Performance Counter Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.PerformanceCounterTarget.InstanceName">
-            <summary>
-            Gets or sets the performance counter instance name.
-            </summary>
-            <docgen category='Performance Counter Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.PerformanceCounterTarget.CounterHelp">
-            <summary>
-            Gets or sets the counter help text.
-            </summary>
-            <docgen category='Performance Counter Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.PerformanceCounterTarget.CounterType">
-            <summary>
-            Gets or sets the performance counter type.
-            </summary>
-            <docgen category='Performance Counter Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.PerformanceCounterTarget.IncrementValue">
-            <summary>
-            The value by which to increment the counter.
-            </summary>
-            <docgen category='Performance Counter Options' order='10' />
-        </member>
         <member name="T:NLog.Targets.SmtpAuthenticationMode">
             <summary>
             SMTP authentication modes.
@@ -22609,95 +20402,6 @@
             implement former <c>PrepareRequest()</c> method,
             that creates the content for
             the requested kind of HTTP request
-            </summary>
-        </member>
-        <member name="T:NLog.Targets.Win32FileAttributes">
-            <summary>
-            Win32 file attributes.
-            </summary>
-            <remarks>
-            For more information see <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/fileio/fs/createfile.asp">http://msdn.microsoft.com/library/default.asp?url=/library/en-us/fileio/fs/createfile.asp</a>.
-            </remarks>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.ReadOnly">
-            <summary>
-            Read-only file.
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.Hidden">
-            <summary>
-            Hidden file.
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.System">
-            <summary>
-            System file.
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.Archive">
-            <summary>
-            File should be archived.
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.Device">
-            <summary>
-            Device file.
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.Normal">
-            <summary>
-            Normal file.
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.Temporary">
-            <summary>
-            File is temporary (should be kept in cache and not 
-            written to disk if possible).
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.SparseFile">
-            <summary>
-            Sparse file.
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.ReparsePoint">
-            <summary>
-            Reparse point.
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.Compressed">
-            <summary>
-            Compress file contents.
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.NotContentIndexed">
-            <summary>
-            File should not be indexed by the content indexing service. 
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.Encrypted">
-            <summary>
-            Encrypted file.
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.WriteThrough">
-            <summary>
-            The system writes through any intermediate cache and goes directly to disk. 
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.NoBuffering">
-            <summary>
-            The system opens a file with no system caching.
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.DeleteOnClose">
-            <summary>
-            Delete file after it is closed.
-            </summary>
-        </member>
-        <member name="F:NLog.Targets.Win32FileAttributes.PosixSemantics">
-            <summary>
-            A file is accessed according to POSIX rules.
             </summary>
         </member>
         <member name="T:NLog.Targets.Wrappers.AsyncRequestQueue">
@@ -23296,129 +21000,6 @@
             to the wrapped target.
             </summary>
             <docgen category='Filtering Options' order='10' />
-        </member>
-        <member name="T:NLog.Targets.Wrappers.ImpersonatingTargetWrapper">
-            <summary>
-            Impersonates another user for the duration of the write.
-            </summary>
-            <seealso href="https://github.com/nlog/nlog/wiki/ImpersonatingWrapper-target">Documentation on NLog Wiki</seealso>
-        </member>
-        <member name="M:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.Wrappers.ImpersonatingTargetWrapper"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.#ctor(System.String,NLog.Targets.Target)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.Wrappers.ImpersonatingTargetWrapper"/> class.
-            </summary>
-            <param name="name">Name of the target.</param>
-            <param name="wrappedTarget">The wrapped target.</param>
-        </member>
-        <member name="M:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.#ctor(NLog.Targets.Target)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.Wrappers.ImpersonatingTargetWrapper"/> class.
-            </summary>
-            <param name="wrappedTarget">The wrapped target.</param>
-        </member>
-        <member name="M:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.InitializeTarget">
-            <summary>
-            Initializes the impersonation context.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.CloseTarget">
-            <summary>
-            Closes the impersonation context.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.Write(NLog.Common.AsyncLogEventInfo)">
-            <summary>
-            Changes the security context, forwards the call to the <see cref="P:NLog.Targets.Wrappers.WrapperTargetBase.WrappedTarget"/>.Write()
-            and switches the context back to original.
-            </summary>
-            <param name="logEvent">The log event.</param>
-        </member>
-        <member name="M:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.Write(NLog.Common.AsyncLogEventInfo[])">
-            <summary>
-            NOTE! Will soon be marked obsolete. Instead override Write(IList{AsyncLogEventInfo} logEvents)
-            
-            Writes an array of logging events to the log target. By default it iterates on all
-            events and passes them to "Write" method. Inheriting classes can use this method to
-            optimize batch writes.
-            </summary>
-            <param name="logEvents">Logging events to be written out.</param>
-        </member>
-        <member name="M:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.Write(System.Collections.Generic.IList{NLog.Common.AsyncLogEventInfo})">
-            <summary>
-            Changes the security context, forwards the call to the <see cref="P:NLog.Targets.Wrappers.WrapperTargetBase.WrappedTarget"/>.Write()
-            and switches the context back to original.
-            </summary>
-            <param name="logEvents">Log events.</param>
-        </member>
-        <member name="M:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.FlushAsync(NLog.Common.AsyncContinuation)">
-            <summary>
-            Flush any pending log messages (in case of asynchronous targets).
-            </summary>
-            <param name="asyncContinuation">The asynchronous continuation.</param>
-        </member>
-        <member name="P:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.UserName">
-            <summary>
-            Gets or sets username to change context to.
-            </summary>
-            <docgen category='Impersonation Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.Password">
-            <summary>
-            Gets or sets the user account password.
-            </summary>
-            <docgen category='Impersonation Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.Domain">
-            <summary>
-            Gets or sets Windows domain name to change context to.
-            </summary>
-            <docgen category='Impersonation Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.LogOnType">
-            <summary>
-            Gets or sets the Logon Type.
-            </summary>
-            <docgen category='Impersonation Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.LogOnProvider">
-            <summary>
-            Gets or sets the type of the logon provider.
-            </summary>
-            <docgen category='Impersonation Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.ImpersonationLevel">
-            <summary>
-            Gets or sets the required impersonation level.
-            </summary>
-            <docgen category='Impersonation Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.RevertToSelf">
-            <summary>
-            Gets or sets a value indicating whether to revert to the credentials of the process instead of impersonating another user.
-            </summary>
-            <docgen category='Impersonation Options' order='10' />
-        </member>
-        <member name="T:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.ContextReverter">
-            <summary>
-            Helper class which reverts the given <see cref="T:System.Security.Principal.WindowsImpersonationContext"/> 
-            to its original value as part of <see cref="M:System.IDisposable.Dispose"/>.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.ContextReverter.#ctor(System.Security.Principal.WindowsImpersonationContext)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.ContextReverter"/> class.
-            </summary>
-            <param name="windowsImpersonationContext">The windows impersonation context.</param>
-        </member>
-        <member name="M:NLog.Targets.Wrappers.ImpersonatingTargetWrapper.ContextReverter.Dispose">
-            <summary>
-            Reverts the impersonation context.
-            </summary>
         </member>
         <member name="T:NLog.Targets.Wrappers.LimitingTargetWrapper">
             <summary>

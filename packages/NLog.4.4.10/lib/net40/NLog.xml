@@ -9264,7 +9264,7 @@
             <param name="value">Object value</param>
             <returns>Object value converted to string</returns>
         </member>
-        <member name="M:NLog.Internal.XmlHelper.XmlConvertToString(System.Object,System.TypeCode@)">
+        <member name="M:NLog.Internal.XmlHelper.XmlConvertToString(System.Object,System.TypeCode)">
             <summary>
             Converts object value to invariant format (understood by JavaScript)
             </summary>
@@ -10487,6 +10487,41 @@
         <member name="P:NLog.LayoutRenderers.NdcLayoutRenderer.Separator">
             <summary>
             Gets or sets the separator to be used for concatenating nested diagnostics context output.
+            </summary>
+            <docgen category='Rendering Options' order='10' />
+        </member>
+        <member name="T:NLog.LayoutRenderers.NdlcLayoutRenderer">
+            <summary>
+            <see cref="T:NLog.NestedDiagnosticsLogicalContext"/> Renderer (Async scope)
+            </summary>
+        </member>
+        <member name="M:NLog.LayoutRenderers.NdlcLayoutRenderer.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:NLog.LayoutRenderers.NdlcLayoutRenderer"/> class.
+            </summary>
+        </member>
+        <member name="M:NLog.LayoutRenderers.NdlcLayoutRenderer.Append(System.Text.StringBuilder,NLog.LogEventInfo)">
+            <summary>
+            Renders the specified Nested Logical Context item and appends it to the specified <see cref="T:System.Text.StringBuilder"/>.
+            </summary>
+            <param name="builder">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
+            <param name="logEvent">Logging event.</param>
+        </member>
+        <member name="P:NLog.LayoutRenderers.NdlcLayoutRenderer.TopFrames">
+            <summary>
+            Gets or sets the number of top stack frames to be rendered.
+            </summary>
+            <docgen category='Rendering Options' order='10' />
+        </member>
+        <member name="P:NLog.LayoutRenderers.NdlcLayoutRenderer.BottomFrames">
+            <summary>
+            Gets or sets the number of bottom stack frames to be rendered.
+            </summary>
+            <docgen category='Rendering Options' order='10' />
+        </member>
+        <member name="P:NLog.LayoutRenderers.NdlcLayoutRenderer.Separator">
+            <summary>
+            Gets or sets the separator to be used for concatenating nested logical context output.
             </summary>
             <docgen category='Rendering Options' order='10' />
         </member>
@@ -12452,6 +12487,16 @@
         <member name="P:NLog.Layouts.JsonLayout.RenderEmptyObject">
             <summary>
             Gets or sets the option to render the empty object value {}
+            </summary>
+        </member>
+        <member name="P:NLog.Layouts.JsonLayout.IncludeMdc">
+            <summary>
+            Gets or sets a value indicating whether to include contents of the <see cref="T:NLog.MappedDiagnosticsContext"/> dictionary.
+            </summary>
+        </member>
+        <member name="P:NLog.Layouts.JsonLayout.IncludeMdlc">
+            <summary>
+            Gets or sets a value indicating whether to include contents of the <see cref="T:NLog.MappedDiagnosticsLogicalContext"/> dictionary.
             </summary>
         </member>
         <member name="P:NLog.Layouts.JsonLayout.IncludeAllProperties">
@@ -18353,6 +18398,36 @@
             Reverts the stack to original item count.
             </summary>
         </member>
+        <member name="T:NLog.NestedDiagnosticsLogicalContext">
+            <summary>
+            Async version of <see cref="T:NLog.NestedDiagnosticsContext"/> - a logical context structure that keeps a stack
+            Allows for maintaining scope across asynchronous tasks and call contexts.
+            </summary>
+        </member>
+        <member name="M:NLog.NestedDiagnosticsLogicalContext.Push``1(``0)">
+            <summary>
+            Pushes the specified value on current stack
+            </summary>
+            <param name="value">The value to be pushed.</param>
+            <returns>An instance of the object that implements IDisposable that returns the stack to the previous level when IDisposable.Dispose() is called. To be used with C# using() statement.</returns>
+        </member>
+        <member name="M:NLog.NestedDiagnosticsLogicalContext.Pop">
+            <summary>
+            Pops the top message off the current stack
+            </summary>
+            <returns>The top message which is no longer on the stack.</returns>
+        </member>
+        <member name="M:NLog.NestedDiagnosticsLogicalContext.Clear">
+            <summary>
+            Clears current stack.
+            </summary>
+        </member>
+        <member name="M:NLog.NestedDiagnosticsLogicalContext.GetAllObjects">
+            <summary>
+            Gets all objects on the stack. The objects are not removed from the stack.
+            </summary>
+            <returns>Array of objects on the stack.</returns>
+        </member>
         <member name="T:NLog.NLogConfigurationException">
             <summary>
             Exception thrown during NLog configuration.
@@ -19962,6 +20037,11 @@
             to initialize logging.
             </summary>
         </member>
+        <member name="M:NLog.Targets.DatabaseTarget.SetConnectionType">
+            <summary>
+            Set the <see cref="P:NLog.Targets.DatabaseTarget.ConnectionType"/> to use it for opening connections to the database.
+            </summary>
+        </member>
         <member name="M:NLog.Targets.DatabaseTarget.CloseTarget">
             <summary>
             Closes the target and releases any unmanaged resources.
@@ -20330,11 +20410,12 @@
             Serialized value.
             </returns>
         </member>
-        <member name="M:NLog.Targets.DefaultJsonSerializer.JsonStringEncode(System.Object,System.Boolean,System.Boolean@)">
+        <member name="M:NLog.Targets.DefaultJsonSerializer.JsonStringEncode(System.Object,System.TypeCode,System.Boolean,System.Boolean@)">
             <summary>
             Converts object value into JSON escaped string
             </summary>
             <param name="value">Object value</param>
+            <param name="objTypeCode">Object TypeCode</param>
             <param name="escapeUnicode">Should non-ascii characters be encoded</param>
             <param name="encodeString">Should string be JSON encoded with quotes</param>
             <returns>Object value converted to JSON escaped string</returns>
@@ -20493,6 +20574,16 @@
             Gets or sets the message length limit to write to the Event Log.
             </summary>
             <remarks><value>MaxMessageLength</value> cannot be zero or negative</remarks>
+        </member>
+        <member name="P:NLog.Targets.EventLogTarget.MaxKilobytes">
+            <summary>
+            Gets or sets the maximum Event log size in kilobytes.
+            
+            If <c>null</c>, the value won't be set. 
+            
+            Default is 512 Kilobytes as specified by Eventlog API
+            </summary>
+            <remarks><value>MaxKilobytes</value> cannot be less than 64 or greater than 4194240 or not a multiple of 64. If <c>null</c>, use the default value</remarks>
         </member>
         <member name="P:NLog.Targets.EventLogTarget.OnOverflow">
             <summary>
