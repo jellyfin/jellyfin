@@ -122,7 +122,7 @@ namespace MediaBrowser.Providers.TV
                 item.Overview = response.overview;
 
                 item.CommunityRating = (float)response.vote_average;
-                item.VoteCount = response.vote_count;
+                //item.VoteCount = response.vote_count;
 
                 if (response.videos != null && response.videos.results != null)
                 {

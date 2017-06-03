@@ -17,8 +17,6 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if [enable u pn p]; otherwise, <c>false</c>.</value>
         public bool EnableUPnP { get; set; }
 
-        public bool EnableSimpleSortNameHandling { get; set; }
-
         /// <summary>
         /// Gets or sets the public mapped port.
         /// </summary>

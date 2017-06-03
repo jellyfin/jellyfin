@@ -217,7 +217,7 @@ namespace MediaBrowser.Providers.TV
             series.Name = seriesInfo.name;
             series.SetProviderId(MetadataProviders.Tmdb, seriesInfo.id.ToString(_usCulture));
 
-            series.VoteCount = seriesInfo.vote_count;
+            //series.VoteCount = seriesInfo.vote_count;
 
             string voteAvg = seriesInfo.vote_average.ToString(CultureInfo.InvariantCulture);
             float rating;

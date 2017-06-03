@@ -107,6 +107,13 @@ namespace MediaBrowser.Api.Playback
 
         public async Task<object> Post(OpenMediaSource request)
         {
+            var result = await OpenMediaSource(request).ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
+        }
+
+        private async Task<LiveStreamResponse> OpenMediaSource(OpenMediaSource request)
+        {
             var authInfo = _authContext.GetAuthorizationInfo(Request);
 
             var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None).ConfigureAwait(false);
@@ -137,7 +144,7 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            return ToOptimizedResult(result);
+            return result;
         }
 
         public void Post(CloseMediaSource request)
@@ -170,6 +177,34 @@ namespace MediaBrowser.Api.Playback
                 var mediaSourceId = request.MediaSourceId;
 
                 SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate ?? profile.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex, request.MaxAudioChannels, request.UserId, request.EnableDirectPlay, request.ForceDirectPlayRemoteMediaSource, request.EnableDirectStream, request.EnableTranscoding, request.AllowVideoStreamCopy, request.AllowAudioStreamCopy);
+            }
+
+            if (request.AutoOpenLiveStream)
+            {
+                var mediaSource = string.IsNullOrWhiteSpace(request.MediaSourceId) ? info.MediaSources.FirstOrDefault() : info.MediaSources.FirstOrDefault(i => string.Equals(i.Id, request.MediaSourceId, StringComparison.Ordinal));
+
+                if (mediaSource != null && mediaSource.RequiresOpening && string.IsNullOrWhiteSpace(mediaSource.LiveStreamId))
+                {
+                    var openStreamResult = await OpenMediaSource(new OpenMediaSource
+                    {
+                        AudioStreamIndex = request.AudioStreamIndex,
+                        DeviceProfile = request.DeviceProfile,
+                        EnableDirectPlay = request.EnableDirectPlay,
+                        EnableDirectStream = request.EnableDirectStream,
+                        ForceDirectPlayRemoteMediaSource = request.ForceDirectPlayRemoteMediaSource,
+                        ItemId = request.Id,
+                        MaxAudioChannels = request.MaxAudioChannels,
+                        MaxStreamingBitrate = request.MaxStreamingBitrate,
+                        PlaySessionId = info.PlaySessionId,
+                        StartTimeTicks = request.StartTimeTicks,
+                        SubtitleStreamIndex = request.SubtitleStreamIndex,
+                        UserId = request.UserId,
+                        OpenToken = mediaSource.OpenToken
+
+                    }).ConfigureAwait(false);
+
+                    info.MediaSources = new List<MediaSourceInfo> { openStreamResult.MediaSource };
+                }
             }
 
             return info;

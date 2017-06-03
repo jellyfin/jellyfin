@@ -2270,11 +2270,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         writer.WriteElementString("studio", studio);
                     }
 
-                    if (item.VoteCount.HasValue)
-                    {
-                        writer.WriteElementString("votes", item.VoteCount.Value.ToString(CultureInfo.InvariantCulture));
-                    }
-
                     writer.WriteEndElement();
                     writer.WriteEndDocument();
                 }

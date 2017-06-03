@@ -207,11 +207,6 @@
         Tags,
 
         /// <summary>
-        /// The vote count
-        /// </summary>
-        VoteCount,
-
-        /// <summary>
         /// The trailer url of the item
         /// </summary>
         RemoteTrailers,

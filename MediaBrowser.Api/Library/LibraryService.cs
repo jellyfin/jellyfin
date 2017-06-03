@@ -675,7 +675,6 @@ namespace MediaBrowser.Api.Library
                 Limit = 0,
                 Recursive = true,
                 IsVirtualItem = false,
-                SourceTypes = new[] { SourceType.Library },
                 IsFavorite = request.IsFavorite,
                 DtoOptions = new DtoOptions(false)
                 {
