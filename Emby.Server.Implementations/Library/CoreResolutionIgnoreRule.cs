@@ -38,7 +38,10 @@ namespace Emby.Server.Implementations.Library
                 // Synology
                 "@eaDir",
                 "eaDir",
-                "#recycle"
+                "#recycle",
+
+                // Qnap
+                "@Recycle"
 
         };
         

@@ -55,7 +55,6 @@ namespace MediaBrowser.Controller.LiveTv
         public override SourceType SourceType
         {
             get { return SourceType.LiveTV; }
-            set { }
         }
 
         [IgnoreDataMember]
@@ -89,7 +88,7 @@ namespace MediaBrowser.Controller.LiveTv
             }
         }
 
-        protected override string CreateSortNameInternal()
+        protected override string CreateSortName()
         {
             if (!string.IsNullOrEmpty(Number))
             {

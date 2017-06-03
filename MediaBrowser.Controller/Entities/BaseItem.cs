@@ -54,7 +54,6 @@ namespace MediaBrowser.Controller.Entities
             ImageInfos = new List<ItemImageInfo>();
             InheritedTags = new List<string>();
             ProductionLocations = new List<string>();
-            SourceType = SourceType.Library;
         }
 
         public static readonly char[] SlugReplaceChars = { '?', '/', '&' };
@@ -187,15 +186,10 @@ namespace MediaBrowser.Controller.Entities
             }
             set
             {
-                var isSortNameDefault = IsSortNameDefault(SortName);
-
                 _name = value;
 
-                if (isSortNameDefault)
-                {
-                    // lazy load this again
-                    SortName = null;
-                }
+                // lazy load this again
+                _sortName = null;
             }
         }
 
@@ -279,7 +273,18 @@ namespace MediaBrowser.Controller.Entities
         public virtual string Path { get; set; }
 
         [IgnoreDataMember]
-        public virtual SourceType SourceType { get; set; }
+        public virtual SourceType SourceType
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(ChannelId))
+                {
+                    return SourceType.Channel;
+                }
+
+                return SourceType.Library;
+            }
+        }
 
         /// <summary>
         /// Returns the folder containing the item.
@@ -586,6 +591,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private string _forcedSortName;
         /// <summary>
         /// Gets or sets the name of the forced sort.
         /// </summary>
@@ -593,42 +599,8 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public string ForcedSortName
         {
-            get
-            {
-                var sortName = SortName;
-
-                if (string.IsNullOrWhiteSpace(sortName))
-                {
-                    return null;
-                }
-
-                if (string.Equals(sortName, CreateSortName(), StringComparison.OrdinalIgnoreCase))
-                {
-                    return null;
-                }
-
-                return sortName;
-            }
-            set
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    SortName = null;
-                }
-                else
-                {
-                    var newValue = CreateSortNameFromCustomValue(value);
-
-                    if (string.Equals(newValue, CreateSortName(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        SortName = null;
-                    }
-                    else
-                    {
-                        SortName = newValue;
-                    }
-                }
-            }
+            get { return _forcedSortName; }
+            set { _forcedSortName = value; _sortName = null; }
         }
 
         private string _sortName;
@@ -643,7 +615,15 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (_sortName == null)
                 {
-                    _sortName = CreateSortName();
+                    if (!string.IsNullOrWhiteSpace(ForcedSortName))
+                    {
+                        // Need the ToLower because that's what CreateSortName does
+                        _sortName = ModifySortChunks(ForcedSortName).ToLower();
+                    }
+                    else
+                    {
+                        _sortName = CreateSortName();
+                    }
                 }
                 return _sortName;
             }
@@ -651,31 +631,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 _sortName = value;
             }
-        }
-
-        private string CreateSortNameFromCustomValue(string value)
-        {
-            return string.IsNullOrWhiteSpace(value) ? null : NormalizeCustomSortName(value);
-        }
-
-        protected virtual string NormalizeCustomSortName(string value)
-        {
-            if (ConfigurationManager.Configuration.EnableSimpleSortNameHandling)
-            {
-                return value.RemoveDiacritics().ToLower();
-            }
-
-            return ModifySortChunks(value).ToLower();
-        }
-
-        public bool IsSortNameDefault(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return true;
-            }
-
-            return string.Equals(CreateSortNameFromCustomValue(value), CreateSortName(), StringComparison.OrdinalIgnoreCase);
         }
 
         public string GetInternalMetadataPath()
@@ -699,22 +654,14 @@ namespace MediaBrowser.Controller.Entities
             return System.IO.Path.Combine(basePath, idString.Substring(0, 2), idString);
         }
 
-        protected string CreateSortName()
-        {
-            if (string.IsNullOrWhiteSpace(Name))
-            {
-                return null;
-            }
-
-            return CreateSortNameInternal();
-        }
-
         /// <summary>
         /// Creates the name of the sort.
         /// </summary>
         /// <returns>System.String.</returns>
-        protected virtual string CreateSortNameInternal()
+        protected virtual string CreateSortName()
         {
+            if (Name == null) return null; //some items may not have name filled in properly
+
             if (!EnableAlphaNumericSorting)
             {
                 return Name.TrimStart();
@@ -950,13 +897,6 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The community rating.</value>
         [IgnoreDataMember]
         public float? CommunityRating { get; set; }
-
-        /// <summary>
-        /// Gets or sets the community rating vote count.
-        /// </summary>
-        /// <value>The community rating vote count.</value>
-        [IgnoreDataMember]
-        public int? VoteCount { get; set; }
 
         /// <summary>
         /// Gets or sets the run time ticks.
@@ -1367,6 +1307,7 @@ namespace MediaBrowser.Controller.Entities
 
         public void AfterMetadataRefresh()
         {
+            _sortName = null;
         }
 
         /// <summary>
@@ -2253,6 +2194,8 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public virtual bool BeforeMetadataRefresh()
         {
+            _sortName = null;
+
             var hasChanges = false;
 
             if (string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Path))

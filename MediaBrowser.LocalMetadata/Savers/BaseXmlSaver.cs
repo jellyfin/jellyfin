@@ -109,7 +109,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                     "TvDbId",
                     "Type",
                     "TVRageId",
-                    "VoteCount",
                     "Website",
                     "Zap2ItId",
                     "CollectionItems",
@@ -406,10 +405,6 @@ namespace MediaBrowser.LocalMetadata.Savers
             if (item.CommunityRating.HasValue)
             {
                 writer.WriteElementString("Rating", item.CommunityRating.Value.ToString(UsCulture));
-            }
-            if (item.VoteCount.HasValue)
-            {
-                writer.WriteElementString("VoteCount", item.VoteCount.Value.ToString(UsCulture));
             }
 
             if (item.ProductionYear.HasValue && !(item is Person))

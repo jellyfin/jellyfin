@@ -1378,12 +1378,6 @@ namespace Emby.Server.Implementations.Channels
                 item.SetImagePath(ImageType.Primary, info.ImageUrl);
             }
 
-            if (item.SourceType != SourceType.Channel)
-            {
-                item.SourceType = SourceType.Channel;
-                forceUpdate = true;
-            }
-
             if (isNew)
             {
                 await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);

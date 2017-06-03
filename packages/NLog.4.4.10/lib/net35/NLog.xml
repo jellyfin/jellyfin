@@ -3593,61 +3593,6 @@
             </summary>
             <docgen category='Filtering Options' order='10' />
         </member>
-        <member name="T:NLog.Fluent.Log">
-            <summary>
-            A global logging class using caller info to find the logger.
-            </summary>
-        </member>
-        <member name="M:NLog.Fluent.Log.Level(NLog.LogLevel,System.String)">
-            <summary>
-            Starts building a log event with the specified <see cref="T:NLog.LogLevel"/>.
-            </summary>
-            <param name="logLevel">The log level.</param>
-            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
-            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
-        </member>
-        <member name="M:NLog.Fluent.Log.Trace(System.String)">
-            <summary>
-            Starts building a log event at the <c>Trace</c> level.
-            </summary>
-            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
-            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
-        </member>
-        <member name="M:NLog.Fluent.Log.Debug(System.String)">
-            <summary>
-            Starts building a log event at the <c>Debug</c> level.
-            </summary>
-            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
-            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
-        </member>
-        <member name="M:NLog.Fluent.Log.Info(System.String)">
-            <summary>
-            Starts building a log event at the <c>Info</c> level.
-            </summary>
-            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
-            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
-        </member>
-        <member name="M:NLog.Fluent.Log.Warn(System.String)">
-            <summary>
-            Starts building a log event at the <c>Warn</c> level.
-            </summary>
-            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
-            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
-        </member>
-        <member name="M:NLog.Fluent.Log.Error(System.String)">
-            <summary>
-            Starts building a log event at the <c>Error</c> level.
-            </summary>
-            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
-            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
-        </member>
-        <member name="M:NLog.Fluent.Log.Fatal(System.String)">
-            <summary>
-            Starts building a log event at the <c>Fatal</c> level.
-            </summary>
-            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
-            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
-        </member>
         <member name="T:NLog.Fluent.LogBuilder">
             <summary>
             A fluent class to build log events for NLog.
@@ -3779,31 +3724,22 @@
             <param name="userStackFrame">Index of the first user stack frame within the stack trace.</param>
             <returns>current <see cref="T:NLog.Fluent.LogBuilder"/> for chaining calls.</returns>
         </member>
-        <member name="M:NLog.Fluent.LogBuilder.Write(System.String,System.String,System.Int32)">
+        <member name="M:NLog.Fluent.LogBuilder.Write">
             <summary>
             Writes the log event to the underlying logger.
             </summary>
-            <param name="callerMemberName">The method or property name of the caller to the method. This is set at by the compiler.</param>
-            <param name="callerFilePath">The full path of the source file that contains the caller. This is set at by the compiler.</param>
-            <param name="callerLineNumber">The line number in the source file at which the method is called. This is set at by the compiler.</param>
         </member>
-        <member name="M:NLog.Fluent.LogBuilder.WriteIf(System.Func{System.Boolean},System.String,System.String,System.Int32)">
+        <member name="M:NLog.Fluent.LogBuilder.WriteIf(System.Func{System.Boolean})">
             <summary>
-            Writes the log event to the underlying logger if the condition delegate is true.
+            Writes the log event to the underlying logger.
             </summary>
             <param name="condition">If condition is true, write log event; otherwise ignore event.</param>
-            <param name="callerMemberName">The method or property name of the caller to the method. This is set at by the compiler.</param>
-            <param name="callerFilePath">The full path of the source file that contains the caller. This is set at by the compiler.</param>
-            <param name="callerLineNumber">The line number in the source file at which the method is called. This is set at by the compiler.</param>
         </member>
-        <member name="M:NLog.Fluent.LogBuilder.WriteIf(System.Boolean,System.String,System.String,System.Int32)">
+        <member name="M:NLog.Fluent.LogBuilder.WriteIf(System.Boolean)">
             <summary>
-            Writes the log event to the underlying logger if the condition is true.
+            Writes the log event to the underlying logger.
             </summary>
             <param name="condition">If condition is true, write log event; otherwise ignore event.</param>
-            <param name="callerMemberName">The method or property name of the caller to the method. This is set at by the compiler.</param>
-            <param name="callerFilePath">The full path of the source file that contains the caller. This is set at by the compiler.</param>
-            <param name="callerLineNumber">The line number in the source file at which the method is called. This is set at by the compiler.</param>
         </member>
         <member name="P:NLog.Fluent.LogBuilder.LogEventInfo">
             <summary>
@@ -4479,46 +4415,6 @@
             <param name="func">Function to run.</param>
             <param name="fallback">Fallback value to return in case of exception.</param>
             <returns>Result returned by the provided function or fallback value in case of exception.</returns>
-        </member>
-        <member name="M:NLog.ISuppress.Swallow(System.Threading.Tasks.Task)">
-            <summary>
-            Logs an exception is logged at <c>Error</c> level if the provided task does not run to completion.
-            </summary>
-            <param name="task">The task for which to log an error if it does not run to completion.</param>
-            <remarks>This method is useful in fire-and-forget situations, where application logic does not depend on completion of task. This method is avoids C# warning CS4014 in such situations.</remarks>
-        </member>
-        <member name="M:NLog.ISuppress.SwallowAsync(System.Threading.Tasks.Task)">
-            <summary>
-            Returns a task that completes when a specified task to completes. If the task does not run to completion, an exception is logged at <c>Error</c> level. The returned task always runs to completion.
-            </summary>
-            <param name="task">The task for which to log an error if it does not run to completion.</param>
-            <returns>A task that completes in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state when <paramref name="task"/> completes.</returns>
-        </member>
-        <member name="M:NLog.ISuppress.SwallowAsync(System.Func{System.Threading.Tasks.Task})">
-            <summary>
-            Runs async action. If the action throws, the exception is logged at <c>Error</c> level. The exception is not propagated outside of this method.
-            </summary>
-            <param name="asyncAction">Async action to execute.</param>
-            <returns>A task that completes in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state when <paramref name="asyncAction"/> completes.</returns>
-        </member>
-        <member name="M:NLog.ISuppress.SwallowAsync``1(System.Func{System.Threading.Tasks.Task{``0}})">
-            <summary>
-            Runs the provided async function and returns its result. If the task does not run to completion, an exception is logged at <c>Error</c> level.
-            The exception is not propagated outside of this method; a default value is returned instead.
-            </summary>
-            <typeparam name="TResult">Return type of the provided function.</typeparam>
-            <param name="asyncFunc">Async function to run.</param>
-            <returns>A task that represents the completion of the supplied task. If the supplied task ends in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state, the result of the new task will be the result of the supplied task; otherwise, the result of the new task will be the default value of type <typeparamref name="TResult"/>.</returns>
-        </member>
-        <member name="M:NLog.ISuppress.SwallowAsync``1(System.Func{System.Threading.Tasks.Task{``0}},``0)">
-            <summary>
-            Runs the provided async function and returns its result. If the task does not run to completion, an exception is logged at <c>Error</c> level.
-            The exception is not propagated outside of this method; a fallback value is returned instead.
-            </summary>
-            <typeparam name="TResult">Return type of the provided function.</typeparam>
-            <param name="asyncFunc">Async function to run.</param>
-            <param name="fallback">Fallback value to return if the task does not end in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state.</param>
-            <returns>A task that represents the completion of the supplied task. If the supplied task ends in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state, the result of the new task will be the result of the supplied task; otherwise, the result of the new task will be the fallback value.</returns>
         </member>
         <member name="M:NLog.ILogger.Trace``1(``0)">
             <overloads>
@@ -8292,6 +8188,11 @@
              we strongly recommend you use https://github.com/jstedfast/MailKit and https://github.com/jstedfast/MimeKit instead'	
             </remarks>
         </member>
+        <member name="M:NLog.Internal.MySmtpClient.Dispose">
+            <summary>
+            Sends a QUIT message to the SMTP server, gracefully ends the TCP connection, and releases all resources used by the current instance of the <see cref="T:System.Net.Mail.SmtpClient"/> class.
+            </summary>
+        </member>
         <member name="T:NLog.Internal.NetworkSenders.HttpNetworkSender">
             <summary>
             Network sender which uses HTTP or HTTPS POST.
@@ -9347,13 +9248,6 @@
             removes any unusual unicode characters that can't be encoded into XML
             </summary>
         </member>
-        <member name="M:NLog.Internal.XmlHelper.CreateValidXmlString(System.String)">
-            <summary>
-            Cleans string of any invalid XML chars found
-            </summary>
-            <param name="text">unclean string</param>
-            <returns>string with only valid XML chars</returns>
-        </member>
         <member name="M:NLog.Internal.XmlHelper.XmlConvertToStringSafe(System.Object)">
             <summary>
             Converts object value to invariant format, and strips any invalid xml-characters
@@ -9368,7 +9262,7 @@
             <param name="value">Object value</param>
             <returns>Object value converted to string</returns>
         </member>
-        <member name="M:NLog.Internal.XmlHelper.XmlConvertToString(System.Object,System.TypeCode@)">
+        <member name="M:NLog.Internal.XmlHelper.XmlConvertToString(System.Object,System.TypeCode)">
             <summary>
             Converts object value to invariant format (understood by JavaScript)
             </summary>
@@ -9559,32 +9453,11 @@
             <param name="builder">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
             <param name="logEvent">Logging event.</param>
         </member>
-        <member name="F:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.CallerInformationAttributeNames">
-            <summary>
-            The names of caller information attributes.
-            https://msdn.microsoft.com/en-us/library/hh534540.aspx
-            </summary>
-        </member>
-        <member name="M:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.GetProperties(NLog.LogEventInfo)">
-             <summary>
-             Also render the call attributes? (<see cref="T:System.Runtime.CompilerServices.CallerMemberNameAttribute"/>,
-             <see cref="T:System.Runtime.CompilerServices.CallerFilePathAttribute"/>, <see cref="T:System.Runtime.CompilerServices.CallerLineNumberAttribute"/>). 
-             </summary>
-            
-        </member>
         <member name="P:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.Separator">
             <summary>
             Gets or sets string that will be used to separate key/value pairs.
             </summary>
             <docgen category='Rendering Options' order='10' />
-        </member>
-        <member name="P:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.IncludeCallerInformation">
-            <summary>
-            Also render the caller information attributes? (<see cref="T:System.Runtime.CompilerServices.CallerMemberNameAttribute"/>,
-            <see cref="T:System.Runtime.CompilerServices.CallerFilePathAttribute"/>, <see cref="T:System.Runtime.CompilerServices.CallerLineNumberAttribute"/>). 
-            
-            See https://msdn.microsoft.com/en-us/library/hh534540.aspx
-            </summary>
         </member>
         <member name="P:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.Format">
             <summary>
@@ -10433,12 +10306,6 @@
             </summary>
             <docgen category="Payload Options" order="10"/>
         </member>
-        <member name="P:NLog.LayoutRenderers.Log4JXmlEventLayoutRenderer.IncludeMdlc">
-            <summary>
-            Gets or sets a value indicating whether to include contents of the <see cref="T:NLog.MappedDiagnosticsLogicalContext"/> dictionary.
-            </summary>
-            <docgen category="Payload Options" order="10"/>
-        </member>
         <member name="P:NLog.LayoutRenderers.Log4JXmlEventLayoutRenderer.IncludeAllProperties">
             <summary>
             Gets or sets the option to include all properties from the log events
@@ -10528,24 +10395,6 @@
             <param name="logEvent">Logging event.</param>
         </member>
         <member name="P:NLog.LayoutRenderers.MdcLayoutRenderer.Item">
-            <summary>
-            Gets or sets the name of the item.
-            </summary>
-            <docgen category='Rendering Options' order='10' />
-        </member>
-        <member name="T:NLog.LayoutRenderers.MdlcLayoutRenderer">
-            <summary>
-            Mapped Diagnostic Logical Context item (based on CallContext).
-            </summary>
-        </member>
-        <member name="M:NLog.LayoutRenderers.MdlcLayoutRenderer.Append(System.Text.StringBuilder,NLog.LogEventInfo)">
-            <summary>
-            Renders the specified MDLC item and appends it to the specified <see cref="T:System.Text.StringBuilder"/>.
-            </summary>
-            <param name="builder">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
-            <param name="logEvent">Logging event.</param>
-        </member>
-        <member name="P:NLog.LayoutRenderers.MdlcLayoutRenderer.Item">
             <summary>
             Gets or sets the name of the item.
             </summary>
@@ -11098,12 +10947,6 @@
             `\\` in value should be configured as `\\\\`.
             </summary>
             <remarks>Default value wasn't a Layout before and needed an escape of the slash</remarks>
-        </member>
-        <member name="P:NLog.LayoutRenderers.RegistryLayoutRenderer.View">
-            <summary>
-            Gets or sets the registry view (see: https://msdn.microsoft.com/de-de/library/microsoft.win32.registryview.aspx). 
-            Allowed values: Registry32, Registry64, Default 
-            </summary>
         </member>
         <member name="P:NLog.LayoutRenderers.RegistryLayoutRenderer.Key">
              <summary>
@@ -12579,6 +12422,11 @@
             Gets or sets the option to render the empty object value {}
             </summary>
         </member>
+        <member name="P:NLog.Layouts.JsonLayout.IncludeMdc">
+            <summary>
+            Gets or sets a value indicating whether to include contents of the <see cref="T:NLog.MappedDiagnosticsContext"/> dictionary.
+            </summary>
+        </member>
         <member name="P:NLog.Layouts.JsonLayout.IncludeAllProperties">
             <summary>
             Gets or sets the option to include all properties from the log events
@@ -12640,12 +12488,6 @@
         <member name="P:NLog.Layouts.Log4JXmlEventLayout.IncludeMdc">
             <summary>
             Gets or sets a value indicating whether to include contents of the <see cref="T:NLog.MappedDiagnosticsContext"/> dictionary.
-            </summary>
-            <docgen category="Payload Options" order="10"/>
-        </member>
-        <member name="P:NLog.Layouts.Log4JXmlEventLayout.IncludeMdlc">
-            <summary>
-            Gets or sets a value indicating whether to include contents of the <see cref="T:NLog.MappedDiagnosticsLogicalContext"/> dictionary.
             </summary>
             <docgen category="Payload Options" order="10"/>
         </member>
@@ -13604,45 +13446,6 @@
             <param name="func">Function to run.</param>
             <param name="fallback">Fallback value to return in case of exception.</param>
             <returns>Result returned by the provided function or fallback value in case of exception.</returns>
-        </member>
-        <member name="M:NLog.Logger.Swallow(System.Threading.Tasks.Task)">
-            <summary>
-            Logs an exception is logged at <c>Error</c> level if the provided task does not run to completion.
-            </summary>
-            <param name="task">The task for which to log an error if it does not run to completion.</param>
-            <remarks>This method is useful in fire-and-forget situations, where application logic does not depend on completion of task. This method is avoids C# warning CS4014 in such situations.</remarks>
-        </member>
-        <member name="M:NLog.Logger.SwallowAsync(System.Threading.Tasks.Task)">
-            <summary>
-            Returns a task that completes when a specified task to completes. If the task does not run to completion, an exception is logged at <c>Error</c> level. The returned task always runs to completion.
-            </summary>
-            <param name="task">The task for which to log an error if it does not run to completion.</param>
-            <returns>A task that completes in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state when <paramref name="task"/> completes.</returns>
-        </member>
-        <member name="M:NLog.Logger.SwallowAsync(System.Func{System.Threading.Tasks.Task})">
-            <summary>
-            Runs async action. If the action throws, the exception is logged at <c>Error</c> level. The exception is not propagated outside of this method.
-            </summary>
-            <param name="asyncAction">Async action to execute.</param>
-        </member>
-        <member name="M:NLog.Logger.SwallowAsync``1(System.Func{System.Threading.Tasks.Task{``0}})">
-            <summary>
-            Runs the provided async function and returns its result. If the task does not run to completion, an exception is logged at <c>Error</c> level.
-            The exception is not propagated outside of this method; a default value is returned instead.
-            </summary>
-            <typeparam name="TResult">Return type of the provided function.</typeparam>
-            <param name="asyncFunc">Async function to run.</param>
-            <returns>A task that represents the completion of the supplied task. If the supplied task ends in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state, the result of the new task will be the result of the supplied task; otherwise, the result of the new task will be the default value of type <typeparamref name="TResult"/>.</returns>
-        </member>
-        <member name="M:NLog.Logger.SwallowAsync``1(System.Func{System.Threading.Tasks.Task{``0}},``0)">
-            <summary>
-            Runs the provided async function and returns its result. If the task does not run to completion, an exception is logged at <c>Error</c> level.
-            The exception is not propagated outside of this method; a fallback value is returned instead.
-            </summary>
-            <typeparam name="TResult">Return type of the provided function.</typeparam>
-            <param name="asyncFunc">Async function to run.</param>
-            <param name="fallback">Fallback value to return if the task does not end in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state.</param>
-            <returns>A task that represents the completion of the supplied task. If the supplied task ends in the <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion"/> state, the result of the new task will be the result of the supplied task; otherwise, the result of the new task will be the fallback value.</returns>
         </member>
         <member name="M:NLog.Logger.OnLoggerReconfigured(System.EventArgs)">
             <summary>
@@ -17471,12 +17274,6 @@
             Gets the target endpoint for the service to which the WCF client can connect.
             </summary>
         </member>
-        <member name="P:NLog.LogReceiverService.IWcfLogReceiverClient.CookieContainer">
-            <summary>
-            Gets or sets the cookie container.
-            </summary>
-            <value>The cookie container.</value>
-        </member>
         <member name="T:NLog.LogReceiverService.LogReceiverForwardingService">
             <summary>
             Implementation of <see cref="T:NLog.LogReceiverService.ILogReceiverServer"/> which forwards received logs through <see cref="T:NLog.LogManager"/> or a given <see cref="T:NLog.LogFactory"/>.
@@ -17748,12 +17545,6 @@
             Occurs when Close operation has completed.
             </summary>
         </member>
-        <member name="P:NLog.LogReceiverService.WcfLogReceiverClientBase`1.CookieContainer">
-            <summary>
-            Gets or sets the cookie container.
-            </summary>
-            <value>The cookie container.</value>
-        </member>
         <member name="M:NLog.LogReceiverService.WcfILogReceiverClient.#ctor">
             <summary>
             Initializes a new instance of the <see cref="T:NLog.LogReceiverService.WcfILogReceiverClient"/> class.
@@ -18022,12 +17813,6 @@
             Occurs when the communication object first enters the closing state.
             </summary>
         </member>
-        <member name="P:NLog.LogReceiverService.WcfLogReceiverClient.CookieContainer">
-            <summary>
-            Gets or sets the cookie container.
-            </summary>
-            <value>The cookie container.</value>
-        </member>
         <member name="P:NLog.LogReceiverService.WcfLogReceiverClient.Endpoint">
             <summary>
             Gets the target endpoint for the service to which the WCF client can connect.
@@ -18254,93 +18039,6 @@
             <summary>
             Clears the content of current thread MDC.
             </summary>
-        </member>
-        <member name="T:NLog.MappedDiagnosticsLogicalContext">
-            <summary>
-            Async version of Mapped Diagnostics Context - a logical context structure that keeps a dictionary
-            of strings and provides methods to output them in layouts.  Allows for maintaining state across
-            asynchronous tasks and call contexts.
-            </summary>
-            <remarks>
-            Ideally, these changes should be incorporated as a new version of the MappedDiagnosticsContext class in the original
-            NLog library so that state can be maintained for multiple threads in asynchronous situations.
-            </remarks>
-        </member>
-        <member name="M:NLog.MappedDiagnosticsLogicalContext.GetLogicalThreadDictionary(System.Boolean)">
-            <summary>
-            Simulate ImmutableDictionary behavior (which is not yet part of all .NET frameworks).
-            In future the real ImmutableDictionary could be used here to minimize memory usage and copying time.
-            </summary>
-            <param name="clone">Must be true for any subsequent dictionary modification operation</param>
-            <returns></returns>
-        </member>
-        <member name="M:NLog.MappedDiagnosticsLogicalContext.Get(System.String)">
-            <summary>
-            Gets the current logical context named item, as <see cref="T:System.String"/>.
-            </summary>
-            <param name="item">Item name.</param>
-            <returns>The value of <paramref name="item"/>, if defined; otherwise <see cref="F:System.String.Empty"/>.</returns>
-            <remarks>If the value isn't a <see cref="T:System.String"/> already, this call locks the <see cref="T:NLog.LogFactory"/> for reading the <see cref="P:NLog.Config.LoggingConfiguration.DefaultCultureInfo"/> needed for converting to <see cref="T:System.String"/>. </remarks>
-        </member>
-        <member name="M:NLog.MappedDiagnosticsLogicalContext.Get(System.String,System.IFormatProvider)">
-            <summary>
-            Gets the current logical context named item, as <see cref="T:System.String"/>.
-            </summary>
-            <param name="item">Item name.</param>
-            <param name="formatProvider">The <see cref="T:System.IFormatProvider"/> to use when converting a value to a string.</param>
-            <returns>The value of <paramref name="item"/>, if defined; otherwise <see cref="F:System.String.Empty"/>.</returns>
-            <remarks>If <paramref name="formatProvider"/> is <c>null</c> and the value isn't a <see cref="T:System.String"/> already, this call locks the <see cref="T:NLog.LogFactory"/> for reading the <see cref="P:NLog.Config.LoggingConfiguration.DefaultCultureInfo"/> needed for converting to <see cref="T:System.String"/>. </remarks>
-        </member>
-        <member name="M:NLog.MappedDiagnosticsLogicalContext.GetObject(System.String)">
-            <summary>
-            Gets the current logical context named item, as <see cref="T:System.Object"/>.
-            </summary>
-            <param name="item">Item name.</param>
-            <returns>The value of <paramref name="item"/>, if defined; otherwise <c>null</c>.</returns>
-        </member>
-        <member name="M:NLog.MappedDiagnosticsLogicalContext.Set(System.String,System.String)">
-            <summary>
-            Sets the current logical context item to the specified value.
-            </summary>
-            <param name="item">Item name.</param>
-            <param name="value">Item value.</param>
-        </member>
-        <member name="M:NLog.MappedDiagnosticsLogicalContext.Set(System.String,System.Object)">
-            <summary>
-            Sets the current logical context item to the specified value.
-            </summary>
-            <param name="item">Item name.</param>
-            <param name="value">Item value.</param>
-        </member>
-        <member name="M:NLog.MappedDiagnosticsLogicalContext.GetNames">
-            <summary>
-            Returns all item names
-            </summary>
-            <returns>A collection of the names of all items in current logical context.</returns>
-        </member>
-        <member name="M:NLog.MappedDiagnosticsLogicalContext.Contains(System.String)">
-            <summary>
-            Checks whether the specified <paramref name="item"/> exists in current logical context.
-            </summary>
-            <param name="item">Item name.</param>
-            <returns>A boolean indicating whether the specified <paramref name="item"/> exists in current logical context.</returns>
-        </member>
-        <member name="M:NLog.MappedDiagnosticsLogicalContext.Remove(System.String)">
-            <summary>
-            Removes the specified <paramref name="item"/> from current logical context.
-            </summary>
-            <param name="item">Item name.</param>
-        </member>
-        <member name="M:NLog.MappedDiagnosticsLogicalContext.Clear">
-            <summary>
-            Clears the content of current logical context.
-            </summary>
-        </member>
-        <member name="M:NLog.MappedDiagnosticsLogicalContext.Clear(System.Boolean)">
-            <summary>
-            Clears the content of current logical context.
-            </summary>
-            <param name="free">Free the full slot.</param>
         </member>
         <member name="T:NLog.MDC">
             <summary>
@@ -18835,9 +18533,102 @@
             The most recent archive has the highest number (in combination with the date).
             </summary>
         </member>
-        <member name="T:NLog.Targets.AsyncTaskTarget">
+        <member name="T:NLog.Targets.ChainsawTarget">
             <summary>
-            Abstract Target with async Task support
+            Sends log messages to the remote instance of Chainsaw application from log4j. 
+            </summary>
+            <seealso href="https://github.com/nlog/nlog/wiki/Chainsaw-target">Documentation on NLog Wiki</seealso>
+            <example>
+            <p>
+            To set up the target in the <a href="config.html">configuration file</a>, 
+            use the following syntax:
+            </p>
+            <code lang="XML" source="examples/targets/Configuration File/Chainsaw/NLog.config" />
+            <p>
+            This assumes just one target and a single rule. More configuration
+            options are described <a href="config.html">here</a>.
+            </p>
+            <p>
+            To set up the log target programmatically use code like this:
+            </p>
+            <code lang="C#" source="examples/targets/Configuration API/Chainsaw/Simple/Example.cs" />
+            <p>
+            NOTE: If your receiver application is ever likely to be off-line, don't use TCP protocol
+            or you'll get TCP timeouts and your application will crawl. 
+            Either switch to UDP transport or use <a href="target.AsyncWrapper.html">AsyncWrapper</a> target
+            so that your application threads will not be blocked by the timing-out connection attempts.
+            </p>
+            </example>
+        </member>
+        <member name="T:NLog.Targets.NLogViewerTarget">
+            <summary>
+            Sends log messages to the remote instance of NLog Viewer. 
+            </summary>
+            <seealso href="https://github.com/nlog/nlog/wiki/NLogViewer-target">Documentation on NLog Wiki</seealso>
+            <example>
+            <p>
+            To set up the target in the <a href="config.html">configuration file</a>, 
+            use the following syntax:
+            </p>
+            <code lang="XML" source="examples/targets/Configuration File/NLogViewer/NLog.config" />
+            <p>
+            This assumes just one target and a single rule. More configuration
+            options are described <a href="config.html">here</a>.
+            </p>
+            <p>
+            To set up the log target programmatically use code like this:
+            </p>
+            <code lang="C#" source="examples/targets/Configuration API/NLogViewer/Simple/Example.cs" />
+            <p>
+            NOTE: If your receiver application is ever likely to be off-line, don't use TCP protocol
+            or you'll get TCP timeouts and your application will crawl. 
+            Either switch to UDP transport or use <a href="target.AsyncWrapper.html">AsyncWrapper</a> target
+            so that your application threads will not be blocked by the timing-out connection attempts.
+            </p>
+            </example>
+        </member>
+        <member name="T:NLog.Targets.NetworkTarget">
+            <summary>
+            Sends log messages over the network.
+            </summary>
+            <seealso href="https://github.com/nlog/nlog/wiki/Network-target">Documentation on NLog Wiki</seealso>
+            <example>
+            <p>
+            To set up the target in the <a href="config.html">configuration file</a>, 
+            use the following syntax:
+            </p>
+            <code lang="XML" source="examples/targets/Configuration File/Network/NLog.config" />
+            <p>
+            This assumes just one target and a single rule. More configuration
+            options are described <a href="config.html">here</a>.
+            </p>
+            <p>
+            To set up the log target programmatically use code like this:
+            </p>
+            <code lang="C#" source="examples/targets/Configuration API/Network/Simple/Example.cs" />
+            <p>
+            To print the results, use any application that's able to receive messages over
+            TCP or UDP. <a href="http://m.nu/program/util/netcat/netcat.html">NetCat</a> is
+            a simple but very powerful command-line tool that can be used for that. This image
+            demonstrates the NetCat tool receiving log messages from Network target.
+            </p>
+            <img src="examples/targets/Screenshots/Network/Output.gif" />
+            <p>
+            NOTE: If your receiver application is ever likely to be off-line, don't use TCP protocol
+            or you'll get TCP timeouts and your application will be very slow. 
+            Either switch to UDP transport or use <a href="target.AsyncWrapper.html">AsyncWrapper</a> target
+            so that your application threads will not be blocked by the timing-out connection attempts.
+            </p>
+            <p>
+            There are two specialized versions of the Network target: <a href="target.Chainsaw.html">Chainsaw</a>
+            and <a href="target.NLogViewer.html">NLogViewer</a> which write to instances of Chainsaw log4j viewer
+            or NLogViewer application respectively.
+            </p>
+            </example>
+        </member>
+        <member name="T:NLog.Targets.TargetWithLayout">
+            <summary>
+            Represents target that supports string formatting using layouts.
             </summary>
         </member>
         <member name="T:NLog.Targets.Target">
@@ -19060,189 +18851,6 @@
             Gets a value indicating whether the target has been initialized.
             </summary>
         </member>
-        <member name="M:NLog.Targets.AsyncTaskTarget.#ctor">
-            <summary>
-            Constructor
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.AsyncTaskTarget.WriteAsyncTask(NLog.LogEventInfo,System.Threading.CancellationToken)">
-            <summary>
-            Override this to create the actual logging task
-            <example>
-            Example of how to override this method, and call custom async method
-            <code>
-            protected override Task WriteAsyncTask(LogEventInfo logEvent, CancellationToken token)
-            {
-               return CustomWriteAsync(logEvent, token);
-            }
-            
-            private async Task CustomWriteAsync(LogEventInfo logEvent, CancellationToken token)
-            {
-                await MyLogMethodAsync(logEvent, token).ConfigureAwait(false);
-            }
-            </code></example>
-            </summary>
-            <param name="logEvent">The log event.</param>
-            <param name="cancellationToken">The cancellation token</param>
-            <returns></returns>
-        </member>
-        <member name="M:NLog.Targets.AsyncTaskTarget.Write(NLog.Common.AsyncLogEventInfo)">
-            <summary>
-            Schedules the LogEventInfo for async writing
-            </summary>
-            <param name="logEvent">The log event.</param>
-        </member>
-        <member name="M:NLog.Targets.AsyncTaskTarget.FlushAsync(NLog.Common.AsyncContinuation)">
-            <summary>
-            Schedules notification of when all messages has been written
-            </summary>
-            <param name="asyncContinuation"></param>
-        </member>
-        <member name="M:NLog.Targets.AsyncTaskTarget.CloseTarget">
-            <summary>
-            Closes Target by updating CancellationToken 
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.AsyncTaskTarget.Dispose(System.Boolean)">
-            <summary>
-            Releases any managed resources
-            </summary>
-            <param name="disposing"></param>
-        </member>
-        <member name="M:NLog.Targets.AsyncTaskTarget.TaskStartNext(System.Threading.Tasks.Task)">
-            <summary>
-            Checks the internal queue for the next <see cref="T:NLog.LogEventInfo"/> to create a new task for
-            </summary>
-            <param name="previousTask">Used for race-condition validation betweewn task-completion and timeout</param>
-        </member>
-        <member name="M:NLog.Targets.AsyncTaskTarget.TaskCreation(NLog.Common.AsyncLogEventInfo)">
-            <summary>
-            Creates new task to handle the writing of the input <see cref="T:NLog.LogEventInfo"/>
-            </summary>
-            <param name="logEvent">LogEvent to write</param>
-            <returns>New Task created [true / false]</returns>
-        </member>
-        <member name="M:NLog.Targets.AsyncTaskTarget.TaskCompletion(System.Threading.Tasks.Task,System.Object)">
-            <summary>
-            Handles that scheduled task has completed (succesfully or failed), and starts the next pending task
-            </summary>
-            <param name="completedTask">Task just completed</param>
-            <param name="continuation">AsyncContinuation to notify of success or failure</param>
-        </member>
-        <member name="M:NLog.Targets.AsyncTaskTarget.TaskTimeout(System.Object)">
-            <summary>
-            Timer method, that is fired when pending task fails to complete within timeout
-            </summary>
-            <param name="state"></param>
-        </member>
-        <member name="P:NLog.Targets.AsyncTaskTarget.TaskTimeoutSeconds">
-            <summary>
-            How many seconds a Task is allowed to run before it is cancelled.
-            </summary>
-        </member>
-        <member name="P:NLog.Targets.AsyncTaskTarget.TaskScheduler">
-            <summary>
-            Task Scheduler used for processing async Tasks
-            </summary>
-        </member>
-        <member name="T:NLog.Targets.ChainsawTarget">
-            <summary>
-            Sends log messages to the remote instance of Chainsaw application from log4j. 
-            </summary>
-            <seealso href="https://github.com/nlog/nlog/wiki/Chainsaw-target">Documentation on NLog Wiki</seealso>
-            <example>
-            <p>
-            To set up the target in the <a href="config.html">configuration file</a>, 
-            use the following syntax:
-            </p>
-            <code lang="XML" source="examples/targets/Configuration File/Chainsaw/NLog.config" />
-            <p>
-            This assumes just one target and a single rule. More configuration
-            options are described <a href="config.html">here</a>.
-            </p>
-            <p>
-            To set up the log target programmatically use code like this:
-            </p>
-            <code lang="C#" source="examples/targets/Configuration API/Chainsaw/Simple/Example.cs" />
-            <p>
-            NOTE: If your receiver application is ever likely to be off-line, don't use TCP protocol
-            or you'll get TCP timeouts and your application will crawl. 
-            Either switch to UDP transport or use <a href="target.AsyncWrapper.html">AsyncWrapper</a> target
-            so that your application threads will not be blocked by the timing-out connection attempts.
-            </p>
-            </example>
-        </member>
-        <member name="T:NLog.Targets.NLogViewerTarget">
-            <summary>
-            Sends log messages to the remote instance of NLog Viewer. 
-            </summary>
-            <seealso href="https://github.com/nlog/nlog/wiki/NLogViewer-target">Documentation on NLog Wiki</seealso>
-            <example>
-            <p>
-            To set up the target in the <a href="config.html">configuration file</a>, 
-            use the following syntax:
-            </p>
-            <code lang="XML" source="examples/targets/Configuration File/NLogViewer/NLog.config" />
-            <p>
-            This assumes just one target and a single rule. More configuration
-            options are described <a href="config.html">here</a>.
-            </p>
-            <p>
-            To set up the log target programmatically use code like this:
-            </p>
-            <code lang="C#" source="examples/targets/Configuration API/NLogViewer/Simple/Example.cs" />
-            <p>
-            NOTE: If your receiver application is ever likely to be off-line, don't use TCP protocol
-            or you'll get TCP timeouts and your application will crawl. 
-            Either switch to UDP transport or use <a href="target.AsyncWrapper.html">AsyncWrapper</a> target
-            so that your application threads will not be blocked by the timing-out connection attempts.
-            </p>
-            </example>
-        </member>
-        <member name="T:NLog.Targets.NetworkTarget">
-            <summary>
-            Sends log messages over the network.
-            </summary>
-            <seealso href="https://github.com/nlog/nlog/wiki/Network-target">Documentation on NLog Wiki</seealso>
-            <example>
-            <p>
-            To set up the target in the <a href="config.html">configuration file</a>, 
-            use the following syntax:
-            </p>
-            <code lang="XML" source="examples/targets/Configuration File/Network/NLog.config" />
-            <p>
-            This assumes just one target and a single rule. More configuration
-            options are described <a href="config.html">here</a>.
-            </p>
-            <p>
-            To set up the log target programmatically use code like this:
-            </p>
-            <code lang="C#" source="examples/targets/Configuration API/Network/Simple/Example.cs" />
-            <p>
-            To print the results, use any application that's able to receive messages over
-            TCP or UDP. <a href="http://m.nu/program/util/netcat/netcat.html">NetCat</a> is
-            a simple but very powerful command-line tool that can be used for that. This image
-            demonstrates the NetCat tool receiving log messages from Network target.
-            </p>
-            <img src="examples/targets/Screenshots/Network/Output.gif" />
-            <p>
-            NOTE: If your receiver application is ever likely to be off-line, don't use TCP protocol
-            or you'll get TCP timeouts and your application will be very slow. 
-            Either switch to UDP transport or use <a href="target.AsyncWrapper.html">AsyncWrapper</a> target
-            so that your application threads will not be blocked by the timing-out connection attempts.
-            </p>
-            <p>
-            There are two specialized versions of the Network target: <a href="target.Chainsaw.html">Chainsaw</a>
-            and <a href="target.NLogViewer.html">NLogViewer</a> which write to instances of Chainsaw log4j viewer
-            or NLogViewer application respectively.
-            </p>
-            </example>
-        </member>
-        <member name="T:NLog.Targets.TargetWithLayout">
-            <summary>
-            Represents target that supports string formatting using layouts.
-            </summary>
-        </member>
         <member name="M:NLog.Targets.TargetWithLayout.#ctor">
             <summary>
             Initializes a new instance of the <see cref="T:NLog.Targets.TargetWithLayout"/> class.
@@ -19432,12 +19040,6 @@
         <member name="P:NLog.Targets.NLogViewerTarget.IncludeMdc">
             <summary>
             Gets or sets a value indicating whether to include <see cref="T:NLog.MappedDiagnosticsContext"/> dictionary contents.
-            </summary>
-            <docgen category="Payload Options" order="10"/>
-        </member>
-        <member name="P:NLog.Targets.NLogViewerTarget.IncludeMdlc">
-            <summary>
-            Gets or sets a value indicating whether to include <see cref="T:NLog.MappedDiagnosticsLogicalContext"/> dictionary contents.
             </summary>
             <docgen category="Payload Options" order="10"/>
         </member>
@@ -20144,6 +19746,11 @@
             to initialize logging.
             </summary>
         </member>
+        <member name="M:NLog.Targets.DatabaseTarget.SetConnectionType">
+            <summary>
+            Set the <see cref="P:NLog.Targets.DatabaseTarget.ConnectionType"/> to use it for opening connections to the database.
+            </summary>
+        </member>
         <member name="M:NLog.Targets.DatabaseTarget.CloseTarget">
             <summary>
             Closes the target and releases any unmanaged resources.
@@ -20512,11 +20119,12 @@
             Serialized value.
             </returns>
         </member>
-        <member name="M:NLog.Targets.DefaultJsonSerializer.JsonStringEncode(System.Object,System.Boolean,System.Boolean@)">
+        <member name="M:NLog.Targets.DefaultJsonSerializer.JsonStringEncode(System.Object,System.TypeCode,System.Boolean,System.Boolean@)">
             <summary>
             Converts object value into JSON escaped string
             </summary>
             <param name="value">Object value</param>
+            <param name="objTypeCode">Object TypeCode</param>
             <param name="escapeUnicode">Should non-ascii characters be encoded</param>
             <param name="encodeString">Should string be JSON encoded with quotes</param>
             <returns>Object value converted to JSON escaped string</returns>
@@ -20675,6 +20283,16 @@
             Gets or sets the message length limit to write to the Event Log.
             </summary>
             <remarks><value>MaxMessageLength</value> cannot be zero or negative</remarks>
+        </member>
+        <member name="P:NLog.Targets.EventLogTarget.MaxKilobytes">
+            <summary>
+            Gets or sets the maximum Event log size in kilobytes.
+            
+            If <c>null</c>, the value won't be set. 
+            
+            Default is 512 Kilobytes as specified by Eventlog API
+            </summary>
+            <remarks><value>MaxKilobytes</value> cannot be less than 64 or greater than 4194240 or not a multiple of 64. If <c>null</c>, use the default value</remarks>
         </member>
         <member name="P:NLog.Targets.EventLogTarget.OnOverflow">
             <summary>
@@ -24370,19 +23988,6 @@
             optimize batch writes.
             </summary>
             <param name="logEvents">Logging events to be written out.</param>
-        </member>
-        <member name="T:NLog.Targets.ZipArchiveFileCompressor">
-            <summary>
-            Builtin IFileCompressor implementation utilizing the .Net4.5 specific <see cref="T:System.IO.Compression.ZipArchive"/> 
-            and is used as the default value for <see cref="P:NLog.Targets.FileTarget.FileCompressor"/> on .Net4.5.
-            So log files created via <see cref="T:NLog.Targets.FileTarget"/> can be zipped when archived
-            w/o 3rd party zip library when run on .Net4.5 or higher.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.ZipArchiveFileCompressor.CompressFile(System.String,System.String)">
-            <summary>
-            Implements <see cref="M:NLog.Targets.IFileCompressor.CompressFile(System.String,System.String)"/> using the .Net4.5 specific <see cref="T:System.IO.Compression.ZipArchive"/>
-            </summary>
         </member>
         <member name="T:NLog.Time.AccurateLocalTimeSource">
             <summary>

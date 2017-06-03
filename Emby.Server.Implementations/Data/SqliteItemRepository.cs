@@ -199,10 +199,11 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "ParentId", "GUID", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "Genres", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "SortName", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ForcedSortName", "Text", existingColumnNames);
+
                     AddColumn(db, "TypedBaseItems", "RunTimeTicks", "BIGINT", existingColumnNames);
 
                     AddColumn(db, "TypedBaseItems", "HomePageUrl", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "VoteCount", "INT", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "DisplayMediaType", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "DateCreated", "DATETIME", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "DateModified", "DATETIME", existingColumnNames);
@@ -233,7 +234,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "UnratedType", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "TopParentId", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "IsItemByName", "BIT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "SourceType", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "CriticRating", "Float", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "InheritedTags", "Text", existingColumnNames);
@@ -424,9 +424,8 @@ namespace Emby.Server.Implementations.Data
             "OfficialRating",
             "HomePageUrl",
             "DisplayMediaType",
-            "SortName",
+            "ForcedSortName",
             "RunTimeTicks",
-            "VoteCount",
             "DateCreated",
             "DateModified",
             "guid",
@@ -439,7 +438,6 @@ namespace Emby.Server.Implementations.Data
             "LockedFields",
             "Studios",
             "Tags",
-            "SourceType",
             "TrailerTypes",
             "OriginalTitle",
             "PrimaryVersionId",
@@ -541,9 +539,9 @@ namespace Emby.Server.Implementations.Data
                 "Genres",
                 "InheritedParentalRatingValue",
                 "SortName",
+                "ForcedSortName",
                 "RunTimeTicks",
                 "HomePageUrl",
-                "VoteCount",
                 "DisplayMediaType",
                 "DateCreated",
                 "DateModified",
@@ -563,7 +561,6 @@ namespace Emby.Server.Implementations.Data
                 "UnratedType",
                 "TopParentId",
                 "IsItemByName",
-                "SourceType",
                 "TrailerTypes",
                 "CriticRating",
                 "InheritedTags",
@@ -815,10 +812,12 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@InheritedParentalRatingValue", item.InheritedParentalRatingValue);
 
             saveItemStatement.TryBind("@SortName", item.SortName);
+
+            saveItemStatement.TryBind("@ForcedSortName", item.ForcedSortName);
+
             saveItemStatement.TryBind("@RunTimeTicks", item.RunTimeTicks);
 
             saveItemStatement.TryBind("@HomePageUrl", item.HomePageUrl);
-            saveItemStatement.TryBind("@VoteCount", item.VoteCount);
             saveItemStatement.TryBind("@DisplayMediaType", item.DisplayMediaType);
             saveItemStatement.TryBind("@DateCreated", item.DateCreated);
             saveItemStatement.TryBind("@DateModified", item.DateModified);
@@ -909,7 +908,6 @@ namespace Emby.Server.Implementations.Data
                 isByName = dualAccess == null || dualAccess.IsAccessedByName;
             }
             saveItemStatement.TryBind("@IsItemByName", isByName);
-            saveItemStatement.TryBind("@SourceType", item.SourceType.ToString());
 
             var trailer = item as Trailer;
             if (trailer != null && trailer.TrailerTypes.Count > 0)
@@ -1624,7 +1622,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.SortName = reader.GetString(index);
+                    item.ForcedSortName = reader.GetString(index);
                 }
                 index++;
             }
@@ -1634,15 +1632,6 @@ namespace Emby.Server.Implementations.Data
                 item.RunTimeTicks = reader.GetInt64(index);
             }
             index++;
-
-            if (HasField(query, ItemFields.VoteCount))
-            {
-                if (!reader.IsDBNull(index))
-                {
-                    item.VoteCount = reader.GetInt32(index);
-                }
-                index++;
-            }
 
             if (HasField(query, ItemFields.DateCreated))
             {
@@ -1732,12 +1721,6 @@ namespace Emby.Server.Implementations.Data
                 }
                 index++;
             }
-
-            if (!reader.IsDBNull(index))
-            {
-                item.SourceType = (SourceType)Enum.Parse(typeof(SourceType), reader.GetString(index), true);
-            }
-            index++;
 
             if (hasTrailerTypes)
             {
@@ -2283,7 +2266,7 @@ namespace Emby.Server.Implementations.Data
             }
             if (field == ItemFields.SortName)
             {
-                return new[] { "SortName" };
+                return new[] { "ForcedSortName" };
             }
             if (field == ItemFields.Taglines)
             {
@@ -2306,7 +2289,6 @@ namespace Emby.Server.Implementations.Data
                 case ItemFields.HomePageUrl:
                 case ItemFields.Keywords:
                 case ItemFields.DisplayMediaType:
-                case ItemFields.VoteCount:
                 case ItemFields.CustomRating:
                 case ItemFields.ProductionLocations:
                 case ItemFields.Settings:
@@ -3872,34 +3854,6 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (query.SourceTypes.Length == 1)
-            {
-                whereClauses.Add("SourceType=@SourceType");
-                if (statement != null)
-                {
-                    statement.TryBind("@SourceType", query.SourceTypes[0].ToString());
-                }
-            }
-            else if (query.SourceTypes.Length > 1)
-            {
-                var inClause = string.Join(",", query.SourceTypes.Select(i => "'" + i + "'").ToArray());
-                whereClauses.Add(string.Format("SourceType in ({0})", inClause));
-            }
-
-            if (query.ExcludeSourceTypes.Length == 1)
-            {
-                whereClauses.Add("SourceType<>@ExcludeSourceTypes");
-                if (statement != null)
-                {
-                    statement.TryBind("@ExcludeSourceTypes", query.ExcludeSourceTypes[0].ToString());
-                }
-            }
-            else if (query.ExcludeSourceTypes.Length > 1)
-            {
-                var inClause = string.Join(",", query.ExcludeSourceTypes.Select(i => "'" + i + "'").ToArray());
-                whereClauses.Add(string.Format("SourceType not in ({0})", inClause));
-            }
-
             if (query.TrailerTypes.Length > 0)
             {
                 var clauses = new List<string>();
@@ -5015,14 +4969,6 @@ namespace Emby.Server.Implementations.Data
                 if (statement != null)
                 {
                     statement.TryBind("@NameContains", "%" + query.NameContains + "%");
-                }
-            }
-            if (query.SourceTypes.Length == 1)
-            {
-                whereClauses.Add("(select sourcetype from typedbaseitems where guid=ItemId) = @SourceTypes");
-                if (statement != null)
-                {
-                    statement.TryBind("@SourceTypes", query.SourceTypes[0].ToString());
                 }
             }
 

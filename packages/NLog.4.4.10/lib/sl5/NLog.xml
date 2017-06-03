@@ -7042,7 +7042,7 @@
             <param name="value">Object value</param>
             <returns>Object value converted to string</returns>
         </member>
-        <member name="M:NLog.Internal.XmlHelper.XmlConvertToString(System.Object,System.TypeCode@)">
+        <member name="M:NLog.Internal.XmlHelper.XmlConvertToString(System.Object,System.TypeCode)">
             <summary>
             Converts object value to invariant format (understood by JavaScript)
             </summary>
@@ -9409,6 +9409,11 @@
         <member name="P:NLog.Layouts.JsonLayout.RenderEmptyObject">
             <summary>
             Gets or sets the option to render the empty object value {}
+            </summary>
+        </member>
+        <member name="P:NLog.Layouts.JsonLayout.IncludeMdc">
+            <summary>
+            Gets or sets a value indicating whether to include contents of the <see cref="T:NLog.MappedDiagnosticsContext"/> dictionary.
             </summary>
         </member>
         <member name="P:NLog.Layouts.JsonLayout.IncludeAllProperties">
@@ -14214,11 +14219,12 @@
             Serialized value.
             </returns>
         </member>
-        <member name="M:NLog.Targets.DefaultJsonSerializer.JsonStringEncode(System.Object,System.Boolean,System.Boolean@)">
+        <member name="M:NLog.Targets.DefaultJsonSerializer.JsonStringEncode(System.Object,System.TypeCode,System.Boolean,System.Boolean@)">
             <summary>
             Converts object value into JSON escaped string
             </summary>
             <param name="value">Object value</param>
+            <param name="objTypeCode">Object TypeCode</param>
             <param name="escapeUnicode">Should non-ascii characters be encoded</param>
             <param name="encodeString">Should string be JSON encoded with quotes</param>
             <returns>Object value converted to JSON escaped string</returns>
