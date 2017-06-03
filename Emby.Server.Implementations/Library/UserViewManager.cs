@@ -280,7 +280,7 @@ namespace Emby.Server.Implementations.Library
 
             } : new string[] { };
 
-            return _libraryManager.GetItemList(new InternalItemsQuery(user)
+            var query = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = includeItemTypes,
                 SortOrder = SortOrder.Descending,
@@ -289,11 +289,16 @@ namespace Emby.Server.Implementations.Library
                 ExcludeItemTypes = excludeItemTypes,
                 IsVirtualItem = false,
                 Limit = limit * 5,
-                SourceTypes = parents.Count == 0 ? new[] { SourceType.Library } : new SourceType[] { },
                 IsPlayed = isPlayed,
                 DtoOptions = options
+            };
 
-            }, parents);
+            if (parents.Count == 0)
+            {
+                return _libraryManager.GetItemList(query, false);
+            }
+
+            return _libraryManager.GetItemList(query, parents);
         }
     }
 }

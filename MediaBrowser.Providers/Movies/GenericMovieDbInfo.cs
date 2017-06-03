@@ -173,7 +173,7 @@ namespace MediaBrowser.Providers.Movies
                 movie.CommunityRating = rating;
             }
 
-            movie.VoteCount = movieData.vote_count;
+            //movie.VoteCount = movieData.vote_count;
 
             //release date and certification are retrieved based on configured country and we fall back on US if not there and to minimun release date if still no match
             if (movieData.releases != null && movieData.releases.countries != null)

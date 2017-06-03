@@ -180,11 +180,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (replaceData || !target.VoteCount.HasValue)
-            {
-                target.VoteCount = source.VoteCount;
-            }
-
             foreach (var id in source.ProviderIds)
             {
                 var key = id.Key;
@@ -200,6 +195,32 @@ namespace MediaBrowser.Providers.Manager
             MergeCriticRating(source, target, lockedFields, replaceData);
             MergeTrailers(source, target, lockedFields, replaceData);
             MergeVideoInfo(source, target, lockedFields, replaceData);
+            MergeDisplayOrder(source, target, lockedFields, replaceData);
+
+            //if (!lockedFields.Contains(MetadataFields.SortName))
+            {
+                if (replaceData || string.IsNullOrEmpty(target.ForcedSortName))
+                {
+                    var forcedSortName = source.ForcedSortName;
+
+                    if (!string.IsNullOrWhiteSpace(forcedSortName))
+                    {
+                        target.ForcedSortName = forcedSortName;
+                    }
+                }
+            }
+
+            //if (!lockedFields.Contains(MetadataFields.DisplayMediaType))
+            {
+                if (replaceData || string.IsNullOrEmpty(target.DisplayMediaType))
+                {
+                    // Safeguard against incoming data having an emtpy name
+                    if (!string.IsNullOrWhiteSpace(source.DisplayMediaType))
+                    {
+                        target.DisplayMediaType = source.DisplayMediaType;
+                    }
+                }
+            }
 
             if (mergeMetadataSettings)
             {
@@ -235,10 +256,8 @@ namespace MediaBrowser.Providers.Manager
         public static void MergeMetadataSettings(BaseItem source,
            BaseItem target)
         {
-            target.ForcedSortName = source.ForcedSortName;
             target.LockedFields = source.LockedFields;
             target.IsLocked = source.IsLocked;
-            target.DisplayMediaType = source.DisplayMediaType;
 
             // Grab the value if it's there, but if not then don't overwrite the default
             if (source.DateCreated != default(DateTime))
@@ -248,7 +267,10 @@ namespace MediaBrowser.Providers.Manager
 
             target.PreferredMetadataCountryCode = source.PreferredMetadataCountryCode;
             target.PreferredMetadataLanguage = source.PreferredMetadataLanguage;
+        }
 
+        private static void MergeDisplayOrder(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
+        {
             var sourceHasDisplayOrder = source as IHasDisplayOrder;
             var targetHasDisplayOrder = target as IHasDisplayOrder;
 

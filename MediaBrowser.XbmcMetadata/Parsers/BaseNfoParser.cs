@@ -704,21 +704,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                case "votes":
-                    {
-                        var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            int num;
-
-                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out num))
-                            {
-                                item.VoteCount = num;
-                            }
-                        }
-                        break;
-                    }
-
                 case "genre":
                     {
                         var val = reader.ReadElementContentAsString();

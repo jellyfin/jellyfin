@@ -1058,11 +1058,6 @@ namespace Emby.Server.Implementations.Dto
                 dto.CommunityRating = item.CommunityRating;
             }
 
-            if (fields.Contains(ItemFields.VoteCount))
-            {
-                dto.VoteCount = item.VoteCount;
-            }
-
             //if (item.IsFolder)
             //{
             //    var folder = (Folder)item;

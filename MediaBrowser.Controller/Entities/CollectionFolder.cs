@@ -311,12 +311,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The actual children.</value>
         [IgnoreDataMember]
-        protected override IEnumerable<BaseItem> ActualChildren
+        public override IEnumerable<BaseItem> Children
         {
             get { return GetActualChildren(); }
         }
 
-        private IEnumerable<BaseItem> GetActualChildren()
+        public IEnumerable<BaseItem> GetActualChildren()
         {
             return GetPhysicalFolders(true).SelectMany(c => c.Children);
         }

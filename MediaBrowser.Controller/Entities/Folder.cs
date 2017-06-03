@@ -185,7 +185,7 @@ namespace MediaBrowser.Controller.Entities
                 item.Id = LibraryManager.GetNewItemId(item.Path, item.GetType());
             }
 
-            if (ActualChildren.Any(i => i.Id == item.Id))
+            if (Children.Any(i => i.Id == item.Id))
             {
                 throw new ArgumentException(string.Format("A child with the Id {0} already exists.", item.Id));
             }
@@ -243,22 +243,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The actual children.</value>
         [IgnoreDataMember]
-        protected virtual IEnumerable<BaseItem> ActualChildren
+        public virtual IEnumerable<BaseItem> Children
         {
             get
             {
                 return LoadChildren();
             }
-        }
-
-        /// <summary>
-        /// thread-safe access to the actual children of this folder - without regard to user
-        /// </summary>
-        /// <value>The children.</value>
-        [IgnoreDataMember]
-        public IEnumerable<BaseItem> Children
-        {
-            get { return ActualChildren.ToList(); }
         }
 
         /// <summary>
@@ -301,7 +291,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads our children.  Validation will occur externally.
         /// We want this sychronous.
         /// </summary>
-        protected virtual IEnumerable<BaseItem> LoadChildren()
+        protected virtual List<BaseItem> LoadChildren()
         {
             //Logger.Debug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
             //just load our children from the repo - the library will be validated and maintained in other processes
@@ -330,7 +320,9 @@ namespace MediaBrowser.Controller.Entities
         {
             var dictionary = new Dictionary<Guid, BaseItem>();
 
-            foreach (var child in ActualChildren)
+            var childrenList = Children.ToList();
+
+            foreach (var child in childrenList)
             {
                 var id = child.Id;
                 if (dictionary.ContainsKey(id))
@@ -466,7 +458,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (recursive)
             {
-                await ValidateSubFolders(ActualChildren.OfType<Folder>().ToList(), directoryService, progress, cancellationToken).ConfigureAwait(false);
+                await ValidateSubFolders(Children.ToList().OfType<Folder>().ToList(), directoryService, progress, cancellationToken).ConfigureAwait(false);
             }
 
             progress.Report(20);
@@ -494,7 +486,7 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task RefreshMetadataRecursive(MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var children = ActualChildren.ToList();
+            var children = Children.ToList();
 
             var percentages = new Dictionary<Guid, double>(children.Count);
             var numComplete = 0;
@@ -668,7 +660,7 @@ namespace MediaBrowser.Controller.Entities
         /// Get our children from the repo - stubbed for now
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        protected IEnumerable<BaseItem> GetCachedChildren()
+        protected List<BaseItem> GetCachedChildren()
         {
             return ItemRepository.GetItemList(new InternalItemsQuery
             {
