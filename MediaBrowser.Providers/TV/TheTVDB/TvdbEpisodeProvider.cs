@@ -680,7 +680,7 @@ namespace MediaBrowser.Providers.TV
                                         // int.TryParse is local aware, so it can be probamatic, force us culture
                                         if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
                                         {
-                                            item.VoteCount = rval;
+                                            //item.VoteCount = rval;
                                         }
                                     }
 

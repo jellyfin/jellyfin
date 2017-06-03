@@ -131,7 +131,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Creates the name of the sort.
         /// </summary>
         /// <returns>System.String.</returns>
-        protected override string CreateSortNameInternal()
+        protected override string CreateSortName()
         {
             return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
                     + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;

@@ -63,7 +63,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "releasedate",
                     "outline",
                     "id",
-                    "votes",
                     "credits",
                     "originaltitle",
                     "watched",
@@ -657,11 +656,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 {
                     writer.WriteElementString("displayorder", hasDisplayOrder.DisplayOrder);
                 }
-            }
-
-            if (item.VoteCount.HasValue)
-            {
-                writer.WriteElementString("votes", item.VoteCount.Value.ToString(UsCulture));
             }
 
             // Use original runtime here, actual file runtime later in MediaInfo

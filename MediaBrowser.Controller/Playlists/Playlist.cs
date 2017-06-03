@@ -74,7 +74,7 @@ namespace MediaBrowser.Controller.Playlists
             return true;
         }
 
-        protected override IEnumerable<BaseItem> LoadChildren()
+        protected override List<BaseItem> LoadChildren()
         {
             // Save a trip to the database
             return new List<BaseItem>();

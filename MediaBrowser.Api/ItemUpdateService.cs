@@ -243,7 +243,6 @@ namespace MediaBrowser.Api
 
             item.DisplayMediaType = request.DisplayMediaType;
             item.CommunityRating = request.CommunityRating;
-            item.VoteCount = request.VoteCount;
             item.HomePageUrl = request.HomePageUrl;
             item.IndexNumber = request.IndexNumber;
             item.ParentIndexNumber = request.ParentIndexNumber;
