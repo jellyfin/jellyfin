@@ -117,7 +117,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 }
                                 else
                                 {
-                                    await _multicastStream.CopyUntilCancelled(response.Content, () => Resolve(openTaskCompletionSource), cancellationToken).ConfigureAwait(false);
+                                    Resolve(openTaskCompletionSource);
+
+                                    await _multicastStream.CopyUntilCancelled(response.Content, null, cancellationToken).ConfigureAwait(false);
                                 }
                             }
                         }
