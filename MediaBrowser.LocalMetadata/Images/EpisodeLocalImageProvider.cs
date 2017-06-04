@@ -40,7 +40,7 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             var parentPath = _fileSystem.GetDirectoryName(item.Path);
 
-            var parentPathFiles = directoryService.GetFileSystemEntries(parentPath)
+            var parentPathFiles = directoryService.GetFiles(parentPath)
                 .ToList();
 
             var nameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(item.Path);
