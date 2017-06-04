@@ -202,8 +202,7 @@ namespace Emby.Server.Implementations.Library
 
         private bool IsValidUsernameCharacter(char i)
         {
-            return char.IsLetterOrDigit(i) || char.Equals(i, '-') || char.Equals(i, '_') || char.Equals(i, '\'') ||
-                   char.Equals(i, '.');
+            return !char.Equals(i, '<') && !char.Equals(i, '>');
         }
 
         public string MakeValidUsername(string username)
