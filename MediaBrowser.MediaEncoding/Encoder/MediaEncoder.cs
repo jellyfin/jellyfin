@@ -80,11 +80,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             int defaultImageExtractionTimeoutMs,
             bool enableEncoderFontFile, IEnvironmentInfo environmentInfo)
         {
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException("jsonSerializer");
-            }
-
             _logger = logger;
             _jsonSerializer = jsonSerializer;
             ConfigurationManager = configurationManager;
@@ -330,7 +325,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             var newPaths = GetEncoderPaths(appPath);
-            if (string.IsNullOrWhiteSpace(newPaths.Item1) || string.IsNullOrWhiteSpace(newPaths.Item2))
+            if (string.IsNullOrWhiteSpace(newPaths.Item1) || string.IsNullOrWhiteSpace(newPaths.Item2) || IsSystemInstalledPath(appPath))
             {
                 newPaths = TestForInstalledVersions();
             }
