@@ -783,7 +783,6 @@ namespace MediaBrowser.Api.Playback
             state.OutputContainer = (container ?? string.Empty).TrimStart('.');
 
             state.OutputAudioBitrate = EncodingHelper.GetAudioBitrateParam(state.Request, state.AudioStream);
-            state.OutputAudioSampleRate = request.AudioSampleRate;
 
             state.OutputAudioCodec = state.Request.AudioCodec;
 
