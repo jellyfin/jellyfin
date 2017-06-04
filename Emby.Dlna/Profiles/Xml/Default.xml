@@ -30,7 +30,7 @@
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="m4v,mpegts,ts,3gp,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm,wtv,m2ts,dvr-ms" type="Video" />
-    <DirectPlayProfile container="aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac" type="Audio" />
+    <DirectPlayProfile container="aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac,m4a" type="Audio" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" minSegments="0" segmentLength="0" breakOnNonKeyFrames="false" />

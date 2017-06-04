@@ -126,11 +126,11 @@ namespace Emby.Drawing.Skia
             for (int row = 0; row < bitmap.Height; ++row)
             {
                 if (IsAllWhiteRow(bitmap, row))
-                    topmost = row;
+                    topmost = row + 1;
                 else break;
             }
 
-            int bottommost = 0;
+            int bottommost = bitmap.Height;
             for (int row = bitmap.Height - 1; row >= 0; --row)
             {
                 if (IsAllWhiteRow(bitmap, row))
@@ -138,11 +138,11 @@ namespace Emby.Drawing.Skia
                 else break;
             }
 
-            int leftmost = 0, rightmost = 0;
+            int leftmost = 0, rightmost = bitmap.Width;
             for (int col = 0; col < bitmap.Width; ++col)
             {
                 if (IsAllWhiteColumn(bitmap, col))
-                    leftmost = col;
+                    leftmost = col + 1;
                 else
                     break;
             }
@@ -162,13 +162,6 @@ namespace Emby.Drawing.Skia
                 using (var subset = image.Subset(newRect))
                 {
                     return SKBitmap.FromImage(subset);
-                    //using (var data = subset.Encode(StripCollageBuilder.GetEncodedFormat(outputPath), 90))
-                    //{
-                    //    using (var fileStream = _fileSystem.GetFileStream(outputPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
-                    //    {
-                    //        data.AsStream().CopyTo(fileStream);
-                    //    }
-                    //}
                 }
             }
         }

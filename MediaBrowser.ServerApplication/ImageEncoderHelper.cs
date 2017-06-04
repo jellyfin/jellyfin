@@ -30,15 +30,6 @@ namespace MediaBrowser.Server.Startup.Common
                 logger.Error("Error loading Skia. Will revert to ImageMagick.");
             }
 
-            try
-            {
-                return new ImageMagickEncoder(logManager.GetLogger("ImageMagick"), appPaths, httpClient, fileSystem);
-            }
-            catch
-            {
-                logger.Error("Error loading ImageMagick. Will revert to GDI.");
-            }
-
             return new NullImageEncoder();
         }
     }
