@@ -357,6 +357,19 @@ namespace MediaBrowser.Api.Playback
                 mediaSource.SupportsTranscoding = false;
             }
 
+            if (item is Audio)
+            {
+                Logger.Info("User policy for {0}. EnableAudioPlaybackTranscoding: {1}", user.Name, user.Policy.EnableAudioPlaybackTranscoding);
+            }
+            else
+            {
+                Logger.Info("User policy for {0}. EnablePlaybackRemuxing: {1} EnableVideoPlaybackTranscoding: {2} EnableAudioPlaybackTranscoding: {3}", 
+                    user.Name,
+                    user.Policy.EnablePlaybackRemuxing,
+                    user.Policy.EnableVideoPlaybackTranscoding, 
+                    user.Policy.EnableAudioPlaybackTranscoding);
+            }
+
             if (mediaSource.SupportsDirectPlay)
             {
                 if (mediaSource.IsRemote && forceDirectPlayRemoteMediaSource)
