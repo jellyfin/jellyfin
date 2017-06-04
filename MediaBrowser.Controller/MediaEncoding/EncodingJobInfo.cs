@@ -8,6 +8,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Drawing;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -134,7 +135,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int? OutputAudioBitrate;
         public int? OutputAudioChannels;
-        public int? OutputAudioSampleRate;
         public bool DeInterlace { get; set; }
         public bool IsVideoRequest { get; set; }
         public TranscodingJobType TranscodingType { get; set; }
@@ -173,6 +173,97 @@ namespace MediaBrowser.Controller.MediaEncoding
             return false;
         }
 
+        public int? TotalOutputBitrate
+        {
+            get
+            {
+                return (OutputAudioBitrate ?? 0) + (OutputVideoBitrate ?? 0);
+            }
+        }
+
+        public int? OutputWidth
+        {
+            get
+            {
+                if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
+                {
+                    var size = new ImageSize
+                    {
+                        Width = VideoStream.Width.Value,
+                        Height = VideoStream.Height.Value
+                    };
+
+                    var newSize = DrawingUtils.Resize(size,
+                        BaseRequest.Width,
+                        BaseRequest.Height,
+                        BaseRequest.MaxWidth,
+                        BaseRequest.MaxHeight);
+
+                    return Convert.ToInt32(newSize.Width);
+                }
+
+                if (!IsVideoRequest)
+                {
+                    return null;
+                }
+
+                return BaseRequest.MaxWidth ?? BaseRequest.Width;
+            }
+        }
+
+        public int? OutputHeight
+        {
+            get
+            {
+                if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
+                {
+                    var size = new ImageSize
+                    {
+                        Width = VideoStream.Width.Value,
+                        Height = VideoStream.Height.Value
+                    };
+
+                    var newSize = DrawingUtils.Resize(size,
+                        BaseRequest.Width,
+                        BaseRequest.Height,
+                        BaseRequest.MaxWidth,
+                        BaseRequest.MaxHeight);
+
+                    return Convert.ToInt32(newSize.Height);
+                }
+
+                if (!IsVideoRequest)
+                {
+                    return null;
+                }
+
+                return BaseRequest.MaxHeight ?? BaseRequest.Height;
+            }
+        }
+
+        public int? OutputAudioSampleRate
+        {
+            get
+            {
+                if (BaseRequest.Static || string.Equals(OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (AudioStream != null)
+                    {
+                        return AudioStream.SampleRate;
+                    }
+                } 
+
+                else if (BaseRequest.AudioSampleRate.HasValue)
+                {
+                    // Don't exceed what the encoder supports
+                    // Seeing issues of attempting to encode to 88200
+                    return Math.Min(44100, BaseRequest.AudioSampleRate.Value);
+                }
+
+                return null;
+            }
+        }
+
         /// <summary>
         /// Predicts the audio sample rate that will be in the output stream
         /// </summary>
@@ -187,6 +278,180 @@ namespace MediaBrowser.Controller.MediaEncoding
                     ? double.Parse(request.Level, CultureInfo.InvariantCulture)
                     : stream == null ? null : stream.Level;
             }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public int? TargetVideoBitDepth
+        {
+            get
+            {
+                var stream = VideoStream;
+                return stream == null || !BaseRequest.Static ? null : stream.BitDepth;
+            }
+        }
+
+        /// <summary>
+        /// Gets the target reference frames.
+        /// </summary>
+        /// <value>The target reference frames.</value>
+        public int? TargetRefFrames
+        {
+            get
+            {
+                var stream = VideoStream;
+                return stream == null || !BaseRequest.Static ? null : stream.RefFrames;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public float? TargetFramerate
+        {
+            get
+            {
+                var stream = VideoStream;
+                var requestedFramerate = BaseRequest.MaxFramerate ?? BaseRequest.Framerate;
+
+                return requestedFramerate.HasValue && !BaseRequest.Static
+                    ? requestedFramerate
+                    : stream == null ? null : stream.AverageFrameRate ?? stream.RealFrameRate;
+            }
+        }
+
+        public TransportStreamTimestamp TargetTimestamp
+        {
+            get
+            {
+                var defaultValue = string.Equals(OutputContainer, "m2ts", StringComparison.OrdinalIgnoreCase) ?
+                    TransportStreamTimestamp.Valid :
+                    TransportStreamTimestamp.None;
+
+                return !BaseRequest.Static
+                    ? defaultValue
+                    : InputTimestamp;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public int? TargetPacketLength
+        {
+            get
+            {
+                var stream = VideoStream;
+                return !BaseRequest.Static
+                    ? null
+                    : stream == null ? null : stream.PacketLength;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public string TargetVideoProfile
+        {
+            get
+            {
+                var stream = VideoStream;
+                return !string.IsNullOrEmpty(BaseRequest.Profile) && !BaseRequest.Static
+                    ? BaseRequest.Profile
+                    : stream == null ? null : stream.Profile;
+            }
+        }
+
+        public string TargetVideoCodecTag
+        {
+            get
+            {
+                var stream = VideoStream;
+                return !BaseRequest.Static
+                    ? null
+                    : stream == null ? null : stream.CodecTag;
+            }
+        }
+
+        public bool? IsTargetAnamorphic
+        {
+            get
+            {
+                if (BaseRequest.Static)
+                {
+                    return VideoStream == null ? null : VideoStream.IsAnamorphic;
+                }
+
+                return false;
+            }
+        }
+
+        public bool? IsTargetInterlaced
+        {
+            get
+            {
+                if (BaseRequest.Static)
+                {
+                    return VideoStream == null ? (bool?)null : VideoStream.IsInterlaced;
+                }
+
+                if (DeInterlace)
+                {
+                    return false;
+                }
+
+                return VideoStream == null ? (bool?)null : VideoStream.IsInterlaced;
+            }
+        }
+
+        public bool? IsTargetAVC
+        {
+            get
+            {
+                if (BaseRequest.Static)
+                {
+                    return VideoStream == null ? null : VideoStream.IsAVC;
+                }
+
+                return false;
+            }
+        }
+
+        public int? TargetVideoStreamCount
+        {
+            get
+            {
+                if (BaseRequest.Static)
+                {
+                    return GetMediaStreamCount(MediaStreamType.Video, int.MaxValue);
+                }
+                return GetMediaStreamCount(MediaStreamType.Video, 1);
+            }
+        }
+
+        public int? TargetAudioStreamCount
+        {
+            get
+            {
+                if (BaseRequest.Static)
+                {
+                    return GetMediaStreamCount(MediaStreamType.Audio, int.MaxValue);
+                }
+                return GetMediaStreamCount(MediaStreamType.Audio, 1);
+            }
+        }
+
+        private int? GetMediaStreamCount(MediaStreamType type, int limit)
+        {
+            var count = MediaSource.GetStreamCount(type);
+
+            if (count.HasValue)
+            {
+                count = Math.Min(count.Value, limit);
+            }
+
+            return count;
         }
 
         protected void DisposeIsoMount()

@@ -35,12 +35,7 @@
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <XmlRootAttributes />
   <DirectPlayProfiles>
-    <DirectPlayProfile container="mp3" audioCodec="mp2,mp3" type="Audio" />
-    <DirectPlayProfile container="mp4" audioCodec="mp4" type="Audio" />
-    <DirectPlayProfile container="aac,wav" type="Audio" />
-    <DirectPlayProfile container="flac" audioCodec="flac" type="Audio" />
-    <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" type="Audio" />
-    <DirectPlayProfile container="ogg" audioCodec="vorbis" type="Audio" />
+    <DirectPlayProfile container="aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac,m4a" type="Audio" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" minSegments="0" segmentLength="0" breakOnNonKeyFrames="false" />
