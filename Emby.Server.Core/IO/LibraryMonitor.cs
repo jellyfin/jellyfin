@@ -332,7 +332,13 @@ namespace Emby.Server.Core.IO
                         NotifyFilters.Attributes;
 
                     newWatcher.Created += watcher_Changed;
-                    newWatcher.Deleted += watcher_Changed;
+
+                    // Seeing mono crashes on background threads we can't catch, testing if this might help
+                    if (_environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
+                    {
+                        newWatcher.Deleted += watcher_Changed;
+                    }
+
                     newWatcher.Renamed += watcher_Changed;
                     newWatcher.Changed += watcher_Changed;
 
