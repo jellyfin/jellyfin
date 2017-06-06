@@ -1180,11 +1180,11 @@ namespace MediaBrowser.Model.Dlna
                             bool isInterlaced;
                             if (bool.TryParse(value, out isInterlaced))
                             {
-                                if (isInterlaced && condition.Condition == ProfileConditionType.Equals)
+                                if (!isInterlaced && condition.Condition == ProfileConditionType.Equals)
                                 {
                                     item.DeInterlace = true;
                                 }
-                                else if (!isInterlaced && condition.Condition == ProfileConditionType.NotEquals)
+                                else if (isInterlaced && condition.Condition == ProfileConditionType.NotEquals)
                                 {
                                     item.DeInterlace = true;
                                 }

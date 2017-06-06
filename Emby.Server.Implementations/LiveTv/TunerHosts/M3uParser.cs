@@ -235,10 +235,18 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
                 else
                 {
-                    numberString = Path.GetFileNameWithoutExtension(mediaUrl.Split('/').Last());
-
-                    if (!IsValidChannelNumber(numberString))
+                    try
                     {
+                        numberString = Path.GetFileNameWithoutExtension(mediaUrl.Split('/').Last());
+
+                        if (!IsValidChannelNumber(numberString))
+                        {
+                            numberString = null;
+                        }
+                    }
+                    catch
+                    {
+                        // Seeing occasional argument exception here
                         numberString = null;
                     }
                 }
