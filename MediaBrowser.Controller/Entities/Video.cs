@@ -633,14 +633,17 @@ namespace MediaBrowser.Controller.Entities
                     if (info.Path.StartsWith("Http", StringComparison.OrdinalIgnoreCase))
                     {
                         info.Protocol = MediaProtocol.Http;
+                        info.SupportsDirectStream = false;
                     }
                     else if (info.Path.StartsWith("Rtmp", StringComparison.OrdinalIgnoreCase))
                     {
                         info.Protocol = MediaProtocol.Rtmp;
+                        info.SupportsDirectStream = false;
                     }
                     else if (info.Path.StartsWith("Rtsp", StringComparison.OrdinalIgnoreCase))
                     {
                         info.Protocol = MediaProtocol.Rtsp;
+                        info.SupportsDirectStream = false;
                     }
                     else
                     {
