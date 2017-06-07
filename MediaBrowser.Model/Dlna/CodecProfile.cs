@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using MediaBrowser.Model.Dlna;
+using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -26,24 +27,24 @@ namespace MediaBrowser.Model.Dlna
             ApplyConditions = new ProfileCondition[] { };
         }
 
-        public List<string> GetCodecs()
+        private static List<string> SplitValue(string value)
         {
             List<string> list = new List<string>();
-            foreach (string i in (Codec ?? string.Empty).Split(','))
+            foreach (string i in (value ?? string.Empty).Split(','))
             {
                 if (!string.IsNullOrEmpty(i)) list.Add(i);
             }
             return list;
         }
 
+        public List<string> GetCodecs()
+        {
+            return SplitValue(Codec);
+        }
+
         public List<string> GetContainers()
         {
-            List<string> list = new List<string>();
-            foreach (string i in (Container ?? string.Empty).Split(','))
-            {
-                if (!string.IsNullOrEmpty(i)) list.Add(i);
-            }
-            return list;
+            return SplitValue(Container);
         }
 
         private bool ContainsContainer(string container)
@@ -62,7 +63,8 @@ namespace MediaBrowser.Model.Dlna
 
             List<string> codecs = GetCodecs();
 
-            return codecs.Count == 0 || ListHelper.ContainsIgnoreCase(codecs, codec);
+            return codecs.Count == 0 || ListHelper.ContainsIgnoreCase(codecs, SplitValue(codec)[0]);
+            //return codecs.Count == 0 || SplitValue(codec).Any(i => ListHelper.ContainsIgnoreCase(codecs, i));
         }
     }
 }
