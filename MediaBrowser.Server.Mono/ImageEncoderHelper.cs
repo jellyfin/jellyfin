@@ -23,14 +23,14 @@ namespace MediaBrowser.Server.Startup.Common
         {
             if (!startupOptions.ContainsOption("-enablegdi"))
             {
-                //try
-                //{
-                //    return new SkiaEncoder(logManager.GetLogger("Skia"), appPaths, httpClient, fileSystem);
-                //}
-                //catch
-                //{
-                //    logger.Error("Error loading Skia. Will revert to ImageMagick.");
-                //}
+                try
+                {
+                    return new SkiaEncoder(logManager.GetLogger("Skia"), appPaths, httpClient, fileSystem);
+                }
+                catch
+                {
+                    logger.Error("Error loading Skia. Will revert to ImageMagick.");
+                }
 
                 try
                 {
