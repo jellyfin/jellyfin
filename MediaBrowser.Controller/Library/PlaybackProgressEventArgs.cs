@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
 
@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Library
         public List<User> Users { get; set; }
         public long? PlaybackPositionTicks { get; set; }
         public BaseItem Item { get; set; }
-        public BaseItemInfo MediaInfo { get; set; }
+        public BaseItemDto MediaInfo { get; set; }
         public string MediaSourceId { get; set; }
         public bool IsPaused { get; set; }
         public bool IsAutomated { get; set; }

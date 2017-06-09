@@ -19,7 +19,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Encodes the image.
         /// </summary>
-        string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, int quality, ImageProcessingOptions options, ImageFormat outputFormat);
+        string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat outputFormat);
 
         /// <summary>
         /// Creates the image collage.

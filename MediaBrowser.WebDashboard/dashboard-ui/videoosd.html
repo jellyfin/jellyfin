@@ -18,8 +18,12 @@
             <div class="osdTextContainer osdSecondaryMediaInfo">
             </div>
 
-            <div class="sliderContainer" style="margin: .5em .5em .25em;">
-                <input type="range" step=".01" min="0" max="100" value="0" is="emby-slider" class="osdPositionSlider"/>
+            <div class="flex flex-direction-row align-items-center">
+                <div class="osdTextContainer startTimeText" style="margin: 0 .25em 0 0;"></div>
+                <div class="sliderContainer flex-grow" style="margin: .5em .5em .25em;">
+                    <input type="range" step=".01" min="0" max="100" value="0" is="emby-slider" class="osdPositionSlider" />
+                </div>
+                <div class="osdTextContainer endTimeText" style="margin: 0 0 0 .25em;"></div>
             </div>
 
             <div class="buttons">
@@ -73,7 +77,7 @@
                         <i class="xlargePaperIconButton md-icon">&#xE050;</i>
                     </button>
                     <div class="sliderContainer osdVolumeSliderContainer">
-                        <input is="emby-slider" type="range" step="1" min="0" max="100" value="0" class="osdVolumeSlider"/>
+                        <input is="emby-slider" type="range" step="1" min="0" max="100" value="0" class="osdVolumeSlider" />
                     </div>
                 </div>
             </div>

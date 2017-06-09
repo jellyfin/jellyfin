@@ -338,7 +338,7 @@ namespace Emby.Server.Implementations.Session
                         }
                     }
 
-                    info.Item = GetItemInfo(libraryItem, libraryItem, mediaSource);
+                    info.Item = GetItemInfo(libraryItem, mediaSource);
 
                     info.Item.RunTimeTicks = runtimeTicks;
                 }
@@ -813,7 +813,7 @@ namespace Emby.Server.Implementations.Session
                         mediaSource = await GetMediaSource(hasMediaSources, info.MediaSourceId, info.LiveStreamId).ConfigureAwait(false);
                     }
 
-                    info.Item = GetItemInfo(libraryItem, libraryItem, mediaSource);
+                    info.Item = GetItemInfo(libraryItem, mediaSource);
                 }
                 else
                 {
@@ -1637,165 +1637,65 @@ namespace Emby.Server.Implementations.Session
             return dto;
         }
 
+        private DtoOptions _itemInfoDtoOptions;
+
         /// <summary>
         /// Converts a BaseItem to a BaseItemInfo
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="chapterOwner">The chapter owner.</param>
-        /// <param name="mediaSource">The media source.</param>
-        /// <returns>BaseItemInfo.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        private BaseItemInfo GetItemInfo(BaseItem item, BaseItem chapterOwner, MediaSourceInfo mediaSource)
+        private BaseItemDto GetItemInfo(BaseItem item, MediaSourceInfo mediaSource)
         {
             if (item == null)
             {
                 throw new ArgumentNullException("item");
             }
 
-            var info = new BaseItemInfo
-            {
-                Id = GetDtoId(item),
-                Name = item.Name,
-                MediaType = item.MediaType,
-                Type = item.GetClientTypeName(),
-                RunTimeTicks = item.RunTimeTicks,
-                IndexNumber = item.IndexNumber,
-                ParentIndexNumber = item.ParentIndexNumber,
-                PremiereDate = item.PremiereDate,
-                ProductionYear = item.ProductionYear,
-                IsThemeMedia = item.IsThemeMedia
-            };
+            var dtoOptions = _itemInfoDtoOptions;
 
-            info.PrimaryImageTag = GetImageCacheTag(item, ImageType.Primary);
-            if (info.PrimaryImageTag != null)
+            if (_itemInfoDtoOptions == null)
             {
-                info.PrimaryImageItemId = GetDtoId(item);
-            }
-
-            var episode = item as Episode;
-            if (episode != null)
-            {
-                info.IndexNumberEnd = episode.IndexNumberEnd;
-            }
-
-            var hasSeries = item as IHasSeries;
-            if (hasSeries != null)
-            {
-                info.SeriesName = hasSeries.SeriesName;
-            }
-
-            var recording = item as ILiveTvRecording;
-            if (recording != null)
-            {
-                if (recording.IsSeries)
+                dtoOptions = new DtoOptions
                 {
-                    info.Name = recording.EpisodeTitle;
-                    info.SeriesName = recording.Name;
+                    AddProgramRecordingInfo = false
+                };
 
-                    if (string.IsNullOrWhiteSpace(info.Name))
-                    {
-                        info.Name = recording.Name;
-                    }
-                }
+                dtoOptions.Fields.Remove(ItemFields.BasicSyncInfo);
+                dtoOptions.Fields.Remove(ItemFields.SyncInfo);
+                dtoOptions.Fields.Remove(ItemFields.CanDelete);
+                dtoOptions.Fields.Remove(ItemFields.CanDownload);
+                dtoOptions.Fields.Remove(ItemFields.ChildCount);
+                dtoOptions.Fields.Remove(ItemFields.CustomRating);
+                dtoOptions.Fields.Remove(ItemFields.DateLastMediaAdded);
+                dtoOptions.Fields.Remove(ItemFields.DateLastRefreshed);
+                dtoOptions.Fields.Remove(ItemFields.DateLastSaved);
+                dtoOptions.Fields.Remove(ItemFields.DisplayMediaType);
+                dtoOptions.Fields.Remove(ItemFields.DisplayPreferencesId);
+                dtoOptions.Fields.Remove(ItemFields.Etag);
+                dtoOptions.Fields.Remove(ItemFields.ExternalEtag);
+                dtoOptions.Fields.Remove(ItemFields.IndexOptions);
+                dtoOptions.Fields.Remove(ItemFields.InheritedParentalRatingValue);
+                dtoOptions.Fields.Remove(ItemFields.ItemCounts);
+                dtoOptions.Fields.Remove(ItemFields.Keywords);
+                dtoOptions.Fields.Remove(ItemFields.MediaSourceCount);
+                dtoOptions.Fields.Remove(ItemFields.MediaStreams);
+                dtoOptions.Fields.Remove(ItemFields.MediaSources);
+                dtoOptions.Fields.Remove(ItemFields.People);
+                dtoOptions.Fields.Remove(ItemFields.PlayAccess);
+                dtoOptions.Fields.Remove(ItemFields.People);
+                dtoOptions.Fields.Remove(ItemFields.ProductionLocations);
+                dtoOptions.Fields.Remove(ItemFields.RecursiveItemCount);
+                dtoOptions.Fields.Remove(ItemFields.RemoteTrailers);
+                dtoOptions.Fields.Remove(ItemFields.SeasonUserData);
+                dtoOptions.Fields.Remove(ItemFields.SeriesGenres);
+                dtoOptions.Fields.Remove(ItemFields.Settings);
+                dtoOptions.Fields.Remove(ItemFields.SortName);
+                dtoOptions.Fields.Remove(ItemFields.Tags);
+                dtoOptions.Fields.Remove(ItemFields.ThemeSongIds);
+                dtoOptions.Fields.Remove(ItemFields.ThemeVideoIds);
+
+                _itemInfoDtoOptions = dtoOptions;
             }
 
-            var audio = item as Audio;
-            if (audio != null)
-            {
-                info.Album = audio.Album;
-                info.Artists = audio.Artists;
-
-                if (info.PrimaryImageTag == null)
-                {
-                    var album = audio.AlbumEntity;
-
-                    if (album != null && album.HasImage(ImageType.Primary))
-                    {
-                        info.PrimaryImageTag = GetImageCacheTag(album, ImageType.Primary);
-                        if (info.PrimaryImageTag != null)
-                        {
-                            info.PrimaryImageItemId = GetDtoId(album);
-                        }
-                    }
-                }
-            }
-
-            var musicVideo = item as MusicVideo;
-            if (musicVideo != null)
-            {
-                info.Album = musicVideo.Album;
-                info.Artists = musicVideo.Artists.ToList();
-            }
-
-            var backropItem = item.HasImage(ImageType.Backdrop) ? item : null;
-            var thumbItem = item.HasImage(ImageType.Thumb) ? item : null;
-            var logoItem = item.HasImage(ImageType.Logo) ? item : null;
-
-            if (thumbItem == null)
-            {
-                if (episode != null)
-                {
-                    var series = episode.Series;
-
-                    if (series != null && series.HasImage(ImageType.Thumb))
-                    {
-                        thumbItem = series;
-                    }
-                }
-            }
-
-            if (backropItem == null)
-            {
-                if (episode != null)
-                {
-                    var series = episode.Series;
-
-                    if (series != null && series.HasImage(ImageType.Backdrop))
-                    {
-                        backropItem = series;
-                    }
-                }
-            }
-
-            if (backropItem == null)
-            {
-                backropItem = item.GetParents().FirstOrDefault(i => i.HasImage(ImageType.Backdrop));
-            }
-
-            if (thumbItem == null)
-            {
-                thumbItem = item.GetParents().FirstOrDefault(i => i.HasImage(ImageType.Thumb));
-            }
-
-            if (logoItem == null)
-            {
-                logoItem = item.GetParents().FirstOrDefault(i => i.HasImage(ImageType.Logo));
-            }
-
-            if (thumbItem != null)
-            {
-                info.ThumbImageTag = GetImageCacheTag(thumbItem, ImageType.Thumb);
-                info.ThumbItemId = GetDtoId(thumbItem);
-            }
-
-            if (backropItem != null)
-            {
-                info.BackdropImageTag = GetImageCacheTag(backropItem, ImageType.Backdrop);
-                info.BackdropItemId = GetDtoId(backropItem);
-            }
-
-            if (logoItem != null)
-            {
-                info.LogoImageTag = GetImageCacheTag(logoItem, ImageType.Logo);
-                info.LogoItemId = GetDtoId(logoItem);
-            }
-
-            if (chapterOwner != null)
-            {
-                info.ChapterImagesItemId = chapterOwner.Id.ToString("N");
-
-                info.Chapters = _dtoService.GetChapterInfoDtos(chapterOwner).ToList();
-            }
+            var info = _dtoService.GetBaseItemDto(item, dtoOptions);
 
             if (mediaSource != null)
             {
@@ -1837,7 +1737,7 @@ namespace Emby.Server.Implementations.Session
             //ReportNowViewingItem(sessionId, info);
         }
 
-        public void ReportNowViewingItem(string sessionId, BaseItemInfo item)
+        public void ReportNowViewingItem(string sessionId, BaseItemDto item)
         {
             //var session = GetSession(sessionId);
 
