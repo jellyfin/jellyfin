@@ -149,6 +149,7 @@ namespace MediaBrowser.Controller.Entities
 
         public string[] PresetViews { get; set; }
         public TrailerType[] TrailerTypes { get; set; }
+        public SourceType[] SourceTypes { get; set; }
 
         public DayOfWeek[] AirDays { get; set; }
         public SeriesStatus[] SeriesStatuses { get; set; }
@@ -214,6 +215,7 @@ namespace MediaBrowser.Controller.Entities
             ExcludeInheritedTags = new string[] { };
             PresetViews = new string[] { };
             TrailerTypes = new TrailerType[] { };
+            SourceTypes = new SourceType[] { };
             AirDays = new DayOfWeek[] { };
             SeriesStatuses = new SeriesStatus[] { };
             OrderBy = new List<Tuple<string, SortOrder>>();

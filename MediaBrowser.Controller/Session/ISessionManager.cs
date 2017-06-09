@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
-using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Users;
@@ -249,7 +249,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="item">The item.</param>
-        void ReportNowViewingItem(string sessionId, BaseItemInfo item);
+        void ReportNowViewingItem(string sessionId, BaseItemDto item);
 
         /// <summary>
         /// Authenticates the new session.
