@@ -17,9 +17,16 @@ namespace MediaBrowser.LocalMetadata.Parsers
             {
                 case "CollectionItems":
 
-                    using (var subReader = reader.ReadSubtree())
+                    if (!reader.IsEmptyElement)
                     {
-                        FetchFromCollectionItemsNode(subReader, item);
+                        using (var subReader = reader.ReadSubtree())
+                        {
+                            FetchFromCollectionItemsNode(subReader, item);
+                        }
+                    }
+                    else
+                    {
+                        reader.Read();
                     }
                     break;
 
