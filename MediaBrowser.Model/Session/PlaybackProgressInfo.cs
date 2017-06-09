@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Session
 {
@@ -17,7 +17,7 @@ namespace MediaBrowser.Model.Session
         /// Gets or sets the item.
         /// </summary>
         /// <value>The item.</value>
-        public BaseItemInfo Item { get; set; }
+        public BaseItemDto Item { get; set; }
 
         /// <summary>
         /// Gets or sets the item identifier.
@@ -66,6 +66,8 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The position ticks.</value>
         public long? PositionTicks { get; set; }
+
+        public long? playbackStartTimeTicks { get; set; }
 
         /// <summary>
         /// Gets or sets the volume level.
