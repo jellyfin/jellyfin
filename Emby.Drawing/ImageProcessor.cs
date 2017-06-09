@@ -217,14 +217,23 @@ namespace Emby.Drawing
                 dateModified = tuple.Item2;
             }
 
-            if (options.HasDefaultOptions(originalImagePath))
+            var photo = item as Photo;
+            var autoOrient = false;
+            ImageOrientation? orientation = null;
+            if (photo != null && photo.Orientation.HasValue && photo.Orientation.Value != ImageOrientation.TopLeft)
+            {
+                autoOrient = true;
+                orientation = photo.Orientation;
+            }
+
+            if (options.HasDefaultOptions(originalImagePath) && !autoOrient)
             {
                 // Just spit out the original file if all the options are default
                 return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
             ImageSize? originalImageSize = GetSavedImageSize(originalImagePath, dateModified);
-            if (originalImageSize.HasValue && options.HasDefaultOptions(originalImagePath, originalImageSize.Value))
+            if (originalImageSize.HasValue && options.HasDefaultOptions(originalImagePath, originalImageSize.Value) && !autoOrient)
             {
                 // Just spit out the original file if all the options are default
                 _logger.Info("Returning original image {0}", originalImagePath);
@@ -243,7 +252,6 @@ namespace Emby.Drawing
 
                 if (!_fileSystem.FileExists(cacheFilePath))
                 {
-                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(cacheFilePath));
                     var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(cacheFilePath));
                     _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(tmpPath));
 
@@ -252,13 +260,14 @@ namespace Emby.Drawing
                         item = _libraryManager().GetItemById(options.ItemId);
                     }
 
-                    var resultPath =_imageEncoder.EncodeImage(originalImagePath, dateModified, tmpPath, AutoOrient(item), quality, options, outputFormat);
+                    var resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, tmpPath, autoOrient, orientation, quality, options, outputFormat);
 
                     if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))
                     {
                         return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
                     }
 
+                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(cacheFilePath));
                     CopyFile(tmpPath, cacheFilePath);
 
                     return new Tuple<string, string, DateTime>(tmpPath, GetMimeType(outputFormat, cacheFilePath), _fileSystem.GetLastWriteTimeUtc(tmpPath));
@@ -286,17 +295,6 @@ namespace Emby.Drawing
             {
 
             }
-        }
-
-        private bool AutoOrient(IHasImages item)
-        {
-            var photo = item as Photo;
-            if (photo != null && photo.Orientation.HasValue)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         //private static  int[][] OPERATIONS = new int[][] {
