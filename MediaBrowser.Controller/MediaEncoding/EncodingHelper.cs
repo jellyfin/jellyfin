@@ -1604,7 +1604,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 // Only do this for video files due to sometimes unpredictable codec names coming from BDInfo
-                if (state.VideoType == VideoType.VideoFile && string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
+                if (state.VideoType == VideoType.VideoFile && state.RunTimeTicks.HasValue && string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
                 {
                     foreach (var stream in state.MediaSource.MediaStreams)
                     {

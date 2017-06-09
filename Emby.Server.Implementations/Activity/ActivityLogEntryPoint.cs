@@ -123,7 +123,7 @@ namespace Emby.Server.Implementations.Activity
                 return;
             }
 
-            if (item.IsThemeMedia)
+            if (e.Item != null && e.Item.IsThemeMedia)
             {
                 // Don't report theme song or local trailer playback
                 return;
@@ -155,7 +155,7 @@ namespace Emby.Server.Implementations.Activity
                 return;
             }
 
-            if (item.IsThemeMedia)
+            if (e.Item != null && e.Item.IsThemeMedia)
             {
                 // Don't report theme song or local trailer playback
                 return;
