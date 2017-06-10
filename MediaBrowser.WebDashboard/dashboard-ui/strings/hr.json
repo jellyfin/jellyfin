@@ -1,4 +1,6 @@
 {
+    "News": "News",
+    "Programs": "Programs",
     "LabelPrevious": "Prethodni",
     "LabelFinish": "Kraj",
     "LabelNext": "Sljede\u0107i",
@@ -940,7 +942,6 @@
     "LabelAlbumArtists": "Izvo\u0111a\u010di albuma:",
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "Ocjene zajednice",
-    "LabelAwardSummary": "Sa\u017eetak nagrada:",
     "LabelReleaseDate": "Datum izdavanja:",
     "LabelEndDate": "Datum zavr\u0161etka:",
     "LabelAirDate": "Dani emitiranja:",

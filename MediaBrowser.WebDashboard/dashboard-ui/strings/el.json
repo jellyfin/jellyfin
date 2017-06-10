@@ -1,4 +1,6 @@
 {
+    "News": "News",
+    "Programs": "Programs",
     "LabelPrevious": "\u03a0\u03c1\u03bf\u03b7\u03b3\u03bf\u03cd\u03bc\u03b5\u03bd\u03bf\u03c2",
     "LabelFinish": "\u03a4\u03ad\u03bb\u03bf\u03c2",
     "LabelNext": "\u0395\u03c0\u03cc\u03bc\u03b5\u03bd\u03bf",
@@ -532,7 +534,7 @@
     "ButtonShutdown": "Shutdown",
     "ButtonUpdateNow": "Update Now",
     "TabHosting": "Hosting",
-    "PleaseUpdateManually": "Please shutdown the server and update manually.",
+    "PleaseUpdateManually": "Please shutdown Emby Server and install the latest version.",
     "NewServerVersionAvailable": "A new version of Emby Server is available!",
     "ServerUpToDate": "Emby Server is up to date",
     "LabelComponentsUpdated": "The following components have been installed or updated:",
@@ -940,7 +942,6 @@
     "LabelAlbumArtists": "Album artists:",
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "Community rating:",
-    "LabelAwardSummary": "Award summary:",
     "LabelReleaseDate": "Release date:",
     "LabelEndDate": "End date:",
     "LabelAirDate": "Air days:",

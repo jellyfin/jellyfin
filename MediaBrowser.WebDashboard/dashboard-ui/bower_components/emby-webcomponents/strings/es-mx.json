@@ -1,4 +1,5 @@
 {
+    "HeaderPlayOn": "Play On",
     "MessageUnlockAppWithPurchaseOrSupporter": "Desbloquee esta caracter\u00edstica con una peque\u00f1a compra \u00fanica, o con una suscripci\u00f3n activa de Emby Premier.",
     "MessageUnlockAppWithSupporter": "Desbloquee esta caracter\u00edstica con una suscripci\u00f3n activa de Emby Premier.",
     "MessageToValidateSupporter": "Si tiene una subscripci\u00f3n de Emby Premiere activa, aseg\u00farese de que ha configurado Emby Premiere en el Panel de Control del Servidor Emby, al cual puede acceder dando click en Emby Premiere dentro del men\u00fa principal.",
@@ -148,7 +149,6 @@
     "LabelAlbum": "\u00c1lbum",
     "Artists": "Artistas",
     "LabelCommunityRating": "Calificaci\u00f3n de la comunidad:",
-    "LabelVoteCount": "Cantidad de votos:",
     "LabelCriticRating": "Calificaci\u00f3n de la cr\u00edtica:",
     "LabelWebsite": "Sitio web:",
     "LabelTagline": "Eslogan",
@@ -430,5 +430,8 @@
     "LandingScreensHelp": "Seleccione la pantalla de llegada por defecto al dar clic sobre una biblioteca.",
     "HeaderTermsOfPurchase": "T\u00e9rminos de Compra",
     "PrivacyPolicy": "Pol\u00edtica de privacidad",
-    "TermsOfUse": "T\u00e9rminos de uso"
+    "TermsOfUse": "T\u00e9rminos de uso",
+    "RepeatMode": "Repeat mode",
+    "RepeatOne": "Repeat one",
+    "RepeatAll": "Repeat all"
 }

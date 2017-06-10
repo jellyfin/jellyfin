@@ -1,4 +1,5 @@
 {
+    "HeaderPlayOn": "Play On",
     "MessageUnlockAppWithPurchaseOrSupporter": "Ontgrendel deze functie met een kleine eenmalige aankoop, of met een actief Emby Premiere abonnement.",
     "MessageUnlockAppWithSupporter": "Ontgrendel deze functie met een actief Emby Premiere abonnement.",
     "MessageToValidateSupporter": "Als u een actieve Emby Premiere abonnement heeft, zorg er dan voor dat u deze activeert in uw Emby Server Dashboard door te klikken op Emby Premiere in het hoofdmenu.",
@@ -148,7 +149,6 @@
     "LabelAlbum": "Album:",
     "Artists": "Artists",
     "LabelCommunityRating": "Beoordeling gemeenschap:",
-    "LabelVoteCount": "Aantal stemmen:",
     "LabelCriticRating": "Beoordeling critici:",
     "LabelWebsite": "Website:",
     "LabelTagline": "Tagline:",
@@ -430,5 +430,8 @@
     "LandingScreensHelp": "Selecteer de standaard sectie wanneer op een bibliotheek wordt geklikt.",
     "HeaderTermsOfPurchase": "Aankoop Voorwaarden",
     "PrivacyPolicy": "Privacy beleid",
-    "TermsOfUse": "Gebruiksvoorwaarden"
+    "TermsOfUse": "Gebruiksvoorwaarden",
+    "RepeatMode": "Repeat mode",
+    "RepeatOne": "Repeat one",
+    "RepeatAll": "Repeat all"
 }
