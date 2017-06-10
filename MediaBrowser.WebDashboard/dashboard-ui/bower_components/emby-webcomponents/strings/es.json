@@ -1,4 +1,5 @@
 {
+    "HeaderPlayOn": "Play On",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -148,7 +149,6 @@
     "LabelAlbum": "\u00c1lbum",
     "Artists": "Artists",
     "LabelCommunityRating": "Puntuaci\u00f3n de la comunidad",
-    "LabelVoteCount": "Contador de votos:",
     "LabelCriticRating": "Valoraci\u00f3n de la cr\u00edtica:",
     "LabelWebsite": "Sitio web:",
     "LabelTagline": "Lema:",
@@ -430,5 +430,8 @@
     "LandingScreensHelp": "Select the default landing screen when clicking on a library.",
     "HeaderTermsOfPurchase": "Terms of Purchase",
     "PrivacyPolicy": "Privacy policy",
-    "TermsOfUse": "Terms of use"
+    "TermsOfUse": "Terms of use",
+    "RepeatMode": "Repeat mode",
+    "RepeatOne": "Repeat one",
+    "RepeatAll": "Repeat all"
 }

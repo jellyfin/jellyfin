@@ -1,4 +1,5 @@
 {
+    "HeaderPlayOn": "Play On",
     "MessageUnlockAppWithPurchaseOrSupporter": "Atrakinkite \u0161i\u0105 funkcij\u0105 nedideliu vienkartiniu mokes\u010diu arba \u012fsigij\u0119 Emby Premiere prenumerat\u0105.",
     "MessageUnlockAppWithSupporter": "Atrakinkite \u0161i\u0105 funkcij\u0105 \u012fsigij\u0119 Emby Premiere prenumerat\u0105.",
     "MessageToValidateSupporter": "Jei turite aktyvi\u0105 Emby Premiere prenumerat\u0105, sutvarkykite Emby Premiere savo Emby Serverio skydelyje. Tai galite atlikti paspaud\u0117 Emby Premiere u\u017era\u0161\u0105 pagrindiniame meniu.",
@@ -148,7 +149,6 @@
     "LabelAlbum": "Albumas:",
     "Artists": "Artists",
     "LabelCommunityRating": "Bendruomen\u0117s vertinimas:",
-    "LabelVoteCount": "Bals\u0173 skai\u010dius:",
     "LabelCriticRating": "Kritik\u0173 vertinimas:",
     "LabelWebsite": "Tinklapis:",
     "LabelTagline": "\u0160\u016bkis:",
@@ -430,5 +430,8 @@
     "LandingScreensHelp": "Select the default landing screen when clicking on a library.",
     "HeaderTermsOfPurchase": "Terms of Purchase",
     "PrivacyPolicy": "Privacy policy",
-    "TermsOfUse": "Terms of use"
+    "TermsOfUse": "Terms of use",
+    "RepeatMode": "Repeat mode",
+    "RepeatOne": "Repeat one",
+    "RepeatAll": "Repeat all"
 }

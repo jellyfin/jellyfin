@@ -1,4 +1,6 @@
 {
+    "News": "News",
+    "Programs": "Programs",
     "LabelPrevious": "Forrige",
     "LabelFinish": "Ferdig",
     "LabelNext": "Neste",
@@ -940,7 +942,6 @@
     "LabelAlbumArtists": "Album artister:",
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "Fellesskap anmeldelse:",
-    "LabelAwardSummary": "Pris sammendrag:",
     "LabelReleaseDate": "Utgivelsesdato:",
     "LabelEndDate": "Slutt dato:",
     "LabelAirDate": "Sendings dager:",

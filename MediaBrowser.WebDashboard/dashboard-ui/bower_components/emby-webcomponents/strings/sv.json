@@ -1,4 +1,5 @@
 {
+    "HeaderPlayOn": "Play On",
     "MessageUnlockAppWithPurchaseOrSupporter": "L\u00e5s upp denna feature med ett eng\u00e5ngsk\u00f6p, eller med ett aktivt Emby Premium-medlemskap.",
     "MessageUnlockAppWithSupporter": "L\u00e5s upp den h\u00e4r funktionen med en aktiv Emby Premium prenumeration.",
     "MessageToValidateSupporter": "Om du har ett aktivt Emby Premium-medlemskap, se till att du har st\u00e4llt in Emby Premium i Emby Server Dashboard, som du kommer \u00e5t genom att klicka p\u00e5 Emby Premium i huvudmenyn.",
@@ -148,7 +149,6 @@
     "LabelAlbum": "Album:",
     "Artists": "Artists",
     "LabelCommunityRating": "Anv\u00e4ndaromd\u00f6me:",
-    "LabelVoteCount": "Antal r\u00f6ster:",
     "LabelCriticRating": "Kritikerbetyg:",
     "LabelWebsite": "Hemsida:",
     "LabelTagline": "Slogan:",
@@ -430,5 +430,8 @@
     "LandingScreensHelp": "Select the default landing screen when clicking on a library.",
     "HeaderTermsOfPurchase": "Terms of Purchase",
     "PrivacyPolicy": "Privacy policy",
-    "TermsOfUse": "Terms of use"
+    "TermsOfUse": "Terms of use",
+    "RepeatMode": "Repeat mode",
+    "RepeatOne": "Repeat one",
+    "RepeatAll": "Repeat all"
 }

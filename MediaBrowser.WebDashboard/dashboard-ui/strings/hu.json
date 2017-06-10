@@ -1,4 +1,6 @@
 {
+    "News": "News",
+    "Programs": "Programs",
     "LabelPrevious": "El\u0151z\u0151",
     "LabelFinish": "Befejez",
     "LabelNext": "K\u00f6vetkez\u0151",
@@ -532,7 +534,7 @@
     "ButtonShutdown": "Le\u00e1ll\u00edt\u00e1s",
     "ButtonUpdateNow": "Friss\u00edtsd most",
     "TabHosting": "Hosting",
-    "PleaseUpdateManually": "Please shutdown the server and update manually.",
+    "PleaseUpdateManually": "Please shutdown Emby Server and install the latest version.",
     "NewServerVersionAvailable": "El\u00e9rhet\u0151 az Emby Szerver \u00fajabb verzi\u00f3ja!",
     "ServerUpToDate": "Emby szerver naprak\u00e9sz",
     "LabelComponentsUpdated": "A k\u00f6vetkez\u0151 komponensek telep\u00edtve, vagy friss\u00edtve lettek.",
@@ -940,7 +942,6 @@
     "LabelAlbumArtists": "Album artists:",
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "K\u00f6z\u00f6ss\u00e9gi \u00e9rt\u00e9kel\u00e9s:",
-    "LabelAwardSummary": "Award summary:",
     "LabelReleaseDate": "Megjelen\u00e9s d\u00e1tuma:",
     "LabelEndDate": "End date:",
     "LabelAirDate": "Air days:",

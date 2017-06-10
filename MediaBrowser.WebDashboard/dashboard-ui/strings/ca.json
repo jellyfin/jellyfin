@@ -1,4 +1,6 @@
 {
+    "News": "News",
+    "Programs": "Programs",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Finalitzar",
     "LabelNext": "Seg\u00fcent",
@@ -940,7 +942,6 @@
     "LabelAlbumArtists": "Album artists:",
     "LabelAlbum": "\u00c0lbum:",
     "LabelCommunityRating": "Valoraci\u00f3 de la comunitat:",
-    "LabelAwardSummary": "Resum de premis:",
     "LabelReleaseDate": "Data de publicaci\u00f3:",
     "LabelEndDate": "End date:",
     "LabelAirDate": "Air days:",

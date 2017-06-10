@@ -1,4 +1,5 @@
 {
+    "HeaderPlayOn": "Play On",
     "MessageUnlockAppWithPurchaseOrSupporter": "Odemknout tuto funkci pomoc\u00ed jednor\u00e1zov\u00e9 platby, nebo pomoc\u00ed aktivace p\u0159edplatn\u00e9ho Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Odemknout tuto funkci pomoc\u00ed aktivn\u00edho p\u0159edplatn\u00e9ho Emby Premiere.",
     "MessageToValidateSupporter": "Pokud m\u00e1te aktivn\u00ed p\u0159edplatn\u00e9 Emby Premiere, ujist\u011bte se, \u017ee m\u00e1te nastaven Emby Premiere v panelu Nastaven\u00ed pod N\u00e1pov\u011bda -> Emby Premiere.",
@@ -148,7 +149,6 @@
     "LabelAlbum": "Album:",
     "Artists": "Artists",
     "LabelCommunityRating": "Hodnocen\u00ed komunity:",
-    "LabelVoteCount": "Po\u010det hlas\u016f:",
     "LabelCriticRating": "Hodnocen\u00ed kritik\u016f:",
     "LabelWebsite": "Webov\u00e9 str\u00e1nky:",
     "LabelTagline": "Slogan:",
@@ -430,5 +430,8 @@
     "LandingScreensHelp": "Select the default landing screen when clicking on a library.",
     "HeaderTermsOfPurchase": "Terms of Purchase",
     "PrivacyPolicy": "Privacy policy",
-    "TermsOfUse": "Terms of use"
+    "TermsOfUse": "Terms of use",
+    "RepeatMode": "Repeat mode",
+    "RepeatOne": "Repeat one",
+    "RepeatAll": "Repeat all"
 }

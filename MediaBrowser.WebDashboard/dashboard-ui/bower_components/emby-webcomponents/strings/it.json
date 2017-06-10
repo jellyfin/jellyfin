@@ -1,4 +1,5 @@
 {
+    "HeaderPlayOn": "Play On",
     "MessageUnlockAppWithPurchaseOrSupporter": "Sblocca questa funzionalit\u00e0 con un piccolo acquisto singolo, o con un abbonamento Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Sblocca questa funzionalit\u00e0 con un abbonamento Emby Premiere",
     "MessageToValidateSupporter": "Se hai un abbonamento Emby Premiere, assicurati di averlo configurato nel Pannello di Controllo del Server, a cui puoi accedere cliccando su Emby Premiere dal menu principale.",
@@ -43,7 +44,7 @@
     "CloudSyncFeatureDescription": "Sincronizza i tuoi media nel cloud per un facile backup, archiviazione e conversione.",
     "DvrFeatureDescription": "Pianifica le registrazioni di Live TV, registrazioni di serie e altro ancora con Emby DVR.",
     "ButtonCancelSyncJob": "Annulla download",
-    "CancelSyncJobConfirmation": "La cancellazione dell'attivit\u00e0 di sincronizzazione causer\u00e0, alla prossima sincronizzazione, la rimozione di tutti i media scaricati dal dispositivo. Sei sicuro di voler procedere?",
+    "CancelSyncJobConfirmation": "La cancellazione dell'attivit\u00e0 di download causer\u00e0 la rimozione di tutti i media scaricati dal dispositivo al prossimo processo in background di sincronizzazione. Sei sicuro di voler procedere?",
     "CinemaModeFeatureDescription": "Modalit\u00e0 Cinema ti fa provare la vera esperienza del cinema con trailer ed intro personalizzate prima del contenuto principale.",
     "HeaderFreeApps": "App Gratuite Emby",
     "FreeAppsFeatureDescription": "Godi dell'accesso gratuito alle App Emby dai tuoi dispositivi.",
@@ -148,7 +149,6 @@
     "LabelAlbum": "Album:",
     "Artists": "Artisti",
     "LabelCommunityRating": "Voto del pubblico:",
-    "LabelVoteCount": "Numero di voti:",
     "LabelCriticRating": "Voto della critica:",
     "LabelWebsite": "Sito Web:",
     "LabelTagline": "Slogan:",
@@ -223,7 +223,7 @@
     "GuestStar": "Personaggio famoso",
     "Producer": "Produttore",
     "Writer": "Scrittore",
-    "MessageNoSyncJobsFound": "Nessuna attivit\u00e0 di sincronizzazione trovata. Le attivit\u00e0 di sincronizzazione vengono create quando usi il pulsanti Sincronizza sull'applicazione.",
+    "MessageNoSyncJobsFound": "Nessun download trovato. Puoi creare un'attivit\u00e0 di download usando il bottone di Download presente nell'applicazione.",
     "MessageNoDownloadsFound": "Nessuno scaricamento trovato. Rendi i tuoi media disponibili offline usando l'opzione Rendi Disponibile Offline sull'applicazione.",
     "InstallingPackage": "Installazione di {0}",
     "PackageInstallCompleted": "Installazione di {0} completa.",
@@ -430,5 +430,8 @@
     "LandingScreensHelp": "Selezionare la schermata di destinazione predefinita quando si fa clic su una libreria",
     "HeaderTermsOfPurchase": "Termini di pagamento",
     "PrivacyPolicy": "Informativa sulla privacy",
-    "TermsOfUse": "Termini di utilizzo"
+    "TermsOfUse": "Termini di utilizzo",
+    "RepeatMode": "Modalit\u00e0 Ripeti",
+    "RepeatOne": "Ripeti uno",
+    "RepeatAll": "Ripeti tutti"
 }

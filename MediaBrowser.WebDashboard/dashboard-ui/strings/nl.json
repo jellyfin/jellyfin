@@ -1,4 +1,6 @@
 {
+    "News": "News",
+    "Programs": "Programs",
     "LabelPrevious": "Vorige",
     "LabelFinish": "Voltooien",
     "LabelNext": "Volgende",
@@ -940,7 +942,6 @@
     "LabelAlbumArtists": "Album artiesten:",
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "Beoordeling gemeenschap:",
-    "LabelAwardSummary": "Samenvatting prijzen:",
     "LabelReleaseDate": "Uitgave datum:",
     "LabelEndDate": "Eind datum|",
     "LabelAirDate": "Uitzend dagen:",

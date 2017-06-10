@@ -1,4 +1,6 @@
 {
+    "News": "News",
+    "Programs": "Programs",
     "LabelPrevious": "Vorher",
     "LabelFinish": "Beende",
     "LabelNext": "N\u00f6chst",
@@ -532,7 +534,7 @@
     "ButtonShutdown": "Shutdown",
     "ButtonUpdateNow": "Update Now",
     "TabHosting": "Hosting",
-    "PleaseUpdateManually": "Please shutdown the server and update manually.",
+    "PleaseUpdateManually": "Please shutdown Emby Server and install the latest version.",
     "NewServerVersionAvailable": "A new version of Emby Server is available!",
     "ServerUpToDate": "Emby Server is up to date",
     "LabelComponentsUpdated": "The following components have been installed or updated:",
@@ -940,7 +942,6 @@
     "LabelAlbumArtists": "Album artists:",
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "Community rating:",
-    "LabelAwardSummary": "Award summary:",
     "LabelReleaseDate": "Release date:",
     "LabelEndDate": "End date:",
     "LabelAirDate": "Air days:",

@@ -1,4 +1,6 @@
 {
+    "News": "News",
+    "Programs": "Programs",
     "LabelPrevious": "F\u00f6reg\u00e5ende",
     "LabelFinish": "Klart",
     "LabelNext": "N\u00e4sta",
@@ -940,7 +942,6 @@
     "LabelAlbumArtists": "Albumartist:",
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "Anv\u00e4ndaromd\u00f6me:",
-    "LabelAwardSummary": "Sammanfattning av utm\u00e4rkelser:",
     "LabelReleaseDate": "Premi\u00e4rdatum:",
     "LabelEndDate": "Slutdatum:",
     "LabelAirDate": "S\u00e4ndningsdagar:",

@@ -1,4 +1,6 @@
 {
+    "News": "News",
+    "Programs": "Programs",
     "LabelPrevious": "Pr\u00e9c\u00e9dent",
     "LabelFinish": "Terminer",
     "LabelNext": "Suivant",
@@ -940,7 +942,6 @@
     "LabelAlbumArtists": "Artistes de l'album :",
     "LabelAlbum": "Album :",
     "LabelCommunityRating": "Note de la communaut\u00e9\u00a0:",
-    "LabelAwardSummary": "R\u00e9compenses\u00a0:",
     "LabelReleaseDate": "Date de sortie\u00a0:",
     "LabelEndDate": "Date de fin\u00a0:",
     "LabelAirDate": "Jours de diffusion\u00a0:",

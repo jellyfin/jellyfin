@@ -1978,5 +1978,7 @@
   "HeaderOnNow": "On Now",
   "Downloading": "Downloading",
   "LabelCertificatePassword": "Certificate password:",
-  "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
+  "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here.",
+  "Programs": "Programs",
+  "News": "News"
 }
