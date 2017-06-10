@@ -58,7 +58,7 @@ namespace MediaBrowser.Common.Updates
             }
             else if (updateLevel == PackageVersionClass.Beta)
             {
-                obj = obj.Where(i => !i.prerelease || i.name.EndsWith("-beta", StringComparison.OrdinalIgnoreCase)).ToArray();
+                obj = obj.Where(i => i.prerelease && i.name.EndsWith("-beta", StringComparison.OrdinalIgnoreCase)).ToArray();
             }
             else if (updateLevel == PackageVersionClass.Dev)
             {
@@ -81,7 +81,7 @@ namespace MediaBrowser.Common.Updates
         {
             if (updateLevel == PackageVersionClass.Beta)
             {
-                return !i.prerelease || i.name.EndsWith("-beta", StringComparison.OrdinalIgnoreCase);
+                return i.prerelease && i.name.EndsWith("-beta", StringComparison.OrdinalIgnoreCase);
             }
             if (updateLevel == PackageVersionClass.Dev)
             {
