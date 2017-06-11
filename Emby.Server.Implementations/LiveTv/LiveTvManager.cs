@@ -694,6 +694,20 @@ namespace Emby.Server.Implementations.LiveTv
                 }
             }
 
+            if (!item.HasImage(ImageType.Thumb))
+            {
+                if (!string.IsNullOrWhiteSpace(info.ThumbImageUrl))
+                {
+                    item.SetImage(new ItemImageInfo
+                    {
+                        Path = info.ImageUrl,
+                        Type = ImageType.Thumb,
+                        IsPlaceholder = true
+
+                    }, 0);
+                }
+            }
+
             var isUpdated = false;
             if (isNew)
             {

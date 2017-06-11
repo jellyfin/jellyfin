@@ -64,7 +64,7 @@ namespace MediaBrowser.Model.Dto
         public DateTime? DateCreated { get; set; }
 
         public DateTime? DateLastMediaAdded { get; set; }
-        public ExtraType? ExtraType { get; set; }
+        public string ExtraType { get; set; }
 
         public int? AirsBeforeSeasonNumber { get; set; }
         public int? AirsAfterSeasonNumber { get; set; }
