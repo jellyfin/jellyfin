@@ -940,7 +940,6 @@
     "LabelAlbumArtists": "Alba \u00fam\u011blce:",
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "Hodnocen\u00ed komunity:",
-    "LabelAwardSummary": "P\u0159ehled ocen\u011bn\u00ed:",
     "LabelReleaseDate": "Datum vyd\u00e1n\u00ed:",
     "LabelEndDate": "Datum ukon\u010den\u00ed:",
     "LabelAirDate": "Dny vys\u00edl\u00e1n\u00ed",
@@ -1979,5 +1978,8 @@
     "HeaderOnNow": "On Now",
     "Downloading": "Downloading",
     "LabelCertificatePassword": "Certificate password:",
-    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here.",
+    "Programs": "Programs",
+    "News": "News",
+    "HeaderDownloadSync": "Download & Sync"
 }

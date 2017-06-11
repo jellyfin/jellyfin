@@ -98,7 +98,7 @@ namespace MediaBrowser.Api.Session
 
     [Route("/Sessions/{Id}/Playing/{Command}", "POST", Summary = "Issues a playstate command to a client")]
     [Authenticated]
-    public class SendPlaystateCommand : IReturnVoid
+    public class SendPlaystateCommand : PlaystateRequest, IReturnVoid
     {
         /// <summary>
         /// Gets or sets the id.
@@ -106,19 +106,6 @@ namespace MediaBrowser.Api.Session
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the position to seek to
-        /// </summary>
-        [ApiMember(Name = "SeekPositionTicks", Description = "The position to seek to.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public long? SeekPositionTicks { get; set; }
-
-        /// <summary>
-        /// Gets or sets the play command.
-        /// </summary>
-        /// <value>The play command.</value>
-        [ApiMember(Name = "Command", Description = "The command to send - stop, pause, unpause, nexttrack, previoustrack, seek, fullscreen.", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public PlaystateCommand Command { get; set; }
     }
 
     [Route("/Sessions/{Id}/System/{Command}", "POST", Summary = "Issues a system command to a client")]
@@ -414,13 +401,7 @@ namespace MediaBrowser.Api.Session
 
         public void Post(SendPlaystateCommand request)
         {
-            var command = new PlaystateRequest
-            {
-                Command = request.Command,
-                SeekPositionTicks = request.SeekPositionTicks
-            };
-
-            var task = _sessionManager.SendPlaystateCommand(GetSession(_sessionContext).Result.Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendPlaystateCommand(GetSession(_sessionContext).Result.Id, request.Id, request, CancellationToken.None);
 
             Task.WaitAll(task);
         }

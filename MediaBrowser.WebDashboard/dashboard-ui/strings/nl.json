@@ -940,7 +940,6 @@
     "LabelAlbumArtists": "Album artiesten:",
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "Beoordeling gemeenschap:",
-    "LabelAwardSummary": "Samenvatting prijzen:",
     "LabelReleaseDate": "Uitgave datum:",
     "LabelEndDate": "Eind datum|",
     "LabelAirDate": "Uitzend dagen:",
@@ -1979,5 +1978,8 @@
     "HeaderOnNow": "Aan het spelen",
     "Downloading": "Downloaden",
     "LabelCertificatePassword": "Certificate password:",
-    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here.",
+    "Programs": "Programs",
+    "News": "News",
+    "HeaderDownloadSync": "Download & Sync"
 }

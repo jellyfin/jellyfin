@@ -40,27 +40,12 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             var parentPath = _fileSystem.GetDirectoryName(item.Path);
 
-            var parentPathFiles = directoryService.GetFileSystemEntries(parentPath)
+            var parentPathFiles = directoryService.GetFiles(parentPath)
                 .ToList();
 
             var nameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(item.Path);
 
-            var files = GetFilesFromParentFolder(nameWithoutExtension, parentPathFiles);
-
-            if (files.Count > 0)
-            {
-                return files;
-            }
-
-            var metadataPath = Path.Combine(parentPath, "metadata");
-
-            if (parentPathFiles.Any(i => string.Equals(i.FullName, metadataPath, StringComparison.OrdinalIgnoreCase)))
-            {
-                var filesInMetadataFolder = _fileSystem.GetFiles(metadataPath, BaseItem.SupportedImageExtensions, false, false);
-                return GetFilesFromParentFolder(nameWithoutExtension, filesInMetadataFolder);
-            }
-
-            return new List<LocalImageInfo>();
+            return GetFilesFromParentFolder(nameWithoutExtension, parentPathFiles);
         }
 
         private List<LocalImageInfo> GetFilesFromParentFolder(string filenameWithoutExtension, IEnumerable<FileSystemMetadata> parentPathFiles)

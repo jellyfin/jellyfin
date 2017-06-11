@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.Omdb
                 && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out voteCount)
                 && voteCount >= 0)
             {
-                item.VoteCount = voteCount;
+                //item.VoteCount = voteCount;
             }
 
             float imdbRating;
@@ -185,7 +185,7 @@ namespace MediaBrowser.Providers.Omdb
                 && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out voteCount)
                 && voteCount >= 0)
             {
-                item.VoteCount = voteCount;
+                //item.VoteCount = voteCount;
             }
 
             float imdbRating;

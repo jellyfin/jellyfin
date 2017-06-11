@@ -940,7 +940,6 @@
     "LabelAlbumArtists": "Albumartist:",
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "Anv\u00e4ndaromd\u00f6me:",
-    "LabelAwardSummary": "Sammanfattning av utm\u00e4rkelser:",
     "LabelReleaseDate": "Premi\u00e4rdatum:",
     "LabelEndDate": "Slutdatum:",
     "LabelAirDate": "S\u00e4ndningsdagar:",
@@ -1979,5 +1978,8 @@
     "HeaderOnNow": "P\u00e5 nu",
     "Downloading": "Laddar ner",
     "LabelCertificatePassword": "Certifikatsl\u00f6senord:",
-    "LabelCertificatePasswordHelp": "Skriv in l\u00f6senordet h\u00e4r om ditt certifikat kr\u00e4ver detta."
+    "LabelCertificatePasswordHelp": "Skriv in l\u00f6senordet h\u00e4r om ditt certifikat kr\u00e4ver detta.",
+    "Programs": "Programs",
+    "News": "News",
+    "HeaderDownloadSync": "Download & Sync"
 }

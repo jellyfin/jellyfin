@@ -940,7 +940,6 @@
     "LabelAlbumArtists": "Artistas de los \u00e1lbumes",
     "LabelAlbum": "\u00c1lbum",
     "LabelCommunityRating": "Puntuaci\u00f3n de la comunidad",
-    "LabelAwardSummary": "Resumen de premios:",
     "LabelReleaseDate": "Fecha de lanzamiento:",
     "LabelEndDate": "Fecha de fin:",
     "LabelAirDate": "D\u00edas de emisi\u00f3n:",
@@ -1979,5 +1978,8 @@
     "HeaderOnNow": "En directo ahora",
     "Downloading": "Descargando",
     "LabelCertificatePassword": "Contrase\u00f1a del certificado",
-    "LabelCertificatePasswordHelp": "Si tu certificado requiere una contrase\u00f1a, por favor introducela aqui"
+    "LabelCertificatePasswordHelp": "Si tu certificado requiere una contrase\u00f1a, por favor introducela aqui",
+    "Programs": "Programs",
+    "News": "News",
+    "HeaderDownloadSync": "Download & Sync"
 }

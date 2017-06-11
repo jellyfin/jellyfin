@@ -940,7 +940,6 @@
     "LabelAlbumArtists": "Album artists:",
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "Community rating:",
-    "LabelAwardSummary": "Award summary:",
     "LabelReleaseDate": "Release date:",
     "LabelEndDate": "End date:",
     "LabelAirDate": "Air days:",
@@ -1979,5 +1978,8 @@
     "HeaderOnNow": "Actuellement",
     "Downloading": "T\u00e9l\u00e9chargement",
     "LabelCertificatePassword": "Certificate password:",
-    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here.",
+    "Programs": "Programs",
+    "News": "News",
+    "HeaderDownloadSync": "Download & Sync"
 }

@@ -1,4 +1,5 @@
 {
+    "HeaderPlayOn": "Abspielen auf",
     "MessageUnlockAppWithPurchaseOrSupporter": "Schalte diese Funktion mit einer kleinen einmaligen Geb\u00fchr oder einem aktiven Emby Premium Abo frei.",
     "MessageUnlockAppWithSupporter": "Schalte diese Funktion mit einem aktiven Emby Premium Abo frei.",
     "MessageToValidateSupporter": "Wenn du eine aktive Emby Premiere Mitgliedschaft hast, stelle bitte sicher, dass du diese \u00fcber das Emby Server Dashboard eingerichtet hast (Hauptmenu -> Emby Premiere).",
@@ -43,7 +44,7 @@
     "CloudSyncFeatureDescription": "Synchronisiere deine Medien in die Cloud f\u00fcr ein Backup, eine Archivierung und Konvertierung.",
     "DvrFeatureDescription": "Plane individuelle Aufnahmen von Live-TV, Serien und mehr mit Emby DVR.",
     "ButtonCancelSyncJob": "Download abbrechen",
-    "CancelSyncJobConfirmation": "Der Abbruch der Synchronisation wird bereits heruntergeladene Medien bei der n\u00e4chsten Synchronisation vom Ger\u00e4t l\u00f6schen. M\u00f6chtest du wirklich fortfahren?",
+    "CancelSyncJobConfirmation": "Der Abbruch des Downloadauftrags wird bereits heruntergeladene Medien bei der n\u00e4chsten Hintergrundsynchronisation vom Ger\u00e4t l\u00f6schen. M\u00f6chtest du wirklich fortfahren?",
     "CinemaModeFeatureDescription": "Der Cinema Mode bringt das richtige Kinogef\u00fchl mit Trailern und eigenen Intros vor dem Hauptfilm.",
     "HeaderFreeApps": "Kostenlose Emby Apps",
     "FreeAppsFeatureDescription": "Genie\u00dfe Zugriff auf kostenlose Emby Apps f\u00fcr deine Ger\u00e4te.",
@@ -148,7 +149,6 @@
     "LabelAlbum": "Album:",
     "Artists": "Interpreten",
     "LabelCommunityRating": "Community Bewertung:",
-    "LabelVoteCount": "Stimmen:",
     "LabelCriticRating": "Kritiker Bewertung:",
     "LabelWebsite": "Website:",
     "LabelTagline": "Tagline:",
@@ -223,7 +223,7 @@
     "GuestStar": "Gaststar",
     "Producer": "Produzent",
     "Writer": "Drehbuchautor",
-    "MessageNoSyncJobsFound": "Keine Synchronisationsaufgaben gefunden. Um Synchronisationsaufgaben zu erstellen verwende die Synchronisationsbuttons in der App.",
+    "MessageNoSyncJobsFound": "Keine Downloads gefunden. Um Downloadauftr\u00e4ge zu erstellen verwende die Downloadbuttons in der App.",
     "MessageNoDownloadsFound": "Keine Offline-Downloads. Mache deine Medien offline verf\u00fcgbar indem du \"Offline verf\u00fcgbar machen\" in der App bei bei den Medien anklickst.",
     "InstallingPackage": "Installiere {0}",
     "PackageInstallCompleted": "{0} Installation abgeschlossen",
@@ -430,5 +430,8 @@
     "LandingScreensHelp": "W\u00e4hle den Standard-Einstiegsbildschirm bei Klick auf eine Bibliothek.",
     "HeaderTermsOfPurchase": "Bestellungsbedingungen",
     "PrivacyPolicy": "Datenschutzbestimmungen",
-    "TermsOfUse": "Nutzungsbedingungen"
+    "TermsOfUse": "Nutzungsbedingungen",
+    "RepeatMode": "Wiederholungsmodus",
+    "RepeatOne": "Dieses wiederholen",
+    "RepeatAll": "Alles wiederholen"
 }

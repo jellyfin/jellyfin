@@ -96,7 +96,7 @@
     "DeviceAccessHelp": "Dies wird nur auf Ger\u00e4te angewandt die eindeutig identifiziert werden k\u00f6nnen und verhindert nicht den Web-Zugriff. Gefilterter Zugriff auf Ger\u00e4te verhindert die Nutzung neuer Ger\u00e4te solange, bis der Zugriff f\u00fcr diese freigegeben wird.",
     "LabelDisplayMissingEpisodesWithinSeasons": "Zeige fehlende Episoden innerhalb von Staffeln",
     "LabelDisplayMissingEpisodesWithinSeasonsHelp": "Dies sollte f\u00fcr Serien in der Bibliothek in den Emby Einstellungen aktiviert sein.",
-    "LabelUnairedMissingEpisodesWithinSeasons": "Zeige noch nicht ausgestahlte Episoden innerhalb von Staffeln",
+    "LabelUnairedMissingEpisodesWithinSeasons": "Zeige noch nicht ausgestrahlte Episoden innerhalb von Staffeln",
     "ImportMissingEpisodesHelp": "Wenn aktiviert, werden Informationen \u00fcber fehlende Episoden in Deine Emby Datenbank importiert und innerhalb von Staffeln angezeigt. Dies kann zu deutlich l\u00e4ngeren Bibliothek Scans f\u00fchren.",
     "MessageEnablingOptionLongerScans": "Die Aktivierung dieser Option kann erheblich l\u00e4ngere Bibliotheks-Scans verursachen.",
     "HeaderVideoPlaybackSettings": "Videowiedergabe Einstellungen",
@@ -532,7 +532,7 @@
     "ButtonShutdown": "Herunterfahren",
     "ButtonUpdateNow": "Jetzt aktualisieren",
     "TabHosting": "Hosting",
-    "PleaseUpdateManually": "Bitte herunterfahren und den Server manuell aktualisieren.",
+    "PleaseUpdateManually": "Bitte Emby Server herunterfahren und die aktuellste Version installieren.",
     "NewServerVersionAvailable": "Eine neue Version des Emby Servers ist verf\u00fcgbar!",
     "ServerUpToDate": "Emby Server ist auf dem aktuellsten Stand.",
     "LabelComponentsUpdated": "Die folgenden Komponenten wurden installiert oder aktualisiert:",
@@ -940,7 +940,6 @@
     "LabelAlbumArtists": "Alben Interpreten:",
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "Community Bewertung:",
-    "LabelAwardSummary": "Auszeichnungen:",
     "LabelReleaseDate": "Ver\u00f6ffentlichungsdatum:",
     "LabelEndDate": "Endzeit:",
     "LabelAirDate": "Ausstrahlungstage:",
@@ -1979,5 +1978,8 @@
     "HeaderOnNow": "Gerade l\u00e4uft",
     "Downloading": "L\u00e4dt herunter",
     "LabelCertificatePassword": "Zertifikat Passwort:",
-    "LabelCertificatePasswordHelp": "Wenn Dein Zertifikat ein Passwort ben\u00f6tigt, gib es hier ein."
+    "LabelCertificatePasswordHelp": "Wenn Dein Zertifikat ein Passwort ben\u00f6tigt, gib es hier ein.",
+    "Programs": "Programme",
+    "News": "News",
+    "HeaderDownloadSync": "Herunterladen & Synchronisieren"
 }

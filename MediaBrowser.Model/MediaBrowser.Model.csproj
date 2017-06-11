@@ -34,10 +34,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="project.json" />
-    <!-- A reference to the entire .NET Framework is automatically included -->
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
@@ -326,7 +322,6 @@
     <Compile Include="Querying\EpisodeQuery.cs" />
     <Compile Include="Querying\ItemCountsQuery.cs" />
     <Compile Include="Querying\ItemsByNameQuery.cs" />
-    <Compile Include="Entities\BaseItemInfo.cs" />
     <Compile Include="Querying\LatestItemsQuery.cs" />
     <Compile Include="Querying\MovieRecommendationQuery.cs" />
     <Compile Include="Querying\NextUpQuery.cs" />

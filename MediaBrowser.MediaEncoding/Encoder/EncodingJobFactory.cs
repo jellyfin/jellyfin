@@ -105,7 +105,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             //state.OutputContainer = (container ?? string.Empty).TrimStart('.');
 
             state.OutputAudioBitrate = encodingHelper.GetAudioBitrateParam(state.Options, state.AudioStream);
-            state.OutputAudioSampleRate = request.AudioSampleRate;
 
             state.OutputAudioCodec = state.Options.AudioCodec;
 

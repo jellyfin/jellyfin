@@ -8,6 +8,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using Emby.Drawing.Skia;
 
 namespace MediaBrowser.Server.Startup.Common
 {
@@ -22,6 +23,15 @@ namespace MediaBrowser.Server.Startup.Common
         {
             if (!startupOptions.ContainsOption("-enablegdi"))
             {
+                try
+                {
+                    return new SkiaEncoder(logManager.GetLogger("Skia"), appPaths, httpClient, fileSystem);
+                }
+                catch
+                {
+                    logger.Error("Error loading Skia. Will revert to ImageMagick.");
+                }
+
                 try
                 {
                     return new ImageMagickEncoder(logManager.GetLogger("ImageMagick"), appPaths, httpClient, fileSystem);

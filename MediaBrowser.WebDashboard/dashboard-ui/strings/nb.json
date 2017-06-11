@@ -940,7 +940,6 @@
     "LabelAlbumArtists": "Album artister:",
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "Fellesskap anmeldelse:",
-    "LabelAwardSummary": "Pris sammendrag:",
     "LabelReleaseDate": "Utgivelsesdato:",
     "LabelEndDate": "Slutt dato:",
     "LabelAirDate": "Sendings dager:",
@@ -1979,5 +1978,8 @@
     "HeaderOnNow": " P\u00e5 N\u00e5",
     "Downloading": "Downloading",
     "LabelCertificatePassword": "Certificate password:",
-    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here.",
+    "Programs": "Programs",
+    "News": "News",
+    "HeaderDownloadSync": "Download & Sync"
 }

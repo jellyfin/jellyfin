@@ -35,7 +35,6 @@ namespace MediaBrowser.Controller.Channels
         public override SourceType SourceType
         {
             get { return SourceType.Channel; }
-            set { }
         }
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)

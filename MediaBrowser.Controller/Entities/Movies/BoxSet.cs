@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return new List<BaseItem>();
         }
 
-        protected override IEnumerable<BaseItem> LoadChildren()
+        protected override List<BaseItem> LoadChildren()
         {
             if (IsLegacyBoxSet)
             {

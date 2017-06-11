@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.Entities
     {
         private List<Guid> _childrenIds = null;
         private readonly object _childIdsLock = new object();
-        protected override IEnumerable<BaseItem> LoadChildren()
+        protected override List<BaseItem> LoadChildren()
         {
             lock (_childIdsLock)
             {
