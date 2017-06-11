@@ -111,6 +111,8 @@ namespace MediaBrowser.Controller.LiveTv
 
         public string LogoImageUrl { get; set; }
 
+        public string BackdropImageUrl { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance has image.
         /// </summary>
