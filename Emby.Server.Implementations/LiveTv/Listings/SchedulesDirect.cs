@@ -172,19 +172,22 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                                 var allImages = (images[imageIndex].data ?? new List<ScheduleDirect.ImageData>()).ToList();
                                 var imagesWithText = allImages.Where(i => string.Equals(i.text, "yes", StringComparison.OrdinalIgnoreCase)).ToList();
+                                var imagesWithoutText = allImages.Where(i => string.Equals(i.text, "no", StringComparison.OrdinalIgnoreCase)).ToList();
 
                                 double desiredAspect = IsMovie(programEntry) ? 0.666666667 : wideAspect;
 
-                                programEntry.primaryImage = GetProgramImage(ApiUrl, imagesWithText, null, true, desiredAspect) ??
-                                    GetProgramImage(ApiUrl, allImages, null, true, desiredAspect);
+                                programEntry.primaryImage = GetProgramImage(ApiUrl, imagesWithText, true, desiredAspect) ??
+                                    GetProgramImage(ApiUrl, allImages, true, desiredAspect);
 
-                                programEntry.thumbImage = GetProgramImage(ApiUrl, imagesWithText, null, true, wideAspect);
+                                programEntry.thumbImage = GetProgramImage(ApiUrl, imagesWithText, true, wideAspect);
 
                                 // Don't supply the same image twice
                                 if (string.Equals(programEntry.primaryImage, programEntry.thumbImage, StringComparison.Ordinal))
                                 {
                                     programEntry.thumbImage = null;
                                 }
+
+                                programEntry.backdropImage = GetProgramImage(ApiUrl, imagesWithoutText, true, wideAspect);
 
                                 //programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
@@ -396,61 +399,18 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return date;
         }
 
-        private string GetProgramImage(string apiUrl, List<ScheduleDirect.ImageData> images, string category, bool returnDefaultImage, double desiredAspect)
+        private string GetProgramImage(string apiUrl, List<ScheduleDirect.ImageData> images, bool returnDefaultImage, double desiredAspect)
         {
             string url = null;
 
             var matches = images;
-
-            if (!string.IsNullOrWhiteSpace(category))
-            {
-                matches = images
-                    .Where(i => string.Equals(i.category, category, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                if (matches.Count == 0)
-                {
-                    if (!returnDefaultImage)
-                    {
-                        return null;
-                    }
-                    matches = images;
-                }
-            }
 
             matches = matches
                 .OrderBy(i => Math.Abs(desiredAspect - GetApsectRatio(i)))
                 .ThenByDescending(GetSizeOrder)
                 .ToList();
 
-            //var match = matches.FirstOrDefault(i =>
-            //{
-            //    if (!string.IsNullOrWhiteSpace(i.width))
-            //    {
-            //        int value;
-            //        if (int.TryParse(i.width, out value))
-            //        {
-            //            return value <= desiredWidth;
-            //        }
-            //    }
-
-            //    return false;
-            //});
-
             var match = matches.FirstOrDefault();
-
-            if (match == null)
-            {
-                // Get the second lowest quality image, when possible
-                if (matches.Count > 1)
-                {
-                    match = matches[matches.Count - 2];
-                }
-                else
-                {
-                    match = matches.FirstOrDefault();
-                }
-            }
 
             if (match == null)
             {
@@ -1243,6 +1203,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 public bool hasImageArtwork { get; set; }
                 public string primaryImage { get; set; }
                 public string thumbImage { get; set; }
+                public string backdropImage { get; set; }
                 public string bannerImage { get; set; }
                 public string imageID { get; set; }
                 public string md5 { get; set; }
