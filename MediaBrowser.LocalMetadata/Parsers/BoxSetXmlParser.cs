@@ -52,14 +52,21 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     {
                         case "CollectionItem":
                             {
-                                using (var subReader = reader.ReadSubtree())
+                                if (!reader.IsEmptyElement)
                                 {
-                                    var child = GetLinkedChild(subReader);
-
-                                    if (child != null)
+                                    using (var subReader = reader.ReadSubtree())
                                     {
-                                        list.Add(child);
+                                        var child = GetLinkedChild(subReader);
+
+                                        if (child != null)
+                                        {
+                                            list.Add(child);
+                                        }
                                     }
+                                }
+                                else
+                                {
+                                    reader.Read();
                                 }
 
                                 break;
