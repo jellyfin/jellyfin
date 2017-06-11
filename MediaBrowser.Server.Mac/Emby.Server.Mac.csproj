@@ -93,7 +93,7 @@
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.4.9\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.4.4.10\lib\net45\NLog.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Text, Version=4.5.8.0, Culture=neutral, processorArchitecture=MSIL">
@@ -104,8 +104,8 @@
       <HintPath>..\packages\SharpCompress.0.14.0\lib\net45\SharpCompress.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SimpleInjector, Version=4.0.7.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
-      <HintPath>..\packages\SimpleInjector.4.0.7\lib\net45\SimpleInjector.dll</HintPath>
+    <Reference Include="SimpleInjector, Version=4.0.8.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.4.0.8\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Data" />
@@ -810,6 +810,12 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\alphapicker\style.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\alphapicker\style.css</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\appfooter\appfooter.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\appfooter\appfooter.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\appfooter\appfooter.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\appfooter\appfooter.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\backdrop\backdrop.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\backdrop\backdrop.js</Link>
     </BundleResource>
@@ -1103,6 +1109,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\notifications\notifications.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\notifications\notifications.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\nowplayingbar\nowplayingbar.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\nowplayingbar\nowplayingbar.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\nowplayingbar\nowplayingbar.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\nowplayingbar\nowplayingbar.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\pagejs\page.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\pagejs\page.js</Link>
@@ -1680,12 +1692,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\accessschedule\accessschedule.template.html">
       <Link>Resources\dashboard-ui\components\accessschedule\accessschedule.template.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\appfooter\appfooter.css">
-      <Link>Resources\dashboard-ui\components\appfooter\appfooter.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\appfooter\appfooter.js">
-      <Link>Resources\dashboard-ui\components\appfooter\appfooter.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\channelmapper\channelmapper.js">
       <Link>Resources\dashboard-ui\components\channelmapper\channelmapper.js</Link>
     </BundleResource>
@@ -1779,9 +1785,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\autoorganizetable.css">
       <Link>Resources\dashboard-ui\css\autoorganizetable.css</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\chromecast.css">
-      <Link>Resources\dashboard-ui\css\chromecast.css</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\dashboard.css">
       <Link>Resources\dashboard-ui\css\dashboard.css</Link>
     </BundleResource>
@@ -1805,9 +1808,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\nowplaying.css">
       <Link>Resources\dashboard-ui\css\nowplaying.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\nowplayingbar.css">
-      <Link>Resources\dashboard-ui\css\nowplayingbar.css</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\site.css">
       <Link>Resources\dashboard-ui\css\site.css</Link>
@@ -2087,9 +2087,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\ios\ios.css">
       <Link>Resources\dashboard-ui\devices\ios\ios.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\files\dummy.mp4">
-      <Link>Resources\dashboard-ui\files\dummy.mp4</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\-l14jk06m6puhb-5mxqqnrjtnkitppoi_ivcxxdnrsc.woff2">
       <Link>Resources\dashboard-ui\fonts\roboto\-l14jk06m6puhb-5mxqqnrjtnkitppoi_ivcxxdnrsc.woff2</Link>
@@ -2384,9 +2381,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\notificationsettings.js">
       <Link>Resources\dashboard-ui\scripts\notificationsettings.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\nowplayingbar.js">
-      <Link>Resources\dashboard-ui\scripts\nowplayingbar.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\nowplayingpage.js">
       <Link>Resources\dashboard-ui\scripts\nowplayingpage.js</Link>
