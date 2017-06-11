@@ -90,7 +90,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "h264_qsv",
                 "hevc_qsv",
                 "mpeg2_qsv",
-                "vc1_qsv"
+                "vc1_qsv",
+                "h264_cuvid"
             };
 
             foreach (var codec in required)

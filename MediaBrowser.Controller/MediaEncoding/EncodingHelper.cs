@@ -1806,6 +1806,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                             break;
                     }
                 }
+
+                else if (string.Equals(encodingOptions.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase))
+                {
+                    switch (state.MediaSource.VideoStream.Codec.ToLower())
+                    {
+                        case "avc":
+                        case "h264":
+                            if (_mediaEncoder.SupportsDecoder("h264_cuvid"))
+                            {
+                                return "-c:v h264_cuvid ";
+                            }
+                            break;
+                    }
+                }
             }
 
             // leave blank so ffmpeg will decide
