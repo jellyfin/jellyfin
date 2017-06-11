@@ -176,7 +176,9 @@ namespace Emby.Server.Implementations.Channels
 
             var internalResult = await GetChannelsInternal(query, cancellationToken).ConfigureAwait(false);
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = new DtoOptions()
+            {
+            };
 
             var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
@@ -558,7 +560,10 @@ namespace Emby.Server.Implementations.Channels
                 totalRecordCount = items.Length;
             }
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = new DtoOptions()
+            {
+                Fields = query.Fields.ToList()
+            };
 
             var returnItems = (await _dtoService.GetBaseItemDtos(items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
@@ -825,7 +830,10 @@ namespace Emby.Server.Implementations.Channels
 
             RefreshIfNeeded(internalResult.Items);
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = new DtoOptions()
+            {
+                Fields = query.Fields.ToList()
+            };
 
             var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
@@ -974,7 +982,10 @@ namespace Emby.Server.Implementations.Channels
 
             var internalResult = await GetChannelItemsInternal(query, new Progress<double>(), cancellationToken).ConfigureAwait(false);
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = new DtoOptions()
+            {
+                Fields = query.Fields.ToList()
+            };
 
             var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();

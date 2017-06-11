@@ -1,6 +1,4 @@
 {
-    "News": "News",
-    "Programs": "Programs",
     "LabelPrevious": "\u0627\u0644\u0633\u0627\u0628\u0642",
     "LabelFinish": "\u0627\u0646\u0647\u0627\u0621",
     "LabelNext": "\u0627\u0644\u062a\u0627\u0644\u064a",
@@ -1980,5 +1978,8 @@
     "HeaderOnNow": "On Now",
     "Downloading": "Downloading",
     "LabelCertificatePassword": "Certificate password:",
-    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here.",
+    "Programs": "Programs",
+    "News": "News",
+    "HeaderDownloadSync": "Download & Sync"
 }

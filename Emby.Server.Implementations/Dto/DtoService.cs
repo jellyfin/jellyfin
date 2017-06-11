@@ -1079,7 +1079,10 @@ namespace Emby.Server.Implementations.Dto
             if (audio != null)
             {
                 dto.Album = audio.Album;
-                dto.ExtraType = audio.ExtraType;
+                if (audio.ExtraType.HasValue)
+                {
+                    dto.ExtraType = audio.ExtraType.Value.ToString();
+                }
 
                 var albumParent = audio.AlbumEntity;
 
@@ -1234,7 +1237,10 @@ namespace Emby.Server.Implementations.Dto
                     dto.Chapters = GetChapterInfoDtos(item);
                 }
 
-                dto.ExtraType = video.ExtraType;
+                if (video.ExtraType.HasValue)
+                {
+                    dto.ExtraType = video.ExtraType.Value.ToString();
+                }
             }
 
             if (fields.Contains(ItemFields.MediaStreams))
@@ -1390,7 +1396,7 @@ namespace Emby.Server.Implementations.Dto
                     }
                 }
 
-                if (fields.Contains(ItemFields.SeriesPrimaryImage))
+                //if (fields.Contains(ItemFields.SeriesPrimaryImage))
                 {
                     series = series ?? season.Series;
                     if (series != null)
@@ -1581,7 +1587,7 @@ namespace Emby.Server.Implementations.Dto
         {
             var imageInfo = item.GetImageInfo(ImageType.Primary, 0);
 
-            if (imageInfo == null || !imageInfo.IsLocalFile)
+            if (imageInfo == null)
             {
                 return null;
             }
@@ -1605,6 +1611,11 @@ namespace Emby.Server.Implementations.Dto
             }
             else
             {
+                if (!imageInfo.IsLocalFile)
+                {
+                    return null;
+                }
+
                 try
                 {
                     size = _imageProcessor.GetImageSize(imageInfo);

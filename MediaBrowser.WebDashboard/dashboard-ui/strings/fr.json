@@ -1,6 +1,4 @@
 {
-    "News": "News",
-    "Programs": "Programs",
     "LabelPrevious": "Pr\u00e9c\u00e9dent",
     "LabelFinish": "Terminer",
     "LabelNext": "Suivant",
@@ -534,7 +532,7 @@
     "ButtonShutdown": "\u00c9teindre",
     "ButtonUpdateNow": "Mettre \u00e0 jour maintenant",
     "TabHosting": "H\u00e9bergement",
-    "PleaseUpdateManually": "Merci d'\u00e9teindre le serveur et de le mettre \u00e0 jour manuellement.",
+    "PleaseUpdateManually": "Merci d'\u00e9teindre le serveur et d'installer la derni\u00e8re version.",
     "NewServerVersionAvailable": "Une nouvelle version du serveur Emby est disponible !",
     "ServerUpToDate": "Le serveur Emby est \u00e0 jour",
     "LabelComponentsUpdated": "Les composants suivants ont \u00e9t\u00e9 install\u00e9s ou mis \u00e0 jour :",
@@ -1980,5 +1978,8 @@
     "HeaderOnNow": "En ce moment",
     "Downloading": "T\u00e9l\u00e9chargement",
     "LabelCertificatePassword": "Mot de passe du certificat\u00a0:",
-    "LabelCertificatePasswordHelp": "Si votre certificat n\u00e9cessite un mot de passe, veuillez le renseigner ici."
+    "LabelCertificatePasswordHelp": "Si votre certificat n\u00e9cessite un mot de passe, veuillez le renseigner ici.",
+    "Programs": "Programmes",
+    "News": "Actualit\u00e9s",
+    "HeaderDownloadSync": "Download & Sync"
 }

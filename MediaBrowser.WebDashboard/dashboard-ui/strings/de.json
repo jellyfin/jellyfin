@@ -1,6 +1,4 @@
 {
-    "News": "News",
-    "Programs": "Programs",
     "LabelPrevious": "Vorheriges",
     "LabelFinish": "Fertig",
     "LabelNext": "N\u00e4chstes",
@@ -534,7 +532,7 @@
     "ButtonShutdown": "Herunterfahren",
     "ButtonUpdateNow": "Jetzt aktualisieren",
     "TabHosting": "Hosting",
-    "PleaseUpdateManually": "Bitte herunterfahren und den Server manuell aktualisieren.",
+    "PleaseUpdateManually": "Bitte Emby Server herunterfahren und die aktuellste Version installieren.",
     "NewServerVersionAvailable": "Eine neue Version des Emby Servers ist verf\u00fcgbar!",
     "ServerUpToDate": "Emby Server ist auf dem aktuellsten Stand.",
     "LabelComponentsUpdated": "Die folgenden Komponenten wurden installiert oder aktualisiert:",
@@ -1980,5 +1978,8 @@
     "HeaderOnNow": "Gerade l\u00e4uft",
     "Downloading": "L\u00e4dt herunter",
     "LabelCertificatePassword": "Zertifikat Passwort:",
-    "LabelCertificatePasswordHelp": "Wenn Dein Zertifikat ein Passwort ben\u00f6tigt, gib es hier ein."
+    "LabelCertificatePasswordHelp": "Wenn Dein Zertifikat ein Passwort ben\u00f6tigt, gib es hier ein.",
+    "Programs": "Programme",
+    "News": "News",
+    "HeaderDownloadSync": "Herunterladen & Synchronisieren"
 }

@@ -1,6 +1,4 @@
 {
-    "News": "News",
-    "Programs": "Programs",
     "LabelPrevious": "El\u0151z\u0151",
     "LabelFinish": "Befejez",
     "LabelNext": "K\u00f6vetkez\u0151",
@@ -1030,7 +1028,7 @@
     "TabDevices": "Eszk\u00f6z\u00f6k",
     "HeaderLibrarySettings": "Library Settings",
     "HeaderChapterSettings": "Chapter Settings",
-    "HeaderCameraUploadHelp": "Automatically upload photos and videos taken from your mobile devices into Emby.",
+    "HeaderCameraUploadHelp": "Emby apps can automatically upload photos and videos taken from your mobile devices into Emby Server.",
     "MessageNoDevicesSupportCameraUpload": "You currently don't have any devices that support camera upload.",
     "LabelCameraUploadPath": "Kamera felt\u00f6lt\u00e9si \u00fatvonal:",
     "LabelCameraUploadPathHelp": "Select a custom upload path, if desired. If unspecified a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
@@ -1980,5 +1978,8 @@
     "HeaderOnNow": "Most",
     "Downloading": "Downloading",
     "LabelCertificatePassword": "Certificate password:",
-    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here.",
+    "Programs": "Programs",
+    "News": "News",
+    "HeaderDownloadSync": "Download & Sync"
 }

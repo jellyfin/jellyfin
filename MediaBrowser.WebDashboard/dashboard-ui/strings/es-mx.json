@@ -1,6 +1,4 @@
 {
-    "News": "News",
-    "Programs": "Programs",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Terminar",
     "LabelNext": "Siguiente",
@@ -1980,5 +1978,8 @@
     "HeaderOnNow": "Transmiti\u00e9ndo Ahora",
     "Downloading": "Descargando",
     "LabelCertificatePassword": "Contrase\u00f1a del certificado:",
-    "LabelCertificatePasswordHelp": "Si su certificado requiere de una contrase\u00f1a, por favor introd\u00fazcala aqu\u00ed."
+    "LabelCertificatePasswordHelp": "Si su certificado requiere de una contrase\u00f1a, por favor introd\u00fazcala aqu\u00ed.",
+    "Programs": "Programs",
+    "News": "News",
+    "HeaderDownloadSync": "Download & Sync"
 }
