@@ -30,6 +30,7 @@ namespace MediaBrowser.Model.MediaInfo
         public bool ForceDirectPlayRemoteMediaSource { get; set; }
         public bool AllowVideoStreamCopy { get; set; }
         public bool AllowAudioStreamCopy { get; set; }
+        public bool AutoOpenLiveStream { get; set; }
 
         public PlaybackInfoRequest()
         {

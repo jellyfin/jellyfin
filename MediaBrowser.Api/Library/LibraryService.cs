@@ -27,6 +27,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Api.Library
 {
@@ -675,7 +676,6 @@ namespace MediaBrowser.Api.Library
                 Limit = 0,
                 Recursive = true,
                 IsVirtualItem = false,
-                SourceTypes = new[] { SourceType.Library },
                 IsFavorite = request.IsFavorite,
                 DtoOptions = new DtoOptions(false)
                 {
@@ -831,6 +831,11 @@ namespace MediaBrowser.Api.Library
                                   : (Folder)_libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
+            if (item == null)
+            {
+                throw new ResourceNotFoundException("Item not found.");
+            }
+
             while (item.ThemeSongIds.Count == 0 && request.InheritFromParent && item.GetParent() != null)
             {
                 item = item.GetParent();
@@ -874,6 +879,11 @@ namespace MediaBrowser.Api.Library
                                   ? user.RootFolder
                                   : (Folder)_libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
+
+            if (item == null)
+            {
+                throw new ResourceNotFoundException("Item not found.");
+            }
 
             while (item.ThemeVideoIds.Count == 0 && request.InheritFromParent && item.GetParent() != null)
             {

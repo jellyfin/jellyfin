@@ -206,14 +206,15 @@ namespace MediaBrowser.Api
             var newLockData = request.LockData ?? false;
             var isLockedChanged = item.IsLocked != newLockData;
 
-            UpdateItem(request, item);
-
-            await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-
+            // Do this first so that metadata savers can pull the updates from the database.
             if (request.People != null)
             {
                 await _libraryManager.UpdatePeople(item, request.People.Select(x => new PersonInfo { Name = x.Name, Role = x.Role, Type = x.Type }).ToList());
             }
+
+            UpdateItem(request, item);
+
+            await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
             if (isLockedChanged && item.IsFolder)
             {
@@ -243,7 +244,6 @@ namespace MediaBrowser.Api
 
             item.DisplayMediaType = request.DisplayMediaType;
             item.CommunityRating = request.CommunityRating;
-            item.VoteCount = request.VoteCount;
             item.HomePageUrl = request.HomePageUrl;
             item.IndexNumber = request.IndexNumber;
             item.ParentIndexNumber = request.ParentIndexNumber;

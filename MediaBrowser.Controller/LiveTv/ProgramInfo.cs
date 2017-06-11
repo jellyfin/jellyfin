@@ -107,7 +107,11 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The image URL.</value>
         public string ImageUrl { get; set; }
 
+        public string ThumbImageUrl { get; set; }
+
         public string LogoImageUrl { get; set; }
+
+        public string BackdropImageUrl { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has image.

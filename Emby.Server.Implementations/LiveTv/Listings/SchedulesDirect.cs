@@ -136,6 +136,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 var requestBody = "[\"" + string.Join("\", \"", programsID) + "\"]";
                 httpOptions.RequestContent = requestBody;
 
+                double wideAspect = 1.77777778;
+                var primaryImageCategory = "Logo";
+
                 using (var innerResponse = await Post(httpOptions, true, info).ConfigureAwait(false))
                 {
                     StreamReader innerReader = new StreamReader(innerResponse.Content);
@@ -167,13 +170,25 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                             {
                                 var programEntry = programDict[schedule.programID];
 
-                                var allImages = (images[imageIndex].data ?? new List<ScheduleDirect.ImageData>()).OrderByDescending(GetSizeOrder).ToList();
+                                var allImages = (images[imageIndex].data ?? new List<ScheduleDirect.ImageData>()).ToList();
                                 var imagesWithText = allImages.Where(i => string.Equals(i.text, "yes", StringComparison.OrdinalIgnoreCase)).ToList();
+                                var imagesWithoutText = allImages.Where(i => string.Equals(i.text, "no", StringComparison.OrdinalIgnoreCase)).ToList();
 
-                                programEntry.primaryImage = GetProgramImage(ApiUrl, imagesWithText, "Logo", true, 600) ??
-                                    GetProgramImage(ApiUrl, allImages, "Logo", true, 600);
+                                double desiredAspect = IsMovie(programEntry) ? 0.666666667 : wideAspect;
 
-                                //programEntry.thumbImage = GetProgramImage(ApiUrl, data, "Iconic", false);
+                                programEntry.primaryImage = GetProgramImage(ApiUrl, imagesWithText, true, desiredAspect) ??
+                                    GetProgramImage(ApiUrl, allImages, true, desiredAspect);
+
+                                programEntry.thumbImage = GetProgramImage(ApiUrl, imagesWithText, true, wideAspect);
+
+                                // Don't supply the same image twice
+                                if (string.Equals(programEntry.primaryImage, programEntry.thumbImage, StringComparison.Ordinal))
+                                {
+                                    programEntry.thumbImage = null;
+                                }
+
+                                programEntry.backdropImage = GetProgramImage(ApiUrl, imagesWithoutText, true, wideAspect);
+
                                 //programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-LO", false) ??
@@ -220,9 +235,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return channelNumber;
         }
 
+        private bool IsMovie(ScheduleDirect.ProgramDetails programInfo)
+        {
+            var showType = programInfo.showType ?? string.Empty;
+            return showType.IndexOf("movie", StringComparison.OrdinalIgnoreCase) != -1 || showType.IndexOf("film", StringComparison.OrdinalIgnoreCase) != -1;
+        }
+
         private ProgramInfo GetProgram(string channelId, ScheduleDirect.Program programInfo, ScheduleDirect.ProgramDetails details)
         {
-            //_logger.Debug("Show type is: " + (details.showType ?? "No ShowType"));
             DateTime startAt = GetDate(programInfo.airDateTime);
             DateTime endAt = startAt.AddSeconds(programInfo.duration);
             ProgramAudio audioType = ProgramAudio.Stereo;
@@ -276,9 +296,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 IsRepeat = repeat,
                 IsSeries = showType.IndexOf("series", StringComparison.OrdinalIgnoreCase) != -1,
                 ImageUrl = details.primaryImage,
+                ThumbImageUrl = details.thumbImage,
                 IsKids = string.Equals(details.audience, "children", StringComparison.OrdinalIgnoreCase),
                 IsSports = showType.IndexOf("sports", StringComparison.OrdinalIgnoreCase) != -1,
-                IsMovie = showType.IndexOf("movie", StringComparison.OrdinalIgnoreCase) != -1 || showType.IndexOf("film", StringComparison.OrdinalIgnoreCase) != -1,
+                IsMovie = IsMovie(details),
                 Etag = programInfo.md5
             };
 
@@ -378,49 +399,18 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return date;
         }
 
-        private string GetProgramImage(string apiUrl, List<ScheduleDirect.ImageData> images, string category, bool returnDefaultImage, int desiredWidth)
+        private string GetProgramImage(string apiUrl, List<ScheduleDirect.ImageData> images, bool returnDefaultImage, double desiredAspect)
         {
             string url = null;
 
-            var matches = images
-                .Where(i => string.Equals(i.category, category, StringComparison.OrdinalIgnoreCase))
+            var matches = images;
+
+            matches = matches
+                .OrderBy(i => Math.Abs(desiredAspect - GetApsectRatio(i)))
+                .ThenByDescending(GetSizeOrder)
                 .ToList();
 
-            if (matches.Count == 0)
-            {
-                if (!returnDefaultImage)
-                {
-                    return null;
-                }
-                matches = images;
-            }
-
-            var match = matches.FirstOrDefault(i =>
-            {
-                if (!string.IsNullOrWhiteSpace(i.width))
-                {
-                    int value;
-                    if (int.TryParse(i.width, out value))
-                    {
-                        return value <= desiredWidth;
-                    }
-                }
-
-                return false;
-            });
-
-            if (match == null)
-            {
-                // Get the second lowest quality image, when possible
-                if (matches.Count > 1)
-                {
-                    match = matches[matches.Count - 2];
-                }
-                else
-                {
-                    match = matches.FirstOrDefault();
-                }
-            }
+            var match = matches.FirstOrDefault();
 
             if (match == null)
             {
@@ -442,6 +432,31 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
             //_logger.Debug("URL for image is : " + url);
             return url;
+        }
+
+        private double GetApsectRatio(ScheduleDirect.ImageData i)
+        {
+            int width = 0;
+            int height = 0;
+
+            if (!string.IsNullOrWhiteSpace(i.width))
+            {
+                int.TryParse(i.width, out width);
+            }
+
+            if (!string.IsNullOrWhiteSpace(i.height))
+            {
+                int.TryParse(i.height, out height);
+            }
+
+            if (height == 0 || width == 0)
+            {
+                return 0;
+            }
+
+            double result = width;
+            result /= height;
+            return result;
         }
 
         private async Task<List<ScheduleDirect.ShowImages>> GetImageForPrograms(
@@ -1188,6 +1203,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 public bool hasImageArtwork { get; set; }
                 public string primaryImage { get; set; }
                 public string thumbImage { get; set; }
+                public string backdropImage { get; set; }
                 public string bannerImage { get; set; }
                 public string imageID { get; set; }
                 public string md5 { get; set; }

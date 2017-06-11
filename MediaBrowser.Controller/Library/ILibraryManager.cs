@@ -527,6 +527,8 @@ namespace MediaBrowser.Controller.Library
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
         IEnumerable<BaseItem> GetItemList(InternalItemsQuery query);
 
+        IEnumerable<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent);
+
         /// <summary>
         /// Gets the items.
         /// </summary>

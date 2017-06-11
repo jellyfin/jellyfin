@@ -90,7 +90,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
-        protected override IEnumerable<BaseItem> ActualChildren
+        public override IEnumerable<BaseItem> Children
         {
             get
             {
@@ -99,7 +99,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                     return new List<BaseItem>();
                 }
 
-                return base.ActualChildren;
+                return base.Children;
             }
         }
 

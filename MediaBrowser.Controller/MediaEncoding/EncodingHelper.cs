@@ -1604,7 +1604,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 // Only do this for video files due to sometimes unpredictable codec names coming from BDInfo
-                if (state.RunTimeTicks.HasValue && state.VideoType == VideoType.VideoFile && string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
+                if (state.VideoType == VideoType.VideoFile && state.RunTimeTicks.HasValue && string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
                 {
                     foreach (var stream in state.MediaSource.MediaStreams)
                     {
@@ -1802,6 +1802,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                             if (_mediaEncoder.SupportsDecoder("vc1_qsv"))
                             {
                                 return "-c:v vc1_qsv ";
+                            }
+                            break;
+                    }
+                }
+
+                else if (string.Equals(encodingOptions.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase))
+                {
+                    switch (state.MediaSource.VideoStream.Codec.ToLower())
+                    {
+                        case "avc":
+                        case "h264":
+                            if (_mediaEncoder.SupportsDecoder("h264_cuvid"))
+                            {
+                                return "-c:v h264_cuvid ";
                             }
                             break;
                     }

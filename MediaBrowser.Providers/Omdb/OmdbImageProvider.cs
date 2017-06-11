@@ -54,11 +54,23 @@ namespace MediaBrowser.Providers.Omdb
 
                 if (!string.IsNullOrEmpty(rootObject.Poster))
                 {
-                    list.Add(new RemoteImageInfo
+                    if (item is Episode)
                     {
-                        ProviderName = Name,
-                        Url = string.Format("https://img.omdbapi.com/?i={0}&apikey=82e83907", imdbId)
-                    });
+                        // img.omdbapi.com returning 404's
+                        list.Add(new RemoteImageInfo
+                        {
+                            ProviderName = Name,
+                            Url = rootObject.Poster
+                        });
+                    }
+                    else
+                    {
+                        list.Add(new RemoteImageInfo
+                        {
+                            ProviderName = Name,
+                            Url = string.Format("https://img.omdbapi.com/?i={0}&apikey=82e83907", imdbId)
+                        });
+                    }
                 }
             }
 

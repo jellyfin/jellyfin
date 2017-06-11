@@ -422,6 +422,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 SupportsTranscoding = true,
                 IsInfiniteStream = true,
                 IgnoreDts = true,
+                //SupportsProbing = false,
+                //AnalyzeDurationMs = 2000000
                 //IgnoreIndex = true,
                 //ReadAtNativeFramerate = true
             };
