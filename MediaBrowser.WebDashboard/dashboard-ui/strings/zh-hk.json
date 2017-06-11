@@ -1,6 +1,4 @@
 {
-    "News": "News",
-    "Programs": "Programs",
     "LabelPrevious": "\u524d\u4e00\u500b",
     "LabelFinish": "\u5b8c\u6210",
     "LabelNext": "\u4e0b\u4e00\u500b",
@@ -1980,5 +1978,8 @@
     "HeaderOnNow": "On Now",
     "Downloading": "Downloading",
     "LabelCertificatePassword": "Certificate password:",
-    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here.",
+    "Programs": "Programs",
+    "News": "News",
+    "HeaderDownloadSync": "Download & Sync"
 }

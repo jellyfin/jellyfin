@@ -1,6 +1,4 @@
 {
-    "News": "News",
-    "Programs": "Programs",
     "LabelPrevious": "Forrige",
     "LabelFinish": "Ferdig",
     "LabelNext": "Neste",
@@ -1980,5 +1978,8 @@
     "HeaderOnNow": " P\u00e5 N\u00e5",
     "Downloading": "Downloading",
     "LabelCertificatePassword": "Certificate password:",
-    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here.",
+    "Programs": "Programs",
+    "News": "News",
+    "HeaderDownloadSync": "Download & Sync"
 }

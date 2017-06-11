@@ -1,6 +1,4 @@
 {
-    "News": "News",
-    "Programs": "Programs",
     "LabelPrevious": "\u03a0\u03c1\u03bf\u03b7\u03b3\u03bf\u03cd\u03bc\u03b5\u03bd\u03bf\u03c2",
     "LabelFinish": "\u03a4\u03ad\u03bb\u03bf\u03c2",
     "LabelNext": "\u0395\u03c0\u03cc\u03bc\u03b5\u03bd\u03bf",
@@ -1030,7 +1028,7 @@
     "TabDevices": "Devices",
     "HeaderLibrarySettings": "Library Settings",
     "HeaderChapterSettings": "Chapter Settings",
-    "HeaderCameraUploadHelp": "Automatically upload photos and videos taken from your mobile devices into Emby.",
+    "HeaderCameraUploadHelp": "Emby apps can automatically upload photos and videos taken from your mobile devices into Emby Server.",
     "MessageNoDevicesSupportCameraUpload": "You currently don't have any devices that support camera upload.",
     "LabelCameraUploadPath": "Camera upload path:",
     "LabelCameraUploadPathHelp": "Select a custom upload path, if desired. If unspecified a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
@@ -1980,5 +1978,8 @@
     "HeaderOnNow": "On Now",
     "Downloading": "Downloading",
     "LabelCertificatePassword": "Certificate password:",
-    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here."
+    "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here.",
+    "Programs": "Programs",
+    "News": "News",
+    "HeaderDownloadSync": "Download & Sync"
 }
