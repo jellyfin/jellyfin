@@ -679,8 +679,7 @@ namespace Emby.Server.Implementations.LiveTv
                     item.SetImage(new ItemImageInfo
                     {
                         Path = info.ImagePath,
-                        Type = ImageType.Primary,
-                        IsPlaceholder = true
+                        Type = ImageType.Primary
                     }, 0);
                 }
                 else if (!string.IsNullOrWhiteSpace(info.ImageUrl))
@@ -688,8 +687,7 @@ namespace Emby.Server.Implementations.LiveTv
                     item.SetImage(new ItemImageInfo
                     {
                         Path = info.ImageUrl,
-                        Type = ImageType.Primary,
-                        IsPlaceholder = true
+                        Type = ImageType.Primary
                     }, 0);
                 }
             }
@@ -700,9 +698,34 @@ namespace Emby.Server.Implementations.LiveTv
                 {
                     item.SetImage(new ItemImageInfo
                     {
-                        Path = info.ImageUrl,
-                        Type = ImageType.Thumb,
-                        IsPlaceholder = true
+                        Path = info.ThumbImageUrl,
+                        Type = ImageType.Thumb
+
+                    }, 0);
+                }
+            }
+
+            if (!item.HasImage(ImageType.Logo))
+            {
+                if (!string.IsNullOrWhiteSpace(info.LogoImageUrl))
+                {
+                    item.SetImage(new ItemImageInfo
+                    {
+                        Path = info.LogoImageUrl,
+                        Type = ImageType.Logo
+
+                    }, 0);
+                }
+            }
+
+            if (!item.HasImage(ImageType.Backdrop))
+            {
+                if (!string.IsNullOrWhiteSpace(info.BackdropImageUrl))
+                {
+                    item.SetImage(new ItemImageInfo
+                    {
+                        Path = info.BackdropImageUrl,
+                        Type = ImageType.Backdrop
 
                     }, 0);
                 }
