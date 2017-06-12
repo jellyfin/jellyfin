@@ -9,6 +9,8 @@ using System.Threading;
 using System.Xml;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
+using System.IO;
+using System.Text;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
@@ -23,6 +25,65 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+
+        protected override void Fetch(MetadataResult<Episode> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
+        {
+            using (var fileStream = FileSystem.OpenRead(metadataFile))
+            {
+                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
+                {
+                    item.ResetPeople();
+
+                    var xml = streamReader.ReadToEnd();
+
+                    var srch = "</episodedetails>";
+                    var index = xml.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
+
+                    if (index != -1)
+                    {
+                        xml = xml.Substring(0, index + srch.Length);
+                    }
+
+                    using (var ms = new MemoryStream())
+                    {
+                        var bytes = Encoding.UTF8.GetBytes(xml);
+
+                        ms.Write(bytes, 0, bytes.Length);
+                        ms.Position = 0;
+
+                        // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
+                        try
+                        {
+                            // Use XmlReader for best performance
+                            using (var reader = XmlReader.Create(ms, settings))
+                            {
+                                reader.MoveToContent();
+                                reader.Read();
+
+                                // Loop through each element
+                                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                                {
+                                    cancellationToken.ThrowIfCancellationRequested();
+
+                                    if (reader.NodeType == XmlNodeType.Element)
+                                    {
+                                        FetchDataFromXmlNode(reader, item);
+                                    }
+                                    else
+                                    {
+                                        reader.Read();
+                                    }
+                                }
+                            }
+                        }
+                        catch (XmlException)
+                        {
+
+                        }
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Fetches the data from XML node.

@@ -227,17 +227,6 @@ namespace MediaBrowser.Controller.Entities.TV
             return list;
         }
 
-        // Studio, Genre and Rating will all be the same so makes no sense to index by these
-        protected override IEnumerable<string> GetIndexByOptions()
-        {
-            return new List<string> {
-                {"None"},
-                {"Performer"},
-                {"Director"},
-                {"Year"},
-            };
-        }
-
         [IgnoreDataMember]
         public bool ContainsEpisodesWithoutSeasonFolders
         {

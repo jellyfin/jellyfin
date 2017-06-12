@@ -13,6 +13,8 @@ namespace MediaBrowser.Model.Configuration
         public string VaapiDevice { get; set; }
         public int H264Crf { get; set; }
         public string H264Preset { get; set; }
+        public bool EnableHardwareDecoding { get; set; }
+        public bool EnableHardwareEncoding { get; set; }
 
         public EncodingOptions()
         {
@@ -22,6 +24,8 @@ namespace MediaBrowser.Model.Configuration
             EncodingThreadCount = -1;
             VaapiDevice = "/dev/dri/card0";
             H264Crf = 23;
+            EnableHardwareDecoding = true;
+            EnableHardwareEncoding = true;
         }
     }
 }
