@@ -1058,18 +1058,8 @@ namespace Emby.Server.Implementations.Dto
                 dto.CommunityRating = item.CommunityRating;
             }
 
-            //if (item.IsFolder)
-            //{
-            //    var folder = (Folder)item;
-
-            //    if (fields.Contains(ItemFields.IndexOptions))
-            //    {
-            //        dto.IndexOptions = folder.IndexByOptionStrings.ToArray();
-            //    }
-            //}
-
             var supportsPlaceHolders = item as ISupportsPlaceHolders;
-            if (supportsPlaceHolders != null)
+            if (supportsPlaceHolders != null && supportsPlaceHolders.IsPlaceHolder)
             {
                 dto.IsPlaceHolder = supportsPlaceHolders.IsPlaceHolder;
             }

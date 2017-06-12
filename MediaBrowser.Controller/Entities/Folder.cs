@@ -212,33 +212,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Returns the valid set of index by options for this folder type.
-        /// Override or extend to modify.
-        /// </summary>
-        /// <returns>Dictionary{System.StringFunc{UserIEnumerable{BaseItem}}}.</returns>
-        protected virtual IEnumerable<string> GetIndexByOptions()
-        {
-            return new List<string> {
-                {"None"},
-                {"Performer"},
-                {"Genre"},
-                {"Director"},
-                {"Year"},
-                {"Studio"}
-            };
-        }
-
-        /// <summary>
-        /// Get the list of indexy by choices for this folder (localized).
-        /// </summary>
-        /// <value>The index by option strings.</value>
-        [IgnoreDataMember]
-        public IEnumerable<string> IndexByOptionStrings
-        {
-            get { return GetIndexByOptions(); }
-        }
-
-        /// <summary>
         /// Gets the actual children.
         /// </summary>
         /// <value>The actual children.</value>

@@ -88,11 +88,6 @@
         HomePageUrl,
 
         /// <summary>
-        /// The fields that the server supports indexing on
-        /// </summary>
-        IndexOptions,
-
-        /// <summary>
         /// The item counts
         /// </summary>
         ItemCounts,
