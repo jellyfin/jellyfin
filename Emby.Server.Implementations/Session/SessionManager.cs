@@ -1671,7 +1671,6 @@ namespace Emby.Server.Implementations.Session
                 dtoOptions.Fields.Remove(ItemFields.DisplayPreferencesId);
                 dtoOptions.Fields.Remove(ItemFields.Etag);
                 dtoOptions.Fields.Remove(ItemFields.ExternalEtag);
-                dtoOptions.Fields.Remove(ItemFields.IndexOptions);
                 dtoOptions.Fields.Remove(ItemFields.InheritedParentalRatingValue);
                 dtoOptions.Fields.Remove(ItemFields.ItemCounts);
                 dtoOptions.Fields.Remove(ItemFields.Keywords);

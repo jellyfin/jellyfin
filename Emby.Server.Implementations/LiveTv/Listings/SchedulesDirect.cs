@@ -174,7 +174,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                                 var imagesWithText = allImages.Where(i => string.Equals(i.text, "yes", StringComparison.OrdinalIgnoreCase)).ToList();
                                 var imagesWithoutText = allImages.Where(i => string.Equals(i.text, "no", StringComparison.OrdinalIgnoreCase)).ToList();
 
-                                double desiredAspect = IsMovie(programEntry) ? 0.666666667 : wideAspect;
+                                double desiredAspect = 0.666666667;
 
                                 programEntry.primaryImage = GetProgramImage(ApiUrl, imagesWithText, true, desiredAspect) ??
                                     GetProgramImage(ApiUrl, allImages, true, desiredAspect);

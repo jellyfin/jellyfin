@@ -72,7 +72,6 @@
     <Compile Include="MediaInfo\SubtitleDownloader.cs" />
     <Compile Include="MediaInfo\SubtitleResolver.cs" />
     <Compile Include="MediaInfo\SubtitleScheduledTask.cs" />
-    <Compile Include="Movies\LiveTvMovieDbProvider.cs" />
     <Compile Include="Movies\MovieDbTrailerProvider.cs" />
     <Compile Include="Movies\MovieExternalIds.cs" />
     <Compile Include="Movies\GenericMovieDbInfo.cs" />
