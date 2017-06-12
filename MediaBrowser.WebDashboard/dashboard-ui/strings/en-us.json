@@ -1927,5 +1927,7 @@
   "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here.",
   "Programs": "Programs",
   "News": "News",
-  "HeaderDownloadSync": "Download & Sync"
+  "HeaderDownloadSync": "Download & Sync",
+  "EnableHardwareDecoding": "Enable hardware decoding",
+  "EnableHardwareEncoding": "Enable hardware encoding"
 }

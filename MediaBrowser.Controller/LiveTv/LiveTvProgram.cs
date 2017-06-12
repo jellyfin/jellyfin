@@ -57,8 +57,13 @@ namespace MediaBrowser.Controller.LiveTv
 
                 return value;
             }
+            else
+            {
+                double value = 2;
+                value /= 3;
 
-            return null;
+                return value;
+            }
         }
 
         [IgnoreDataMember]
