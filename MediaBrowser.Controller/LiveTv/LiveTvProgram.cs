@@ -221,12 +221,6 @@ namespace MediaBrowser.Controller.LiveTv
 
         public override bool IsInternetMetadataEnabled()
         {
-            if (IsMovie)
-            {
-                var options = (LiveTvOptions)ConfigurationManager.GetConfiguration("livetv");
-                return options.EnableMovieProviders;
-            }
-
             return false;
         }
 
