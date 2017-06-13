@@ -1422,18 +1422,6 @@ namespace Emby.Server.Implementations.LiveTv
                         await _libraryManager.UpdateItem(program, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
                     }
 
-                    if (!(service is EmbyTV.EmbyTV))
-                    {
-                        foreach (var program in newPrograms)
-                        {
-                            _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.Low);
-                        }
-                        foreach (var program in updatedPrograms)
-                        {
-                            _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.Low);
-                        }
-                    }
-
                     currentChannel.IsMovie = isMovie;
                     currentChannel.IsNews = isNews;
                     currentChannel.IsSports = isSports;

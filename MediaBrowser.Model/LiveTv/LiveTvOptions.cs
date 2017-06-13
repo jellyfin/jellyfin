@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.LiveTv
 {
     public class LiveTvOptions
     {
         public int? GuideDays { get; set; }
-        public bool EnableMovieProviders { get; set; }
         public string RecordingPath { get; set; }
         public string MovieRecordingPath { get; set; }
         public string SeriesRecordingPath { get; set; }
@@ -30,7 +28,6 @@ namespace MediaBrowser.Model.LiveTv
 
         public LiveTvOptions()
         {
-            EnableMovieProviders = true;
             TunerHosts = new List<TunerHostInfo>();
             ListingProviders = new List<ListingsProviderInfo>();
             MediaLocationsCreated = new string[] { };

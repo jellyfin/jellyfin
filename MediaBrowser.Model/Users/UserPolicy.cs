@@ -70,6 +70,8 @@ namespace MediaBrowser.Model.Users
 
         public UserPolicy()
         {
+            EnableContentDeletion = true;
+
             EnableSyncTranscoding = true;
 
             EnableMediaPlayback = true;
