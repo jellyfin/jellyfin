@@ -1,5 +1,4 @@
 {
-    "HeaderPlayOn": "Play On",
     "MessageUnlockAppWithPurchaseOrSupporter": "Atrakinkite \u0161i\u0105 funkcij\u0105 nedideliu vienkartiniu mokes\u010diu arba \u012fsigij\u0119 Emby Premiere prenumerat\u0105.",
     "MessageUnlockAppWithSupporter": "Atrakinkite \u0161i\u0105 funkcij\u0105 \u012fsigij\u0119 Emby Premiere prenumerat\u0105.",
     "MessageToValidateSupporter": "Jei turite aktyvi\u0105 Emby Premiere prenumerat\u0105, sutvarkykite Emby Premiere savo Emby Serverio skydelyje. Tai galite atlikti paspaud\u0117 Emby Premiere u\u017era\u0161\u0105 pagrindiniame meniu.",
@@ -377,7 +376,7 @@
     "HeaderRemoteControl": "Remote Control",
     "Disconnect": "Disconnect",
     "EnableDisplayMirroring": "Enable display mirroring",
-    "HeaderSelectPlayer": "Select Player",
+    "HeaderPlayOn": "Play On",
     "Quality": "Quality",
     "Auto": "Auto",
     "AndroidUnlockRestoreHelp": "To restore your previous purchase, please ensure you're signed into the device with the same Google (or Amazon) account that originally made the purchase. Make sure the app store is enabled and not restricted by any parental controls, and ensure you have an active internet connection. You'll only have to do this once to restore your previous purchase.",
@@ -433,5 +432,9 @@
     "TermsOfUse": "Terms of use",
     "RepeatMode": "Repeat mode",
     "RepeatOne": "Repeat one",
-    "RepeatAll": "Repeat all"
+    "RepeatAll": "Repeat all",
+    "ConfirmEndPlayerSession": "Would you like to close Emby on the device?",
+    "Yes": "Yes",
+    "No": "No",
+    "LiveTV": "Live TV"
 }

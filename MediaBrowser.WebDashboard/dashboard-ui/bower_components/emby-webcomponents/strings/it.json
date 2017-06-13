@@ -1,5 +1,4 @@
 {
-    "HeaderPlayOn": "Play On",
     "MessageUnlockAppWithPurchaseOrSupporter": "Sblocca questa funzionalit\u00e0 con un piccolo acquisto singolo, o con un abbonamento Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Sblocca questa funzionalit\u00e0 con un abbonamento Emby Premiere",
     "MessageToValidateSupporter": "Se hai un abbonamento Emby Premiere, assicurati di averlo configurato nel Pannello di Controllo del Server, a cui puoi accedere cliccando su Emby Premiere dal menu principale.",
@@ -377,7 +376,7 @@
     "HeaderRemoteControl": "Telecomando",
     "Disconnect": "Disconnetti",
     "EnableDisplayMirroring": "Abilita visualizzazione remota",
-    "HeaderSelectPlayer": "Seleziona Riproduttore",
+    "HeaderPlayOn": "Riproduci Su",
     "Quality": "Qualit\u00e0",
     "Auto": "Auto",
     "AndroidUnlockRestoreHelp": "Per ripristinare il tuo acquisto precedente, per favore assicurati di essere loggato sul dispositivo con lo stesso account Google (or Amazon) dell'acquisto originale. Assicurati che l'App Store sia abilitato e non limitato da controlli parentali ed assicurati di avere una connessione ad Internet. Dovrai effettuare questa procedura una sola volta per ripristinare il tuo acquisto precendente.",
@@ -433,5 +432,9 @@
     "TermsOfUse": "Termini di utilizzo",
     "RepeatMode": "Modalit\u00e0 Ripeti",
     "RepeatOne": "Ripeti uno",
-    "RepeatAll": "Ripeti tutti"
+    "RepeatAll": "Ripeti tutti",
+    "ConfirmEndPlayerSession": "Would you like to close Emby on the device?",
+    "Yes": "Yes",
+    "No": "No",
+    "LiveTV": "Live TV"
 }
