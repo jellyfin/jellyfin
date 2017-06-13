@@ -1,5 +1,4 @@
 {
-    "HeaderPlayOn": "Play On",
     "MessageUnlockAppWithPurchaseOrSupporter": "Ontgrendel deze functie met een kleine eenmalige aankoop, of met een actief Emby Premiere abonnement.",
     "MessageUnlockAppWithSupporter": "Ontgrendel deze functie met een actief Emby Premiere abonnement.",
     "MessageToValidateSupporter": "Als u een actieve Emby Premiere abonnement heeft, zorg er dan voor dat u deze activeert in uw Emby Server Dashboard door te klikken op Emby Premiere in het hoofdmenu.",
@@ -377,7 +376,7 @@
     "HeaderRemoteControl": "Afstandsbediening",
     "Disconnect": "Loskoppelen",
     "EnableDisplayMirroring": "Inschakelen beeld spiegelen",
-    "HeaderSelectPlayer": "Selecteer Speler",
+    "HeaderPlayOn": "Play On",
     "Quality": "Kwaliteit",
     "Auto": "Automatisch",
     "AndroidUnlockRestoreHelp": "Om uw eerdere aankoop te herstellen, controleert u of u aangemeld bent met hetzelfde Google (of Amazon) account waarmee u de aankoop deed. Controleer dat de app store is ingeschakeld en niet door ouderlijk toezicht wordt tegengehouden en controleer dat u een actieve internet verbinding hebt. U hoeft dit slechts eenmalig te doen om uw eerdere aankoop te herstellen.",
@@ -433,5 +432,9 @@
     "TermsOfUse": "Gebruiksvoorwaarden",
     "RepeatMode": "Repeat mode",
     "RepeatOne": "Repeat one",
-    "RepeatAll": "Repeat all"
+    "RepeatAll": "Repeat all",
+    "ConfirmEndPlayerSession": "Would you like to close Emby on the device?",
+    "Yes": "Yes",
+    "No": "No",
+    "LiveTV": "Live TV"
 }

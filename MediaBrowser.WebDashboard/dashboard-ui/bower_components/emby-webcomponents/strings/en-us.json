@@ -432,5 +432,11 @@
   "TermsOfUse": "Terms of use",
   "RepeatMode": "Repeat mode",
   "RepeatOne": "Repeat one",
-  "RepeatAll": "Repeat all"
+  "RepeatAll": "Repeat all",
+  "ConfirmEndPlayerSession": "Would you like to close Emby on the device?",
+  "Yes": "Yes",
+  "No": "No",
+  "LiveTV": "Live TV",
+  "Schedule": "Schedule",
+  "Recordings": "Recordings"
 }

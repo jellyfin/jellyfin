@@ -1,5 +1,4 @@
 {
-    "HeaderPlayOn": "Play On",
     "MessageUnlockAppWithPurchaseOrSupporter": "Desbloquee esta caracter\u00edstica con una peque\u00f1a compra \u00fanica, o con una suscripci\u00f3n activa de Emby Premier.",
     "MessageUnlockAppWithSupporter": "Desbloquee esta caracter\u00edstica con una suscripci\u00f3n activa de Emby Premier.",
     "MessageToValidateSupporter": "Si tiene una subscripci\u00f3n de Emby Premiere activa, aseg\u00farese de que ha configurado Emby Premiere en el Panel de Control del Servidor Emby, al cual puede acceder dando click en Emby Premiere dentro del men\u00fa principal.",
@@ -44,7 +43,7 @@
     "CloudSyncFeatureDescription": "Sincronice sus medios a la nube para un f\u00e1cil respaldo, archivo y conversi\u00f3n.",
     "DvrFeatureDescription": "Programe grabaciones individuales de TV en Vivo, series, y mas con Emby DVR.",
     "ButtonCancelSyncJob": "Cancelar descarga",
-    "CancelSyncJobConfirmation": "Cancelando el trabajo de sincronizaci\u00f3n eliminara los medios descargados del dispositivo durante el pr\u00f3ximo proceso de sincronizaci\u00f3n. \u00bfEsta seguro de que desea continuar?",
+    "CancelSyncJobConfirmation": "Cancelando el trabajo de descarga eliminara los medios descargados del dispositivo durante el pr\u00f3ximo proceso de sincronizaci\u00f3n. \u00bfEsta seguro de que desea continuar?",
     "CinemaModeFeatureDescription": "El Modo Cine le da una verdadera experiencia de cine con trailers e intros personalizados antes de la funci\u00f3n.",
     "HeaderFreeApps": "Aplicaciones Emby Gratuitas",
     "FreeAppsFeatureDescription": "Disfrute acceso gratuito para elegir aplicaciones Emby para sus dispositivos.",
@@ -223,7 +222,7 @@
     "GuestStar": "Estrella invitada",
     "Producer": "Productor",
     "Writer": "Escritor",
-    "MessageNoSyncJobsFound": "No se han encontrado trabajos de sincronizaci\u00f3n. Cree trabajos de sincronizaci\u00f3n empleando los botones de Sinc. en la app.",
+    "MessageNoSyncJobsFound": "No se han encontrado descargas. Cree descaegas empleando los botones de Sinc. en la app.",
     "MessageNoDownloadsFound": "No hay elementos sin conexi\u00f3n. Haga sus medios disponibles mientras esta desconectado haciendo clic en Hacer Disponible sin Conexi\u00f3n a trav\u00e9s de la app.",
     "InstallingPackage": "Instalando {0}",
     "PackageInstallCompleted": "{0} instalaci\u00f3n completada.",
@@ -377,7 +376,7 @@
     "HeaderRemoteControl": "Control Remoto",
     "Disconnect": "Desconectar",
     "EnableDisplayMirroring": "Habilitar duplicaci\u00f3n de pantalla",
-    "HeaderSelectPlayer": "Seleccionar Reproductor",
+    "HeaderPlayOn": "Reproducir En",
     "Quality": "Calidad",
     "Auto": "Auto",
     "AndroidUnlockRestoreHelp": "Para restaurar su compra previa, por favor aseg\u00farese de que se encuentra registrado en el dispositivo con la misma cuenta de Google (o Amazon) con que hizo la compra. Aseg\u00farese que la tienda de aplicaciones esta habilitada, no esta restringida por cualquier control parental y que tiene una conexi\u00f3n de internet activa. Esto se tiene que hacer solo una vez para restaurar su compra previa.",
@@ -431,7 +430,11 @@
     "HeaderTermsOfPurchase": "T\u00e9rminos de Compra",
     "PrivacyPolicy": "Pol\u00edtica de privacidad",
     "TermsOfUse": "T\u00e9rminos de uso",
-    "RepeatMode": "Repeat mode",
-    "RepeatOne": "Repeat one",
-    "RepeatAll": "Repeat all"
+    "RepeatMode": "Modo de repeticion",
+    "RepeatOne": "Repetir uno",
+    "RepeatAll": "Repetir todas",
+    "ConfirmEndPlayerSession": "\u00bfDesea cerrar Emby en el dispositivo?",
+    "Yes": "S\u00ed",
+    "No": "No",
+    "LiveTV": "Live TV"
 }

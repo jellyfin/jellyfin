@@ -3929,15 +3929,6 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(query.SlugName))
-            {
-                whereClauses.Add("CleanName=@SlugName");
-                if (statement != null)
-                {
-                    statement.TryBind("@SlugName", GetCleanValue(query.SlugName));
-                }
-            }
-
             if (!string.IsNullOrWhiteSpace(query.MinSortName))
             {
                 whereClauses.Add("SortName>=@MinSortName");

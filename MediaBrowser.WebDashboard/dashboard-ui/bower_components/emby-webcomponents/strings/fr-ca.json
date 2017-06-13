@@ -1,5 +1,4 @@
 {
-    "HeaderPlayOn": "Play On",
     "MessageUnlockAppWithPurchaseOrSupporter": "D\u00e9verrouillez cette fonctionnalit\u00e9 avec un petit achat unique ou avec un abonnement Emby Premiere actif.",
     "MessageUnlockAppWithSupporter": "D\u00e9verrouillez cette fonctionnalit\u00e9 avec un abonnement Emby Premi\u00e8re actif.",
     "MessageToValidateSupporter": "Si vous avez un abonnement Emby Premi\u00e8re actif, assurez-vous d'avoir install\u00e9 Emby Premi\u00e8re sur le tableau de bord de votre serveur Emby, auquel vous pouvez acc\u00e9der en cliquant sur Emby Premi\u00e8re dans le menu principal.",
@@ -377,7 +376,7 @@
     "HeaderRemoteControl": "T\u00e9l\u00e9commande",
     "Disconnect": "Se d\u00e9connecter",
     "EnableDisplayMirroring": "Activer l'affichage mirroir",
-    "HeaderSelectPlayer": "Choisir un lecteur",
+    "HeaderPlayOn": "Play On",
     "Quality": "Qualit\u00e9",
     "Auto": "Auto",
     "AndroidUnlockRestoreHelp": "To restore your previous purchase, please ensure you're signed into the device with the same Google (or Amazon) account that originally made the purchase. Make sure the app store is enabled and not restricted by any parental controls, and ensure you have an active internet connection. You'll only have to do this once to restore your previous purchase.",
@@ -433,5 +432,9 @@
     "TermsOfUse": "Terms of use",
     "RepeatMode": "Repeat mode",
     "RepeatOne": "Repeat one",
-    "RepeatAll": "Repeat all"
+    "RepeatAll": "Repeat all",
+    "ConfirmEndPlayerSession": "Would you like to close Emby on the device?",
+    "Yes": "Yes",
+    "No": "No",
+    "LiveTV": "Live TV"
 }
