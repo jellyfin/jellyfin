@@ -178,13 +178,7 @@ namespace MediaBrowser.Api
         {
             if (name.IndexOf(BaseItem.SlugChar) != -1)
             {
-                var result = libraryManager.GetItemList(new InternalItemsQuery
-                {
-                    SlugName = name,
-                    IncludeItemTypes = new[] { typeof(MusicArtist).Name },
-                    DtoOptions = dtoOptions
-
-                }).OfType<MusicArtist>().FirstOrDefault();
+                var result = GetItemFromSlugName<MusicArtist>(libraryManager, name, dtoOptions);
 
                 if (result != null)
                 {
@@ -199,13 +193,7 @@ namespace MediaBrowser.Api
         {
             if (name.IndexOf(BaseItem.SlugChar) != -1)
             {
-                var result = libraryManager.GetItemList(new InternalItemsQuery
-                {
-                    SlugName = name,
-                    IncludeItemTypes = new[] { typeof(Studio).Name },
-                    DtoOptions = dtoOptions
-
-                }).OfType<Studio>().FirstOrDefault();
+                var result = GetItemFromSlugName<Studio>(libraryManager, name, dtoOptions);
 
                 if (result != null)
                 {
@@ -220,13 +208,7 @@ namespace MediaBrowser.Api
         {
             if (name.IndexOf(BaseItem.SlugChar) != -1)
             {
-                var result = libraryManager.GetItemList(new InternalItemsQuery
-                {
-                    SlugName = name,
-                    IncludeItemTypes = new[] { typeof(Genre).Name },
-                    DtoOptions = dtoOptions
-
-                }).OfType<Genre>().FirstOrDefault();
+                var result = GetItemFromSlugName<Genre>(libraryManager, name, dtoOptions);
 
                 if (result != null)
                 {
@@ -241,13 +223,7 @@ namespace MediaBrowser.Api
         {
             if (name.IndexOf(BaseItem.SlugChar) != -1)
             {
-                var result = libraryManager.GetItemList(new InternalItemsQuery
-                {
-                    SlugName = name,
-                    IncludeItemTypes = new[] { typeof(MusicGenre).Name },
-                    DtoOptions = dtoOptions
-
-                }).OfType<MusicGenre>().FirstOrDefault();
+                var result = GetItemFromSlugName<MusicGenre>(libraryManager, name, dtoOptions);
 
                 if (result != null)
                 {
@@ -262,13 +238,7 @@ namespace MediaBrowser.Api
         {
             if (name.IndexOf(BaseItem.SlugChar) != -1)
             {
-                var result = libraryManager.GetItemList(new InternalItemsQuery
-                {
-                    SlugName = name,
-                    IncludeItemTypes = new[] { typeof(GameGenre).Name },
-                    DtoOptions = dtoOptions
-
-                }).OfType<GameGenre>().FirstOrDefault();
+                var result = GetItemFromSlugName<GameGenre>(libraryManager, name, dtoOptions);
 
                 if (result != null)
                 {
@@ -283,13 +253,7 @@ namespace MediaBrowser.Api
         {
             if (name.IndexOf(BaseItem.SlugChar) != -1)
             {
-                var result = libraryManager.GetItemList(new InternalItemsQuery
-                {
-                    SlugName = name,
-                    IncludeItemTypes = new[] { typeof(Person).Name },
-                    DtoOptions = dtoOptions
-
-                }).OfType<Person>().FirstOrDefault();
+                var result = GetItemFromSlugName<Person>(libraryManager, name, dtoOptions);
 
                 if (result != null)
                 {
@@ -298,6 +262,42 @@ namespace MediaBrowser.Api
             }
 
             return libraryManager.GetPerson(name);
+        }
+
+        private T GetItemFromSlugName<T>(ILibraryManager libraryManager, string name, DtoOptions dtoOptions)
+            where T : BaseItem, new()
+        {
+            var result = libraryManager.GetItemList(new InternalItemsQuery
+            {
+                Name = name.Replace(BaseItem.SlugChar, '&'),
+                IncludeItemTypes = new[] { typeof(T).Name },
+                DtoOptions = dtoOptions
+
+            }).OfType<Person>().FirstOrDefault();
+
+            if (result == null)
+            {
+                result = libraryManager.GetItemList(new InternalItemsQuery
+                {
+                    Name = name.Replace(BaseItem.SlugChar, '/'),
+                    IncludeItemTypes = new[] { typeof(T).Name },
+                    DtoOptions = dtoOptions
+
+                }).OfType<Person>().FirstOrDefault();
+            }
+
+            if (result == null)
+            {
+                result = libraryManager.GetItemList(new InternalItemsQuery
+                {
+                    Name = name.Replace(BaseItem.SlugChar, '?'),
+                    IncludeItemTypes = new[] { typeof(T).Name },
+                    DtoOptions = dtoOptions
+
+                }).OfType<Person>().FirstOrDefault();
+            }
+
+            return result as T;
         }
 
         protected string GetPathValue(int index)

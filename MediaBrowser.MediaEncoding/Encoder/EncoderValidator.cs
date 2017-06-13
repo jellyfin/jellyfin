@@ -92,7 +92,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "mpeg2_qsv",
                 "vc1_qsv",
                 "h264_cuvid",
-                "hevc_cuvid"
+                "hevc_cuvid",
+                "dts",
+                "ac3",
+                "aac",
+                "mp3",
+                "h264",
+                "hevc"
             };
 
             foreach (var codec in required)

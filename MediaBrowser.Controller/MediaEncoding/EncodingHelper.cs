@@ -233,7 +233,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return null;
             }
 
-            return codec;
+            if (_mediaEncoder.SupportsDecoder(codec))
+            {
+                return codec;
+            }
+
+            return null;
         }
 
         /// <summary>
