@@ -598,9 +598,10 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 ErrorHandler(ex, httpReq, false);
             }
+
             catch (Exception ex)
             {
-                ErrorHandler(ex, httpReq);
+                ErrorHandler(ex, httpReq, !string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase));
             }
             finally
             {
