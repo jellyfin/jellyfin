@@ -132,27 +132,28 @@ namespace SocketHttpListener.Net
 
         private MemoryStream GetHeaders(bool closing, bool isWebSocketHandshake = false)
         {
-            // SendHeaders works on shared headers
-            lock (_response.headers_lock)
-            {
-                if (_response.HeadersSent)
-                    return null;
-                var ms = _memoryStreamFactory.CreateNew();
-                _response.SendHeaders(closing, ms);
-                return ms;
-            }
-
-            //lock (_response._headersLock)
+            //// SendHeaders works on shared headers
+            //lock (_response.headers_lock)
             //{
-            //    if (_response.SentHeaders)
-            //    {
+            //    if (_response.HeadersSent)
             //        return null;
-            //    }
-
-            //    MemoryStream ms = new MemoryStream();
-            //    _response.SendHeaders(closing, ms, isWebSocketHandshake);
+            //    var ms = _memoryStreamFactory.CreateNew();
+            //    _response.SendHeaders(closing, ms);
             //    return ms;
             //}
+
+            // SendHeaders works on shared headers
+            lock (_response._headersLock)
+            {
+                if (_response.SentHeaders)
+                {
+                    return null;
+                }
+
+                MemoryStream ms = new MemoryStream();
+                _response.SendHeaders(closing, ms, isWebSocketHandshake);
+                return ms;
+            }
         }
 
         private static byte[] s_crlf = new byte[] { 13, 10 };

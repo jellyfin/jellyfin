@@ -248,6 +248,22 @@ namespace MediaBrowser.Model.Net
             {
                 return "audio/ac3";
             }
+            if (StringHelper.EqualsIgnoreCase(ext, ".dsf"))
+            {
+                return "audio/dsf";
+            }
+            if (StringHelper.EqualsIgnoreCase(ext, ".m4b"))
+            {
+                return "audio/m4b";
+            }
+            if (StringHelper.EqualsIgnoreCase(ext, ".xsp"))
+            {
+                return "audio/xsp";
+            }
+            if (StringHelper.EqualsIgnoreCase(ext, ".dsp"))
+            {
+                return "audio/dsp";
+            }
 
             // Playlists
             if (StringHelper.EqualsIgnoreCase(ext, ".m3u8"))
