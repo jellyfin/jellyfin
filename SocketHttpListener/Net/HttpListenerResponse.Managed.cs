@@ -40,7 +40,7 @@ namespace SocketHttpListener.Net
 
         public Version ProtocolVersion
         {
-            get => _version;
+            get { return _version; }
             set
             {
                 CheckDisposed();
@@ -59,7 +59,7 @@ namespace SocketHttpListener.Net
 
         public int StatusCode
         {
-            get => _statusCode;
+            get { return _statusCode; }
             set
             {
                 CheckDisposed();
@@ -71,7 +71,10 @@ namespace SocketHttpListener.Net
             }
         }
 
-        private void Dispose() => Close(true);
+        private void Dispose()
+        {
+            Close(true);
+        }
 
         public void Close()
         {
