@@ -27,9 +27,9 @@ namespace MediaBrowser.Server.Startup.Common
                 {
                     return new SkiaEncoder(logManager.GetLogger("Skia"), appPaths, httpClient, fileSystem);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    logger.Error("Error loading Skia. Will revert to ImageMagick.");
+                    logger.Error("Error loading Skia: {0}. Will revert to ImageMagick.", ex.Message);
                 }
 
                 try
