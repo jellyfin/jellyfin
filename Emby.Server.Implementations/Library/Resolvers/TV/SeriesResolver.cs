@@ -160,15 +160,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                             return true;
                         }
 
-                        var namingOptions = ((LibraryManager)libraryManager).GetNamingOptions();
-
-                        // In mixed folders we need to be conservative and avoid expressions that may result in false positives (e.g. movies with numbers in the title)
-                        if (!isTvContentType)
-                        {
-                            namingOptions.EpisodeExpressions = namingOptions.EpisodeExpressions
-                                .Where(i => i.IsNamed && !i.IsOptimistic)
-                                .ToList();
-                        }
+                        var allowOptimisticEpisodeDetection = isTvContentType;
+                        var namingOptions = ((LibraryManager)libraryManager).GetNamingOptions(allowOptimisticEpisodeDetection);
 
                         var episodeResolver = new MediaBrowser.Naming.TV.EpisodeResolver(namingOptions, new NullLogger());
                         var episodeInfo = episodeResolver.Resolve(fullName, false, false);

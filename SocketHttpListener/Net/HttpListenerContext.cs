@@ -29,7 +29,7 @@ namespace SocketHttpListener.Net
             _memoryStreamFactory = memoryStreamFactory;
             _textEncoding = textEncoding;
             request = new HttpListenerRequest(this, _textEncoding);
-            response = new HttpListenerResponse(this, logger, _textEncoding, fileSystem);
+            response = new HttpListenerResponse(this, _textEncoding);
         }
 
         internal int ErrorStatus
