@@ -25,14 +25,14 @@ namespace SocketHttpListener.Net
 
         public WebHeaderCollection Headers
         {
-            get => _webHeaders;
+            get { return _webHeaders; }
         }
 
         public Encoding ContentEncoding { get; set; }
 
         public string ContentType
         {
-            get => Headers["Content-Type"];
+            get { return Headers["Content-Type"]; }
             set
             {
                 CheckDisposed();
@@ -47,13 +47,13 @@ namespace SocketHttpListener.Net
             }
         }
 
-        private HttpListenerContext HttpListenerContext => _httpContext;
+        private HttpListenerContext HttpListenerContext { get { return _httpContext; } }
 
-        private HttpListenerRequest HttpListenerRequest => HttpListenerContext.Request;
+        private HttpListenerRequest HttpListenerRequest { get { return HttpListenerContext.Request; } }
 
         internal EntitySendFormat EntitySendFormat
         {
-            get => (EntitySendFormat)_boundaryType;
+            get { return (EntitySendFormat)_boundaryType; }
             set
             {
                 CheckDisposed();
@@ -72,8 +72,8 @@ namespace SocketHttpListener.Net
 
         public bool SendChunked
         {
-            get => EntitySendFormat == EntitySendFormat.Chunked;
-            set => EntitySendFormat = value ? EntitySendFormat.Chunked : EntitySendFormat.ContentLength;
+            get { return EntitySendFormat == EntitySendFormat.Chunked; ; }
+            set { EntitySendFormat = value ? EntitySendFormat.Chunked : EntitySendFormat.ContentLength; }
         }
 
         // We MUST NOT send message-body when we send responses with these Status codes
@@ -93,7 +93,7 @@ namespace SocketHttpListener.Net
 
         public long ContentLength64
         {
-            get => _contentLength;
+            get { return _contentLength; }
             set
             {
                 CheckDisposed();
@@ -112,13 +112,13 @@ namespace SocketHttpListener.Net
 
         public CookieCollection Cookies
         {
-            get => _cookies ?? (_cookies = new CookieCollection());
-            set => _cookies = value;
+            get { return _cookies ?? (_cookies = new CookieCollection()); }
+            set { _cookies = value; }
         }
 
         public bool KeepAlive
         {
-            get => _keepAlive;
+            get { return _keepAlive; }
             set
             {
                 CheckDisposed();
@@ -138,7 +138,7 @@ namespace SocketHttpListener.Net
 
         public string RedirectLocation
         {
-            get => Headers["Location"];
+            get { return Headers["Location"]; }
             set
             {
                 // note that this doesn't set the status code to a redirect one
@@ -281,7 +281,10 @@ namespace SocketHttpListener.Net
             //}
         }
 
-        void IDisposable.Dispose() => Dispose();
+        void IDisposable.Dispose()
+        {
+            Dispose();
+        }
 
         private void CheckDisposed()
         {

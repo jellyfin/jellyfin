@@ -165,7 +165,8 @@ namespace SocketHttpListener.Net
             if (asyncResult == null)
                 throw new ArgumentNullException(nameof(asyncResult));
 
-            if (asyncResult is HttpStreamAsyncResult r)
+            var r = asyncResult as HttpStreamAsyncResult;
+            if (r != null)
             {
                 if (!ReferenceEquals(this, r._parent))
                 {
