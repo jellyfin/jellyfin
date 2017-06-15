@@ -511,8 +511,6 @@ namespace Emby.Server.Core
         {
             var migrations = new List<IVersionMigration>
             {
-                new LibraryScanMigration(ServerConfigurationManager, TaskManager),
-                new GuideMigration(ServerConfigurationManager, TaskManager)
             };
 
             foreach (var task in migrations)
