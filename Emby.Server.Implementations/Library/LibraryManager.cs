@@ -2505,9 +2505,32 @@ namespace Emby.Server.Implementations.Library
 
         public NamingOptions GetNamingOptions()
         {
+            return GetNamingOptions(true);
+        }
+
+        public NamingOptions GetNamingOptions(bool allowOptimisticEpisodeDetection)
+        {
+            if (!allowOptimisticEpisodeDetection)
+            {
+                if (_namingOptionsWithoutOptimisticEpisodeDetection == null)
+                {
+                    var namingOptions = new ExtendedNamingOptions();
+
+                    InitNamingOptions(namingOptions);
+                    namingOptions.EpisodeExpressions = namingOptions.EpisodeExpressions
+                        .Where(i => i.IsNamed && !i.IsOptimistic)
+                        .ToList();
+
+                    _namingOptionsWithoutOptimisticEpisodeDetection = namingOptions;
+                }
+
+                return _namingOptionsWithoutOptimisticEpisodeDetection;
+            }
+
             return GetNamingOptions(new LibraryOptions());
         }
 
+        private NamingOptions _namingOptionsWithoutOptimisticEpisodeDetection;
         private NamingOptions _namingOptions;
         private string[] _videoFileExtensions;
         public NamingOptions GetNamingOptions(LibraryOptions libraryOptions)
@@ -2516,28 +2539,34 @@ namespace Emby.Server.Implementations.Library
             {
                 var options = new ExtendedNamingOptions();
 
-                // These cause apps to have problems
-                options.AudioFileExtensions.Remove(".m3u");
-                options.AudioFileExtensions.Remove(".wpl");
+                InitNamingOptions(options);
 
-                //if (!libraryOptions.EnableArchiveMediaFiles)
-                {
-                    options.AudioFileExtensions.Remove(".rar");
-                    options.AudioFileExtensions.Remove(".zip");
-                }
-
-                //if (!libraryOptions.EnableArchiveMediaFiles)
-                {
-                    options.VideoFileExtensions.Remove(".rar");
-                    options.VideoFileExtensions.Remove(".zip");
-                }
-
-                options.VideoFileExtensions.Add(".tp");
                 _namingOptions = options;
                 _videoFileExtensions = _namingOptions.VideoFileExtensions.ToArray();
             }
 
             return _namingOptions;
+        }
+
+        private void InitNamingOptions(NamingOptions options)
+        {
+            // These cause apps to have problems
+            options.AudioFileExtensions.Remove(".m3u");
+            options.AudioFileExtensions.Remove(".wpl");
+
+            //if (!libraryOptions.EnableArchiveMediaFiles)
+            {
+                options.AudioFileExtensions.Remove(".rar");
+                options.AudioFileExtensions.Remove(".zip");
+            }
+
+            //if (!libraryOptions.EnableArchiveMediaFiles)
+            {
+                options.VideoFileExtensions.Remove(".rar");
+                options.VideoFileExtensions.Remove(".zip");
+            }
+
+            options.VideoFileExtensions.Add(".tp");
         }
 
         public ItemLookupInfo ParseName(string name)
