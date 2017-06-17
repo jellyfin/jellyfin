@@ -561,7 +561,7 @@ namespace Emby.Server.Core
             StringExtensions.LocalizationManager = LocalizationManager;
             RegisterSingleInstance(LocalizationManager);
 
-            ITextEncoding textEncoding = new TextEncoding(FileSystemManager, LogManager.GetLogger("TextEncoding"));
+            ITextEncoding textEncoding = new TextEncoding(FileSystemManager, LogManager.GetLogger("TextEncoding"), JsonSerializer);
             RegisterSingleInstance(textEncoding);
             Utilities.EncodingHelper = textEncoding;
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer(FileSystemManager, textEncoding));
