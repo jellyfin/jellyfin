@@ -7,8 +7,8 @@ namespace MediaBrowser.Model.Text
     {
         Encoding GetASCIIEncoding();
 
-        string GetDetectedEncodingName(byte[] bytes, string language);
-        Encoding GetDetectedEncoding(byte[] bytes, string language);
+        string GetDetectedEncodingName(byte[] bytes, string language, bool enableLanguageDetection);
+        Encoding GetDetectedEncoding(byte[] bytes, string language, bool enableLanguageDetection);
         Encoding GetEncodingFromCharset(string charset);
     }
 }
