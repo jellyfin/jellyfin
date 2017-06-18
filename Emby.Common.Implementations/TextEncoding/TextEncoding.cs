@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Logging;
 using UniversalDetector;
+using NLangDetect.Core;
+using MediaBrowser.Model.Serialization;
 
 namespace Emby.Common.Implementations.TextEncoding
 {
@@ -15,11 +17,13 @@ namespace Emby.Common.Implementations.TextEncoding
     {
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
+        private IJsonSerializer _json;
 
-        public TextEncoding(IFileSystem fileSystem, ILogger logger)
+        public TextEncoding(IFileSystem fileSystem, ILogger logger, IJsonSerializer json)
         {
             _fileSystem = fileSystem;
             _logger = logger;
+            _json = json;
         }
 
         public Encoding GetASCIIEncoding()
@@ -63,13 +67,30 @@ namespace Emby.Common.Implementations.TextEncoding
             }
         }
 
-        public string GetDetectedEncodingName(byte[] bytes, string language)
+        private bool _langDetectInitialized;
+        public string GetDetectedEncodingName(byte[] bytes, string language, bool enableLanguageDetection)
         {
             var encoding = GetInitialEncoding(bytes);
 
             if (encoding != null && encoding.Equals(Encoding.UTF8))
             {
                 return "utf-8";
+            }
+
+            if (string.IsNullOrWhiteSpace(language) && enableLanguageDetection)
+            {
+                if (!_langDetectInitialized)
+                {
+                    _langDetectInitialized = true;
+                    LanguageDetector.Initialize(_json);
+                }
+
+                language = DetectLanguage(bytes);
+
+                if (!string.IsNullOrWhiteSpace(language))
+                {
+                    _logger.Debug("Text language detected as {0}", language);
+                }
             }
 
             var charset = DetectCharset(bytes, language);
@@ -90,6 +111,35 @@ namespace Emby.Common.Implementations.TextEncoding
             if (!string.IsNullOrWhiteSpace(language))
             {
                 return GetFileCharacterSetFromLanguage(language);
+            }
+
+            return null;
+        }
+
+        private string DetectLanguage(byte[] bytes)
+        {
+            try
+            {
+                return LanguageDetector.DetectLanguage(Encoding.UTF8.GetString(bytes));
+            }
+            catch (NLangDetectException ex)
+            {
+            }
+
+            try
+            {
+                return LanguageDetector.DetectLanguage(Encoding.ASCII.GetString(bytes));
+            }
+            catch (NLangDetectException ex)
+            {
+            }
+
+            try
+            {
+                return LanguageDetector.DetectLanguage(Encoding.Unicode.GetString(bytes));
+            }
+            catch (NLangDetectException ex)
+            {
             }
 
             return null;
@@ -117,9 +167,9 @@ namespace Emby.Common.Implementations.TextEncoding
             }
         }
 
-        public Encoding GetDetectedEncoding(byte[] bytes, string language)
+        public Encoding GetDetectedEncoding(byte[] bytes, string language, bool enableLanguageDetection)
         {
-            var charset = GetDetectedEncodingName(bytes, language);
+            var charset = GetDetectedEncodingName(bytes, language, enableLanguageDetection);
 
             return GetEncodingFromCharset(charset);
         }
@@ -136,22 +186,29 @@ namespace Emby.Common.Implementations.TextEncoding
                 case "cze":
                 case "ces":
                 case "slo":
-                case "slk":
-                case "slv":
                 case "srp":
                 case "hrv":
                 case "rum":
                 case "ron":
                 case "rup":
+                    return "windows-1250";
+                // albanian
                 case "alb":
                 case "sqi":
+                    return "windows-1250";
+                // slovak
+                case "slk":
+                case "slv":
                     return "windows-1250";
                 case "ara":
                     return "windows-1256";
                 case "heb":
                     return "windows-1255";
                 case "grc":
+                    return "windows-1253";
+                // greek
                 case "gre":
+                case "ell":
                     return "windows-1253";
                 case "crh":
                 case "ota":
