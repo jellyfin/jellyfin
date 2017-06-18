@@ -778,16 +778,16 @@ namespace Emby.Server.Implementations.Dto
                 .Select(i => new NameIdPair
                 {
                     Name = i,
-                    Id = GetStudioId(i, item)
+                    Id = GetGenreId(i, item)
                 })
                 .ToArray();
         }
 
-        private string GetStudioId(string name, BaseItem owner)
+        private string GetGenreId(string name, BaseItem owner)
         {
             if (owner is IHasMusicGenres)
             {
-                return _libraryManager.GetGameGenreId(name).ToString("N");
+                return _libraryManager.GetMusicGenreId(name).ToString("N");
             }
 
             if (owner is Game || owner is GameSystem)

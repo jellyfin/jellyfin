@@ -68,7 +68,7 @@ namespace Emby.Common.Implementations.TextEncoding
         }
 
         private bool _langDetectInitialized;
-        public string GetDetectedEncodingName(byte[] bytes, string language)
+        public string GetDetectedEncodingName(byte[] bytes, string language, bool enableLanguageDetection)
         {
             var encoding = GetInitialEncoding(bytes);
 
@@ -77,14 +77,14 @@ namespace Emby.Common.Implementations.TextEncoding
                 return "utf-8";
             }
 
-            if (!_langDetectInitialized)
+            if (string.IsNullOrWhiteSpace(language) && enableLanguageDetection)
             {
-                _langDetectInitialized = true;
-                LanguageDetector.Initialize(_json);
-            }
+                if (!_langDetectInitialized)
+                {
+                    _langDetectInitialized = true;
+                    LanguageDetector.Initialize(_json);
+                }
 
-            if (string.IsNullOrWhiteSpace(language))
-            {
                 language = DetectLanguage(bytes);
 
                 if (!string.IsNullOrWhiteSpace(language))
@@ -167,9 +167,9 @@ namespace Emby.Common.Implementations.TextEncoding
             }
         }
 
-        public Encoding GetDetectedEncoding(byte[] bytes, string language)
+        public Encoding GetDetectedEncoding(byte[] bytes, string language, bool enableLanguageDetection)
         {
-            var charset = GetDetectedEncodingName(bytes, language);
+            var charset = GetDetectedEncodingName(bytes, language, enableLanguageDetection);
 
             return GetEncodingFromCharset(charset);
         }
