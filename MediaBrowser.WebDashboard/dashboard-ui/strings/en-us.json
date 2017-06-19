@@ -1929,5 +1929,6 @@
   "News": "News",
   "HeaderDownloadSync": "Download & Sync",
   "EnableHardwareDecoding": "Enable hardware decoding",
-  "EnableHardwareEncoding": "Enable hardware encoding"
+  "EnableHardwareEncoding": "Enable hardware encoding",
+  "Rate": "Rate"
 }
