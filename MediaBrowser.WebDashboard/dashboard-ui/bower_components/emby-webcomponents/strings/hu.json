@@ -1,6 +1,4 @@
 {
-    "Schedule": "Schedule",
-    "Recordings": "Recordings",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -256,7 +254,6 @@
     "MessageItemSaved": "Item saved.",
     "SearchResults": "Search Results",
     "DownloadToOtherDevice": "Download to other device",
-    "MakeAvailableOffline": "Make available offline",
     "ServerNameIsRestarting": "Emby Server - {0} \u00fajraindul.",
     "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",
     "HeaderDeleteItems": "Delete Items",
@@ -359,7 +356,6 @@
     "RemoveDownload": "Remove download",
     "AddedOnValue": "Hozz\u00e1adva {0}",
     "RemovingFromDevice": "Removing from device",
-    "RemoveFromDevice": "Remove from device",
     "KeepOnDevice": "Keep on device",
     "CancelDownload": "Cancel download",
     "SyncJobItemStatusReadyToTransfer": "Ready to Transfer",
@@ -438,5 +434,8 @@
     "ConfirmEndPlayerSession": "Would you like to close Emby on the device?",
     "Yes": "Yes",
     "No": "No",
-    "LiveTV": "Live TV"
+    "LiveTV": "Live TV",
+    "Schedule": "Schedule",
+    "Recordings": "Recordings",
+    "MarkWatched": "Mark watched"
 }

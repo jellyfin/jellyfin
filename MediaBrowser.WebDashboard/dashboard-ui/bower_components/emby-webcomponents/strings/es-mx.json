@@ -1,6 +1,4 @@
 {
-    "Schedule": "Programacion",
-    "Recordings": "Recordings",
     "MessageUnlockAppWithPurchaseOrSupporter": "Desbloquee esta caracter\u00edstica con una peque\u00f1a compra \u00fanica, o con una suscripci\u00f3n activa de Emby Premier.",
     "MessageUnlockAppWithSupporter": "Desbloquee esta caracter\u00edstica con una suscripci\u00f3n activa de Emby Premier.",
     "MessageToValidateSupporter": "Si tiene una subscripci\u00f3n de Emby Premiere activa, aseg\u00farese de que ha configurado Emby Premiere en el Panel de Control del Servidor Emby, al cual puede acceder dando click en Emby Premiere dentro del men\u00fa principal.",
@@ -256,7 +254,6 @@
     "MessageItemSaved": "\u00cdtem guardado.",
     "SearchResults": "Resultados de la b\u00fasqueda",
     "DownloadToOtherDevice": "Descargar a otro dispositivo",
-    "MakeAvailableOffline": "Hacer disponible sin conexi\u00f3n",
     "ServerNameIsRestarting": "El Servidor Emby - {0} se esta reiniciando.",
     "ServerNameIsShuttingDown": "El Servidor Emby - {0} se esta apagando.",
     "HeaderDeleteItems": "Borrar items",
@@ -359,7 +356,6 @@
     "RemoveDownload": "Eliminar descarga",
     "AddedOnValue": "Agregado {0}",
     "RemovingFromDevice": "Eliminando del dispositivo",
-    "RemoveFromDevice": "Eliminar del dispositivo",
     "KeepOnDevice": "Conservar en el dispositivo",
     "CancelDownload": "Cancelar descarga",
     "SyncJobItemStatusReadyToTransfer": "Listo para Transferir",
@@ -438,5 +434,8 @@
     "ConfirmEndPlayerSession": "\u00bfDesea cerrar Emby en el dispositivo?",
     "Yes": "S\u00ed",
     "No": "No",
-    "LiveTV": "TV en Vivo"
+    "LiveTV": "TV en Vivo",
+    "Schedule": "Programacion",
+    "Recordings": "Recordings",
+    "MarkWatched": "Mark watched"
 }
