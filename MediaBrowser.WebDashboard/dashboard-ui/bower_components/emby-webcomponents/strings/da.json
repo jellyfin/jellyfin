@@ -1,6 +1,4 @@
 {
-    "Schedule": "Schedule",
-    "Recordings": "Recordings",
     "MessageUnlockAppWithPurchaseOrSupporter": "L\u00e5s op for dette feature med en lille enkeltst\u00e5ende betaling, eller med et aktivt Emby Premiere abonnement.",
     "MessageUnlockAppWithSupporter": "L\u00e5s op for dette feature med et aktivt Emby Premiere abonnement.",
     "MessageToValidateSupporter": "Hvis du har et aktivt Emby Premiere abonnement, skal du v\u00e6re sikker p\u00e5 at Emby Premiere er konfigureret i dit Emby Server-kontrolpanel, som kan tilg\u00e5es ved at klikke p\u00e5 Emby Premiere i hovedmenuen.",
@@ -256,7 +254,6 @@
     "MessageItemSaved": "Element gemt.",
     "SearchResults": "S\u00f8geresultater",
     "DownloadToOtherDevice": "Download to other device",
-    "MakeAvailableOffline": "G\u00f8r tilg\u00e6ngelig offline",
     "ServerNameIsRestarting": "Emby Server - {0} genstarter.",
     "ServerNameIsShuttingDown": "Emby Server - {0} lukker ned.",
     "HeaderDeleteItems": "Slet emner",
@@ -359,7 +356,6 @@
     "RemoveDownload": "Fjern download",
     "AddedOnValue": "Tilf\u00f8jet {0}",
     "RemovingFromDevice": "Fjerner fra enhed",
-    "RemoveFromDevice": "Fjern fra enhed",
     "KeepOnDevice": "Bevar p\u00e5 enhed",
     "CancelDownload": "Annuller download",
     "SyncJobItemStatusReadyToTransfer": "Klar til at Overf\u00f8re",
@@ -438,5 +434,8 @@
     "ConfirmEndPlayerSession": "Would you like to close Emby on the device?",
     "Yes": "Yes",
     "No": "No",
-    "LiveTV": "Live TV"
+    "LiveTV": "Live TV",
+    "Schedule": "Schedule",
+    "Recordings": "Recordings",
+    "MarkWatched": "Mark watched"
 }

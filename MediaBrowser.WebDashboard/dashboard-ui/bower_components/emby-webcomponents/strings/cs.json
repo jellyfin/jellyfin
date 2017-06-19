@@ -1,6 +1,4 @@
 {
-    "Schedule": "Schedule",
-    "Recordings": "Recordings",
     "MessageUnlockAppWithPurchaseOrSupporter": "Odemknout tuto funkci pomoc\u00ed jednor\u00e1zov\u00e9 platby, nebo pomoc\u00ed aktivace p\u0159edplatn\u00e9ho Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Odemknout tuto funkci pomoc\u00ed aktivn\u00edho p\u0159edplatn\u00e9ho Emby Premiere.",
     "MessageToValidateSupporter": "Pokud m\u00e1te aktivn\u00ed p\u0159edplatn\u00e9 Emby Premiere, ujist\u011bte se, \u017ee m\u00e1te nastaven Emby Premiere v panelu Nastaven\u00ed pod N\u00e1pov\u011bda -> Emby Premiere.",
@@ -256,7 +254,6 @@
     "MessageItemSaved": "Polo\u017eka ulo\u017eena.",
     "SearchResults": "V\u00fdsledky vyhled\u00e1v\u00e1n\u00ed",
     "DownloadToOtherDevice": "Download to other device",
-    "MakeAvailableOffline": "Zp\u0159\u00edstupnit offline",
     "ServerNameIsRestarting": "Emby Server - {0} je restartov\u00e1n.",
     "ServerNameIsShuttingDown": "Emby Server - {0} je vyp\u00edn\u00e1n.",
     "HeaderDeleteItems": "Odstranit polo\u017eky",
@@ -359,7 +356,6 @@
     "RemoveDownload": "Remove download",
     "AddedOnValue": "Added {0}",
     "RemovingFromDevice": "Removing from device",
-    "RemoveFromDevice": "Remove from device",
     "KeepOnDevice": "Keep on device",
     "CancelDownload": "Cancel download",
     "SyncJobItemStatusReadyToTransfer": "Ready to Transfer",
@@ -438,5 +434,8 @@
     "ConfirmEndPlayerSession": "Would you like to close Emby on the device?",
     "Yes": "Yes",
     "No": "No",
-    "LiveTV": "Live TV"
+    "LiveTV": "Live TV",
+    "Schedule": "Schedule",
+    "Recordings": "Recordings",
+    "MarkWatched": "Mark watched"
 }

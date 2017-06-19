@@ -1,6 +1,4 @@
 {
-    "Schedule": "Schedule",
-    "Recordings": "Recordings",
     "MessageUnlockAppWithPurchaseOrSupporter": "Atrakinkite \u0161i\u0105 funkcij\u0105 nedideliu vienkartiniu mokes\u010diu arba \u012fsigij\u0119 Emby Premiere prenumerat\u0105.",
     "MessageUnlockAppWithSupporter": "Atrakinkite \u0161i\u0105 funkcij\u0105 \u012fsigij\u0119 Emby Premiere prenumerat\u0105.",
     "MessageToValidateSupporter": "Jei turite aktyvi\u0105 Emby Premiere prenumerat\u0105, sutvarkykite Emby Premiere savo Emby Serverio skydelyje. Tai galite atlikti paspaud\u0117 Emby Premiere u\u017era\u0161\u0105 pagrindiniame meniu.",
@@ -256,7 +254,6 @@
     "MessageItemSaved": "Elementas i\u0161saugotas.",
     "SearchResults": "Paie\u0161kos rezultatai",
     "DownloadToOtherDevice": "Download to other device",
-    "MakeAvailableOffline": "\u012egalinti \u017ei\u016br\u0117jim\u0105 neprisijungus",
     "ServerNameIsRestarting": "Emby Serveris - {0} leid\u017eiamas i\u0161 naujo.",
     "ServerNameIsShuttingDown": "Emby Serveris - {0} i\u0161sijungia.",
     "HeaderDeleteItems": "I\u0161trinti elementus",
@@ -359,7 +356,6 @@
     "RemoveDownload": "Remove download",
     "AddedOnValue": "Added {0}",
     "RemovingFromDevice": "Removing from device",
-    "RemoveFromDevice": "Remove from device",
     "KeepOnDevice": "Keep on device",
     "CancelDownload": "Cancel download",
     "SyncJobItemStatusReadyToTransfer": "Ready to Transfer",
@@ -438,5 +434,8 @@
     "ConfirmEndPlayerSession": "Would you like to close Emby on the device?",
     "Yes": "Yes",
     "No": "No",
-    "LiveTV": "Live TV"
+    "LiveTV": "Live TV",
+    "Schedule": "Schedule",
+    "Recordings": "Recordings",
+    "MarkWatched": "Mark watched"
 }

@@ -130,11 +130,18 @@ namespace SocketHttpListener.Net
                     var thisRef = (HttpListenerResponse)iar.AsyncState;
                     try
                     {
-                        thisRef.OutputStream.EndWrite(iar);
+                        try
+                        {
+                            thisRef.OutputStream.EndWrite(iar);
+                        }
+                        finally
+                        {
+                            thisRef.Close(false);
+                        }
                     }
-                    finally
+                    catch (Exception)
                     {
-                        thisRef.Close(false);
+                        // In case response was disposed during this time
                     }
                 }, this);
             }

@@ -1,6 +1,4 @@
 {
-    "Schedule": "Zeitplan",
-    "Recordings": "Aufnahmen",
     "MessageUnlockAppWithPurchaseOrSupporter": "Schalte diese Funktion mit einer kleinen einmaligen Geb\u00fchr oder einem aktiven Emby Premium Abo frei.",
     "MessageUnlockAppWithSupporter": "Schalte diese Funktion mit einem aktiven Emby Premium Abo frei.",
     "MessageToValidateSupporter": "Wenn du eine aktive Emby Premiere Mitgliedschaft hast, stelle bitte sicher, dass du diese \u00fcber das Emby Server Dashboard eingerichtet hast (Hauptmenu -> Emby Premiere).",
@@ -225,7 +223,7 @@
     "Producer": "Produzent",
     "Writer": "Drehbuchautor",
     "MessageNoSyncJobsFound": "Keine Downloads gefunden. Um Downloadauftr\u00e4ge zu erstellen verwende die Downloadbuttons in der App.",
-    "MessageNoDownloadsFound": "Keine Offline-Downloads. Mache deine Medien offline verf\u00fcgbar indem du \"Offline verf\u00fcgbar machen\" in der App bei bei den Medien anklickst.",
+    "MessageNoDownloadsFound": "Keine Offline-Downloads. Downloade deine Medien um sie offline abzuspielen indem du Download in der App anklickst.",
     "InstallingPackage": "Installiere {0}",
     "PackageInstallCompleted": "{0} Installation abgeschlossen",
     "PackageInstallFailed": "{0} Installation fehlgeschlagen",
@@ -256,7 +254,6 @@
     "MessageItemSaved": "Element gespeichert",
     "SearchResults": "Suchergebnisse",
     "DownloadToOtherDevice": "Auf ein anderes Ger\u00e4t herunterladen",
-    "MakeAvailableOffline": "Offline verf\u00fcgbar machen",
     "ServerNameIsRestarting": "Emby Server - {0} startet neu.",
     "ServerNameIsShuttingDown": "Emby Server - {0} f\u00e4hrt herunter.",
     "HeaderDeleteItems": "L\u00f6sche Objekte",
@@ -267,7 +264,7 @@
     "LabelQuality": "Qualit\u00e4t:",
     "LabelSyncNoTargetsHelp": "Es sieht so aus als w\u00fcrdest du aktuell keine Apps verwenden, die Offline-Downloads unterst\u00fctzen.",
     "DownloadScheduled": "Download geplant",
-    "HeaderSyncRequiresSub": "Synchronisation ben\u00f6tigt ein aktives Emby Premiere Abonnement.",
+    "HeaderSyncRequiresSub": "Downloads ben\u00f6tigen ein aktives Emby Premiere Abonnement.",
     "LearnMore": "Erfahre mehr",
     "LabelProfile": "Profil:",
     "LabelBitrateMbps": "Datenrate (Mbps):",
@@ -359,7 +356,6 @@
     "RemoveDownload": "Download entfernen",
     "AddedOnValue": "Hinzugef\u00fcgt {0}",
     "RemovingFromDevice": "Vom Ger\u00e4t entfernen",
-    "RemoveFromDevice": "Vom Ger\u00e4t entfernen",
     "KeepOnDevice": "Auf Ger\u00e4t behalten",
     "CancelDownload": "Download abbrechen",
     "SyncJobItemStatusReadyToTransfer": "Fertig zum Transfer",
@@ -438,5 +434,8 @@
     "ConfirmEndPlayerSession": "M\u00f6chtest du Emby auf diesem Ger\u00e4t beenden?",
     "Yes": "Ja",
     "No": "Nein",
-    "LiveTV": "Live TV"
+    "LiveTV": "Live TV",
+    "Schedule": "Zeitplan",
+    "Recordings": "Aufnahmen",
+    "MarkWatched": "Als gesehen markieren"
 }
