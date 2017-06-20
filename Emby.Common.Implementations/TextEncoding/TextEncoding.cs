@@ -214,7 +214,10 @@ namespace Emby.Common.Implementations.TextEncoding
                 case "ota":
                 case "tur":
                     return "windows-1254";
+                // bulgarian
+                case "bul":
                 case "bgr":
+                    return "windows-1251";
                 case "rus":
                     return "windows-1251";
                 case "vie":
