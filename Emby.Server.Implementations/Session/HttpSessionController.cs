@@ -159,24 +159,25 @@ namespace Emby.Server.Implementations.Session
 
         public Task SendMessage<T>(string name, T data, CancellationToken cancellationToken)
         {
-            var url = PostUrl + "/" + name;
+            return Task.FromResult(true);
+            //var url = PostUrl + "/" + name;
 
-            var options = new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = cancellationToken,
-                BufferContent = false
-            };
+            //var options = new HttpRequestOptions
+            //{
+            //    Url = url,
+            //    CancellationToken = cancellationToken,
+            //    BufferContent = false
+            //};
 
-            options.RequestContent = _json.SerializeToString(data);
-            options.RequestContentType = "application/json";
+            //options.RequestContent = _json.SerializeToString(data);
+            //options.RequestContentType = "application/json";
 
-            return _httpClient.Post(new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = cancellationToken,
-                BufferContent = false
-            });
+            //return _httpClient.Post(new HttpRequestOptions
+            //{
+            //    Url = url,
+            //    CancellationToken = cancellationToken,
+            //    BufferContent = false
+            //});
         }
 
         private string ToQueryString(Dictionary<string, string> nvc)
