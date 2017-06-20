@@ -74,6 +74,13 @@
                             </div>
                         </button>
 
+                        <button is="emby-downloadbutton" type="button" class="button-flat btnSyncDownload hide detailButton-mobile">
+                            <div class="detailButton-mobile-content">
+                                <i class="md-icon detailButton-mobile-icon">file_download</i>
+                                <div class="detailButton-mobile-text emby-downloadbutton-downloadtext">${ButtonDownload}</div>
+                            </div>
+                        </button>
+
                         <button is="emby-button" type="button" class="button-flat btnMoreCommands hide detailButton-mobile">
                             <div class="detailButton-mobile-content">
                                 <i class="md-icon detailButton-mobile-icon">more_vert</i>
@@ -131,7 +138,7 @@
                             <span>${ButtonCancelSeries}</span>
                         </button>
 
-                        <div style="margin-left:.5em; display: flex; align-items: center;">
+                        <div style="margin-left: .5em; display: flex; align-items: center;">
                             <button is="emby-button" type="button" class="btnMoreCommands fab mini hide" title="${ButtonMore}"><i class="md-icon">more_vert</i></button>
                             <button is="emby-button" type="button" class="btnDeleteItem fab mini hide" title="${DeleteMedia}"><i class="md-icon">&#xE872;</i></button>
                             <button is="emby-playstatebutton" type="button" class="btnPlaystate fab mini hide"><i class="md-icon">check</i></button>
@@ -139,8 +146,10 @@
                         </div>
                     </div>
 
-                    <div class="syncLocalContainer hide" style="margin: 1em 0;">
-                    </div>
+                    <button is="emby-downloadbutton" type="button" class="button-flat btnSyncDownload hide mainDetailButtons-nonmobile" style="margin: 1em 0 0;">
+                        <i class="md-icon">file_download</i>
+                        <span class="emby-downloadbutton-downloadtext">${ButtonDownload}</span>
+                    </button>
 
                     <div class="recordingFields hide" style="margin: .5em 0 1.5em;">
 
