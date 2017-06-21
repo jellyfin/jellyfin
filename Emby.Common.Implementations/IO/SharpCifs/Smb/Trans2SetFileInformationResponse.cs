@@ -16,48 +16,48 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-	internal class Trans2SetFileInformationResponse : SmbComTransactionResponse
-	{
-		public Trans2SetFileInformationResponse()
-		{
-			SubCommand = Smb.SmbComTransaction.Trans2SetFileInformation;
-		}
+    internal class Trans2SetFileInformationResponse : SmbComTransactionResponse
+    {
+        public Trans2SetFileInformationResponse()
+        {
+            SubCommand = Smb.SmbComTransaction.Trans2SetFileInformation;
+        }
 
-		internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
-			)
-		{
-			return 0;
-		}
+        internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len)
+        {
+            return 0;
+        }
 
-		internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int
-			 len)
-		{
-			return 0;
-		}
+        internal override int ReadParametersWireFormat(byte[] buffer, 
+                                                       int bufferIndex, 
+                                                       int len)
+        {
+            return 0;
+        }
 
-		internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
-		{
-			return 0;
-		}
+        internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
+        {
+            return 0;
+        }
 
-		public override string ToString()
-		{
-			return "Trans2SetFileInformationResponse[" + base.ToString() + "]";
-		}
-	}
+        public override string ToString()
+        {
+            return "Trans2SetFileInformationResponse[" + base.ToString() + "]";
+        }
+    }
 }

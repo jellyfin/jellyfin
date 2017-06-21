@@ -16,78 +16,78 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-	internal abstract class SmbComNtTransaction : SmbComTransaction
-	{
-		private const int NttPrimarySetupOffset = 69;
+    internal abstract class SmbComNtTransaction : SmbComTransaction
+    {
+        private const int NttPrimarySetupOffset = 69;
 
-		private const int NttSecondaryParameterOffset = 51;
+        private const int NttSecondaryParameterOffset = 51;
 
-		internal const int NtTransactQuerySecurityDesc = 6;
+        internal const int NtTransactQuerySecurityDesc = 6;
 
-		internal int Function;
+        internal int Function;
 
-		public SmbComNtTransaction()
-		{
-			// relative to headerStart
-			primarySetupOffset = NttPrimarySetupOffset;
-			secondaryParameterOffset = NttSecondaryParameterOffset;
-		}
+        public SmbComNtTransaction()
+        {
+            // relative to headerStart
+            primarySetupOffset = NttPrimarySetupOffset;
+            secondaryParameterOffset = NttSecondaryParameterOffset;
+        }
 
-		internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
-		{
-			int start = dstIndex;
-			if (Command != SmbComNtTransactSecondary)
-			{
-				dst[dstIndex++] = MaxSetupCount;
-			}
-			else
-			{
-				dst[dstIndex++] = unchecked(unchecked(0x00));
-			}
-			// Reserved
-			dst[dstIndex++] = unchecked(unchecked(0x00));
-			// Reserved
-			dst[dstIndex++] = unchecked(unchecked(0x00));
-			// Reserved
-			WriteInt4(TotalParameterCount, dst, dstIndex);
-			dstIndex += 4;
-			WriteInt4(TotalDataCount, dst, dstIndex);
-			dstIndex += 4;
-			if (Command != SmbComNtTransactSecondary)
-			{
-				WriteInt4(MaxParameterCount, dst, dstIndex);
-				dstIndex += 4;
-				WriteInt4(MaxDataCount, dst, dstIndex);
-				dstIndex += 4;
-			}
-			WriteInt4(ParameterCount, dst, dstIndex);
-			dstIndex += 4;
-			WriteInt4((ParameterCount == 0 ? 0 : ParameterOffset), dst, dstIndex);
-			dstIndex += 4;
-			if (Command == SmbComNtTransactSecondary)
-			{
-				WriteInt4(ParameterDisplacement, dst, dstIndex);
-				dstIndex += 4;
-			}
-			WriteInt4(DataCount, dst, dstIndex);
-			dstIndex += 4;
-			WriteInt4((DataCount == 0 ? 0 : DataOffset), dst, dstIndex);
-			dstIndex += 4;
-			if (Command == SmbComNtTransactSecondary)
-			{
-				WriteInt4(DataDisplacement, dst, dstIndex);
-				dstIndex += 4;
-				dst[dstIndex++] = unchecked(unchecked(0x00));
-			}
-			else
-			{
-				// Reserved1
-				dst[dstIndex++] = unchecked((byte)SetupCount);
-				WriteInt2(Function, dst, dstIndex);
-				dstIndex += 2;
-				dstIndex += WriteSetupWireFormat(dst, dstIndex);
-			}
-			return dstIndex - start;
-		}
-	}
+        internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
+        {
+            int start = dstIndex;
+            if (Command != SmbComNtTransactSecondary)
+            {
+                dst[dstIndex++] = MaxSetupCount;
+            }
+            else
+            {
+                dst[dstIndex++] = unchecked(unchecked(0x00));
+            }
+            // Reserved
+            dst[dstIndex++] = unchecked(unchecked(0x00));
+            // Reserved
+            dst[dstIndex++] = unchecked(unchecked(0x00));
+            // Reserved
+            WriteInt4(TotalParameterCount, dst, dstIndex);
+            dstIndex += 4;
+            WriteInt4(TotalDataCount, dst, dstIndex);
+            dstIndex += 4;
+            if (Command != SmbComNtTransactSecondary)
+            {
+                WriteInt4(MaxParameterCount, dst, dstIndex);
+                dstIndex += 4;
+                WriteInt4(MaxDataCount, dst, dstIndex);
+                dstIndex += 4;
+            }
+            WriteInt4(ParameterCount, dst, dstIndex);
+            dstIndex += 4;
+            WriteInt4((ParameterCount == 0 ? 0 : ParameterOffset), dst, dstIndex);
+            dstIndex += 4;
+            if (Command == SmbComNtTransactSecondary)
+            {
+                WriteInt4(ParameterDisplacement, dst, dstIndex);
+                dstIndex += 4;
+            }
+            WriteInt4(DataCount, dst, dstIndex);
+            dstIndex += 4;
+            WriteInt4((DataCount == 0 ? 0 : DataOffset), dst, dstIndex);
+            dstIndex += 4;
+            if (Command == SmbComNtTransactSecondary)
+            {
+                WriteInt4(DataDisplacement, dst, dstIndex);
+                dstIndex += 4;
+                dst[dstIndex++] = unchecked(unchecked(0x00));
+            }
+            else
+            {
+                // Reserved1
+                dst[dstIndex++] = unchecked((byte)SetupCount);
+                WriteInt2(Function, dst, dstIndex);
+                dstIndex += 2;
+                dstIndex += WriteSetupWireFormat(dst, dstIndex);
+            }
+            return dstIndex - start;
+        }
+    }
 }

@@ -18,13 +18,13 @@ using SharpCifs.Dcerpc.Ndr;
 
 namespace SharpCifs.Dcerpc.Msrpc
 {
-	public class MsrpcQueryInformationPolicy : Lsarpc.LsarQueryInformationPolicy
-	{
-		public MsrpcQueryInformationPolicy(LsaPolicyHandle policyHandle, short level, NdrObject
-			 info) : base(policyHandle, level, info)
-		{
-			Ptype = 0;
+    public class MsrpcQueryInformationPolicy : Lsarpc.LsarQueryInformationPolicy
+    {
+        public MsrpcQueryInformationPolicy(LsaPolicyHandle policyHandle, short level, NdrObject info)
+            : base(policyHandle, level, info)
+        {
+            Ptype = 0;
             Flags = DcerpcConstants.DcerpcFirstFrag | DcerpcConstants.DcerpcLastFrag;
-		}
-	}
+        }
+    }
 }

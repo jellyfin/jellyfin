@@ -18,63 +18,65 @@ using SharpCifs.Util;
 
 namespace SharpCifs.Smb
 {
-	internal class Trans2QueryFsInformation : SmbComTransaction
-	{
-		private int _informationLevel;
+    internal class Trans2QueryFsInformation : SmbComTransaction
+    {
+        private int _informationLevel;
 
-		internal Trans2QueryFsInformation(int informationLevel)
-		{
-			Command = SmbComTransaction2;
-			SubCommand = Trans2QueryFsInformation;
-			this._informationLevel = informationLevel;
-			TotalParameterCount = 2;
-			TotalDataCount = 0;
-			MaxParameterCount = 0;
-			MaxDataCount = 800;
-			MaxSetupCount = 0;
-		}
+        internal Trans2QueryFsInformation(int informationLevel)
+        {
+            Command = SmbComTransaction2;
+            SubCommand = Trans2QueryFsInformation;
+            this._informationLevel = informationLevel;
+            TotalParameterCount = 2;
+            TotalDataCount = 0;
+            MaxParameterCount = 0;
+            MaxDataCount = 800;
+            MaxSetupCount = 0;
+        }
 
-		internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
-		{
-			dst[dstIndex++] = SubCommand;
-			dst[dstIndex++] = unchecked(unchecked(0x00));
-			return 2;
-		}
+        internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
+        {
+            dst[dstIndex++] = SubCommand;
+            dst[dstIndex++] = unchecked(unchecked(0x00));
+            return 2;
+        }
 
-		internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
-		{
-			int start = dstIndex;
-			WriteInt2(_informationLevel, dst, dstIndex);
-			dstIndex += 2;
-			return dstIndex - start;
-		}
+        internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
+        {
+            int start = dstIndex;
+            WriteInt2(_informationLevel, dst, dstIndex);
+            dstIndex += 2;
+            return dstIndex - start;
+        }
 
-		internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
-			)
-		{
-			return 0;
-		}
+        internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len)
+        {
+            return 0;
+        }
 
-		internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int
-			 len)
-		{
-			return 0;
-		}
+        internal override int ReadParametersWireFormat(byte[] buffer,
+                                                       int bufferIndex,
+                                                       int len)
+        {
+            return 0;
+        }
 
-		internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
-		{
-			return 0;
-		}
+        internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
+        {
+            return 0;
+        }
 
-		public override string ToString()
-		{
-			return "Trans2QueryFSInformation[" + base.ToString() + ",informationLevel=0x"
-				 + Hexdump.ToHexString(_informationLevel, 3) + "]";
-		}
-	}
+        public override string ToString()
+        {
+            return "Trans2QueryFSInformation["
+                        + base.ToString()
+                        + ",informationLevel=0x" + Hexdump.ToHexString(_informationLevel, 3)
+                        + "]";
+        }
+    }
 }

@@ -21,8 +21,8 @@ namespace SharpCifs.Smb
 {
     internal abstract class SmbComTransaction : ServerMessageBlock
     {
-        private static readonly int DefaultMaxDataCount = Config.GetInt("jcifs.smb.client.transaction_buf_size"
-            , TransactionBufSize) - 512;
+        private static readonly int DefaultMaxDataCount
+            = Config.GetInt("jcifs.smb.client.transaction_buf_size", TransactionBufSize) - 512;
 
         private const int PrimarySetupOffset = 61;
 
@@ -70,14 +70,11 @@ namespace SharpCifs.Smb
 
         internal const int NetServerEnum3 = unchecked(0x00D7);
 
-        internal const byte TransPeekNamedPipe = unchecked(unchecked(0x23
-            ));
+        internal const byte TransPeekNamedPipe = unchecked(unchecked(0x23));
 
-        internal const byte TransWaitNamedPipe = unchecked(unchecked(0x53
-            ));
+        internal const byte TransWaitNamedPipe = unchecked(unchecked(0x53));
 
-        internal const byte TransCallNamedPipe = unchecked(unchecked(0x54
-            ));
+        internal const byte TransCallNamedPipe = unchecked(unchecked(0x54));
 
         internal const byte TransTransactNamedPipe = unchecked(unchecked(0x26));
 
@@ -211,8 +208,8 @@ namespace SharpCifs.Smb
                 available -= _pad1;
                 DataCount = Math.Min(TotalDataCount - DataDisplacement, available);
             }
-            if ((ParameterDisplacement + ParameterCount) >= TotalParameterCount && (DataDisplacement
-                 + DataCount) >= TotalDataCount)
+            if ((ParameterDisplacement + ParameterCount) >= TotalParameterCount
+                && (DataDisplacement + DataCount) >= TotalDataCount)
             {
                 _hasMore = false;
             }
@@ -246,7 +243,7 @@ namespace SharpCifs.Smb
             }
             WriteInt2(ParameterCount, dst, dstIndex);
             dstIndex += 2;
-            //        writeInt2(( parameterCount == 0 ? 0 : parameterOffset ), dst, dstIndex );
+            // writeInt2(( parameterCount == 0 ? 0 : parameterOffset ), dst, dstIndex );
             WriteInt2(ParameterOffset, dst, dstIndex);
             dstIndex += 2;
             if (Command == SmbComTransactionSecondary)
@@ -306,8 +303,7 @@ namespace SharpCifs.Smb
             return dstIndex - start;
         }
 
-        internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex
-            )
+        internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex)
         {
             return 0;
         }
@@ -323,24 +319,31 @@ namespace SharpCifs.Smb
 
         internal abstract int WriteDataWireFormat(byte[] dst, int dstIndex);
 
-        internal abstract int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
-            );
+        internal abstract int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len);
 
-        internal abstract int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int
-             len);
+        internal abstract int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int len);
 
         internal abstract int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len);
 
         public override string ToString()
         {
-            return base.ToString() + ",totalParameterCount=" + TotalParameterCount
-                 + ",totalDataCount=" + TotalDataCount + ",maxParameterCount=" + MaxParameterCount
-                 + ",maxDataCount=" + MaxDataCount + ",maxSetupCount=" + (int)MaxSetupCount + ",flags=0x"
-                 + Hexdump.ToHexString(_flags, 2) + ",timeout=" + Timeout + ",parameterCount=" +
-                ParameterCount + ",parameterOffset=" + ParameterOffset + ",parameterDisplacement="
-                 + ParameterDisplacement + ",dataCount=" + DataCount + ",dataOffset=" + DataOffset
-                 + ",dataDisplacement=" + DataDisplacement + ",setupCount=" + SetupCount + ",pad="
-                 + _pad + ",pad1=" + _pad1;
+            return base.ToString()
+                    + ",totalParameterCount=" + TotalParameterCount
+                    + ",totalDataCount=" + TotalDataCount
+                    + ",maxParameterCount=" + MaxParameterCount
+                    + ",maxDataCount=" + MaxDataCount
+                    + ",maxSetupCount=" + (int)MaxSetupCount
+                    + ",flags=0x" + Hexdump.ToHexString(_flags, 2)
+                    + ",timeout=" + Timeout
+                    + ",parameterCount=" + ParameterCount
+                    + ",parameterOffset=" + ParameterOffset
+                    + ",parameterDisplacement=" + ParameterDisplacement
+                    + ",dataCount=" + DataCount
+                    + ",dataOffset=" + DataOffset
+                    + ",dataDisplacement=" + DataDisplacement
+                    + ",setupCount=" + SetupCount
+                    + ",pad=" + _pad
+                    + ",pad1=" + _pad1;
         }
     }
 }
