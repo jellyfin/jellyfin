@@ -82,6 +82,7 @@
     <Compile Include="Net\HttpStreamAsyncResult.cs" />
     <Compile Include="Net\HttpVersion.cs" />
     <Compile Include="Net\ListenerPrefix.cs" />
+    <Compile Include="Net\UriScheme.cs" />
     <Compile Include="Net\WebHeaderCollection.cs" />
     <Compile Include="Net\WebHeaderEncoding.cs" />
     <Compile Include="Net\WebSockets\HttpListenerWebSocketContext.cs" />
