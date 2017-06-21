@@ -16,21 +16,21 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-	/// <summary>
-	/// The <code>SmbAuthException</code> encapsulates the variety of
-	/// authentication related error codes returned by an SMB server.
-	/// </summary>
-	/// <remarks>
-	/// The <code>SmbAuthException</code> encapsulates the variety of
-	/// authentication related error codes returned by an SMB server.
-	/// <p>
-	/// See <a href="../../../authhandler.html">jCIFS Exceptions and NtlmAuthenticator</a> for more information about <code>SmbAuthException</code>.
-	/// </remarks>
-	
-	public class SmbAuthException : SmbException
-	{
-		internal SmbAuthException(int errcode) : base(errcode, null)
-		{
-		}
-	}
+    /// <summary>
+    /// The <code>SmbAuthException</code> encapsulates the variety of
+    /// authentication related error codes returned by an SMB server.
+    /// </summary>
+    /// <remarks>
+    /// The <code>SmbAuthException</code> encapsulates the variety of
+    /// authentication related error codes returned by an SMB server.
+    /// <p>
+    /// See <a href="../../../authhandler.html">jCIFS Exceptions and NtlmAuthenticator</a> for more information about <code>SmbAuthException</code>.
+    /// </remarks>
+
+    public class SmbAuthException : SmbException
+    {
+        internal SmbAuthException(int errcode) : base(errcode, null)
+        {
+        }
+    }
 }

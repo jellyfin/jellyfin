@@ -16,42 +16,42 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-	internal class SmbComDeleteDirectory : ServerMessageBlock
-	{
-		internal SmbComDeleteDirectory(string directoryName)
-		{
-			Path = directoryName;
-			Command = SmbComDeleteDirectory;
-		}
+    internal class SmbComDeleteDirectory : ServerMessageBlock
+    {
+        internal SmbComDeleteDirectory(string directoryName)
+        {
+            Path = directoryName;
+            Command = SmbComDeleteDirectory;
+        }
 
-		internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
-		{
-			int start = dstIndex;
-			dst[dstIndex++] = unchecked(unchecked(0x04));
-			dstIndex += WriteString(Path, dst, dstIndex);
-			return dstIndex - start;
-		}
+        internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
+        {
+            int start = dstIndex;
+            dst[dstIndex++] = unchecked(unchecked(0x04));
+            dstIndex += WriteString(Path, dst, dstIndex);
+            return dstIndex - start;
+        }
 
-		internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex
-			)
-		{
-			return 0;
-		}
+        internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex)
+        {
+            return 0;
+        }
 
-		internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
-		{
-			return 0;
-		}
+        internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
+        {
+            return 0;
+        }
 
-		public override string ToString()
-		{
-			return "SmbComDeleteDirectory[" + base.ToString() + ",directoryName=" 
-				+ Path + "]";
-		}
-	}
+        public override string ToString()
+        {
+            return "SmbComDeleteDirectory["
+                        + base.ToString()
+                        + ",directoryName=" + Path + "]";
+        }
+    }
 }

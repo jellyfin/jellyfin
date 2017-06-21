@@ -118,6 +118,11 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             get
             {
+                if (string.IsNullOrWhiteSpace(Path))
+                {
+                    return false;
+                }
+
                 return !FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, Path);
             }
         }

@@ -16,18 +16,18 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-	public interface IFileEntry
-	{
-		string GetName();
+    public interface IFileEntry
+    {
+        string GetName();
 
-		int GetType();
+        int GetType();
 
-		int GetAttributes();
+        int GetAttributes();
 
-		long CreateTime();
+        long CreateTime();
 
-		long LastModified();
+        long LastModified();
 
-		long Length();
-	}
+        long Length();
+    }
 }

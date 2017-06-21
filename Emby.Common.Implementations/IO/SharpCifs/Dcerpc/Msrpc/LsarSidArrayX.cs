@@ -18,17 +18,17 @@ using SharpCifs.Smb;
 
 namespace SharpCifs.Dcerpc.Msrpc
 {
-	internal class LsarSidArrayX : Lsarpc.LsarSidArray
-	{
-		internal LsarSidArrayX(Sid[] sids)
-		{
-			NumSids = sids.Length;
-			this.Sids = new Lsarpc.LsarSidPtr[sids.Length];
-			for (int si = 0; si < sids.Length; si++)
-			{
-				this.Sids[si] = new Lsarpc.LsarSidPtr();
-				this.Sids[si].Sid = sids[si];
-			}
-		}
-	}
+    internal class LsarSidArrayX : Lsarpc.LsarSidArray
+    {
+        internal LsarSidArrayX(Sid[] sids)
+        {
+            NumSids = sids.Length;
+            this.Sids = new Lsarpc.LsarSidPtr[sids.Length];
+            for (int si = 0; si < sids.Length; si++)
+            {
+                this.Sids[si] = new Lsarpc.LsarSidPtr();
+                this.Sids[si].Sid = sids[si];
+            }
+        }
+    }
 }

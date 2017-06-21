@@ -18,87 +18,89 @@ using SharpCifs.Util;
 
 namespace SharpCifs.Smb
 {
-	public class SmbShareInfo : IFileEntry
-	{
-		protected internal string NetName;
+    public class SmbShareInfo : IFileEntry
+    {
+        protected internal string NetName;
 
-		protected internal int Type;
+        protected internal int Type;
 
-		protected internal string Remark;
+        protected internal string Remark;
 
-		public SmbShareInfo()
-		{
-		}
+        public SmbShareInfo()
+        {
+        }
 
-		public SmbShareInfo(string netName, int type, string remark)
-		{
-			this.NetName = netName;
-			this.Type = type;
-			this.Remark = remark;
-		}
+        public SmbShareInfo(string netName, int type, string remark)
+        {
+            this.NetName = netName;
+            this.Type = type;
+            this.Remark = remark;
+        }
 
-		public virtual string GetName()
-		{
-			return NetName;
-		}
+        public virtual string GetName()
+        {
+            return NetName;
+        }
 
-		public new virtual int GetType() 
-		{
-			switch (Type & unchecked(0xFFFF))
-			{
-				case 1:
-				{
-					return SmbFile.TypePrinter;
-				}
+        public new virtual int GetType()
+        {
+            switch (Type & unchecked(0xFFFF))
+            {
+                case 1:
+                    {
+                        return SmbFile.TypePrinter;
+                    }
 
-				case 3:
-				{
-					return SmbFile.TypeNamedPipe;
-				}
-			}
-			return SmbFile.TypeShare;
-		}
+                case 3:
+                    {
+                        return SmbFile.TypeNamedPipe;
+                    }
+            }
+            return SmbFile.TypeShare;
+        }
 
-		public virtual int GetAttributes()
-		{
-			return SmbFile.AttrReadonly | SmbFile.AttrDirectory;
-		}
+        public virtual int GetAttributes()
+        {
+            return SmbFile.AttrReadonly | SmbFile.AttrDirectory;
+        }
 
-		public virtual long CreateTime()
-		{
-			return 0L;
-		}
+        public virtual long CreateTime()
+        {
+            return 0L;
+        }
 
-		public virtual long LastModified()
-		{
-			return 0L;
-		}
+        public virtual long LastModified()
+        {
+            return 0L;
+        }
 
-		public virtual long Length()
-		{
-			return 0L;
-		}
+        public virtual long Length()
+        {
+            return 0L;
+        }
 
-		public override bool Equals(object obj)
-		{
-			if (obj is SmbShareInfo)
-			{
-				SmbShareInfo si = (SmbShareInfo)obj;
-				return NetName.Equals(si.NetName);
-			}
-			return false;
-		}
+        public override bool Equals(object obj)
+        {
+            if (obj is SmbShareInfo)
+            {
+                SmbShareInfo si = (SmbShareInfo)obj;
+                return NetName.Equals(si.NetName);
+            }
+            return false;
+        }
 
-		public override int GetHashCode()
-		{
-			int hashCode = NetName.GetHashCode();
-			return hashCode;
-		}
+        public override int GetHashCode()
+        {
+            int hashCode = NetName.GetHashCode();
+            return hashCode;
+        }
 
-		public override string ToString()
-		{
-			return "SmbShareInfo[" + "netName=" + NetName + ",type=0x" + Hexdump.ToHexString
-				(Type, 8) + ",remark=" + Remark + "]";
-		}
-	}
+        public override string ToString()
+        {
+            return "SmbShareInfo["
+                        + "netName=" + NetName
+                        + ",type=0x" + Hexdump.ToHexString(Type, 8)
+                        + ",remark=" + Remark + "]";
+        }
+    }
 }

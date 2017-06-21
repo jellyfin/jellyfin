@@ -4,15 +4,16 @@ using System;
 using System.Text;
 
 namespace SharpCifs.Util.Sharpen
-{ // **************************************************************
-// * Raw implementation of the MD5 hash algorithm
-// * from RFC 1321.
-// *
-// * Written By: Reid Borsuk and Jenny Zheng
-// * Copyright (c) Microsoft Corporation.  All rights reserved.
-// **************************************************************
+{
+    // **************************************************************
+    // * Raw implementation of the MD5 hash algorithm
+    // * from RFC 1321.
+    // *
+    // * Written By: Reid Borsuk and Jenny Zheng
+    // * Copyright (c) Microsoft Corporation.  All rights reserved.
+    // **************************************************************
 
-// Simple struct for the (a,b,c,d) which is used to compute the mesage digest.    
+    // Simple struct for the (a,b,c,d) which is used to compute the mesage digest.    
     struct AbcdStruct
     {
         public uint A;
@@ -29,9 +30,13 @@ namespace SharpCifs.Util.Sharpen
         public static byte[] GetHash(string input, Encoding encoding)
         {
             if (null == input)
-                throw new ArgumentNullException("input", "Unable to calculate hash over null input data");
+                throw new ArgumentNullException(
+                    "input", "Unable to calculate hash over null input data");
             if (null == encoding)
-                throw new ArgumentNullException("encoding", "Unable to calculate hash over a string without a default encoding. Consider using the GetHash(string) overload to use UTF8 Encoding");
+                throw new ArgumentNullException(
+                    "encoding",
+                    "Unable to calculate hash over a string without a default encoding. "
+                    + "Consider using the GetHash(string) overload to use UTF8 Encoding");
 
             byte[] target = encoding.GetBytes(input);
 
@@ -46,7 +51,8 @@ namespace SharpCifs.Util.Sharpen
         public static string GetHashString(byte[] input)
         {
             if (null == input)
-                throw new ArgumentNullException("input", "Unable to calculate hash over null input data");
+                throw new ArgumentNullException(
+                    "input", "Unable to calculate hash over null input data");
 
             string retval = BitConverter.ToString(GetHash(input));
             retval = retval.Replace("-", "");
@@ -57,9 +63,13 @@ namespace SharpCifs.Util.Sharpen
         public static string GetHashString(string input, Encoding encoding)
         {
             if (null == input)
-                throw new ArgumentNullException("input", "Unable to calculate hash over null input data");
+                throw new ArgumentNullException(
+                    "input", "Unable to calculate hash over null input data");
             if (null == encoding)
-                throw new ArgumentNullException("encoding", "Unable to calculate hash over a string without a default encoding. Consider using the GetHashString(string) overload to use UTF8 Encoding");
+                throw new ArgumentNullException(
+                    "encoding",
+                    "Unable to calculate hash over a string without a default encoding. "
+                    + "Consider using the GetHashString(string) overload to use UTF8 Encoding");
 
             byte[] target = encoding.GetBytes(input);
 
@@ -74,7 +84,8 @@ namespace SharpCifs.Util.Sharpen
         public static byte[] GetHash(byte[] input)
         {
             if (null == input)
-                throw new ArgumentNullException("input", "Unable to calculate hash over null input data");
+                throw new ArgumentNullException(
+                    "input", "Unable to calculate hash over null input data");
 
             //Intitial values defined in RFC 1321
             AbcdStruct abcd = new AbcdStruct();
@@ -91,10 +102,18 @@ namespace SharpCifs.Util.Sharpen
                 startIndex += 64;
             }
             // The final data block. 
-            return GetHashFinalBlock(input, startIndex, input.Length - startIndex, abcd, (Int64)input.Length * 8);
+            return GetHashFinalBlock(input,
+                                     startIndex,
+                                     input.Length - startIndex,
+                                     abcd,
+                                     (Int64)input.Length * 8);
         }
 
-        internal static byte[] GetHashFinalBlock(byte[] input, int ibStart, int cbSize, AbcdStruct abcd, Int64 len)
+        internal static byte[] GetHashFinalBlock(byte[] input,
+                                                 int ibStart,
+                                                 int cbSize,
+                                                 AbcdStruct abcd,
+                                                 Int64 len)
         {
             byte[] working = new byte[64];
             byte[] length = BitConverter.GetBytes(len);
@@ -129,11 +148,11 @@ namespace SharpCifs.Util.Sharpen
 
         // Performs a single block transform of MD5 for a given set of ABCD inputs
         /* If implementing your own hashing framework, be sure to set the initial ABCD correctly according to RFC 1321:
-    //    A = 0x67452301;
-    //    B = 0xefcdab89;
-    //    C = 0x98badcfe;
-    //    D = 0x10325476;
-    */
+        //    A = 0x67452301;
+        //    B = 0xefcdab89;
+        //    C = 0x98badcfe;
+        //    D = 0x10325476;
+        */
         internal static void GetHashBlock(byte[] input, ref AbcdStruct abcdValue, int ibStart)
         {
             uint[] temp = Converter(input, ibStart);
@@ -257,7 +276,8 @@ namespace SharpCifs.Util.Sharpen
         private static uint[] Converter(byte[] input, int ibStart)
         {
             if (null == input)
-                throw new ArgumentNullException("input", "Unable convert null array to array of uInts");
+                throw new ArgumentNullException(
+                    "input", "Unable convert null array to array of uInts");
 
             uint[] result = new uint[16];
 

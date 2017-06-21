@@ -122,11 +122,19 @@ namespace SocketHttpListener.Net
             try
             {
                 int nread = base.EndRead(base_ares);
+                if (nread == 0)
+                {
+                    _no_more_data = true;
+                    ares._count = rb.InitialCount - rb.Count;
+                    ares.Complete();
+                    return;
+                }
+
                 _decoder.Write(ares._buffer, ares._offset, nread);
                 nread = _decoder.Read(rb.Buffer, rb.Offset, rb.Count);
                 rb.Offset += nread;
                 rb.Count -= nread;
-                if (rb.Count == 0 || !_decoder.WantMore || nread == 0)
+                if (rb.Count == 0 || !_decoder.WantMore)
                 {
                     _no_more_data = !_decoder.WantMore && nread == 0;
                     ares._count = rb.InitialCount - rb.Count;
@@ -164,7 +172,7 @@ namespace SocketHttpListener.Net
                 asyncResult.AsyncWaitHandle.WaitOne();
 
             if (ares._error != null)
-                throw new HttpListenerException((int)HttpStatusCode.BadRequest, "Bad Request");
+                throw new HttpListenerException((int)HttpStatusCode.BadRequest, "Operation aborted");
 
             return ares._count;
         }

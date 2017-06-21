@@ -16,69 +16,69 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-	internal class TransPeekNamedPipeResponse : SmbComTransactionResponse
-	{
-		private SmbNamedPipe _pipe;
+    internal class TransPeekNamedPipeResponse : SmbComTransactionResponse
+    {
+        private SmbNamedPipe _pipe;
 
-		private int _head;
+        private int _head;
 
-		internal const int StatusDisconnected = 1;
+        internal const int StatusDisconnected = 1;
 
-		internal const int StatusListening = 2;
+        internal const int StatusListening = 2;
 
-		internal const int StatusConnectionOk = 3;
+        internal const int StatusConnectionOk = 3;
 
-		internal const int StatusServerEndClosed = 4;
+        internal const int StatusServerEndClosed = 4;
 
-		internal int status;
+        internal int status;
 
-		internal int Available;
+        internal int Available;
 
-		internal TransPeekNamedPipeResponse(SmbNamedPipe pipe)
-		{
-			this._pipe = pipe;
-		}
+        internal TransPeekNamedPipeResponse(SmbNamedPipe pipe)
+        {
+            this._pipe = pipe;
+        }
 
-		internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
-			)
-		{
-			return 0;
-		}
+        internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len)
+        {
+            return 0;
+        }
 
-		internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int
-			 len)
-		{
-			Available = ReadInt2(buffer, bufferIndex);
-			bufferIndex += 2;
-			_head = ReadInt2(buffer, bufferIndex);
-			bufferIndex += 2;
-			status = ReadInt2(buffer, bufferIndex);
-			return 6;
-		}
+        internal override int ReadParametersWireFormat(byte[] buffer,
+                                                       int bufferIndex,
+                                                       int len)
+        {
+            Available = ReadInt2(buffer, bufferIndex);
+            bufferIndex += 2;
+            _head = ReadInt2(buffer, bufferIndex);
+            bufferIndex += 2;
+            status = ReadInt2(buffer, bufferIndex);
+            return 6;
+        }
 
-		internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
-		{
-			return 0;
-		}
+        internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
+        {
+            return 0;
+        }
 
-		public override string ToString()
-		{
-			return "TransPeekNamedPipeResponse[" + base.ToString() + "]";
-		}
-	}
+        public override string ToString()
+        {
+            return "TransPeekNamedPipeResponse[" + base.ToString() + "]";
+        }
+    }
 }

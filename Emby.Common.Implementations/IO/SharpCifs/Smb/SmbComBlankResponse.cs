@@ -17,31 +17,31 @@
 namespace SharpCifs.Smb
 {
     internal class SmbComBlankResponse : ServerMessageBlock
-	{
-	    internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+    {
+        internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex
-			)
-		{
-			return 0;
-		}
+        internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex
+            )
+        {
+            return 0;
+        }
 
-		internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
-		{
-			return 0;
-		}
+        internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
+        {
+            return 0;
+        }
 
-		public override string ToString()
-		{
-			return "SmbComBlankResponse[" + base.ToString() + "]";
-		}
-	}
+        public override string ToString()
+        {
+            return "SmbComBlankResponse[" + base.ToString() + "]";
+        }
+    }
 }
