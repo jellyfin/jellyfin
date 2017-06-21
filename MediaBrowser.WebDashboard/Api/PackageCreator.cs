@@ -101,7 +101,7 @@ namespace MediaBrowser.WebDashboard.Api
             var parent = _fileSystem.GetDirectoryName(path);
             
             return string.Equals(_basePath, parent, StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(Path.Combine(_basePath, "voice"), parent, StringComparison.OrdinalIgnoreCase);
+                   string.Equals(Path.Combine(_basePath, "offline"), parent, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
