@@ -26,7 +26,7 @@ namespace Emby.Server.Implementations.Photos
             return items;
         }
 
-        protected string CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override string CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             return CreateSingleImage(itemsWithImages, outputPathWithoutExtension, ImageType.Primary);
         }
