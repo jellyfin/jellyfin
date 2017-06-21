@@ -268,7 +268,8 @@ namespace SocketHttpListener.Net
 
                 if (!_epl.BindContext(_context))
                 {
-                    SendError("Invalid host", 400);
+                    const int NotFoundErrorCode = 404;
+                    SendError(HttpStatusDescription.Get(NotFoundErrorCode), NotFoundErrorCode);
                     Close(true);
                     return;
                 }
