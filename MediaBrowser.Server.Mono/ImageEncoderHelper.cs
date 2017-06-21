@@ -31,7 +31,7 @@ namespace MediaBrowser.Server.Startup.Common
                 }
                 catch (Exception ex)
                 {
-                    logger.Error("Error loading Skia: {0}. Will revert to ImageMagick.", ex.Message);
+                    logger.Info("Error loading Skia: {0}. Will revert to ImageMagick.", ex.Message);
                 }
 
                 try
