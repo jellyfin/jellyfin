@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using Emby.Drawing.Skia;
+using MediaBrowser.Model.System;
 
 namespace MediaBrowser.Server.Startup.Common
 {
@@ -19,7 +20,8 @@ namespace MediaBrowser.Server.Startup.Common
             IFileSystem fileSystem, 
             StartupOptions startupOptions, 
             Func<IHttpClient> httpClient,
-            IApplicationPaths appPaths)
+            IApplicationPaths appPaths,
+            IEnvironmentInfo environment)
         {
             if (!startupOptions.ContainsOption("-enablegdi"))
             {
@@ -34,7 +36,7 @@ namespace MediaBrowser.Server.Startup.Common
 
                 try
                 {
-                    return new ImageMagickEncoder(logManager.GetLogger("ImageMagick"), appPaths, httpClient, fileSystem);
+                    return new ImageMagickEncoder(logManager.GetLogger("ImageMagick"), appPaths, httpClient, fileSystem, environment);
                 }
                 catch
                 {

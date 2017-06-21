@@ -16,44 +16,44 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Netbios
 {
-	internal class NodeStatusRequest : NameServicePacket
-	{
-		internal NodeStatusRequest(Name name)
-		{
-			QuestionName = name;
-			QuestionType = Nbstat;
-			IsRecurDesired = false;
-			IsBroadcast = false;
-		}
+    internal class NodeStatusRequest : NameServicePacket
+    {
+        internal NodeStatusRequest(Name name)
+        {
+            QuestionName = name;
+            QuestionType = Nbstat;
+            IsRecurDesired = false;
+            IsBroadcast = false;
+        }
 
-		internal override int WriteBodyWireFormat(byte[] dst, int dstIndex)
-		{
-			int tmp = QuestionName.HexCode;
-			QuestionName.HexCode = unchecked(0x00);
-			// type has to be 0x00 for node status
-			int result = WriteQuestionSectionWireFormat(dst, dstIndex);
-			QuestionName.HexCode = tmp;
-			return result;
-		}
+        internal override int WriteBodyWireFormat(byte[] dst, int dstIndex)
+        {
+            int tmp = QuestionName.HexCode;
+            QuestionName.HexCode = unchecked(0x00);
+            // type has to be 0x00 for node status
+            int result = WriteQuestionSectionWireFormat(dst, dstIndex);
+            QuestionName.HexCode = tmp;
+            return result;
+        }
 
-		internal override int ReadBodyWireFormat(byte[] src, int srcIndex)
-		{
-			return 0;
-		}
+        internal override int ReadBodyWireFormat(byte[] src, int srcIndex)
+        {
+            return 0;
+        }
 
-		internal override int WriteRDataWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteRDataWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int ReadRDataWireFormat(byte[] src, int srcIndex)
-		{
-			return 0;
-		}
+        internal override int ReadRDataWireFormat(byte[] src, int srcIndex)
+        {
+            return 0;
+        }
 
-		public override string ToString()
-		{
-			return "NodeStatusRequest[" + base.ToString() + "]";
-		}
-	}
+        public override string ToString()
+        {
+            return "NodeStatusRequest[" + base.ToString() + "]";
+        }
+    }
 }

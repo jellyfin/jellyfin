@@ -16,37 +16,37 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Netbios
 {
-	internal class NameQueryRequest : NameServicePacket
-	{
-		internal NameQueryRequest(Name name)
-		{
-			QuestionName = name;
-			QuestionType = Nb;
-		}
+    internal class NameQueryRequest : NameServicePacket
+    {
+        internal NameQueryRequest(Name name)
+        {
+            QuestionName = name;
+            QuestionType = Nb;
+        }
 
-		internal override int WriteBodyWireFormat(byte[] dst, int dstIndex)
-		{
-			return WriteQuestionSectionWireFormat(dst, dstIndex);
-		}
+        internal override int WriteBodyWireFormat(byte[] dst, int dstIndex)
+        {
+            return WriteQuestionSectionWireFormat(dst, dstIndex);
+        }
 
-		internal override int ReadBodyWireFormat(byte[] src, int srcIndex)
-		{
-			return ReadQuestionSectionWireFormat(src, srcIndex);
-		}
+        internal override int ReadBodyWireFormat(byte[] src, int srcIndex)
+        {
+            return ReadQuestionSectionWireFormat(src, srcIndex);
+        }
 
-		internal override int WriteRDataWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteRDataWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int ReadRDataWireFormat(byte[] src, int srcIndex)
-		{
-			return 0;
-		}
+        internal override int ReadRDataWireFormat(byte[] src, int srcIndex)
+        {
+            return 0;
+        }
 
-		public override string ToString()
-		{
-			return "NameQueryRequest[" + base.ToString() + "]";
-		}
-	}
+        public override string ToString()
+        {
+            return "NameQueryRequest[" + base.ToString() + "]";
+        }
+    }
 }

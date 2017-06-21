@@ -16,90 +16,97 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-	internal class Trans2SetFileInformation : SmbComTransaction
-	{
-		internal const int SmbFileBasicInfo = unchecked(0x101);
+    internal class Trans2SetFileInformation : SmbComTransaction
+    {
+        internal const int SmbFileBasicInfo = unchecked(0x101);
 
-		private int _fid;
+        private int _fid;
 
-		private int _attributes;
+        private int _attributes;
 
-		private long _createTime;
+        private long _createTime;
 
-		private long _lastWriteTime;
+        private long _lastWriteTime;
 
-		internal Trans2SetFileInformation(int fid, int attributes, long createTime, long 
-			lastWriteTime)
-		{
-			this._fid = fid;
-			this._attributes = attributes;
-			this._createTime = createTime;
-			this._lastWriteTime = lastWriteTime;
-			Command = SmbComTransaction2;
-			SubCommand = Trans2SetFileInformation;
-			MaxParameterCount = 6;
-			MaxDataCount = 0;
-			MaxSetupCount = unchecked(unchecked(0x00));
-		}
+        internal Trans2SetFileInformation(int fid,
+                                          int attributes,
+                                          long createTime,
+                                          long lastWriteTime)
+        {
+            this._fid = fid;
+            this._attributes = attributes;
+            this._createTime = createTime;
+            this._lastWriteTime = lastWriteTime;
+            Command = SmbComTransaction2;
+            SubCommand = Trans2SetFileInformation;
+            MaxParameterCount = 6;
+            MaxDataCount = 0;
+            MaxSetupCount = unchecked(unchecked(0x00));
+        }
 
-		internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
-		{
-			dst[dstIndex++] = SubCommand;
-			dst[dstIndex++] = unchecked(unchecked(0x00));
-			return 2;
-		}
+        internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
+        {
+            dst[dstIndex++] = SubCommand;
+            dst[dstIndex++] = unchecked(unchecked(0x00));
+            return 2;
+        }
 
-		internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
-		{
-			int start = dstIndex;
-			WriteInt2(_fid, dst, dstIndex);
-			dstIndex += 2;
-			WriteInt2(SmbFileBasicInfo, dst, dstIndex);
-			dstIndex += 2;
-			WriteInt2(0, dst, dstIndex);
-			dstIndex += 2;
-			return dstIndex - start;
-		}
+        internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
+        {
+            int start = dstIndex;
+            WriteInt2(_fid, dst, dstIndex);
+            dstIndex += 2;
+            WriteInt2(SmbFileBasicInfo, dst, dstIndex);
+            dstIndex += 2;
+            WriteInt2(0, dst, dstIndex);
+            dstIndex += 2;
+            return dstIndex - start;
+        }
 
-		internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
-		{
-			int start = dstIndex;
-			WriteTime(_createTime, dst, dstIndex);
-			dstIndex += 8;
-			WriteInt8(0L, dst, dstIndex);
-			dstIndex += 8;
-			WriteTime(_lastWriteTime, dst, dstIndex);
-			dstIndex += 8;
-			WriteInt8(0L, dst, dstIndex);
-			dstIndex += 8;
-			WriteInt2(unchecked(0x80) | _attributes, dst, dstIndex);
-			dstIndex += 2;
-			WriteInt8(0L, dst, dstIndex);
-			dstIndex += 6;
-			return dstIndex - start;
-		}
+        internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
+        {
+            int start = dstIndex;
+            WriteTime(_createTime, dst, dstIndex);
+            dstIndex += 8;
+            WriteInt8(0L, dst, dstIndex);
+            dstIndex += 8;
+            WriteTime(_lastWriteTime, dst, dstIndex);
+            dstIndex += 8;
+            WriteInt8(0L, dst, dstIndex);
+            dstIndex += 8;
+            WriteInt2(unchecked(0x80) | _attributes, dst, dstIndex);
+            dstIndex += 2;
+            WriteInt8(0L, dst, dstIndex);
+            dstIndex += 6;
+            return dstIndex - start;
+        }
 
-		internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
-			)
-		{
-			return 0;
-		}
+        internal override int ReadSetupWireFormat(byte[] buffer,
+                                                  int bufferIndex,
+                                                  int len)
+        {
+            return 0;
+        }
 
-		internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int
-			 len)
-		{
-			return 0;
-		}
+        internal override int ReadParametersWireFormat(byte[] buffer,
+                                                       int bufferIndex,
+                                                       int len)
+        {
+            return 0;
+        }
 
-		internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
-		{
-			return 0;
-		}
+        internal override int ReadDataWireFormat(byte[] buffer,
+                                                 int bufferIndex,
+                                                 int len)
+        {
+            return 0;
+        }
 
-		public override string ToString()
-		{
-			return "Trans2SetFileInformation[" + base.ToString() + ",fid=" + _fid +
-				 "]";
-		}
-	}
+        public override string ToString()
+        {
+            return "Trans2SetFileInformation["
+                        + base.ToString()
+                        + ",fid=" + _fid + "]";
+        }
+    }
 }

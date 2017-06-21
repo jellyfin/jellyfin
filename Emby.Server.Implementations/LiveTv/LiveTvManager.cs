@@ -742,7 +742,7 @@ namespace Emby.Server.Implementations.LiveTv
             else
             {
                 // Increment this whenver some internal change deems it necessary
-                var etag = info.Etag + "5";
+                var etag = info.Etag + "6";
 
                 if (!string.Equals(etag, item.ExternalEtag, StringComparison.OrdinalIgnoreCase))
                 {

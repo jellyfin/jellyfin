@@ -21,10 +21,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.Linq;
 using System.Threading;
+using SharpCifs.Smb;
 using SharpCifs.Util;
+using SharpCifs.Util.DbsHelper;
 using SharpCifs.Util.Sharpen;
 
 using Thread = SharpCifs.Util.Sharpen.Thread;
+using System.Threading.Tasks;
 
 namespace SharpCifs.Netbios
 {
@@ -48,27 +51,29 @@ namespace SharpCifs.Netbios
 
         internal const int ResolverWins = 3;
 
-        private static readonly int SndBufSize = Config.GetInt("jcifs.netbios.snd_buf_size"
-            , DefaultSndBufSize);
+        private static readonly int SndBufSize
+            = Config.GetInt("jcifs.netbios.snd_buf_size", DefaultSndBufSize);
 
-        private static readonly int RcvBufSize = Config.GetInt("jcifs.netbios.rcv_buf_size"
-            , DefaultRcvBufSize);
+        private static readonly int RcvBufSize
+            = Config.GetInt("jcifs.netbios.rcv_buf_size", DefaultRcvBufSize);
 
-        private static readonly int SoTimeout = Config.GetInt("jcifs.netbios.soTimeout",
-            DefaultSoTimeout);
+        private static readonly int SoTimeout
+            = Config.GetInt("jcifs.netbios.soTimeout", DefaultSoTimeout);
 
-        private static readonly int RetryCount = Config.GetInt("jcifs.netbios.retryCount"
-            , DefaultRetryCount);
+        private static readonly int RetryCount
+            = Config.GetInt("jcifs.netbios.retryCount", DefaultRetryCount);
 
-        private static readonly int RetryTimeout = Config.GetInt("jcifs.netbios.retryTimeout"
-            , DefaultRetryTimeout);
+        private static readonly int RetryTimeout
+            = Config.GetInt("jcifs.netbios.retryTimeout", DefaultRetryTimeout);
 
-        private static readonly int Lport = Config.GetInt("jcifs.netbios.lport", 137);
+        private static readonly int Lport
+            = Config.GetInt("jcifs.netbios.lport", 137);
 
-        private static readonly IPAddress Laddr = Config.GetInetAddress("jcifs.netbios.laddr"
-            , null);
+        private static readonly IPAddress Laddr
+            = Config.GetInetAddress("jcifs.netbios.laddr", null);
 
-        private static readonly string Ro = Config.GetProperty("jcifs.resolveOrder");
+        private static readonly string Ro
+            = Config.GetProperty("jcifs.resolveOrder");
 
         private static LogStream _log = LogStream.GetInstance();
 
@@ -82,17 +87,19 @@ namespace SharpCifs.Netbios
 
         private byte[] _rcvBuf;
 
-        private SocketEx _socket;
+        private SocketEx _socketSender;
 
         private Hashtable _responseTable = new Hashtable();
 
         private Thread _thread;
-        
+
         private int _nextNameTrnId;
 
         private int[] _resolveOrder;
 
         private bool _waitResponse = true;
+
+        private bool _isActive = false;
 
         private AutoResetEvent _autoResetWaitReceive;
 
@@ -109,13 +116,17 @@ namespace SharpCifs.Netbios
         {
             this._lport = lport;
 
-            this.laddr = laddr 
-                            ?? Config.GetLocalHost() 
-                            ?? Extensions.GetAddressesByName(Dns.GetHostName()).FirstOrDefault();
+            this.laddr = laddr
+                            ?? Config.GetLocalHost()
+                            ?? Extensions.GetLocalAddresses()?.FirstOrDefault();
+
+            if (this.laddr == null)
+                throw new ArgumentNullException("IPAddress NOT found. if exec on localhost, set vallue to [jcifs.smb.client.laddr]");
 
             try
             {
-                Baddr = Config.GetInetAddress("jcifs.netbios.baddr", Extensions.GetAddressByName("255.255.255.255"));
+                Baddr = Config.GetInetAddress("jcifs.netbios.baddr",
+                                              Extensions.GetAddressByName("255.255.255.255"));
             }
             catch (Exception ex)
             {
@@ -161,8 +172,8 @@ namespace SharpCifs.Netbios
                             {
                                 if (_log.Level > 1)
                                 {
-                                    _log.WriteLine("NetBIOS resolveOrder specifies WINS however the " + "jcifs.netbios.wins property has not been set"
-                                        );
+                                    _log.WriteLine("NetBIOS resolveOrder specifies WINS however the "
+                                                   + "jcifs.netbios.wins property has not been set");
                                 }
                                 continue;
                             }
@@ -208,53 +219,93 @@ namespace SharpCifs.Netbios
         /// <exception cref="System.IO.IOException"></exception>
         internal virtual void EnsureOpen(int timeout)
         {
+            //Log.Out($"NameServiceClient.EnsureOpen");
+
             _closeTimeout = 0;
             if (SoTimeout != 0)
             {
                 _closeTimeout = Math.Max(SoTimeout, timeout);
             }
+
+            var localPort = (SmbConstants.Lport == 0) ? _lport : SmbConstants.Lport;
+
             // If socket is still good, the new closeTimeout will
             // be ignored; see tryClose comment.
-            if (_socket == null)
+            if (
+                _socketSender == null
+                || _socketSender.LocalEndPoint == null
+                || _socketSender.GetLocalPort() != localPort
+                || !IPAddress.Any.Equals(_socketSender.GetLocalInetAddress())
+            )
             {
-                _socket = new SocketEx(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                
-                //IPAddress.`Address` property deleted
-                //_socket.Bind(new IPEndPoint(laddr.Address, _lport));
-                _socket.Bind(new IPEndPoint(laddr, _lport));
+                if (_socketSender != null)
+                {
+                    _socketSender.Dispose();
+                    _socketSender = null;
+                }
+
+                _socketSender = new SocketEx(AddressFamily.InterNetwork, 
+                                             SocketType.Dgram, 
+                                             ProtocolType.Udp);
+
+                _socketSender.Bind(new IPEndPoint(IPAddress.Any, localPort));
+
 
                 if (_waitResponse)
                 {
-                    _thread = new Thread(this); //new Sharpen.Thread(this, "JCIFS-NameServiceClient");
+                    if (_thread != null)
+                    {
+                        _thread.Cancel(true);
+                        _thread.Dispose();
+                    }
+
+                    _thread = new Thread(this);
                     _thread.SetDaemon(true);
-                    _thread.Start();                    
+                    _thread.Start(true);
                 }
             }
         }
 
         internal virtual void TryClose()
         {
+            //Log.Out("NameSerciceClient.TryClose");
+
+            if (this._isActive)
+            {
+                //Log.Out("NameSerciceClient.TryClose - Now in Processing... Exit.");
+                return;
+            }
+
             lock (_lock)
             {
-                if (_socket != null)
+                if (_socketSender != null)
                 {
-                    //Socket.`Close` method deleted
-                    //_socket.Close();
-                    _socket.Dispose();
-                    _socket = null;
+                    _socketSender.Dispose();
+                    _socketSender = null;
+                    //Log.Out("NameSerciceClient.TryClose - _socketSender.Disposed");
                 }
-                _thread = null;
+
+                if (_thread != null)
+                {
+                    _thread.Cancel(true);
+                    _thread.Dispose();
+                    _thread = null;
+                    //Log.Out("NameSerciceClient.TryClose - _thread.Aborted");
+                }
 
                 if (_waitResponse)
                 {
                     _responseTable.Clear();
-                } else
+                }
+                else
                 {
                     _autoResetWaitReceive.Set();
                 }
             }
         }
 
+
+        private int _recievedLength = -1;
         public virtual void Run()
         {
             int nameTrnId;
@@ -262,12 +313,38 @@ namespace SharpCifs.Netbios
 
             try
             {
-
-                while (_thread == Thread.CurrentThread())
+                while (Thread.CurrentThread().Equals(_thread))
                 {
-                    _socket.SoTimeOut = _closeTimeout;
+                    if (_thread.IsCanceled)
+                        break;
 
-                    int len = _socket.Receive(_rcvBuf, 0, RcvBufSize);
+                    var localPort = (SmbConstants.Lport == 0) ? _lport : SmbConstants.Lport;
+
+                    var sockEvArg = new SocketAsyncEventArgs();
+                    sockEvArg.RemoteEndPoint = new IPEndPoint(IPAddress.Any, localPort);
+                    sockEvArg.SetBuffer(_rcvBuf, 0, RcvBufSize);
+                    sockEvArg.Completed += this.OnReceiveCompleted;
+
+                    _socketSender.SoTimeOut = _closeTimeout;
+
+                    this._recievedLength = -1;
+
+                    //Log.Out($"NameServiceClient.Run - Wait Recieve: {IPAddress.Any}: {localPort}");
+                    _socketSender.ReceiveFromAsync(sockEvArg);
+
+                    while (this._recievedLength == -1)
+                    {
+                        if (_thread.IsCanceled)
+                            break;
+
+                        Task.Delay(300).GetAwaiter().GetResult();
+                    }
+
+                    sockEvArg?.Dispose();
+
+
+                    if (_thread.IsCanceled)
+                        break;
 
                     if (_log.Level > 3)
                     {
@@ -284,12 +361,15 @@ namespace SharpCifs.Netbios
 
                     lock (response)
                     {
+                        if (_thread.IsCanceled)
+                            break;
+
                         response.ReadWireFormat(_rcvBuf, 0);
 
                         if (_log.Level > 3)
                         {
                             _log.WriteLine(response);
-                            Hexdump.ToHexdump(_log, _rcvBuf, 0, len);
+                            Hexdump.ToHexdump(_log, _rcvBuf, 0, this._recievedLength);
                         }
 
                         if (response.IsResponse)
@@ -300,7 +380,6 @@ namespace SharpCifs.Netbios
                         }
                     }
                 }
-
             }
             catch (TimeoutException) { }
             catch (Exception ex)
@@ -316,10 +395,21 @@ namespace SharpCifs.Netbios
             }
         }
 
-        /// <exception cref="System.IO.IOException"></exception>
-        internal virtual void Send(NameServicePacket request, NameServicePacket response,
-            int timeout)
+
+        private void OnReceiveCompleted(object sender, SocketAsyncEventArgs e)
         {
+            //Log.Out("NameServiceClient.OnReceiveCompleted");
+            this._recievedLength = e.BytesTransferred;
+        }
+
+
+        /// <exception cref="System.IO.IOException"></exception>
+        internal virtual void Send(NameServicePacket request,
+                                   NameServicePacket response,
+                                   int timeout)
+        {
+            //Log.Out("NameSerciceClient.Send - Start");
+
             int nid = 0;
             int max = NbtAddress.Nbns.Length;
             if (max == 0)
@@ -329,6 +419,7 @@ namespace SharpCifs.Netbios
 
             lock (response)
             {
+                this._isActive = true;
 
                 while (max-- > 0)
                 {
@@ -338,45 +429,75 @@ namespace SharpCifs.Netbios
                         {
                             request.NameTrnId = GetNextNameTrnId();
                             nid = request.NameTrnId;
+
                             response.Received = false;
                             _responseTable.Put(nid, response);
+
+                            //Log.Out($"NameSerciceClient.Send - timeout = {timeout}");
                             EnsureOpen(timeout + 1000);
+                            
                             int requestLenght = request.WriteWireFormat(_sndBuf, 0);
-                            _socket.Send(_sndBuf, 0, requestLenght, new IPEndPoint(request.Addr, _lport));
+                            byte[] msg = new byte[requestLenght];
+                            Array.Copy(_sndBuf, msg, requestLenght);
+
+                            _socketSender.SetSocketOption(SocketOptionLevel.Socket,
+                                                          SocketOptionName.Broadcast,
+                                                          request.IsBroadcast
+                                                            ? 1
+                                                            : 0);
+
+                            _socketSender.SendTo(msg, new IPEndPoint(request.Addr, _lport));
+                            //Log.Out("NameSerciceClient.Send - Sended");
+
                             if (_log.Level > 3)
                             {
                                 _log.WriteLine(request);
                                 Hexdump.ToHexdump(_log, _sndBuf, 0, requestLenght);
                             }
-
                         }
+
                         if (_waitResponse)
                         {
                             long start = Runtime.CurrentTimeMillis();
+                            var isRecieved = false;
+                            var startTime = DateTime.Now;
                             while (timeout > 0)
                             {
                                 Runtime.Wait(response, timeout);
                                 if (response.Received && request.QuestionType == response.RecordType)
                                 {
-                                    return;
+                                    //return;
+                                    isRecieved = true;
+                                    break;
                                 }
                                 response.Received = false;
                                 timeout -= (int)(Runtime.CurrentTimeMillis() - start);
+
+                                //if (timeout <= 0)
+                                //{
+                                //    Log.Out($"NameSerciceClient.Send Timeout! - {(DateTime.Now - startTime).TotalMilliseconds} msec");
+                                //}
                             }
+                            
+                            if (isRecieved)
+                                break;
                         }
                     }
                     catch (Exception ie)
                     {
+                        if (_waitResponse)
+                            _responseTable.Remove(nid);
+
+                        //Log.Out("NameSerciceClient.Send - IOException");
+
                         throw new IOException(ie.Message);
                     }
                     finally
                     {
-                        //Sharpen.Collections.Remove(responseTable, nid);
                         if (_waitResponse)
-                        {
                             _responseTable.Remove(nid);
-                        }
                     }
+
                     if (_waitResponse)
                     {
                         lock (_lock)
@@ -393,17 +514,24 @@ namespace SharpCifs.Netbios
                         }
                     }
                 }
+
+                this._isActive = false;
+                //Log.Out("NameSerciceClient.Send - Normaly Ended.");
             }
         }
 
         /// <exception cref="UnknownHostException"></exception>
         internal virtual NbtAddress[] GetAllByName(Name name, IPAddress addr)
         {
+            //Log.Out("NameSerciceClient.GetAllByName");
+
             int n;
             NameQueryRequest request = new NameQueryRequest(name);
             NameQueryResponse response = new NameQueryResponse();
             request.Addr = addr ?? NbtAddress.GetWinsAddress();
-            request.IsBroadcast = request.Addr == null;
+            request.IsBroadcast = (request.Addr == null
+                                    || request.Addr.ToString() == Baddr.ToString());
+
             if (request.IsBroadcast)
             {
                 request.Addr = Baddr;
@@ -440,10 +568,12 @@ namespace SharpCifs.Netbios
         /// <exception cref="UnknownHostException"></exception>
         internal virtual NbtAddress GetByName(Name name, IPAddress addr)
         {
-            int n;
+            //Log.Out("NameSerciceClient.GetByName");
 
+            int n;
             NameQueryRequest request = new NameQueryRequest(name);
             NameQueryResponse response = new NameQueryResponse();
+
             if (addr != null)
             {
                 request.Addr = addr;
@@ -463,7 +593,9 @@ namespace SharpCifs.Netbios
                         }
                         throw new UnknownHostException(ioe);
                     }
-                    if (response.Received && response.ResultCode == 0
+
+                    if (response.Received 
+                        && response.ResultCode == 0
                         && response.IsResponse)
                     {
                         int last = response.AddrEntry.Length - 1;
@@ -471,9 +603,11 @@ namespace SharpCifs.Netbios
                         return response.AddrEntry[last];
                     }
                 }
+
                 while (--n > 0 && request.IsBroadcast);
                 throw new UnknownHostException();
             }
+
             for (int i = 0; i < _resolveOrder.Length; i++)
             {
                 try
@@ -496,8 +630,9 @@ namespace SharpCifs.Netbios
                         case ResolverWins:
                         case ResolverBcast:
                             {
-                                if (_resolveOrder[i] == ResolverWins && name.name != NbtAddress.MasterBrowserName
-                                     && name.HexCode != unchecked(0x1d))
+                                if (_resolveOrder[i] == ResolverWins
+                                    && name.name != NbtAddress.MasterBrowserName
+                                    && name.HexCode != unchecked(0x1d))
                                 {
                                     request.Addr = NbtAddress.GetWinsAddress();
                                     request.IsBroadcast = false;
@@ -522,11 +657,12 @@ namespace SharpCifs.Netbios
                                         }
                                         throw new UnknownHostException(ioe);
                                     }
-                                    if (response.Received && response.ResultCode == 0
+                                    if (response.Received 
+                                        && response.ResultCode == 0
                                         && response.IsResponse)
                                     {
-
-                                        response.AddrEntry[0].HostName.SrcHashCode = request.Addr.GetHashCode();
+                                        response.AddrEntry[0].HostName.SrcHashCode
+                                            = request.Addr.GetHashCode();
                                         return response.AddrEntry[0];
                                     }
                                     if (_resolveOrder[i] == ResolverWins)
@@ -542,12 +678,15 @@ namespace SharpCifs.Netbios
                 {
                 }
             }
+
             throw new UnknownHostException();
         }
 
         /// <exception cref="UnknownHostException"></exception>
         internal virtual NbtAddress[] GetNodeStatus(NbtAddress addr)
         {
+            //Log.Out("NameSerciceClient.GetNodeStatus");
+
             int n;
             int srcHashCode;
             NodeStatusRequest request;
@@ -556,6 +695,7 @@ namespace SharpCifs.Netbios
             request = new NodeStatusRequest(new Name(NbtAddress.AnyHostsName, unchecked(0x00), null));
             request.Addr = addr.GetInetAddress();
             n = RetryCount;
+
             while (n-- > 0)
             {
                 try
@@ -585,6 +725,8 @@ namespace SharpCifs.Netbios
 
         internal virtual NbtAddress[] GetHosts()
         {
+            //Log.Out("NbtServiceClient.GetHosts");
+
             try
             {
                 _waitResponse = false;
@@ -593,6 +735,8 @@ namespace SharpCifs.Netbios
 
                 for (int i = 1; i <= 254; i++)
                 {
+                    //Log.Out($"NbtServiceClient.GetHosts - {i}");
+
                     NodeStatusRequest request;
                     NodeStatusResponse response;
 
@@ -605,49 +749,59 @@ namespace SharpCifs.Netbios
 
                     IPAddress addr = new IPAddress(addrBytes);
 
-                    //response = new NodeStatusResponse(new NbtAddress(NbtAddress.UnknownName,
-                    //    (int)addr.Address, false, 0x20));
-                    response = new NodeStatusResponse(new NbtAddress(NbtAddress.UnknownName,
-                        BitConverter.ToInt32(addr.GetAddressBytes(), 0) , false, 0x20));
+                    response = new NodeStatusResponse(
+                        new NbtAddress(NbtAddress.UnknownName,
+                                       BitConverter.ToInt32(addr.GetAddressBytes(), 0),
+                                       false,
+                                       0x20)
+                    );
 
-                    request = new NodeStatusRequest(new Name(NbtAddress.AnyHostsName, unchecked(0x20), null));
-                    request.Addr = addr;
+                    request = new NodeStatusRequest(new Name(NbtAddress.AnyHostsName,
+                                                    unchecked(0x20),
+                                                    null))
+                    {
+                        Addr = addr
+                    };
+
                     Send(request, response, 0);
                 }
-
             }
             catch (IOException ioe)
             {
+                //Log.Out(ioe);
+
                 if (_log.Level > 1)
                 {
                     Runtime.PrintStackTrace(ioe, _log);
                 }
                 throw new UnknownHostException(ioe);
             }
-            
+
             _autoResetWaitReceive = new AutoResetEvent(false);
-            _thread = new Thread(this); 
+
+            if (_thread != null)
+            {
+                _thread.Cancel(true);
+                _thread.Dispose();
+            }
+
+            _thread = new Thread(this);
             _thread.SetDaemon(true);
-            _thread.Start();
+            _thread.Start(true);
 
-            _autoResetWaitReceive.WaitOne();         
+            _autoResetWaitReceive.WaitOne();
 
-            List<NbtAddress> result = new List<NbtAddress>();
+            var result = new List<NbtAddress>();
 
             foreach (var key in _responseTable.Keys)
             {
-                NodeStatusResponse resp = (NodeStatusResponse)_responseTable[key];
+                var resp = (NodeStatusResponse)_responseTable[key];
 
-                if (resp.Received && resp.ResultCode == 0)
-                {
-                    foreach (var entry in resp.AddressArray)
-                    {
-                        if (entry.HostName.HexCode == 0x20)
-                        {
-                            result.Add(entry);
-                        }
-                    }
-                }
+                if (!resp.Received || resp.ResultCode != 0)
+                    continue;
+
+                result.AddRange(resp.AddressArray
+                                    .Where(entry => entry.HostName.HexCode == 0x20));
             }
 
             _responseTable.Clear();

@@ -18,68 +18,72 @@ using SharpCifs.Util;
 
 namespace SharpCifs.Smb
 {
-	internal class Trans2QueryPathInformation : SmbComTransaction
-	{
-		private int _informationLevel;
+    internal class Trans2QueryPathInformation : SmbComTransaction
+    {
+        private int _informationLevel;
 
-		internal Trans2QueryPathInformation(string filename, int informationLevel)
-		{
-			Path = filename;
-			this._informationLevel = informationLevel;
-			Command = SmbComTransaction2;
-			SubCommand = Trans2QueryPathInformation;
-			TotalDataCount = 0;
-			MaxParameterCount = 2;
-			MaxDataCount = 40;
-			MaxSetupCount = unchecked(unchecked(0x00));
-		}
+        internal Trans2QueryPathInformation(string filename, int informationLevel)
+        {
+            Path = filename;
+            this._informationLevel = informationLevel;
+            Command = SmbComTransaction2;
+            SubCommand = Trans2QueryPathInformation;
+            TotalDataCount = 0;
+            MaxParameterCount = 2;
+            MaxDataCount = 40;
+            MaxSetupCount = unchecked(unchecked(0x00));
+        }
 
-		internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
-		{
-			dst[dstIndex++] = SubCommand;
-			dst[dstIndex++] = unchecked(unchecked(0x00));
-			return 2;
-		}
+        internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
+        {
+            dst[dstIndex++] = SubCommand;
+            dst[dstIndex++] = unchecked(unchecked(0x00));
+            return 2;
+        }
 
-		internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
-		{
-			int start = dstIndex;
-			WriteInt2(_informationLevel, dst, dstIndex);
-			dstIndex += 2;
-			dst[dstIndex++] = unchecked(unchecked(0x00));
-			dst[dstIndex++] = unchecked(unchecked(0x00));
-			dst[dstIndex++] = unchecked(unchecked(0x00));
-			dst[dstIndex++] = unchecked(unchecked(0x00));
-			dstIndex += WriteString(Path, dst, dstIndex);
-			return dstIndex - start;
-		}
+        internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
+        {
+            int start = dstIndex;
+            WriteInt2(_informationLevel, dst, dstIndex);
+            dstIndex += 2;
+            dst[dstIndex++] = unchecked(unchecked(0x00));
+            dst[dstIndex++] = unchecked(unchecked(0x00));
+            dst[dstIndex++] = unchecked(unchecked(0x00));
+            dst[dstIndex++] = unchecked(unchecked(0x00));
+            dstIndex += WriteString(Path, dst, dstIndex);
+            return dstIndex - start;
+        }
 
-		internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
-			)
-		{
-			return 0;
-		}
+        internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len)
+        {
+            return 0;
+        }
 
-		internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int
-			 len)
-		{
-			return 0;
-		}
+        internal override int ReadParametersWireFormat(byte[] buffer, 
+                                                       int bufferIndex, 
+                                                       int len)
+        {
+            return 0;
+        }
 
-		internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
-		{
-			return 0;
-		}
+        internal override int ReadDataWireFormat(byte[] buffer, 
+                                                 int bufferIndex, 
+                                                 int len)
+        {
+            return 0;
+        }
 
-		public override string ToString()
-		{
-			return "Trans2QueryPathInformation[" + base.ToString() + ",informationLevel=0x"
-				 + Hexdump.ToHexString(_informationLevel, 3) + ",filename=" + Path + "]";
-		}
-	}
+        public override string ToString()
+        {
+            return "Trans2QueryPathInformation[" 
+                        + base.ToString() 
+                        + ",informationLevel=0x" + Hexdump.ToHexString(_informationLevel, 3) 
+                        + ",filename=" + Path + "]";
+        }
+    }
 }

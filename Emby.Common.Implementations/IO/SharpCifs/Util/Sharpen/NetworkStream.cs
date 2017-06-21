@@ -3,15 +3,15 @@ using System.IO;
 
 namespace SharpCifs.Util.Sharpen
 {
-    public class NetworkStream : Stream 
+    public class NetworkStream : Stream
     {
         SocketEx _socket;
-        
+
         public NetworkStream(SocketEx socket)
         {
             _socket = socket;
         }
-        
+
         public override bool CanRead
         {
             get { throw new NotImplementedException(); }
@@ -29,7 +29,7 @@ namespace SharpCifs.Util.Sharpen
 
         public override void Flush()
         {
-           // throw new NotImplementedException();
+            // throw new NotImplementedException();
         }
 
         public override long Length
