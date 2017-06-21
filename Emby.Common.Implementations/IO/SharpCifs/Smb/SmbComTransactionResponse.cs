@@ -108,8 +108,7 @@ namespace SharpCifs.Smb
             return 0;
         }
 
-        internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex
-            )
+        internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex)
         {
             int start = bufferIndex;
             TotalParameterCount = ReadInt2(buffer, bufferIndex);
@@ -152,22 +151,30 @@ namespace SharpCifs.Smb
             if (ParameterCount > 0)
             {
                 bufferIndex += _pad = ParameterOffset - (bufferIndex - HeaderStart);
-                Array.Copy(buffer, bufferIndex, TxnBuf, BufParameterStart + ParameterDisplacement
-                    , ParameterCount);
+                Array.Copy(buffer,
+                           bufferIndex,
+                           TxnBuf,
+                           BufParameterStart + ParameterDisplacement,
+                           ParameterCount);
                 bufferIndex += ParameterCount;
             }
             if (DataCount > 0)
             {
                 bufferIndex += _pad1 = DataOffset - (bufferIndex - HeaderStart);
-                Array.Copy(buffer, bufferIndex, TxnBuf, BufDataStart + DataDisplacement,
-                    DataCount);
+                Array.Copy(buffer,
+                           bufferIndex,
+                           TxnBuf,
+                           BufDataStart + DataDisplacement,
+                           DataCount);
                 bufferIndex += DataCount;
             }
-            if (!_parametersDone && (ParameterDisplacement + ParameterCount) == TotalParameterCount)
+            if (!_parametersDone
+                && (ParameterDisplacement + ParameterCount) == TotalParameterCount)
             {
                 _parametersDone = true;
             }
-            if (!_dataDone && (DataDisplacement + DataCount) == TotalDataCount)
+            if (!_dataDone
+                && (DataDisplacement + DataCount) == TotalDataCount)
             {
                 _dataDone = true;
             }
@@ -186,21 +193,26 @@ namespace SharpCifs.Smb
 
         internal abstract int WriteDataWireFormat(byte[] dst, int dstIndex);
 
-        internal abstract int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
-            );
+        internal abstract int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len);
 
-        internal abstract int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int
-             len);
+        internal abstract int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int len);
 
         internal abstract int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len);
 
         public override string ToString()
         {
-            return base.ToString() + ",totalParameterCount=" + TotalParameterCount
-                 + ",totalDataCount=" + TotalDataCount + ",parameterCount=" + ParameterCount + ",parameterOffset="
-                 + ParameterOffset + ",parameterDisplacement=" + ParameterDisplacement + ",dataCount="
-                 + DataCount + ",dataOffset=" + DataOffset + ",dataDisplacement=" + DataDisplacement
-                 + ",setupCount=" + SetupCount + ",pad=" + _pad + ",pad1=" + _pad1;
+            return base.ToString()
+                    + ",totalParameterCount=" + TotalParameterCount
+                    + ",totalDataCount=" + TotalDataCount
+                    + ",parameterCount=" + ParameterCount
+                    + ",parameterOffset=" + ParameterOffset
+                    + ",parameterDisplacement=" + ParameterDisplacement
+                    + ",dataCount=" + DataCount
+                    + ",dataOffset=" + DataOffset
+                    + ",dataDisplacement=" + DataDisplacement
+                    + ",setupCount=" + SetupCount
+                    + ",pad=" + _pad
+                    + ",pad1=" + _pad1;
         }
     }
 }
