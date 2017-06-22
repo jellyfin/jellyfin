@@ -1,6 +1,7 @@
 {
     "EnableHardwareDecoding": "Enable hardware decoding",
     "EnableHardwareEncoding": "Enable hardware encoding",
+    "Rate": "Rate",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Finalitzar",
     "LabelNext": "Seg\u00fcent",

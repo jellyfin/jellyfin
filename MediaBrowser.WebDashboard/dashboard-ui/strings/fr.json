@@ -1,6 +1,7 @@
 {
-    "EnableHardwareDecoding": "Enable hardware decoding",
-    "EnableHardwareEncoding": "Enable hardware encoding",
+    "EnableHardwareDecoding": "Activer le d\u00e9codage mat\u00e9riel",
+    "EnableHardwareEncoding": "Activer l'encodage mat\u00e9riel",
+    "Rate": "D\u00e9bit",
     "LabelPrevious": "Pr\u00e9c\u00e9dent",
     "LabelFinish": "Terminer",
     "LabelNext": "Suivant",

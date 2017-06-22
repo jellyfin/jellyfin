@@ -1,6 +1,7 @@
 {
-    "EnableHardwareDecoding": "Enable hardware decoding",
-    "EnableHardwareEncoding": "Enable hardware encoding",
+    "EnableHardwareDecoding": "Ativar decodifica\u00e7\u00e3o por hardware",
+    "EnableHardwareEncoding": "Ativar codifica\u00e7\u00e3o por hardware",
+    "Rate": "Avalia\u00e7\u00e3o",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Finalizar",
     "LabelNext": "Pr\u00f3ximo",
@@ -528,7 +529,7 @@
     "ButtonShutdown": "Desligar",
     "ButtonUpdateNow": "Atualizar Agora",
     "TabHosting": "Hospedagem",
-    "PleaseUpdateManually": "Por favor, desligue o servidor e atualize-o manualmente.",
+    "PleaseUpdateManually": "Por favor, desligue o Servidor Emby e instale a \u00faltima vers\u00e3o..",
     "NewServerVersionAvailable": "Uma nova vers\u00e3o do Emby est\u00e1 dispon\u00edvel!",
     "ServerUpToDate": "O Servidor Emby est\u00e1 atualizado",
     "LabelComponentsUpdated": "Os seguintes componentes foram instalados ou atualizados:",
@@ -1009,7 +1010,7 @@
     "TabDevices": "Dispositivos",
     "HeaderLibrarySettings": "Configura\u00e7\u00f5es da Biblioteca",
     "HeaderChapterSettings": "Configura\u00e7\u00f5es dos Cap\u00edtulos",
-    "HeaderCameraUploadHelp": "Faz o upload autom\u00e1tico de fotos e v\u00eddeos tiradas por seus dispositivos m\u00f3veis para o Emby.",
+    "HeaderCameraUploadHelp": "Os apps Emby podem fazer o updload autom\u00e1tico de fotos e v\u00eddeos tiradas por seus dispositivos m\u00f3veis para o Servidor Emby.",
     "LabelCameraUploadPath": "Local para upload da c\u00e2mera:",
     "LabelCameraUploadPathHelp": "Selecione um local personalizado para upload, se desejar. Se n\u00e3o definir, a pasta padr\u00e3o ser\u00e1 usada. Se usar um local personalizado, ser\u00e1 necess\u00e1rio adicionar na \u00e1rea de ajustes da biblioteca.",
     "LabelCreateCameraUploadSubfolder": "Criar uma subpasta para cada dispositivo",
@@ -1927,7 +1928,7 @@
     "Downloading": "Transferindo",
     "LabelCertificatePassword": "Senha do certificado:",
     "LabelCertificatePasswordHelp": "Se o seu certificado exige uma senha, por favor digite aqui.",
-    "Programs": "Programs",
-    "News": "News",
-    "HeaderDownloadSync": "Download & Sync"
+    "Programs": "Programas",
+    "News": "Not\u00edcias",
+    "HeaderDownloadSync": "Download & Sincroniza\u00e7\u00e3o"
 }

@@ -1,6 +1,7 @@
 {
     "EnableHardwareDecoding": "Enable hardware decoding",
     "EnableHardwareEncoding": "Enable hardware encoding",
+    "Rate": "Rate",
     "LabelPrevious": "\u524d\u4e00\u500b",
     "LabelFinish": "\u5b8c\u6210",
     "LabelNext": "\u4e0b\u4e00\u500b",
