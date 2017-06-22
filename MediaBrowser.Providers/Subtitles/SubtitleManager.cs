@@ -133,7 +133,8 @@ namespace MediaBrowser.Providers.Subtitles
                     {
                         //var isText = MediaStream.IsTextFormat(response.Format);
 
-                        using (var fs = _fileSystem.GetFileStream(savePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
+                        using (var fs = _fileSystem.GetFileStream(savePath, FileOpenMode.Create, FileAccessMode.Write,
+                                FileShareMode.Read, true))
                         {
                             await stream.CopyToAsync(fs).ConfigureAwait(false);
                         }
@@ -153,6 +154,10 @@ namespace MediaBrowser.Providers.Subtitles
                         _monitor.ReportFileSystemChangeComplete(savePath, false);
                     }
                 }
+            }
+            catch (RateLimitExceededException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
