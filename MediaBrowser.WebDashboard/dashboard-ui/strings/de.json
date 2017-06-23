@@ -1,7 +1,4 @@
 {
-    "EnableHardwareDecoding": "Aktiviere Hardware-Decoding",
-    "EnableHardwareEncoding": "Aktiviere Hardware-Encoding",
-    "Rate": "Rate",
     "LabelPrevious": "Vorheriges",
     "LabelFinish": "Fertig",
     "LabelNext": "N\u00e4chstes",
@@ -1150,7 +1147,7 @@
     "MessageTunerDeviceNotListed": "Wird Ihr Tuner hier nicht angezeigt? Installieren Sie einen externen Dienst f\u00fcr Weitere Live-TV Funktionen.",
     "LabelImportOnlyFavoriteChannels": "Beschr\u00e4nke auf favorisierte Kan\u00e4le",
     "ImportFavoriteChannelsHelp": "Wenn aktiviert, werden nur auf dem Tuner favorisierte Kan\u00e4le importiert.",
-    "ButtonRepeat": "Wiederholen",
+    "ButtonRepeat": "Wiederholung",
     "LabelEnableThisTuner": "Aktiviere diesen Tuner",
     "LabelEnableThisTunerHelp": "Abw\u00e4hlen um das importieren von Kan\u00e4len dieses Tuners zu verhindern",
     "HeaderImagePrimary": "Bevorzugt",
@@ -1930,5 +1927,10 @@
     "LabelCertificatePasswordHelp": "Wenn Dein Zertifikat ein Passwort ben\u00f6tigt, gib es hier ein.",
     "Programs": "Programme",
     "News": "News",
-    "HeaderDownloadSync": "Herunterladen & Synchronisieren"
+    "HeaderDownloadSync": "Herunterladen & Synchronisieren",
+    "EnableHardwareDecoding": "Aktiviere Hardware-Decoding",
+    "EnableHardwareEncoding": "Aktiviere Hardware-Encoding",
+    "Rate": "Rate",
+    "ButtonScanAllLibraries": "Scan All Libraries",
+    "ScanLibrary": "Scan library"
 }

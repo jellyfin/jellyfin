@@ -1,7 +1,4 @@
 {
-    "EnableHardwareDecoding": "Activer le d\u00e9codage mat\u00e9riel",
-    "EnableHardwareEncoding": "Activer l'encodage mat\u00e9riel",
-    "Rate": "D\u00e9bit",
     "LabelPrevious": "Pr\u00e9c\u00e9dent",
     "LabelFinish": "Terminer",
     "LabelNext": "Suivant",
@@ -1930,5 +1927,10 @@
     "LabelCertificatePasswordHelp": "Si votre certificat n\u00e9cessite un mot de passe, veuillez le renseigner ici.",
     "Programs": "Programmes",
     "News": "Actualit\u00e9s",
-    "HeaderDownloadSync": "T\u00e9l\u00e9charger et synchroniser"
+    "HeaderDownloadSync": "T\u00e9l\u00e9charger et synchroniser",
+    "EnableHardwareDecoding": "Activer le d\u00e9codage mat\u00e9riel",
+    "EnableHardwareEncoding": "Activer l'encodage mat\u00e9riel",
+    "Rate": "D\u00e9bit",
+    "ButtonScanAllLibraries": "Scan All Libraries",
+    "ScanLibrary": "Scan library"
 }

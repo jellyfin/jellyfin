@@ -440,5 +440,6 @@
     "LiveTV": "TV en Direct",
     "Schedule": "Programmer",
     "Recordings": "Enregistrements",
-    "MarkWatched": "Marquer comme vu"
+    "MarkWatched": "Marquer comme vu",
+    "ScanForNewAndUpdatedFiles": "Scan for new and updated files"
 }

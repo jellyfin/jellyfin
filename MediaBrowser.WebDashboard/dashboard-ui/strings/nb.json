@@ -1,7 +1,4 @@
 {
-    "EnableHardwareDecoding": "Aktiver hardware dekoding",
-    "EnableHardwareEncoding": "Aktiver hardware enkoding",
-    "Rate": "Rate",
     "LabelPrevious": "Forrige",
     "LabelFinish": "Ferdig",
     "LabelNext": "Neste",
@@ -1930,5 +1927,10 @@
     "LabelCertificatePasswordHelp": "Hvis sertifikatet ditt krever et passord, vennligst skriv det inn her.",
     "Programs": "Programmer",
     "News": "Nyheter",
-    "HeaderDownloadSync": "Last  ned og synkronisere"
+    "HeaderDownloadSync": "Last  ned og synkronisere",
+    "EnableHardwareDecoding": "Aktiver hardware dekoding",
+    "EnableHardwareEncoding": "Aktiver hardware enkoding",
+    "Rate": "Rate",
+    "ButtonScanAllLibraries": "Scan All Libraries",
+    "ScanLibrary": "Scan library"
 }

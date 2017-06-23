@@ -1,7 +1,4 @@
 {
-    "EnableHardwareDecoding": "Enable hardware decoding",
-    "EnableHardwareEncoding": "Enable hardware encoding",
-    "Rate": "Rate",
     "LabelPrevious": "Previous",
     "LabelFinish": "Finish",
     "LabelNext": "Next",
@@ -1930,5 +1927,10 @@
     "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here.",
     "Programs": "Programmes",
     "News": "News",
-    "HeaderDownloadSync": "Download & Sync"
+    "HeaderDownloadSync": "Download & Sync",
+    "EnableHardwareDecoding": "Enable hardware decoding",
+    "EnableHardwareEncoding": "Enable hardware encoding",
+    "Rate": "Rate",
+    "ButtonScanAllLibraries": "Scan All Libraries",
+    "ScanLibrary": "Scan library"
 }

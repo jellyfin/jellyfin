@@ -440,5 +440,6 @@
     "LiveTV": "Diretta TV",
     "Schedule": "Programmazione",
     "Recordings": "Registrazioni",
-    "MarkWatched": "Segna come visto"
+    "MarkWatched": "Segna come visto",
+    "ScanForNewAndUpdatedFiles": "Scan for new and updated files"
 }

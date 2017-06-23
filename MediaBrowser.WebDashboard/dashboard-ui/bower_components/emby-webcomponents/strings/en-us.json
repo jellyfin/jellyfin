@@ -440,5 +440,6 @@
   "LiveTV": "Live TV",
   "Schedule": "Schedule",
   "Recordings": "Recordings",
-  "MarkWatched": "Mark watched"
+  "MarkWatched": "Mark watched",
+  "ScanForNewAndUpdatedFiles": "Scan for new and updated files"
 }

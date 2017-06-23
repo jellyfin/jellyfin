@@ -1,7 +1,4 @@
 {
-    "EnableHardwareDecoding": "Enable hardware decoding",
-    "EnableHardwareEncoding": "Enable hardware encoding",
-    "Rate": "Rate",
     "LabelPrevious": "F\u00f6reg\u00e5ende",
     "LabelFinish": "Klart",
     "LabelNext": "N\u00e4sta",
@@ -1930,5 +1927,10 @@
     "LabelCertificatePasswordHelp": "Skriv in l\u00f6senordet h\u00e4r om ditt certifikat kr\u00e4ver detta.",
     "Programs": "Programs",
     "News": "News",
-    "HeaderDownloadSync": "Download & Sync"
+    "HeaderDownloadSync": "Download & Sync",
+    "EnableHardwareDecoding": "Enable hardware decoding",
+    "EnableHardwareEncoding": "Enable hardware encoding",
+    "Rate": "Rate",
+    "ButtonScanAllLibraries": "Scan All Libraries",
+    "ScanLibrary": "Scan library"
 }
