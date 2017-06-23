@@ -4,6 +4,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Tasks;
 
 namespace Emby.Server.Implementations.Channels
@@ -42,7 +43,7 @@ namespace Emby.Server.Implementations.Channels
         {
             var manager = (ChannelManager)_channelManager;
 
-            await manager.RefreshChannels(new Progress<double>(), cancellationToken).ConfigureAwait(false);
+            await manager.RefreshChannels(new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
 
             await new ChannelPostScanTask(_channelManager, _userManager, _logger, _libraryManager).Run(progress, cancellationToken)
                     .ConfigureAwait(false);

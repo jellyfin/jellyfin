@@ -246,7 +246,7 @@ namespace Emby.Server.Implementations.Updates
                 {
                     Url = "https://www.mb3admin.com/admin/service/MB3Packages.json",
                     CancellationToken = cancellationToken,
-                    Progress = new Progress<Double>()
+                    Progress = new SimpleProgress<Double>()
 
                 }).ConfigureAwait(false);
 

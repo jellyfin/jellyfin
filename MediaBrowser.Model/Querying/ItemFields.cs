@@ -228,6 +228,7 @@
         ExternalSeriesId,
         SeriesPresentationUniqueKey,
         DateLastRefreshed,
-        DateLastSaved
+        DateLastSaved,
+        RefreshState
     }
 }

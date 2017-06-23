@@ -235,8 +235,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 await RefreshArtists(refreshOptions, cancellationToken).ConfigureAwait(false);
             }
-
-            progress.Report(100);
         }
 
         private async Task RefreshArtists(MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)

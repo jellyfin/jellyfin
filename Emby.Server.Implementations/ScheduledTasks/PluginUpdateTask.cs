@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Tasks;
 
 namespace Emby.Server.Implementations.ScheduledTasks
@@ -77,7 +78,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 try
                 {
-                    await _installationManager.InstallPackage(i, true, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+                    await _installationManager.InstallPackage(i, true, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {

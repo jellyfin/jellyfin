@@ -23,7 +23,6 @@ namespace Emby.Server.Implementations.Notifications
         public void Run()
         {
             _notificationsRepo.NotificationAdded += _notificationsRepo_NotificationAdded;
-
             _notificationsRepo.NotificationsMarkedRead += _notificationsRepo_NotificationsMarkedRead;
         }
 

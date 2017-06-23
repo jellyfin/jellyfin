@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Tasks;
 
 namespace Emby.Server.Implementations.ScheduledTasks
@@ -70,7 +71,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             EventHandler<double> innerProgressHandler = (sender, e) => progress.Report(e * .1);
 
             // Create a progress object for the update check
-            var innerProgress = new Progress<double>();
+            var innerProgress = new SimpleProgress<double>();
             innerProgress.ProgressChanged += innerProgressHandler;
 
             var updateInfo = await _appHost.CheckForApplicationUpdate(cancellationToken, innerProgress).ConfigureAwait(false);
@@ -97,7 +98,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 innerProgressHandler = (sender, e) => progress.Report(e * .9 + .1);
 
-                innerProgress = new Progress<double>();
+                innerProgress = new SimpleProgress<double>();
                 innerProgress.ProgressChanged += innerProgressHandler;
 
                 await _appHost.UpdateApplication(updateInfo.Package, cancellationToken, innerProgress).ConfigureAwait(false);
