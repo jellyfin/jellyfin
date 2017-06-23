@@ -57,8 +57,8 @@
     "Save": "Lagre",
     "Edit": "Rediger",
     "Download": "Nedlasting",
-    "Downloaded": "Downloaded",
-    "Downloading": "Downloading",
+    "Downloaded": "Nedlastet",
+    "Downloading": "Laster ned",
     "Advanced": "Avansert",
     "Delete": "Slett",
     "HeaderDeleteItem": "Slett element",
@@ -356,7 +356,7 @@
     "OneChannel": "En kanal",
     "ConfirmRemoveDownload": "Fjern nedlastet?",
     "RemoveDownload": "Fjern nedlastet",
-    "KeepDownload": "Keep download",
+    "KeepDownload": "Behold nedlasting",
     "AddedOnValue": "Lagt til {0}",
     "RemovingFromDevice": "Fjerner fra enheten",
     "KeepOnDevice": "Behold p\u00e5 enhet",
@@ -440,5 +440,6 @@
     "LiveTV": "Direkte TV",
     "Schedule": "Planlegg",
     "Recordings": "Opptak",
-    "MarkWatched": "Mark watched"
+    "MarkWatched": "Marker som sett",
+    "ScanForNewAndUpdatedFiles": "Scan for new and updated files"
 }

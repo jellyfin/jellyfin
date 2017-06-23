@@ -7,6 +7,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Configuration;
 
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -62,7 +63,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     // Kick this off, but no need to wait on it
                     var task = Task.Run(async () =>
                     {
-                        await DownloadFontFile(fontsDirectory, fontFilename, new Progress<double>()).ConfigureAwait(false);
+                        await DownloadFontFile(fontsDirectory, fontFilename, new SimpleProgress<double>()).ConfigureAwait(false);
 
                         await WriteFontConfigFile(fontsDirectory).ConfigureAwait(false);
                     });

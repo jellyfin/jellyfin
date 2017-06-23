@@ -10,7 +10,8 @@ namespace MediaBrowser.Controller.Dto
     {
         private static readonly List<ItemFields> DefaultExcludedFields = new List<ItemFields>
         {
-            ItemFields.SeasonUserData
+            ItemFields.SeasonUserData,
+            ItemFields.RefreshState
         };
 
         public List<ItemFields> Fields { get; set; }

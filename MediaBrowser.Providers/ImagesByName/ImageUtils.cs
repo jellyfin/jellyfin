@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.ImagesByName
@@ -30,7 +31,7 @@ namespace MediaBrowser.Providers.ImagesByName
                 var temp = await httpClient.GetTempFile(new HttpRequestOptions
                 {
                     CancellationToken = cancellationToken,
-                    Progress = new Progress<double>(),
+                    Progress = new SimpleProgress<double>(),
                     Url = url
 
                 }).ConfigureAwait(false);

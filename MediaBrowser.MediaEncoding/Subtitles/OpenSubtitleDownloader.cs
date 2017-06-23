@@ -136,7 +136,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if ((DateTime.UtcNow - _lastRateLimitException).TotalHours < 1)
             {
-                throw new Exception("OpenSubtitles rate limit reached");
+                throw new RateLimitExceededException("OpenSubtitles rate limit reached");
             }
 
             var resultDownLoad = await OpenSubtitles.DownloadSubtitlesAsync(downloadsList, cancellationToken).ConfigureAwait(false);
@@ -144,7 +144,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             if ((resultDownLoad.Status ?? string.Empty).IndexOf("407", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 _lastRateLimitException = DateTime.UtcNow;
-                throw new Exception("OpenSubtitles rate limit reached");
+                throw new RateLimitExceededException("OpenSubtitles rate limit reached");
             }
 
             if (!(resultDownLoad is MethodResponseSubtitleDownload))

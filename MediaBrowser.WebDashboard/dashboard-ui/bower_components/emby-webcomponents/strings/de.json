@@ -440,5 +440,6 @@
     "LiveTV": "Live TV",
     "Schedule": "Zeitplan",
     "Recordings": "Aufnahmen",
-    "MarkWatched": "Als gesehen markieren"
+    "MarkWatched": "Als gesehen markieren",
+    "ScanForNewAndUpdatedFiles": "Scan for new and updated files"
 }

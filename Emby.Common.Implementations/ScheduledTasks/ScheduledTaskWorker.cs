@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -402,7 +403,7 @@ namespace Emby.Common.Implementations.ScheduledTasks
                 throw new InvalidOperationException("Cannot execute a Task that is already running");
             }
 
-            var progress = new Progress<double>();
+            var progress = new SimpleProgress<double>();
 
             CurrentCancellationTokenSource = new CancellationTokenSource();
 

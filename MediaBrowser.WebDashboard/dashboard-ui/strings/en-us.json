@@ -1930,5 +1930,7 @@
   "HeaderDownloadSync": "Download & Sync",
   "EnableHardwareDecoding": "Enable hardware decoding",
   "EnableHardwareEncoding": "Enable hardware encoding",
-  "Rate": "Rate"
+  "Rate": "Rate",
+  "ButtonScanAllLibraries": "Scan All Libraries",
+  "ScanLibrary": "Scan library"
 }

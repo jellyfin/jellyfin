@@ -57,8 +57,8 @@
     "Save": "Salva",
     "Edit": "Modifica",
     "Download": "Scarica",
-    "Downloaded": "Downloaded",
-    "Downloading": "Downloading",
+    "Downloaded": "Scaricato",
+    "Downloading": "In scaricamento",
     "Advanced": "Avanzate",
     "Delete": "Elimina",
     "HeaderDeleteItem": "Elimina Elemento",
@@ -356,7 +356,7 @@
     "OneChannel": "Un canale",
     "ConfirmRemoveDownload": "Rimuovi scaricamento?",
     "RemoveDownload": "Rimuovi scaricamento",
-    "KeepDownload": "Keep download",
+    "KeepDownload": "Continua a scaricare",
     "AddedOnValue": "Aggiunto {0}",
     "RemovingFromDevice": "Rimuovendo dal dispositivo",
     "KeepOnDevice": "Mantieni sul dispositivo",
@@ -440,5 +440,6 @@
     "LiveTV": "Diretta TV",
     "Schedule": "Programmazione",
     "Recordings": "Registrazioni",
-    "MarkWatched": "Segna come visto"
+    "MarkWatched": "Segna come visto",
+    "ScanForNewAndUpdatedFiles": "Scan for new and updated files"
 }

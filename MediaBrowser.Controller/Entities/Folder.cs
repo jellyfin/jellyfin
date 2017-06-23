@@ -271,6 +271,11 @@ namespace MediaBrowser.Controller.Entities
             return GetCachedChildren();
         }
 
+        public override double? GetRefreshProgress()
+        {
+            return ProviderManager.GetRefreshProgress(Id);
+        }
+
         public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken)
         {
             return ValidateChildren(progress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(Logger, FileSystem)));
@@ -318,6 +323,14 @@ namespace MediaBrowser.Controller.Entities
             return current.IsValidFromResolver(newItem);
         }
 
+        protected override void TriggerOnRefreshStart()
+        {
+        }
+
+        protected override void TriggerOnRefreshComplete()
+        {
+        }
+
         /// <summary>
         /// Validates the children internal.
         /// </summary>
@@ -328,7 +341,27 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <returns>Task.</returns>
-        protected async virtual Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected virtual async Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        {
+            if (recursive)
+            {
+                ProviderManager.OnRefreshStart(this);
+            }
+
+            try
+            {
+                await ValidateChildrenInternal2(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (recursive)
+                {
+                    ProviderManager.OnRefreshComplete(this);
+                }
+            }
+        }
+
+        private async Task ValidateChildrenInternal2(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
             var locationType = LocationType;
 
@@ -359,6 +392,11 @@ namespace MediaBrowser.Controller.Entities
                 if (nonCachedChildren == null) return; //nothing to validate
 
                 progress.Report(5);
+
+                if (recursive)
+                {
+                    ProviderManager.OnRefreshProgress(this, 5);
+                }
 
                 //build a dictionary of the current children we have now by Id so we can compare quickly and easily
                 var currentChildren = GetActualChildrenDictionary();
@@ -424,76 +462,99 @@ namespace MediaBrowser.Controller.Entities
                     await LibraryManager.CreateItems(newItems, cancellationToken).ConfigureAwait(false);
                 }
             }
+            else
+            {
+                if (recursive || refreshChildMetadata)
+                {
+                    // used below
+                    validChildren = Children.ToList();
+                }
+            }
 
             progress.Report(10);
+
+            if (recursive)
+            {
+                ProviderManager.OnRefreshProgress(this, 10);
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
             if (recursive)
             {
-                await ValidateSubFolders(Children.ToList().OfType<Folder>().ToList(), directoryService, progress, cancellationToken).ConfigureAwait(false);
-            }
+                using (var innerProgress = new ActionableProgress<double>())
+                {
+                    var folder = this;
+                    innerProgress.RegisterAction(p =>
+                    {
+                        double newPct = .70 * p + 10;
+                        progress.Report(newPct);
+                        ProviderManager.OnRefreshProgress(folder, newPct);
+                    });
 
-            progress.Report(20);
+                    await ValidateSubFolders(validChildren.OfType<Folder>().ToList(), directoryService, innerProgress, cancellationToken).ConfigureAwait(false);
+                }
+            }
 
             if (refreshChildMetadata)
             {
+                progress.Report(80);
+
+                if (recursive)
+                {
+                    ProviderManager.OnRefreshProgress(this, 80);
+                }
+
                 var container = this as IMetadataContainer;
 
-                var innerProgress = new ActionableProgress<double>();
-
-                innerProgress.RegisterAction(p => progress.Report(.80 * p + 20));
-
-                if (container != null)
+                using (var innerProgress = new ActionableProgress<double>())
                 {
-                    await container.RefreshAllMetadata(refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    await RefreshMetadataRecursive(refreshOptions, recursive, innerProgress, cancellationToken);
+                    var folder = this;
+                    innerProgress.RegisterAction(p =>
+                    {
+                        double newPct = .20 * p + 80;
+                        progress.Report(newPct);
+                        if (recursive)
+                        {
+                            ProviderManager.OnRefreshProgress(folder, newPct);
+                        }
+                    });
+
+                    if (container != null)
+                    {
+                        await container.RefreshAllMetadata(refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await RefreshMetadataRecursive(validChildren, refreshOptions, recursive, innerProgress, cancellationToken);
+                    }
                 }
             }
-
-            progress.Report(100);
         }
 
-        private async Task RefreshMetadataRecursive(MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task RefreshMetadataRecursive(List<BaseItem> children, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var children = Children.ToList();
-
-            var percentages = new Dictionary<Guid, double>(children.Count);
             var numComplete = 0;
             var count = children.Count;
+            double currentPercent = 0;
 
             foreach (var child in children)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (child.IsFolder)
+                using (var innerProgress = new ActionableProgress<double>())
                 {
-                    var innerProgress = new ActionableProgress<double>();
-
                     // Avoid implicitly captured closure
-                    var currentChild = child;
+                    var currentInnerPercent = currentPercent;
+
                     innerProgress.RegisterAction(p =>
                     {
-                        lock (percentages)
-                        {
-                            percentages[currentChild.Id] = p / 100;
-
-                            var innerPercent = percentages.Values.Sum();
-                            innerPercent /= count;
-                            innerPercent *= 100;
-                            progress.Report(innerPercent);
-                        }
+                        double innerPercent = currentInnerPercent;
+                        innerPercent += p / (count);
+                        progress.Report(innerPercent);
                     });
 
-                    await RefreshChildMetadata(child, refreshOptions, recursive, innerProgress, cancellationToken)
-                      .ConfigureAwait(false);
-                }
-                else
-                {
-                    await RefreshChildMetadata(child, refreshOptions, false, new Progress<double>(), cancellationToken)
+                    await RefreshChildMetadata(child, refreshOptions, recursive && child.IsFolder, innerProgress, cancellationToken)
                       .ConfigureAwait(false);
                 }
 
@@ -501,11 +562,10 @@ namespace MediaBrowser.Controller.Entities
                 double percent = numComplete;
                 percent /= count;
                 percent *= 100;
+                currentPercent = percent;
 
                 progress.Report(percent);
             }
-
-            progress.Report(100);
         }
 
         private async Task RefreshChildMetadata(BaseItem child, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
@@ -526,11 +586,10 @@ namespace MediaBrowser.Controller.Entities
 
                     if (folder != null)
                     {
-                        await folder.RefreshMetadataRecursive(refreshOptions, true, progress, cancellationToken);
+                        await folder.RefreshMetadataRecursive(folder.Children.ToList(), refreshOptions, true, progress, cancellationToken);
                     }
                 }
             }
-            progress.Report(100);
         }
 
         /// <summary>
@@ -543,45 +602,38 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         private async Task ValidateSubFolders(IList<Folder> children, IDirectoryService directoryService, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var list = children;
-            var childCount = list.Count;
+            var numComplete = 0;
+            var count = children.Count;
+            double currentPercent = 0;
 
-            var percentages = new Dictionary<Guid, double>(list.Count);
-
-            foreach (var item in list)
+            foreach (var child in children)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var child = item;
-
-                var innerProgress = new ActionableProgress<double>();
-
-                innerProgress.RegisterAction(p =>
+                using (var innerProgress = new ActionableProgress<double>())
                 {
-                    lock (percentages)
+                    // Avoid implicitly captured closure
+                    var currentInnerPercent = currentPercent;
+
+                    innerProgress.RegisterAction(p =>
                     {
-                        percentages[child.Id] = p / 100;
+                        double innerPercent = currentInnerPercent;
+                        innerPercent += p / (count);
+                        progress.Report(innerPercent);
+                    });
 
-                        var percent = percentages.Values.Sum();
-                        percent /= childCount;
+                    await child.ValidateChildrenInternal(innerProgress, cancellationToken, true, false, null, directoryService)
+                            .ConfigureAwait(false);
+                }
 
-                        progress.Report(10 * percent + 10);
-                    }
-                });
+                numComplete++;
+                double percent = numComplete;
+                percent /= count;
+                percent *= 100;
+                currentPercent = percent;
 
-                await child.ValidateChildrenInternal(innerProgress, cancellationToken, true, false, null, directoryService)
-                        .ConfigureAwait(false);
+                progress.Report(percent);
             }
-        }
-
-        /// <summary>
-        /// Determines whether the specified path is offline.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if the specified path is offline; otherwise, <c>false</c>.</returns>
-        public static bool IsPathOffline(string path)
-        {
-            return IsPathOffline(path, LibraryManager.GetVirtualFolders().SelectMany(i => i.Locations).ToList());
         }
 
         public static bool IsPathOffline(string path, List<string> allLibraryPaths)
@@ -926,7 +978,7 @@ namespace MediaBrowser.Controller.Entities
                         SortBy = query.SortBy,
                         SortOrder = query.SortOrder
 
-                    }, new Progress<double>(), CancellationToken.None).Result;
+                    }, new SimpleProgress<double>(), CancellationToken.None).Result;
                 }
                 catch
                 {
