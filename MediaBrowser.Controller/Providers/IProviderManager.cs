@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -30,7 +31,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task RefreshFullItem(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Refreshes the metadata.
         /// </summary>
@@ -68,7 +69,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <returns>Task.</returns>
         Task SaveImage(IHasImages item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Adds the metadata providers.
         /// </summary>
@@ -128,7 +129,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="savers">The savers.</param>
         /// <returns>Task.</returns>
         Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType, IEnumerable<string> savers);
-        
+
         /// <summary>
         /// Gets the metadata options.
         /// </summary>
@@ -158,6 +159,18 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
         Task<HttpResponseInfo> GetSearchImage(string providerName, string url, CancellationToken cancellationToken);
+
+        Dictionary<Guid, Guid> GetRefreshQueue();
+
+        void OnRefreshStart(BaseItem item);
+        void OnRefreshProgress(BaseItem item, double progress);
+        void OnRefreshComplete(BaseItem item);
+
+        double? GetRefreshProgress(Guid id);
+
+        event EventHandler<GenericEventArgs<BaseItem>> RefreshStarted;
+        event EventHandler<GenericEventArgs<BaseItem>> RefreshCompleted;
+        event EventHandler<GenericEventArgs<Tuple<BaseItem, double>>> RefreshProgress;
     }
 
     public enum RefreshPriority

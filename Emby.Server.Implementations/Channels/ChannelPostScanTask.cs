@@ -207,7 +207,7 @@ namespace Emby.Server.Implementations.Channels
                     StartIndex = totalRetrieved,
                     FolderId = folderId
 
-                }, new Progress<double>(), cancellationToken);
+                }, new SimpleProgress<double>(), cancellationToken);
 
                 folderItems.AddRange(result.Items.Where(i => i.IsFolder).Select(i => i.Id.ToString("N")));
 

@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -208,7 +208,7 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetVirtualFolders request)
         {
-            var result = _libraryManager.GetVirtualFolders().OrderBy(i => i.Name).ToList();
+            var result = _libraryManager.GetVirtualFolders(true);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -290,7 +290,7 @@ namespace MediaBrowser.Api.Library
                     // No need to start if scanning the library because it will handle it
                     if (request.RefreshLibrary)
                     {
-                        _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                        _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
                     }
                     else
                     {
@@ -347,7 +347,7 @@ namespace MediaBrowser.Api.Library
                     // No need to start if scanning the library because it will handle it
                     if (request.RefreshLibrary)
                     {
-                        _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                        _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
                     }
                     else
                     {
@@ -400,7 +400,7 @@ namespace MediaBrowser.Api.Library
                     // No need to start if scanning the library because it will handle it
                     if (request.RefreshLibrary)
                     {
-                        _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                        _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
                     }
                     else
                     {

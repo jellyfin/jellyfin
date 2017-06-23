@@ -7,12 +7,13 @@ namespace MediaBrowser.Common.Progress
     /// Class ActionableProgress
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ActionableProgress<T> : Progress<T>, IDisposable
+    public class ActionableProgress<T> : IProgress<T>, IDisposable
     {
         /// <summary>
         /// The _actions
         /// </summary>
         private readonly List<Action<T>> _actions = new List<Action<T>>();
+        public event EventHandler<T> ProgressChanged;
 
         /// <summary>
         /// Registers the action.
@@ -21,22 +22,6 @@ namespace MediaBrowser.Common.Progress
         public void RegisterAction(Action<T> action)
         {
             _actions.Add(action);
-
-            ProgressChanged -= ActionableProgress_ProgressChanged;
-            ProgressChanged += ActionableProgress_ProgressChanged;
-        }
-
-        /// <summary>
-        /// Actionables the progress_ progress changed.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        void ActionableProgress_ProgressChanged(object sender, T e)
-        {
-            foreach (var action in _actions)
-            {
-                action(e);
-            }
         }
 
         /// <summary>
@@ -55,8 +40,33 @@ namespace MediaBrowser.Common.Progress
         {
             if (disposing)
             {
-                ProgressChanged -= ActionableProgress_ProgressChanged;
                 _actions.Clear();
+            }
+        }
+
+        public void Report(T value)
+        {
+            if (ProgressChanged != null)
+            {
+                ProgressChanged(this, value);
+            }
+
+            foreach (var action in _actions)
+            {
+                action(value);
+            }
+        }
+    }
+
+    public class SimpleProgress<T> : IProgress<T>
+    {
+        public event EventHandler<T> ProgressChanged;
+
+        public void Report(T value)
+        {
+            if (ProgressChanged != null)
+            {
+                ProgressChanged(this, value);
             }
         }
     }

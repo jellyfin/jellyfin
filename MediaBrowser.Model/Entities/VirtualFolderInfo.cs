@@ -47,5 +47,8 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The primary image item identifier.</value>
         public string PrimaryImageItemId { get; set; }
+
+        public double? RefreshProgress { get; set; }
+        public string RefreshStatus { get; set; }
     }
 }

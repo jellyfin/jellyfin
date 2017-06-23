@@ -65,7 +65,7 @@ namespace MediaBrowser.Api
             _providerManager.QueueRefresh(item.Id, options, RefreshPriority.High);
         }
 
-        private MetadataRefreshOptions GetRefreshOptions(BaseRefreshRequest request)
+        private MetadataRefreshOptions GetRefreshOptions(RefreshItem request)
         {
             return new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
             {
@@ -73,8 +73,9 @@ namespace MediaBrowser.Api
                 ImageRefreshMode = request.ImageRefreshMode,
                 ReplaceAllImages = request.ReplaceAllImages,
                 ReplaceAllMetadata = request.ReplaceAllMetadata,
-                ForceSave = true,
-                IsAutomated = false
+                ForceSave = request.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || request.ImageRefreshMode == ImageRefreshMode.FullRefresh || request.ReplaceAllImages || request.ReplaceAllMetadata,
+                IsAutomated = false,
+                ValidateChildren = request.Recursive
             };
         }
     }

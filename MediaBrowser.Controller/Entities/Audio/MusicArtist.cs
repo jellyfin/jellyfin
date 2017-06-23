@@ -250,8 +250,6 @@ namespace MediaBrowser.Controller.Entities.Audio
                 percent /= totalItems;
                 progress.Report(percent * 100);
             }
-
-            progress.Report(100);
         }
 
         public ArtistInfo GetLookupInfo()
