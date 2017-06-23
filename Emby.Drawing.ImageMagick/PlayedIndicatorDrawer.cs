@@ -5,7 +5,7 @@ using MediaBrowser.Model.Drawing;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
@@ -104,7 +104,7 @@ namespace Emby.Drawing.ImageMagick
             var tempPath = await httpClient.GetTempFile(new HttpRequestOptions
             {
                 Url = url,
-                Progress = new Progress<double>()
+                Progress = new SimpleProgress<double>()
 
             }).ConfigureAwait(false);
 

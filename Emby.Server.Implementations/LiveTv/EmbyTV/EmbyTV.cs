@@ -28,7 +28,7 @@ using System.Xml;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
-
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -240,7 +240,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (requiresRefresh)
             {
-                _libraryManager.ValidateMediaLibrary(new Progress<Double>(), CancellationToken.None);
+                _libraryManager.ValidateMediaLibrary(new SimpleProgress<Double>(), CancellationToken.None);
             }
         }
 

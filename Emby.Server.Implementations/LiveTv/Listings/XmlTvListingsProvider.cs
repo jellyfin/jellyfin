@@ -15,6 +15,7 @@ using Emby.XmlTv.Classes;
 using Emby.XmlTv.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -75,7 +76,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 CancellationToken = cancellationToken,
                 Url = path,
-                Progress = new Progress<Double>(),
+                Progress = new SimpleProgress<Double>(),
                 DecompressionMethod = CompressionMethod.Gzip,
 
                 // It's going to come back gzipped regardless of this value

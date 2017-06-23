@@ -320,7 +320,6 @@
     <Compile Include="Plugins\IPluginConfigurationPage.cs" />
     <Compile Include="Plugins\IServerEntryPoint.cs" />
     <Compile Include="Providers\IImageEnhancer.cs" />
-    <Compile Include="Providers\ProviderRefreshStatus.cs" />
     <Compile Include="Resolvers\IResolverIgnoreRule.cs" />
     <Compile Include="Resolvers\ResolverPriority.cs" />
     <Compile Include="Library\TVUtils.cs" />

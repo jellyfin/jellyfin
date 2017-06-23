@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
@@ -156,7 +157,7 @@ namespace MediaBrowser.Api
 
             else if (string.Equals(request.PackageType, "System", StringComparison.OrdinalIgnoreCase) || string.Equals(request.PackageType, "All", StringComparison.OrdinalIgnoreCase))
             {
-                var updateCheckResult = _appHost.CheckForApplicationUpdate(CancellationToken.None, new Progress<double>()).Result;
+                var updateCheckResult = _appHost.CheckForApplicationUpdate(CancellationToken.None, new SimpleProgress<double>()).Result;
 
                 if (updateCheckResult.IsUpdateAvailable)
                 {
@@ -233,7 +234,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException(string.Format("Package not found: {0}", request.Name));
             }
 
-            Task.Run(() => _installationManager.InstallPackage(package, true, new Progress<double>(), CancellationToken.None));
+            Task.Run(() => _installationManager.InstallPackage(package, true, new SimpleProgress<double>(), CancellationToken.None));
         }
 
         /// <summary>

@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Events;
-
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
@@ -170,7 +170,7 @@ namespace Emby.Server.Implementations.IO
             // If the root folder changed, run the library task so the user can see it
             if (itemsToRefresh.Any(i => i is AggregateFolder))
             {
-                LibraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                LibraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
                 return;
             }
 

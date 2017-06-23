@@ -462,7 +462,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (parent != null)
                 {
-                    await parent.ValidateChildren(new Progress<double>(), CancellationToken.None, new MetadataRefreshOptions(_fileSystem), false).ConfigureAwait(false);
+                    await parent.ValidateChildren(new SimpleProgress<double>(), CancellationToken.None, new MetadataRefreshOptions(_fileSystem), false).ConfigureAwait(false);
                 }
             }
             else if (parent != null)
@@ -1113,13 +1113,13 @@ namespace Emby.Server.Implementations.Library
             progress.Report(.5);
 
             // Start by just validating the children of the root, but go no further
-            await RootFolder.ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: false);
+            await RootFolder.ValidateChildren(new SimpleProgress<double>(), cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: false);
 
             progress.Report(1);
 
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
-            await GetUserRootFolder().ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: false).ConfigureAwait(false);
+            await GetUserRootFolder().ValidateChildren(new SimpleProgress<double>(), cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: false).ConfigureAwait(false);
             progress.Report(2);
 
             // Quickly scan CollectionFolders for changes
@@ -1204,25 +1204,24 @@ namespace Emby.Server.Implementations.Library
         /// Gets the default view.
         /// </summary>
         /// <returns>IEnumerable{VirtualFolderInfo}.</returns>
-        public IEnumerable<VirtualFolderInfo> GetVirtualFolders()
+        public List<VirtualFolderInfo> GetVirtualFolders()
         {
-            return GetView(ConfigurationManager.ApplicationPaths.DefaultUserViewsPath);
+            return GetVirtualFolders(false);
         }
 
-        /// <summary>
-        /// Gets the view.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>IEnumerable{VirtualFolderInfo}.</returns>
-        private IEnumerable<VirtualFolderInfo> GetView(string path)
+        public List<VirtualFolderInfo> GetVirtualFolders(bool includeRefreshState)
         {
             var topLibraryFolders = GetUserRootFolder().Children.ToList();
 
-            return _fileSystem.GetDirectoryPaths(path)
-                .Select(dir => GetVirtualFolderInfo(dir, topLibraryFolders));
+            var refreshQueue = includeRefreshState ? _providerManagerFactory().GetRefreshQueue() : null;
+
+            return _fileSystem.GetDirectoryPaths(ConfigurationManager.ApplicationPaths.DefaultUserViewsPath)
+                .Select(dir => GetVirtualFolderInfo(dir, topLibraryFolders, refreshQueue))
+                .OrderBy(i => i.Name)
+                .ToList();
         }
 
-        private VirtualFolderInfo GetVirtualFolderInfo(string dir, List<BaseItem> allCollectionFolders)
+        private VirtualFolderInfo GetVirtualFolderInfo(string dir, List<BaseItem> allCollectionFolders, Dictionary<Guid, Guid> refreshQueue)
         {
             var info = new VirtualFolderInfo
             {
@@ -1248,6 +1247,13 @@ namespace Emby.Server.Implementations.Library
             {
                 info.ItemId = libraryFolder.Id.ToString("N");
                 info.LibraryOptions = GetLibraryOptions(libraryFolder);
+
+                if (refreshQueue != null)
+                {
+                    info.RefreshProgress = libraryFolder.GetRefreshProgress();
+
+                    info.RefreshStatus = info.RefreshProgress.HasValue ? "Active" : refreshQueue.ContainsKey(libraryFolder.Id) ? "Queued" : "Idle";
+                }
             }
 
             return info;
@@ -2947,7 +2953,7 @@ namespace Emby.Server.Implementations.Library
                     // No need to start if scanning the library because it will handle it
                     if (refreshLibrary)
                     {
-                        ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                        ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
                     }
                     else
                     {
@@ -3075,7 +3081,7 @@ namespace Emby.Server.Implementations.Library
         private void SyncLibraryOptionsToLocations(string virtualFolderPath, LibraryOptions options)
         {
             var topLibraryFolders = GetUserRootFolder().Children.ToList();
-            var info = GetVirtualFolderInfo(virtualFolderPath, topLibraryFolders);
+            var info = GetVirtualFolderInfo(virtualFolderPath, topLibraryFolders, null);
 
             if (info.Locations.Count > 0 && info.Locations.Count != options.PathInfos.Length)
             {
@@ -3125,7 +3131,7 @@ namespace Emby.Server.Implementations.Library
                     // No need to start if scanning the library because it will handle it
                     if (refreshLibrary)
                     {
-                        ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                        ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
                     }
                     else
                     {

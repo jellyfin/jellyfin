@@ -23,7 +23,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -980,7 +980,7 @@ namespace Emby.Server.Implementations.Channels
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
-            var internalResult = await GetChannelItemsInternal(query, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+            var internalResult = await GetChannelItemsInternal(query, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
 
             var dtoOptions = new DtoOptions()
             {

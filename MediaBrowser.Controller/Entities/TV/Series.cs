@@ -414,8 +414,6 @@ namespace MediaBrowser.Controller.Entities.TV
             refreshOptions = new MetadataRefreshOptions(refreshOptions);
             refreshOptions.IsPostRecursiveRefresh = true;
             await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
-
-            progress.Report(100);
         }
 
         public IEnumerable<Episode> GetSeasonEpisodes(Season parentSeason, User user, DtoOptions options)
