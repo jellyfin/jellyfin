@@ -31,7 +31,7 @@ namespace MediaBrowser.Server.Startup.Common
                 }
                 catch (Exception ex)
                 {
-                    logger.Info("Error loading Skia: {0}. Will revert to ImageMagick.", ex.Message);
+                    logger.Error("Skia not available. Will try next image processor. {0}", ex.Message);
                 }
 
                 try
@@ -40,7 +40,7 @@ namespace MediaBrowser.Server.Startup.Common
                 }
                 catch
                 {
-                    logger.Error("Error loading ImageMagick. Will revert to GDI.");
+                    logger.Error("ImageMagick not available. Will try next image processor.");
                 }
             }
 
