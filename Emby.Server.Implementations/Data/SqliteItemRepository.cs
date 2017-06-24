@@ -4297,12 +4297,9 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (query.HasDeadParentId.HasValue)
+            if (query.HasDeadParentId.HasValue && query.HasDeadParentId.Value)
             {
-                if (query.HasDeadParentId.Value)
-                {
-                    whereClauses.Add("ParentId NOT NULL AND ParentId NOT IN (select guid from TypedBaseItems)");
-                }
+                whereClauses.Add("ParentId NOT NULL AND ParentId NOT IN (select guid from TypedBaseItems)");
             }
 
             if (query.Years.Length == 1)
