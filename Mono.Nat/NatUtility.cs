@@ -41,34 +41,31 @@ using MediaBrowser.Model.Logging;
 
 namespace Mono.Nat
 {
-	public static class NatUtility
-	{
-        private static ManualResetEvent searching;
-		public static event EventHandler<DeviceEventArgs> DeviceFound;
-		public static event EventHandler<DeviceEventArgs> DeviceLost;
-        
-		private static List<ISearcher> controllers;
-		private static bool verbose;
+    public static class NatUtility
+    {
+        public static event EventHandler<DeviceEventArgs> DeviceFound;
+        public static event EventHandler<DeviceEventArgs> DeviceLost;
+
+        private static List<ISearcher> controllers;
+        private static bool verbose;
 
         public static List<NatProtocol> EnabledProtocols { get; set; }
 
-	    public static ILogger Logger { get; set; }
+        public static ILogger Logger { get; set; }
         public static IHttpClient HttpClient { get; set; }
 
         public static bool Verbose
-		{
-			get { return verbose; }
-			set { verbose = value; }
-		}
-		
+        {
+            get { return verbose; }
+            set { verbose = value; }
+        }
+
         static NatUtility()
         {
             EnabledProtocols = new List<NatProtocol>
             {
                 NatProtocol.Pmp
             };
-
-            searching = new ManualResetEvent(false);
 
             controllers = new List<ISearcher>();
             controllers.Add(PmpSearcher.Instance);
@@ -86,23 +83,19 @@ namespace Mono.Nat
                             DeviceLost(sender, args);
                     };
                 });
-
-            Task.Factory.StartNew(SearchAndListen, TaskCreationOptions.LongRunning);
         }
 
-		internal static void Log(string format, params object[] args)
-		{
-			var logger = Logger;
-		    if (logger != null)
-		        logger.Debug(format, args);
-		}
-
-        private static async Task SearchAndListen()
+        internal static void Log(string format, params object[] args)
         {
-            while (true)
-            {
-                searching.WaitOne();
+            var logger = Logger;
+            if (logger != null)
+                logger.Debug(format, args);
+        }
 
+        private static async Task SearchAndListen(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
                 try
                 {
                     var enabledProtocols = EnabledProtocols.ToList();
@@ -123,67 +116,99 @@ namespace Mono.Nat
                 }
                 catch (Exception e)
                 {
-                    
+
                 }
                 await Task.Delay(100).ConfigureAwait(false);
             }
-		}
+        }
 
-		static async Task Receive (ISearcher searcher, List<UdpClient> clients)
-		{
-			foreach (UdpClient client in clients)
-			{
-				if (client.Available > 0)
-				{
-				    IPAddress localAddress = ((IPEndPoint)client.Client.LocalEndPoint).Address;
-				    var result = await client.ReceiveAsync().ConfigureAwait(false);
-				    var data = result.Buffer;
-				    var received = result.RemoteEndPoint;
-					searcher.Handle(localAddress, data, received);
-				}
+        static async Task Receive(ISearcher searcher, List<UdpClient> clients)
+        {
+            foreach (UdpClient client in clients)
+            {
+                if (client.Available > 0)
+                {
+                    IPAddress localAddress = ((IPEndPoint)client.Client.LocalEndPoint).Address;
+                    var result = await client.ReceiveAsync().ConfigureAwait(false);
+                    var data = result.Buffer;
+                    var received = result.RemoteEndPoint;
+                    searcher.Handle(localAddress, data, received);
+                }
             }
         }
-		
-		public static void StartDiscovery ()
-		{
-            searching.Set();
-		}
 
-		public static void StopDiscovery ()
-		{
-            searching.Reset();
-		}
-		
-		//checks if an IP address is a private address space as defined by RFC 1918
-		public static bool IsPrivateAddressSpace (IPAddress address)
-		{
-			byte[] ba = address.GetAddressBytes ();
+        private static CancellationTokenSource _currentCancellationTokenSource;
+        private static object _runSyncLock = new object();
+        public static void StartDiscovery()
+        {
+            lock (_runSyncLock)
+            {
+                if (_currentCancellationTokenSource == null)
+                {
+                    return;
+                }
 
-			switch ((int)ba[0]) {
-			case 10:
-				return true; //10.x.x.x
-			case 172:
-				return ((int)ba[1] & 16) != 0; //172.16-31.x.x
-			case 192:
-				return (int)ba[1] == 168; //192.168.x.x
-			default:
-				return false;
-			}
-		}
+                var tokenSource = new CancellationTokenSource();
 
-	    public static void Handle(IPAddress localAddress, byte[] response, IPEndPoint endpoint, NatProtocol protocol)
-	    {
-	        switch (protocol)
-	        {
+                _currentCancellationTokenSource = tokenSource;
+                //Task.Factory.StartNew(() => SearchAndListen(tokenSource.Token), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            }
+        }
+
+        public static void StopDiscovery()
+        {
+            lock (_runSyncLock)
+            {
+                var tokenSource = _currentCancellationTokenSource;
+
+                if (tokenSource != null)
+                {
+                    try
+                    {
+                        tokenSource.Cancel();
+                        tokenSource.Dispose();
+                    }
+                    catch
+                    {
+
+                    }
+
+                    _currentCancellationTokenSource = null;
+                }
+            }
+        }
+
+        //checks if an IP address is a private address space as defined by RFC 1918
+        public static bool IsPrivateAddressSpace(IPAddress address)
+        {
+            byte[] ba = address.GetAddressBytes();
+
+            switch ((int)ba[0])
+            {
+                case 10:
+                    return true; //10.x.x.x
+                case 172:
+                    return ((int)ba[1] & 16) != 0; //172.16-31.x.x
+                case 192:
+                    return (int)ba[1] == 168; //192.168.x.x
+                default:
+                    return false;
+            }
+        }
+
+        public static void Handle(IPAddress localAddress, byte[] response, IPEndPoint endpoint, NatProtocol protocol)
+        {
+            switch (protocol)
+            {
                 case NatProtocol.Upnp:
-	                //UpnpSearcher.Instance.Handle(localAddress, response, endpoint);
-	                break;
+                    //UpnpSearcher.Instance.Handle(localAddress, response, endpoint);
+                    break;
                 case NatProtocol.Pmp:
-	                PmpSearcher.Instance.Handle(localAddress, response, endpoint);
-	                break;
-	            default:
-	                throw new ArgumentException("Unexpected protocol: " + protocol);
-	        }
+                    PmpSearcher.Instance.Handle(localAddress, response, endpoint);
+                    break;
+                default:
+                    throw new ArgumentException("Unexpected protocol: " + protocol);
+            }
         }
 
         public static void Handle(IPAddress localAddress, UpnpDeviceInfo deviceInfo, IPEndPoint endpoint, NatProtocol protocol)
