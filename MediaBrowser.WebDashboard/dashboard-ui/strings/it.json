@@ -954,8 +954,8 @@
     "HeaderXmlDocumentAttribute": "Attributo Documento Xml",
     "XmlDocumentAttributeListHelp": "Questi attributi vengono applicati all'elemento radice di ogni risposta XML.",
     "OptionSaveMetadataAsHidden": "Salvare i metadati e le immagini come file nascosti",
-    "LabelExtractChaptersDuringLibraryScan": "Estrarre immagini capitolo durante la scansione biblioteca",
-    "LabelExtractChaptersDuringLibraryScanHelp": "Se abilitata, le immagini capitolo verranno estratti quando i video vengono importati durante la scansione della libreria. Se disabilitata verranno estratti durante le immagini dei capitoli programmati compito, permettendo la scansione biblioteca regolare per completare pi\u00f9 velocemente.",
+    "LabelExtractChaptersDuringLibraryScan": "Estrarre immagini capitolo durante la scansione della libreria",
+    "LabelExtractChaptersDuringLibraryScanHelp": "Se abilitata, le immagini capitolo verranno estratti quando i video vengono importati durante la scansione della libreria. Se disabilitata verranno estratti durante l'operazione pianificata di estrazione delle immagini capitolo, permettendo la scansione della libreria pi\u00f9 velocemente.",
     "LabelConnectGuestUserName": "Username di Emby o indirizzo email:",
     "LabelConnectUserName": "Utente Emby o indirizzo e-mail:",
     "LabelConnectUserNameHelp": "Collegare questo utente locale a un account online ricamato per consentire un facile segno-in di accesso da qualsiasi applicazione ricamato senza dover conoscere l'indirizzo IP del server",
@@ -1931,6 +1931,6 @@
     "EnableHardwareDecoding": "Abilita la decodifica hardware",
     "EnableHardwareEncoding": "Abilita la codifica hardware",
     "Rate": "Vota",
-    "ButtonScanAllLibraries": "Scan All Libraries",
-    "ScanLibrary": "Scan library"
+    "ButtonScanAllLibraries": "Scansiona Tutte le Librerie",
+    "ScanLibrary": "Scansione libreria"
 }

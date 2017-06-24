@@ -1930,7 +1930,7 @@
     "HeaderDownloadSync": "Herunterladen & Synchronisieren",
     "EnableHardwareDecoding": "Aktiviere Hardware-Decoding",
     "EnableHardwareEncoding": "Aktiviere Hardware-Encoding",
-    "Rate": "Rate",
-    "ButtonScanAllLibraries": "Scan All Libraries",
-    "ScanLibrary": "Scan library"
+    "Rate": "Bewerte",
+    "ButtonScanAllLibraries": "Scanne alle Bibliotheken",
+    "ScanLibrary": "Scanne Bibliothek"
 }
