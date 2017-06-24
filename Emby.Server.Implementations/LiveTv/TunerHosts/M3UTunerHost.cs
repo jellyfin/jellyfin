@@ -148,7 +148,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     },
                     RequiresOpening = true,
                     RequiresClosing = true,
-                    RequiresLooping = true,
+                    RequiresLooping = info.EnableStreamLooping,
 
                     ReadAtNativeFramerate = false,
 

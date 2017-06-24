@@ -204,6 +204,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string SubtitleCodec { get; set; }
 
+        public string TranscodeReasons { get; set; }
+
         /// <summary>
         /// Gets or sets the index of the audio stream.
         /// </summary>

@@ -130,12 +130,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ImageEncoderHelper.cs" />
-    <Compile Include="MainForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MainForm.Designer.cs">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="MainStartup.cs" />
     <Compile Include="Native\LoopUtil.cs" />
     <Compile Include="Native\PowerManagement.cs" />
@@ -167,9 +161,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MainForm.resx">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -197,7 +188,7 @@
     <Content Include="x64\sqlite3.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Icon.ico" />
+    <EmbeddedResource Include="Icon.ico" />
     <Content Include="Resources\Images\mb3logo800.png" />
     <Content Include="x86\libSkiaSharp.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

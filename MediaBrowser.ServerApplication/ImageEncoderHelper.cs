@@ -14,10 +14,10 @@ namespace MediaBrowser.Server.Startup.Common
 {
     public class ImageEncoderHelper
     {
-        public static IImageEncoder GetImageEncoder(ILogger logger, 
-            ILogManager logManager, 
-            IFileSystem fileSystem, 
-            StartupOptions startupOptions, 
+        public static IImageEncoder GetImageEncoder(ILogger logger,
+            ILogManager logManager,
+            IFileSystem fileSystem,
+            StartupOptions startupOptions,
             Func<IHttpClient> httpClient,
             IApplicationPaths appPaths)
         {
@@ -27,7 +27,7 @@ namespace MediaBrowser.Server.Startup.Common
             }
             catch
             {
-                logger.Error("Error loading Skia. Will revert to ImageMagick.");
+                logger.Error("Skia not available. Will try next image processor.");
             }
 
             return new NullImageEncoder();

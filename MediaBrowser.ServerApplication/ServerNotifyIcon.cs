@@ -45,7 +45,6 @@ namespace MediaBrowser.ServerApplication
 
             components = new System.ComponentModel.Container();
 
-            var resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             contextMenuStrip1 = new ContextMenuStrip(components);
             notifyIcon1 = new NotifyIcon(components);
 
@@ -62,7 +61,7 @@ namespace MediaBrowser.ServerApplication
             // notifyIcon1
             // 
             notifyIcon1.ContextMenuStrip = contextMenuStrip1;
-            notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            notifyIcon1.Icon = new System.Drawing.Icon(GetType().Assembly.GetManifestResourceStream(GetType().Namespace + ".Icon.ico"));
             notifyIcon1.Text = "Emby";
             notifyIcon1.Visible = true;
             // 
