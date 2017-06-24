@@ -265,7 +265,8 @@ namespace MediaBrowser.Api
                     Height = state.OutputHeight,
                     AudioChannels = state.OutputAudioChannels,
                     IsAudioDirect = string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase),
-                    IsVideoDirect = string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase)
+                    IsVideoDirect = string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase),
+                    TranscodeReasons = state.TranscodeReasons
                 });
             }
         }

@@ -583,6 +583,10 @@ namespace MediaBrowser.Api.Playback
                         videoRequest.DeInterlace = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     }
                 }
+                else if (i == 33)
+                {
+                    request.TranscodeReasons = val;
+                }
             }
         }
 

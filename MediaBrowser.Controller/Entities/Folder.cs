@@ -487,7 +487,7 @@ namespace MediaBrowser.Controller.Entities
                     var folder = this;
                     innerProgress.RegisterAction(p =>
                     {
-                        double newPct = .70 * p + 10;
+                        double newPct = .80 * p + 10;
                         progress.Report(newPct);
                         ProviderManager.OnRefreshProgress(folder, newPct);
                     });
@@ -498,11 +498,11 @@ namespace MediaBrowser.Controller.Entities
 
             if (refreshChildMetadata)
             {
-                progress.Report(80);
+                progress.Report(90);
 
                 if (recursive)
                 {
-                    ProviderManager.OnRefreshProgress(this, 80);
+                    ProviderManager.OnRefreshProgress(this, 90);
                 }
 
                 var container = this as IMetadataContainer;
@@ -512,7 +512,7 @@ namespace MediaBrowser.Controller.Entities
                     var folder = this;
                     innerProgress.RegisterAction(p =>
                     {
-                        double newPct = .20 * p + 80;
+                        double newPct = .10 * p + 90;
                         progress.Report(newPct);
                         if (recursive)
                         {
