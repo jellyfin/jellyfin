@@ -72,6 +72,7 @@ namespace MediaBrowser.Model.Net
             dict.Add(".tbn", "image/jpeg");
             dict.Add(".png", "image/png");
             dict.Add(".gif", "image/gif");
+            dict.Add(".tiff", "image/tiff");
             dict.Add(".webp", "image/webp");
             dict.Add(".ico", "image/vnd.microsoft.icon");
             dict.Add(".mpg", "video/mpeg");
