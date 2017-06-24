@@ -513,6 +513,8 @@ namespace MediaBrowser.Api.Playback
             var profiles = info.GetSubtitleProfiles(false, "-", accessToken);
             mediaSource.DefaultSubtitleStreamIndex = info.SubtitleStreamIndex;
 
+            mediaSource.TranscodeReasons = info.TranscodeReasons;
+
             foreach (var profile in profiles)
             {
                 foreach (var stream in mediaSource.MediaStreams)
