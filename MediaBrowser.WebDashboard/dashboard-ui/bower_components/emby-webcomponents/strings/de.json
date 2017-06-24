@@ -269,7 +269,7 @@
     "HeaderSyncRequiresSub": "Downloads ben\u00f6tigen ein aktives Emby Premiere Abonnement.",
     "LearnMore": "Erfahre mehr",
     "LabelProfile": "Profil:",
-    "LabelBitrateMbps": "Datenrate (Mbps):",
+    "LabelBitrateMbps": "Bitrate (Mbps):",
     "SyncUnwatchedVideosOnly": "Lade nur ungesehene Videos herunter",
     "SyncUnwatchedVideosOnlyHelp": "Nur ungesehene Video werden heruntergeladen. Videos werden entfernt sobald diese auf dem Ger\u00e4t angeschaut wurden.",
     "AutomaticallySyncNewContent": "Lade neue Inhalte automatisch herunter",
@@ -441,5 +441,5 @@
     "Schedule": "Zeitplan",
     "Recordings": "Aufnahmen",
     "MarkWatched": "Als gesehen markieren",
-    "ScanForNewAndUpdatedFiles": "Scan for new and updated files"
+    "ScanForNewAndUpdatedFiles": "Scanne nach neuen und aktualisierten Dateien"
 }

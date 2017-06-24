@@ -541,6 +541,11 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 queryString += "&SegmentContainer=" + state.Request.SegmentContainer;
             }
+            // from universal audio service
+            if (!string.IsNullOrWhiteSpace(state.Request.TranscodeReasons) && queryString.IndexOf("TranscodeReasons=", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                queryString += "&TranscodeReasons=" + state.Request.TranscodeReasons;
+            }
 
             // Main stream
             var playlistUrl = isLiveStream ? "live.m3u8" : "main.m3u8";

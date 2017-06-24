@@ -53,31 +53,10 @@ namespace MediaBrowser.ServerApplication
 
         private static IFileSystem FileSystem;
 
-        public static bool TryGetLocalFromUncDirectory(string local, out string unc)
-        {
-            if ((local == null) || (local == ""))
-            {
-                unc = "";
-                throw new ArgumentNullException("local");
-            }
-
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT Name FROM Win32_share WHERE path ='" + local.Replace("\\", "\\\\") + "'");
-            ManagementObjectCollection coll = searcher.Get();
-            if (coll.Count == 1)
-            {
-                foreach (ManagementObject share in searcher.Get())
-                {
-                    unc = share["Name"] as String;
-                    unc = "\\\\" + SystemInformation.ComputerName + "\\" + unc;
-                    return true;
-                }
-            }
-            unc = "";
-            return false;
-        }
         /// <summary>
         /// Defines the entry point of the application.
         /// </summary>
+        [STAThread]
         public static void Main()
         {
             var options = new StartupOptions(Environment.GetCommandLineArgs());
@@ -321,8 +300,6 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
-        private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
-
         /// <summary>
         /// Runs the application.
         /// </summary>
@@ -394,9 +371,6 @@ namespace MediaBrowser.ServerApplication
                 HideSplashScreen();
 
                 ShowTrayIcon();
-
-                task = ApplicationTaskCompletionSource.Task;
-                Task.WaitAll(task);
             }
         }
 
@@ -487,7 +461,6 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         static void service_Disposed(object sender, EventArgs e)
         {
-            ApplicationTaskCompletionSource.SetResult(true);
             OnServiceShutdown();
         }
 
@@ -706,14 +679,10 @@ namespace MediaBrowser.ServerApplication
                 _serverNotifyIcon = null;
             }
 
-            //_logger.Info("Calling Application.Exit");
+            _logger.Info("Calling Application.Exit");
             //Application.Exit();
-
-            _logger.Info("Calling Environment.Exit");
+            
             Environment.Exit(0);
-
-            _logger.Info("Calling ApplicationTaskCompletionSource.SetResult");
-            ApplicationTaskCompletionSource.SetResult(true);
         }
 
         private static void ShutdownWindowsService()

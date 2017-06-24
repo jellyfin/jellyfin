@@ -1932,5 +1932,7 @@
     "EnableHardwareEncoding": "Aktiver hardware enkoding",
     "Rate": "Rate",
     "ButtonScanAllLibraries": "Scan All Libraries",
-    "ScanLibrary": "Scan library"
+    "ScanLibrary": "Scan library",
+    "EnableStreamLooping": "Auto-loop live streams",
+    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
 }

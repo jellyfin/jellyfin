@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Api.Playback.Hls;
 using MediaBrowser.Api.Playback.Progressive;
@@ -265,7 +266,8 @@ namespace MediaBrowser.Api.Playback
                     Static = isStatic,
                     SegmentContainer = request.TranscodingContainer,
                     AudioSampleRate = request.MaxAudioSampleRate,
-                    BreakOnNonKeyFrames = transcodingProfile.BreakOnNonKeyFrames
+                    BreakOnNonKeyFrames = transcodingProfile.BreakOnNonKeyFrames,
+                    TranscodeReasons = mediaSource.TranscodeReasons == null ? null : string.Join(",", mediaSource.TranscodeReasons.Select(i => i.ToString()).ToArray())
                 };
 
                 if (isHeadRequest)
@@ -307,7 +309,8 @@ namespace MediaBrowser.Api.Playback
                     PlaySessionId = playbackInfoResult.PlaySessionId,
                     StartTimeTicks = request.StartTimeTicks,
                     Static = isStatic,
-                    AudioSampleRate = request.MaxAudioSampleRate
+                    AudioSampleRate = request.MaxAudioSampleRate,
+                    TranscodeReasons = mediaSource.TranscodeReasons == null ? null : string.Join(",", mediaSource.TranscodeReasons.Select(i => i.ToString()).ToArray())
                 };
 
                 if (isHeadRequest)

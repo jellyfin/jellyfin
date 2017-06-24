@@ -1931,6 +1931,8 @@
     "EnableHardwareDecoding": "Habilitar decodificaci\u00f3n por hardware",
     "EnableHardwareEncoding": "Habilitar codificaci\u00f3n por hardware",
     "Rate": "Calificaci\u00f3n",
-    "ButtonScanAllLibraries": "Scan All Libraries",
-    "ScanLibrary": "Scan library"
+    "ButtonScanAllLibraries": "Escanear Todas las Bibliotecas",
+    "ScanLibrary": "Escanear biblioteca",
+    "EnableStreamLooping": "Auto-loop live streams",
+    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
 }

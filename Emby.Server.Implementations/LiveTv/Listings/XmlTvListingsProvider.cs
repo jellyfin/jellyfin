@@ -49,8 +49,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             get { return "xmltv"; }
         }
 
-        private string GetLanguage()
+        private string GetLanguage(ListingsProviderInfo info)
         {
+            if (!string.IsNullOrWhiteSpace(info.PreferredLanguage))
+            {
+                return info.PreferredLanguage;
+            }
+
             return _config.Configuration.PreferredMetadataLanguage;
         }
 
@@ -152,7 +157,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             _logger.Debug("Getting xmltv programs for channel {0}", channelId);
 
             var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
-            var reader = new XmlTvReader(path, GetLanguage());
+            var reader = new XmlTvReader(path, GetLanguage(info));
 
             var results = reader.GetProgrammes(channelId, startDateUtc, endDateUtc, cancellationToken);
             return results.Select(p => GetProgramInfo(p, info));
@@ -254,7 +259,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             // In theory this should never be called because there is always only one lineup
             var path = await GetXml(info.Path, CancellationToken.None).ConfigureAwait(false);
-            var reader = new XmlTvReader(path, GetLanguage());
+            var reader = new XmlTvReader(path, GetLanguage(info));
             var results = reader.GetChannels();
 
             // Should this method be async?
@@ -265,7 +270,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             // In theory this should never be called because there is always only one lineup
             var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
-            var reader = new XmlTvReader(path, GetLanguage());
+            var reader = new XmlTvReader(path, GetLanguage(info));
             var results = reader.GetChannels();
 
             // Should this method be async?
