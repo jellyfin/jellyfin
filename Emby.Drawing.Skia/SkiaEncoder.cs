@@ -63,15 +63,15 @@ namespace Emby.Drawing.Skia
 
         private void LogVersion()
         {
+            // test an operation that requires the native library
+            SKPMColor.PreMultiply(SKColors.Black);
+
             _logger.Info("SkiaSharp version: " + GetVersion());
         }
 
         public static string GetVersion()
         {
-            using (var bitmap = new SKBitmap())
-            {
-                return typeof(SKBitmap).GetTypeInfo().Assembly.GetName().Version.ToString();
-            }
+            return typeof(SKBitmap).GetTypeInfo().Assembly.GetName().Version.ToString();
         }
 
         private static bool IsWhiteSpace(SKColor color)
