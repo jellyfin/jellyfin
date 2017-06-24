@@ -1932,5 +1932,7 @@
     "EnableHardwareEncoding": "Aktiviere Hardware-Encoding",
     "Rate": "Bewerte",
     "ButtonScanAllLibraries": "Scanne alle Bibliotheken",
-    "ScanLibrary": "Scanne Bibliothek"
+    "ScanLibrary": "Scanne Bibliothek",
+    "EnableStreamLooping": "Auto-Schleife Live Streams",
+    "EnableStreamLoopingHelp": "Aktivieren, wenn Live Streams nur ein paar Sekunden Daten enthalten und st\u00e4ndig angefragt werden m\u00fcssen."
 }
