@@ -326,7 +326,7 @@ namespace MediaBrowser.Api.Images
                         var fileInfo = _fileSystem.GetFileInfo(info.Path);
                         length = fileInfo.Length;
 
-                        var size = _imageProcessor.GetImageSize(info);
+                        var size = _imageProcessor.GetImageSize(info, true);
 
                         width = Convert.ToInt32(size.Width);
                         height = Convert.ToInt32(size.Height);
