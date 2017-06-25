@@ -86,6 +86,7 @@
     <Compile Include="Profiles\Foobar2000Profile.cs" />
     <Compile Include="Profiles\LgTvProfile.cs" />
     <Compile Include="Profiles\LinksysDMA2100Profile.cs" />
+    <Compile Include="Profiles\MarantzProfile.cs" />
     <Compile Include="Profiles\MediaMonkeyProfile.cs" />
     <Compile Include="Profiles\PanasonicVieraProfile.cs" />
     <Compile Include="Profiles\PopcornHourProfile.cs" />
@@ -176,6 +177,9 @@
     <EmbeddedResource Include="Profiles\Xml\WDTV Live.xml" />
     <EmbeddedResource Include="Profiles\Xml\Xbox 360.xml" />
     <EmbeddedResource Include="Profiles\Xml\Xbox One.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Marantz.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
