@@ -92,7 +92,20 @@ namespace MediaBrowser.Controller.LiveTv
 
         public override double? GetDefaultPrimaryImageAspectRatio()
         {
-            return null;
+            if (IsMovie)
+            {
+                double value = 2;
+                value /= 3;
+
+                return value;
+            }
+            else
+            {
+                double value = 2;
+                value /= 3;
+
+                return value;
+            }
         }
 
         public override string GetClientTypeName()

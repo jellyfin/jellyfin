@@ -550,7 +550,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (audioStream != null && !audioSupported)
             {
-                list.Add(TranscodeReason.VideoCodecNotSupported);
+                list.Add(TranscodeReason.AudioCodecNotSupported);
             }
 
             return list;
