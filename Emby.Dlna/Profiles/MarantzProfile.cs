@@ -1,27 +1,27 @@
-﻿using MediaBrowser.Model.Dlna;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
+using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Profiles
 {
     [XmlRoot("Profile")]
-    public class MediaMonkeyProfile : DefaultProfile
+    public class MarantzProfile : DefaultProfile
     {
-        public MediaMonkeyProfile()
+        public MarantzProfile()
         {
-            Name = "MediaMonkey";
+            Name = "Marantz";
 
             SupportedMediaTypes = "Audio";
 
             Identification = new DeviceIdentification
             {
-               FriendlyName = @"MediaMonkey",
+                Manufacturer = @"Marantz",
 
-               Headers = new[]
+                Headers = new[]
                {
                    new HttpHeaderInfo
                    {
                        Name = "User-Agent",
-                       Value = "MediaMonkey",
+                       Value = "Marantz",
                        Match = HeaderMatchType.Substring
                    }
                }
@@ -31,9 +31,9 @@ namespace Emby.Dlna.Profiles
             {
                 new DirectPlayProfile
                 {
-                    Container = "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac,m4a",
+                    Container = "aac,mp3,mpa,wav,wma,mp2,ogg,oga",
                     Type = DlnaProfileType.Audio
-                }
+                },
             };
 
             ResponseProfiles = new ResponseProfile[] { };
