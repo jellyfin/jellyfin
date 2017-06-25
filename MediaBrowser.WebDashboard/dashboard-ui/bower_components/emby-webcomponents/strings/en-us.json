@@ -444,5 +444,10 @@
   "ScanForNewAndUpdatedFiles": "Scan for new and updated files",
   "DirectStreamHelp1": "The media is compatible with the device regarding resolution and media type (H.264, AC3, etc.), but is in an incompatible file container (.mkv, .avi, .wmv, etc.). The video will be re-packaged on the fly before streaming it to the device.",
   "DirectStreamHelp2": "Direct Streaming a file uses very little processing power without any loss in video quality.",
-  "MediaIsBeingConverted": "The media is being converted into a format that is compatible with the device that is playing the media."
+  "MediaIsBeingConverted": "The media is being converted into a format that is compatible with the device that is playing the media.",
+  "StatsForNerds": "Stats for nerds",
+  "LabelReasonForTranscoding": "Reason for transcoding:",
+  "DirectPlaying": "Direct playing",
+  "DirectStreaming": "Direct streaming",
+  "Transcoding": "Transcoding"
 }
