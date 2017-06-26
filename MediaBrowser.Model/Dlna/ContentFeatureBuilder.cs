@@ -55,6 +55,7 @@ namespace MediaBrowser.Model.Dlna
             int? audioBitrate,
             int? audioSampleRate,
             int? audioChannels,
+            int? audioBitDepth,
             bool isDirectStream,
             long? runtimeTicks,
             TranscodeSeekInfo transcodeSeekInfo)
@@ -86,7 +87,8 @@ namespace MediaBrowser.Model.Dlna
                 audioCodec,
                 audioChannels,
                 audioBitrate,
-                audioSampleRate);
+                audioSampleRate,
+                audioBitDepth);
 
             string orgPn = mediaProfile == null ? null : mediaProfile.OrgPn;
 

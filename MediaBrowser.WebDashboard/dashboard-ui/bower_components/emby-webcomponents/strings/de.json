@@ -441,5 +441,19 @@
     "Schedule": "Zeitplan",
     "Recordings": "Aufnahmen",
     "MarkWatched": "Als gesehen markieren",
-    "ScanForNewAndUpdatedFiles": "Scanne nach neuen und aktualisierten Dateien"
+    "ScanForNewAndUpdatedFiles": "Scanne nach neuen und aktualisierten Dateien",
+    "DirectStreamHelp1": "Das Medium ist mit dem Abspielger\u00e4t kompatibel bzgl. Aufl\u00f6sung und Codecs (H.264, AC3, etc.), besitzt jedoch einen inkompatiblen Dateicontainer (.mkv, .avi, .wmv, etc.). Das Video wird in Echtzeit neugepackt bevor es zum Abspielger\u00e4t gestreamt wird.",
+    "DirectStreamHelp2": "Direktes Streaming von Dateien ben\u00f6tigt sehr wenig Rechenleistung ohne Verlust der Videoqualit\u00e4t.",
+    "MediaIsBeingConverted": "Das Medium wird in ein Format konvertiert, das mit dem Abspielger\u00e4t kompatibel ist.",
+    "StatsForNerds": "Expertenstatistik",
+    "LabelReasonForTranscoding": "Grund f\u00fcr die Transkodierung:",
+    "DirectPlaying": "Direktes Abspielen",
+    "DirectStreaming": "Direktes Streaming",
+    "Transcoding": "Transcoding",
+    "VideoCodecNotSupported": "Video Codec nicht unterst\u00fctzt",
+    "AudioCodecNotSupported": "Audio Codec nicht unterst\u00fctzt",
+    "ContainerNotSupported": "Container format not supported",
+    "AudioBitrateNotSupported": "Audio bitrate not supported",
+    "AudioChannelsNotSupported": "Audio channels not supported",
+    "VideoResolutionNotSupported": "Video resolution not supported"
 }

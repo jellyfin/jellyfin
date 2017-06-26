@@ -284,6 +284,29 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
+        public int? OutputAudioBitDepth
+        {
+            get
+            {
+                if (BaseRequest.Static || string.Equals(OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (AudioStream != null)
+                    {
+                        return AudioStream.BitDepth;
+                    }
+                }
+
+                //else if (BaseRequest.AudioSampleRate.HasValue)
+                //{
+                //    // Don't exceed what the encoder supports
+                //    // Seeing issues of attempting to encode to 88200
+                //    return Math.Min(44100, BaseRequest.AudioSampleRate.Value);
+                //}
+
+                return null;
+            }
+        }
+
         /// <summary>
         /// Predicts the audio sample rate that will be in the output stream
         /// </summary>

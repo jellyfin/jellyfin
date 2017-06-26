@@ -449,5 +449,11 @@
   "LabelReasonForTranscoding": "Reason for transcoding:",
   "DirectPlaying": "Direct playing",
   "DirectStreaming": "Direct streaming",
-  "Transcoding": "Transcoding"
+  "Transcoding": "Transcoding",
+  "VideoCodecNotSupported": "Video codec not supported",
+  "AudioCodecNotSupported": "Audio codec not supported",
+  "ContainerNotSupported": "Container format not supported",
+  "AudioBitrateNotSupported": "Audio bitrate not supported",
+  "AudioChannelsNotSupported": "Audio channels not supported",
+  "VideoResolutionNotSupported": "Video resolution not supported"
 }

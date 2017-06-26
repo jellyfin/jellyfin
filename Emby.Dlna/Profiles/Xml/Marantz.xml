@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
 <Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Name>Denon AVR</Name>
+  <Name>Marantz</Name>
   <Identification>
-    <FriendlyName>Denon:\[AVR:.*</FriendlyName>
-    <Manufacturer>Denon</Manufacturer>
-    <Headers />
+    <Manufacturer>Marantz</Manufacturer>
+    <Headers>
+      <HttpHeaderInfo name="User-Agent" value="Marantz" match="Substring" />
+    </Headers>
   </Identification>
   <Manufacturer>Emby</Manufacturer>
   <ManufacturerUrl>http://emby.media/</ManufacturerUrl>
@@ -34,7 +35,7 @@
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <XmlRootAttributes />
   <DirectPlayProfiles>
-    <DirectPlayProfile container="mp3,flac,m4a,wma" type="Audio" />
+    <DirectPlayProfile container="aac,mp3,wav,wma,flac" type="Audio" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" minSegments="0" segmentLength="0" breakOnNonKeyFrames="false" />

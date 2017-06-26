@@ -1931,8 +1931,8 @@
     "EnableHardwareDecoding": "Activer le d\u00e9codage mat\u00e9riel",
     "EnableHardwareEncoding": "Activer l'encodage mat\u00e9riel",
     "Rate": "D\u00e9bit",
-    "ButtonScanAllLibraries": "Scan All Libraries",
-    "ScanLibrary": "Scan library",
-    "EnableStreamLooping": "Auto-loop live streams",
-    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
+    "ButtonScanAllLibraries": "Actualiser toutes les m\u00e9diath\u00e8ques",
+    "ScanLibrary": "Actualiser la m\u00e9diath\u00e8que",
+    "EnableStreamLooping": "Reboucler les streaming en direct",
+    "EnableStreamLoopingHelp": "Activez cette option si les streaming en direct ne contiennent que quelques secondes de donn\u00e9es et doivent \u00eatre redemand\u00e9s continuellement."
 }

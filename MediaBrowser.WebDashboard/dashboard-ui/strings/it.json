@@ -454,7 +454,7 @@
     "LabelLocalHttpServerPortNumberHelp": "Numero di porta TCP da associare al server http di Emby",
     "LabelPublicHttpPort": "Porta HTTP pubblica",
     "LabelPublicHttpPortHelp": "Numero di porta pubblica che dovrebbe essere mappato sulla porta HTTP locale.",
-    "LabelPublicHttpsPort": "Numero porta HTTP pubblica",
+    "LabelPublicHttpsPort": "Numero porta HTTPS pubblica",
     "LabelPublicHttpsPortHelp": "Numero della porta pubblica che dovrebbe essere mappato sulla porta HTTPS locale.",
     "LabelEnableHttps": "Riporta HTTPS come indirizzo esterno",
     "LabelEnableHttpsHelp": "Se abilitato, il server riporter\u00e0 un url HTTPS ai client Emby come il proprio indirizzo esterno.",
@@ -1933,6 +1933,6 @@
     "Rate": "Vota",
     "ButtonScanAllLibraries": "Scansiona Tutte le Librerie",
     "ScanLibrary": "Scansione libreria",
-    "EnableStreamLooping": "Auto-loop live streams",
-    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
+    "EnableStreamLooping": "Auto-loop streaming in diretta",
+    "EnableStreamLoopingHelp": "Abilita questo se gli streaming in diretta contengono solo pochi secondi di dati e devono essere costantemente richiesti."
 }

@@ -1933,6 +1933,6 @@
     "Rate": "Calificaci\u00f3n",
     "ButtonScanAllLibraries": "Escanear Todas las Bibliotecas",
     "ScanLibrary": "Escanear biblioteca",
-    "EnableStreamLooping": "Auto-loop live streams",
-    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
+    "EnableStreamLooping": "Repetir autom\u00e1ticamente transmisiones en vivo",
+    "EnableStreamLoopingHelp": "Habilite esta opci\u00f3n si las transmisiones en vivo solo contienen unos segundos de datos y necesitan ser solicitados continuamente."
 }

@@ -10,6 +10,8 @@ namespace Emby.Dlna.Profiles
         {
             Name = "Denon AVR";
 
+            SupportedMediaTypes = "Audio";
+
             Identification = new DeviceIdentification
             {
                 FriendlyName = @"Denon:\[AVR:.*",
