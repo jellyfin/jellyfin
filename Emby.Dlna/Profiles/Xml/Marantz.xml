@@ -35,7 +35,7 @@
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <XmlRootAttributes />
   <DirectPlayProfiles>
-    <DirectPlayProfile container="aac,mp3,mpa,wav,wma,mp2,ogg,oga" type="Audio" />
+    <DirectPlayProfile container="aac,mp3,wav,wma,flac" type="Audio" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" minSegments="0" segmentLength="0" breakOnNonKeyFrames="false" />

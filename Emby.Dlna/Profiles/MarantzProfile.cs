@@ -31,7 +31,7 @@ namespace Emby.Dlna.Profiles
             {
                 new DirectPlayProfile
                 {
-                    Container = "aac,mp3,mpa,wav,wma,mp2,ogg,oga",
+                    Container = "aac,mp3,wav,wma,flac",
                     Type = DlnaProfileType.Audio
                 },
             };
