@@ -52,6 +52,7 @@ namespace MediaBrowser.Api.Playback
         public string TranscodingContainer { get; set; }
         public string TranscodingProtocol { get; set; }
         public int? MaxAudioSampleRate { get; set; }
+        public int? MaxAudioBitDepth { get; set; }
 
         public bool EnableRedirection { get; set; }
         public bool EnableRemoteMedia { get; set; }
@@ -164,6 +165,18 @@ namespace MediaBrowser.Api.Playback
                 });
             }
 
+            if (request.MaxAudioBitDepth.HasValue)
+            {
+                // codec profile
+                conditions.Add(new ProfileCondition
+                {
+                    Condition = ProfileConditionType.LessThanEqual,
+                    IsRequired = false,
+                    Property = ProfileConditionValue.AudioBitDepth,
+                    Value = request.MaxAudioBitDepth.Value.ToString(CultureInfo.InvariantCulture)
+                });
+            }
+
             if (request.MaxAudioChannels.HasValue)
             {
                 // codec profile
@@ -266,6 +279,7 @@ namespace MediaBrowser.Api.Playback
                     Static = isStatic,
                     SegmentContainer = request.TranscodingContainer,
                     AudioSampleRate = request.MaxAudioSampleRate,
+                    MaxAudioBitDepth = request.MaxAudioBitDepth,
                     BreakOnNonKeyFrames = transcodingProfile.BreakOnNonKeyFrames,
                     TranscodeReasons = mediaSource.TranscodeReasons == null ? null : string.Join(",", mediaSource.TranscodeReasons.Select(i => i.ToString()).ToArray())
                 };
@@ -310,6 +324,7 @@ namespace MediaBrowser.Api.Playback
                     StartTimeTicks = request.StartTimeTicks,
                     Static = isStatic,
                     AudioSampleRate = request.MaxAudioSampleRate,
+                    MaxAudioBitDepth = request.MaxAudioBitDepth,
                     TranscodeReasons = mediaSource.TranscodeReasons == null ? null : string.Join(",", mediaSource.TranscodeReasons.Select(i => i.ToString()).ToArray())
                 };
 

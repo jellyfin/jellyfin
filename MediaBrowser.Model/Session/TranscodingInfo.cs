@@ -47,6 +47,7 @@ namespace MediaBrowser.Model.Session
         VideoBitrateNotSupported = 16,
         VideoFramerateNotSupported = 17,
         VideoLevelNotSupported = 18,
-        VideoProfileNotSupported = 19
+        VideoProfileNotSupported = 19,
+        AudioBitDepthNotSupported = 20
     }
 }
