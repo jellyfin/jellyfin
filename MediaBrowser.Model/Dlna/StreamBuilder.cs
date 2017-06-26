@@ -167,6 +167,9 @@ namespace MediaBrowser.Model.Dlna
                 case ProfileConditionValue.VideoBitDepth:
                     return TranscodeReason.VideoBitDepthNotSupported;
 
+                case ProfileConditionValue.AudioBitDepth:
+                    return TranscodeReason.AudioBitDepthNotSupported;
+
                 case ProfileConditionValue.VideoBitrate:
                     return TranscodeReason.VideoBitrateNotSupported;
 
@@ -234,6 +237,7 @@ namespace MediaBrowser.Model.Dlna
             int? inputAudioChannels = audioStream == null ? null : audioStream.Channels;
             int? inputAudioBitrate = audioStream == null ? null : audioStream.BitDepth;
             int? inputAudioSampleRate = audioStream == null ? null : audioStream.SampleRate;
+            int? inputAudioBitDepth = audioStream == null ? null : audioStream.BitDepth;
 
             if (directPlayMethods.Count > 0)
             {
@@ -250,7 +254,7 @@ namespace MediaBrowser.Model.Dlna
                             bool applyConditions = true;
                             foreach (ProfileCondition applyCondition in i.ApplyConditions)
                             {
-                                if (!conditionProcessor.IsAudioConditionSatisfied(applyCondition, inputAudioChannels, inputAudioBitrate, inputAudioSampleRate))
+                                if (!conditionProcessor.IsAudioConditionSatisfied(applyCondition, inputAudioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth))
                                 {
                                     LogConditionFailure(options.Profile, "AudioCodecProfile", applyCondition, item);
                                     applyConditions = false;
@@ -271,7 +275,7 @@ namespace MediaBrowser.Model.Dlna
                     bool all = true;
                     foreach (ProfileCondition c in conditions)
                     {
-                        if (!conditionProcessor.IsAudioConditionSatisfied(c, inputAudioChannels, inputAudioBitrate, inputAudioSampleRate))
+                        if (!conditionProcessor.IsAudioConditionSatisfied(c, inputAudioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth))
                         {
                             LogConditionFailure(options.Profile, "AudioCodecProfile", c, item);
                             var transcodeReason = GetTranscodeReasonForFailedCondition(c);
@@ -351,7 +355,7 @@ namespace MediaBrowser.Model.Dlna
                     bool applyConditions = true;
                     foreach (ProfileCondition applyCondition in i.ApplyConditions)
                     {
-                        if (!conditionProcessor.IsAudioConditionSatisfied(applyCondition, inputAudioChannels, inputAudioBitrate, inputAudioSampleRate))
+                        if (!conditionProcessor.IsAudioConditionSatisfied(applyCondition, inputAudioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth))
                         {
                             LogConditionFailure(options.Profile, "AudioCodecProfile", applyCondition, item);
                             applyConditions = false;
@@ -734,8 +738,9 @@ namespace MediaBrowser.Model.Dlna
                             int? audioChannels = audioStream == null ? null : audioStream.Channels;
                             string audioProfile = audioStream == null ? null : audioStream.Profile;
                             int? inputAudioSampleRate = audioStream == null ? null : audioStream.SampleRate;
+                            int? inputAudioBitDepth = audioStream == null ? null : audioStream.BitDepth;
 
-                            if (!conditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, inputAudioBitrate, inputAudioSampleRate, audioProfile, isSecondaryAudio))
+                            if (!conditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth, audioProfile, isSecondaryAudio))
                             {
                                 LogConditionFailure(options.Profile, "AudioCodecProfile", applyCondition, item);
                                 applyConditions = false;
@@ -972,6 +977,7 @@ namespace MediaBrowser.Model.Dlna
             int? audioChannels = audioStream == null ? null : audioStream.Channels;
             string audioProfile = audioStream == null ? null : audioStream.Profile;
             int? audioSampleRate = audioStream == null ? null : audioStream.SampleRate;
+            int? audioBitDepth = audioStream == null ? null : audioStream.BitDepth;
 
             TransportStreamTimestamp? timestamp = videoStream == null ? TransportStreamTimestamp.None : mediaSource.Timestamp;
             int? packetLength = videoStream == null ? null : videoStream.PacketLength;
@@ -1066,7 +1072,7 @@ namespace MediaBrowser.Model.Dlna
                         bool applyConditions = true;
                         foreach (ProfileCondition applyCondition in i.ApplyConditions)
                         {
-                            if (!conditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, audioBitrate, audioSampleRate, audioProfile, isSecondaryAudio))
+                            if (!conditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, isSecondaryAudio))
                             {
                                 LogConditionFailure(profile, "VideoAudioCodecProfile", applyCondition, mediaSource);
                                 applyConditions = false;
@@ -1086,7 +1092,7 @@ namespace MediaBrowser.Model.Dlna
 
                 foreach (ProfileCondition i in conditions)
                 {
-                    if (!conditionProcessor.IsVideoAudioConditionSatisfied(i, audioChannels, audioBitrate, audioSampleRate, audioProfile, isSecondaryAudio))
+                    if (!conditionProcessor.IsVideoAudioConditionSatisfied(i, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, isSecondaryAudio))
                     {
                         LogConditionFailure(profile, "VideoAudioCodecProfile", i, mediaSource);
 

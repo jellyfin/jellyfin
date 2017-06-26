@@ -532,6 +532,7 @@ namespace Emby.Dlna.PlayTo
                     streamInfo.TargetAudioBitrate,
                     streamInfo.TargetAudioSampleRate,
                     streamInfo.TargetAudioChannels,
+                    streamInfo.TargetAudioBitDepth,
                     streamInfo.IsDirectStream,
                     streamInfo.RunTimeTicks,
                     streamInfo.TranscodeSeekInfo);

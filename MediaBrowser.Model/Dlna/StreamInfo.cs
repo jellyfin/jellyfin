@@ -480,6 +480,18 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Predicts the audio sample rate that will be in the output stream
         /// </summary>
+        public int? TargetAudioBitDepth
+        {
+            get
+            {
+                MediaStream stream = TargetAudioStream;
+                return stream == null ? null : stream.BitDepth;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
         public int? TargetVideoBitDepth
         {
             get
