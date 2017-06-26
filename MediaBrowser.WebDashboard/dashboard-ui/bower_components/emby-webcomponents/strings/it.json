@@ -441,5 +441,19 @@
     "Schedule": "Programmazione",
     "Recordings": "Registrazioni",
     "MarkWatched": "Segna come visto",
-    "ScanForNewAndUpdatedFiles": "Scansiona per file nuovi e aggiornati"
+    "ScanForNewAndUpdatedFiles": "Scansiona per file nuovi e aggiornati",
+    "DirectStreamHelp1": "Il file multimediale \u00e8 compatibile con il dispositivo per quanto riguarda la risoluzione e il tipo di supporto (H. 264, AC3, etc.), ma \u00e8 in un contenitore file incompatibile (.mkv, .avi, .wmv, etc.). Il video sar\u00e0 ri-confezionato al volo prima di streammarlo sul dispositivo.",
+    "DirectStreamHelp2": "Lo Streaming in Diretta di un file utilizza poco il processore senza alcuna perdita di qualit\u00e0 video",
+    "MediaIsBeingConverted": "Il file multimediale viene convertito in un formato che \u00e8 compatibile con il dispositivo che sta riproducendo il file multimediale.",
+    "StatsForNerds": "Statistiche per nerds",
+    "LabelReasonForTranscoding": "Motivo per la transcodifica:",
+    "DirectPlaying": "Riproduzione Diretta",
+    "DirectStreaming": "Streaming Diretto",
+    "Transcoding": "Trascodifica",
+    "VideoCodecNotSupported": "Il codec video non \u00e8 supportato",
+    "AudioCodecNotSupported": "Il codec audio non \u00e8 supportato",
+    "ContainerNotSupported": "Container format not supported",
+    "AudioBitrateNotSupported": "Audio bitrate not supported",
+    "AudioChannelsNotSupported": "Audio channels not supported",
+    "VideoResolutionNotSupported": "Video resolution not supported"
 }
