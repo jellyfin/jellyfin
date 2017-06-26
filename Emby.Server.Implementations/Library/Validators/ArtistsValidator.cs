@@ -2,11 +2,14 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Persistence;
 
 namespace Emby.Server.Implementations.Library.Validators
@@ -76,6 +79,35 @@ namespace Emby.Server.Implementations.Library.Validators
                 percent *= 100;
 
                 progress.Report(percent);
+            }
+
+            names = names.Select(i => i.RemoveDiacritics()).DistinctNames().ToList();
+
+            var artistEntities = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(MusicArtist).Name }
+
+            }).Cast<MusicArtist>().ToList();
+
+            foreach (var artist in artistEntities)
+            {
+                if (!artist.IsAccessedByName)
+                {
+                    continue;
+                }
+
+                var name = (artist.Name ?? string.Empty).RemoveDiacritics();
+
+                if (!names.Contains(name, StringComparer.OrdinalIgnoreCase))
+                {
+                    _logger.Info("Deleting dead artist {0} {1}.", artist.Id.ToString("N"), artist.Name);
+
+                    await _libraryManager.DeleteItem(artist, new DeleteOptions
+                    {
+                        DeleteFileLocation = false
+
+                    }).ConfigureAwait(false);
+                }
             }
 
             progress.Report(100);
