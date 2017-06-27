@@ -445,15 +445,17 @@
     "DirectStreamHelp1": "Das Medium ist mit dem Abspielger\u00e4t kompatibel bzgl. Aufl\u00f6sung und Codecs (H.264, AC3, etc.), besitzt jedoch einen inkompatiblen Dateicontainer (.mkv, .avi, .wmv, etc.). Das Video wird in Echtzeit neugepackt bevor es zum Abspielger\u00e4t gestreamt wird.",
     "DirectStreamHelp2": "Direktes Streaming von Dateien ben\u00f6tigt sehr wenig Rechenleistung ohne Verlust der Videoqualit\u00e4t.",
     "MediaIsBeingConverted": "Das Medium wird in ein Format konvertiert, das mit dem Abspielger\u00e4t kompatibel ist.",
-    "StatsForNerds": "Expertenstatistik",
+    "StatsForNerds": "Statistiken f\u00fcr T\u00fcftler",
     "LabelReasonForTranscoding": "Grund f\u00fcr die Transkodierung:",
     "DirectPlaying": "Direktes Abspielen",
     "DirectStreaming": "Direktes Streaming",
     "Transcoding": "Transcoding",
     "VideoCodecNotSupported": "Video Codec nicht unterst\u00fctzt",
     "AudioCodecNotSupported": "Audio Codec nicht unterst\u00fctzt",
-    "ContainerNotSupported": "Container format not supported",
-    "AudioBitrateNotSupported": "Audio bitrate not supported",
-    "AudioChannelsNotSupported": "Audio channels not supported",
-    "VideoResolutionNotSupported": "Video resolution not supported"
+    "ContainerNotSupported": "Container nicht unterst\u00fctzt",
+    "AudioBitrateNotSupported": "Audio Bitrate nicht unterst\u00fctzt",
+    "AudioChannelsNotSupported": "Audio Kan\u00e4le nicht unterst\u00fctzt",
+    "VideoResolutionNotSupported": "Video Aufl\u00f6sung nicht unterst\u00fctzt",
+    "AudioProfileNotSupported": "Audio Profil nicht unterst\u00fctzt",
+    "AudioSampleRateNotSupported": "Audio Sample Rate nicht unterst\u00fctzt"
 }

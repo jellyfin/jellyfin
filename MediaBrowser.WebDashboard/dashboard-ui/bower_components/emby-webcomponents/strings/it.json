@@ -452,8 +452,10 @@
     "Transcoding": "Trascodifica",
     "VideoCodecNotSupported": "Il codec video non \u00e8 supportato",
     "AudioCodecNotSupported": "Il codec audio non \u00e8 supportato",
-    "ContainerNotSupported": "Container format not supported",
-    "AudioBitrateNotSupported": "Audio bitrate not supported",
-    "AudioChannelsNotSupported": "Audio channels not supported",
-    "VideoResolutionNotSupported": "Video resolution not supported"
+    "ContainerNotSupported": "Contenitore file non supportato",
+    "AudioBitrateNotSupported": "Bitrate audio non supportato",
+    "AudioChannelsNotSupported": "Canali audio non supportati",
+    "VideoResolutionNotSupported": "Risoluzione video non supportata",
+    "AudioProfileNotSupported": "Profilo audio non supportato",
+    "AudioSampleRateNotSupported": "Il tasso di campionamento audio non \u00e8 supportato"
 }
