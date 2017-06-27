@@ -58,7 +58,7 @@
     <TlsProvider>Default</TlsProvider>
     <LinkMode>None</LinkMode>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <I18n>west</I18n>
+    <I18n>cjk,mideast,other,rare,west</I18n>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'AppStore|AnyCPU' ">
     <DebugType>full</DebugType>
