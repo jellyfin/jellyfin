@@ -2365,7 +2365,7 @@ namespace Emby.Server.Implementations.Library
 
         public bool IsVideoFile(string path, LibraryOptions libraryOptions)
         {
-            var resolver = new VideoResolver(GetNamingOptions(libraryOptions), new NullLogger());
+            var resolver = new VideoResolver(GetNamingOptions(), new NullLogger());
             return resolver.IsVideoFile(path);
         }
 
@@ -2376,7 +2376,7 @@ namespace Emby.Server.Implementations.Library
 
         public bool IsAudioFile(string path, LibraryOptions libraryOptions)
         {
-            var parser = new AudioFileParser(GetNamingOptions(libraryOptions));
+            var parser = new AudioFileParser(GetNamingOptions());
             return parser.IsAudioFile(path);
         }
 
@@ -2533,13 +2533,13 @@ namespace Emby.Server.Implementations.Library
                 return _namingOptionsWithoutOptimisticEpisodeDetection;
             }
 
-            return GetNamingOptions(new LibraryOptions());
+            return GetNamingOptionsInternal();
         }
 
         private NamingOptions _namingOptionsWithoutOptimisticEpisodeDetection;
         private NamingOptions _namingOptions;
         private string[] _videoFileExtensions;
-        public NamingOptions GetNamingOptions(LibraryOptions libraryOptions)
+        private NamingOptions GetNamingOptionsInternal()
         {
             if (_namingOptions == null)
             {
