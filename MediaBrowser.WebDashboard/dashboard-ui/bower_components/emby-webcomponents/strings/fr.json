@@ -452,8 +452,10 @@
     "Transcoding": "Transcodage",
     "VideoCodecNotSupported": "Codec vid\u00e9o non support\u00e9",
     "AudioCodecNotSupported": "Codec audio non support\u00e9",
-    "ContainerNotSupported": "Container format not supported",
-    "AudioBitrateNotSupported": "Audio bitrate not supported",
-    "AudioChannelsNotSupported": "Audio channels not supported",
-    "VideoResolutionNotSupported": "Video resolution not supported"
+    "ContainerNotSupported": "Conteneur non pris en charge",
+    "AudioBitrateNotSupported": "D\u00e9bit audio non pris en charge",
+    "AudioChannelsNotSupported": "Canaux audio non prises en charge",
+    "VideoResolutionNotSupported": "R\u00e9solution vid\u00e9o non prise en charge",
+    "AudioProfileNotSupported": "Profil audio non pris en charge",
+    "AudioSampleRateNotSupported": "Taux d'\u00e9chantillonnage audio non pris en charge"
 }
