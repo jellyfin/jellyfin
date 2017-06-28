@@ -108,8 +108,6 @@ namespace Emby.Server.Implementations.EntryPoints
             try
             {
                 _sessionManager.SendMessageToAdminSessions("RefreshProgress", dict, CancellationToken.None);
-
-                _logger.Info("Sending refresh progress {0} {1}", item.Id.ToString("N"), progress);
             }
             catch
             {
