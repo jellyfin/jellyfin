@@ -1,4 +1,4 @@
-﻿<div id="libraryReportManagerPage" data-role="page" class="page libraryPage noSecondaryNavPage reportsPage" data-title="${HeaderReports}" data-require="jQuery,paper-icon-button-light,jqmpanel,jqmtable,scripts/reports,detailtablecss">
+﻿<div id="libraryReportManagerPage" data-role="page" class="page libraryPage noSecondaryNavPage reportsPage" data-title="${HeaderReports}" data-require="jQuery,emby-linkbutton,paper-icon-button-light,jqmpanel,jqmtable,scripts/reports,detailtablecss">
     <style>
         /* Page and overlay */
         .ui-page-theme-b .ui-panel-wrapper {
@@ -96,8 +96,8 @@
         <div data-role="panel" id="viewPanel" class="viewPanel" data-theme="b" data-position="right" data-display="overlay" data-position-fixed="true">
             <form>
                 <div class="viewPanelTabs">
-                    <a href="#" id="tabView" data-role="button" class="viewTabButton ui-btn-active" data-tab="tabView">${TabView}</a>
-                    <a href="#" id="tabFilter" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
+                    <a is="emby-linkbutton" href="#" id="tabView" data-role="button" class="viewTabButton ui-btn-active" data-tab="tabView">${TabView}</a>
+                    <a is="emby-linkbutton" href="#" id="tabFilter" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
                 </div>
 
                 <div class="tabView viewTab" id="tabViewBox">
