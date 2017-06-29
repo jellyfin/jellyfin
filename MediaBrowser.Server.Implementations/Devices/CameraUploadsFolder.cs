@@ -33,6 +33,15 @@ namespace MediaBrowser.Server.Implementations.Devices
             get { return Model.Entities.CollectionType.Photos; }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public override string GetClientTypeName()
         {
             return typeof(CollectionFolder).Name;

@@ -29,11 +29,21 @@ namespace MediaBrowser.Controller.Entities.Movies
             Shares = new List<Share>();
         }
 
+        [IgnoreDataMember]
         protected override bool FilterLinkedChildrenPerUser
         {
             get
             {
                 return true;
+            }
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get
+            {
+                return false;
             }
         }
 

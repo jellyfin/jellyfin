@@ -9,6 +9,7 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public abstract class BasePluginFolder : Folder, ICollectionFolder
     {
+        [IgnoreDataMember]
         public virtual string CollectionType
         {
             get { return null; }
@@ -22,6 +23,15 @@ namespace MediaBrowser.Controller.Entities
         public override bool IsSaveLocalMetadataEnabled()
         {
             return true;
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get
+            {
+                return false;
+            }
         }
 
         [IgnoreDataMember]

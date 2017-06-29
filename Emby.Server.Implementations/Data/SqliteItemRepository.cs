@@ -3758,10 +3758,10 @@ namespace Emby.Server.Implementations.Data
 
             if (query.MinDateLastSavedForUser.HasValue)
             {
-                whereClauses.Add("DateLastSaved>=@MinDateLastSaved");
+                whereClauses.Add("DateLastSaved>=@MinDateLastSavedForUser");
                 if (statement != null)
                 {
-                    statement.TryBind("@MinDateLastSaved", query.MinDateLastSavedForUser.Value);
+                    statement.TryBind("@MinDateLastSavedForUser", query.MinDateLastSavedForUser.Value);
                 }
             }
 
