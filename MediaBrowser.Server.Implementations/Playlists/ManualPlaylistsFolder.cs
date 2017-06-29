@@ -38,6 +38,15 @@ namespace MediaBrowser.Server.Implementations.Playlists
         }
 
         [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        [IgnoreDataMember]
         public override string CollectionType
         {
             get { return MediaBrowser.Model.Entities.CollectionType.Playlists; }

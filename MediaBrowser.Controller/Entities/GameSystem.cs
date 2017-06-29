@@ -35,6 +35,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the game system.
         /// </summary>
