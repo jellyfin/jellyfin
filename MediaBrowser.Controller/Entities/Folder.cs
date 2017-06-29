@@ -66,6 +66,15 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        [IgnoreDataMember]
         public override bool SupportsPlayedStatus
         {
             get
