@@ -26,6 +26,8 @@ namespace MediaBrowser.Model.Session
         /// <value>The id.</value>
         public string Id { get; set; }
 
+        public string ServerId { get; set; }
+
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>

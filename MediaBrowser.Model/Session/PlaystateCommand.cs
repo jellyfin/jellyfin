@@ -37,6 +37,7 @@ namespace MediaBrowser.Model.Session
         /// <summary>
         /// The fast forward
         /// </summary>
-        FastForward
+        FastForward,
+        PlayPause
     }
 }

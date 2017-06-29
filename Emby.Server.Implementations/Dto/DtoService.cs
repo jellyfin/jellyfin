@@ -1464,9 +1464,9 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private BaseItem GetImageDisplayParent(BaseItem item)
+        private BaseItem GetImageDisplayParent(BaseItem currentItem, BaseItem originalItem)
         {
-            var musicAlbum = item as MusicAlbum;
+            var musicAlbum = currentItem as MusicAlbum;
             if (musicAlbum != null)
             {
                 var artist = musicAlbum.GetMusicArtist(new DtoOptions(false));
@@ -1476,7 +1476,14 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            return item.DisplayParent ?? item.GetParent();
+            var parent = currentItem.DisplayParent ?? currentItem.GetParent();
+
+            if (parent == null && !(originalItem is UserRootFolder) && !(originalItem is UserView) && !(originalItem is AggregateFolder) && !(originalItem is ICollectionFolder) && !(originalItem is Channel))
+            {
+                parent = _libraryManager.GetCollectionFolders(originalItem).FirstOrDefault();
+            }
+
+            return parent;
         }
 
         private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem owner)
@@ -1503,7 +1510,7 @@ namespace Emby.Server.Implementations.Dto
             var isFirst = true;
 
             while (((!dto.HasLogo && logoLimit > 0) || (!dto.HasArtImage && artLimit > 0) || (!dto.HasThumb && thumbLimit > 0) || parent is Series) &&
-                (parent = parent ?? (isFirst ? GetImageDisplayParent(item) ?? owner : parent)) != null)
+                (parent = parent ?? (isFirst ? GetImageDisplayParent(item, item) ?? owner : parent)) != null)
             {
                 if (parent == null)
                 {
@@ -1560,7 +1567,7 @@ namespace Emby.Server.Implementations.Dto
                     break;
                 }
 
-                parent = GetImageDisplayParent(parent);
+                parent = GetImageDisplayParent(parent, item);
             }
         }
 

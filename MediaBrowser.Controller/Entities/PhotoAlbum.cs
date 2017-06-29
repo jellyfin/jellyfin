@@ -21,5 +21,14 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
         }
+
+        [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
 }

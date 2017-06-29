@@ -1622,6 +1622,8 @@ namespace Emby.Server.Implementations.Session
                 TranscodingInfo = session.NowPlayingItem == null ? null : session.TranscodingInfo
             };
 
+            dto.ServerId = _appHost.SystemId;
+
             if (session.UserId.HasValue)
             {
                 dto.UserId = session.UserId.Value.ToString("N");
