@@ -31,10 +31,13 @@
                 </div>
                 <br /><br />
 
-                <label class="checkboxContainer">
-                    <input is="emby-checkbox" type="checkbox" id="chkRequirePerfectMatch"/>
-                    <span>${OptionRequirePerfectSubtitleMatch}</span>
-                </label>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" id="chkRequirePerfectMatch" />
+                        <span>${OptionRequirePerfectSubtitleMatch}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${OptionRequirePerfectSubtitleMatchHelp}</div>
+                </div>
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label>
                         <input is="emby-checkbox" type="checkbox" id="chkSkipIfAudioTrackPresent" />

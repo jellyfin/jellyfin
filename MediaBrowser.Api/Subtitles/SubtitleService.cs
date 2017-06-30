@@ -46,6 +46,8 @@ namespace MediaBrowser.Api.Subtitles
 
         [ApiMember(Name = "Language", Description = "Language", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Language { get; set; }
+
+        public bool? IsPerfectMatch { get; set; }
     }
 
     [Route("/Items/{Id}/RemoteSearch/Subtitles/Providers", "GET")]
@@ -247,11 +249,11 @@ namespace MediaBrowser.Api.Subtitles
                 CancellationToken.None);
         }
 
-        public object Get(SearchRemoteSubtitles request)
+        public async Task<object> Get(SearchRemoteSubtitles request)
         {
             var video = (Video)_libraryManager.GetItemById(request.Id);
 
-            var response = _subtitleManager.SearchSubtitles(video, request.Language, CancellationToken.None).Result;
+            var response = await _subtitleManager.SearchSubtitles(video, request.Language, request.IsPerfectMatch, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(response);
         }

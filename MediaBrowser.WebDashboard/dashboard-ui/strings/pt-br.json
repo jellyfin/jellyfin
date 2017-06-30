@@ -1,6 +1,4 @@
 {
-    "SendMessage": "Send message",
-    "ViewPlaybackInfo": "View playback info",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Finalizar",
     "LabelNext": "Pr\u00f3ximo",
@@ -710,8 +708,10 @@
     "ButtonRegister": "Registrar",
     "LabelSkipIfAudioTrackPresent": "Ignorar se a faixa de \u00e1udio padr\u00e3o coincidir com o idioma de download",
     "LabelSkipIfAudioTrackPresentHelp": "Desmarque esta op\u00e7\u00e3o para garantir que todos os v\u00eddeos t\u00eam legendas, independente do idioma do \u00e1udio.",
+    "SendMessage": "Enviar mensagem",
     "HeaderSendMessage": "Enviar mensagem",
     "ButtonSend": "Enviar",
+    "ViewPlaybackInfo": "Ver informa\u00e7\u00e3o de reprodu\u00e7\u00e3o",
     "LabelMessageText": "Texto da mensagem:",
     "LabelMessageTitle": "T\u00edtulo da mensagem:",
     "MessageNoAvailablePlugins": "N\u00e3o existem plugins dispon\u00edveis.",
@@ -1821,6 +1821,7 @@
     "LabelAllowHWTranscoding": "Permitir a transcodifica\u00e7\u00e3o de hardware",
     "AllowHWTranscodingHelp": "Se ativado, permite ao sintonizador transcodificar streams em tempo real. Isto pode ajudar a reduzir a transcodifica\u00e7\u00e3o requerida pelo Servidor Emby.",
     "OptionRequirePerfectSubtitleMatch": "Fazer download apenas de legendas que correspondem exatamente a meus arquivos de v\u00eddeo",
+    "OptionRequirePerfectSubtitleMatchHelp": "Requiring a perfect match will filter subtitles to include only those that have been tested and verified with your exact video file. Unchecking this will increase the likelihood of subtitles being downloaded, but will increase the chances of mistimed or incorrect subtitle text.",
     "ErrorAddingGuestAccount1": "Ocorreu um erro ao adicionar a conta Emby Connect. O seu convidado criou uma conta Emby? Ele pode criar em {0}.",
     "ErrorAddingGuestAccount2": "Por favor, certifique-se que seu convidado completou a ativa\u00e7\u00e3o seguindo as instru\u00e7\u00f5es no email enviado ap\u00f3s a cria\u00e7\u00e3o da conta. Se ele n\u00e3o recebeu o email, por favor envie um e-mail para {0} e inclua o seu endere\u00e7o de e-mail, assim como o de seu convidado.",
     "GuestUserNotFound": "Usu\u00e1rio n\u00e3o encontrado. Por favor, certifique-se que o nome esteja correto e tente novamente ou tente digitar o endere\u00e7o de e-mail.",
@@ -1933,8 +1934,8 @@
     "EnableHardwareDecoding": "Ativar decodifica\u00e7\u00e3o por hardware",
     "EnableHardwareEncoding": "Ativar codifica\u00e7\u00e3o por hardware",
     "Rate": "Avalia\u00e7\u00e3o",
-    "ButtonScanAllLibraries": "Scan All Libraries",
-    "ScanLibrary": "Scan library",
-    "EnableStreamLooping": "Auto-loop live streams",
-    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
+    "ButtonScanAllLibraries": "Rastrear Todas as Bibliotecas",
+    "ScanLibrary": "Rastrear biblioteca",
+    "EnableStreamLooping": "Fazer auto-loop de streams ao vivo",
+    "EnableStreamLoopingHelp": "Ativar isto se as streams ao vivo contiverem poucos segundos de dados e precisarem ser continuamente solicitadas."
 }

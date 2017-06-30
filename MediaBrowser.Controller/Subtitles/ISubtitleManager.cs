@@ -28,12 +28,9 @@ namespace MediaBrowser.Controller.Subtitles
         /// <summary>
         /// Searches the subtitles.
         /// </summary>
-        /// <param name="video">The video.</param>
-        /// <param name="language">The language.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{RemoteSubtitleInfo}}.</returns>
         Task<IEnumerable<RemoteSubtitleInfo>> SearchSubtitles(Video video,
             string language,
+            bool? isPerfectMatch,
             CancellationToken cancellationToken);
 
         /// <summary>
