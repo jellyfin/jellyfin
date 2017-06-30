@@ -169,6 +169,9 @@
   "LabelOriginalAspectRatio": "Original aspect ratio:",
   "LabelPlayers": "Players:",
   "Label3DFormat": "3D format:",
+  "FormatValue": "Format: {0}",
+  "DownloadsValue": "Downloads: {0}",
+  "PerfectMatch": "Perfect match",
   "HeaderAlternateEpisodeNumbers": "Alternate Episode Numbers",
   "LabelDvdSeasonNumber": "Dvd season number:",
   "LabelDvdEpisodeNumber": "Dvd episode number:",
@@ -475,5 +478,6 @@
   "ErrorAddingGuestAccount2": "Please ensure your guest has completed activation by following the instructions in the email sent after creating the account. If they did not receive this email then please send an email to {0}, and include your email address as well as theirs.",
   "MessageEmbyAccountAdded": "The Emby account has been added to this user.",
   "MessagePendingEmbyAccountAdded": "The Emby account has been added to this user. An email will be sent to the owner of the account. The invitation will need to be confirmed by clicking a link within the email.",
-  "HeaderEmbyAccountAdded": "Emby Account Added"
+  "HeaderEmbyAccountAdded": "Emby Account Added",
+  "ErrorDeletingItem": "There was an error deleting the item from Emby Server. Please check that Emby Server has write access to the media folder and try again."
 }
