@@ -605,6 +605,11 @@ namespace MediaBrowser.Model.Dlna
 
         private StreamInfo BuildVideoItem(MediaSourceInfo item, VideoOptions options)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
             List<TranscodeReason> transcodeReasons = new List<TranscodeReason>();
 
             StreamInfo playlistItem = new StreamInfo
@@ -993,7 +998,12 @@ namespace MediaBrowser.Model.Dlna
                 {
                     LogConditionFailure(profile, "VideoContainerProfile", i, mediaSource);
 
-                    return null;
+                    var transcodeReason = GetTranscodeReasonForFailedCondition(i);
+                    var transcodeReasons = transcodeReason.HasValue
+                        ? new List<TranscodeReason> { transcodeReason.Value }
+                        : new List<TranscodeReason> { };
+
+                    return new Tuple<PlayMethod?, List<TranscodeReason>>(null, transcodeReasons);
                 }
             }
 
