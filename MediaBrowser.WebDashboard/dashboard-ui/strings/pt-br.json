@@ -1821,7 +1821,7 @@
     "LabelAllowHWTranscoding": "Permitir a transcodifica\u00e7\u00e3o de hardware",
     "AllowHWTranscodingHelp": "Se ativado, permite ao sintonizador transcodificar streams em tempo real. Isto pode ajudar a reduzir a transcodifica\u00e7\u00e3o requerida pelo Servidor Emby.",
     "OptionRequirePerfectSubtitleMatch": "Fazer download apenas de legendas que correspondem exatamente a meus arquivos de v\u00eddeo",
-    "OptionRequirePerfectSubtitleMatchHelp": "Requiring a perfect match will filter subtitles to include only those that have been tested and verified with your exact video file. Unchecking this will increase the likelihood of subtitles being downloaded, but will increase the chances of mistimed or incorrect subtitle text.",
+    "OptionRequirePerfectSubtitleMatchHelp": "Ao solicitar uma combina\u00e7\u00e3o perfeita, filtrar\u00e1 as legendas para incluir somente aquelas que foram testadas e verificadas com o arquivo de v\u00eddeo. Ao desativar isto, aumentar\u00e1 a quantidade de legendas baixadas, mas aumentar\u00e1 as chances de ter legendas que n\u00e3o estejam sincronizadas.",
     "ErrorAddingGuestAccount1": "Ocorreu um erro ao adicionar a conta Emby Connect. O seu convidado criou uma conta Emby? Ele pode criar em {0}.",
     "ErrorAddingGuestAccount2": "Por favor, certifique-se que seu convidado completou a ativa\u00e7\u00e3o seguindo as instru\u00e7\u00f5es no email enviado ap\u00f3s a cria\u00e7\u00e3o da conta. Se ele n\u00e3o recebeu o email, por favor envie um e-mail para {0} e inclua o seu endere\u00e7o de e-mail, assim como o de seu convidado.",
     "GuestUserNotFound": "Usu\u00e1rio n\u00e3o encontrado. Por favor, certifique-se que o nome esteja correto e tente novamente ou tente digitar o endere\u00e7o de e-mail.",

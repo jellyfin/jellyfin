@@ -1821,7 +1821,7 @@
     "LabelAllowHWTranscoding": "Consenti transcodifica hardware",
     "AllowHWTranscodingHelp": "Se abilitato, abilita il sintonizzatore per codificare i flussi al volo. Ci\u00f2 potrebbe contribuire a ridurre la transcodifica richiesta da Emby Server.",
     "OptionRequirePerfectSubtitleMatch": "Scarica solo i sottotitoli che corrispondono perfettamente ai miei file video",
-    "OptionRequirePerfectSubtitleMatchHelp": "Requiring a perfect match will filter subtitles to include only those that have been tested and verified with your exact video file. Unchecking this will increase the likelihood of subtitles being downloaded, but will increase the chances of mistimed or incorrect subtitle text.",
+    "OptionRequirePerfectSubtitleMatchHelp": "La richiesta di una corrispondenza perfetta filtrer\u00e0 i sottotitoli per includere solo quelli che sono stati testati e verificati con il file video esatto. Deselezionando questo aumenter\u00e0 la probabilit\u00e0 che i sottotitoli vengono scaricati, ma aumenteranno le probabilit\u00e0 di testo sottotitolato impreciso o errato.",
     "ErrorAddingGuestAccount1": "C'\u00e8 stato un errore nell'aggiunta dell'account Emby Connect. Il tuo ospite ha creato un account Emby? Si pu\u00f2 registrare su {0}.",
     "ErrorAddingGuestAccount2": "Assicurati che i tuoi ospiti abbiano completato l'attivazione seguendo le istruzioni contenute nell'email inviata dopo la creazione dell'account. Se non ha ricevuto questa email, invia una email a {0}, e includi il tuo indirizzo email cos\u00ec come il loro.",
     "GuestUserNotFound": "Utente non trovato. Assicurati che il nome sia corretto e riprovare o provare ad inserire l'indirizzo email.",
