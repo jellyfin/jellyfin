@@ -19,36 +19,35 @@ using SharpCifs.Util.Sharpen;
 
 namespace SharpCifs.Netbios
 {
-	internal class SessionRetargetResponsePacket : SessionServicePacket
-	{
-		private NbtAddress _retargetAddress;
+    internal class SessionRetargetResponsePacket : SessionServicePacket
+    {
+        private NbtAddress _retargetAddress;
 
-		private int _retargetPort;
+        private int _retargetPort;
 
-		public SessionRetargetResponsePacket()
-		{
-			Type = SessionRetargetResponse;
-			Length = 6;
-		}
+        public SessionRetargetResponsePacket()
+        {
+            Type = SessionRetargetResponse;
+            Length = 6;
+        }
 
-		internal override int WriteTrailerWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteTrailerWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		/// <exception cref="System.IO.IOException"></exception>
-		internal override int ReadTrailerWireFormat(InputStream @in, byte[] buffer, int bufferIndex
-			)
-		{
-			if (@in.Read(buffer, bufferIndex, Length) != Length)
-			{
-				throw new IOException("unexpected EOF reading netbios retarget session response");
-			}
-			int addr = ReadInt4(buffer, bufferIndex);
-			bufferIndex += 4;
-			_retargetAddress = new NbtAddress(null, addr, false, NbtAddress.BNode);
-			_retargetPort = ReadInt2(buffer, bufferIndex);
-			return Length;
-		}
-	}
+        /// <exception cref="System.IO.IOException"></exception>
+        internal override int ReadTrailerWireFormat(InputStream @in, byte[] buffer, int bufferIndex)
+        {
+            if (@in.Read(buffer, bufferIndex, Length) != Length)
+            {
+                throw new IOException("unexpected EOF reading netbios retarget session response");
+            }
+            int addr = ReadInt4(buffer, bufferIndex);
+            bufferIndex += 4;
+            _retargetAddress = new NbtAddress(null, addr, false, NbtAddress.BNode);
+            _retargetPort = ReadInt2(buffer, bufferIndex);
+            return Length;
+        }
+    }
 }

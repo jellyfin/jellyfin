@@ -16,7 +16,8 @@ namespace Emby.Server.Implementations.LiveTv
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILogger _logger;
 
-        const int AnalyzeDurationMs = 1000;
+        const int ProbeAnalyzeDurationMs = 2000;
+        const int PlaybackAnalyzeDurationMs = 2000;
 
         public LiveStreamHelper(IMediaEncoder mediaEncoder, ILogger logger)
         {
@@ -36,7 +37,7 @@ namespace Emby.Server.Implementations.LiveTv
                 Protocol = mediaSource.Protocol,
                 MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
                 ExtractChapters = false,
-                AnalyzeDurationMs = AnalyzeDurationMs
+                AnalyzeDurationMs = ProbeAnalyzeDurationMs
 
             }, cancellationToken).ConfigureAwait(false);
 
@@ -106,7 +107,7 @@ namespace Emby.Server.Implementations.LiveTv
             // Try to estimate this
             mediaSource.InferTotalBitrate(true);
 
-            mediaSource.AnalyzeDurationMs = AnalyzeDurationMs;
+            mediaSource.AnalyzeDurationMs = PlaybackAnalyzeDurationMs;
         }
     }
 }

@@ -21,6 +21,7 @@ namespace MediaBrowser.Model.Dlna
             AudioCodecs = new string[] { };
             VideoCodecs = new string[] { };
             SubtitleCodecs = new string[] { };
+            TranscodeReasons = new List<TranscodeReason>();
         }
 
         public string ItemId { get; set; }
@@ -89,6 +90,7 @@ namespace MediaBrowser.Model.Dlna
 
         public string PlaySessionId { get; set; }
         public List<MediaSourceInfo> AllMediaSources { get; set; }
+        public List<TranscodeReason> TranscodeReasons { get; set; }
 
         public string MediaSourceId
         {
@@ -231,22 +233,11 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("MaxWidth", item.MaxWidth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxWidth.Value) : string.Empty));
             list.Add(new NameValuePair("MaxHeight", item.MaxHeight.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxHeight.Value) : string.Empty));
 
-            var forceStartPosition = false;
             long startPositionTicks = item.StartPositionTicks;
-            //if (item.MediaSource.DateLiveStreamOpened.HasValue && startPositionTicks == 0)
-            //{
-            //    var elapsed = DateTime.UtcNow - item.MediaSource.DateLiveStreamOpened.Value;
-            //    elapsed -= TimeSpan.FromSeconds(20);
-            //    if (elapsed.TotalSeconds >= 0)
-            //    {
-            //        startPositionTicks = elapsed.Ticks + startPositionTicks;
-            //        forceStartPosition = true;
-            //    }
-            //}
 
             var isHls = StringHelper.EqualsIgnoreCase(item.SubProtocol, "hls");
 
-            if (isHls && !forceStartPosition)
+            if (isHls)
             {
                 list.Add(new NameValuePair("StartTimeTicks", string.Empty));
             }
@@ -308,6 +299,11 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 list.Add(new NameValuePair("BreakOnNonKeyFrames", item.BreakOnNonKeyFrames.ToString()));
+            }
+
+            if (isDlna || !item.IsDirectStream)
+            {
+                list.Add(new NameValuePair("TranscodeReasons", string.Join(",", item.TranscodeReasons.Distinct().Select(i => i.ToString()).ToArray())));
             }
 
             return list;
@@ -478,6 +474,18 @@ namespace MediaBrowser.Model.Dlna
             {
                 MediaStream stream = TargetAudioStream;
                 return stream == null ? null : stream.SampleRate;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public int? TargetAudioBitDepth
+        {
+            get
+            {
+                MediaStream stream = TargetAudioStream;
+                return stream == null ? null : stream.BitDepth;
             }
         }
 

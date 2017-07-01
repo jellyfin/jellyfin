@@ -583,6 +583,10 @@ namespace MediaBrowser.Api.Playback
                         videoRequest.DeInterlace = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     }
                 }
+                else if (i == 33)
+                {
+                    request.TranscodeReasons = val;
+                }
             }
         }
 
@@ -865,7 +869,7 @@ namespace MediaBrowser.Api.Playback
             var videoCodec = state.ActualOutputVideoCodec;
 
             var mediaProfile = state.VideoRequest == null ?
-                profile.GetAudioMediaProfile(state.OutputContainer, audioCodec, state.OutputAudioChannels, state.OutputAudioBitrate, state.OutputAudioSampleRate) :
+                profile.GetAudioMediaProfile(state.OutputContainer, audioCodec, state.OutputAudioChannels, state.OutputAudioBitrate, state.OutputAudioSampleRate, state.OutputAudioBitDepth) :
                 profile.GetVideoMediaProfile(state.OutputContainer,
                 audioCodec,
                 videoCodec,
@@ -962,6 +966,7 @@ namespace MediaBrowser.Api.Playback
                     state.OutputAudioBitrate,
                     state.OutputAudioSampleRate,
                     state.OutputAudioChannels,
+                    state.OutputAudioBitDepth,
                     isStaticallyStreamed,
                     state.RunTimeTicks,
                     state.TranscodeSeekInfo

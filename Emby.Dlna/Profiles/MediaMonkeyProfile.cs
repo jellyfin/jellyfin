@@ -16,7 +16,7 @@ namespace Emby.Dlna.Profiles
             {
                FriendlyName = @"MediaMonkey",
 
-                Headers = new[]
+               Headers = new[]
                {
                    new HttpHeaderInfo
                    {

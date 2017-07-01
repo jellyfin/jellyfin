@@ -33,6 +33,8 @@ namespace MediaBrowser.Controller.Drawing
         /// <returns>ImageSize.</returns>
         ImageSize GetImageSize(ItemImageInfo info);
 
+        ImageSize GetImageSize(ItemImageInfo info, bool allowSlowMethods);
+
         /// <summary>
         /// Gets the size of the image.
         /// </summary>

@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 if (!hasHeaders.Headers.ContainsKey("Server"))
                 {
-                    hasHeaders.Headers["Server"] = "Mono-HTTPAPI/1.1, UPnP/1.0 DLNADOC/1.50";
+                    hasHeaders.Headers["Server"] = "Microsoft-NetCore/2.0, UPnP/1.0 DLNADOC/1.50";
                     //hasHeaders.Headers["Server"] = "Mono-HTTPAPI/1.1";
                 }
 

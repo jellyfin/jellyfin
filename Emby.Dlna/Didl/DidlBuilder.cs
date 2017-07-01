@@ -472,6 +472,7 @@ namespace Emby.Dlna.Didl
             var targetAudioBitrate = streamInfo.TargetAudioBitrate;
             var targetSampleRate = streamInfo.TargetAudioSampleRate;
             var targetChannels = streamInfo.TargetAudioChannels;
+            var targetAudioBitDepth = streamInfo.TargetAudioBitDepth;
 
             if (targetChannels.HasValue)
             {
@@ -492,7 +493,8 @@ namespace Emby.Dlna.Didl
                 streamInfo.TargetAudioCodec,
                 targetChannels,
                 targetAudioBitrate,
-                targetSampleRate);
+                targetSampleRate,
+                targetAudioBitDepth);
 
             var filename = url.Substring(0, url.IndexOf('?'));
 
@@ -505,6 +507,7 @@ namespace Emby.Dlna.Didl
                 targetAudioBitrate,
                 targetSampleRate,
                 targetChannels,
+                targetAudioBitDepth,
                 streamInfo.IsDirectStream,
                 streamInfo.RunTimeTicks,
                 streamInfo.TranscodeSeekInfo);

@@ -29,11 +29,21 @@ namespace MediaBrowser.Controller.Entities.Movies
             Shares = new List<Share>();
         }
 
+        [IgnoreDataMember]
         protected override bool FilterLinkedChildrenPerUser
         {
             get
             {
                 return true;
+            }
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get
+            {
+                return false;
             }
         }
 
@@ -118,6 +128,11 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             get
             {
+                if (string.IsNullOrWhiteSpace(Path))
+                {
+                    return false;
+                }
+
                 return !FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, Path);
             }
         }

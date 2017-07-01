@@ -18,71 +18,71 @@ using SharpCifs.Util;
 
 namespace SharpCifs.Smb
 {
-	internal class NtTransQuerySecurityDesc : SmbComNtTransaction
-	{
-		internal int Fid;
+    internal class NtTransQuerySecurityDesc : SmbComNtTransaction
+    {
+        internal int Fid;
 
-		internal int SecurityInformation;
+        internal int SecurityInformation;
 
-		internal NtTransQuerySecurityDesc(int fid, int securityInformation)
-		{
-			this.Fid = fid;
-			this.SecurityInformation = securityInformation;
-			Command = SmbComNtTransact;
-			Function = NtTransactQuerySecurityDesc;
-			SetupCount = 0;
-			TotalDataCount = 0;
-			MaxParameterCount = 4;
-			MaxDataCount = 32768;
-			MaxSetupCount = unchecked(unchecked(0x00));
-		}
+        internal NtTransQuerySecurityDesc(int fid, int securityInformation)
+        {
+            this.Fid = fid;
+            this.SecurityInformation = securityInformation;
+            Command = SmbComNtTransact;
+            Function = NtTransactQuerySecurityDesc;
+            SetupCount = 0;
+            TotalDataCount = 0;
+            MaxParameterCount = 4;
+            MaxDataCount = 32768;
+            MaxSetupCount = unchecked(unchecked(0x00));
+        }
 
-		internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
-		{
-			int start = dstIndex;
-			WriteInt2(Fid, dst, dstIndex);
-			dstIndex += 2;
-			dst[dstIndex++] = unchecked(unchecked(0x00));
-			// Reserved
-			dst[dstIndex++] = unchecked(unchecked(0x00));
-			// Reserved
-			WriteInt4(SecurityInformation, dst, dstIndex);
-			dstIndex += 4;
-			return dstIndex - start;
-		}
+        internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
+        {
+            int start = dstIndex;
+            WriteInt2(Fid, dst, dstIndex);
+            dstIndex += 2;
+            dst[dstIndex++] = unchecked(unchecked(0x00));
+            // Reserved
+            dst[dstIndex++] = unchecked(unchecked(0x00));
+            // Reserved
+            WriteInt4(SecurityInformation, dst, dstIndex);
+            dstIndex += 4;
+            return dstIndex - start;
+        }
 
-		internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
-			)
-		{
-			return 0;
-		}
+        internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len)
+        {
+            return 0;
+        }
 
-		internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int
-			 len)
-		{
-			return 0;
-		}
+        internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int len)
+        {
+            return 0;
+        }
 
-		internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
-		{
-			return 0;
-		}
+        internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
+        {
+            return 0;
+        }
 
-		public override string ToString()
-		{
-			return "NtTransQuerySecurityDesc[" + base.ToString() + ",fid=0x" + Hexdump
-				.ToHexString(Fid, 4) + ",securityInformation=0x" + Hexdump.ToHexString(SecurityInformation
-				, 8) + "]";
-		}
-	}
+        public override string ToString()
+        {
+            return "NtTransQuerySecurityDesc["
+                            + base.ToString()
+                            + ",fid=0x" + Hexdump.ToHexString(Fid, 4)
+                            + ",securityInformation=0x" + Hexdump.ToHexString(SecurityInformation, 8)
+                            + "]";
+        }
+    }
 }

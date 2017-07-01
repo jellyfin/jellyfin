@@ -42,6 +42,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 var hwType = encodingOptions.HardwareAccelerationType;
 
+                if (!encodingOptions.EnableHardwareEncoding)
+                {
+                    hwType = null;
+                }
+
                 if (string.Equals(hwType, "qsv", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(hwType, "h264_qsv", StringComparison.OrdinalIgnoreCase))
                 {
@@ -196,6 +201,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return null;
             }
+            if (string.Equals(container, "tp", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
 
             // Seeing reported failures here, not sure yet if this is related to specfying input format
             if (string.Equals(container, "m4v", StringComparison.OrdinalIgnoreCase))
@@ -228,7 +237,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return null;
             }
 
-            return codec;
+            if (_mediaEncoder.SupportsDecoder(codec))
+            {
+                return codec;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -1761,14 +1775,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return null;
             }
 
-            if (state.VideoStream != null && !string.IsNullOrWhiteSpace(state.VideoStream.Codec))
+            if (state.VideoStream != null && 
+                !string.IsNullOrWhiteSpace(state.VideoStream.Codec) && 
+                !string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType) &&
+                encodingOptions.EnableHardwareDecoding)
             {
-                if (!string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
-                {
-                    // causing unpredictable results
-                    //return "-hwaccel auto";
-                }
-
                 if (string.Equals(encodingOptions.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (state.MediaSource.VideoStream.Codec.ToLower())
@@ -1816,6 +1827,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                             if (_mediaEncoder.SupportsDecoder("h264_cuvid"))
                             {
                                 return "-c:v h264_cuvid ";
+                            }
+                            break;
+                        case "hevc":
+                        case "h265":
+                            if (_mediaEncoder.SupportsDecoder("hevc_cuvid"))
+                            {
+                                return "-c:v hevc_cuvid ";
                             }
                             break;
                     }

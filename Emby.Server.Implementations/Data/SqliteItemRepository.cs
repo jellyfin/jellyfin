@@ -3758,10 +3758,10 @@ namespace Emby.Server.Implementations.Data
 
             if (query.MinDateLastSavedForUser.HasValue)
             {
-                whereClauses.Add("DateLastSaved>=@MinDateLastSaved");
+                whereClauses.Add("DateLastSaved>=@MinDateLastSavedForUser");
                 if (statement != null)
                 {
-                    statement.TryBind("@MinDateLastSaved", query.MinDateLastSavedForUser.Value);
+                    statement.TryBind("@MinDateLastSavedForUser", query.MinDateLastSavedForUser.Value);
                 }
             }
 
@@ -3926,15 +3926,6 @@ namespace Emby.Server.Implementations.Data
                 if (statement != null)
                 {
                     statement.TryBind("@PersonName", query.Person);
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.SlugName))
-            {
-                whereClauses.Add("CleanName=@SlugName");
-                if (statement != null)
-                {
-                    statement.TryBind("@SlugName", GetCleanValue(query.SlugName));
                 }
             }
 
@@ -4306,12 +4297,9 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (query.HasDeadParentId.HasValue)
+            if (query.HasDeadParentId.HasValue && query.HasDeadParentId.Value)
             {
-                if (query.HasDeadParentId.Value)
-                {
-                    whereClauses.Add("ParentId NOT NULL AND ParentId NOT IN (select guid from TypedBaseItems)");
-                }
+                whereClauses.Add("ParentId NOT NULL AND ParentId NOT IN (select guid from TypedBaseItems)");
             }
 
             if (query.Years.Length == 1)

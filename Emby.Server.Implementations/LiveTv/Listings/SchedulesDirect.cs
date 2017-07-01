@@ -174,7 +174,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                                 var imagesWithText = allImages.Where(i => string.Equals(i.text, "yes", StringComparison.OrdinalIgnoreCase)).ToList();
                                 var imagesWithoutText = allImages.Where(i => string.Equals(i.text, "no", StringComparison.OrdinalIgnoreCase)).ToList();
 
-                                double desiredAspect = IsMovie(programEntry) ? 0.666666667 : wideAspect;
+                                double desiredAspect = 0.666666667;
 
                                 programEntry.primaryImage = GetProgramImage(ApiUrl, imagesWithText, true, desiredAspect) ??
                                     GetProgramImage(ApiUrl, allImages, true, desiredAspect);
@@ -237,8 +237,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private bool IsMovie(ScheduleDirect.ProgramDetails programInfo)
         {
-            var showType = programInfo.showType ?? string.Empty;
-            return showType.IndexOf("movie", StringComparison.OrdinalIgnoreCase) != -1 || showType.IndexOf("film", StringComparison.OrdinalIgnoreCase) != -1;
+            return string.Equals(programInfo.entityType, "movie", StringComparison.OrdinalIgnoreCase);
         }
 
         private ProgramInfo GetProgram(string channelId, ScheduleDirect.Program programInfo, ScheduleDirect.ProgramDetails details)
@@ -280,8 +279,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 episodeTitle = details.episodeTitle150;
             }
 
-            var showType = details.showType ?? string.Empty;
-            
             var info = new ProgramInfo
             {
                 ChannelId = channelId,
@@ -294,11 +291,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 EpisodeTitle = episodeTitle,
                 Audio = audioType,
                 IsRepeat = repeat,
-                IsSeries = showType.IndexOf("series", StringComparison.OrdinalIgnoreCase) != -1,
+                IsSeries = string.Equals(details.entityType, "episode", StringComparison.OrdinalIgnoreCase),
                 ImageUrl = details.primaryImage,
                 ThumbImageUrl = details.thumbImage,
                 IsKids = string.Equals(details.audience, "children", StringComparison.OrdinalIgnoreCase),
-                IsSports = showType.IndexOf("sports", StringComparison.OrdinalIgnoreCase) != -1,
+                IsSports = string.Equals(details.entityType, "sports", StringComparison.OrdinalIgnoreCase),
                 IsMovie = IsMovie(details),
                 Etag = programInfo.md5
             };
@@ -882,7 +879,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 foreach (ScheduleDirect.Map map in root.map)
                 {
                     var channelNumber = GetChannelNumber(map);
-                    
+
                     var station = allStations.FirstOrDefault(item => string.Equals(item.stationID, map.stationID, StringComparison.OrdinalIgnoreCase));
                     if (station == null)
                     {
@@ -906,7 +903,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                         {
                             channelInfo.Name = station.name;
                         }
-                       
+
                         channelInfo.Id = station.stationID;
                         channelInfo.CallSign = station.callsign;
 
@@ -1199,6 +1196,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 public List<ContentRating> contentRating { get; set; }
                 public List<Cast> cast { get; set; }
                 public List<Crew> crew { get; set; }
+                public string entityType { get; set; }
                 public string showType { get; set; }
                 public bool hasImageArtwork { get; set; }
                 public string primaryImage { get; set; }

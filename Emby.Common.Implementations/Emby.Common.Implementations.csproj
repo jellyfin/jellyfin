@@ -32,7 +32,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.4.10\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.4.4.11\lib\net45\NLog.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Text, Version=4.5.8.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ServiceStack.Text.4.5.8\lib\net45\ServiceStack.Text.dll</HintPath>
@@ -227,6 +228,7 @@
     <Compile Include="IO\SharpCifs\Smb\WinError.cs" />
     <Compile Include="IO\SharpCifs\UniAddress.cs" />
     <Compile Include="IO\SharpCifs\Util\Base64.cs" />
+    <Compile Include="IO\SharpCifs\Util\DbsHelper\Log.cs" />
     <Compile Include="IO\SharpCifs\Util\DES.cs" />
     <Compile Include="IO\SharpCifs\Util\Encdec.cs" />
     <Compile Include="IO\SharpCifs\Util\Hexdump.cs" />
@@ -317,6 +319,23 @@
     <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />
     <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Serialization\XmlSerializer.cs" />
+    <Compile Include="TextEncoding\NLangDetect\Detector.cs" />
+    <Compile Include="TextEncoding\NLangDetect\DetectorFactory.cs" />
+    <Compile Include="TextEncoding\NLangDetect\ErrorCode.cs" />
+    <Compile Include="TextEncoding\NLangDetect\Extensions\CharExtensions.cs" />
+    <Compile Include="TextEncoding\NLangDetect\Extensions\RandomExtensions.cs" />
+    <Compile Include="TextEncoding\NLangDetect\Extensions\StringExtensions.cs" />
+    <Compile Include="TextEncoding\NLangDetect\Extensions\UnicodeBlock.cs" />
+    <Compile Include="TextEncoding\NLangDetect\GenProfile.cs" />
+    <Compile Include="TextEncoding\NLangDetect\InternalException.cs" />
+    <Compile Include="TextEncoding\NLangDetect\Language.cs" />
+    <Compile Include="TextEncoding\NLangDetect\LanguageDetector.cs" />
+    <Compile Include="TextEncoding\NLangDetect\NLangDetectException.cs" />
+    <Compile Include="TextEncoding\NLangDetect\ProbVector.cs" />
+    <Compile Include="TextEncoding\NLangDetect\Utils\LangProfile.cs" />
+    <Compile Include="TextEncoding\NLangDetect\Utils\Messages.cs" />
+    <Compile Include="TextEncoding\NLangDetect\Utils\NGram.cs" />
+    <Compile Include="TextEncoding\NLangDetect\Utils\TagExtractor.cs" />
     <Compile Include="TextEncoding\TextEncoding.cs" />
     <Compile Include="TextEncoding\TextEncodingDetect.cs" />
     <Compile Include="TextEncoding\UniversalDetector\CharsetDetector.cs" />
@@ -368,7 +387,62 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="TextEncoding\NLangDetect\Profiles\afr" />
+    <None Include="TextEncoding\NLangDetect\Profiles\ara" />
+    <None Include="TextEncoding\NLangDetect\Profiles\bul" />
+    <None Include="TextEncoding\NLangDetect\Profiles\ben" />
+    <None Include="TextEncoding\NLangDetect\Profiles\ces" />
+    <None Include="TextEncoding\NLangDetect\Profiles\dan" />
+    <None Include="TextEncoding\NLangDetect\Profiles\deu" />
+    <None Include="TextEncoding\NLangDetect\Profiles\ell" />
+    <None Include="TextEncoding\NLangDetect\Profiles\eng" />
+    <None Include="TextEncoding\NLangDetect\Profiles\spa" />
+    <None Include="TextEncoding\NLangDetect\Profiles\est" />
+    <None Include="TextEncoding\NLangDetect\Profiles\fas" />
+    <None Include="TextEncoding\NLangDetect\Profiles\fin" />
+    <None Include="TextEncoding\NLangDetect\Profiles\fra" />
+    <None Include="TextEncoding\NLangDetect\Profiles\guj" />
+    <None Include="TextEncoding\NLangDetect\Profiles\heb" />
+    <None Include="TextEncoding\NLangDetect\Profiles\hin" />
+    <None Include="TextEncoding\NLangDetect\Profiles\hrv" />
+    <None Include="TextEncoding\NLangDetect\Profiles\hun" />
+    <None Include="TextEncoding\NLangDetect\Profiles\ind" />
+    <None Include="TextEncoding\NLangDetect\Profiles\ita" />
+    <None Include="TextEncoding\NLangDetect\Profiles\jpn" />
+    <None Include="TextEncoding\NLangDetect\Profiles\kan" />
+    <None Include="TextEncoding\NLangDetect\Profiles\kor" />
+    <None Include="TextEncoding\NLangDetect\Profiles\lit" />
+    <None Include="TextEncoding\NLangDetect\Profiles\lav" />
+    <None Include="TextEncoding\NLangDetect\Profiles\mkd" />
+    <None Include="TextEncoding\NLangDetect\Profiles\mal" />
+    <None Include="TextEncoding\NLangDetect\Profiles\mar" />
+    <None Include="TextEncoding\NLangDetect\Profiles\nep" />
+    <None Include="TextEncoding\NLangDetect\Profiles\nld" />
+    <None Include="TextEncoding\NLangDetect\Profiles\nor" />
+    <None Include="TextEncoding\NLangDetect\Profiles\pan" />
+    <None Include="TextEncoding\NLangDetect\Profiles\pol" />
+    <None Include="TextEncoding\NLangDetect\Profiles\por" />
+    <None Include="TextEncoding\NLangDetect\Profiles\ron" />
+    <None Include="TextEncoding\NLangDetect\Profiles\rus" />
+    <None Include="TextEncoding\NLangDetect\Profiles\slk" />
+    <None Include="TextEncoding\NLangDetect\Profiles\slv" />
+    <None Include="TextEncoding\NLangDetect\Profiles\som" />
+    <None Include="TextEncoding\NLangDetect\Profiles\sqi" />
+    <None Include="TextEncoding\NLangDetect\Profiles\swe" />
+    <None Include="TextEncoding\NLangDetect\Profiles\swa" />
+    <None Include="TextEncoding\NLangDetect\Profiles\tam" />
+    <None Include="TextEncoding\NLangDetect\Profiles\tel" />
+    <None Include="TextEncoding\NLangDetect\Profiles\tha" />
+    <None Include="TextEncoding\NLangDetect\Profiles\tgl" />
+    <None Include="TextEncoding\NLangDetect\Profiles\tur" />
+    <None Include="TextEncoding\NLangDetect\Profiles\ukr" />
+    <None Include="TextEncoding\NLangDetect\Profiles\urd" />
+    <None Include="TextEncoding\NLangDetect\Profiles\vie" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\zh-cn" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\zh-tw" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Utils\messages.properties" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

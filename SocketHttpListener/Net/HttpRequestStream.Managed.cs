@@ -104,9 +104,24 @@ namespace SocketHttpListener.Net
                 return nread;
             }
 
+            if (_remainingBody > 0)
+            {
+                size = (int)Math.Min(_remainingBody, (long)size);
+            }
+
             nread = _stream.Read(buffer, offset, size);
-            if (nread > 0 && _remainingBody > 0)
+
+            if (_remainingBody > 0)
+            {
+                if (nread == 0)
+                {
+                    throw new Exception("Bad request");
+                }
+
+                //Debug.Assert(nread <= _remainingBody);
                 _remainingBody -= nread;
+            }
+
             return nread;
         }
 
@@ -139,7 +154,7 @@ namespace SocketHttpListener.Net
             // for HTTP pipelining
             if (_remainingBody >= 0 && size > _remainingBody)
             {
-                size = (int)Math.Min(int.MaxValue, _remainingBody);
+                size = (int)Math.Min(_remainingBody, (long)size);
             }
 
             return _stream.BeginRead(buffer, offset, size, cback, state);
@@ -151,7 +166,6 @@ namespace SocketHttpListener.Net
                 throw new ArgumentNullException(nameof(asyncResult));
 
             var r = asyncResult as HttpStreamAsyncResult;
-
             if (r != null)
             {
                 if (!ReferenceEquals(this, r._parent))
@@ -160,7 +174,7 @@ namespace SocketHttpListener.Net
                 }
                 if (r._endCalled)
                 {
-                    throw new InvalidOperationException("Invalid end call");
+                    throw new InvalidOperationException("invalid end call");
                 }
                 r._endCalled = true;
 
@@ -185,8 +199,13 @@ namespace SocketHttpListener.Net
                 throw e.InnerException;
             }
 
-            if (_remainingBody > 0 && nread > 0)
+            if (_remainingBody > 0)
             {
+                if (nread == 0)
+                {
+                    throw new Exception("Bad request");
+                }
+
                 _remainingBody -= nread;
             }
 

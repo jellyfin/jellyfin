@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -56,27 +58,33 @@
     <Compile Include="Mask.cs" />
     <Compile Include="MessageEventArgs.cs" />
     <Compile Include="Net\AuthenticationSchemeSelector.cs" />
+    <Compile Include="Net\BoundaryType.cs" />
     <Compile Include="Net\ChunkedInputStream.cs" />
     <Compile Include="Net\ChunkStream.cs" />
     <Compile Include="Net\CookieHelper.cs" />
     <Compile Include="Net\EndPointListener.cs" />
     <Compile Include="Net\EndPointManager.cs" />
+    <Compile Include="Net\EntitySendFormat.cs" />
     <Compile Include="Net\HttpConnection.cs" />
     <Compile Include="Net\HttpListener.cs" />
     <Compile Include="Net\HttpListenerBasicIdentity.cs" />
     <Compile Include="Net\HttpListenerContext.cs" />
     <Compile Include="Net\HttpListenerPrefixCollection.cs" />
     <Compile Include="Net\HttpListenerRequest.cs" />
+    <Compile Include="Net\HttpListenerResponse.Managed.cs" />
     <Compile Include="Net\HttpListenerResponse.cs" />
     <Compile Include="Net\HttpRequestStream.cs" />
     <Compile Include="Net\HttpRequestStream.Managed.cs" />
     <Compile Include="Net\HttpResponseStream.cs" />
     <Compile Include="Net\HttpResponseStream.Managed.cs" />
     <Compile Include="Net\HttpStatusCode.cs" />
+    <Compile Include="Net\HttpStatusDescription.cs" />
     <Compile Include="Net\HttpStreamAsyncResult.cs" />
     <Compile Include="Net\HttpVersion.cs" />
     <Compile Include="Net\ListenerPrefix.cs" />
+    <Compile Include="Net\UriScheme.cs" />
     <Compile Include="Net\WebHeaderCollection.cs" />
+    <Compile Include="Net\WebHeaderEncoding.cs" />
     <Compile Include="Net\WebSockets\HttpListenerWebSocketContext.cs" />
     <Compile Include="Net\WebSockets\WebSocketContext.cs" />
     <Compile Include="Opcode.cs" />

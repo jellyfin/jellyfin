@@ -410,6 +410,11 @@ namespace Emby.Drawing
             return GetCachePath(ResizedImageCachePath, filename, "." + format.ToString().ToLower());
         }
 
+        public ImageSize GetImageSize(ItemImageInfo info, bool allowSlowMethods)
+        {
+            return GetImageSize(info.Path, info.DateModified, allowSlowMethods);
+        }
+
         public ImageSize GetImageSize(ItemImageInfo info)
         {
             return GetImageSize(info.Path, info.DateModified, false);

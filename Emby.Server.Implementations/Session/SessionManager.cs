@@ -1622,6 +1622,8 @@ namespace Emby.Server.Implementations.Session
                 TranscodingInfo = session.NowPlayingItem == null ? null : session.TranscodingInfo
             };
 
+            dto.ServerId = _appHost.SystemId;
+
             if (session.UserId.HasValue)
             {
                 dto.UserId = session.UserId.Value.ToString("N");
@@ -1671,7 +1673,6 @@ namespace Emby.Server.Implementations.Session
                 dtoOptions.Fields.Remove(ItemFields.DisplayPreferencesId);
                 dtoOptions.Fields.Remove(ItemFields.Etag);
                 dtoOptions.Fields.Remove(ItemFields.ExternalEtag);
-                dtoOptions.Fields.Remove(ItemFields.IndexOptions);
                 dtoOptions.Fields.Remove(ItemFields.InheritedParentalRatingValue);
                 dtoOptions.Fields.Remove(ItemFields.ItemCounts);
                 dtoOptions.Fields.Remove(ItemFields.Keywords);

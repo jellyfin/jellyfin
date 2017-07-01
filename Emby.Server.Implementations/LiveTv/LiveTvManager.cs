@@ -742,7 +742,7 @@ namespace Emby.Server.Implementations.LiveTv
             else
             {
                 // Increment this whenver some internal change deems it necessary
-                var etag = info.Etag + "4";
+                var etag = info.Etag + "6";
 
                 if (!string.Equals(etag, item.ExternalEtag, StringComparison.OrdinalIgnoreCase))
                 {
@@ -1273,8 +1273,8 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (coreService != null)
             {
-                await coreService.RefreshSeriesTimers(cancellationToken, new Progress<double>()).ConfigureAwait(false);
-                await coreService.RefreshTimers(cancellationToken, new Progress<double>()).ConfigureAwait(false);
+                await coreService.RefreshSeriesTimers(cancellationToken, new SimpleProgress<double>()).ConfigureAwait(false);
+                await coreService.RefreshTimers(cancellationToken, new SimpleProgress<double>()).ConfigureAwait(false);
             }
 
             // Load these now which will prefetch metadata
@@ -1422,15 +1422,6 @@ namespace Emby.Server.Implementations.LiveTv
                         await _libraryManager.UpdateItem(program, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
                     }
 
-                    foreach (var program in newPrograms)
-                    {
-                        _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.Low);
-                    }
-                    foreach (var program in updatedPrograms)
-                    {
-                        _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.Low);
-                    }
-
                     currentChannel.IsMovie = isMovie;
                     currentChannel.IsNews = isNews;
                     currentChannel.IsSports = isSports;
@@ -1558,7 +1549,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 var idList = await Task.WhenAll(recordingTasks).ConfigureAwait(false);
 
-                await CleanDatabaseInternal(idList.ToList(), new[] { typeof(LiveTvVideoRecording).Name, typeof(LiveTvAudioRecording).Name }, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+                await CleanDatabaseInternal(idList.ToList(), new[] { typeof(LiveTvVideoRecording).Name, typeof(LiveTvAudioRecording).Name }, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
 
                 _lastRecordingRefreshTime = DateTime.UtcNow;
             }

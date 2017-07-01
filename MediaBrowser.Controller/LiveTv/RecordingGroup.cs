@@ -27,6 +27,15 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        [IgnoreDataMember]
         public override SourceType SourceType
         {
             get { return SourceType.LiveTV; }

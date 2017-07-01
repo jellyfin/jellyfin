@@ -105,7 +105,7 @@ namespace MediaBrowser.Server.Mono
 
             FileSystem = fileSystem;
 
-            var imageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => _appHost.HttpClient, appPaths);
+            var imageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => _appHost.HttpClient, appPaths, environmentInfo);
 
             _appHost = new MonoAppHost(appPaths,
                 logManager,

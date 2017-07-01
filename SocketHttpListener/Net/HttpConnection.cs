@@ -25,7 +25,7 @@ namespace SocketHttpListener.Net
         StringBuilder _currentLine;
         ListenerPrefix _prefix;
         HttpRequestStream _requestStream;
-        Stream _responseStream;
+        HttpResponseStream _responseStream;
         bool _chunked;
         int _reuses;
         bool _contextBound;
@@ -202,7 +202,7 @@ namespace SocketHttpListener.Net
             return _requestStream;
         }
 
-        public Stream GetResponseStream(bool isExpect100Continue = false)
+        public HttpResponseStream GetResponseStream(bool isExpect100Continue = false)
         {
             // TODO: can we get this _stream before reading the input?
             if (_responseStream == null)
@@ -268,7 +268,8 @@ namespace SocketHttpListener.Net
 
                 if (!_epl.BindContext(_context))
                 {
-                    SendError("Invalid host", 400);
+                    const int NotFoundErrorCode = 404;
+                    SendError(HttpStatusDescription.Get(NotFoundErrorCode), NotFoundErrorCode);
                     Close(true);
                     return;
                 }
@@ -423,14 +424,14 @@ namespace SocketHttpListener.Net
                 HttpListenerResponse response = _context.Response;
                 response.StatusCode = status;
                 response.ContentType = "text/html";
-                string description = HttpListenerResponse.GetStatusDescription(status);
+                string description = HttpStatusDescription.Get(status);
                 string str;
                 if (msg != null)
                     str = string.Format("<h1>{0} ({1})</h1>", description, msg);
                 else
                     str = string.Format("<h1>{0}</h1>", description);
 
-                byte[] error = Encoding.Default.GetBytes(str);
+                byte[] error = _textEncoding.GetDefaultEncoding().GetBytes(str);
                 response.Close(error, false);
             }
             catch

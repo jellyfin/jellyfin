@@ -23,6 +23,7 @@
         VideoCodecTag = 19,
         IsAvc = 20,
         IsInterlaced = 21,
-        AudioSampleRate = 22
+        AudioSampleRate = 22,
+        AudioBitDepth = 23
     }
 }

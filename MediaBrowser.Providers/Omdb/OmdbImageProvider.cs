@@ -93,13 +93,6 @@ namespace MediaBrowser.Providers.Omdb
 
         public bool Supports(IHasImages item)
         {
-            // Supports images for tv movies
-            var tvProgram = item as LiveTvProgram;
-            if (tvProgram != null && tvProgram.IsMovie)
-            {
-                return true;
-            }
-
             return item is Movie || item is Trailer || item is Episode;
         }
 

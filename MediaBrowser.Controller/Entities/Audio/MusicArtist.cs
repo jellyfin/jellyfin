@@ -36,6 +36,15 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        [IgnoreDataMember]
         public override bool SupportsCumulativeRunTimeTicks
         {
             get
@@ -250,8 +259,6 @@ namespace MediaBrowser.Controller.Entities.Audio
                 percent /= totalItems;
                 progress.Report(percent * 100);
             }
-
-            progress.Report(100);
         }
 
         public ArtistInfo GetLookupInfo()

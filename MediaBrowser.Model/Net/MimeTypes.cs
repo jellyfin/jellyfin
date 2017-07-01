@@ -72,6 +72,7 @@ namespace MediaBrowser.Model.Net
             dict.Add(".tbn", "image/jpeg");
             dict.Add(".png", "image/png");
             dict.Add(".gif", "image/gif");
+            dict.Add(".tiff", "image/tiff");
             dict.Add(".webp", "image/webp");
             dict.Add(".ico", "image/vnd.microsoft.icon");
             dict.Add(".mpg", "video/mpeg");
@@ -247,6 +248,22 @@ namespace MediaBrowser.Model.Net
             if (StringHelper.EqualsIgnoreCase(ext, ".ac3"))
             {
                 return "audio/ac3";
+            }
+            if (StringHelper.EqualsIgnoreCase(ext, ".dsf"))
+            {
+                return "audio/dsf";
+            }
+            if (StringHelper.EqualsIgnoreCase(ext, ".m4b"))
+            {
+                return "audio/m4b";
+            }
+            if (StringHelper.EqualsIgnoreCase(ext, ".xsp"))
+            {
+                return "audio/xsp";
+            }
+            if (StringHelper.EqualsIgnoreCase(ext, ".dsp"))
+            {
+                return "audio/dsp";
             }
 
             // Playlists
