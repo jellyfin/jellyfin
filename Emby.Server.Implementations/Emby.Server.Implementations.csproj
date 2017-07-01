@@ -202,7 +202,6 @@
     <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
     <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
     <Compile Include="ScheduledTasks\PluginUpdateTask.cs" />
-    <Compile Include="ScheduledTasks\RefreshIntrosTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="ScheduledTasks\SystemUpdateTask.cs" />
     <Compile Include="Security\AuthenticationRepository.cs" />
