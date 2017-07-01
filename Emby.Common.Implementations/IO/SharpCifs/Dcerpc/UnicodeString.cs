@@ -16,50 +16,50 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Dcerpc
 {
-	public class UnicodeString : Rpc.Unicode_string
-	{
-		internal bool Zterm;
+    public class UnicodeString : Rpc.Unicode_string
+    {
+        internal bool Zterm;
 
-		public UnicodeString(bool zterm)
-		{
-			this.Zterm = zterm;
-		}
+        public UnicodeString(bool zterm)
+        {
+            this.Zterm = zterm;
+        }
 
-		public UnicodeString(Rpc.Unicode_string rus, bool zterm)
-		{
-			Length = rus.Length;
-			MaximumLength = rus.MaximumLength;
-			Buffer = rus.Buffer;
-			this.Zterm = zterm;
-		}
+        public UnicodeString(Rpc.Unicode_string rus, bool zterm)
+        {
+            Length = rus.Length;
+            MaximumLength = rus.MaximumLength;
+            Buffer = rus.Buffer;
+            this.Zterm = zterm;
+        }
 
-		public UnicodeString(string str, bool zterm)
-		{
-			this.Zterm = zterm;
-			int len = str.Length;
-			int zt = zterm ? 1 : 0;
-			Length = MaximumLength = (short)((len + zt) * 2);
-			Buffer = new short[len + zt];
-			int i;
-			for (i = 0; i < len; i++)
-			{
-				Buffer[i] = (short)str[i];
-			}
-			if (zterm)
-			{
-				Buffer[i] = 0;
-			}
-		}
+        public UnicodeString(string str, bool zterm)
+        {
+            this.Zterm = zterm;
+            int len = str.Length;
+            int zt = zterm ? 1 : 0;
+            Length = MaximumLength = (short)((len + zt) * 2);
+            Buffer = new short[len + zt];
+            int i;
+            for (i = 0; i < len; i++)
+            {
+                Buffer[i] = (short)str[i];
+            }
+            if (zterm)
+            {
+                Buffer[i] = 0;
+            }
+        }
 
-		public override string ToString()
-		{
-			int len = Length / 2 - (Zterm ? 1 : 0);
-			char[] ca = new char[len];
-			for (int i = 0; i < len; i++)
-			{
-				ca[i] = (char)Buffer[i];
-			}
-			return new string(ca, 0, len);
-		}
-	}
+        public override string ToString()
+        {
+            int len = Length / 2 - (Zterm ? 1 : 0);
+            char[] ca = new char[len];
+            for (int i = 0; i < len; i++)
+            {
+                ca[i] = (char)Buffer[i];
+            }
+            return new string(ca, 0, len);
+        }
+    }
 }

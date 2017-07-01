@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
 using MediaBrowser.Controller.Entities;
+using System.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Audio
 {
@@ -42,6 +43,13 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
                 if (_libraryManager.IsAudioFile(args.Path, libraryOptions))
                 {
+                    if (string.Equals(Path.GetExtension(args.Path), ".cue", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // if audio file exists of same name, return null
+
+                        return null;
+                    }
+
                     var collectionType = args.GetCollectionType();
 
                     var isMixed = string.IsNullOrWhiteSpace(collectionType);

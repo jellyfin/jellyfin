@@ -105,9 +105,13 @@ namespace Emby.Server.Implementations.Dto
             var programTuples = new List<Tuple<BaseItem, BaseItemDto>>();
             var channelTuples = new List<Tuple<BaseItemDto, LiveTvChannel>>();
 
+            var refreshQueue = options.Fields.Contains(ItemFields.RefreshState)
+                ? _providerManager.GetRefreshQueue()
+                : null;
+
             foreach (var item in items)
             {
-                var dto = GetBaseItemDtoInternal(item, options, user, owner);
+                var dto = GetBaseItemDtoInternal(item, options, refreshQueue, user, owner);
 
                 var tvChannel = item as LiveTvChannel;
                 if (tvChannel != null)
@@ -160,7 +164,11 @@ namespace Emby.Server.Implementations.Dto
         {
             var syncDictionary = GetSyncedItemProgress(options);
 
-            var dto = GetBaseItemDtoInternal(item, options, user, owner);
+            var refreshQueue = options.Fields.Contains(ItemFields.RefreshState)
+                ? _providerManager.GetRefreshQueue()
+                : null;
+
+            var dto = GetBaseItemDtoInternal(item, options, refreshQueue, user, owner);
             var tvChannel = item as LiveTvChannel;
             if (tvChannel != null)
             {
@@ -292,7 +300,7 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, Dictionary<Guid, Guid> currentRefreshQueue, User user = null, BaseItem owner = null)
         {
             var fields = options.Fields;
 
@@ -392,6 +400,11 @@ namespace Emby.Server.Implementations.Dto
                 dto.Etag = item.GetEtag(user);
             }
 
+            if (currentRefreshQueue != null)
+            {
+                //dto.RefreshState = item.GetRefreshState(currentRefreshQueue);
+            }
+
             if (item is ILiveTvRecording)
             {
                 _livetvManager().AddInfoToRecordingDto(item, dto, user);
@@ -402,7 +415,10 @@ namespace Emby.Server.Implementations.Dto
 
         public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, Dictionary<string, SyncedItemProgress> syncProgress, User user = null)
         {
-            var dto = GetBaseItemDtoInternal(item, options, user);
+            var refreshQueue = options.Fields.Contains(ItemFields.RefreshState)
+                ? _providerManager.GetRefreshQueue()
+                : null;
+            var dto = GetBaseItemDtoInternal(item, options, refreshQueue, user);
 
             if (taggedItems != null && options.Fields.Contains(ItemFields.ItemCounts))
             {
@@ -778,16 +794,16 @@ namespace Emby.Server.Implementations.Dto
                 .Select(i => new NameIdPair
                 {
                     Name = i,
-                    Id = GetStudioId(i, item)
+                    Id = GetGenreId(i, item)
                 })
                 .ToArray();
         }
 
-        private string GetStudioId(string name, BaseItem owner)
+        private string GetGenreId(string name, BaseItem owner)
         {
             if (owner is IHasMusicGenres)
             {
-                return _libraryManager.GetGameGenreId(name).ToString("N");
+                return _libraryManager.GetMusicGenreId(name).ToString("N");
             }
 
             if (owner is Game || owner is GameSystem)
@@ -1058,18 +1074,8 @@ namespace Emby.Server.Implementations.Dto
                 dto.CommunityRating = item.CommunityRating;
             }
 
-            //if (item.IsFolder)
-            //{
-            //    var folder = (Folder)item;
-
-            //    if (fields.Contains(ItemFields.IndexOptions))
-            //    {
-            //        dto.IndexOptions = folder.IndexByOptionStrings.ToArray();
-            //    }
-            //}
-
             var supportsPlaceHolders = item as ISupportsPlaceHolders;
-            if (supportsPlaceHolders != null)
+            if (supportsPlaceHolders != null && supportsPlaceHolders.IsPlaceHolder)
             {
                 dto.IsPlaceHolder = supportsPlaceHolders.IsPlaceHolder;
             }
@@ -1458,9 +1464,9 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private BaseItem GetImageDisplayParent(BaseItem item)
+        private BaseItem GetImageDisplayParent(BaseItem currentItem, BaseItem originalItem)
         {
-            var musicAlbum = item as MusicAlbum;
+            var musicAlbum = currentItem as MusicAlbum;
             if (musicAlbum != null)
             {
                 var artist = musicAlbum.GetMusicArtist(new DtoOptions(false));
@@ -1470,7 +1476,14 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            return item.DisplayParent ?? item.GetParent();
+            var parent = currentItem.DisplayParent ?? currentItem.GetParent();
+
+            if (parent == null && !(originalItem is UserRootFolder) && !(originalItem is UserView) && !(originalItem is AggregateFolder) && !(originalItem is ICollectionFolder) && !(originalItem is Channel))
+            {
+                parent = _libraryManager.GetCollectionFolders(originalItem).FirstOrDefault();
+            }
+
+            return parent;
         }
 
         private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem owner)
@@ -1497,7 +1510,7 @@ namespace Emby.Server.Implementations.Dto
             var isFirst = true;
 
             while (((!dto.HasLogo && logoLimit > 0) || (!dto.HasArtImage && artLimit > 0) || (!dto.HasThumb && thumbLimit > 0) || parent is Series) &&
-                (parent = parent ?? (isFirst ? GetImageDisplayParent(item) ?? owner : parent)) != null)
+                (parent = parent ?? (isFirst ? GetImageDisplayParent(item, item) ?? owner : parent)) != null)
             {
                 if (parent == null)
                 {
@@ -1554,7 +1567,7 @@ namespace Emby.Server.Implementations.Dto
                     break;
                 }
 
-                parent = GetImageDisplayParent(parent);
+                parent = GetImageDisplayParent(parent, item);
             }
         }
 

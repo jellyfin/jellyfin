@@ -53,6 +53,15 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public List<Guid> LocalTrailerIds { get; set; }
         public List<Guid> RemoteTrailerIds { get; set; }
 
@@ -225,17 +234,6 @@ namespace MediaBrowser.Controller.Entities.TV
             var list = LocalTrailerIds.ToList();
             list.AddRange(RemoteTrailerIds);
             return list;
-        }
-
-        // Studio, Genre and Rating will all be the same so makes no sense to index by these
-        protected override IEnumerable<string> GetIndexByOptions()
-        {
-            return new List<string> {
-                {"None"},
-                {"Performer"},
-                {"Director"},
-                {"Year"},
-            };
         }
 
         [IgnoreDataMember]
@@ -425,8 +423,6 @@ namespace MediaBrowser.Controller.Entities.TV
             refreshOptions = new MetadataRefreshOptions(refreshOptions);
             refreshOptions.IsPostRecursiveRefresh = true;
             await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
-
-            progress.Report(100);
         }
 
         public IEnumerable<Episode> GetSeasonEpisodes(Season parentSeason, User user, DtoOptions options)

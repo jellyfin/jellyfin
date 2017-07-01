@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.LiveTv
 {
     public class LiveTvOptions
     {
         public int? GuideDays { get; set; }
-        public bool EnableMovieProviders { get; set; }
         public string RecordingPath { get; set; }
         public string MovieRecordingPath { get; set; }
         public string SeriesRecordingPath { get; set; }
@@ -30,7 +28,6 @@ namespace MediaBrowser.Model.LiveTv
 
         public LiveTvOptions()
         {
-            EnableMovieProviders = true;
             TunerHosts = new List<TunerHostInfo>();
             ListingProviders = new List<ListingsProviderInfo>();
             MediaLocationsCreated = new string[] { };
@@ -50,10 +47,12 @@ namespace MediaBrowser.Model.LiveTv
         public bool ImportFavoritesOnly { get; set; }
         public bool AllowHWTranscoding { get; set; }
         public bool EnableTvgId { get; set; }
+        public bool EnableStreamLooping { get; set; }
 
         public TunerHostInfo()
         {
             AllowHWTranscoding = true;
+            EnableTvgId = true;
         }
     }
 
@@ -77,6 +76,7 @@ namespace MediaBrowser.Model.LiveTv
         public NameValuePair[] ChannelMappings { get; set; }
         public string MoviePrefix { get; set; }
         public bool EnableNewProgramIds { get; set; }
+        public string PreferredLanguage { get; set; }
 
         public ListingsProviderInfo()
         {

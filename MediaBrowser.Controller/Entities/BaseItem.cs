@@ -1058,6 +1058,16 @@ namespace MediaBrowser.Controller.Entities
             return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(Logger, FileSystem)), cancellationToken);
         }
 
+        protected virtual void TriggerOnRefreshStart()
+        {
+
+        }
+
+        protected virtual void TriggerOnRefreshComplete()
+        {
+
+        }
+
         /// <summary>
         /// Overrides the base implementation to refresh metadata for local trailers
         /// </summary>
@@ -1066,6 +1076,8 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>true if a provider reports we changed</returns>
         public async Task<ItemUpdateType> RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
+            TriggerOnRefreshStart();
+
             var locationType = LocationType;
 
             var requiresSave = false;
@@ -1091,14 +1103,21 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            var refreshOptions = requiresSave
-                ? new MetadataRefreshOptions(options)
-                {
-                    ForceSave = true
-                }
-                : options;
+            try
+            {
+                var refreshOptions = requiresSave
+                    ? new MetadataRefreshOptions(options)
+                    {
+                        ForceSave = true
+                    }
+                    : options;
 
-            return await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
+                return await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                TriggerOnRefreshComplete();
+            }
         }
 
         [IgnoreDataMember]
@@ -2420,6 +2439,11 @@ namespace MediaBrowser.Controller.Entities
         public virtual List<ExternalUrl> GetRelatedUrls()
         {
             return new List<ExternalUrl>();
+        }
+
+        public virtual double? GetRefreshProgress()
+        {
+            return null;
         }
     }
 }

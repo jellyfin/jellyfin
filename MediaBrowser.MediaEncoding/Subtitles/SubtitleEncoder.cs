@@ -198,7 +198,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 var bytes = await GetBytes(path, protocol, cancellationToken).ConfigureAwait(false);
 
-                var charset = _textEncoding.GetDetectedEncodingName(bytes, language);
+                var charset = _textEncoding.GetDetectedEncodingName(bytes, language, true);
                 _logger.Debug("charset {0} detected for {1}", charset ?? "null", path);
 
                 if (!string.IsNullOrEmpty(charset))
@@ -705,7 +705,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             var bytes = await GetBytes(path, protocol, cancellationToken).ConfigureAwait(false);
 
-            var charset = _textEncoding.GetDetectedEncodingName(bytes, language);
+            var charset = _textEncoding.GetDetectedEncodingName(bytes, language, true);
 
             _logger.Debug("charset {0} detected for {1}", charset ?? "null", path);
 

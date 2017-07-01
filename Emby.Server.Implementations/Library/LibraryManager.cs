@@ -462,7 +462,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (parent != null)
                 {
-                    await parent.ValidateChildren(new Progress<double>(), CancellationToken.None, new MetadataRefreshOptions(_fileSystem), false).ConfigureAwait(false);
+                    await parent.ValidateChildren(new SimpleProgress<double>(), CancellationToken.None, new MetadataRefreshOptions(_fileSystem), false).ConfigureAwait(false);
                 }
             }
             else if (parent != null)
@@ -1113,13 +1113,13 @@ namespace Emby.Server.Implementations.Library
             progress.Report(.5);
 
             // Start by just validating the children of the root, but go no further
-            await RootFolder.ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: false);
+            await RootFolder.ValidateChildren(new SimpleProgress<double>(), cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: false);
 
             progress.Report(1);
 
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
-            await GetUserRootFolder().ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: false).ConfigureAwait(false);
+            await GetUserRootFolder().ValidateChildren(new SimpleProgress<double>(), cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: false).ConfigureAwait(false);
             progress.Report(2);
 
             // Quickly scan CollectionFolders for changes
@@ -1204,25 +1204,24 @@ namespace Emby.Server.Implementations.Library
         /// Gets the default view.
         /// </summary>
         /// <returns>IEnumerable{VirtualFolderInfo}.</returns>
-        public IEnumerable<VirtualFolderInfo> GetVirtualFolders()
+        public List<VirtualFolderInfo> GetVirtualFolders()
         {
-            return GetView(ConfigurationManager.ApplicationPaths.DefaultUserViewsPath);
+            return GetVirtualFolders(false);
         }
 
-        /// <summary>
-        /// Gets the view.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>IEnumerable{VirtualFolderInfo}.</returns>
-        private IEnumerable<VirtualFolderInfo> GetView(string path)
+        public List<VirtualFolderInfo> GetVirtualFolders(bool includeRefreshState)
         {
             var topLibraryFolders = GetUserRootFolder().Children.ToList();
 
-            return _fileSystem.GetDirectoryPaths(path)
-                .Select(dir => GetVirtualFolderInfo(dir, topLibraryFolders));
+            var refreshQueue = includeRefreshState ? _providerManagerFactory().GetRefreshQueue() : null;
+
+            return _fileSystem.GetDirectoryPaths(ConfigurationManager.ApplicationPaths.DefaultUserViewsPath)
+                .Select(dir => GetVirtualFolderInfo(dir, topLibraryFolders, refreshQueue))
+                .OrderBy(i => i.Name)
+                .ToList();
         }
 
-        private VirtualFolderInfo GetVirtualFolderInfo(string dir, List<BaseItem> allCollectionFolders)
+        private VirtualFolderInfo GetVirtualFolderInfo(string dir, List<BaseItem> allCollectionFolders, Dictionary<Guid, Guid> refreshQueue)
         {
             var info = new VirtualFolderInfo
             {
@@ -1248,6 +1247,13 @@ namespace Emby.Server.Implementations.Library
             {
                 info.ItemId = libraryFolder.Id.ToString("N");
                 info.LibraryOptions = GetLibraryOptions(libraryFolder);
+
+                if (refreshQueue != null)
+                {
+                    info.RefreshProgress = libraryFolder.GetRefreshProgress();
+
+                    info.RefreshStatus = info.RefreshProgress.HasValue ? "Active" : refreshQueue.ContainsKey(libraryFolder.Id) ? "Queued" : "Idle";
+                }
             }
 
             return info;
@@ -2359,7 +2365,7 @@ namespace Emby.Server.Implementations.Library
 
         public bool IsVideoFile(string path, LibraryOptions libraryOptions)
         {
-            var resolver = new VideoResolver(GetNamingOptions(libraryOptions), new NullLogger());
+            var resolver = new VideoResolver(GetNamingOptions(), new NullLogger());
             return resolver.IsVideoFile(path);
         }
 
@@ -2370,7 +2376,7 @@ namespace Emby.Server.Implementations.Library
 
         public bool IsAudioFile(string path, LibraryOptions libraryOptions)
         {
-            var parser = new AudioFileParser(GetNamingOptions(libraryOptions));
+            var parser = new AudioFileParser(GetNamingOptions());
             return parser.IsAudioFile(path);
         }
 
@@ -2505,39 +2511,68 @@ namespace Emby.Server.Implementations.Library
 
         public NamingOptions GetNamingOptions()
         {
-            return GetNamingOptions(new LibraryOptions());
+            return GetNamingOptions(true);
         }
 
+        public NamingOptions GetNamingOptions(bool allowOptimisticEpisodeDetection)
+        {
+            if (!allowOptimisticEpisodeDetection)
+            {
+                if (_namingOptionsWithoutOptimisticEpisodeDetection == null)
+                {
+                    var namingOptions = new ExtendedNamingOptions();
+
+                    InitNamingOptions(namingOptions);
+                    namingOptions.EpisodeExpressions = namingOptions.EpisodeExpressions
+                        .Where(i => i.IsNamed && !i.IsOptimistic)
+                        .ToList();
+
+                    _namingOptionsWithoutOptimisticEpisodeDetection = namingOptions;
+                }
+
+                return _namingOptionsWithoutOptimisticEpisodeDetection;
+            }
+
+            return GetNamingOptionsInternal();
+        }
+
+        private NamingOptions _namingOptionsWithoutOptimisticEpisodeDetection;
         private NamingOptions _namingOptions;
         private string[] _videoFileExtensions;
-        public NamingOptions GetNamingOptions(LibraryOptions libraryOptions)
+        private NamingOptions GetNamingOptionsInternal()
         {
             if (_namingOptions == null)
             {
                 var options = new ExtendedNamingOptions();
 
-                // These cause apps to have problems
-                options.AudioFileExtensions.Remove(".m3u");
-                options.AudioFileExtensions.Remove(".wpl");
+                InitNamingOptions(options);
 
-                //if (!libraryOptions.EnableArchiveMediaFiles)
-                {
-                    options.AudioFileExtensions.Remove(".rar");
-                    options.AudioFileExtensions.Remove(".zip");
-                }
-
-                //if (!libraryOptions.EnableArchiveMediaFiles)
-                {
-                    options.VideoFileExtensions.Remove(".rar");
-                    options.VideoFileExtensions.Remove(".zip");
-                }
-
-                options.VideoFileExtensions.Add(".tp");
                 _namingOptions = options;
                 _videoFileExtensions = _namingOptions.VideoFileExtensions.ToArray();
             }
 
             return _namingOptions;
+        }
+
+        private void InitNamingOptions(NamingOptions options)
+        {
+            // These cause apps to have problems
+            options.AudioFileExtensions.Remove(".m3u");
+            options.AudioFileExtensions.Remove(".wpl");
+
+            //if (!libraryOptions.EnableArchiveMediaFiles)
+            {
+                options.AudioFileExtensions.Remove(".rar");
+                options.AudioFileExtensions.Remove(".zip");
+            }
+
+            //if (!libraryOptions.EnableArchiveMediaFiles)
+            {
+                options.VideoFileExtensions.Remove(".rar");
+                options.VideoFileExtensions.Remove(".zip");
+            }
+
+            options.VideoFileExtensions.Add(".tp");
         }
 
         public ItemLookupInfo ParseName(string name)
@@ -2918,7 +2953,7 @@ namespace Emby.Server.Implementations.Library
                     // No need to start if scanning the library because it will handle it
                     if (refreshLibrary)
                     {
-                        ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                        ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
                     }
                     else
                     {
@@ -3046,7 +3081,7 @@ namespace Emby.Server.Implementations.Library
         private void SyncLibraryOptionsToLocations(string virtualFolderPath, LibraryOptions options)
         {
             var topLibraryFolders = GetUserRootFolder().Children.ToList();
-            var info = GetVirtualFolderInfo(virtualFolderPath, topLibraryFolders);
+            var info = GetVirtualFolderInfo(virtualFolderPath, topLibraryFolders, null);
 
             if (info.Locations.Count > 0 && info.Locations.Count != options.PathInfos.Length)
             {
@@ -3096,7 +3131,7 @@ namespace Emby.Server.Implementations.Library
                     // No need to start if scanning the library because it will handle it
                     if (refreshLibrary)
                     {
-                        ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                        ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
                     }
                     else
                     {

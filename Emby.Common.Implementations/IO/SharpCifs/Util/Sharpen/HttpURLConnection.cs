@@ -34,4 +34,3 @@ namespace SharpCifs.Util.Sharpen
     }
 
 }
-

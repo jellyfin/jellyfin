@@ -15,6 +15,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Threading;
 
@@ -82,7 +83,7 @@ namespace Emby.Server.Implementations.News
             var requestOptions = new HttpRequestOptions
             {
                 Url = "http://emby.media/community/index.php?/blog/rss/1-media-browser-developers-blog",
-                Progress = new Progress<double>(),
+                Progress = new SimpleProgress<double>(),
                 UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.42 Safari/537.36",
                 BufferContent = false
             };

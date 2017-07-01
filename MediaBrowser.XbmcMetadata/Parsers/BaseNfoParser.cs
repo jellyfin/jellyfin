@@ -107,7 +107,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="metadataFile">The metadata file.</param>
         /// <param name="settings">The settings.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private void Fetch(MetadataResult<T> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
+        protected virtual void Fetch(MetadataResult<T> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
             if (!SupportsUrlAfterClosingXmlTag)
             {
@@ -233,7 +233,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             get { return "themoviedb.org/movie/"; }
         }
 
-        private void ParseProviderLinks(T item, string xml)
+        protected void ParseProviderLinks(T item, string xml)
         {
             //Look for a match for the Regex pattern "tt" followed by 7 digits
             Match m = Regex.Match(xml, @"tt([0-9]{7})", RegexOptions.IgnoreCase);

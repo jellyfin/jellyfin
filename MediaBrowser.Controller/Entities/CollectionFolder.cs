@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
@@ -41,6 +42,15 @@ namespace MediaBrowser.Controller.Entities
 
         [IgnoreDataMember]
         public override bool SupportsPlayedStatus
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
         {
             get
             {
@@ -199,6 +209,30 @@ namespace MediaBrowser.Controller.Entities
             return changed;
         }
 
+        public override double? GetRefreshProgress()
+        {
+            var folders = GetPhysicalFolders(true).ToList();
+            double totalProgresses = 0;
+            var foldersWithProgress = 0;
+
+            foreach (var folder in folders)
+            {
+                var progress = ProviderManager.GetRefreshProgress(folder.Id);
+                if (progress.HasValue)
+                {
+                    totalProgresses += progress.Value;
+                    foldersWithProgress++;
+                }
+            }
+
+            if (foldersWithProgress == 0)
+            {
+                return null;
+            }
+
+            return (totalProgresses / foldersWithProgress);
+        }
+
         protected override bool RefreshLinkedChildren(IEnumerable<FileSystemMetadata> fileSystemChildren)
         {
             return RefreshLinkedChildrenInternal(true);
@@ -319,6 +353,11 @@ namespace MediaBrowser.Controller.Entities
         public IEnumerable<BaseItem> GetActualChildren()
         {
             return GetPhysicalFolders(true).SelectMany(c => c.Children);
+        }
+
+        public IEnumerable<Folder> GetPhysicalFolders()
+        {
+            return GetPhysicalFolders(true);
         }
 
         private IEnumerable<Folder> GetPhysicalFolders(bool enableCache)

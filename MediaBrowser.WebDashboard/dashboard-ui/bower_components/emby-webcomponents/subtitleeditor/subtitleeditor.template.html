@@ -1,6 +1,9 @@
 ﻿<div class="formDialogHeader">
     <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
     <h3 class="formDialogHeaderTitle">${Subtitles}</h3>
+
+    <a is="emby-linkbutton" class="button-link btnHelp flex align-items-center" href="https://github.com/MediaBrowser/Wiki/wiki/Subtitles" target="_blank" style="margin-left:auto;margin-right:.5em;padding:.25em;" title="${Help}"><i class="md-icon">&#xE88E;</i><span style="margin-left:.25em;">${Help}</span></a>
+
 </div>
 <div class="formDialogContent smoothScrollY">
     <div class="dialogContentInner dialog-content-centered">
@@ -11,9 +14,9 @@
         <p style="margin: 1.5em 0;" class="originalFile"><span class="originalSubtitleFileLabel secondaryText"></span><span class="pathValue"></span></p>
 
         <form class="subtitleSearchForm" style="max-width: none;">
-            <div style="display: flex; align-items: center;">
-                <div class="selectContainer" style="flex-grow: 1; margin-bottom: 0;">
-                    <select is="emby-select" id="selectLanguage" required="required" label="${LabelLanguage}"></select>
+            <div class="flex align-items-center">
+                <div class="selectContainer flex-grow" style="margin-bottom: 0;">
+                    <select is="emby-select" id="selectLanguage" required="required" label="${LabelLanguage}" autofocus></select>
                 </div>
                 <button type="submit" is="paper-icon-button-light" title="${Search}" class="btnSearchSubtitles"><i class="md-icon">search</i></button>
             </div>

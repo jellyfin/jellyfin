@@ -66,17 +66,6 @@ namespace MediaBrowser.Controller.Entities.TV
             return series == null ? SeriesName : series.SortName;
         }
 
-        // Genre, Rating and Stuido will all be the same
-        protected override IEnumerable<string> GetIndexByOptions()
-        {
-            return new List<string> {
-                {"None"},
-                {"Performer"},
-                {"Director"},
-                {"Year"},
-            };
-        }
-
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();

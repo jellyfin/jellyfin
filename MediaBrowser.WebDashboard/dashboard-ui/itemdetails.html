@@ -10,7 +10,7 @@
     </style>
 
     <div id="itemBackdrop" class="itemBackdrop noBackdrop">
-        <div class="itemBackdropContent">
+        <div class="itemBackdropFader">
         </div>
         <button is="emby-button" type="button" class="btnPlay detailFloatingButton hide fab autoSize" title="${ButtonPlay}" data-mode="playmenu"><i class="md-icon">play_arrow</i></button>
     </div>
@@ -37,7 +37,88 @@
 
                     </div>
 
-                    <div class="mainDetailButtons">
+                    <div class="mainDetailButtons mainDetailButtons-mobile">
+
+                        <button is="emby-button" type="button" class="button-flat btnResume btnPlaySimple hide detailButton-mobile" data-mode="resume">
+                            <div class="detailButton-mobile-content">
+                                <i class="md-icon detailButton-mobile-icon">play_arrow</i>
+                                <div class="detailButton-mobile-text">${ButtonResume}</div>
+                            </div>
+                        </button>
+
+                        <button is="emby-button" type="button" class="button-flat btnPlay btnPlaySimple hide detailButton-mobile" data-mode="play">
+                            <div class="detailButton-mobile-content">
+                                <i class="md-icon detailButton-mobile-icon">play_arrow</i>
+                                <div class="detailButton-mobile-text">${ButtonPlay}</div>
+                            </div>
+                        </button>
+
+                        <button is="emby-button" type="button" class="button-flat btnPlayTrailer hide detailButton-mobile">
+                            <div class="detailButton-mobile-content">
+                                <i class="md-icon detailButton-mobile-icon">&#xE8DA;</i>
+                                <div class="detailButton-mobile-text">${ButtonTrailer}</div>
+                            </div>
+                        </button>
+
+                        <button is="emby-button" type="button" class="button-flat btnInstantMix hide detailButton-mobile">
+                            <div class="detailButton-mobile-content">
+                                <i class="md-icon detailButton-mobile-icon">&#xE043;</i>
+                                <div class="detailButton-mobile-text">${HeaderInstantMix}</div>
+                            </div>
+                        </button>
+
+                        <button is="emby-button" type="button" class="button-flat btnShuffle hide detailButton-mobile">
+                            <div class="detailButton-mobile-content">
+                                <i class="md-icon detailButton-mobile-icon">&#xE043;</i>
+                                <div class="detailButton-mobile-text">${ButtonShuffle}</div>
+                            </div>
+                        </button>
+
+                        <button is="emby-downloadbutton" type="button" class="button-flat btnSyncDownload hide detailButton-mobile">
+                            <div class="detailButton-mobile-content">
+                                <i class="md-icon detailButton-mobile-icon">file_download</i>
+                                <div class="detailButton-mobile-text emby-downloadbutton-downloadtext">${ButtonDownload}</div>
+                            </div>
+                        </button>
+
+                        <button is="emby-button" type="button" class="button-flat btnMoreCommands hide detailButton-mobile">
+                            <div class="detailButton-mobile-content">
+                                <i class="md-icon detailButton-mobile-icon">more_vert</i>
+                                <div class="detailButton-mobile-text">${ButtonMore}</div>
+                            </div>
+                        </button>
+
+                        <button is="emby-button" type="button" class="button-flat btnCancelSeriesTimer hide detailButton-mobile">
+                            <div class="detailButton-mobile-content">
+                                <i class="md-icon detailButton-mobile-icon">&#xE872;</i>
+                                <div class="detailButton-mobile-text">${ButtonCancelSeries}</div>
+                            </div>
+                        </button>
+
+                        <button is="emby-button" type="button" class="button-flat btnDeleteItem hide detailButton-mobile">
+                            <div class="detailButton-mobile-content">
+                                <i class="md-icon detailButton-mobile-icon">&#xE872;</i>
+                                <div class="detailButton-mobile-text">${Delete}</div>
+                            </div>
+                        </button>
+
+                        <button is="emby-playstatebutton" type="button" class="button-flat btnPlaystate hide detailButton-mobile">
+                            <div class="detailButton-mobile-content">
+                                <i class="md-icon detailButton-mobile-icon">check</i>
+                                <div class="detailButton-mobile-text"></div>
+                            </div>
+                        </button>
+
+                        <button is="emby-ratingbutton" type="button" class="button-flat btnUserRating hide detailButton-mobile">
+                            <div class="detailButton-mobile-content">
+                                <i class="md-icon detailButton-mobile-icon">&#xE87D;</i>
+                                <div class="detailButton-mobile-text">${Rate}</div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="mainDetailButtons mainDetailButtons-nonmobile">
+
                         <button is="emby-button" type="button" class="raised subdued btnPlaySimple btnResume hide" data-mode="resume">
                             <span>${ButtonResume}</span>
                         </button>
@@ -57,15 +138,18 @@
                             <span>${ButtonCancelSeries}</span>
                         </button>
 
-                        <div style="margin-left:.5em; display: flex; align-items: center;">
+                        <div style="margin-left: .5em; display: flex; align-items: center;">
                             <button is="emby-button" type="button" class="btnMoreCommands fab mini hide" title="${ButtonMore}"><i class="md-icon">more_vert</i></button>
                             <button is="emby-button" type="button" class="btnDeleteItem fab mini hide" title="${DeleteMedia}"><i class="md-icon">&#xE872;</i></button>
-                            <div class="detailUserDataIcons userDataIcons"></div>
+                            <button is="emby-playstatebutton" type="button" class="btnPlaystate fab mini hide"><i class="md-icon">check</i></button>
+                            <button is="emby-ratingbutton" type="button" class="btnUserRating fab mini hide"><i class="md-icon">&#xE87D;</i></button>
                         </div>
                     </div>
 
-                    <div class="syncLocalContainer hide" style="margin: 1em 0;">
-                    </div>
+                    <button is="emby-downloadbutton" type="button" class="button-flat btnSyncDownload hide mainDetailButtons-nonmobile" style="margin: 1em 0 0;">
+                        <i class="md-icon">file_download</i>
+                        <span class="emby-downloadbutton-downloadtext">${ButtonDownload}</span>
+                    </button>
 
                     <div class="recordingFields hide" style="margin: .5em 0 1.5em;">
 
@@ -172,16 +256,6 @@
                 ${HeaderAwardsAndReviews}
             </h2>
             <div class="padded-left padded-right">
-                <div class="paperList" id="criticRatingSummary">
-                    <div class="listItem">
-                        <button is="emby-button" type="button" class="mini fab" style="flex-shrink: 0; width: 40px; height: 40px; background-color: transparent; background-repeat: no-repeat; background-position: center center; background-size: cover; background-image: url(css/images/fresh.png);"></button>
-                        <div class="listItemBody three-line">
-                            <h3 class="listItemBodyText">TOMATOMETER®</h3>
-                            <div class="listItemBodyText criticRatingScore"></div>
-                            <div class="listItemBodyText criticRatingSummaryText secondary" style="white-space: normal;"></div>
-                        </div>
-                    </div>
-                </div>
                 <div id="criticReviewsContent"></div>
             </div>
         </div>

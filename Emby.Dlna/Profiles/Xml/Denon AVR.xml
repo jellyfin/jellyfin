@@ -15,7 +15,7 @@
   <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
   <EnableSingleAlbumArtLimit>false</EnableSingleAlbumArtLimit>
   <EnableSingleSubtitleLimit>false</EnableSingleSubtitleLimit>
-  <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
+  <SupportedMediaTypes>Audio</SupportedMediaTypes>
   <AlbumArtPn>JPEG_SM</AlbumArtPn>
   <MaxAlbumArtWidth>480</MaxAlbumArtWidth>
   <MaxAlbumArtHeight>480</MaxAlbumArtHeight>

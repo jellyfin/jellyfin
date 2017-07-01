@@ -19,60 +19,58 @@ using SharpCifs.Util.Sharpen;
 
 namespace SharpCifs.Smb
 {
-	internal class NtTransQuerySecurityDescResponse : SmbComNtTransactionResponse
-	{
-		internal SecurityDescriptor SecurityDescriptor;
+    internal class NtTransQuerySecurityDescResponse : SmbComNtTransactionResponse
+    {
+        internal SecurityDescriptor SecurityDescriptor;
 
-	    internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
-			)
-		{
-			return 0;
-		}
+        internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len)
+        {
+            return 0;
+        }
 
-		internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int
-			 len)
-		{
-			Length = ReadInt4(buffer, bufferIndex);
-			return 4;
-		}
+        internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int len)
+        {
+            Length = ReadInt4(buffer, bufferIndex);
+            return 4;
+        }
 
-		internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
-		{
-			int start = bufferIndex;
-			if (ErrorCode != 0)
-			{
-				return 4;
-			}
-			try
-			{
-				SecurityDescriptor = new SecurityDescriptor();
-				bufferIndex += SecurityDescriptor.Decode(buffer, bufferIndex, len);
-			}
-			catch (IOException ioe)
-			{
-				throw new RuntimeException(ioe.Message);
-			}
-			return bufferIndex - start;
-		}
+        internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
+        {
+            int start = bufferIndex;
+            if (ErrorCode != 0)
+            {
+                return 4;
+            }
+            try
+            {
+                SecurityDescriptor = new SecurityDescriptor();
+                bufferIndex += SecurityDescriptor.Decode(buffer, bufferIndex, len);
+            }
+            catch (IOException ioe)
+            {
+                throw new RuntimeException(ioe.Message);
+            }
+            return bufferIndex - start;
+        }
 
-		public override string ToString()
-		{
-			return "NtTransQuerySecurityResponse[" + base.ToString() + "]";
-		}
-	}
+        public override string ToString()
+        {
+            return "NtTransQuerySecurityResponse[" + base.ToString() + "]";
+        }
+    }
 }

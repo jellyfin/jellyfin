@@ -16,72 +16,73 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-	internal class SmbComReadAndXResponse : AndXServerMessageBlock
-	{
-		internal byte[] B;
+    internal class SmbComReadAndXResponse : AndXServerMessageBlock
+    {
+        internal byte[] B;
 
-		internal int Off;
+        internal int Off;
 
-		internal int DataCompactionMode;
+        internal int DataCompactionMode;
 
-		internal int DataLength;
+        internal int DataLength;
 
-		internal int DataOffset;
+        internal int DataOffset;
 
-		public SmbComReadAndXResponse()
-		{
-		}
+        public SmbComReadAndXResponse()
+        {
+        }
 
-		internal SmbComReadAndXResponse(byte[] b, int off)
-		{
-			this.B = b;
-			this.Off = off;
-		}
+        internal SmbComReadAndXResponse(byte[] b, int off)
+        {
+            this.B = b;
+            this.Off = off;
+        }
 
-		internal virtual void SetParam(byte[] b, int off)
-		{
-			this.B = b;
-			this.Off = off;
-		}
+        internal virtual void SetParam(byte[] b, int off)
+        {
+            this.B = b;
+            this.Off = off;
+        }
 
-		internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
-		{
-			return 0;
-		}
+        internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
+        {
+            return 0;
+        }
 
-		internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex
-			)
-		{
-			int start = bufferIndex;
-			bufferIndex += 2;
-			// reserved
-			DataCompactionMode = ReadInt2(buffer, bufferIndex);
-			bufferIndex += 4;
-			// 2 reserved
-			DataLength = ReadInt2(buffer, bufferIndex);
-			bufferIndex += 2;
-			DataOffset = ReadInt2(buffer, bufferIndex);
-			bufferIndex += 12;
-			// 10 reserved
-			return bufferIndex - start;
-		}
+        internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex)
+        {
+            int start = bufferIndex;
+            bufferIndex += 2;
+            // reserved
+            DataCompactionMode = ReadInt2(buffer, bufferIndex);
+            bufferIndex += 4;
+            // 2 reserved
+            DataLength = ReadInt2(buffer, bufferIndex);
+            bufferIndex += 2;
+            DataOffset = ReadInt2(buffer, bufferIndex);
+            bufferIndex += 12;
+            // 10 reserved
+            return bufferIndex - start;
+        }
 
-		internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
-		{
-			// handled special in SmbTransport.doRecv()
-			return 0;
-		}
+        internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
+        {
+            // handled special in SmbTransport.doRecv()
+            return 0;
+        }
 
-		public override string ToString()
-		{
-			return "SmbComReadAndXResponse[" + base.ToString() + ",dataCompactionMode="
-				 + DataCompactionMode + ",dataLength=" + DataLength + ",dataOffset=" + DataOffset
-				 + "]";
-		}
-	}
+        public override string ToString()
+        {
+            return "SmbComReadAndXResponse["
+                        + base.ToString()
+                        + ",dataCompactionMode=" + DataCompactionMode
+                        + ",dataLength=" + DataLength
+                        + ",dataOffset=" + DataOffset + "]";
+        }
+    }
 }

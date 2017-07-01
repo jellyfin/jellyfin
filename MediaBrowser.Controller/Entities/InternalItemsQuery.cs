@@ -56,7 +56,6 @@ namespace MediaBrowser.Controller.Entities
         public string Path { get; set; }
         public string PathNotStartsWith { get; set; }
         public string Name { get; set; }
-        public string SlugName { get; set; }
 
         public string Person { get; set; }
         public string[] PersonIds { get; set; }

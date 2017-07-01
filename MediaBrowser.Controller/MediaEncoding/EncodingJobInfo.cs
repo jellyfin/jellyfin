@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -9,6 +10,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -39,6 +41,24 @@ namespace MediaBrowser.Controller.MediaEncoding
         public long? RunTimeTicks { get; set; }
 
         public bool ReadInputAtNativeFramerate { get; set; }
+
+        private List<TranscodeReason> _transcodeReasons = null;
+        public List<TranscodeReason> TranscodeReasons
+        {
+            get
+            {
+                if (_transcodeReasons == null)
+                {
+                    _transcodeReasons = (BaseRequest.TranscodeReasons ?? string.Empty)
+                        .Split(',')
+                        .Where(i => !string.IsNullOrWhiteSpace(i))
+                        .Select(v => (TranscodeReason)Enum.Parse(typeof(TranscodeReason), v, true))
+                        .ToList();
+                }
+
+                return _transcodeReasons;
+            }
+        }
 
         public bool IgnoreInputDts
         {
@@ -251,7 +271,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         return AudioStream.SampleRate;
                     }
-                } 
+                }
 
                 else if (BaseRequest.AudioSampleRate.HasValue)
                 {
@@ -259,6 +279,29 @@ namespace MediaBrowser.Controller.MediaEncoding
                     // Seeing issues of attempting to encode to 88200
                     return Math.Min(44100, BaseRequest.AudioSampleRate.Value);
                 }
+
+                return null;
+            }
+        }
+
+        public int? OutputAudioBitDepth
+        {
+            get
+            {
+                if (BaseRequest.Static || string.Equals(OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (AudioStream != null)
+                    {
+                        return AudioStream.BitDepth;
+                    }
+                }
+
+                //else if (BaseRequest.AudioSampleRate.HasValue)
+                //{
+                //    // Don't exceed what the encoder supports
+                //    // Seeing issues of attempting to encode to 88200
+                //    return Math.Min(44100, BaseRequest.AudioSampleRate.Value);
+                //}
 
                 return null;
             }

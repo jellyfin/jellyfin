@@ -23,19 +23,21 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Tasks;
 
 namespace Emby.Server.Implementations.Channels
 {
     public class ChannelManager : IChannelManager
     {
-        private IChannel[] _channels;
+        internal IChannel[] Channels { get; private set; }
 
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
@@ -76,12 +78,12 @@ namespace Emby.Server.Implementations.Channels
 
         public void AddParts(IEnumerable<IChannel> channels)
         {
-            _channels = channels.ToArray();
+            Channels = channels.ToArray();
         }
 
         private IEnumerable<IChannel> GetAllChannels()
         {
-            return _channels
+            return Channels
                 .OrderBy(i => i.Name);
         }
 
@@ -980,7 +982,7 @@ namespace Emby.Server.Implementations.Channels
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
-            var internalResult = await GetChannelItemsInternal(query, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+            var internalResult = await GetChannelItemsInternal(query, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
 
             var dtoOptions = new DtoOptions()
             {
@@ -1557,6 +1559,78 @@ namespace Emby.Server.Implementations.Channels
             var name = _localization.GetLocalizedString("ViewTypeChannels");
 
             return await _libraryManager.GetNamedView(name, "channels", "zz_" + name, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    public class ChannelsEntryPoint : IServerEntryPoint
+    {
+        private readonly IServerConfigurationManager _config;
+        private readonly IChannelManager _channelManager;
+        private readonly ITaskManager _taskManager;
+        private readonly IFileSystem _fileSystem;
+
+        public ChannelsEntryPoint(IChannelManager channelManager, ITaskManager taskManager, IServerConfigurationManager config, IFileSystem fileSystem)
+        {
+            _channelManager = channelManager;
+            _taskManager = taskManager;
+            _config = config;
+            _fileSystem = fileSystem;
+        }
+
+        public void Run()
+        {
+            var channels = ((ChannelManager)_channelManager).Channels
+                .Select(i => i.GetType().FullName.GetMD5().ToString("N"))
+                .ToArray();
+
+            var channelsString = string.Join(",", channels);
+
+            if (!string.Equals(channelsString, GetSavedLastChannels(), StringComparison.OrdinalIgnoreCase))
+            {
+                _taskManager.QueueIfNotRunning<RefreshChannelsScheduledTask>();
+
+                SetSavedLastChannels(channelsString);
+            }
+        }
+
+        private string DataPath
+        {
+            get { return Path.Combine(_config.ApplicationPaths.DataPath, "channels.txt"); }
+        }
+
+        private string GetSavedLastChannels()
+        {
+            try
+            {
+                return _fileSystem.ReadAllText(DataPath);
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private void SetSavedLastChannels(string value)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    _fileSystem.DeleteFile(DataPath);
+
+                }
+                else
+                {
+                    _fileSystem.WriteAllText(DataPath, value);
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

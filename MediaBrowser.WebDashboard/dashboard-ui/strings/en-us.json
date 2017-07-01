@@ -708,8 +708,10 @@
   "ButtonRegister": "Register",
   "LabelSkipIfAudioTrackPresent": "Skip if the default audio track matches the download language",
   "LabelSkipIfAudioTrackPresentHelp": "Uncheck this to ensure all videos have subtitles, regardless of audio language.",
+  "SendMessage": "Send message",
   "HeaderSendMessage": "Send Message",
   "ButtonSend": "Send",
+  "ViewPlaybackInfo": "View playback info",
   "LabelMessageText": "Message text:",
   "LabelMessageTitle": "Message title:",
   "MessageNoAvailablePlugins": "No available plugins.",
@@ -1819,6 +1821,7 @@
   "LabelAllowHWTranscoding": "Allow hardware transcoding",
   "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
   "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files",
+  "OptionRequirePerfectSubtitleMatchHelp": "Requiring a perfect match will filter subtitles to include only those that have been tested and verified with your exact video file. Unchecking this will increase the likelihood of subtitles being downloaded, but will increase the chances of mistimed or incorrect subtitle text.",
   "ErrorAddingGuestAccount1": "There was an error adding the Emby Connect account. Has your guest created an Emby account? They can sign up at {0}.",
   "ErrorAddingGuestAccount2": "Please ensure your guest has completed activation by following the instructions in the email sent after creating the account. If they did not receive this email then please send an email to {0}, and include your email address as well as theirs.",
   "GuestUserNotFound": "User not found. Please ensure the name is correct and try again, or try entering their email address.",
@@ -1927,5 +1930,12 @@
   "LabelCertificatePasswordHelp": "If your certificate requires a password, please enter it here.",
   "Programs": "Programs",
   "News": "News",
-  "HeaderDownloadSync": "Download & Sync"
+  "HeaderDownloadSync": "Download & Sync",
+  "EnableHardwareDecoding": "Enable hardware decoding",
+  "EnableHardwareEncoding": "Enable hardware encoding",
+  "Rate": "Rate",
+  "ButtonScanAllLibraries": "Scan All Libraries",
+  "ScanLibrary": "Scan library",
+  "EnableStreamLooping": "Auto-loop live streams",
+  "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
 }

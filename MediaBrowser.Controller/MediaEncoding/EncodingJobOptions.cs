@@ -83,6 +83,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         [ApiMember(Name = "AudioSampleRate", Description = "Optional. Specify a specific audio sample rate, e.g. 44100", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? AudioSampleRate { get; set; }
 
+        public int? MaxAudioBitDepth { get; set; }
+
         /// <summary>
         /// Gets or sets the audio bit rate.
         /// </summary>
@@ -203,6 +205,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string VideoCodec { get; set; }
 
         public string SubtitleCodec { get; set; }
+
+        public string TranscodeReasons { get; set; }
 
         /// <summary>
         /// Gets or sets the index of the audio stream.

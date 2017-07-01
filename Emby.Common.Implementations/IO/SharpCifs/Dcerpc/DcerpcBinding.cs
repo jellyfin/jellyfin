@@ -20,103 +20,105 @@ using SharpCifs.Util.Sharpen;
 
 namespace SharpCifs.Dcerpc
 {
-	public class DcerpcBinding
-	{
-		private static Hashtable _interfaces;
+    public class DcerpcBinding
+    {
+        private static Hashtable _interfaces;
 
-		static DcerpcBinding()
-		{
-			_interfaces = new Hashtable();
-			_interfaces.Put("srvsvc", Srvsvc.GetSyntax());
-			_interfaces.Put("lsarpc", Lsarpc.GetSyntax());
-			_interfaces.Put("samr", Samr.GetSyntax());
-			_interfaces.Put("netdfs", Netdfs.GetSyntax());
-		}
+        static DcerpcBinding()
+        {
+            _interfaces = new Hashtable();
+            _interfaces.Put("srvsvc", Srvsvc.GetSyntax());
+            _interfaces.Put("lsarpc", Lsarpc.GetSyntax());
+            _interfaces.Put("samr", Samr.GetSyntax());
+            _interfaces.Put("netdfs", Netdfs.GetSyntax());
+        }
 
-		public static void AddInterface(string name, string syntax)
-		{
-			_interfaces.Put(name, syntax);
-		}
+        public static void AddInterface(string name, string syntax)
+        {
+            _interfaces.Put(name, syntax);
+        }
 
-		internal string Proto;
+        internal string Proto;
 
-		internal string Server;
+        internal string Server;
 
-		internal string Endpoint;
+        internal string Endpoint;
 
-		internal Hashtable Options;
+        internal Hashtable Options;
 
-		internal Uuid Uuid;
+        internal Uuid Uuid;
 
-		internal int Major;
+        internal int Major;
 
-		internal int Minor;
+        internal int Minor;
 
-		internal DcerpcBinding(string proto, string server)
-		{
-			this.Proto = proto;
-			this.Server = server;
-		}
+        internal DcerpcBinding(string proto, string server)
+        {
+            this.Proto = proto;
+            this.Server = server;
+        }
 
-		/// <exception cref="SharpCifs.Dcerpc.DcerpcException"></exception>
-		internal virtual void SetOption(string key, object val)
-		{
-			if (key.Equals("endpoint"))
-			{
-				Endpoint = val.ToString().ToLower();
-				if (Endpoint.StartsWith("\\pipe\\"))
-				{
-					string iface = (string)_interfaces.Get(Runtime.Substring(Endpoint, 6));
-					if (iface != null)
-					{
-						int c;
-						int p;
-						c = iface.IndexOf(':');
-						p = iface.IndexOf('.', c + 1);
-						Uuid = new Uuid(Runtime.Substring(iface, 0, c));
-						Major = Convert.ToInt32(Runtime.Substring(iface, c + 1, p));
-						Minor = Convert.ToInt32(Runtime.Substring(iface, p + 1));
-						return;
-					}
-				}
-				throw new DcerpcException("Bad endpoint: " + Endpoint);
-			}
-			if (Options == null)
-			{
-				Options = new Hashtable();
-			}
-			Options.Put(key, val);
-		}
+        /// <exception cref="SharpCifs.Dcerpc.DcerpcException"></exception>
+        internal virtual void SetOption(string key, object val)
+        {
+            if (key.Equals("endpoint"))
+            {
+                Endpoint = val.ToString().ToLower();
+                if (Endpoint.StartsWith("\\pipe\\"))
+                {
+                    string iface = (string)_interfaces.Get(Runtime.Substring(Endpoint, 6));
+                    if (iface != null)
+                    {
+                        int c;
+                        int p;
+                        c = iface.IndexOf(':');
+                        p = iface.IndexOf('.', c + 1);
+                        Uuid = new Uuid(Runtime.Substring(iface, 0, c));
+                        Major = Convert.ToInt32(Runtime.Substring(iface, c + 1, p));
+                        Minor = Convert.ToInt32(Runtime.Substring(iface, p + 1));
+                        return;
+                    }
+                }
+                throw new DcerpcException("Bad endpoint: " + Endpoint);
+            }
+            if (Options == null)
+            {
+                Options = new Hashtable();
+            }
+            Options.Put(key, val);
+        }
 
-		internal virtual object GetOption(string key)
-		{
-			if (key.Equals("endpoint"))
-			{
-				return Endpoint;
-			}
-			if (Options != null)
-			{
-				return Options.Get(key);
-			}
-			return null;
-		}
-
-		public override string ToString()
-		{
-		/*	string ret = proto + ":" + server + "[" + endpoint;
-			if (options != null)
-			{
-			    Iterator iter = (Iterator) options.Keys.GetEnumerator();
-				while (iter.HasNext())
-				{
-					object key = iter.Next();
-					object val = options.Get(key);
-					ret += "," + key + "=" + val;
-				}
-			}
-			ret += "]";
-			return ret; */
+        internal virtual object GetOption(string key)
+        {
+            if (key.Equals("endpoint"))
+            {
+                return Endpoint;
+            }
+            if (Options != null)
+            {
+                return Options.Get(key);
+            }
             return null;
-		}
-	}
+        }
+
+        public override string ToString()
+        {
+            /*	
+            string ret = proto + ":" + server + "[" + endpoint;
+            if (options != null)
+            {
+                Iterator iter = (Iterator) options.Keys.GetEnumerator();
+                while (iter.HasNext())
+                {
+                    object key = iter.Next();
+                    object val = options.Get(key);
+                    ret += "," + key + "=" + val;
+                }
+            }
+            ret += "]";
+            return ret; 
+            */
+            return null;
+        }
+    }
 }

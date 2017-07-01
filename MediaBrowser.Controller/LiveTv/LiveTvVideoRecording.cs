@@ -108,6 +108,24 @@ namespace MediaBrowser.Controller.LiveTv
             return false;
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            if (IsMovie)
+            {
+                double value = 2;
+                value /= 3;
+
+                return value;
+            }
+            else
+            {
+                double value = 2;
+                value /= 3;
+
+                return value;
+            }
+        }
+
         [IgnoreDataMember]
         public override bool SupportsLocalMetadata
         {

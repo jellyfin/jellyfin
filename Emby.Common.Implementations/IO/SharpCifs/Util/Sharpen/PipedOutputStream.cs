@@ -1,37 +1,37 @@
 namespace SharpCifs.Util.Sharpen
 {
     internal class PipedOutputStream : OutputStream
-	{
-		PipedInputStream _ips;
+    {
+        PipedInputStream _ips;
 
-		public PipedOutputStream ()
-		{
-		}
+        public PipedOutputStream()
+        {
+        }
 
-		public PipedOutputStream (PipedInputStream iss) : this()
-		{
-			Attach (iss);
-		}
+        public PipedOutputStream(PipedInputStream iss) : this()
+        {
+            Attach(iss);
+        }
 
-		public override void Close ()
-		{
-			_ips.Close ();
-			base.Close ();
-		}
+        public override void Close()
+        {
+            _ips.Close();
+            base.Close();
+        }
 
-		internal void Attach (PipedInputStream iss)
-		{
-			_ips = iss;
-		}
+        internal void Attach(PipedInputStream iss)
+        {
+            _ips = iss;
+        }
 
-		public override void Write (int b)
-		{
-			_ips.Write (b);
-		}
+        public override void Write(int b)
+        {
+            _ips.Write(b);
+        }
 
-		public override void Write (byte[] b, int offset, int len)
-		{
-			_ips.Write (b, offset, len);
-		}
-	}
+        public override void Write(byte[] b, int offset, int len)
+        {
+            _ips.Write(b, offset, len);
+        }
+    }
 }

@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
         private bool IsMultiDiscFolder(string path, LibraryOptions libraryOptions)
         {
-            var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions(libraryOptions);
+            var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
 
             var parser = new AlbumParser(namingOptions, new NullLogger());
             var result = parser.ParseMultiPart(path);

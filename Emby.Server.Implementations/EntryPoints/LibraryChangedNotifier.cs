@@ -6,9 +6,14 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Threading;
 
@@ -49,13 +54,16 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         private const int LibraryUpdateDuration = 5000;
 
-        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IUserManager userManager, ILogger logger, ITimerFactory timerFactory)
+        private readonly IProviderManager _providerManager;
+
+        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IUserManager userManager, ILogger logger, ITimerFactory timerFactory, IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;
             _userManager = userManager;
             _logger = logger;
             _timerFactory = timerFactory;
+            _providerManager = providerManager;
         }
 
         public void Run()
@@ -64,6 +72,106 @@ namespace Emby.Server.Implementations.EntryPoints
             _libraryManager.ItemUpdated += libraryManager_ItemUpdated;
             _libraryManager.ItemRemoved += libraryManager_ItemRemoved;
 
+            _providerManager.RefreshCompleted += _providerManager_RefreshCompleted;
+            _providerManager.RefreshStarted += _providerManager_RefreshStarted;
+            _providerManager.RefreshProgress += _providerManager_RefreshProgress;
+        }
+
+        private Dictionary<Guid, DateTime> _lastProgressMessageTimes = new Dictionary<Guid, DateTime>();
+
+        private void _providerManager_RefreshProgress(object sender, GenericEventArgs<Tuple<BaseItem, double>> e)
+        {
+            var item = e.Argument.Item1;
+
+            if (!EnableRefreshMessage(item))
+            {
+                return;
+            }
+
+            var progress = e.Argument.Item2;
+
+            DateTime lastMessageSendTime;
+            if (_lastProgressMessageTimes.TryGetValue(item.Id, out lastMessageSendTime))
+            {
+                if (progress > 0 && progress < 100 && (DateTime.UtcNow - lastMessageSendTime).TotalMilliseconds < 1000)
+                {
+                    return;
+                }
+            }
+
+            _lastProgressMessageTimes[item.Id] = DateTime.UtcNow;
+
+            var dict = new Dictionary<string, string>();
+            dict["ItemId"] = item.Id.ToString("N");
+            dict["Progress"] = progress.ToString(CultureInfo.InvariantCulture);
+
+            try
+            {
+                _sessionManager.SendMessageToAdminSessions("RefreshProgress", dict, CancellationToken.None);
+            }
+            catch
+            {
+            }
+
+            var collectionFolders = _libraryManager.GetCollectionFolders(item).ToList();
+
+            foreach (var collectionFolder in collectionFolders)
+            {
+                var collectionFolderDict = new Dictionary<string, string>();
+                collectionFolderDict["ItemId"] = collectionFolder.Id.ToString("N");
+                collectionFolderDict["Progress"] = (collectionFolder.GetRefreshProgress() ?? 0).ToString(CultureInfo.InvariantCulture);
+
+                try
+                {
+                    _sessionManager.SendMessageToAdminSessions("RefreshProgress", collectionFolderDict, CancellationToken.None);
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
+        private void _providerManager_RefreshStarted(object sender, GenericEventArgs<BaseItem> e)
+        {
+            _providerManager_RefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 0)));
+        }
+
+        private void _providerManager_RefreshCompleted(object sender, GenericEventArgs<BaseItem> e)
+        {
+            _providerManager_RefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 100)));
+        }
+
+        private bool EnableRefreshMessage(BaseItem item)
+        {
+            var folder = item as Folder;
+
+            if (folder == null)
+            {
+                return false;
+            }
+
+            if (folder.IsRoot)
+            {
+                return false;
+            }
+
+            if (folder is AggregateFolder || folder is UserRootFolder)
+            {
+                return false;
+            }
+
+            if (folder is UserView || folder is Channel)
+            {
+                return false;
+            }
+
+            if (!folder.IsTopParent)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -218,8 +326,8 @@ namespace Emby.Server.Implementations.EntryPoints
 
                     try
                     {
-                         info = GetLibraryUpdateInfo(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo,
-                                                        foldersRemovedFrom, id);
+                        info = GetLibraryUpdateInfo(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo,
+                                                       foldersRemovedFrom, id);
                     }
                     catch (Exception ex)
                     {

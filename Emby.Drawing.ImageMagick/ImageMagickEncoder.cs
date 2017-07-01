@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.System;
 
 namespace Emby.Drawing.ImageMagick
 {
@@ -18,13 +19,15 @@ namespace Emby.Drawing.ImageMagick
         private readonly IApplicationPaths _appPaths;
         private readonly Func<IHttpClient> _httpClientFactory;
         private readonly IFileSystem _fileSystem;
+        private readonly IEnvironmentInfo _environment;
 
-        public ImageMagickEncoder(ILogger logger, IApplicationPaths appPaths, Func<IHttpClient> httpClientFactory, IFileSystem fileSystem)
+        public ImageMagickEncoder(ILogger logger, IApplicationPaths appPaths, Func<IHttpClient> httpClientFactory, IFileSystem fileSystem, IEnvironmentInfo environment)
         {
             _logger = logger;
             _appPaths = appPaths;
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
+            _environment = environment;
 
             LogVersion();
         }
@@ -337,7 +340,17 @@ namespace Emby.Drawing.ImageMagick
 
         public bool SupportsImageCollageCreation
         {
-            get { return true; }
+            get
+            {
+                // too heavy. seeing crashes on RPI.
+                if (_environment.SystemArchitecture == Architecture.Arm ||
+                    _environment.SystemArchitecture == Architecture.Arm64)
+                {
+                    return false;
+                }
+
+                return true;
+            }
         }
 
         public bool SupportsImageEncoding

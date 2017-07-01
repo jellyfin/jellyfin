@@ -18,58 +18,61 @@ using SharpCifs.Util;
 
 namespace SharpCifs.Smb
 {
-	internal class SmbComRename : ServerMessageBlock
-	{
-		private int _searchAttributes;
+    internal class SmbComRename : ServerMessageBlock
+    {
+        private int _searchAttributes;
 
-		private string _oldFileName;
+        private string _oldFileName;
 
-		private string _newFileName;
+        private string _newFileName;
 
-		internal SmbComRename(string oldFileName, string newFileName)
-		{
-			Command = SmbComRename;
-			this._oldFileName = oldFileName;
-			this._newFileName = newFileName;
-            _searchAttributes = SmbConstants.AttrHidden | SmbConstants.AttrSystem | SmbConstants.AttrDirectory;
-		}
+        internal SmbComRename(string oldFileName, string newFileName)
+        {
+            Command = SmbComRename;
+            this._oldFileName = oldFileName;
+            this._newFileName = newFileName;
+            _searchAttributes = SmbConstants.AttrHidden
+                                | SmbConstants.AttrSystem
+                                | SmbConstants.AttrDirectory;
+        }
 
-		internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
-		{
-			WriteInt2(_searchAttributes, dst, dstIndex);
-			return 2;
-		}
+        internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
+        {
+            WriteInt2(_searchAttributes, dst, dstIndex);
+            return 2;
+        }
 
-		internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
-		{
-			int start = dstIndex;
-			dst[dstIndex++] = unchecked(unchecked(0x04));
-			dstIndex += WriteString(_oldFileName, dst, dstIndex);
-			dst[dstIndex++] = unchecked(unchecked(0x04));
-			if (UseUnicode)
-			{
-				dst[dstIndex++] = unchecked((byte)('\0'));
-			}
-			dstIndex += WriteString(_newFileName, dst, dstIndex);
-			return dstIndex - start;
-		}
+        internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
+        {
+            int start = dstIndex;
+            dst[dstIndex++] = unchecked(unchecked(0x04));
+            dstIndex += WriteString(_oldFileName, dst, dstIndex);
+            dst[dstIndex++] = unchecked(unchecked(0x04));
+            if (UseUnicode)
+            {
+                dst[dstIndex++] = unchecked((byte)('\0'));
+            }
+            dstIndex += WriteString(_newFileName, dst, dstIndex);
+            return dstIndex - start;
+        }
 
-		internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex
-			)
-		{
-			return 0;
-		}
+        internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex)
+        {
+            return 0;
+        }
 
-		internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
-		{
-			return 0;
-		}
+        internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
+        {
+            return 0;
+        }
 
-		public override string ToString()
-		{
-			return "SmbComRename[" + base.ToString() + ",searchAttributes=0x" + Hexdump
-				.ToHexString(_searchAttributes, 4) + ",oldFileName=" + _oldFileName + ",newFileName="
-				 + _newFileName + "]";
-		}
-	}
+        public override string ToString()
+        {
+            return "SmbComRename["
+                        + base.ToString()
+                        + ",searchAttributes=0x" + Hexdump.ToHexString(_searchAttributes, 4)
+                        + ",oldFileName=" + _oldFileName
+                        + ",newFileName=" + _newFileName + "]";
+        }
+    }
 }

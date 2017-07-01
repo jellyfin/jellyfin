@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Connect;
 using Emby.Server.Connect;
 using Emby.Server.Sync;
 using MediaBrowser.Controller.Sync;
+using Emby.Server.CinemaMode;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -66,8 +67,10 @@ namespace MediaBrowser.Server.Mac
             var list = new List<Assembly>();
 
             list.Add(GetType().Assembly);
-			list.Add(typeof(ConnectManager).Assembly);
-			list.Add(typeof(SyncManager).Assembly);
+			list.Add(typeof(DefaultIntroProvider).Assembly);
+            list.Add(typeof(ConnectManager).Assembly);
+            list.Add(typeof(SyncManager).Assembly);
+
 
             return list;
         }

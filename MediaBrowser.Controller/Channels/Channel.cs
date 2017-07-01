@@ -6,6 +6,7 @@ using System.Linq;
 using MediaBrowser.Model.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Progress;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -32,6 +33,15 @@ namespace MediaBrowser.Controller.Channels
         }
 
         [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        [IgnoreDataMember]
         public override SourceType SourceType
         {
             get { return SourceType.Channel; }
@@ -51,7 +61,7 @@ namespace MediaBrowser.Controller.Channels
                     SortBy = query.SortBy,
                     SortOrder = query.SortOrder
 
-                }, new Progress<double>(), CancellationToken.None).Result;
+                }, new SimpleProgress<double>(), CancellationToken.None).Result;
             }
             catch
             {

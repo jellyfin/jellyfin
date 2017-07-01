@@ -16,10 +16,10 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Util.Transport
 {
-	public abstract class Response
-	{
-		public long Expiration;
+    public abstract class Response
+    {
+        public long Expiration;
 
-		public bool IsReceived;
-	}
+        public bool IsReceived;
+    }
 }

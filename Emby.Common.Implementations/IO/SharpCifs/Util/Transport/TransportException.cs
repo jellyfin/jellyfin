@@ -21,43 +21,43 @@ using SharpCifs.Util.Sharpen;
 namespace SharpCifs.Util.Transport
 {
 
-	public class TransportException : IOException
-	{
-		private Exception _rootCause;
+    public class TransportException : IOException
+    {
+        private Exception _rootCause;
 
-		public TransportException()
-		{
-		}
+        public TransportException()
+        {
+        }
 
-		public TransportException(string msg) : base(msg)
-		{
-		}
+        public TransportException(string msg) : base(msg)
+        {
+        }
 
-		public TransportException(Exception rootCause)
-		{
-			this._rootCause = rootCause;
-		}
+        public TransportException(Exception rootCause)
+        {
+            this._rootCause = rootCause;
+        }
 
-		public TransportException(string msg, Exception rootCause) : base(msg)
-		{
-			this._rootCause = rootCause;
-		}
+        public TransportException(string msg, Exception rootCause) : base(msg)
+        {
+            this._rootCause = rootCause;
+        }
 
-		public virtual Exception GetRootCause()
-		{
-			return _rootCause;
-		}
+        public virtual Exception GetRootCause()
+        {
+            return _rootCause;
+        }
 
-		public override string ToString()
-		{
-		    if (_rootCause != null)
-			{
-				StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				Runtime.PrintStackTrace(_rootCause, pw);
-				return base.ToString() + "\n" + sw;
-			}
-		    return base.ToString();
-		}
-	}
+        public override string ToString()
+        {
+            if (_rootCause != null)
+            {
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                Runtime.PrintStackTrace(_rootCause, pw);
+                return base.ToString() + "\n" + sw;
+            }
+            return base.ToString();
+        }
+    }
 }
