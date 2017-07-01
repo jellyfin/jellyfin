@@ -30,7 +30,6 @@ using Emby.Server.Implementations;
 using Emby.Server.Implementations.Browser;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Logging;
-using ImageMagickSharp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 
@@ -71,8 +70,6 @@ namespace MediaBrowser.ServerApplication
 
             ApplicationPath = currentProcess.MainModule.FileName;
             var architecturePath = Path.Combine(Path.GetDirectoryName(ApplicationPath), Environment.Is64BitProcess ? "x64" : "x86");
-
-            Wand.SetMagickCoderModulePath(architecturePath);
 
             var success = SetDllDirectory(architecturePath);
 
