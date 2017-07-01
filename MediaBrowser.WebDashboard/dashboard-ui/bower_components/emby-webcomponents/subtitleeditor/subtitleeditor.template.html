@@ -14,9 +14,9 @@
         <p style="margin: 1.5em 0;" class="originalFile"><span class="originalSubtitleFileLabel secondaryText"></span><span class="pathValue"></span></p>
 
         <form class="subtitleSearchForm" style="max-width: none;">
-            <div style="display: flex; align-items: center;">
-                <div class="selectContainer" style="flex-grow: 1; margin-bottom: 0;">
-                    <select is="emby-select" id="selectLanguage" required="required" label="${LabelLanguage}"></select>
+            <div class="flex align-items-center">
+                <div class="selectContainer flex-grow" style="margin-bottom: 0;">
+                    <select is="emby-select" id="selectLanguage" required="required" label="${LabelLanguage}" autofocus></select>
                 </div>
                 <button type="submit" is="paper-icon-button-light" title="${Search}" class="btnSearchSubtitles"><i class="md-icon">search</i></button>
             </div>

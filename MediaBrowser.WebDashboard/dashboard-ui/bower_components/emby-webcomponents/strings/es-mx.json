@@ -1,4 +1,7 @@
 {
+    "AnamorphicVideoNotSupported": "Video anamorfico no soportado",
+    "InterlacedVideoNotSupported": "Video entrelazado no soportado",
+    "SecondaryAudioNotSupported": "Cambio de pista de audio no soportado",
     "MessageUnlockAppWithPurchaseOrSupporter": "Desbloquee esta caracter\u00edstica con una peque\u00f1a compra \u00fanica, o con una suscripci\u00f3n activa de Emby Premier.",
     "MessageUnlockAppWithSupporter": "Desbloquee esta caracter\u00edstica con una suscripci\u00f3n activa de Emby Premier.",
     "MessageToValidateSupporter": "Si tiene una subscripci\u00f3n de Emby Premiere activa, aseg\u00farese de que ha configurado Emby Premiere en el Panel de Control del Servidor Emby, al cual puede acceder dando click en Emby Premiere dentro del men\u00fa principal.",
@@ -169,6 +172,9 @@
     "LabelOriginalAspectRatio": "Relaci\u00f3n de aspecto original:",
     "LabelPlayers": "Reproductores:",
     "Label3DFormat": "Formato 3D:",
+    "FormatValue": "Formato: {0}",
+    "DownloadsValue": "Descargas: {0}",
+    "PerfectMatch": "Coincidencia exacta",
     "HeaderAlternateEpisodeNumbers": "N\u00fameros de Episodio Alternativos:",
     "LabelDvdSeasonNumber": "N\u00famero de temporada del DVD:",
     "LabelDvdEpisodeNumber": "N\u00famero de episodio de DVD:",

@@ -1,4 +1,7 @@
 {
+    "AnamorphicVideoNotSupported": "Anamorphic video not supported",
+    "InterlacedVideoNotSupported": "Interlaced video not supported",
+    "SecondaryAudioNotSupported": "Audio track switching not supported",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
