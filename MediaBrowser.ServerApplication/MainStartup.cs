@@ -678,7 +678,7 @@ namespace MediaBrowser.ServerApplication
 
             _logger.Info("Calling Application.Exit");
             //Application.Exit();
-            
+
             Environment.Exit(0);
         }
 
@@ -770,19 +770,43 @@ namespace MediaBrowser.ServerApplication
 
             try
             {
-                var subkey = Environment.Is64BitProcess
-                    ? "SOFTWARE\\WOW6432Node\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\x64"
-                    : "SOFTWARE\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\x86";
+                RegistryKey key;
 
-                using (RegistryKey ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
-                    .OpenSubKey(subkey))
+                if (Environment.Is64BitProcess)
                 {
-                    if (ndpKey != null && ndpKey.GetValue("Version") != null)
+                    key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
+                       .OpenSubKey("SOFTWARE\\Classes\\Installer\\Dependencies\\{d992c12e-cab2-426f-bde3-fb8c53950b0d}");
+
+                    if (key == null)
                     {
-                        var installedVersion = ((string)ndpKey.GetValue("Version")).TrimStart('v');
-                        if (installedVersion.StartsWith("14", StringComparison.OrdinalIgnoreCase))
+                        key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
+                            .OpenSubKey("SOFTWARE\\WOW6432Node\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\x64");
+                    }
+                }
+                else
+                {
+                    key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
+                        .OpenSubKey("SOFTWARE\\Classes\\Installer\\Dependencies\\{e2803110-78b3-4664-a479-3611a381656a}");
+
+                    if (key == null)
+                    {
+                        key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
+                            .OpenSubKey("SOFTWARE\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\x86");
+                    }
+                }
+
+                if (key != null)
+                {
+                    using (key)
+                    {
+                        var version = key.GetValue("Version");
+                        if (version != null)
                         {
-                            return;
+                            var installedVersion = ((string)version).TrimStart('v');
+                            if (installedVersion.StartsWith("14", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return;
+                            }
                         }
                     }
                 }

@@ -183,8 +183,8 @@ namespace Emby.Drawing.Skia
             }
         }
 
-        private string[] TransparentImageTypes = new string[] { ".png", ".gif", ".webp" };
-        private SKBitmap Decode(string path, bool forceCleanBitmap, out SKCodecOrigin origin)
+        private static string[] TransparentImageTypes = new string[] { ".png", ".gif", ".webp" };
+        internal static SKBitmap Decode(string path, bool forceCleanBitmap, out SKCodecOrigin origin)
         {
             var requiresTransparencyHack = TransparentImageTypes.Contains(Path.GetExtension(path) ?? string.Empty);
 
