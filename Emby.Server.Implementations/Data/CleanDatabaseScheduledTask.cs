@@ -17,7 +17,7 @@ using MediaBrowser.Model.Tasks;
 
 namespace Emby.Server.Implementations.Data
 {
-    public class CleanDatabaseScheduledTask : IScheduledTask
+    public class CleanDatabaseScheduledTask : ILibraryPostScanTask
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IItemRepository _itemRepo;
@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.Data
             get { return "Library"; }
         }
 
-        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
             // Ensure these objects are lazy loaded.
             // Without this there is a deadlock that will need to be investigated

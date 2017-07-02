@@ -20,10 +20,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Opens the media source.
         /// </summary>
-        /// <param name="openToken">The open token.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
-        Task<Tuple<MediaSourceInfo,IDirectStreamProvider>> OpenMediaSource(string openToken, CancellationToken cancellationToken);
+        Task<Tuple<MediaSourceInfo,IDirectStreamProvider>> OpenMediaSource(string openToken, bool allowLiveStreamProbe, CancellationToken cancellationToken);
 
         /// <summary>
         /// Closes the media source.
