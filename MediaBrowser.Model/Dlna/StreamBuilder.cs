@@ -635,8 +635,10 @@ namespace MediaBrowser.Model.Dlna
             MediaStream videoStream = item.VideoStream;
 
             // TODO: This doesn't accout for situation of device being able to handle media bitrate, but wifi connection not fast enough
-            bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true), subtitleStream, options, PlayMethod.DirectPlay));
-            bool isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || IsEligibleForDirectPlay(item, options.GetMaxBitrate(false), subtitleStream, options, PlayMethod.DirectStream));
+            var directPlayEligibilityResult = IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true), subtitleStream, options, PlayMethod.DirectPlay);
+            var directStreamEligibilityResult = IsEligibleForDirectPlay(item, options.GetMaxBitrate(false), subtitleStream, options, PlayMethod.DirectStream);
+            bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || directPlayEligibilityResult.Item1);
+            bool isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || directStreamEligibilityResult.Item1);
 
             _logger.Info("Profile: {0}, Path: {1}, isEligibleForDirectPlay: {2}, isEligibleForDirectStream: {3}",
                 options.Profile.Name ?? "Unknown Profile",
@@ -667,6 +669,16 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 transcodeReasons.AddRange(directPlayInfo.Item2);
+            }
+
+            if (directPlayEligibilityResult.Item2.HasValue)
+            {
+                transcodeReasons.Add(directPlayEligibilityResult.Item2.Value);
+            }
+
+            if (directStreamEligibilityResult.Item2.HasValue)
+            {
+                transcodeReasons.Add(directStreamEligibilityResult.Item2.Value);
             }
 
             // Can't direct play, find the transcoding profile
@@ -1136,7 +1148,7 @@ namespace MediaBrowser.Model.Dlna
                 mediaSource.Path ?? "Unknown path");
         }
 
-        private bool IsEligibleForDirectPlay(MediaSourceInfo item,
+        private Tuple<bool, TranscodeReason?> IsEligibleForDirectPlay(MediaSourceInfo item,
             long? maxBitrate,
             MediaStream subtitleStream,
             VideoOptions options,
@@ -1149,11 +1161,18 @@ namespace MediaBrowser.Model.Dlna
                 if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
                     _logger.Info("Not eligible for {0} due to unsupported subtitles", playMethod);
-                    return false;
+                    return new Tuple<bool, TranscodeReason?>(false, TranscodeReason.SubtitleCodecNotSupported);
                 }
             }
 
-            return IsAudioEligibleForDirectPlay(item, maxBitrate, playMethod);
+            var result = IsAudioEligibleForDirectPlay(item, maxBitrate, playMethod);
+
+            if (result)
+            {
+                return new Tuple<bool, TranscodeReason?>(result, null);
+            }
+
+            return new Tuple<bool, TranscodeReason?>(result, TranscodeReason.ContainerBitrateExceedsLimit);
         }
 
         public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, string transcodingSubProtocol, string transcodingContainer)
