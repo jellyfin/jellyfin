@@ -199,7 +199,7 @@ namespace MediaBrowser.Api.Playback
                         SubtitleStreamIndex = request.SubtitleStreamIndex,
                         UserId = request.UserId,
                         OpenToken = mediaSource.OpenToken,
-                        AllowMediaProbe = request.AllowMediaProbe
+                        EnableMediaProbe = request.EnableMediaProbe
 
                     }).ConfigureAwait(false);
 

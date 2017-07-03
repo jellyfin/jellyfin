@@ -21,7 +21,7 @@ namespace MediaBrowser.Providers.Music
 
             if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
             {
-                if (!item.IsLocked)
+                if (!item.IsLocked && !item.LockedFields.Contains(MetadataFields.Genres))
                 {
                     var taggedItems = item.IsAccessedByName ?
                         item.GetTaggedItems(new Controller.Entities.InternalItemsQuery()
@@ -31,22 +31,19 @@ namespace MediaBrowser.Providers.Music
                         }) :
                         item.GetRecursiveChildren(i => i is IHasArtist && !i.IsFolder).ToList();
 
-                    if (!item.LockedFields.Contains(MetadataFields.Genres))
+                    var currentList = item.Genres.ToList();
+
+                    item.Genres = taggedItems.SelectMany(i => i.Genres)
+                        .DistinctNames()
+                        .ToList();
+
+                    if (currentList.Count != item.Genres.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
                     {
-                        var currentList = item.Genres.ToList();
-
-                        item.Genres = taggedItems.SelectMany(i => i.Genres)
-                            .DistinctNames()
-                            .ToList();
-
-                        if (currentList.Count != item.Genres.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
-                        {
-                            updateType = updateType | ItemUpdateType.MetadataEdit;
-                        }
+                        updateType = updateType | ItemUpdateType.MetadataEdit;
                     }
                 }
             }
-            
+
             return updateType;
         }
 
