@@ -27,17 +27,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
     public class HdHomerunHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
         private readonly IHttpClient _httpClient;
-        private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationHost _appHost;
         private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
         private readonly IEnvironmentInfo _environment;
 
-        public HdHomerunHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IHttpClient httpClient, IFileSystem fileSystem, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager, IEnvironmentInfo environment)
-            : base(config, logger, jsonSerializer, mediaEncoder)
+        public HdHomerunHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager, IEnvironmentInfo environment) : base(config, logger, jsonSerializer, mediaEncoder, fileSystem)
         {
             _httpClient = httpClient;
-            _fileSystem = fileSystem;
             _appHost = appHost;
             _socketFactory = socketFactory;
             _networkManager = networkManager;
@@ -509,7 +506,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             if (hdhomerunChannel != null && hdhomerunChannel.IsLegacyTuner)
             {
-                return new HdHomerunUdpStream(mediaSource, streamId, new LegacyHdHomerunChannelCommands(hdhomerunChannel.Url), modelInfo.TunerCount, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager, _environment);
+                return new HdHomerunUdpStream(mediaSource, streamId, new LegacyHdHomerunChannelCommands(hdhomerunChannel.Url), modelInfo.TunerCount, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager, _environment);
             }
 
             // The UDP method is not working reliably on OSX, and on BSD it hasn't been tested yet
@@ -529,10 +526,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
                 mediaSource.Path = httpUrl;
 
-                return new HdHomerunHttpStream(mediaSource, streamId, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _environment);
+                return new HdHomerunHttpStream(mediaSource, streamId, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _environment);
             }
 
-            return new HdHomerunUdpStream(mediaSource, streamId, new HdHomerunChannelCommands(hdhomerunChannel.Number, profile), modelInfo.TunerCount, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager, _environment);
+            return new HdHomerunUdpStream(mediaSource, streamId, new HdHomerunChannelCommands(hdhomerunChannel.Number, profile), modelInfo.TunerCount, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager, _environment);
         }
 
         public async Task Validate(TunerHostInfo info)
