@@ -10,9 +10,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
@@ -23,16 +25,18 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         protected readonly ILogger Logger;
         protected IJsonSerializer JsonSerializer;
         protected readonly IMediaEncoder MediaEncoder;
+        protected readonly IFileSystem FileSystem;
 
         private readonly ConcurrentDictionary<string, ChannelCache> _channelCache =
             new ConcurrentDictionary<string, ChannelCache>(StringComparer.OrdinalIgnoreCase);
 
-        protected BaseTunerHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder)
+        protected BaseTunerHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem)
         {
             Config = config;
             Logger = logger;
             JsonSerializer = jsonSerializer;
             MediaEncoder = mediaEncoder;
+            FileSystem = fileSystem;
         }
 
         protected abstract Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken);
@@ -81,16 +85,44 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             foreach (var host in hosts)
             {
+                var channelCacheFile = Path.Combine(Config.ApplicationPaths.CachePath, host.Id + "_channels");
+
                 try
                 {
                     var channels = await GetChannels(host, enableCache, cancellationToken).ConfigureAwait(false);
                     var newChannels = channels.Where(i => !list.Any(l => string.Equals(i.Id, l.Id, StringComparison.OrdinalIgnoreCase))).ToList();
 
                     list.AddRange(newChannels);
+
+                    if (!enableCache)
+                    {
+                        try
+                        {
+                            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(channelCacheFile));
+                            JsonSerializer.SerializeToFile(channels, channelCacheFile);
+                        }
+                        catch (IOException)
+                        {
+
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
                     Logger.ErrorException("Error getting channel list", ex);
+
+                    if (enableCache)
+                    {
+                        try
+                        {
+                            var channels = JsonSerializer.DeserializeFromFile<List<ChannelInfo>>(channelCacheFile);
+                            list.AddRange(channels);
+                        }
+                        catch (IOException)
+                        {
+
+                        }
+                    }
                 }
             }
 
