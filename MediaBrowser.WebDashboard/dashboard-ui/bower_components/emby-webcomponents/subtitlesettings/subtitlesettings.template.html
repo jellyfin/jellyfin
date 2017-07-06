@@ -25,6 +25,14 @@
             <div class="fieldDescription subtitlesOnlyForcedHelp subtitlesHelp hide">${OnlyForcedSubtitlesHelp}</div>
             <div class="fieldDescription subtitlesNoneHelp subtitlesHelp hide">${NoSubtitlesHelp}</div>
         </div>
+        <div class="selectContainer fldBurnIn hide">
+            <select is="emby-select" id="selectSubtitleBurnIn" label="${LabelBurnSubtitles}">
+                <option value="">${Auto}</option>
+                <option value="onlyimageformats">${OnlyImageFormats}</option>
+                <option value="allcomplexformats">${AllComplexFormats}</option>
+            </select>
+            <div class="fieldDescription">${BurnSubtitlesHelp}</div>
+        </div>
     </div>
 
     <div class="verticalSection subtitleAppearanceSection hide">
@@ -34,7 +42,7 @@
         </h1>
 
         <div style="margin: 2em 0 2em;">
-            <div class="subtitleappearance-preview flex align-items-center justify-content-center" style="border: 1px solid gray; color: black; background: lightblue url(https://github.com/MediaBrowser/Emby.Resources/raw/master/images/subtitles/previewbg.jpg) no-repeat center center; background-size: cover; height: 6em;">
+            <div class="subtitleappearance-preview flex align-items-center justify-content-center" style="border: 1px solid gray; color: black; background: lightblue url(https://github.com/MediaBrowser/Emby.Resources/raw/master/images/subtitles/previewbg.jpg) no-repeat center center; background-size: cover; min-height: 4em;padding:1em;">
                 <div class="subtitleappearance-preview-window flex align-items-center justify-content-center" style="width: 90%; padding: .25em;">
                     <div class="subtitleappearance-preview-text flex align-items-center justify-content-center">
                         ${TheseSettingsAffectSubtitlesOnThisDevice}
@@ -47,7 +55,7 @@
         <div class="selectContainer">
             <select is="emby-select" id="selectTextSize" label="${LabelTextSize}">
                 <option value="small">${Small}</option>
-                <option value="">${Medium}</option>
+                <option value="">${Normal}</option>
                 <option value="large">${Large}</option>
                 <option value="larger">${Larger}</option>
                 <option value="extralarge">${ExtraLarge}</option>
