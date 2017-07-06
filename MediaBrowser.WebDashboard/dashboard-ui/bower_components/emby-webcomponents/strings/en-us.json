@@ -513,5 +513,10 @@
   "Uniform": "Uniform",
   "DropShadow": "Drop shadow",
   "SmallCaps": "Small caps",
-  "SubtitleAppearanceSettingsDisclaimer": "These settings will not apply to graphical subtitles (PGS, DVD, etc), or subtitles that have their own styles embedded (ASS/SSA)."
+  "SubtitleAppearanceSettingsDisclaimer": "These settings will not apply to graphical subtitles (PGS, DVD, etc), or subtitles that have their own styles embedded (ASS/SSA).",
+  "LabelBurnSubtitles": "Burn subtitles:",
+  "OnlyImageFormats": "Only image formats (VOBSUB, PGS, SUB/IDX, etc.)",
+  "Normal": "Normal",
+  "BurnSubtitlesHelp": "Determines if the server should burn in subtitles when converting video depending on the subtitles format. Avoiding burning in subtitles will improve server performance. Select Auto to burn image based formats (e.g. VOBSUB, PGS, SUB/IDX, etc.) as well as certain ASS/SSA subtitles",
+  "AllComplexFormats": "All complex formats (ASS, SSA, VOBSUB, PGS, SUB/IDX, etc.)"
 }
