@@ -1539,7 +1539,7 @@ namespace Emby.Server.Implementations.Dto
                         dto.ParentArtImageTag = GetImageCacheTag(parent, image);
                     }
                 }
-                if (thumbLimit > 0 && !dto.HasThumb && (dto.ParentThumbItemId == null || parent is Series))
+                if (thumbLimit > 0 && !dto.HasThumb && (dto.ParentThumbItemId == null || parent is Series) && !(parent is ICollectionFolder) && !(parent is UserView))
                 {
                     var image = allImages.FirstOrDefault(i => i.Type == ImageType.Thumb);
 
