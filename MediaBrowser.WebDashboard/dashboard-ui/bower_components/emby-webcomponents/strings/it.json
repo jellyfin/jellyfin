@@ -514,9 +514,9 @@
     "DropShadow": "Ombreggiatura",
     "SmallCaps": "Maiuscoletto",
     "SubtitleAppearanceSettingsDisclaimer": "Queste impostazioni non si applicano a sottotitoli grafici (PGS, DVD, ecc.), o sottotitoli che hanno i propri stili incorporati (ASS \/ SSA).",
-    "LabelBurnSubtitles": "Burn subtitles:",
-    "OnlyImageFormats": "Only image formats (VOBSUB, PGS, SUB\/IDX, etc.)",
-    "Normal": "Normal",
-    "BurnSubtitlesHelp": "Determines if the server should burn in subtitles when converting video depending on the subtitles format. Avoiding burning in subtitles will improve server performance. Select Auto to burn image based formats (e.g. VOBSUB, PGS, SUB\/IDX, etc.) as well as certain ASS\/SSA subtitles",
-    "AllComplexFormats": "All complex formats (ASS, SSA, VOBSUB, PGS, SUB\/IDX, etc.)"
+    "LabelBurnSubtitles": "Applica sottotitoli:",
+    "OnlyImageFormats": "Solo formati immagine (VOBSUB, PGS, SUB \/ IDX, ecc.)",
+    "Normal": "Normale",
+    "BurnSubtitlesHelp": "Determina se il server deve applicare i sottotitoli quando si converte i video in base al formato dei sottotitoli. Evitando di applicare i sottotitoli migliorer\u00e0 le prestazioni del server. Selezionare Auto per applicare formati basati sull'immagine (ad esempio VOBSUB, PGS, SUB \/ IDX, ecc.) cos\u00ec come alcuni sottotitoli ASS \/ SSA",
+    "AllComplexFormats": "Tutti i formati complessi (ASS, SSA, VOBSUB, PGS, SUB \/ IDX, ecc.)"
 }
