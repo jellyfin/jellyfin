@@ -514,9 +514,9 @@
     "DropShadow": "Schlagschatten",
     "SmallCaps": "Kapit\u00e4lchen",
     "SubtitleAppearanceSettingsDisclaimer": "Diese Einstellungen werden nicht auf grafische Untertitel (PGS, DVD, etc.) oder Untertitel mit eingebettetem Style-Elementen (ASS\/SSA) angewendet.",
-    "LabelBurnSubtitles": "Burn subtitles:",
-    "OnlyImageFormats": "Only image formats (VOBSUB, PGS, SUB\/IDX, etc.)",
+    "LabelBurnSubtitles": "Untertitel einbrennen:",
+    "OnlyImageFormats": "Nur Bildformate (VOBSUB, PGS, SUB\/IDX, etc.)",
     "Normal": "Normal",
-    "BurnSubtitlesHelp": "Determines if the server should burn in subtitles when converting video depending on the subtitles format. Avoiding burning in subtitles will improve server performance. Select Auto to burn image based formats (e.g. VOBSUB, PGS, SUB\/IDX, etc.) as well as certain ASS\/SSA subtitles",
-    "AllComplexFormats": "All complex formats (ASS, SSA, VOBSUB, PGS, SUB\/IDX, etc.)"
+    "BurnSubtitlesHelp": "Legt fest, ob der Server die Untertitel basierend auf deren Format einbrennen soll w\u00e4hrend der Videokonvertierung. Die Vermeidung des Einbrennen von Untertiteln verbessert die Serverperformance. W\u00e4hle Auto, um Bildfomate (z.B. VOBSUB, PGS, SUB\/IDX, etc.) sowie bestimmte ASS\/SSA-Untertitel einbrennen zu lassen.",
+    "AllComplexFormats": "Alle komplexen Formate (ASS, SSA, VOBSUB, PGS, SUB\/IDX, etc.)"
 }
