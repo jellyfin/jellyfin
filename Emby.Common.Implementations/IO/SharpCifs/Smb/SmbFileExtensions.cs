@@ -30,7 +30,7 @@ namespace SharpCifs.Smb
         public static DateTime GetLocalCreateTime(this SmbFile smbFile)
         {
             return TimeZoneInfo.ConvertTime(Extensions.CreateDateFromUTC(smbFile.CreateTime()),
-                                            TimeZoneInfo.Local);
+                TimeZoneInfo.Local);
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace SharpCifs.Smb
         public static DateTime GetLocalLastModified(this SmbFile smbFile)
         {
             return TimeZoneInfo.ConvertTime(Extensions.CreateDateFromUTC(smbFile.LastModified()),
-                                            TimeZoneInfo.Local);
+                TimeZoneInfo.Local);
         }
 
 

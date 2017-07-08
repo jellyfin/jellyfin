@@ -18,148 +18,140 @@ using SharpCifs.Util;
 
 namespace SharpCifs.Smb
 {
-    internal class NetServerEnum2Response : SmbComTransactionResponse
-    {
-        internal class ServerInfo1 : IFileEntry
-        {
-            internal string Name;
+	internal class NetServerEnum2Response : SmbComTransactionResponse
+	{
+		internal class ServerInfo1 : IFileEntry
+		{
+			internal string Name;
 
-            internal int VersionMajor;
+			internal int VersionMajor;
 
-            internal int VersionMinor;
+			internal int VersionMinor;
 
-            internal int Type;
+			internal int Type;
 
-            internal string CommentOrMasterBrowser;
+			internal string CommentOrMasterBrowser;
 
-            public virtual string GetName()
-            {
-                return Name;
-            }
+			public virtual string GetName()
+			{
+				return Name;
+			}
 
-            public new virtual int GetType()
-            {
-                return (Type & unchecked((int)(0x80000000))) != 0
-                            ? SmbFile.TypeWorkgroup
-                            : SmbFile.TypeServer;
-            }
+			public new virtual int GetType()
+			{
+				return (Type & unchecked((int)(0x80000000))) != 0 ? SmbFile.TypeWorkgroup : 
+					SmbFile.TypeServer;
+			}
 
-            public virtual int GetAttributes()
-            {
-                return SmbFile.AttrReadonly | SmbFile.AttrDirectory;
-            }
+			public virtual int GetAttributes()
+			{
+				return SmbFile.AttrReadonly | SmbFile.AttrDirectory;
+			}
 
-            public virtual long CreateTime()
-            {
-                return 0L;
-            }
+			public virtual long CreateTime()
+			{
+				return 0L;
+			}
 
-            public virtual long LastModified()
-            {
-                return 0L;
-            }
+			public virtual long LastModified()
+			{
+				return 0L;
+			}
 
-            public virtual long Length()
-            {
-                return 0L;
-            }
+			public virtual long Length()
+			{
+				return 0L;
+			}
 
-            public override string ToString()
-            {
-                return "ServerInfo1["
-                            + "name=" + Name
-                            + ",versionMajor=" + VersionMajor
-                            + ",versionMinor=" + VersionMinor
-                            + ",type=0x" + Hexdump.ToHexString(Type, 8)
-                            + ",commentOrMasterBrowser=" + CommentOrMasterBrowser + "]";
-            }
+			public override string ToString()
+			{
+				return "ServerInfo1[" + "name=" + Name + ",versionMajor=" + VersionMajor + ",versionMinor=" + VersionMinor + ",type=0x" + Hexdump.ToHexString
+					(Type, 8) + ",commentOrMasterBrowser=" + CommentOrMasterBrowser + "]";
+			}
 
-            internal ServerInfo1(NetServerEnum2Response enclosing)
-            {
-                this._enclosing = enclosing;
-            }
+			internal ServerInfo1(NetServerEnum2Response enclosing)
+			{
+				this._enclosing = enclosing;
+			}
 
-            private readonly NetServerEnum2Response _enclosing;
-        }
+			private readonly NetServerEnum2Response _enclosing;
+		}
 
-        private int _converter;
+		private int _converter;
 
-        private int _totalAvailableEntries;
+		private int _totalAvailableEntries;
 
-        internal string LastName;
+		internal string LastName;
 
-        internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+	    internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
-            )
-        {
-            return 0;
-        }
+		internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
+			)
+		{
+			return 0;
+		}
 
-        internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int len)
-        {
-            int start = bufferIndex;
-            Status = ReadInt2(buffer, bufferIndex);
-            bufferIndex += 2;
-            _converter = ReadInt2(buffer, bufferIndex);
-            bufferIndex += 2;
-            NumEntries = ReadInt2(buffer, bufferIndex);
-            bufferIndex += 2;
-            _totalAvailableEntries = ReadInt2(buffer, bufferIndex);
-            bufferIndex += 2;
-            return bufferIndex - start;
-        }
+		internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int
+			 len)
+		{
+			int start = bufferIndex;
+			Status = ReadInt2(buffer, bufferIndex);
+			bufferIndex += 2;
+			_converter = ReadInt2(buffer, bufferIndex);
+			bufferIndex += 2;
+			NumEntries = ReadInt2(buffer, bufferIndex);
+			bufferIndex += 2;
+			_totalAvailableEntries = ReadInt2(buffer, bufferIndex);
+			bufferIndex += 2;
+			return bufferIndex - start;
+		}
 
-        internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
-        {
-            int start = bufferIndex;
-            ServerInfo1 e = null;
-            Results = new ServerInfo1[NumEntries];
-            for (int i = 0; i < NumEntries; i++)
-            {
-                Results[i] = e = new ServerInfo1(this);
-                e.Name = ReadString(buffer, bufferIndex, 16, false);
-                bufferIndex += 16;
-                e.VersionMajor = buffer[bufferIndex++] & unchecked(0xFF);
-                e.VersionMinor = buffer[bufferIndex++] & unchecked(0xFF);
-                e.Type = ReadInt4(buffer, bufferIndex);
-                bufferIndex += 4;
-                int off = ReadInt4(buffer, bufferIndex);
-                bufferIndex += 4;
-                off = (off & unchecked(0xFFFF)) - _converter;
-                off = start + off;
-                e.CommentOrMasterBrowser = ReadString(buffer, off, 48, false);
-                if (Log.Level >= 4)
-                {
-                    Log.WriteLine(e);
-                }
-            }
-            LastName = NumEntries == 0 ? null : e.Name;
-            return bufferIndex - start;
-        }
+		internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
+		{
+			int start = bufferIndex;
+			ServerInfo1 e = null;
+			Results = new ServerInfo1[NumEntries];
+			for (int i = 0; i < NumEntries; i++)
+			{
+				Results[i] = e = new ServerInfo1(this);
+				e.Name = ReadString(buffer, bufferIndex, 16, false);
+				bufferIndex += 16;
+				e.VersionMajor = buffer[bufferIndex++] & unchecked(0xFF);
+				e.VersionMinor = buffer[bufferIndex++] & unchecked(0xFF);
+				e.Type = ReadInt4(buffer, bufferIndex);
+				bufferIndex += 4;
+				int off = ReadInt4(buffer, bufferIndex);
+				bufferIndex += 4;
+				off = (off & unchecked(0xFFFF)) - _converter;
+				off = start + off;
+				e.CommentOrMasterBrowser = ReadString(buffer, off, 48, false);
+				if (Log.Level >= 4)
+				{
+					Log.WriteLine(e);
+				}
+			}
+			LastName = NumEntries == 0 ? null : e.Name;
+			return bufferIndex - start;
+		}
 
-        public override string ToString()
-        {
-            return "NetServerEnum2Response["
-                        + base.ToString()
-                        + ",status=" + Status
-                        + ",converter=" + _converter
-                        + ",entriesReturned=" + NumEntries
-                        + ",totalAvailableEntries=" + _totalAvailableEntries
-                        + ",lastName=" + LastName + "]";
-        }
-    }
+		public override string ToString()
+		{
+			return "NetServerEnum2Response[" + base.ToString() + ",status=" + Status
+				 + ",converter=" + _converter + ",entriesReturned=" + NumEntries + ",totalAvailableEntries="
+				 + _totalAvailableEntries + ",lastName=" + LastName + "]";
+		}
+	}
 }

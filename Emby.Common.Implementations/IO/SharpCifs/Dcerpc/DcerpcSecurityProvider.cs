@@ -18,12 +18,12 @@ using SharpCifs.Dcerpc.Ndr;
 
 namespace SharpCifs.Dcerpc
 {
-    public interface IDcerpcSecurityProvider
-    {
-        /// <exception cref="SharpCifs.Dcerpc.DcerpcException"></exception>
-        void Wrap(NdrBuffer outgoing);
+	public interface IDcerpcSecurityProvider
+	{
+		/// <exception cref="SharpCifs.Dcerpc.DcerpcException"></exception>
+		void Wrap(NdrBuffer outgoing);
 
-        /// <exception cref="SharpCifs.Dcerpc.DcerpcException"></exception>
-        void Unwrap(NdrBuffer incoming);
-    }
+		/// <exception cref="SharpCifs.Dcerpc.DcerpcException"></exception>
+		void Unwrap(NdrBuffer incoming);
+	}
 }

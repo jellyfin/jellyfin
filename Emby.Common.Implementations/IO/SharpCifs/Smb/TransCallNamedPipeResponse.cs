@@ -19,59 +19,59 @@ using SharpCifs.Util.Sharpen;
 
 namespace SharpCifs.Smb
 {
-    internal class TransCallNamedPipeResponse : SmbComTransactionResponse
-    {
-        private SmbNamedPipe _pipe;
+	internal class TransCallNamedPipeResponse : SmbComTransactionResponse
+	{
+		private SmbNamedPipe _pipe;
 
-        internal TransCallNamedPipeResponse(SmbNamedPipe pipe)
-        {
-            this._pipe = pipe;
-        }
+		internal TransCallNamedPipeResponse(SmbNamedPipe pipe)
+		{
+			this._pipe = pipe;
+		}
 
-        internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len)
-        {
-            return 0;
-        }
+		internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
+			)
+		{
+			return 0;
+		}
 
-        internal override int ReadParametersWireFormat(byte[] buffer,
-                                                       int bufferIndex,
-                                                       int len)
-        {
-            return 0;
-        }
+		internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int
+			 len)
+		{
+			return 0;
+		}
 
-        internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
-        {
-            if (_pipe.PipeIn != null)
-            {
-                TransactNamedPipeInputStream @in = (TransactNamedPipeInputStream)_pipe.PipeIn;
-                lock (@in.Lock)
-                {
-                    @in.Receive(buffer, bufferIndex, len);
-                    Runtime.Notify(@in.Lock);
-                }
-            }
-            return len;
-        }
+		internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
+		{
+			if (_pipe.PipeIn != null)
+			{
+				TransactNamedPipeInputStream @in = (TransactNamedPipeInputStream)_pipe.PipeIn;
+				lock (@in.Lock)
+				{
+					@in.Receive(buffer, bufferIndex, len);
+					Runtime.Notify(@in.Lock);
+				}
+			}
+			return len;
+		}
 
-        public override string ToString()
-        {
-            return "TransCallNamedPipeResponse[" + base.ToString() + "]";
-        }
-    }
+		public override string ToString()
+		{
+			return "TransCallNamedPipeResponse[" + base.ToString() + "]";
+		}
+	}
 }

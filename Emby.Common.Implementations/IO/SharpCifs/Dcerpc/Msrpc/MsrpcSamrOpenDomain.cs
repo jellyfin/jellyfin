@@ -18,11 +18,8 @@ namespace SharpCifs.Dcerpc.Msrpc
 {
 	public class MsrpcSamrOpenDomain : Samr.SamrOpenDomain
 	{
-		public MsrpcSamrOpenDomain(SamrPolicyHandle handle, 
-                                   int access, 
-                                   Rpc.SidT sid, 
-                                   SamrDomainHandle domainHandle) 
-            : base(handle, access, sid, domainHandle)
+		public MsrpcSamrOpenDomain(SamrPolicyHandle handle, int access, Rpc.SidT sid, SamrDomainHandle
+			 domainHandle) : base(handle, access, sid, domainHandle)
 		{
 			Ptype = 0;
             Flags = DcerpcConstants.DcerpcFirstFrag | DcerpcConstants.DcerpcLastFrag;

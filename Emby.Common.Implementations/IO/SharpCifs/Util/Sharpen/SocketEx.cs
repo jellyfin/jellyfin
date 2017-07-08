@@ -23,7 +23,7 @@ namespace SharpCifs.Util.Sharpen
 {
     public class SocketEx : Socket
     {
-        private int _soTimeOut = -1;
+        private int _soTimeOut = -1;       
 
         public int SoTimeOut
         {
@@ -46,9 +46,7 @@ namespace SharpCifs.Util.Sharpen
             }
         }
 
-        public SocketEx(AddressFamily addressFamily, 
-                        SocketType socketType, 
-                        ProtocolType protocolType)
+        public SocketEx(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
             : base(addressFamily, socketType, protocolType)
         {
 

@@ -21,73 +21,73 @@ using SharpCifs.Util.Sharpen;
 
 namespace SharpCifs.Dcerpc
 {
-
-    public class DcerpcException : IOException
-    {
-        internal static string GetMessageByDcerpcError(int errcode)
-        {
-            int min = 0;
+	
+	public class DcerpcException : IOException 
+	{
+		internal static string GetMessageByDcerpcError(int errcode)
+		{
+			int min = 0;
             int max = DcerpcError.DcerpcFaultCodes.Length;
-            while (max >= min)
-            {
-                int mid = (min + max) / 2;
+			while (max >= min)
+			{
+				int mid = (min + max) / 2;
                 if (errcode > DcerpcError.DcerpcFaultCodes[mid])
-                {
-                    min = mid + 1;
-                }
-                else
-                {
+				{
+					min = mid + 1;
+				}
+				else
+				{
                     if (errcode < DcerpcError.DcerpcFaultCodes[mid])
-                    {
-                        max = mid - 1;
-                    }
-                    else
-                    {
+					{
+						max = mid - 1;
+					}
+					else
+					{
                         return DcerpcError.DcerpcFaultMessages[mid];
-                    }
-                }
-            }
-            return "0x" + Hexdump.ToHexString(errcode, 8);
-        }
+					}
+				}
+			}
+			return "0x" + Hexdump.ToHexString(errcode, 8);
+		}
 
-        private int _error;
+		private int _error;
 
-        private Exception _rootCause;
+		private Exception _rootCause;
 
-        internal DcerpcException(int error) : base(GetMessageByDcerpcError(error))
-        {
-            this._error = error;
-        }
+		internal DcerpcException(int error) : base(GetMessageByDcerpcError(error))
+		{
+			this._error = error;
+		}
 
-        public DcerpcException(string msg) : base(msg)
-        {
-        }
+		public DcerpcException(string msg) : base(msg)
+		{
+		}
 
-        public DcerpcException(string msg, Exception rootCause) : base(msg)
-        {
-            this._rootCause = rootCause;
-        }
+		public DcerpcException(string msg, Exception rootCause) : base(msg)
+		{
+			this._rootCause = rootCause;
+		}
 
-        public virtual int GetErrorCode()
-        {
-            return _error;
-        }
+		public virtual int GetErrorCode()
+		{
+			return _error;
+		}
 
-        public virtual Exception GetRootCause()
-        {
-            return _rootCause;
-        }
+		public virtual Exception GetRootCause()
+		{
+			return _rootCause;
+		}
 
-        public override string ToString()
-        {
-            if (_rootCause != null)
-            {
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
-                Runtime.PrintStackTrace(_rootCause, pw);
-                return base.ToString() + "\n" + sw;
-            }
-            return base.ToString();
-        }
-    }
+		public override string ToString()
+		{
+			if (_rootCause != null)
+			{
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				Runtime.PrintStackTrace(_rootCause, pw);
+				return base.ToString() + "\n" + sw;
+			}
+			return base.ToString();
+		}
+	}
 }

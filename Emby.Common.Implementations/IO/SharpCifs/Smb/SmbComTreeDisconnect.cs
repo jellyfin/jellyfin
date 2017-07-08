@@ -16,36 +16,37 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-    internal class SmbComTreeDisconnect : ServerMessageBlock
-    {
-        public SmbComTreeDisconnect()
-        {
-            Command = SmbComTreeDisconnect;
-        }
+	internal class SmbComTreeDisconnect : ServerMessageBlock
+	{
+		public SmbComTreeDisconnect()
+		{
+			Command = SmbComTreeDisconnect;
+		}
 
-        internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex)
-        {
-            return 0;
-        }
+		internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex
+			)
+		{
+			return 0;
+		}
 
-        internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
-        {
-            return 0;
-        }
+		internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
+		{
+			return 0;
+		}
 
-        public override string ToString()
-        {
-            return "SmbComTreeDisconnect[" + base.ToString() + "]";
-        }
-    }
+		public override string ToString()
+		{
+			return "SmbComTreeDisconnect[" + base.ToString() + "]";
+		}
+	}
 }

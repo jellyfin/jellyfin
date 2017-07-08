@@ -18,25 +18,24 @@ using SharpCifs.Smb;
 
 namespace SharpCifs.Dcerpc.Msrpc
 {
-    public class SamrDomainHandle : Rpc.PolicyHandle
-    {
-        /// <exception cref="System.IO.IOException"></exception>
-        public SamrDomainHandle(DcerpcHandle handle,
-                                SamrPolicyHandle policyHandle,
-                                int access,
-                                Rpc.SidT sid)
-        {
-            MsrpcSamrOpenDomain rpc = new MsrpcSamrOpenDomain(policyHandle, access, sid, this);
-            handle.Sendrecv(rpc);
-            if (rpc.Retval != 0)
-            {
-                throw new SmbException(rpc.Retval, false);
-            }
-        }
+	public class SamrDomainHandle : Rpc.PolicyHandle
+	{
+		/// <exception cref="System.IO.IOException"></exception>
+		public SamrDomainHandle(DcerpcHandle handle, SamrPolicyHandle policyHandle, int access
+			, Rpc.SidT sid)
+		{
+			MsrpcSamrOpenDomain rpc = new MsrpcSamrOpenDomain(policyHandle, access, sid, this
+				);
+			handle.Sendrecv(rpc);
+			if (rpc.Retval != 0)
+			{
+				throw new SmbException(rpc.Retval, false);
+			}
+		}
 
-        /// <exception cref="System.IO.IOException"></exception>
-        public virtual void Close()
-        {
-        }
-    }
+		/// <exception cref="System.IO.IOException"></exception>
+		public virtual void Close()
+		{
+		}
+	}
 }

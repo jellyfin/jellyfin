@@ -16,23 +16,20 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Dcerpc.Msrpc
 {
-    public class MsrpcLsarOpenPolicy2 : Lsarpc.LsarOpenPolicy2
-    {
-        public MsrpcLsarOpenPolicy2(string server, int access, LsaPolicyHandle policyHandle)
-            : base(server,
-                   new Lsarpc.LsarObjectAttributes(),
-                   access,
-                   policyHandle)
-        {
-            ObjectAttributes.Length = 24;
-            Lsarpc.LsarQosInfo qos = new Lsarpc.LsarQosInfo();
-            qos.Length = 12;
-            qos.ImpersonationLevel = 2;
-            qos.ContextMode = 1;
-            qos.EffectiveOnly = 0;
-            ObjectAttributes.SecurityQualityOfService = qos;
-            Ptype = 0;
+	public class MsrpcLsarOpenPolicy2 : Lsarpc.LsarOpenPolicy2
+	{
+		public MsrpcLsarOpenPolicy2(string server, int access, LsaPolicyHandle policyHandle
+			) : base(server, new Lsarpc.LsarObjectAttributes(), access, policyHandle)
+		{
+			ObjectAttributes.Length = 24;
+			Lsarpc.LsarQosInfo qos = new Lsarpc.LsarQosInfo();
+			qos.Length = 12;
+			qos.ImpersonationLevel = 2;
+			qos.ContextMode = 1;
+			qos.EffectiveOnly = 0;
+			ObjectAttributes.SecurityQualityOfService = qos;
+			Ptype = 0;
             Flags = DcerpcConstants.DcerpcFirstFrag | DcerpcConstants.DcerpcLastFrag;
-        }
-    }
+		}
+	}
 }
