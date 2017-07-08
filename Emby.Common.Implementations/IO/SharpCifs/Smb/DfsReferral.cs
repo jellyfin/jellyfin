@@ -18,55 +18,50 @@ using System.Collections.Generic;
 
 namespace SharpCifs.Smb
 {
+	
+	public class DfsReferral : SmbException
+	{
+		public int PathConsumed;
 
-    public class DfsReferral : SmbException
-    {
-        public int PathConsumed;
+		public long Ttl;
 
-        public long Ttl;
+		public string Server;
 
-        public string Server;
+		public string Share;
 
-        public string Share;
+		public string Link;
 
-        public string Link;
+		public string Path;
 
-        public string Path;
+		public bool ResolveHashes;
 
-        public bool ResolveHashes;
+		public long Expiration;
 
-        public long Expiration;
+		internal DfsReferral Next;
 
-        internal DfsReferral Next;
+		internal IDictionary<string, DfsReferral> Map;
 
-        internal IDictionary<string, DfsReferral> Map;
+		internal string Key = null;
 
-        internal string Key = null;
+		public DfsReferral()
+		{
+			// Server
+			// Share
+			// Path relative to tree from which this referral was thrown
+			Next = this;
+		}
 
-        public DfsReferral()
-        {
-            // Server
-            // Share
-            // Path relative to tree from which this referral was thrown
-            Next = this;
-        }
+		internal virtual void Append(DfsReferral dr)
+		{
+			dr.Next = Next;
+			Next = dr;
+		}
 
-        internal virtual void Append(DfsReferral dr)
-        {
-            dr.Next = Next;
-            Next = dr;
-        }
-
-        public override string ToString()
-        {
-            return "DfsReferral[pathConsumed=" + PathConsumed
-                            + ",server=" + Server
-                            + ",share=" + Share
-                            + ",link=" + Link
-                            + ",path=" + Path
-                            + ",ttl=" + Ttl
-                            + ",expiration=" + Expiration
-                            + ",resolveHashes=" + ResolveHashes + "]";
-        }
-    }
+		public override string ToString()
+		{
+			return "DfsReferral[pathConsumed=" + PathConsumed + ",server=" + Server + ",share="
+				 + Share + ",link=" + Link + ",path=" + Path + ",ttl=" + Ttl + ",expiration=" + 
+				Expiration + ",resolveHashes=" + ResolveHashes + "]";
+		}
+	}
 }

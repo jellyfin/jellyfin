@@ -16,47 +16,48 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-    internal abstract class SmbComNtTransactionResponse : SmbComTransactionResponse
-    {
-        internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex)
-        {
-            int start = bufferIndex;
-            buffer[bufferIndex++] = unchecked(unchecked(0x00));
-            // Reserved
-            buffer[bufferIndex++] = unchecked(unchecked(0x00));
-            // Reserved
-            buffer[bufferIndex++] = unchecked(unchecked(0x00));
-            // Reserved
-            TotalParameterCount = ReadInt4(buffer, bufferIndex);
-            if (BufDataStart == 0)
-            {
-                BufDataStart = TotalParameterCount;
-            }
-            bufferIndex += 4;
-            TotalDataCount = ReadInt4(buffer, bufferIndex);
-            bufferIndex += 4;
-            ParameterCount = ReadInt4(buffer, bufferIndex);
-            bufferIndex += 4;
-            ParameterOffset = ReadInt4(buffer, bufferIndex);
-            bufferIndex += 4;
-            ParameterDisplacement = ReadInt4(buffer, bufferIndex);
-            bufferIndex += 4;
-            DataCount = ReadInt4(buffer, bufferIndex);
-            bufferIndex += 4;
-            DataOffset = ReadInt4(buffer, bufferIndex);
-            bufferIndex += 4;
-            DataDisplacement = ReadInt4(buffer, bufferIndex);
-            bufferIndex += 4;
-            SetupCount = buffer[bufferIndex] & unchecked(0xFF);
-            bufferIndex += 2;
-            if (SetupCount != 0)
-            {
-                if (Log.Level >= 3)
-                {
-                    Log.WriteLine("setupCount is not zero: " + SetupCount);
-                }
-            }
-            return bufferIndex - start;
-        }
-    }
+	internal abstract class SmbComNtTransactionResponse : SmbComTransactionResponse
+	{
+	    internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex
+			)
+		{
+			int start = bufferIndex;
+			buffer[bufferIndex++] = unchecked(unchecked(0x00));
+			// Reserved
+			buffer[bufferIndex++] = unchecked(unchecked(0x00));
+			// Reserved
+			buffer[bufferIndex++] = unchecked(unchecked(0x00));
+			// Reserved
+			TotalParameterCount = ReadInt4(buffer, bufferIndex);
+			if (BufDataStart == 0)
+			{
+				BufDataStart = TotalParameterCount;
+			}
+			bufferIndex += 4;
+			TotalDataCount = ReadInt4(buffer, bufferIndex);
+			bufferIndex += 4;
+			ParameterCount = ReadInt4(buffer, bufferIndex);
+			bufferIndex += 4;
+			ParameterOffset = ReadInt4(buffer, bufferIndex);
+			bufferIndex += 4;
+			ParameterDisplacement = ReadInt4(buffer, bufferIndex);
+			bufferIndex += 4;
+			DataCount = ReadInt4(buffer, bufferIndex);
+			bufferIndex += 4;
+			DataOffset = ReadInt4(buffer, bufferIndex);
+			bufferIndex += 4;
+			DataDisplacement = ReadInt4(buffer, bufferIndex);
+			bufferIndex += 4;
+			SetupCount = buffer[bufferIndex] & unchecked(0xFF);
+			bufferIndex += 2;
+			if (SetupCount != 0)
+			{
+				if (Log.Level >= 3)
+				{
+					Log.WriteLine("setupCount is not zero: " + SetupCount);
+				}
+			}
+			return bufferIndex - start;
+		}
+	}
 }

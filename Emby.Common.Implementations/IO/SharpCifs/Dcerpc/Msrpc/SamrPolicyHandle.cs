@@ -16,34 +16,34 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Dcerpc.Msrpc
 {
-    public class SamrPolicyHandle : Rpc.PolicyHandle
-    {
-        /// <exception cref="System.IO.IOException"></exception>
-        public SamrPolicyHandle(DcerpcHandle handle, string server, int access)
-        {
-            if (server == null)
-            {
-                server = "\\\\";
-            }
-            MsrpcSamrConnect4 rpc = new MsrpcSamrConnect4(server, access, this);
-            try
-            {
-                handle.Sendrecv(rpc);
-            }
-            catch (DcerpcException de)
-            {
-                if (de.GetErrorCode() != DcerpcError.DcerpcFaultOpRngError)
-                {
-                    throw;
-                }
-                MsrpcSamrConnect2 rpc2 = new MsrpcSamrConnect2(server, access, this);
-                handle.Sendrecv(rpc2);
-            }
-        }
+	public class SamrPolicyHandle : Rpc.PolicyHandle
+	{
+		/// <exception cref="System.IO.IOException"></exception>
+		public SamrPolicyHandle(DcerpcHandle handle, string server, int access)
+		{
+			if (server == null)
+			{
+				server = "\\\\";
+			}
+			MsrpcSamrConnect4 rpc = new MsrpcSamrConnect4(server, access, this);
+			try
+			{
+				handle.Sendrecv(rpc);
+			}
+			catch (DcerpcException de)
+			{
+				if (de.GetErrorCode() != DcerpcError.DcerpcFaultOpRngError)
+				{
+					throw;
+				}
+				MsrpcSamrConnect2 rpc2 = new MsrpcSamrConnect2(server, access, this);
+				handle.Sendrecv(rpc2);
+			}
+		}
 
-        /// <exception cref="System.IO.IOException"></exception>
-        public virtual void Close()
-        {
-        }
-    }
+		/// <exception cref="System.IO.IOException"></exception>
+		public virtual void Close()
+		{
+		}
+	}
 }

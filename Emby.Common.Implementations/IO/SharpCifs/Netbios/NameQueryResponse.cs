@@ -16,52 +16,53 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Netbios
 {
-    internal class NameQueryResponse : NameServicePacket
-    {
-        public NameQueryResponse()
-        {
-            RecordName = new Name();
-        }
+	internal class NameQueryResponse : NameServicePacket
+	{
+		public NameQueryResponse()
+		{
+			RecordName = new Name();
+		}
 
-        internal override int WriteBodyWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteBodyWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int ReadBodyWireFormat(byte[] src, int srcIndex)
-        {
-            return ReadResourceRecordWireFormat(src, srcIndex);
-        }
+		internal override int ReadBodyWireFormat(byte[] src, int srcIndex)
+		{
+			return ReadResourceRecordWireFormat(src, srcIndex);
+		}
 
-        internal override int WriteRDataWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteRDataWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int ReadRDataWireFormat(byte[] src, int srcIndex)
-        {
-            if (ResultCode != 0 || OpCode != Query)
-            {
-                return 0;
-            }
-            bool groupName = ((src[srcIndex] & unchecked(0x80)) == unchecked(0x80)) ? true : false;
-            int nodeType = (src[srcIndex] & unchecked(0x60)) >> 5;
-            srcIndex += 2;
-            int address = ReadInt4(src, srcIndex);
-            if (address != 0)
-            {
-                AddrEntry[AddrIndex] = new NbtAddress(RecordName, address, groupName, nodeType);
-            }
-            else
-            {
-                AddrEntry[AddrIndex] = null;
-            }
-            return 6;
-        }
+		internal override int ReadRDataWireFormat(byte[] src, int srcIndex)
+		{
+			if (ResultCode != 0 || OpCode != Query)
+			{
+				return 0;
+			}
+			bool groupName = ((src[srcIndex] & unchecked(0x80)) == unchecked(0x80)) ? true : false;
+			int nodeType = (src[srcIndex] & unchecked(0x60)) >> 5;
+			srcIndex += 2;
+			int address = ReadInt4(src, srcIndex);
+			if (address != 0)
+			{
+				AddrEntry[AddrIndex] = new NbtAddress(RecordName, address, groupName, nodeType);
+			}
+			else
+			{
+				AddrEntry[AddrIndex] = null;
+			}
+			return 6;
+		}
 
-        public override string ToString()
-        {
-            return "NameQueryResponse[" + base.ToString() + ",addrEntry=" + AddrEntry + "]";
-        }
-    }
+		public override string ToString()
+		{
+			return "NameQueryResponse[" + base.ToString() + ",addrEntry=" + AddrEntry
+				 + "]";
+		}
+	}
 }

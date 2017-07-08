@@ -19,44 +19,45 @@ using SharpCifs.Util.Sharpen;
 
 namespace SharpCifs.Netbios
 {
-    public class SessionRequestPacket : SessionServicePacket
-    {
-        private Name _calledName;
+	public class SessionRequestPacket : SessionServicePacket
+	{
+		private Name _calledName;
 
-        private Name _callingName;
+		private Name _callingName;
 
-        public SessionRequestPacket()
-        {
-            _calledName = new Name();
-            _callingName = new Name();
-        }
+		public SessionRequestPacket()
+		{
+			_calledName = new Name();
+			_callingName = new Name();
+		}
 
-        public SessionRequestPacket(Name calledName, Name callingName)
-        {
-            Type = SessionRequest;
-            this._calledName = calledName;
-            this._callingName = callingName;
-        }
+		public SessionRequestPacket(Name calledName, Name callingName)
+		{
+			Type = SessionRequest;
+			this._calledName = calledName;
+			this._callingName = callingName;
+		}
 
-        internal override int WriteTrailerWireFormat(byte[] dst, int dstIndex)
-        {
-            int start = dstIndex;
-            dstIndex += _calledName.WriteWireFormat(dst, dstIndex);
-            dstIndex += _callingName.WriteWireFormat(dst, dstIndex);
-            return dstIndex - start;
-        }
+		internal override int WriteTrailerWireFormat(byte[] dst, int dstIndex)
+		{
+			int start = dstIndex;
+			dstIndex += _calledName.WriteWireFormat(dst, dstIndex);
+			dstIndex += _callingName.WriteWireFormat(dst, dstIndex);
+			return dstIndex - start;
+		}
 
-        /// <exception cref="System.IO.IOException"></exception>
-        internal override int ReadTrailerWireFormat(InputStream @in, byte[] buffer, int bufferIndex)
-        {
-            int start = bufferIndex;
-            if (@in.Read(buffer, bufferIndex, Length) != Length)
-            {
-                throw new IOException("invalid session request wire format");
-            }
-            bufferIndex += _calledName.ReadWireFormat(buffer, bufferIndex);
-            bufferIndex += _callingName.ReadWireFormat(buffer, bufferIndex);
-            return bufferIndex - start;
-        }
-    }
+		/// <exception cref="System.IO.IOException"></exception>
+		internal override int ReadTrailerWireFormat(InputStream @in, byte[] buffer, int bufferIndex
+			)
+		{
+			int start = bufferIndex;
+			if (@in.Read(buffer, bufferIndex, Length) != Length)
+			{
+				throw new IOException("invalid session request wire format");
+			}
+			bufferIndex += _calledName.ReadWireFormat(buffer, bufferIndex);
+			bufferIndex += _callingName.ReadWireFormat(buffer, bufferIndex);
+			return bufferIndex - start;
+		}
+	}
 }

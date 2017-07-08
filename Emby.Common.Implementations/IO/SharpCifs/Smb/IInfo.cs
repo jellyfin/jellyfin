@@ -16,14 +16,14 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-    internal interface IInfo
-    {
-        int GetAttributes();
+	internal interface IInfo
+	{
+		int GetAttributes();
 
-        long GetCreateTime();
+		long GetCreateTime();
 
-        long GetLastWriteTime();
+		long GetLastWriteTime();
 
-        long GetSize();
-    }
+		long GetSize();
+	}
 }

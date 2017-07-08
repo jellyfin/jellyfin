@@ -18,49 +18,46 @@ using SharpCifs.Util;
 
 namespace SharpCifs.Smb
 {
-    internal class SmbComDelete : ServerMessageBlock
-    {
-        private int _searchAttributes;
+	internal class SmbComDelete : ServerMessageBlock
+	{
+		private int _searchAttributes;
 
-        internal SmbComDelete(string fileName)
-        {
-            Path = fileName;
-            Command = SmbComDelete;
-            _searchAttributes = SmbConstants.AttrHidden
-                                | SmbConstants.AttrHidden
-                                | SmbConstants.AttrSystem;
-        }
+		internal SmbComDelete(string fileName)
+		{
+			Path = fileName;
+			Command = SmbComDelete;
+            _searchAttributes = SmbConstants.AttrHidden | SmbConstants.AttrHidden | SmbConstants.AttrSystem;
+		}
 
-        internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
-        {
-            WriteInt2(_searchAttributes, dst, dstIndex);
-            return 2;
-        }
+		internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
+		{
+			WriteInt2(_searchAttributes, dst, dstIndex);
+			return 2;
+		}
 
-        internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
-        {
-            int start = dstIndex;
-            dst[dstIndex++] = unchecked(unchecked(0x04));
-            dstIndex += WriteString(Path, dst, dstIndex);
-            return dstIndex - start;
-        }
+		internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
+		{
+			int start = dstIndex;
+			dst[dstIndex++] = unchecked(unchecked(0x04));
+			dstIndex += WriteString(Path, dst, dstIndex);
+			return dstIndex - start;
+		}
 
-        internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex)
-        {
-            return 0;
-        }
+		internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex
+			)
+		{
+			return 0;
+		}
 
-        internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
-        {
-            return 0;
-        }
+		internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
+		{
+			return 0;
+		}
 
-        public override string ToString()
-        {
-            return "SmbComDelete["
-                        + base.ToString()
-                        + ",searchAttributes=0x" + Hexdump.ToHexString(_searchAttributes, 4)
-                        + ",fileName=" + Path + "]";
-        }
-    }
+		public override string ToString()
+		{
+			return "SmbComDelete[" + base.ToString() + ",searchAttributes=0x" + Hexdump
+				.ToHexString(_searchAttributes, 4) + ",fileName=" + Path + "]";
+		}
+	}
 }
