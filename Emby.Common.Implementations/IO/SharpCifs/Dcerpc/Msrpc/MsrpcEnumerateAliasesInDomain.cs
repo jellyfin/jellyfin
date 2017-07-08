@@ -16,14 +16,14 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Dcerpc.Msrpc
 {
-    public class MsrpcEnumerateAliasesInDomain : Samr.SamrEnumerateAliasesInDomain
-    {
-        public MsrpcEnumerateAliasesInDomain(SamrDomainHandle domainHandle, int acctFlags
-            , Samr.SamrSamArray sam) : base(domainHandle, 0, acctFlags, null, 0)
-        {
-            this.Sam = sam;
-            Ptype = 0;
+	public class MsrpcEnumerateAliasesInDomain : Samr.SamrEnumerateAliasesInDomain
+	{
+		public MsrpcEnumerateAliasesInDomain(SamrDomainHandle domainHandle, int acctFlags
+			, Samr.SamrSamArray sam) : base(domainHandle, 0, acctFlags, null, 0)
+		{
+			this.Sam = sam;
+			Ptype = 0;
             Flags = DcerpcConstants.DcerpcFirstFrag | DcerpcConstants.DcerpcLastFrag;
-        }
-    }
+		}
+	}
 }

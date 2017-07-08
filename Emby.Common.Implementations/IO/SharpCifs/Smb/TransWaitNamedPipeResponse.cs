@@ -16,44 +16,44 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-    internal class TransWaitNamedPipeResponse : SmbComTransactionResponse
-    {
-        // not much to this one is there :~)
-        internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+	internal class TransWaitNamedPipeResponse : SmbComTransactionResponse
+	{
+	    // not much to this one is there :~)
+		internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len)
-        {
-            return 0;
-        }
+		internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
+			)
+		{
+			return 0;
+		}
 
-        internal override int ReadParametersWireFormat(byte[] buffer,
-                                                       int bufferIndex,
-                                                       int len)
-        {
-            return 0;
-        }
+		internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int
+			 len)
+		{
+			return 0;
+		}
 
-        internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
-        {
-            return 0;
-        }
+		internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
+		{
+			return 0;
+		}
 
-        public override string ToString()
-        {
-            return "TransWaitNamedPipeResponse[" + base.ToString() + "]";
-        }
-    }
+		public override string ToString()
+		{
+			return "TransWaitNamedPipeResponse[" + base.ToString() + "]";
+		}
+	}
 }

@@ -19,75 +19,77 @@ using SharpCifs.Util.Sharpen;
 
 namespace SharpCifs.Smb
 {
-    internal class NetShareEnum : SmbComTransaction
-    {
-        private static readonly string Descr = "WrLeh\u0000B13BWz\u0000";
+	internal class NetShareEnum : SmbComTransaction
+	{
+		private static readonly string Descr = "WrLeh\u0000B13BWz\u0000";
 
-        public NetShareEnum()
-        {
-            Command = SmbComTransaction;
-            SubCommand = NetShareEnum;
-            // not really true be used by upper logic
-            Name = "\\PIPE\\LANMAN";
-            MaxParameterCount = 8;
-            //        maxDataCount = 4096; why was this set?
-            MaxSetupCount = 0x00;
-            SetupCount = 0;
-            Timeout = 5000;
-        }
+		public NetShareEnum()
+		{
+			Command = SmbComTransaction;
+			SubCommand = NetShareEnum;
+			// not really true be used by upper logic
+			Name ="\\PIPE\\LANMAN";
+			MaxParameterCount = 8;
+			//        maxDataCount = 4096; why was this set?
+			MaxSetupCount = 0x00;
+			SetupCount = 0;
+			Timeout = 5000;
+		}
 
-        internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
-        {
-            int start = dstIndex;
-            byte[] descr;
-            try
-            {
-                //descr = Runtime.GetBytesForString(Descr, "ASCII");
+		internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
+		{
+			int start = dstIndex;
+			byte[] descr;
+			try
+			{
+				//descr = Runtime.GetBytesForString(Descr, "ASCII");
                 descr = Runtime.GetBytesForString(Descr, "UTF-8");
-            }
-            catch (UnsupportedEncodingException)
-            {
-                return 0;
-            }
-            WriteInt2(NetShareEnum, dst, dstIndex);
-            dstIndex += 2;
-            Array.Copy(descr, 0, dst, dstIndex, descr.Length);
-            dstIndex += descr.Length;
-            WriteInt2(unchecked(0x0001), dst, dstIndex);
-            dstIndex += 2;
-            WriteInt2(MaxDataCount, dst, dstIndex);
-            dstIndex += 2;
-            return dstIndex - start;
-        }
+			}
+			catch (UnsupportedEncodingException)
+			{
+				return 0;
+			}
+			WriteInt2(NetShareEnum, dst, dstIndex);
+			dstIndex += 2;
+			Array.Copy(descr, 0, dst, dstIndex, descr.Length);
+			dstIndex += descr.Length;
+			WriteInt2(unchecked(0x0001), dst, dstIndex);
+			dstIndex += 2;
+			WriteInt2(MaxDataCount, dst, dstIndex);
+			dstIndex += 2;
+			return dstIndex - start;
+		}
 
-        internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len)
-        {
-            return 0;
-        }
+		internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
+			)
+		{
+			return 0;
+		}
 
-        internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int len)
-        {
-            return 0;
-        }
+		internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int
+			 len)
+		{
+			return 0;
+		}
 
-        internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
-        {
-            return 0;
-        }
+		internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
+		{
+			return 0;
+		}
 
-        public override string ToString()
-        {
-            return "NetShareEnum[" + base.ToString() + "]";
-        }
-    }
+		public override string ToString()
+		{
+			return "NetShareEnum[" + base.ToString() + "]";
+		}
+	}
 }

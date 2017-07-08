@@ -19,25 +19,25 @@ using SharpCifs.Smb;
 
 namespace SharpCifs.Dcerpc.Msrpc
 {
-    public class MsrpcDfsRootEnum : Netdfs.NetrDfsEnumEx
-    {
-        public MsrpcDfsRootEnum(string server) : base(server, 200, unchecked(0xFFFF), new Netdfs.DfsEnumStruct(), new NdrLong(0))
-        {
-            Info.Level = Level;
-            Info.E = new Netdfs.DfsEnumArray200();
-            Ptype = 0;
+	public class MsrpcDfsRootEnum : Netdfs.NetrDfsEnumEx
+	{
+		public MsrpcDfsRootEnum(string server) : base(server, 200, unchecked(0xFFFF), new Netdfs.DfsEnumStruct(), new NdrLong(0))
+		{
+			Info.Level = Level;
+			Info.E = new Netdfs.DfsEnumArray200();
+			Ptype = 0;
             Flags = DcerpcConstants.DcerpcFirstFrag | DcerpcConstants.DcerpcLastFrag;
-        }
+		}
 
-        public virtual IFileEntry[] GetEntries()
-        {
-            Netdfs.DfsEnumArray200 a200 = (Netdfs.DfsEnumArray200)Info.E;
-            SmbShareInfo[] entries = new SmbShareInfo[a200.Count];
-            for (int i = 0; i < a200.Count; i++)
-            {
-                entries[i] = new SmbShareInfo(a200.S[i].DfsName, 0, null);
-            }
-            return entries;
-        }
-    }
+		public virtual IFileEntry[] GetEntries()
+		{
+			Netdfs.DfsEnumArray200 a200 = (Netdfs.DfsEnumArray200)Info.E;
+			SmbShareInfo[] entries = new SmbShareInfo[a200.Count];
+			for (int i = 0; i < a200.Count; i++)
+			{
+				entries[i] = new SmbShareInfo(a200.S[i].DfsName, 0, null);
+			}
+			return entries;
+		}
+	}
 }

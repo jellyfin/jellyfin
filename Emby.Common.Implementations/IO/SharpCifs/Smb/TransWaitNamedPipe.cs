@@ -16,62 +16,61 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-    internal class TransWaitNamedPipe : SmbComTransaction
-    {
-        internal TransWaitNamedPipe(string pipeName)
-        {
-            Name = pipeName;
-            Command = SmbComTransaction;
-            SubCommand = TransWaitNamedPipe;
-            Timeout = unchecked((int)(0xFFFFFFFF));
-            MaxParameterCount = 0;
-            MaxDataCount = 0;
-            MaxSetupCount = unchecked(unchecked(0x00));
-            SetupCount = 2;
-        }
+	internal class TransWaitNamedPipe : SmbComTransaction
+	{
+		internal TransWaitNamedPipe(string pipeName)
+		{
+			Name = pipeName;
+			Command = SmbComTransaction;
+			SubCommand = TransWaitNamedPipe;
+			Timeout = unchecked((int)(0xFFFFFFFF));
+			MaxParameterCount = 0;
+			MaxDataCount = 0;
+			MaxSetupCount = unchecked(unchecked(0x00));
+			SetupCount = 2;
+		}
 
-        internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
-        {
-            dst[dstIndex++] = SubCommand;
-            dst[dstIndex++] = unchecked(unchecked(0x00));
-            dst[dstIndex++] = unchecked(unchecked(0x00));
-            // no FID
-            dst[dstIndex++] = unchecked(unchecked(0x00));
-            return 4;
-        }
+		internal override int WriteSetupWireFormat(byte[] dst, int dstIndex)
+		{
+			dst[dstIndex++] = SubCommand;
+			dst[dstIndex++] = unchecked(unchecked(0x00));
+			dst[dstIndex++] = unchecked(unchecked(0x00));
+			// no FID
+			dst[dstIndex++] = unchecked(unchecked(0x00));
+			return 4;
+		}
 
-        internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len)
-        {
-            return 0;
-        }
+		internal override int ReadSetupWireFormat(byte[] buffer, int bufferIndex, int len
+			)
+		{
+			return 0;
+		}
 
-        internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteParametersWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteDataWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int ReadParametersWireFormat(byte[] buffer, 
-                                                       int bufferIndex, 
-                                                       int len)
-        {
-            return 0;
-        }
+		internal override int ReadParametersWireFormat(byte[] buffer, int bufferIndex, int
+			 len)
+		{
+			return 0;
+		}
 
-        internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
-        {
-            return 0;
-        }
+		internal override int ReadDataWireFormat(byte[] buffer, int bufferIndex, int len)
+		{
+			return 0;
+		}
 
-        public override string ToString()
-        {
-            return "TransWaitNamedPipe[" 
-                        + base.ToString() 
-                        + ",pipeName=" + Name + "]";
-        }
-    }
+		public override string ToString()
+		{
+			return "TransWaitNamedPipe[" + base.ToString() + ",pipeName=" + Name +
+				 "]";
+		}
+	}
 }

@@ -6,76 +6,81 @@ namespace SharpCifs.Util.Sharpen
     {
         protected Hashtable _properties;
 
-
         public Properties()
         {
-            this._properties = new Hashtable();
+            _properties = new Hashtable();
         }
 
-        public Properties(Properties defaultProp) : this()
+        public Properties(Properties defaultProp): this()
         {
-            this.PutAll(defaultProp._properties);
+            PutAll(defaultProp._properties);
         }
 
         public void PutAll(Hashtable properties)
         {
             foreach (var key in properties.Keys)
             {
-                this._properties.Put(key, properties[key]);
+                //_properties.Add(key, properties[key]);
+                _properties.Put(key, properties[key]);
             }
         }
 
         public void SetProperty(object key, object value)
         {
-            this._properties.Put(key, value);
+            //_properties.Add(key, value);
+            _properties.Put(key, value);
         }
 
         public object GetProperty(object key)
         {
-            return this._properties.Keys.Contains(key) 
-                ? this._properties[key] 
-                : null;
+            return _properties.Keys.Contains(key) ? _properties[key] : null;
         }
 
         public object GetProperty(object key, object def)
         {
-            return this._properties.Get(key) ?? def;
+            /*if (_properties.ContainsKey(key))
+            {
+                return _properties[key];
+            }
+            return def;*/
+            object value = _properties.Get(key);
+
+            return value ?? def;            
         }
 
         public void Load(InputStream input)
         {
-            using (var reader = new StreamReader(input))
+            StreamReader sr = new StreamReader(input);
+            while (!sr.EndOfStream)
             {
-                while (!reader.EndOfStream)
+                string line = sr.ReadLine();
+
+                if (!string.IsNullOrEmpty(line))
                 {
-                    var line = reader.ReadLine();
-
-                    if (string.IsNullOrEmpty(line))
-                        continue;
-
-                    var tokens = line.Split('=');
-
-                    if (tokens.Length < 2)
-                        continue;
-
-                    this._properties.Put(tokens[0], tokens[1]);
+                    string[] tokens = line.Split('=');
+                    //_properties.Add(tokens[0], tokens[1]);
+                    _properties.Put(tokens[0], tokens[1]);
                 }
             }
         }
 
         public void Store(OutputStream output)
         {
-            using (var writer = new StreamWriter(output))
+            StreamWriter sw = new StreamWriter(output);
+            foreach (var key in _properties.Keys)
             {
-                foreach (var pair in this._properties)
-                    writer.WriteLine($"{pair.Key}={pair.Value}");
+                string line = string.Format("{0}={1}", key, _properties[key]);
+                sw.WriteLine(line);
             }
         }
 
         public void Store(TextWriter output)
-        {
-            foreach (var pair in this._properties)
-                output.WriteLine($"{pair.Key}={pair.Value}");
+        {            
+            foreach (var key in _properties.Keys)
+            {
+                string line = string.Format("{0}={1}", key, _properties[key]);
+                output.WriteLine(line);
+            }
         }
     }
 }

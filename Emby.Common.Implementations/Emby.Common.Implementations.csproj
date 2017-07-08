@@ -228,7 +228,6 @@
     <Compile Include="IO\SharpCifs\Smb\WinError.cs" />
     <Compile Include="IO\SharpCifs\UniAddress.cs" />
     <Compile Include="IO\SharpCifs\Util\Base64.cs" />
-    <Compile Include="IO\SharpCifs\Util\DbsHelper\Log.cs" />
     <Compile Include="IO\SharpCifs\Util\DES.cs" />
     <Compile Include="IO\SharpCifs\Util\Encdec.cs" />
     <Compile Include="IO\SharpCifs\Util\Hexdump.cs" />
