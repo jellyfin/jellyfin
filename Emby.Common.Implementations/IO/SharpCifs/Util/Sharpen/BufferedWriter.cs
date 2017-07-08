@@ -28,31 +28,31 @@ using System.IO;
 
 namespace SharpCifs.Util.Sharpen
 {
-    public class BufferedWriter
-    {
-        StreamWriter _writer;
-
-        public BufferedWriter(StreamWriter w)
-        {
-            _writer = w;
-        }
-
-        public void Write(string s)
-        {
-            _writer.Write(s);
-        }
-
-        public void NewLine()
-        {
-            _writer.WriteLine();
-        }
-
-        public void Close()
-        {
+	public class BufferedWriter
+	{
+		StreamWriter _writer;
+		
+		public BufferedWriter (StreamWriter w)
+		{
+			_writer = w;
+		}
+		
+		public void Write (string s)
+		{
+			_writer.Write (s);
+		}
+		
+		public void NewLine ()
+		{
+			_writer.WriteLine ();
+		}
+		
+		public void Close ()
+		{
             //Stream.`Close` method deleted
-            //_writer.Close ();
+			//_writer.Close ();
             _writer.Dispose();
         }
-    }
+	}
 }
 

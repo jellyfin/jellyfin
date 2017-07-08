@@ -16,42 +16,41 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-    internal class SmbComFindClose2 : ServerMessageBlock
-    {
-        private int _sid;
+	internal class SmbComFindClose2 : ServerMessageBlock
+	{
+		private int _sid;
 
-        internal SmbComFindClose2(int sid)
-        {
-            this._sid = sid;
-            Command = SmbComFindClose2;
-        }
+		internal SmbComFindClose2(int sid)
+		{
+			this._sid = sid;
+			Command = SmbComFindClose2;
+		}
 
-        internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
-        {
-            WriteInt2(_sid, dst, dstIndex);
-            return 2;
-        }
+		internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
+		{
+			WriteInt2(_sid, dst, dstIndex);
+			return 2;
+		}
 
-        internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex)
-        {
-            return 0;
-        }
+		internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex
+			)
+		{
+			return 0;
+		}
 
-        internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
-        {
-            return 0;
-        }
+		internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
+		{
+			return 0;
+		}
 
-        public override string ToString()
-        {
-            return "SmbComFindClose2["
-                        + base.ToString()
-                        + ",sid=" + _sid + "]";
-        }
-    }
+		public override string ToString()
+		{
+			return "SmbComFindClose2[" + base.ToString() + ",sid=" + _sid + "]";
+		}
+	}
 }

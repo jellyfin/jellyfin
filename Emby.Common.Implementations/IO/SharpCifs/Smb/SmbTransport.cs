@@ -31,30 +31,25 @@ namespace SharpCifs.Smb
     {
         internal static readonly byte[] Buf = new byte[0xFFFF];
 
-        internal static readonly SmbComNegotiate NegotiateRequest = new SmbComNegotiate();
+        internal static readonly SmbComNegotiate NegotiateRequest = new SmbComNegotiate(
+            );
 
         internal static LogStream LogStatic = LogStream.GetInstance();
 
         internal static Hashtable DfsRoots = null;
 
 
-        internal static SmbTransport GetSmbTransport(UniAddress address, int port)
+        internal static SmbTransport GetSmbTransport(UniAddress address, int port
+            )
         {
             lock (typeof(SmbTransport))
             {
-                return GetSmbTransport(address,
-                                       port,
-                                       SmbConstants.Laddr,
-                                       SmbConstants.Lport,
-                                       null);
+                return GetSmbTransport(address, port, SmbConstants.Laddr, SmbConstants.Lport, null);
             }
         }
 
-        internal static SmbTransport GetSmbTransport(UniAddress address,
-                                                     int port,
-                                                     IPAddress localAddr,
-                                                     int localPort,
-                                                     string hostName)
+        internal static SmbTransport GetSmbTransport(UniAddress address, int port
+            , IPAddress localAddr, int localPort, string hostName)
         {
             lock (typeof(SmbTransport))
             {
@@ -64,19 +59,18 @@ namespace SharpCifs.Smb
                 {
                     if (SmbConstants.SsnLimit != 1)
                     {
-                        conn = SmbConstants.Connections
-                                           .FirstOrDefault(c => c.Matches(address,
-                                                                          port,
-                                                                          localAddr,
-                                                                          localPort,
-                                                                          hostName)
-                                                                && (SmbConstants.SsnLimit == 0
-                                                                    || c.Sessions.Count < SmbConstants.SsnLimit));
+                        conn =
+                            SmbConstants.Connections.FirstOrDefault(
+                                c =>
+                                    c.Matches(address, port, localAddr, localPort, hostName) &&
+                                    (SmbConstants.SsnLimit ==
+                                     0 || c.Sessions.Count < SmbConstants.SsnLimit));
 
                         if (conn != null)
                         {
                             return conn;
                         }
+
                     }
 
                     conn = new SmbTransport(address, port, localAddr, localPort);
@@ -85,26 +79,6 @@ namespace SharpCifs.Smb
                 return conn;
             }
         }
-
-
-        /// <summary>
-        /// Clear All Cached Transport-Connections
-        /// </summary>
-        public static void ClearCachedConnections()
-        {
-            lock (typeof(SmbTransport))
-            lock (SmbConstants.Connections)
-            {
-                foreach (var transport in SmbConstants.Connections)
-                {
-                    try { transport.Disconnect(true); }
-                    catch (Exception) {}
-                }
-
-                SmbConstants.Connections.Clear();
-            }
-        }
-
 
         internal class ServerData
         {
@@ -200,10 +174,8 @@ namespace SharpCifs.Smb
 
         internal string TconHostName;
 
-        internal SmbTransport(UniAddress address,
-                              int port,
-                              IPAddress localAddr,
-                              int localPort)
+        internal SmbTransport(UniAddress address, int port, IPAddress localAddr, int localPort
+            )
         {
             Server = new ServerData(this);
             this.Address = address;
@@ -234,8 +206,7 @@ namespace SharpCifs.Smb
                     return ssn;
                 }
 
-                if (SmbConstants.SoTimeout > 0
-                    && SessionExpiration < (now = Runtime.CurrentTimeMillis()))
+                if (SmbConstants.SoTimeout > 0 && SessionExpiration < (now = Runtime.CurrentTimeMillis()))
                 {
                     SessionExpiration = now + SmbConstants.SoTimeout;
 
@@ -251,25 +222,16 @@ namespace SharpCifs.Smb
             }
         }
 
-        internal virtual bool Matches(UniAddress address,
-                                      int port,
-                                      IPAddress localAddr,
-                                      int localPort,
-                                      string hostName)
+        internal virtual bool Matches(UniAddress address, int port, IPAddress localAddr,
+            int localPort, string hostName)
         {
             if (hostName == null)
             {
                 hostName = address.GetHostName();
             }
-            return (TconHostName == null
-                        || Runtime.EqualsIgnoreCase(hostName, TconHostName))
-                   && address.Equals(this.Address)
-                   && (port == -1
-                        || port == this.Port
-                        || (port == 445 && this.Port == 139))
-                   && (localAddr == this.LocalAddr
-                        || (localAddr != null && localAddr.Equals(this.LocalAddr)))
-                   && localPort == this.LocalPort;
+            return (TconHostName == null || Runtime.EqualsIgnoreCase(hostName, TconHostName)) && address.Equals(this.Address) && (port == -1 || port == this.Port
+                 || (port == 445 && this.Port == 139)) && (localAddr == this.LocalAddr || (localAddr
+                 != null && localAddr.Equals(this.LocalAddr))) && localPort == this.LocalPort;
         }
 
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
@@ -288,36 +250,31 @@ namespace SharpCifs.Smb
 
         internal virtual bool IsSignatureSetupRequired(NtlmPasswordAuthentication auth)
         {
-            return (Flags2 & SmbConstants.Flags2SecuritySignatures) != 0
-                   && Digest == null
-                   && auth != NtlmPasswordAuthentication.Null
-                   && NtlmPasswordAuthentication.Null.Equals(auth) == false;
+            return (Flags2 & SmbConstants.Flags2SecuritySignatures) != 0 && Digest ==
+                 null && auth != NtlmPasswordAuthentication.Null && NtlmPasswordAuthentication.Null
+                .Equals(auth) == false;
         }
 
         /// <exception cref="System.IO.IOException"></exception>
         internal virtual void Ssn139()
         {
-            Name calledName = new Name(Address.FirstCalledName(), 0x20, null);
+            Name calledName = new Name(Address.FirstCalledName(), 0x20, null
+                );
             do
             {
-                Socket = new SocketEx(AddressFamily.InterNetwork,
-                                      SocketType.Stream,
-                                      ProtocolType.Tcp);
+                Socket = new SocketEx(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                if (LocalAddr != null)
+                {
+                    Socket.Bind2(new IPEndPoint(LocalAddr, LocalPort));
+                }
 
-                //TCPローカルポートは、毎回空いているものを使う。
-                //https://blogs.msdn.microsoft.com/dgorti/2005/09/18/only-one-usage-of-each-socket-address-protocolnetwork-addressport-is-normally-permitted/
-                Socket.Bind(new IPEndPoint(LocalAddr, 0));
-
-                Socket.Connect(new IPEndPoint(IPAddress.Parse(Address.GetHostAddress()), 
-                                              139),
-                               SmbConstants.ConnTimeout);
-                
+                Socket.Connect(new IPEndPoint(IPAddress.Parse(Address.GetHostAddress()), 139), SmbConstants.ConnTimeout);
                 Socket.SoTimeOut = SmbConstants.SoTimeout;
 
                 Out = Socket.GetOutputStream();
                 In = Socket.GetInputStream();
-                SessionServicePacket ssp = new SessionRequestPacket(calledName,
-                                                                    NbtAddress.GetLocalName());
+                SessionServicePacket ssp = new SessionRequestPacket(calledName, NbtAddress.GetLocalName
+                    ());
                 Out.Write(Sbuf, 0, ssp.WriteWireFormat(Sbuf, 0));
                 if (Readn(In, Sbuf, 0, 4) < 4)
                 {
@@ -360,8 +317,7 @@ namespace SharpCifs.Smb
                                 default:
                                     {
                                         Disconnect(true);
-                                        throw new NbtException(NbtException.ErrSsnSrvc,
-                                                               errorCode);
+                                        throw new NbtException(NbtException.ErrSsnSrvc, errorCode);
                                     }
                             }
                             break;
@@ -370,8 +326,8 @@ namespace SharpCifs.Smb
                     case -1:
                         {
                             Disconnect(true);
-                            throw new NbtException(NbtException.ErrSsnSrvc,
-                                                   NbtException.ConnectionRefused);
+                            throw new NbtException(NbtException.ErrSsnSrvc, NbtException.ConnectionRefused
+                                );
                         }
 
                     default:
@@ -401,18 +357,13 @@ namespace SharpCifs.Smb
                         port = SmbConstants.DefaultPort;
                     }
                     // 445
-                    Socket = new SocketEx(AddressFamily.InterNetwork,
-                                          SocketType.Stream,
-                                          ProtocolType.Tcp);
+                    Socket = new SocketEx(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    if (LocalAddr != null)
+                    {
+                        Socket.Bind2(new IPEndPoint(LocalAddr, LocalPort));
+                    }
 
-                    //TCPローカルポートは、毎回空いているものを使う。
-                    //https://blogs.msdn.microsoft.com/dgorti/2005/09/18/only-one-usage-of-each-socket-address-protocolnetwork-addressport-is-normally-permitted/
-                    Socket.Bind(new IPEndPoint(LocalAddr, 0));
-
-                    Socket.Connect(new IPEndPoint(IPAddress.Parse(Address.GetHostAddress()), 
-                                                  port), // <- 445
-                                   SmbConstants.ConnTimeout);
-
+                    Socket.Connect(new IPEndPoint(IPAddress.Parse(Address.GetHostAddress()), port), SmbConstants.ConnTimeout);
                     Socket.SoTimeOut = SmbConstants.SoTimeout;
                     Out = Socket.GetOutputStream();
                     In = Socket.GetInputStream();
@@ -479,28 +430,21 @@ namespace SharpCifs.Smb
             }
             catch (ConnectException)
             {
-                Port = (Port == -1 || Port == SmbConstants.DefaultPort)
-                            ? 139
-                            : SmbConstants.DefaultPort;
+                Port = (Port == -1 || Port == SmbConstants.DefaultPort) ? 139 : SmbConstants.DefaultPort;
                 Negotiate(Port, resp);
             }
             if (resp.DialectIndex > 10)
             {
                 throw new SmbException("This client does not support the negotiated dialect.");
             }
-            if (
-                (Server.Capabilities & SmbConstants.CapExtendedSecurity)
-                    != SmbConstants.CapExtendedSecurity
-                && Server.EncryptionKeyLength != 8
-                && SmbConstants.LmCompatibility == 0
-            )
+            if ((Server.Capabilities & SmbConstants.CapExtendedSecurity) != SmbConstants.CapExtendedSecurity && Server
+                .EncryptionKeyLength != 8 && SmbConstants.LmCompatibility == 0)
             {
-                throw new SmbException("Unexpected encryption key length: "
-                                       + Server.EncryptionKeyLength);
+                throw new SmbException("Unexpected encryption key length: " + Server.EncryptionKeyLength
+                    );
             }
             TconHostName = Address.GetHostName();
-            if (Server.SignaturesRequired
-                || (Server.SignaturesEnabled && SmbConstants.Signpref))
+            if (Server.SignaturesRequired || (Server.SignaturesEnabled && SmbConstants.Signpref))
             {
                 Flags2 |= SmbConstants.Flags2SecuritySignatures;
             }
@@ -515,8 +459,7 @@ namespace SharpCifs.Smb
             }
             SndBufSize = Math.Min(SndBufSize, Server.MaxBufferSize);
             Capabilities &= Server.Capabilities;
-            if ((Server.Capabilities & SmbConstants.CapExtendedSecurity)
-                    == SmbConstants.CapExtendedSecurity)
+            if ((Server.Capabilities & SmbConstants.CapExtendedSecurity) == SmbConstants.CapExtendedSecurity)
             {
                 Capabilities |= SmbConstants.CapExtendedSecurity;
             }
@@ -551,7 +494,6 @@ namespace SharpCifs.Smb
 
                 //Socket.`Close` method deleted
                 //Socket.Close();
-                Socket.Shutdown(SocketShutdown.Both);
                 Socket.Dispose();
             }
             finally
@@ -594,7 +536,7 @@ namespace SharpCifs.Smb
                 Log.WriteLine("New data read: " + this);
                 Hexdump.ToHexdump(Log, Sbuf, 4, 32);
             }
-            for (;;)
+            for (; ; )
             {
                 if (Sbuf[0] == 0x00 && Sbuf[1] == 0x00 &&
                     Sbuf[4] == 0xFF &&
@@ -633,8 +575,8 @@ namespace SharpCifs.Smb
                     {
                         Log.WriteLine(smb);
                     }
-                    while (smb is AndXServerMessageBlock
-                           && (smb = ((AndXServerMessageBlock)smb).Andx) != null);
+                    while (smb is AndXServerMessageBlock && (smb = ((AndXServerMessageBlock)smb).Andx
+                        ) != null);
                     if (Log.Level >= 6)
                     {
                         Hexdump.ToHexdump(Log, Buf, 4, n);
@@ -674,9 +616,7 @@ namespace SharpCifs.Smb
         {
             ServerMessageBlock resp = (ServerMessageBlock)response;
             resp.UseUnicode = UseUnicode;
-            resp.ExtendedSecurity
-                = (Capabilities & SmbConstants.CapExtendedSecurity)
-                    == SmbConstants.CapExtendedSecurity;
+            resp.ExtendedSecurity = (Capabilities & SmbConstants.CapExtendedSecurity) == SmbConstants.CapExtendedSecurity;
             lock (Buf)
             {
                 Array.Copy(Sbuf, 0, Buf, 0, 4 + SmbConstants.HeaderLength);
@@ -686,10 +626,8 @@ namespace SharpCifs.Smb
                     throw new IOException("Invalid payload size: " + size);
                 }
                 int errorCode = Encdec.Dec_uint32le(Buf, 9) & unchecked((int)(0xFFFFFFFF));
-                if (resp.Command == ServerMessageBlock.SmbComReadAndx
-                    && (errorCode == 0
-                        || errorCode == unchecked((int)(0x80000005)))
-                )
+                if (resp.Command == ServerMessageBlock.SmbComReadAndx && (errorCode == 0 || errorCode
+                     == unchecked((int)(0x80000005))))
                 {
                     // overflow indicator normal for pipe
                     SmbComReadAndXResponse r = (SmbComReadAndXResponse)resp;
@@ -746,7 +684,8 @@ namespace SharpCifs.Smb
         }
 
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
-        internal virtual void CheckStatus(ServerMessageBlock req, ServerMessageBlock resp)
+        internal virtual void CheckStatus(ServerMessageBlock req, ServerMessageBlock resp
+            )
         {
             resp.ErrorCode = SmbException.GetStatusByCode(resp.ErrorCode);
             switch (resp.ErrorCode)
@@ -807,7 +746,8 @@ namespace SharpCifs.Smb
         }
 
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
-        internal virtual void Send(ServerMessageBlock request, ServerMessageBlock response)
+        internal virtual void Send(ServerMessageBlock request, ServerMessageBlock response
+            )
         {
             Connect();
             request.Flags2 |= Flags2;
@@ -869,8 +809,7 @@ namespace SharpCifs.Smb
                                     timeout = resp.Expiration - Runtime.CurrentTimeMillis();
                                     if (timeout <= 0)
                                     {
-                                        throw new TransportException(
-                                            this + " timedout waiting for response to " + req);
+                                        throw new TransportException(this + " timedout waiting for response to " + req);
                                     }
                                 }
                                 if (response.ErrorCode != 0)
@@ -886,7 +825,7 @@ namespace SharpCifs.Smb
                                 }
                                 else
                                 {
-                                    throw new TransportException(ie);
+                                    throw new TransportException(ie);                                    
                                 }
                             }
                             finally
@@ -952,9 +891,8 @@ namespace SharpCifs.Smb
         }
 
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
-        internal virtual DfsReferral GetDfsReferrals(NtlmPasswordAuthentication auth,
-                                                     string path,
-                                                     int rn)
+        internal virtual DfsReferral GetDfsReferrals(NtlmPasswordAuthentication auth, string
+             path, int rn)
         {
             SmbTree ipc = GetSmbSession(auth).GetSmbTree("IPC$", null);
             Trans2GetDfsReferralResponse resp = new Trans2GetDfsReferralResponse();
@@ -971,7 +909,7 @@ namespace SharpCifs.Smb
             string[] arr = new string[4];
             long expiration = Runtime.CurrentTimeMillis() + Dfs.Ttl * 1000;
             int di = 0;
-            for (;;)
+            for (; ; )
             {
                 dr.ResolveHashes = auth.HashesExternal;
                 dr.Ttl = resp.Referrals[di].Ttl;
@@ -1001,8 +939,7 @@ namespace SharpCifs.Smb
 
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
         internal virtual DfsReferral[] __getDfsReferrals(NtlmPasswordAuthentication auth,
-                                                         string path,
-                                                         int rn)
+            string path, int rn)
         {
             SmbTree ipc = GetSmbSession(auth).GetSmbTree("IPC$", null);
             Trans2GetDfsReferralResponse resp = new Trans2GetDfsReferralResponse();
