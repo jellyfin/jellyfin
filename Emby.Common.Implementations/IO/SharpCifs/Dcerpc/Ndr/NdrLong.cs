@@ -16,25 +16,25 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Dcerpc.Ndr
 {
-    public class NdrLong : NdrObject
-    {
-        public int Value;
+	public class NdrLong : NdrObject
+	{
+		public int Value;
 
-        public NdrLong(int value)
-        {
-            this.Value = value;
-        }
+		public NdrLong(int value)
+		{
+			this.Value = value;
+		}
 
-        /// <exception cref="SharpCifs.Dcerpc.Ndr.NdrException"></exception>
-        public override void Encode(NdrBuffer dst)
-        {
-            dst.Enc_ndr_long(Value);
-        }
+		/// <exception cref="SharpCifs.Dcerpc.Ndr.NdrException"></exception>
+		public override void Encode(NdrBuffer dst)
+		{
+			dst.Enc_ndr_long(Value);
+		}
 
-        /// <exception cref="SharpCifs.Dcerpc.Ndr.NdrException"></exception>
-        public override void Decode(NdrBuffer src)
-        {
-            Value = src.Dec_ndr_long();
-        }
-    }
+		/// <exception cref="SharpCifs.Dcerpc.Ndr.NdrException"></exception>
+		public override void Decode(NdrBuffer src)
+		{
+			Value = src.Dec_ndr_long();
+		}
+	}
 }

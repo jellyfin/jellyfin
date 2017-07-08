@@ -16,22 +16,22 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-    public class DosFileFilter : ISmbFileFilter
-    {
-        protected internal string Wildcard;
+	public class DosFileFilter : ISmbFileFilter
+	{
+		protected internal string Wildcard;
 
-        protected internal int Attributes;
+		protected internal int Attributes;
 
-        public DosFileFilter(string wildcard, int attributes)
-        {
-            this.Wildcard = wildcard;
-            this.Attributes = attributes;
-        }
+		public DosFileFilter(string wildcard, int attributes)
+		{
+			this.Wildcard = wildcard;
+			this.Attributes = attributes;
+		}
 
-        /// <exception cref="SharpCifs.Smb.SmbException"></exception>
-        public virtual bool Accept(SmbFile file)
-        {
-            return (file.GetAttributes() & Attributes) != 0;
-        }
-    }
+		/// <exception cref="SharpCifs.Smb.SmbException"></exception>
+		public virtual bool Accept(SmbFile file)
+		{
+			return (file.GetAttributes() & Attributes) != 0;
+		}
+	}
 }

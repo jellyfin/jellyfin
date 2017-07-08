@@ -18,15 +18,15 @@ using System.IO;
 
 namespace SharpCifs.Dcerpc.Ndr
 {
+	
+	public class NdrException : IOException
+	{
+		public static readonly string NoNullRef = "ref pointer cannot be null";
 
-    public class NdrException : IOException
-    {
-        public static readonly string NoNullRef = "ref pointer cannot be null";
+		public static readonly string InvalidConformance = "invalid array conformance";
 
-        public static readonly string InvalidConformance = "invalid array conformance";
-
-        public NdrException(string msg) : base(msg)
-        {
-        }
-    }
+		public NdrException(string msg) : base(msg)
+		{
+		}
+	}
 }

@@ -16,34 +16,35 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-    internal class SmbComWriteAndXResponse : AndXServerMessageBlock
-    {
-        internal long Count;
+	internal class SmbComWriteAndXResponse : AndXServerMessageBlock
+	{
+		internal long Count;
 
-        internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+	    internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex)
-        {
-            Count = ReadInt2(buffer, bufferIndex) & unchecked(0xFFFFL);
-            return 8;
-        }
+		internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex
+			)
+		{
+			Count = ReadInt2(buffer, bufferIndex) & unchecked(0xFFFFL);
+			return 8;
+		}
 
-        internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
-        {
-            return 0;
-        }
+		internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
+		{
+			return 0;
+		}
 
-        public override string ToString()
-        {
-            return "SmbComWriteAndXResponse[" + base.ToString() + ",count=" + Count + "]";
-        }
-    }
+		public override string ToString()
+		{
+			return "SmbComWriteAndXResponse[" + base.ToString() + ",count=" + Count + "]";
+		}
+	}
 }

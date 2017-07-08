@@ -18,26 +18,26 @@ using SharpCifs.Smb;
 
 namespace SharpCifs.Dcerpc.Msrpc
 {
-    public class MsrpcShareGetInfo : Srvsvc.ShareGetInfo
-    {
-        public MsrpcShareGetInfo(string server, string sharename)
-            : base(server, sharename, 502, new Srvsvc.ShareInfo502())
-        {
-            Ptype = 0;
+	public class MsrpcShareGetInfo : Srvsvc.ShareGetInfo
+	{
+		public MsrpcShareGetInfo(string server, string sharename) : base(server, sharename
+			, 502, new Srvsvc.ShareInfo502())
+		{
+			Ptype = 0;
             Flags = DcerpcConstants.DcerpcFirstFrag | DcerpcConstants.DcerpcLastFrag;
-        }
+		}
 
-        /// <exception cref="System.IO.IOException"></exception>
-        public virtual Ace[] GetSecurity()
-        {
-            Srvsvc.ShareInfo502 info502 = (Srvsvc.ShareInfo502)Info;
-            if (info502.SecurityDescriptor != null)
-            {
-                SecurityDescriptor sd;
-                sd = new SecurityDescriptor(info502.SecurityDescriptor, 0, info502.SdSize);
-                return sd.Aces;
-            }
-            return null;
-        }
-    }
+		/// <exception cref="System.IO.IOException"></exception>
+		public virtual Ace[] GetSecurity()
+		{
+			Srvsvc.ShareInfo502 info502 = (Srvsvc.ShareInfo502)Info;
+			if (info502.SecurityDescriptor != null)
+			{
+				SecurityDescriptor sd;
+				sd = new SecurityDescriptor(info502.SecurityDescriptor, 0, info502.SdSize);
+				return sd.Aces;
+			}
+			return null;
+		}
+	}
 }

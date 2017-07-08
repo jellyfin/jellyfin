@@ -24,7 +24,6 @@ using SharpCifs.Dcerpc.Msrpc;
 using SharpCifs.Netbios;
 using SharpCifs.Util;
 using SharpCifs.Util.Sharpen;
-using System.Threading.Tasks;
 
 namespace SharpCifs.Smb
 {
@@ -228,14 +227,6 @@ namespace SharpCifs.Smb
     /// <seealso cref="FilePath">Sharpen.FilePath</seealso>
     public class SmbFile : UrlConnection
     {
-        public static void Initialize()
-        {
-            SmbTransport.ClearCachedConnections();
-            SmbConstants.ApplyConfig();
-        }
-
-
-
         internal const int ORdonly = 0x01;
 
         internal const int OWronly = 0x02;
@@ -383,10 +374,10 @@ namespace SharpCifs.Smb
                 Sharpen.Runtime.PrintStackTrace(cnfe);
             }*/
 
-            AttrExpirationPeriod
-                = Config.GetLong("jcifs.smb.client.attrExpirationPeriod", DefaultAttrExpirationPeriod);
-            IgnoreCopyToException
-                = Config.GetBoolean("jcifs.smb.client.ignoreCopyToException", true);
+            AttrExpirationPeriod = Config.GetLong("jcifs.smb.client.attrExpirationPeriod", DefaultAttrExpirationPeriod
+                );
+            IgnoreCopyToException = Config.GetBoolean("jcifs.smb.client.ignoreCopyToException"
+                , true);
             Dfs = new Dfs();
         }
 
@@ -529,13 +520,13 @@ namespace SharpCifs.Smb
         /// do not follow the prescribed syntax
         /// </exception>
         /// <exception cref="UnknownHostException">If the server or workgroup of the <tt>context</tt> file cannot be determined
-        /// </exception>
+        /// 	</exception>
         public SmbFile(SmbFile context, string name)
-            : this(context.IsWorkgroup0()
-                    ? new Uri("smb://" + name)
-                    : new Uri(context.Url.AbsoluteUri + name),
-                   context.Auth)
+            : this(context.IsWorkgroup0
+                () ? new Uri("smb://" + name) : new Uri(context.Url.AbsoluteUri + name),
+                context.Auth)
         {
+
             this._enableDfs = context.EnableDfs;
 
             if (!context.IsWorkgroup0())
@@ -546,7 +537,7 @@ namespace SharpCifs.Smb
                 {
                     Tree = context.Tree;
                     _dfsReferral = context._dfsReferral;
-                }
+                }                
             }
         }
 
@@ -574,6 +565,7 @@ namespace SharpCifs.Smb
         public SmbFile(string context, string name)
             : this(new Uri(context + name))
         {
+
         }
 
 
@@ -588,10 +580,12 @@ namespace SharpCifs.Smb
         /// <param name="url">A URL string</param>
         /// <param name="auth">The credentials the client should use for authentication</param>
         /// <exception cref="System.UriFormatException">If the <code>url</code> parameter does not follow the prescribed syntax
-        /// </exception>
+        /// 	</exception>
         public SmbFile(string url, NtlmPasswordAuthentication auth)
-            : this(new Uri(url, UriKind.RelativeOrAbsolute), auth)
+            : this(new Uri(url, UriKind.RelativeOrAbsolute),
+             auth)
         {
+
         }
 
         /// <summary>Constructs an SmbFile representing a file on an SMB network.</summary>
@@ -606,11 +600,12 @@ namespace SharpCifs.Smb
         /// <param name="url">A URL string</param>
         /// <param name="auth">The credentials the client should use for authentication</param>
         /// <param name="shareAccess">Specifies what access other clients have while this file is open.
-        /// </param>
+        /// 	</param>
         /// <exception cref="System.UriFormatException">If the <code>url</code> parameter does not follow the prescribed syntax
-        /// </exception>
+        /// 	</exception>
         public SmbFile(string url, NtlmPasswordAuthentication auth, int shareAccess)
-            : this(new Uri(url), auth)
+            : this
+                (new Uri(url), auth)
         {
             // Initially null; set by getUncPath; dir must end with '/'
             // Can be null
@@ -619,7 +614,8 @@ namespace SharpCifs.Smb
             // Initially null
             // Initially null; set by getUncPath; never ends with '/'
             // Initially 0; set by open()
-            if ((shareAccess & ~(FileShareRead | FileShareWrite | FileShareDelete)) != 0)
+            if ((shareAccess & ~(FileShareRead | FileShareWrite | FileShareDelete)) !=
+                0)
             {
                 throw new RuntimeException("Illegal shareAccess parameter");
             }
@@ -644,8 +640,11 @@ namespace SharpCifs.Smb
         /// do not follow the prescribed syntax
         /// </exception>
         public SmbFile(string context, string name, NtlmPasswordAuthentication auth)
-            : this(new Uri(context + name), auth)
+            : this
+                (new Uri(context + name)
+                , auth)
         {
+
         }
 
 
@@ -668,18 +667,17 @@ namespace SharpCifs.Smb
         /// <param name="name">A path string relative to the <code>context</code> paremeter</param>
         /// <param name="auth">The credentials the client should use for authentication</param>
         /// <param name="shareAccess">Specifies what access other clients have while this file is open.
-        /// </param>
+        /// 	</param>
         /// <exception cref="System.UriFormatException">
         /// If the <code>context</code> and <code>name</code> parameters
         /// do not follow the prescribed syntax
         /// </exception>
-        public SmbFile(string context,
-                       string name,
-                       NtlmPasswordAuthentication auth,
-                       int shareAccess)
+        public SmbFile(string context, string name, NtlmPasswordAuthentication auth, int
+            shareAccess)
             : this(new Uri(context + name), auth)
         {
-            if ((shareAccess & ~(FileShareRead | FileShareWrite | FileShareDelete)) != 0)
+            if ((shareAccess & ~(FileShareRead | FileShareWrite | FileShareDelete)) !=
+                0)
             {
                 throw new RuntimeException("Illegal shareAccess parameter");
             }
@@ -704,19 +702,18 @@ namespace SharpCifs.Smb
         /// <param name="context">A base <code>SmbFile</code></param>
         /// <param name="name">A path string relative to the <code>context</code> file path</param>
         /// <param name="shareAccess">Specifies what access other clients have while this file is open.
-        /// </param>
+        /// 	</param>
         /// <exception cref="System.UriFormatException">
         /// If the <code>context</code> and <code>name</code> parameters
         /// do not follow the prescribed syntax
         /// </exception>
         /// <exception cref="UnknownHostException"></exception>
         public SmbFile(SmbFile context, string name, int shareAccess)
-            : this(context.IsWorkgroup0()
-                        ? new Uri("smb://" + name)
-                        : new Uri(context.Url.AbsoluteUri + name),
-                   context.Auth)
+            : this(context.IsWorkgroup0() ? new Uri("smb://" + name) : new Uri(
+                          context.Url.AbsoluteUri + name), context.Auth)
         {
-            if ((shareAccess & ~(FileShareRead | FileShareWrite | FileShareDelete)) != 0)
+            if ((shareAccess & ~(FileShareRead | FileShareWrite | FileShareDelete)) !=
+                0)
             {
                 throw new RuntimeException("Illegal shareAccess parameter");
             }
@@ -746,7 +743,8 @@ namespace SharpCifs.Smb
         /// </remarks>
         /// <param name="url">The URL of the target resource</param>
         protected SmbFile(Uri url)
-            : this(url, new NtlmPasswordAuthentication(url.GetUserInfo()))
+            : this(url, new NtlmPasswordAuthentication(url.GetUserInfo
+                ()))
         {
         }
 
@@ -771,18 +769,16 @@ namespace SharpCifs.Smb
 
         /// <exception cref="System.UriFormatException"></exception>
         /// <exception cref="UnknownHostException"></exception>
-        internal SmbFile(SmbFile context,
-                         string name,
-                         int type,
-                         int attributes,
-                         long createTime,
-                         long lastModified,
-                         long size)
-            : this(context.IsWorkgroup0()
-                        ? new Uri("smb://" + name + "/")
-                        : new Uri(context.Url.AbsoluteUri + name + ((attributes & AttrDirectory) > 0
-                                                                        ? "/"
-                                                                        : string.Empty)))
+        /*internal SmbFile(Jcifs.Smb.SmbFile context, string name, int type, int attributes
+            , long createTime, long lastModified, long size)
+            : this(context.IsWorkgroup0() ?
+                new Uri(null, "smb://" + name + "/") : new Uri(context.url,
+                name + ((attributes & ATTR_DIRECTORY) > 0 ? "/" : string.Empty)))*/
+        internal SmbFile(SmbFile context, string name, int type, int attributes
+            , long createTime, long lastModified, long size)
+            : this(context.IsWorkgroup0() ?
+                new Uri("smb://" + name + "/") : new Uri(context.Url.AbsoluteUri +
+                name + ((attributes & AttrDirectory) > 0 ? "/" : string.Empty)))
         {
             Auth = context.Auth;
             if (context._share != null)
@@ -850,7 +846,8 @@ namespace SharpCifs.Smb
                 return;
             }
             Connect0();
-            DfsReferral dr = Dfs.Resolve(Tree.Session.transport.TconHostName, Tree.Share, Unc, Auth);
+            DfsReferral dr = Dfs.Resolve(Tree.Session.transport.TconHostName, Tree.Share, Unc
+                , Auth);
             if (dr != null)
             {
                 string service = null;
@@ -949,10 +946,8 @@ namespace SharpCifs.Smb
                     dunc = "\\" + dr.Path + dunc;
                 }
                 Unc = dunc;
-                if (request != null
-                    && request.Path != null
-                    && request.Path.EndsWith("\\")
-                    && dunc.EndsWith("\\") == false)
+                if (request != null && request.Path != null && request.Path.EndsWith("\\") && dunc
+                    .EndsWith("\\") == false)
                 {
                     dunc += "\\";
                 }
@@ -964,10 +959,8 @@ namespace SharpCifs.Smb
             }
             else
             {
-                if (Tree.InDomainDfs
-                    && !(request is NtTransQuerySecurityDesc)
-                    && !(request is SmbComClose)
-                    && !(request is SmbComFindClose2))
+                if (Tree.InDomainDfs && !(request is NtTransQuerySecurityDesc) && !(request is SmbComClose
+                    ) && !(request is SmbComFindClose2))
                 {
                     throw new SmbException(NtStatus.NtStatusNotFound, false);
                 }
@@ -979,9 +972,10 @@ namespace SharpCifs.Smb
         }
 
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
-        internal virtual void Send(ServerMessageBlock request, ServerMessageBlock response)
+        internal virtual void Send(ServerMessageBlock request, ServerMessageBlock response
+            )
         {
-            for (;;)
+            for (; ; )
             {
                 ResolveDfs(request);
                 try
@@ -1105,8 +1099,8 @@ namespace SharpCifs.Smb
                     {
                         throw;
                     }
-                    Addresses = UniAddress.GetAllByName(NtlmPasswordAuthentication.DefaultDomain,
-                                                        true);
+                    Addresses = UniAddress.GetAllByName(NtlmPasswordAuthentication.DefaultDomain, true
+                        );
                 }
             }
             else
@@ -1207,8 +1201,8 @@ namespace SharpCifs.Smb
                 }
                 else
                 {
-                    if ((a = NtlmAuthenticator.RequestNtlmPasswordAuthentication(Url.ToString(), sae))
-                        != null)
+                    if ((a = NtlmAuthenticator.RequestNtlmPasswordAuthentication(Url.ToString(), sae)
+                        ) != null)
                     {
                         Auth = a;
                         ssn = trans.GetSmbSession(Auth);
@@ -1249,7 +1243,7 @@ namespace SharpCifs.Smb
             }
             GetUncPath0();
             GetFirstAddress();
-            for (;;)
+            for (; ; )
             {
                 try
                 {
@@ -1297,13 +1291,8 @@ namespace SharpCifs.Smb
             if (Tree.Session.transport.HasCapability(SmbConstants.CapNtSmbs))
             {
                 SmbComNtCreateAndXResponse response = new SmbComNtCreateAndXResponse();
-                SmbComNtCreateAndX request = new SmbComNtCreateAndX(Unc,
-                                                                    flags,
-                                                                    access,
-                                                                    _shareAccess,
-                                                                    attrs,
-                                                                    options,
-                                                                    null);
+                SmbComNtCreateAndX request = new SmbComNtCreateAndX(Unc, flags, access, _shareAccess
+                    , attrs, options, null);
                 if (this is SmbNamedPipe)
                 {
                     request.Flags0 |= 0x16;
@@ -1521,10 +1510,8 @@ namespace SharpCifs.Smb
                                     i++;
                                     break;
                                 }
-                                if ((i + 1) < length
-                                    && instr[i] == '.'
-                                    && instr[i + 1] == '.'
-                                    && ((i + 2) >= length || instr[i + 2] == '/'))
+                                if ((i + 1) < length && instr[i] == '.' && instr[i + 1] == '.' && ((i + 2) >= length
+                                                                                               || instr[i + 2] == '/'))
                                 {
                                     i += 2;
                                     if (o == 1)
@@ -1588,9 +1575,9 @@ namespace SharpCifs.Smb
         }
 
         /// <summary>Retuns the Windows UNC style path with backslashs intead of forward slashes.
-        /// </summary>
+        /// 	</summary>
         /// <remarks>Retuns the Windows UNC style path with backslashs intead of forward slashes.
-        /// </remarks>
+        /// 	</remarks>
         /// <returns>The UNC path.</returns>
         public virtual string GetUncPath()
         {
@@ -1781,17 +1768,15 @@ namespace SharpCifs.Smb
             }
             if (Tree.Session.transport.HasCapability(SmbConstants.CapNtSmbs))
             {
-                Trans2QueryPathInformationResponse response
-                    = new Trans2QueryPathInformationResponse(infoLevel);
+                Trans2QueryPathInformationResponse response = new Trans2QueryPathInformationResponse
+                    (infoLevel);
                 Send(new Trans2QueryPathInformation(path, infoLevel), response);
                 return response.Info;
             }
             else
             {
-                SmbComQueryInformationResponse response
-                    = new SmbComQueryInformationResponse(Tree.Session.transport.Server.ServerTimeZone
-                                                         * 1000
-                                                         * 60L);
+                SmbComQueryInformationResponse response = new SmbComQueryInformationResponse(Tree
+                    .Session.transport.Server.ServerTimeZone * 1000 * 60L);
                 Send(new SmbComQueryInformation(path), response);
                 return response;
             }
@@ -1850,8 +1835,8 @@ namespace SharpCifs.Smb
                         else
                         {
                             // treeConnect is good enough
-                            IInfo info = QueryPath(GetUncPath0(),
-                                                   Trans2QueryPathInformationResponse.SMB_QUERY_FILE_BASIC_INFO);
+                            IInfo info = QueryPath(GetUncPath0(), Trans2QueryPathInformationResponse.SMB_QUERY_FILE_BASIC_INFO
+                                );
                             _attributes = info.GetAttributes();
                             _createTime = info.GetCreateTime();
                             _lastModified = info.GetLastWriteTime();
@@ -1934,9 +1919,9 @@ namespace SharpCifs.Smb
         }
 
         /// <summary>Tests to see if the file this <code>SmbFile</code> represents is a directory.
-        /// </summary>
+        /// 	</summary>
         /// <remarks>Tests to see if the file this <code>SmbFile</code> represents is a directory.
-        /// </remarks>
+        /// 	</remarks>
         /// <returns><code>true</code> if this <code>SmbFile</code> is a directory</returns>
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
         public virtual bool IsDirectory()
@@ -1953,9 +1938,9 @@ namespace SharpCifs.Smb
         }
 
         /// <summary>Tests to see if the file this <code>SmbFile</code> represents is not a directory.
-        /// </summary>
+        /// 	</summary>
         /// <remarks>Tests to see if the file this <code>SmbFile</code> represents is not a directory.
-        /// </remarks>
+        /// 	</remarks>
         /// <returns><code>true</code> if this <code>SmbFile</code> is not a directory</returns>
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
         public virtual bool IsFile()
@@ -2189,10 +2174,8 @@ namespace SharpCifs.Smb
         /// <exception cref="SmbException"></exception>
         public virtual SmbFile[] ListFiles(string wildcard)
         {
-            return ListFiles(wildcard,
-                             AttrDirectory | AttrHidden | AttrSystem,
-                             null,
-                             null);
+            return ListFiles(wildcard, AttrDirectory | AttrHidden | AttrSystem, null, null
+                );
         }
 
         /// <summary>List the contents of this SMB resource.</summary>
@@ -2225,10 +2208,8 @@ namespace SharpCifs.Smb
         }
 
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
-        internal virtual string[] List(string wildcard,
-                                       int searchAttributes,
-                                       ISmbFilenameFilter fnf,
-                                       ISmbFileFilter ff)
+        internal virtual string[] List(string wildcard, int searchAttributes, ISmbFilenameFilter
+             fnf, ISmbFileFilter ff)
         {
             List<object> list = new List<object>();
             DoEnum(list, false, wildcard, searchAttributes, fnf, ff);
@@ -2237,10 +2218,8 @@ namespace SharpCifs.Smb
         }
 
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
-        internal virtual SmbFile[] ListFiles(string wildcard,
-                                             int searchAttributes,
-                                             ISmbFilenameFilter fnf,
-                                             ISmbFileFilter ff)
+        internal virtual SmbFile[] ListFiles(string wildcard, int searchAttributes
+            , ISmbFilenameFilter fnf, ISmbFileFilter ff)
         {
             List<object> list = new List<object>();
             DoEnum(list, true, wildcard, searchAttributes, fnf, ff);
@@ -2249,12 +2228,8 @@ namespace SharpCifs.Smb
         }
 
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
-        internal virtual void DoEnum(List<object> list,
-                                     bool files,
-                                     string wildcard,
-                                     int searchAttributes,
-                                     ISmbFilenameFilter fnf,
-                                     ISmbFileFilter ff)
+        internal virtual void DoEnum(List<object> list, bool files, string wildcard, int searchAttributes
+            , ISmbFilenameFilter fnf, ISmbFileFilter ff)
         {
             if (ff != null && ff is DosFileFilter)
             {
@@ -2267,9 +2242,7 @@ namespace SharpCifs.Smb
             }
             try
             {
-                int hostlen = Url.GetHost() != null
-                                ? Url.GetHost().Length
-                                : 0;
+                int hostlen = Url.GetHost() != null ? Url.GetHost().Length : 0;
                 if (hostlen == 0 || GetType() == TypeWorkgroup)
                 {
                     DoNetServerEnum(list, files, wildcard, searchAttributes, fnf, ff);
@@ -2312,12 +2285,8 @@ namespace SharpCifs.Smb
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
         /// <exception cref="UnknownHostException"></exception>
         /// <exception cref="System.UriFormatException"></exception>
-        internal virtual void DoShareEnum(List<object> list,
-                                          bool files,
-                                          string wildcard,
-                                          int searchAttributes,
-                                          ISmbFilenameFilter fnf,
-                                          ISmbFileFilter ff)
+        internal virtual void DoShareEnum(List<object> list, bool files, string wildcard, int
+             searchAttributes, ISmbFilenameFilter fnf, ISmbFileFilter ff)
         {
             string p = Url.AbsolutePath;
             IOException last = null;
@@ -2428,13 +2397,8 @@ namespace SharpCifs.Smb
                 if (name.Length > 0)
                 {
                     // if !files we don't need to create SmbFiles here
-                    SmbFile f = new SmbFile(this,
-                                            name,
-                                            e.GetType(),
-                                            AttrReadonly | AttrDirectory,
-                                            0L,
-                                            0L,
-                                            0L);
+                    SmbFile f = new SmbFile(this, name, e.GetType(), AttrReadonly
+                         | AttrDirectory, 0L, 0L, 0L);
                     if (ff != null && ff.Accept(f) == false)
                     {
                         continue;
@@ -2457,10 +2421,8 @@ namespace SharpCifs.Smb
             MsrpcDfsRootEnum rpc;
             DcerpcHandle handle = null;
             IFileEntry[] entries;
-            handle = DcerpcHandle.GetHandle("ncacn_np:"
-                                                + GetAddress().GetHostAddress()
-                                                + "[\\PIPE\\netdfs]",
-                                            Auth);
+            handle = DcerpcHandle.GetHandle("ncacn_np:" + GetAddress().GetHostAddress() + "[\\PIPE\\netdfs]"
+                , Auth);
             try
             {
                 rpc = new MsrpcDfsRootEnum(GetServer());
@@ -2493,10 +2455,8 @@ namespace SharpCifs.Smb
             MsrpcShareEnum rpc;
             DcerpcHandle handle;
             rpc = new MsrpcShareEnum(Url.GetHost());
-            handle = DcerpcHandle.GetHandle("ncacn_np:"
-                                                + GetAddress().GetHostAddress()
-                                                + "[\\PIPE\\srvsvc]",
-                                            Auth);
+            handle = DcerpcHandle.GetHandle("ncacn_np:" + GetAddress().GetHostAddress() + "[\\PIPE\\srvsvc]"
+                , Auth);
             try
             {
                 handle.Sendrecv(rpc);
@@ -2538,23 +2498,17 @@ namespace SharpCifs.Smb
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
         /// <exception cref="UnknownHostException"></exception>
         /// <exception cref="System.UriFormatException"></exception>
-        internal virtual void DoNetServerEnum(List<object> list,
-                                              bool files,
-                                              string wildcard,
-                                              int searchAttributes,
-                                              ISmbFilenameFilter fnf,
-                                              ISmbFileFilter ff)
+        internal virtual void DoNetServerEnum(List<object> list, bool files, string wildcard
+            , int searchAttributes, ISmbFilenameFilter fnf, ISmbFileFilter ff)
         {
-            int listType = Url.GetHost().Length == 0
-                                ? 0
-                                : GetType();
+            int listType = Url.GetHost().Length == 0 ? 0 : GetType();
             SmbComTransaction req;
             SmbComTransactionResponse resp;
             if (listType == 0)
             {
                 Connect0();
-                req = new NetServerEnum2(Tree.Session.transport.Server.OemDomainName,
-                                         NetServerEnum2.SvTypeDomainEnum);
+                req = new NetServerEnum2(Tree.Session.transport.Server.OemDomainName, NetServerEnum2
+                    .SvTypeDomainEnum);
                 resp = new NetServerEnum2Response();
             }
             else
@@ -2591,13 +2545,8 @@ namespace SharpCifs.Smb
                     if (name.Length > 0)
                     {
                         // if !files we don't need to create SmbFiles here
-                        SmbFile f = new SmbFile(this,
-                                                name,
-                                                e.GetType(),
-                                                AttrReadonly | AttrDirectory,
-                                                0L,
-                                                0L,
-                                                0L);
+                        SmbFile f = new SmbFile(this, name, e.GetType(), AttrReadonly
+                             | AttrDirectory, 0L, 0L, 0L);
                         if (ff != null && ff.Accept(f) == false)
                         {
                             continue;
@@ -2626,12 +2575,8 @@ namespace SharpCifs.Smb
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
         /// <exception cref="UnknownHostException"></exception>
         /// <exception cref="System.UriFormatException"></exception>
-        internal virtual void DoFindFirstNext(List<object> list,
-                                              bool files,
-                                              string wildcard,
-                                              int searchAttributes,
-                                              ISmbFilenameFilter fnf,
-                                              ISmbFileFilter ff)
+        internal virtual void DoFindFirstNext(List<object> list, bool files, string wildcard
+            , int searchAttributes, ISmbFilenameFilter fnf, ISmbFileFilter ff)
         {
             SmbComTransaction req;
             Trans2FindFirst2Response resp;
@@ -2652,7 +2597,7 @@ namespace SharpCifs.Smb
             sid = resp.Sid;
             req = new Trans2FindNext2(sid, resp.ResumeKey, resp.LastName);
             resp.SubCommand = SmbComTransaction.Trans2FindNext2;
-            for (;;)
+            for (; ; )
             {
                 for (int i = 0; i < resp.NumEntries; i++)
                 {
@@ -2675,13 +2620,8 @@ namespace SharpCifs.Smb
                     }
                     if (name.Length > 0)
                     {
-                        SmbFile f = new SmbFile(this,
-                                                name,
-                                                TypeFilesystem,
-                                                e.GetAttributes(),
-                                                e.CreateTime(),
-                                                e.LastModified(),
-                                                e.Length());
+                        SmbFile f = new SmbFile(this, name, TypeFilesystem, e.GetAttributes
+                            (), e.CreateTime(), e.LastModified(), e.Length());
                         if (ff != null && ff.Accept(f) == false)
                         {
                             continue;
@@ -2732,7 +2672,7 @@ namespace SharpCifs.Smb
         /// </remarks>
         /// <param name="dest">An <code>SmbFile</code> that represents the new pathname</param>
         /// <exception cref="System.ArgumentNullException">If the <code>dest</code> argument is <code>null</code>
-        /// </exception>
+        /// 	</exception>
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
         public virtual void RenameTo(SmbFile dest)
         {
@@ -2782,10 +2722,7 @@ namespace SharpCifs.Smb
                 : base("JCIFS-WriterThread")
             {
                 this._enclosing = enclosing;
-                UseNtSmbs = this._enclosing.Tree
-                                           .Session
-                                           .transport
-                                           .HasCapability(SmbConstants.CapNtSmbs);
+                UseNtSmbs = this._enclosing.Tree.Session.transport.HasCapability(SmbConstants.CapNtSmbs);
                 if (UseNtSmbs)
                 {
                     Reqx = new SmbComWriteAndX();
@@ -2818,7 +2755,7 @@ namespace SharpCifs.Smb
                 {
                     try
                     {
-                        for (;;)
+                        for (; ; )
                         {
                             Runtime.Notify(this);
                             Ready = true;
@@ -2858,12 +2795,8 @@ namespace SharpCifs.Smb
         }
 
         /// <exception cref="SharpCifs.Smb.SmbException"></exception>
-        internal virtual void CopyTo0(SmbFile dest,
-                                      byte[][] b,
-                                      int bsize,
-                                      WriterThread w,
-                                      SmbComReadAndX req,
-                                      SmbComReadAndXResponse resp)
+        internal virtual void CopyTo0(SmbFile dest, byte[][] b, int bsize, WriterThread
+             w, SmbComReadAndX req, SmbComReadAndXResponse resp)
         {
             int i;
             if (_attrExpiration < Runtime.CurrentTimeMillis())
@@ -2872,8 +2805,8 @@ namespace SharpCifs.Smb
                 _createTime = 0L;
                 _lastModified = 0L;
                 _isExists = false;
-                IInfo info = QueryPath(GetUncPath0(),
-                                       Trans2QueryPathInformationResponse.SMB_QUERY_FILE_BASIC_INFO);
+                IInfo info = QueryPath(GetUncPath0(), Trans2QueryPathInformationResponse.SMB_QUERY_FILE_BASIC_INFO
+                    );
                 _attributes = info.GetAttributes();
                 _createTime = info.GetCreateTime();
                 _lastModified = info.GetLastWriteTime();
@@ -2894,8 +2827,8 @@ namespace SharpCifs.Smb
                     }
                     catch (SmbException se)
                     {
-                        if (se.GetNtStatus() != NtStatus.NtStatusAccessDenied
-                            && se.GetNtStatus() != NtStatus.NtStatusObjectNameCollision)
+                        if (se.GetNtStatus() != NtStatus.NtStatusAccessDenied && se.GetNtStatus() != NtStatus
+                            .NtStatusObjectNameCollision)
                         {
                             throw;
                         }
@@ -2906,13 +2839,8 @@ namespace SharpCifs.Smb
                 {
                     for (i = 0; i < files.Length; i++)
                     {
-                        ndest = new SmbFile(dest,
-                                            files[i].GetName(),
-                                            files[i].Type,
-                                            files[i]._attributes,
-                                            files[i]._createTime,
-                                            files[i]._lastModified,
-                                            files[i]._size);
+                        ndest = new SmbFile(dest, files[i].GetName(), files[i].Type, files[i]._attributes,
+                            files[i]._createTime, files[i]._lastModified, files[i]._size);
                         files[i].CopyTo0(ndest, b, bsize, w, req, resp);
                     }
                 }
@@ -2933,20 +2861,16 @@ namespace SharpCifs.Smb
                     Open(ORdonly, 0, AttrNormal, 0);
                     try
                     {
-                        dest.Open(OCreat | OWronly | OTrunc,
-                                  SmbConstants.FileWriteData | SmbConstants.FileWriteAttributes,
-                                  _attributes,
-                                  0);
+                        dest.Open(OCreat | OWronly | OTrunc, SmbConstants.FileWriteData |
+                             SmbConstants.FileWriteAttributes, _attributes, 0);
                     }
                     catch (SmbAuthException sae)
                     {
                         if ((dest._attributes & AttrReadonly) != 0)
                         {
                             dest.SetPathInformation(dest._attributes & ~AttrReadonly, 0L, 0L);
-                            dest.Open(OCreat | OWronly | OTrunc,
-                                      SmbConstants.FileWriteData | SmbConstants.FileWriteAttributes,
-                                      _attributes,
-                                      0);
+                            dest.Open(OCreat | OWronly | OTrunc, SmbConstants.FileWriteData |
+                                 SmbConstants.FileWriteAttributes, _attributes, 0);
                         }
                         else
                         {
@@ -2955,7 +2879,7 @@ namespace SharpCifs.Smb
                     }
                     i = 0;
                     off = 0L;
-                    for (;;)
+                    for (; ; )
                     {
                         req.SetParam(Fid, off, bsize);
                         resp.SetParam(b[i], 0);
@@ -2990,19 +2914,16 @@ namespace SharpCifs.Smb
                         i = i == 1 ? 0 : 1;
                         off += resp.DataLength;
                     }
-                    dest.Send(new Trans2SetFileInformation(dest.Fid,
-                                                           _attributes,
-                                                           _createTime,
-                                                           _lastModified),
-                              new Trans2SetFileInformationResponse());
+                    dest.Send(new Trans2SetFileInformation(dest.Fid, _attributes, _createTime, _lastModified
+                        ), new Trans2SetFileInformationResponse());
                     dest.Close(0L);
                 }
                 catch (SmbException se)
                 {
                     if (IgnoreCopyToException == false)
                     {
-                        throw new SmbException("Failed to copy file from "
-                                               + "[" + ToString() + "] to [" + dest + "]", se);
+                        throw new SmbException("Failed to copy file from [" + ToString() + "] to ["
+                            + dest + "]", se);
                     }
                     if (Log.Level > 1)
                     {
@@ -3055,8 +2976,8 @@ namespace SharpCifs.Smb
             ResolveDfs(null);
             try
             {
-                if (GetAddress().Equals(dest.GetAddress())
-                    && _canon.RegionMatches(true, 0, dest._canon, 0, Math.Min(_canon.Length, dest._canon.Length)))
+                if (GetAddress().Equals(dest.GetAddress()) && _canon.RegionMatches(true, 0, dest._canon
+                    , 0, Math.Min(_canon.Length, dest._canon.Length)))
                 {
                     throw new SmbException("Source and destination paths overlap.");
                 }
@@ -3066,8 +2987,7 @@ namespace SharpCifs.Smb
             }
             w = new WriterThread(this);
             w.SetDaemon(true);
-            w.Start(true);
-
+            w.Start();
             SmbTransport t1 = Tree.Session.transport;
             SmbTransport t2 = dest.Tree.Session.transport;
             if (t1.SndBufSize < t2.SndBufSize)
@@ -3123,8 +3043,8 @@ namespace SharpCifs.Smb
                 _createTime = 0L;
                 _lastModified = 0L;
                 _isExists = false;
-                IInfo info = QueryPath(GetUncPath0(),
-                                       Trans2QueryPathInformationResponse.SMB_QUERY_FILE_BASIC_INFO);
+                IInfo info = QueryPath(GetUncPath0(), Trans2QueryPathInformationResponse.SMB_QUERY_FILE_BASIC_INFO
+                    );
                 _attributes = info.GetAttributes();
                 _createTime = info.GetCreateTime();
                 _lastModified = info.GetLastWriteTime();
@@ -3143,7 +3063,8 @@ namespace SharpCifs.Smb
             {
                 try
                 {
-                    SmbFile[] l = ListFiles("*", AttrDirectory | AttrHidden | AttrSystem, null, null);
+                    SmbFile[] l = ListFiles("*", AttrDirectory | AttrHidden | AttrSystem, null, null
+                        );
                     for (int i = 0; i < l.Length; i++)
                     {
                         l[i].Delete();
@@ -3196,8 +3117,8 @@ namespace SharpCifs.Smb
             {
                 if (GetUncPath0().Length > 1 && Type != TypeNamedPipe)
                 {
-                    IInfo info = QueryPath(GetUncPath0(),
-                                           Trans2QueryPathInformationResponse.SMB_QUERY_FILE_STANDARD_INFO);
+                    IInfo info = QueryPath(GetUncPath0(), Trans2QueryPathInformationResponse.SMB_QUERY_FILE_STANDARD_INFO
+                        );
                     _size = info.GetSize();
                 }
                 else
@@ -3351,14 +3272,10 @@ namespace SharpCifs.Smb
             int dir;
             Exists();
             dir = _attributes & AttrDirectory;
-            f = Open0(ORdonly,
-                      SmbConstants.FileWriteAttributes,
-                      dir,
-                      dir != 0
-                        ? 0x0001
-                        : 0x0040);
-            Send(new Trans2SetFileInformation(f, attrs | dir, ctime, mtime),
-                 new Trans2SetFileInformationResponse());
+            f = Open0(ORdonly, SmbConstants.FileWriteAttributes, dir, dir != 0 ? 0x0001
+                 : 0x0040);
+            Send(new Trans2SetFileInformation(f, attrs | dir, ctime, mtime), new Trans2SetFileInformationResponse
+                ());
             Close(f, 0L);
             _attrExpiration = 0;
         }
@@ -3513,7 +3430,8 @@ namespace SharpCifs.Smb
             return hash + _canon.ToUpper().GetHashCode();
         }
 
-        protected internal virtual bool PathNamesPossiblyEqual(string path1, string path2)
+        protected internal virtual bool PathNamesPossiblyEqual(string path1, string path2
+            )
         {
             int p1;
             int p2;
@@ -3620,9 +3538,9 @@ namespace SharpCifs.Smb
         }
 
         /// <summary>This URLConnection method just returns the result of <tt>lastModified</tt>.
-        /// </summary>
+        /// 	</summary>
         /// <remarks>This URLConnection method just returns the result of <tt>lastModified</tt>.
-        /// </remarks>
+        /// 	</remarks>
         /// <returns>the last modified data as milliseconds since Jan 1, 1970</returns>
         public long GetDate()
         {
@@ -3637,9 +3555,9 @@ namespace SharpCifs.Smb
         }
 
         /// <summary>This URLConnection method just returns the result of <tt>lastModified</tt>.
-        /// </summary>
+        /// 	</summary>
         /// <remarks>This URLConnection method just returns the result of <tt>lastModified</tt>.
-        /// </remarks>
+        /// 	</remarks>
         /// <returns>the last modified data as milliseconds since Jan 1, 1970</returns>
         public long GetLastModified()
         {
@@ -3654,22 +3572,22 @@ namespace SharpCifs.Smb
         }
 
         /// <summary>This URLConnection method just returns a new <tt>SmbFileInputStream</tt> created with this file.
-        /// </summary>
+        /// 	</summary>
         /// <remarks>This URLConnection method just returns a new <tt>SmbFileInputStream</tt> created with this file.
-        /// </remarks>
+        /// 	</remarks>
         /// <exception cref="System.IO.IOException">thrown by <tt>SmbFileInputStream</tt> constructor
-        /// </exception>
+        /// 	</exception>
         public InputStream GetInputStream()
         {
             return new SmbFileInputStream(this);
         }
 
         /// <summary>This URLConnection method just returns a new <tt>SmbFileOutputStream</tt> created with this file.
-        /// </summary>
+        /// 	</summary>
         /// <remarks>This URLConnection method just returns a new <tt>SmbFileOutputStream</tt> created with this file.
-        /// </remarks>
+        /// 	</remarks>
         /// <exception cref="System.IO.IOException">thrown by <tt>SmbFileOutputStream</tt> constructor
-        /// </exception>
+        /// 	</exception>
         public OutputStream GetOutputStream()
         {
             return new SmbFileOutputStream(this);
@@ -3728,7 +3646,8 @@ namespace SharpCifs.Smb
             Ace[] aces;
             f = Open0(ORdonly, SmbConstants.ReadControl, 0, IsDirectory() ? 1 : 0);
             NtTransQuerySecurityDesc request = new NtTransQuerySecurityDesc(f, 0x04);
-            NtTransQuerySecurityDescResponse response = new NtTransQuerySecurityDescResponse();
+            NtTransQuerySecurityDescResponse response = new NtTransQuerySecurityDescResponse(
+                );
             try
             {
                 Send(request, response);

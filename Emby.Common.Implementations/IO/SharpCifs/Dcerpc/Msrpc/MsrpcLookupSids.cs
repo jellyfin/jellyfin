@@ -18,21 +18,17 @@ using SharpCifs.Smb;
 
 namespace SharpCifs.Dcerpc.Msrpc
 {
-    public class MsrpcLookupSids : Lsarpc.LsarLookupSids
-    {
-        internal Sid[] sids;
+	public class MsrpcLookupSids : Lsarpc.LsarLookupSids
+	{
+		internal Sid[] sids;
 
-        public MsrpcLookupSids(LsaPolicyHandle policyHandle, Sid[] sids) 
-            : base(policyHandle, 
-                   new LsarSidArrayX(sids), 
-                   new Lsarpc.LsarRefDomainList(), 
-                   new Lsarpc.LsarTransNameArray(), 
-                   1, 
-                   sids.Length)
-        {
-            this.sids = sids;
-            Ptype = 0;
+		public MsrpcLookupSids(LsaPolicyHandle policyHandle, Sid[] sids) : base(policyHandle
+			, new LsarSidArrayX(sids), new Lsarpc.LsarRefDomainList(), new Lsarpc.LsarTransNameArray
+			(), 1, sids.Length)
+		{
+			this.sids = sids;
+			Ptype = 0;
             Flags = DcerpcConstants.DcerpcFirstFrag | DcerpcConstants.DcerpcLastFrag;
-        }
-    }
+		}
+	}
 }

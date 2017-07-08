@@ -16,63 +16,65 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-    public class BufferCache
-    {
-        private static readonly int MaxBuffers = Config.GetInt("jcifs.smb.maxBuffers", 16);
+	public class BufferCache
+	{
+		private static readonly int MaxBuffers = Config.GetInt("jcifs.smb.maxBuffers", 16
+			);
 
-        internal static object[] Cache = new object[MaxBuffers];
+		internal static object[] Cache = new object[MaxBuffers];
 
-        private static int _freeBuffers;
+		private static int _freeBuffers;
 
-        public static byte[] GetBuffer()
-        {
-            lock (Cache)
-            {
-                byte[] buf;
-                if (_freeBuffers > 0)
-                {
-                    for (int i = 0; i < MaxBuffers; i++)
-                    {
-                        if (Cache[i] != null)
-                        {
-                            buf = (byte[])Cache[i];
-                            Cache[i] = null;
-                            _freeBuffers--;
-                            return buf;
-                        }
-                    }
-                }
-                buf = new byte[SmbComTransaction.TransactionBufSize];
-                return buf;
-            }
-        }
+		public static byte[] GetBuffer()
+		{
+			lock (Cache)
+			{
+				byte[] buf;
+				if (_freeBuffers > 0)
+				{
+					for (int i = 0; i < MaxBuffers; i++)
+					{
+						if (Cache[i] != null)
+						{
+							buf = (byte[])Cache[i];
+							Cache[i] = null;
+							_freeBuffers--;
+							return buf;
+						}
+					}
+				}
+				buf = new byte[SmbComTransaction.TransactionBufSize];
+				return buf;
+			}
+		}
 
-        internal static void GetBuffers(SmbComTransaction req, SmbComTransactionResponse rsp)
-        {
-            lock (Cache)
-            {
-                req.TxnBuf = GetBuffer();
-                rsp.TxnBuf = GetBuffer();
-            }
-        }
+		internal static void GetBuffers(SmbComTransaction req, SmbComTransactionResponse 
+			rsp)
+		{
+			lock (Cache)
+			{
+				req.TxnBuf = GetBuffer();
+				rsp.TxnBuf = GetBuffer();
+			}
+		}
 
-        public static void ReleaseBuffer(byte[] buf)
-        {
-            lock (Cache)
-            {
-                if (_freeBuffers < MaxBuffers)
-                {
-                    for (int i = 0; i < MaxBuffers; i++)
-                    {
-                        if (Cache[i] == null)
-                        {
-                            Cache[i] = buf;
-                            _freeBuffers++;
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
+		public static void ReleaseBuffer(byte[] buf)
+		{
+			lock (Cache)
+			{
+				if (_freeBuffers < MaxBuffers)
+				{
+					for (int i = 0; i < MaxBuffers; i++)
+					{
+						if (Cache[i] == null)
+						{
+							Cache[i] = buf;
+							_freeBuffers++;
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
 }
