@@ -779,18 +779,18 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override string GetAudioArguments(StreamState state)
         {
-            var codec = EncodingHelper.GetAudioEncoder(state);
+            var audioCodec = EncodingHelper.GetAudioEncoder(state);
 
             if (!state.IsOutputVideo)
             {
-                if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     return "-acodec copy";
                 }
 
                 var audioTranscodeParams = new List<string>();
 
-                audioTranscodeParams.Add("-acodec " + codec);
+                audioTranscodeParams.Add("-acodec " + audioCodec);
 
                 if (state.OutputAudioBitrate.HasValue)
                 {
@@ -811,12 +811,19 @@ namespace MediaBrowser.Api.Playback.Hls
                 return string.Join(" ", audioTranscodeParams.ToArray());
             }
 
-            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                return "-codec:a:0 copy -copypriorss:a:0 0";
+                var videoCodec = EncodingHelper.GetVideoEncoder(state, ApiEntryPoint.Instance.GetEncodingOptions());
+
+                if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.EnableBreakOnNonKeyFrames(videoCodec))
+                {
+                    return "-codec:a:0 copy -copypriorss:a:0 0";
+                }
+
+                return "-codec:a:0 copy";
             }
 
-            var args = "-codec:a:0 " + codec;
+            var args = "-codec:a:0 " + audioCodec;
 
             var channels = state.OutputAudioChannels;
 
