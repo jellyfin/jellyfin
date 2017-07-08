@@ -5,14 +5,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-
 //using Windows.Networking;
 //using Windows.Networking.Sockets;
 
@@ -73,7 +71,7 @@ namespace SharpCifs.Util.Sharpen
 
         public static int BitCount(int val)
         {
-            uint num = (uint) val;
+            uint num = (uint)val;
             int count = 0;
             for (int i = 0; i < 32; i++)
             {
@@ -126,9 +124,10 @@ namespace SharpCifs.Util.Sharpen
 
         public static Encoding GetEncoding(string name)
         {
-            //Encoding e = Encoding.GetEncoding (name, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
+            //			Encoding e = Encoding.GetEncoding (name, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
             try
             {
+
                 Encoding e = Encoding.GetEncoding(name.Replace('_', '-'));
                 if (e is UTF8Encoding)
                     return new UTF8Encoding(false, true);
@@ -205,32 +204,12 @@ namespace SharpCifs.Util.Sharpen
 
         public static int GetOffset(this TimeZoneInfo tzone, long date)
         {
-            return (int) tzone.GetUtcOffset(MillisToDateTimeOffset(date, 0).DateTime).TotalMilliseconds;
-        }
-
-        public static InputStream GetResourceAsStream(this Type type, string name)
-        {
-            //Type.`Assembly` property deleted
-            //string str2 = type.Assembly.GetName().Name + ".resources";
-            string str2 = type.GetTypeInfo().Assembly.GetName().Name + ".resources";
-            string[] textArray1 = {str2, ".", type.Namespace, ".", name};
-            string str = string.Concat(textArray1);
-
-            //Type.`Assembly` property deleted
-            //Stream manifestResourceStream = type.Assembly.GetManifestResourceStream(str);
-            Stream manifestResourceStream = type.GetTypeInfo().Assembly.GetManifestResourceStream(str);
-            if (manifestResourceStream == null)
-            {
-                return null;
-            }
-            return InputStream.Wrap(manifestResourceStream);
+            return (int)tzone.GetUtcOffset(MillisToDateTimeOffset(date, 0).DateTime).TotalMilliseconds;
         }
 
         public static long GetTime(this DateTime dateTime)
         {
-            return
-                new DateTimeOffset(DateTime.SpecifyKind(dateTime, DateTimeKind.Utc), TimeSpan.Zero)
-                    .ToMillisecondsSinceEpoch();
+            return new DateTimeOffset(DateTime.SpecifyKind(dateTime, DateTimeKind.Utc), TimeSpan.Zero).ToMillisecondsSinceEpoch();
         }
 
         public static void InitCause(this Exception ex, Exception cause)
@@ -266,7 +245,7 @@ namespace SharpCifs.Util.Sharpen
         public static Iterator<T> Iterator<T>(this IEnumerable<T> col)
         {
             return new EnumeratorWrapper<T>(col, col.GetEnumerator());
-        }
+        } 
 
         public static T Last<T>(this ICollection<T> col)
         {
@@ -291,28 +270,27 @@ namespace SharpCifs.Util.Sharpen
 
         public static DateTime CreateDate(long milliSecondsSinceEpoch)
         {
-            long num = EpochTicks + (milliSecondsSinceEpoch*10000);
+            long num = EpochTicks + (milliSecondsSinceEpoch * 10000);
             return new DateTime(num);
         }
 
         public static DateTime CreateDateFromUTC(long milliSecondsSinceEpoch)
         {
-            long num = EpochTicks + (milliSecondsSinceEpoch*10000);
+            long num = EpochTicks + (milliSecondsSinceEpoch * 10000);
             return new DateTime(num, DateTimeKind.Utc);
         }
 
 
-        public static DateTimeOffset MillisToDateTimeOffset(long milliSecondsSinceEpoch,
-            long offsetMinutes)
+        public static DateTimeOffset MillisToDateTimeOffset(long milliSecondsSinceEpoch, long offsetMinutes)
         {
             TimeSpan offset = TimeSpan.FromMinutes(offsetMinutes);
-            long num = EpochTicks + (milliSecondsSinceEpoch*10000);
+            long num = EpochTicks + (milliSecondsSinceEpoch * 10000);
             return new DateTimeOffset(num + offset.Ticks, offset);
         }
 
         public static int NumberOfLeadingZeros(int val)
         {
-            uint num = (uint) val;
+            uint num = (uint)val;
             int count = 0;
             while ((num & 0x80000000) == 0)
             {
@@ -324,7 +302,7 @@ namespace SharpCifs.Util.Sharpen
 
         public static int NumberOfTrailingZeros(int val)
         {
-            uint num = (uint) val;
+            uint num = (uint)val;
             int count = 0;
             while ((num & 1) == 0)
             {
@@ -375,7 +353,7 @@ namespace SharpCifs.Util.Sharpen
         {
             Regex rgx = new Regex(regex);
 
-            if (replacement.IndexOfAny(new[] {'\\', '$'}) != -1)
+            if (replacement.IndexOfAny(new[] { '\\', '$' }) != -1)
             {
                 // Back references not yet supported
                 StringBuilder sb = new StringBuilder();
@@ -394,13 +372,7 @@ namespace SharpCifs.Util.Sharpen
             return rgx.Replace(str, replacement);
         }
 
-        public static bool RegionMatches(this
-                string str,
-            bool ignoreCase,
-            int toOffset,
-            string other,
-            int ooffset,
-            int len)
+        public static bool RegionMatches(this string str, bool ignoreCase, int toOffset, string other, int ooffset, int len)
         {
             if (toOffset < 0 || ooffset < 0 || toOffset + len > str.Length || ooffset + len > other.Length)
                 return false;
@@ -526,19 +498,14 @@ namespace SharpCifs.Util.Sharpen
         {
             if (dateTime.Kind != DateTimeKind.Utc)
             {
-                throw new ArgumentException(
-                    "dateTime is expected to be expressed as a UTC DateTime", "dateTime");
+                throw new ArgumentException("dateTime is expected to be expressed as a UTC DateTime", "dateTime");
             }
-            return new DateTimeOffset(DateTime.SpecifyKind(dateTime, DateTimeKind.Utc),
-                TimeSpan.Zero).ToMillisecondsSinceEpoch();
+            return new DateTimeOffset(DateTime.SpecifyKind(dateTime, DateTimeKind.Utc), TimeSpan.Zero).ToMillisecondsSinceEpoch();
         }
 
         public static long ToMillisecondsSinceEpoch(this DateTimeOffset dateTimeOffset)
         {
-            return (
-                ((dateTimeOffset.Ticks - dateTimeOffset.Offset.Ticks) - EpochTicks)
-                /TimeSpan.TicksPerMillisecond
-            );
+            return (((dateTimeOffset.Ticks - dateTimeOffset.Offset.Ticks) - EpochTicks) / TimeSpan.TicksPerMillisecond);
         }
 
         public static string ToOctalString(int val)
@@ -630,8 +597,8 @@ namespace SharpCifs.Util.Sharpen
             if (host == "0.0.0.0")
             {
                 return IPAddress.Any;
-            }
-
+            }                
+            
             try
             {
                 return IPAddress.Parse(host);
@@ -639,46 +606,41 @@ namespace SharpCifs.Util.Sharpen
             catch (Exception ex)
             {
                 return null;
-            }
+            }            
         }
 
         public static IPAddress[] GetAddressesByName(string host)
         {
-            try
-            {
-                //get v4-address only
-                return System.Net.Dns.GetHostEntryAsync(host)
-                                     .GetAwaiter()
-                                     .GetResult()
-                                     .AddressList
-                                     .Where(addr => addr.AddressFamily == AddressFamily.InterNetwork)
-                                     .ToArray();
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+            //IReadOnlyList<EndpointPair> data = null;
+
+            //try
+            //{
+            //    Task.Run(async () =>
+            //    {
+            //        data = await DatagramSocket.GetEndpointPairsAsync(new HostName(host), "0");
+            //    }).Wait();
+            //}
+            //catch (Exception ex)
+            //{
+            //    return null;
+            //}
+
+            //return data != null
+            //    ? data.Where(i => i.RemoteHostName.Type == HostNameType.Ipv4)
+            //          .GroupBy(i => i.RemoteHostName.DisplayName)
+            //          .Select(i => IPAddress.Parse(i.First().RemoteHostName.DisplayName))
+            //          .ToArray() 
+            //    : null;
+
+            //get v4-address only
+            var entry = Task.Run(() => System.Net.Dns.GetHostEntryAsync(host))
+                            .GetAwaiter()
+                            .GetResult();
+            return entry.AddressList
+                        .Where(addr => addr.AddressFamily == AddressFamily.InterNetwork)
+                        .ToArray();
+
         }
-
-
-        public static IPAddress[] GetLocalAddresses()
-        {
-            try
-            {
-                //get v4-address only
-                return NetworkInterface.GetAllNetworkInterfaces()
-                                       .SelectMany(i => i.GetIPProperties().UnicastAddresses)
-                                       .Select(ua => ua.Address)
-                                       .Where(addr => addr.AddressFamily == AddressFamily.InterNetwork
-                                                   && !IPAddress.IsLoopback(addr))
-                                       .ToArray();
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
 
         public static string GetImplementationVersion(this Assembly asm)
         {
@@ -705,11 +667,6 @@ namespace SharpCifs.Util.Sharpen
             return ((IPEndPoint)socket.LocalEndPoint).Port;
         }
 
-        public static IPAddress GetLocalInetAddress(this Socket socket)
-        {
-            return ((IPEndPoint)socket.LocalEndPoint).Address;
-        }
-
         public static int GetPort(this Socket socket)
         {
             return ((IPEndPoint)socket.RemoteEndPoint).Port;
@@ -721,16 +678,14 @@ namespace SharpCifs.Util.Sharpen
         }
 
 
-        /*
-        public static bool RemoveElement(this ArrayList list, object elem)
+        /*public static bool RemoveElement(this ArrayList list, object elem)
         {
             int i = list.IndexOf(elem);
             if (i == -1)
                 return false;
             list.RemoveAt(i);
             return true;
-        }
-        */
+        }*/
 
         public static Semaphore CreateSemaphore(int count)
         {

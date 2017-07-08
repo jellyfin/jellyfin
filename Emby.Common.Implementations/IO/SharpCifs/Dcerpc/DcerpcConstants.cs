@@ -16,24 +16,25 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Dcerpc
 {
-    public static class DcerpcConstants
-    {
-        public static Uuid DcerpcUuidSyntaxNdr = new Uuid("8a885d04-1ceb-11c9-9fe8-08002b104860");
+	public static class DcerpcConstants
+	{
+		public static Uuid DcerpcUuidSyntaxNdr = new Uuid("8a885d04-1ceb-11c9-9fe8-08002b104860"
+			);
 
-        public static int DcerpcFirstFrag = unchecked(0x01);
+		public static int DcerpcFirstFrag = unchecked(0x01);
 
-        public static int DcerpcLastFrag = unchecked(0x02);
+		public static int DcerpcLastFrag = unchecked(0x02);
 
-        public static int DcerpcPendingCancel = unchecked(0x04);
+		public static int DcerpcPendingCancel = unchecked(0x04);
 
-        public static int DcerpcReserved1 = unchecked(0x08);
+		public static int DcerpcReserved1 = unchecked(0x08);
 
-        public static int DcerpcConcMpx = unchecked(0x10);
+		public static int DcerpcConcMpx = unchecked(0x10);
 
-        public static int DcerpcDidNotExecute = unchecked(0x20);
+		public static int DcerpcDidNotExecute = unchecked(0x20);
 
-        public static int DcerpcMaybe = unchecked(0x40);
+		public static int DcerpcMaybe = unchecked(0x40);
 
-        public static int DcerpcObjectUuid = unchecked(0x80);
-    }
+		public static int DcerpcObjectUuid = unchecked(0x80);
+	}
 }

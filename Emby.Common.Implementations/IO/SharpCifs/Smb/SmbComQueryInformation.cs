@@ -16,42 +16,42 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace SharpCifs.Smb
 {
-    internal class SmbComQueryInformation : ServerMessageBlock
-    {
-        internal SmbComQueryInformation(string filename)
-        {
-            Path = filename;
-            Command = SmbComQueryInformation;
-        }
+	internal class SmbComQueryInformation : ServerMessageBlock
+	{
+		internal SmbComQueryInformation(string filename)
+		{
+			Path = filename;
+			Command = SmbComQueryInformation;
+		}
 
-        internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
-        {
-            return 0;
-        }
+		internal override int WriteParameterWordsWireFormat(byte[] dst, int dstIndex)
+		{
+			return 0;
+		}
 
-        internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
-        {
-            int start = dstIndex;
-            dst[dstIndex++] = 0x04;
-            dstIndex += WriteString(Path, dst, dstIndex);
-            return dstIndex - start;
-        }
+		internal override int WriteBytesWireFormat(byte[] dst, int dstIndex)
+		{
+			int start = dstIndex;
+			dst[dstIndex++] = 0x04;
+			dstIndex += WriteString(Path, dst, dstIndex);
+			return dstIndex - start;
+		}
 
-        internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex)
-        {
-            return 0;
-        }
+		internal override int ReadParameterWordsWireFormat(byte[] buffer, int bufferIndex
+			)
+		{
+			return 0;
+		}
 
-        internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
-        {
-            return 0;
-        }
+		internal override int ReadBytesWireFormat(byte[] buffer, int bufferIndex)
+		{
+			return 0;
+		}
 
-        public override string ToString()
-        {
-            return "SmbComQueryInformation["
-                        + base.ToString()
-                        + ",filename=" + Path + "]";
-        }
-    }
+		public override string ToString()
+		{
+			return "SmbComQueryInformation[" + base.ToString() + ",filename=" + Path
+				 + "]";
+		}
+	}
 }

@@ -18,23 +18,23 @@ using SharpCifs.Util;
 
 namespace SharpCifs.Smb
 {
+	
+	public sealed class NtlmChallenge
+	{
+		public byte[] Challenge;
 
-    public sealed class NtlmChallenge
-    {
-        public byte[] Challenge;
+		public UniAddress Dc;
 
-        public UniAddress Dc;
+		internal NtlmChallenge(byte[] challenge, UniAddress dc)
+		{
+			this.Challenge = challenge;
+			this.Dc = dc;
+		}
 
-        internal NtlmChallenge(byte[] challenge, UniAddress dc)
-        {
-            this.Challenge = challenge;
-            this.Dc = dc;
-        }
-
-        public override string ToString()
-        {
-            return "NtlmChallenge[challenge=0x" + Hexdump.ToHexString(Challenge, 0, Challenge.Length * 2)
-                                + ",dc=" + Dc + "]";
-        }
-    }
+		public override string ToString()
+		{
+			return "NtlmChallenge[challenge=0x" + Hexdump.ToHexString(Challenge, 0, Challenge
+				.Length * 2) + ",dc=" + Dc + "]";
+		}
+	}
 }

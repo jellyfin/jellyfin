@@ -18,38 +18,38 @@ using SharpCifs.Smb;
 
 namespace SharpCifs.Dcerpc.Msrpc
 {
-    public class MsrpcShareEnum : Srvsvc.ShareEnumAll
-    {
-        internal class MsrpcShareInfo1 : SmbShareInfo
-        {
-            internal MsrpcShareInfo1(MsrpcShareEnum enclosing, Srvsvc.ShareInfo1 info1)
-            {
-                this._enclosing = enclosing;
-                NetName = info1.Netname;
-                Type = info1.Type;
-                Remark = info1.Remark;
-            }
+	public class MsrpcShareEnum : Srvsvc.ShareEnumAll
+	{
+		internal class MsrpcShareInfo1 : SmbShareInfo
+		{
+			internal MsrpcShareInfo1(MsrpcShareEnum enclosing, Srvsvc.ShareInfo1 info1)
+			{
+				this._enclosing = enclosing;
+				NetName = info1.Netname;
+				Type = info1.Type;
+				Remark = info1.Remark;
+			}
 
-            private readonly MsrpcShareEnum _enclosing;
-        }
+			private readonly MsrpcShareEnum _enclosing;
+		}
 
-        public MsrpcShareEnum(string server)
-            : base("\\\\" + server, 1, new Srvsvc.ShareInfoCtr1(), -1, 0, 0)
-        {
-            Ptype = 0;
+		public MsrpcShareEnum(string server) : base("\\\\" + server, 1, new Srvsvc.ShareInfoCtr1
+			(), -1, 0, 0)
+		{
+			Ptype = 0;
             Flags = DcerpcConstants.DcerpcFirstFrag | DcerpcConstants.DcerpcLastFrag;
-        }
+		}
 
-        public virtual IFileEntry[] GetEntries()
-        {
-            Srvsvc.ShareInfoCtr1 ctr = (Srvsvc.ShareInfoCtr1)Info;
-            MsrpcShareInfo1[] entries = new MsrpcShareInfo1[ctr
-                .Count];
-            for (int i = 0; i < ctr.Count; i++)
-            {
-                entries[i] = new MsrpcShareInfo1(this, ctr.Array[i]);
-            }
-            return entries;
-        }
-    }
+		public virtual IFileEntry[] GetEntries()
+		{
+			Srvsvc.ShareInfoCtr1 ctr = (Srvsvc.ShareInfoCtr1)Info;
+			MsrpcShareInfo1[] entries = new MsrpcShareInfo1[ctr
+				.Count];
+			for (int i = 0; i < ctr.Count; i++)
+			{
+				entries[i] = new MsrpcShareInfo1(this, ctr.Array[i]);
+			}
+			return entries;
+		}
+	}
 }

@@ -24,55 +24,55 @@ using SharpCifs.Util.Sharpen;
 
 namespace SharpCifs.Util
 {
-    /// <summary>
-    /// 0 - nothing
-    /// 1 - critical [default]
-    /// 2 - basic info can be logged under load
-    /// 3 - almost everything
-    /// N - debugging
-    /// </summary>
-    public class LogStream : PrintWriter
-    {
+	/// <summary>
+	/// 0 - nothing
+	/// 1 - critical [default]
+	/// 2 - basic info can be logged under load
+	/// 3 - almost everything
+	/// N - debugging
+	/// </summary>
+	public class LogStream: PrintWriter
+{       
         private static LogStream _inst = null;
 
-        public int Level = 1;
+		public int Level = 1;
 
-        public void SetLevel(int level)
-        {
-            this.Level = level;
-        }
+		public void SetLevel(int level)
+		{
+			this.Level = level;
+		}
 
-        public LogStream(TextWriter other) : base(other)
-        {
+	    public LogStream(TextWriter other) : base(other)
+	    {
+	        
+	    }
 
-        }
+		/// <summary>
+		/// This must be called before <tt>getInstance</tt> is called or
+		/// it will have no effect.
+		/// </summary>
+		/// <remarks>
+		/// This must be called before <tt>getInstance</tt> is called or
+		/// it will have no effect.
+		/// </remarks>
+		public static void SetInstance(TextWriter other)
+		{
+			//inst = new Jcifs.Util.LogStream();
+		    _inst = new LogStream(other);            
+		}
 
-        /// <summary>
-        /// This must be called before <tt>getInstance</tt> is called or
-        /// it will have no effect.
-        /// </summary>
-        /// <remarks>
-        /// This must be called before <tt>getInstance</tt> is called or
-        /// it will have no effect.
-        /// </remarks>
-        public static void SetInstance(TextWriter other)
-        {
-            //inst = new Jcifs.Util.LogStream();
-            _inst = new LogStream(other);
-        }
-
-        public static LogStream GetInstance()
-        {
-            if (_inst == null)
-            {
+		public static LogStream GetInstance()
+		{
+			if (_inst == null)
+			{
                 SetInstance(Console.Error);
-            }
-            return _inst;
-        }
-
-        public override Encoding Encoding
-        {
-            get { throw new NotImplementedException(); }
-        }
-    }
+			}
+			return _inst;
+		}
+        
+	    public override Encoding Encoding
+	    {
+	        get { throw new NotImplementedException(); }
+	    }
+	}
 }
