@@ -1935,5 +1935,6 @@
   "ButtonScanAllLibraries": "Scan All Libraries",
   "ScanLibrary": "Scan library",
   "EnableStreamLooping": "Auto-loop live streams",
-  "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
+  "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested.",
+  "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt."
 }

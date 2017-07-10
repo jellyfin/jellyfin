@@ -518,5 +518,6 @@
     "OnlyImageFormats": "Seulement les formats image (VOBSUB, PGS, SUB \/ IDX, etc.)",
     "Normal": "Normal",
     "BurnSubtitlesHelp": "D\u00e9termine si le serveur doit graver les sous-titres lors de la conversion vid\u00e9o en fonction du format des sous-titres. \u00c9viter la gravure des sous-titres am\u00e9liorera les performances du serveur. S\u00e9lectionnez Auto pour graver les formats bas\u00e9s sur l'image (par exemple, VOBSUB, PGS, SUB \/ IDX, etc.) ainsi que certains sous-titres ASS \/ SSA",
-    "AllComplexFormats": "Tous les formats complexes (ASS, SSA, VOBSUB, PGS, SUB \/ IDX, etc.)"
+    "AllComplexFormats": "Tous les formats complexes (ASS, SSA, VOBSUB, PGS, SUB \/ IDX, etc.)",
+    "SubtitleAppearanceSettingsAlsoPassedToCastDevices": "These settings also apply to any Chromecast playback started by this device."
 }
