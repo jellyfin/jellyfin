@@ -518,5 +518,6 @@
     "OnlyImageFormats": "Only image formats (VOBSUB, PGS, SUB\/IDX, etc.)",
     "Normal": "Normal",
     "BurnSubtitlesHelp": "Determines if the server should burn in subtitles when converting video depending on the subtitles format. Avoiding burning in subtitles will improve server performance. Select Auto to burn image based formats (e.g. VOBSUB, PGS, SUB\/IDX, etc.) as well as certain ASS\/SSA subtitles",
-    "AllComplexFormats": "All complex formats (ASS, SSA, VOBSUB, PGS, SUB\/IDX, etc.)"
+    "AllComplexFormats": "All complex formats (ASS, SSA, VOBSUB, PGS, SUB\/IDX, etc.)",
+    "SubtitleAppearanceSettingsAlsoPassedToCastDevices": "These settings also apply to any Chromecast playback started by this device."
 }

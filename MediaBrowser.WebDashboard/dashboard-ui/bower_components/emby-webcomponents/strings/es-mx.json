@@ -518,5 +518,6 @@
     "OnlyImageFormats": "Solo formato de imagen (VOBSUB, PGS, SUB\/IDX, etc.)",
     "Normal": "Normal",
     "BurnSubtitlesHelp": "Determina si el servidor deber\u00eda quemar los subtitulos al convertir el video dependiendo en el formato de los subtitulos. Evitar los subtitulos quemados mejorara el rendimiento del servidor. Elija \"Auto\" para quemar los formatos basados en im\u00e1genes (por ejemplo VOBSUB, PGS, SUB\/IDX, etc.) as\u00ed como ciertos subtitulos ASS\/SSA",
-    "AllComplexFormats": "Todos los subtitulos complejos (ASS, SSA, VOBSUB, PGS, SUB\/IDX, etc.)"
+    "AllComplexFormats": "Todos los subtitulos complejos (ASS, SSA, VOBSUB, PGS, SUB\/IDX, etc.)",
+    "SubtitleAppearanceSettingsAlsoPassedToCastDevices": "Estos ajustes tambi\u00e9n aplican a cualquier reproducci\u00f3n de Chromecast iniciada por este dispositivo."
 }
