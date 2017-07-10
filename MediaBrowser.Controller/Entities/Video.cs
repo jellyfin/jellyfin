@@ -57,6 +57,22 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
+                var extraType = ExtraType;
+                if (extraType.HasValue)
+                {
+                    if (extraType.Value == Model.Entities.ExtraType.Sample)
+                    {
+                        return false;
+                    }
+                    if (extraType.Value == Model.Entities.ExtraType.ThemeVideo)
+                    {
+                        return false;
+                    }
+                    if (extraType.Value == Model.Entities.ExtraType.Trailer)
+                    {
+                        return false;
+                    }
+                }
                 return true;
             }
         }
