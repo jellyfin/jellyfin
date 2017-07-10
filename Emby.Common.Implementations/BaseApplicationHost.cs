@@ -561,7 +561,7 @@ namespace Emby.Common.Implementations
         {
             if (assembly == null)
             {
-                throw new ArgumentNullException("assembly");
+                return new List<Type>();
             }
 
             try
