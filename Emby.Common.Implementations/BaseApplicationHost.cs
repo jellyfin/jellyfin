@@ -560,12 +560,15 @@ namespace Emby.Common.Implementations
         {
             if (assembly == null)
             {
-                throw new ArgumentNullException("assembly");
+                return new List<Type>();
             }
 
             try
             {
-                return assembly.GetTypes();
+                // This null checking really shouldn't be needed but adding it due to some
+                // unhandled exceptions in mono 5.0 that are a little hard to hunt down
+                var types = assembly.GetTypes() ?? new Type[] { };
+                return types.Where(t => t != null);
             }
             catch (ReflectionTypeLoadException ex)
             {
@@ -578,7 +581,14 @@ namespace Emby.Common.Implementations
                 }
 
                 // If it fails we can still get a list of the Types it was able to resolve
-                return ex.Types.Where(t => t != null);
+                var types = ex.Types ?? new Type[] { };
+                return types.Where(t => t != null);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error loading types from assembly", ex);
+
+                return new List<Type>();
             }
         }
 
