@@ -1,4 +1,6 @@
 {
+    "HttpsRequiresCert": "Zg\u0142aszanie si\u0119 serwera na na zewn\u0119trznym adresie HTTPS, wymaga dostarczenia zaufanego certyfikatu SSL takiego, jak Lets Encrypt.",
+    "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
     "LabelPrevious": "Wstecz",
     "LabelFinish": "Zako\u0144cz",
     "LabelNext": "Dalej",

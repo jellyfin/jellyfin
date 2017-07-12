@@ -1,4 +1,6 @@
 {
+    "HttpsRequiresCert": "Um https als externe Adresse zu aktivieren, ben\u00f6tigst du ein vertrauensw\u00fcrdiges SSL-Zertifikat wie Let's Encrypt.",
+    "HeaderLatestDownloadedVideos": "Neueste heruntergeladene Videos",
     "LabelPrevious": "Vorheriges",
     "LabelFinish": "Fertig",
     "LabelNext": "N\u00e4chstes",
