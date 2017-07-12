@@ -75,6 +75,16 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.String.</returns>
         protected override string GetVideoArguments(StreamState state)
         {
+            if (!state.IsOutputVideo)
+            {
+                return string.Empty;
+            }
+            // No known video stream
+            if (state.VideoStream == null)
+            {
+                return string.Empty;
+            }
+
             var codec = EncodingHelper.GetVideoEncoder(state, ApiEntryPoint.Instance.GetEncodingOptions());
 
             var args = "-codec:v:0 " + codec;

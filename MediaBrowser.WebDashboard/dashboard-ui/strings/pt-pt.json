@@ -1,4 +1,6 @@
 {
+    "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
+    "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Terminar",
     "LabelNext": "Seguinte",

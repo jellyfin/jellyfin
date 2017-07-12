@@ -1,4 +1,6 @@
 {
+    "HttpsRequiresCert": "Pour pouvoir utiliser https comme adresse externe, vous devez fournir un certificat SSL v\u00e9rifi\u00e9, fourni par Let's Encrypt par exemple.",
+    "HeaderLatestDownloadedVideos": "Derni\u00e8res vid\u00e9os t\u00e9l\u00e9charg\u00e9es",
     "LabelPrevious": "Pr\u00e9c\u00e9dent",
     "LabelFinish": "Terminer",
     "LabelNext": "Suivant",
@@ -1821,7 +1823,7 @@
     "LabelAllowHWTranscoding": "Autoriser le transcodage mat\u00e9riel",
     "AllowHWTranscodingHelp": "Si activ\u00e9e, autorise le tuner \u00e0 transcoder les flux \u00e0 la vol\u00e9e. Cela peut aider \u00e0 r\u00e9duire le transcodage requis par le serveur Emby.",
     "OptionRequirePerfectSubtitleMatch": "Uniquement t\u00e9l\u00e9charger les sous titres qui conviennent parfaitement pour mes fichiers vid\u00e9os",
-    "OptionRequirePerfectSubtitleMatchHelp": "Requiring a perfect match will filter subtitles to include only those that have been tested and verified with your exact video file. Unchecking this will increase the likelihood of subtitles being downloaded, but will increase the chances of mistimed or incorrect subtitle text.",
+    "OptionRequirePerfectSubtitleMatchHelp": "En activant cette option, seuls les sous-titres ayant \u00e9t\u00e9 test\u00e9s et v\u00e9rifi\u00e9s avec votre fichier vid\u00e9o seront t\u00e9l\u00e9charg\u00e9s. En d\u00e9sactivant cette option, vous aurez plus de chance que des sous-titres soient t\u00e9l\u00e9charg\u00e9s, mais ils risquent d'\u00eatre d\u00e9cal\u00e9s ou incorrects.",
     "ErrorAddingGuestAccount1": "There was an error adding the Emby Connect account. Has your guest created an Emby account? They can sign up at {0}.",
     "ErrorAddingGuestAccount2": "Please ensure your guest has completed activation by following the instructions in the email sent after creating the account. If they did not receive this email then please send an email to {0}, and include your email address as well as theirs.",
     "GuestUserNotFound": "Utilisateur non trouv\u00e9. S'il vous pla\u00eet v\u00e9rifiez que le nom est correct et ressayez, ou essayez d'entrer leur adresse e-mail.",

@@ -1,4 +1,6 @@
 {
+    "HttpsRequiresCert": "Per abilitare https come indirizzo esterno, sar\u00e0 necessario fornire un certificato SSL attendibile, ad esempio Lets Encrypt.",
+    "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
     "LabelPrevious": "Precedente",
     "LabelFinish": "Finito",
     "LabelNext": "Prossimo",
@@ -1102,7 +1104,7 @@
     "HeaderViewStyles": "Stili Viste",
     "TabPhotos": "Foto",
     "HeaderWelcomeToEmby": "Benvenuto in Emby",
-    "EmbyIntroMessage": "Con Emby si pu\u00f2 facilmente lo streaming di video, musica e foto da smartphone, tablet e altri dispositivi dal vostro ricamato Server.",
+    "EmbyIntroMessage": "Con Emby si pu\u00f2 facilmente eseguire lo streaming di video, musica e foto da smartphone, tablet e altri dispositivi dal vostro Server Emby.",
     "ButtonSkip": "Salta",
     "TextConnectToServerManually": "Connetti al mio server manualmente",
     "ButtonSignInWithConnect": "Accedi con Emby Connect",

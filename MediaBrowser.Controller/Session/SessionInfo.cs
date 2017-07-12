@@ -203,6 +203,11 @@ namespace MediaBrowser.Controller.Session
 
         public void StartAutomaticProgress(ITimerFactory timerFactory, PlaybackProgressInfo progressInfo)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             lock (_progressLock)
             {
                 _lastProgressInfo = progressInfo;
@@ -223,6 +228,11 @@ namespace MediaBrowser.Controller.Session
 
         private async void OnProgressTimerCallback(object state)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             var progressInfo = _lastProgressInfo;
             if (progressInfo == null)
             {
@@ -274,8 +284,12 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
+        private bool _disposed = false;
+
         public void Dispose()
         {
+            _disposed = true;
+
             StopAutomaticProgress();
             _sessionManager = null;
         }
