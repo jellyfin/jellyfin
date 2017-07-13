@@ -67,7 +67,7 @@ namespace MediaBrowser.Controller.Channels
                 Name = id,
                 Id = id,
                 ReadAtNativeFramerate = ReadAtNativeFramerate,
-                SupportsDirectStream = false,
+                SupportsDirectStream = Protocol == MediaProtocol.Http && !string.IsNullOrWhiteSpace(Container) && !string.Equals(Container, "hls", StringComparison.OrdinalIgnoreCase),
                 SupportsDirectPlay = SupportsDirectPlay,
                 IsRemote = true
             };
