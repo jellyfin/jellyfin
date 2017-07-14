@@ -1,4 +1,5 @@
 {
+    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "MessageUnlockAppWithPurchaseOrSupporter": "L\u00e5s opp denne funksjonen med et engangskj\u00f8p, eller med et aktivt Emby Premiere abonnement.",
     "MessageUnlockAppWithSupporter": "L\u00e5s opp denne funksjonen med et aktivt Emby Premiere abonnement.",
     "MessageToValidateSupporter": "Hvis du har et aktivt Emby Premiere-abonnement, m\u00e5 du s\u00f8rge for at du har konfigurert Emby Premiere i Emby Server Dashboard, som du f\u00e5r tilgang til ved \u00e5 klikke Emby Premiere i hovedmenyen.",

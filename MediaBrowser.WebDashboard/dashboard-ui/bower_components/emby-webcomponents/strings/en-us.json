@@ -18,6 +18,7 @@
   "HeaderSelectDate": "Select Date",
   "ButtonOk": "Ok",
   "ButtonCancel": "Cancel",
+  "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
   "ButtonGotIt": "Got It",
   "ButtonRestart": "Restart",
   "RecordingCancelled": "Recording cancelled.",
