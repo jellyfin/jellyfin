@@ -855,11 +855,6 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 return string.Empty;
             }
-            // No known video stream
-            if (state.VideoStream == null)
-            {
-                return string.Empty;
-            }
 
             var codec = EncodingHelper.GetVideoEncoder(state, ApiEntryPoint.Instance.GetEncodingOptions());
 
