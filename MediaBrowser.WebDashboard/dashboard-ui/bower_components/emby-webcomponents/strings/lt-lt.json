@@ -1,5 +1,4 @@
 {
-    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "MessageUnlockAppWithPurchaseOrSupporter": "Atrakinkite \u0161i\u0105 funkcij\u0105 nedideliu vienkartiniu mokes\u010diu arba \u012fsigij\u0119 Emby Premiere prenumerat\u0105.",
     "MessageUnlockAppWithSupporter": "Atrakinkite \u0161i\u0105 funkcij\u0105 \u012fsigij\u0119 Emby Premiere prenumerat\u0105.",
     "MessageToValidateSupporter": "Jei turite aktyvi\u0105 Emby Premiere prenumerat\u0105, sutvarkykite Emby Premiere savo Emby Serverio skydelyje. Tai galite atlikti paspaud\u0117 Emby Premiere u\u017era\u0161\u0105 pagrindiniame meniu.",
@@ -19,6 +18,7 @@
     "HeaderSelectDate": "Pasirinkite dat\u0105",
     "ButtonOk": "OK",
     "ButtonCancel": "At\u0161aukti",
+    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "ButtonGotIt": "Supratau",
     "ButtonRestart": "I\u0161 naujo",
     "RecordingCancelled": "\u012era\u0161as at\u0161auktas.",
@@ -266,7 +266,6 @@
     "HeaderDeleteItems": "I\u0161trinti elementus",
     "ConfirmDeleteItems": "Tai atlikus \u0161ie elementai bus i\u0161trinti ir i\u0161 bibliotekos, ir i\u0161 fail\u0173 sistemos. Ar tikrai norite t\u0119sti?",
     "PleaseRestartServerName": "Pra\u0161au paleisti Emby Server\u012f i\u0161 naujo - {0}.",
-    "SyncJobCreated": "Sinchronizavimo darbas u\u017esakytas.",
     "LabelSyncJobName": "Sinchronizavimo darbo pavadinimas:",
     "LabelQuality": "Kokyb\u0117:",
     "LabelSyncNoTargetsHelp": "Atrodo, kad neturite joki\u0173 program\u0117li\u0173, kurios palaikyt\u0173 sinchronizavim\u0105.",

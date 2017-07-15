@@ -1,5 +1,4 @@
 {
-    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "MessageUnlockAppWithPurchaseOrSupporter": "Activa aquesta funcionalitat amb un \u00fanic pagament, o amb una subscripci\u00f3 activa d'Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Activa aquesta funcionalitat amb una subscripci\u00f3 activa d'Emby Premiere.",
     "MessageToValidateSupporter": "Si tens una subscripci\u00f3 activa d'Emby Premiere assegura't que l'has configurat al teu tauler de control de l'Emby Server, on pots accedir clicant a l'opci\u00f3 d'Emby Premiere al men\u00fa principal.",
@@ -19,6 +18,7 @@
     "HeaderSelectDate": "Seleccionar Data",
     "ButtonOk": "D'acord",
     "ButtonCancel": "Cancel\u00b7la",
+    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "ButtonGotIt": "Entesos",
     "ButtonRestart": "Reiniciar",
     "RecordingCancelled": "Enregistrament cancel\u00b7lat.",
@@ -266,7 +266,6 @@
     "HeaderDeleteItems": "Delete Items",
     "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
     "PleaseRestartServerName": "Please restart Emby Server - {0}.",
-    "SyncJobCreated": "Sync job created.",
     "LabelSyncJobName": "Sync job name:",
     "LabelQuality": "Qualitat:",
     "LabelSyncNoTargetsHelp": "It looks like you don't currently have any apps that support offline downloading.",

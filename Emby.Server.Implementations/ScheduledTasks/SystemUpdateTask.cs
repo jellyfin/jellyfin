@@ -71,8 +71,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
             // Create a progress object for the update check
             var updateInfo = await _appHost.CheckForApplicationUpdate(cancellationToken, new SimpleProgress<double>()).ConfigureAwait(false);
 
-            progress.Report(10);
-
             if (!updateInfo.IsUpdateAvailable)
             {
                 Logger.Debug("No application update available.");
@@ -87,15 +85,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 Logger.Info("Update Revision {0} available.  Updating...", updateInfo.AvailableVersion);
 
-                EventHandler<double> innerProgressHandler = (sender, e) => progress.Report(e * .9 + .1);
-
-                var innerProgress = new SimpleProgress<double>();
-                innerProgress.ProgressChanged += innerProgressHandler;
-
-                await _appHost.UpdateApplication(updateInfo.Package, cancellationToken, innerProgress).ConfigureAwait(false);
-
-                // Release the event handler
-                innerProgress.ProgressChanged -= innerProgressHandler;
+                await _appHost.UpdateApplication(updateInfo.Package, cancellationToken, progress).ConfigureAwait(false);
             }
             else
             {

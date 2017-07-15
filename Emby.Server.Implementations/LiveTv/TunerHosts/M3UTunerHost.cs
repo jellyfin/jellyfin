@@ -151,7 +151,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                     Id = channel.Path.GetMD5().ToString("N"),
                     IsInfiniteStream = true,
-                    IsRemote = true
+                    IsRemote = true,
+
+                    IgnoreDts = true
                 };
 
                 mediaSource.InferTotalBitrate();

@@ -1,5 +1,4 @@
 {
-    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "MessageUnlockAppWithPurchaseOrSupporter": "Sblocca questa funzionalit\u00e0 con un piccolo acquisto singolo, o con un abbonamento Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Sblocca questa funzionalit\u00e0 con un abbonamento Emby Premiere",
     "MessageToValidateSupporter": "Se hai un abbonamento Emby Premiere, assicurati di averlo configurato nel Pannello di Controllo del Server, a cui puoi accedere cliccando su Emby Premiere dal menu principale.",
@@ -19,6 +18,7 @@
     "HeaderSelectDate": "Scegli una data",
     "ButtonOk": "Ok",
     "ButtonCancel": "Annulla",
+    "AccessRestrictedTryAgainLater": "L'accesso \u00e8 attualmente limitato. Si prega di riprovare pi\u00f9 tardi.",
     "ButtonGotIt": "Ho capito",
     "ButtonRestart": "Riavvia",
     "RecordingCancelled": "Registrazione annullata.",
@@ -266,7 +266,6 @@
     "HeaderDeleteItems": "Elimina Elementi",
     "ConfirmDeleteItems": "L'eliminazione di questi elementi li canceller\u00e0 sia dal disco che dalla tua libreria multimediale. Sei sicuro di voler continuare?",
     "PleaseRestartServerName": "Per favore riavvia Emby Server - {0}.",
-    "SyncJobCreated": "Attivit\u00e0 di Sinc. creata",
     "LabelSyncJobName": "Nome Attivit\u00e0 di Sinc.:",
     "LabelQuality": "Qualit\u00e0:",
     "LabelSyncNoTargetsHelp": "Al momento non hai applicazioni che supportino il download offline.",

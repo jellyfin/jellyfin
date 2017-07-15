@@ -1,5 +1,4 @@
 {
-    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -19,6 +18,7 @@
     "HeaderSelectDate": "Seleccionar Fecha",
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancelar",
+    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "ButtonGotIt": "Lo tengo",
     "ButtonRestart": "Reiniciar",
     "RecordingCancelled": "Grabaci\u00f3n cancelada.",
@@ -266,7 +266,6 @@
     "HeaderDeleteItems": "Borrar \u00edtems",
     "ConfirmDeleteItems": "Al borrar este \u00edtem se borrar\u00e1 del sistema de archivos y de la biblioteca. \u00bfQuieres continuar?",
     "PleaseRestartServerName": "Please restart Emby Server - {0}.",
-    "SyncJobCreated": "Trabajo de sincronizaci\u00f3n creado.",
     "LabelSyncJobName": "Nombre del trabajo de sincronizaci\u00f3n:",
     "LabelQuality": "Calidad:",
     "LabelSyncNoTargetsHelp": "Parece que no tienes aplicaciones que soporten la sincronizaci\u00f3n.",

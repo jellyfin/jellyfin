@@ -1,5 +1,4 @@
 {
-    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -19,6 +18,7 @@
     "HeaderSelectDate": "\ub0a0\uc9dc \uc120\ud0dd",
     "ButtonOk": "OK",
     "ButtonCancel": "\ucde8\uc18c",
+    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "ButtonGotIt": "Got It",
     "ButtonRestart": "\ub2e4\uc2dc \uc2dc\uc791",
     "RecordingCancelled": "\ub179\ud654\uac00 \ucde8\uc18c\ub418\uc5c8\uc2b5\ub2c8\ub2e4.",
@@ -266,7 +266,6 @@
     "HeaderDeleteItems": "Delete Items",
     "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
     "PleaseRestartServerName": "Please restart Emby Server - {0}.",
-    "SyncJobCreated": "\ub3d9\uae30\ud654 \uc791\uc5c5\uc774 \uc0dd\uc131\ub418\uc5c8\uc2b5\ub2c8\ub2e4.",
     "LabelSyncJobName": "\ub3d9\uae30\ud654 \uc791\uc5c5 \uc774\ub984:",
     "LabelQuality": "\ud488\uc9c8:",
     "LabelSyncNoTargetsHelp": "\ud604\uc7ac \ub3d9\uae30\ud654\ub97c \uc9c0\uc6d0\ud558\ub294 \uc571\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.",
