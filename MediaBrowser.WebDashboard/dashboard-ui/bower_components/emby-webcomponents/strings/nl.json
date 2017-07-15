@@ -1,5 +1,4 @@
 {
-    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "MessageUnlockAppWithPurchaseOrSupporter": "Ontgrendel deze functie met een kleine eenmalige aankoop, of met een actief Emby Premiere abonnement.",
     "MessageUnlockAppWithSupporter": "Ontgrendel deze functie met een actief Emby Premiere abonnement.",
     "MessageToValidateSupporter": "Als u een actieve Emby Premiere abonnement heeft, zorg er dan voor dat u deze activeert in uw Emby Server Dashboard door te klikken op Emby Premiere in het hoofdmenu.",
@@ -19,6 +18,7 @@
     "HeaderSelectDate": "Selecteer Datum",
     "ButtonOk": "Ok",
     "ButtonCancel": "Annuleren",
+    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "ButtonGotIt": "Begrepen",
     "ButtonRestart": "Herstart",
     "RecordingCancelled": "Opname geannuleerd.",
@@ -266,7 +266,6 @@
     "HeaderDeleteItems": "Verwijder items",
     "ConfirmDeleteItems": "Het verwijderen van deze items verwijdert ze van het bestandssysteem en uit uw bibliotheek. Weet u zeker dat u verder wilt gaan?",
     "PleaseRestartServerName": "Herstart Emby Server - {0} aub.",
-    "SyncJobCreated": "Synchronisatie taak gemaakt.",
     "LabelSyncJobName": "Naam synchroniseer taak:",
     "LabelQuality": "Kwaliteit",
     "LabelSyncNoTargetsHelp": "Het lijkt erop dat u momenteel geen apps heeft die synchroniseren ondersteunen.",

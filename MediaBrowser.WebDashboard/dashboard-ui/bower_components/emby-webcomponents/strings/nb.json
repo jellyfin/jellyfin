@@ -1,5 +1,4 @@
 {
-    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "MessageUnlockAppWithPurchaseOrSupporter": "L\u00e5s opp denne funksjonen med et engangskj\u00f8p, eller med et aktivt Emby Premiere abonnement.",
     "MessageUnlockAppWithSupporter": "L\u00e5s opp denne funksjonen med et aktivt Emby Premiere abonnement.",
     "MessageToValidateSupporter": "Hvis du har et aktivt Emby Premiere-abonnement, m\u00e5 du s\u00f8rge for at du har konfigurert Emby Premiere i Emby Server Dashboard, som du f\u00e5r tilgang til ved \u00e5 klikke Emby Premiere i hovedmenyen.",
@@ -19,6 +18,7 @@
     "HeaderSelectDate": "Velg dato",
     "ButtonOk": "Ok",
     "ButtonCancel": "Avbryt",
+    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "ButtonGotIt": "Har det",
     "ButtonRestart": "Omstart",
     "RecordingCancelled": "Opptak er Avbrutt.",
@@ -266,7 +266,6 @@
     "HeaderDeleteItems": "Slett elementer",
     "ConfirmDeleteItems": "Slette disse elementene vil slette dem fra b\u00e5de filsystemet og mediebiblioteket . Er du sikker p\u00e5 at du vil fortsette?",
     "PleaseRestartServerName": "Vennligst start gj\u00f8r en omstart av Emby Server  - {0}",
-    "SyncJobCreated": "Synkroniseringsjobb p\u00e5begynt.",
     "LabelSyncJobName": "Navn p\u00e5 synkroniseringsjobb:",
     "LabelQuality": "Kvalitet:",
     "LabelSyncNoTargetsHelp": "Det ser ikke ut til at du har noen applikasjoner som st\u00f8tter synkronisering.",

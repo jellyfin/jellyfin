@@ -1,5 +1,4 @@
 {
-    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "MessageUnlockAppWithPurchaseOrSupporter": "Otklju\u010daj ovu mogu\u0107nost s malom jednokratnom kupnjom ili s aktivnom pretplatom Emby Premijere.",
     "MessageUnlockAppWithSupporter": "Otklju\u010daj ovu mogu\u0107nost sa pretplatom Emby Premijere.",
     "MessageToValidateSupporter": "Ako imate aktivnu pretplatu Emby Premijere provjerite dali ste postavili Emby Premijeru u svojoj nadzornoj plo\u010di Emby Server-a kojoj mo\u017eete pristupiti klikom Emby Premijera u glavnom izborniku.",
@@ -19,6 +18,7 @@
     "HeaderSelectDate": "Odaberi datum",
     "ButtonOk": "U redu",
     "ButtonCancel": "Odustani",
+    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "ButtonGotIt": "Shva\u0107am",
     "ButtonRestart": "Ponovo pokreni",
     "RecordingCancelled": "Snimka je otkazana.",
@@ -266,7 +266,6 @@
     "HeaderDeleteItems": "Brisanje stavki",
     "ConfirmDeleteItems": "Brisanjem ove stavke \u0107e se izbrisati iz oba datote\u010dnog sustava i medijskoj biblioteci. Jeste li sigurni da \u017eelite nastaviti?",
     "PleaseRestartServerName": "Ponovno pokrenite Emby Server - {0}.",
-    "SyncJobCreated": "Sinkronizacijski posao je stvoren.",
     "LabelSyncJobName": "Ime sinkronizacijskog posla:",
     "LabelQuality": "Kvaliteta:",
     "LabelSyncNoTargetsHelp": "Izgleda da trenutno nemate aplikacija koje podr\u017eavaju sinkronizaciju.",

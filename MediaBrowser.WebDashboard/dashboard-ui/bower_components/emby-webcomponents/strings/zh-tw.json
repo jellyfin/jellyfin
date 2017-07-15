@@ -1,5 +1,4 @@
 {
-    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -19,6 +18,7 @@
     "HeaderSelectDate": "\u9078\u64c7\u65e5\u671f",
     "ButtonOk": "\u78ba\u5b9a",
     "ButtonCancel": "\u53d6\u6d88",
+    "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "ButtonGotIt": "\u6211\u77e5\u9053\u4e86",
     "ButtonRestart": "Restart",
     "RecordingCancelled": "\u5df2\u53d6\u6d88\u6392\u7a0b\u9304\u88fd",
@@ -266,7 +266,6 @@
     "HeaderDeleteItems": "Delete Items",
     "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
     "PleaseRestartServerName": "Please restart Emby Server - {0}.",
-    "SyncJobCreated": "Sync job created.",
     "LabelSyncJobName": "Sync job name:",
     "LabelQuality": "Quality:",
     "LabelSyncNoTargetsHelp": "It looks like you don't currently have any apps that support offline downloading.",
