@@ -1,4 +1,5 @@
 {
+    "DownloadingDots": "Downloading...",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -93,7 +94,7 @@
     "MessageDownloadQueued": "Download queued.",
     "EditSubtitles": "Editar subt\u00edtulos",
     "UnlockGuide": "Gu\u00eda de desbloqueo",
-    "RefreshMetadata": "Refresh Metadata",
+    "RefreshMetadata": "Refresh metadata",
     "ReplaceExistingImages": "Reemplazar im\u00e1genes existentes",
     "ReplaceAllMetadata": "Replace all metadata",
     "SearchForMissingMetadata": "Search for missing metadata",
