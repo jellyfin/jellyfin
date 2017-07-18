@@ -1,5 +1,8 @@
 {
     "DownloadingDots": "L\u00e4dt herunter...",
+    "HeaderWaitingForWifi": "Waiting for Wifi",
+    "WifiRequiredToDownload": "A Wifi connection is required to continue downloading.",
+    "HeaderDownloadSettings": "Download Settings",
     "MessageUnlockAppWithPurchaseOrSupporter": "Schalte diese Funktion mit einer kleinen einmaligen Geb\u00fchr oder einem aktiven Emby Premium Abo frei.",
     "MessageUnlockAppWithSupporter": "Schalte diese Funktion mit einem aktiven Emby Premium Abo frei.",
     "MessageToValidateSupporter": "Wenn du eine aktive Emby Premiere Mitgliedschaft hast, stelle bitte sicher, dass du diese \u00fcber das Emby Server Dashboard eingerichtet hast (Hauptmenu -> Emby Premiere).",
