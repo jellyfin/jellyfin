@@ -512,10 +512,6 @@ namespace MediaBrowser.Api.Library
 
             var headers = new Dictionary<string, string>();
 
-            // Quotes are valid in linux. They'll possibly cause issues here
-            var filename = Path.GetFileName(item.Path).Replace("\"", string.Empty);
-            headers["Content-Disposition"] = string.Format("attachment; filename=\"{0}\"", filename);
-
             if (user != null)
             {
                 LogDownload(item, user, auth);

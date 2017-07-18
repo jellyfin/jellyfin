@@ -438,6 +438,15 @@ namespace Emby.Server.Implementations.HttpServer
             options.CacheKey = cacheKey.GetMD5();
             options.ContentFactory = () => Task.FromResult(GetFileStream(path, fileShare));
 
+            options.ResponseHeaders = options.ResponseHeaders ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            // Quotes are valid in linux. They'll possibly cause issues here
+            var filename = (Path.GetFileName(path) ?? string.Empty).Replace("\"", string.Empty);
+            if (!string.IsNullOrWhiteSpace(filename))
+            {
+                options.ResponseHeaders["Content-Disposition"] = "inline; filename=\"" + filename + "\"";
+            }
+
             return GetStaticResult(requestContext, options);
         }
 
