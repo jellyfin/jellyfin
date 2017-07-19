@@ -80,7 +80,7 @@ namespace MediaBrowser.Api.Playback
                             return 6;
                         }
 
-                        return 10;
+                        return 6;
                     }
 
                     if (IsSegmentedLiveStream)
