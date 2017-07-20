@@ -519,5 +519,10 @@
   "SubtitleAppearanceSettingsAlsoPassedToCastDevices": "These settings also apply to any Chromecast playback started by this device.",
   "HeaderWaitingForWifi": "Waiting for Wifi",
   "WifiRequiredToDownload": "A Wifi connection is required to continue downloading.",
-  "HeaderDownloadSettings": "Download Settings"
+  "HeaderDownloadSettings": "Download Settings",
+  "Hide": "Hide",
+  "HeaderStartNow": "Start Now",
+  "HeaderNextVideoPlayingInValue": "Next Video Playing in {0}",
+  "HeaderNextEpisodePlayingInValue": "Next Episode Playing in {0}",
+  "HeaderSecondsValue": "{0} Seconds"
 }

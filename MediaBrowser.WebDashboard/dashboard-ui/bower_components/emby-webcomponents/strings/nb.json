@@ -1,5 +1,13 @@
 {
     "DownloadingDots": "Downloading...",
+    "HeaderWaitingForWifi": "Waiting for Wifi",
+    "WifiRequiredToDownload": "A Wifi connection is required to continue downloading.",
+    "HeaderDownloadSettings": "Download Settings",
+    "Hide": "Hide",
+    "HeaderStartNow": "Start Now",
+    "HeaderNextVideoPlayingInValue": "Next Video Playing in {0}",
+    "HeaderSecondsValue": "{0} Seconds",
+    "HeaderNextEpisodePlayingInValue": "Next Episode Playing in {0}",
     "MessageUnlockAppWithPurchaseOrSupporter": "L\u00e5s opp denne funksjonen med et engangskj\u00f8p, eller med et aktivt Emby Premiere abonnement.",
     "MessageUnlockAppWithSupporter": "L\u00e5s opp denne funksjonen med et aktivt Emby Premiere abonnement.",
     "MessageToValidateSupporter": "Hvis du har et aktivt Emby Premiere-abonnement, m\u00e5 du s\u00f8rge for at du har konfigurert Emby Premiere i Emby Server Dashboard, som du f\u00e5r tilgang til ved \u00e5 klikke Emby Premiere i hovedmenyen.",
