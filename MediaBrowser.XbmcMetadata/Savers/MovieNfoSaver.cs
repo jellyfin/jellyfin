@@ -51,6 +51,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 //}
 
                 list.Add(Path.ChangeExtension(item.Path, ".nfo"));
+
+                if (!item.IsInMixedFolder)
+                {
+                    list.Add(Path.Combine(item.ContainingFolderPath, "movie.nfo"));
+                }
             }
 
             return list;
