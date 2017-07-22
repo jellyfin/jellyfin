@@ -12,7 +12,7 @@ namespace MediaBrowser.Common.Extensions
         /// </summary>
         public ResourceNotFoundException()
         {
-            
+
         }
 
         /// <summary>
@@ -20,6 +20,20 @@ namespace MediaBrowser.Common.Extensions
         /// </summary>
         /// <param name="message">The message.</param>
         public ResourceNotFoundException(string message)
+            : base(message)
+        {
+
+        }
+    }
+
+    public class RemoteServiceUnavailableException : Exception
+    {
+        public RemoteServiceUnavailableException()
+        {
+
+        }
+
+        public RemoteServiceUnavailableException(string message)
             : base(message)
         {
 

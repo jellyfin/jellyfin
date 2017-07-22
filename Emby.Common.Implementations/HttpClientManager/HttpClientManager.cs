@@ -736,10 +736,10 @@ namespace Emby.Common.Implementations.HttpClientManager
             {
                 if (options.LogErrors)
                 {
-                    _logger.ErrorException("Error getting response from " + options.Url, ex);
+                    _logger.ErrorException("Error " + webException.Status + " getting response from " + options.Url, webException);
                 }
 
-                var exception = new HttpException(ex.Message, ex);
+                var exception = new HttpException(webException.Message, webException);
 
                 var response = webException.Response as HttpWebResponse;
                 if (response != null)
@@ -749,6 +749,15 @@ namespace Emby.Common.Implementations.HttpClientManager
                     if ((int)response.StatusCode == 429)
                     {
                         client.LastTimeout = DateTime.UtcNow;
+                    }
+                }
+
+                if (!exception.StatusCode.HasValue)
+                {
+                    if (webException.Status == WebExceptionStatus.NameResolutionFailure ||
+                        webException.Status == WebExceptionStatus.ConnectFailure)
+                    {
+                        exception.IsTimedOut = true;
                     }
                 }
 

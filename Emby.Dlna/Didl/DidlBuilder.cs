@@ -399,6 +399,46 @@ namespace Emby.Dlna.Didl
                 }
                 return _localization.GetLocalizedString("HeaderPeople");
             }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.Latest)
+            {
+                return _localization.GetLocalizedString("ViewTypeMusicLatest");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.Playlists)
+            {
+                return _localization.GetLocalizedString("ViewTypeMusicPlaylists");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.AlbumArtists)
+            {
+                return _localization.GetLocalizedString("ViewTypeMusicAlbumArtists");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.Albums)
+            {
+                return _localization.GetLocalizedString("ViewTypeMusicAlbums");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.Artists)
+            {
+                return _localization.GetLocalizedString("ViewTypeMusicArtists");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.Songs)
+            {
+                return _localization.GetLocalizedString("ViewTypeMusicSongs");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.Genres)
+            {
+                return _localization.GetLocalizedString("ViewTypeTvGenres");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteAlbums)
+            {
+                return _localization.GetLocalizedString("ViewTypeMusicFavoriteAlbums");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteArtists)
+            {
+                return _localization.GetLocalizedString("ViewTypeMusicFavoriteArtists");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteSongs)
+            {
+                return _localization.GetLocalizedString("ViewTypeMusicFavoriteSongs");
+            }
 
             var episode = item as Episode;
             var season = context as Season;

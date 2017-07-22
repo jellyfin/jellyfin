@@ -242,10 +242,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                      "css/site.css" + versionString,
-                                      "css/librarymenu.css" + versionString,
-                                      "css/librarybrowser.css" + versionString,
-                                      "thirdparty/paper-button-style.css" + versionString
+                                      "css/site.css" + versionString
                             };
 
             var tags = files.Select(s => string.Format("<link rel=\"stylesheet\" href=\"{0}\" async />", s)).ToArray();
