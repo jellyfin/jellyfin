@@ -183,8 +183,6 @@
     "OptionCommunityRating": "Ocjeni zajednice",
     "OptionNameSort": "Nazivu",
     "OptionFolderSort": "Mape",
-    "OptionBudget": "Bud\u017eet",
-    "OptionRevenue": "Prihod",
     "OptionPoster": "Poster",
     "OptionPosterCard": "Kartice postera",
     "OptionBackdrop": "Pozadina",
@@ -1822,8 +1820,6 @@
     "AllowHWTranscodingHelp": "Ako je omogu\u0107eno, omogu\u0107ite TV\/radio ure\u0111aju da konvertira strujanja u letu. Ovo mo\u017ee pomo\u0107i smanjiti konvertiranje koje zahtijeva Emby Server.",
     "OptionRequirePerfectSubtitleMatch": "Samo preuzimanje titlova prijevoda koji su savr\u0161en izbor za moje video datoteke",
     "OptionRequirePerfectSubtitleMatchHelp": "Requiring a perfect match will filter subtitles to include only those that have been tested and verified with your exact video file. Unchecking this will increase the likelihood of subtitles being downloaded, but will increase the chances of mistimed or incorrect subtitle text.",
-    "ErrorAddingGuestAccount1": "Do\u0161lo je do pogre\u0161ke prilikom dodavanja \"Emby Connect\" ra\u010duna. Je li va\u0161 gost stvorio Emby ra\u010dun? Oni se mogu prijaviti na {0}.",
-    "ErrorAddingGuestAccount2": "Provjerite da su va\u0161i gosti zavr\u0161ili aktivaciju slijede\u0107i upute u e-po\u0161ti poslane nakon izrade ra\u010duna. Ako nisu primili ovu e-po\u0161tu onda po\u0161aljite e-po\u0161tu na {0} uklju\u010duju\u0107i va\u0161u e-mail adresu kao i njihovu.",
     "GuestUserNotFound": "Korisnik nije prona\u0111en. Provjerite da je naziv ispravan i poku\u0161ajte ponovno ili poku\u0161ajte unijeti svoju adresu e-po\u0161te.",
     "Yesterday": "Ju\u010der",
     "DownloadImagesInAdvanceWarning": "Preuzimanje svih slika unaprijed rezultirati \u0107e du\u017eim skeniranjem biblioteke.",
@@ -1937,5 +1933,9 @@
     "ButtonScanAllLibraries": "Scan All Libraries",
     "ScanLibrary": "Scan library",
     "EnableStreamLooping": "Auto-loop live streams",
-    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
+    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested.",
+    "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
+    "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
+    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
 }

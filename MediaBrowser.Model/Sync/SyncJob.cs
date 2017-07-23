@@ -59,7 +59,7 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the status.
         /// </summary>
         /// <value>The status.</value>
-        public SyncJobStatus Status { get; set; }        
+        public SyncJobStatus Status { get; set; }
         /// <summary>
         /// Gets or sets the user identifier.
         /// </summary>
@@ -105,9 +105,12 @@ namespace MediaBrowser.Model.Sync
         public string PrimaryImageItemId { get; set; }
         public string PrimaryImageTag { get; set; }
 
+        public bool EnableAutomaticResync { get; set; }
+
         public SyncJob()
         {
             RequestedItemIds = new List<string>();
+            EnableAutomaticResync = true;
         }
     }
 }

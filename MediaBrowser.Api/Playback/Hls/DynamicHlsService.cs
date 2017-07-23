@@ -18,6 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Services;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
@@ -777,20 +778,20 @@ namespace MediaBrowser.Api.Playback.Hls
             return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
-        protected override string GetAudioArguments(StreamState state)
+        protected override string GetAudioArguments(StreamState state, EncodingOptions encodingOptions)
         {
-            var codec = EncodingHelper.GetAudioEncoder(state);
+            var audioCodec = EncodingHelper.GetAudioEncoder(state);
 
             if (!state.IsOutputVideo)
             {
-                if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     return "-acodec copy";
                 }
 
                 var audioTranscodeParams = new List<string>();
 
-                audioTranscodeParams.Add("-acodec " + codec);
+                audioTranscodeParams.Add("-acodec " + audioCodec);
 
                 if (state.OutputAudioBitrate.HasValue)
                 {
@@ -811,12 +812,19 @@ namespace MediaBrowser.Api.Playback.Hls
                 return string.Join(" ", audioTranscodeParams.ToArray());
             }
 
-            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                return "-codec:a:0 copy -copypriorss:a:0 0";
+                var videoCodec = EncodingHelper.GetVideoEncoder(state, encodingOptions);
+
+                if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.EnableBreakOnNonKeyFrames(videoCodec))
+                {
+                    return "-codec:a:0 copy -copypriorss:a:0 0";
+                }
+
+                return "-codec:a:0 copy";
             }
 
-            var args = "-codec:a:0 " + codec;
+            var args = "-codec:a:0 " + audioCodec;
 
             var channels = state.OutputAudioChannels;
 
@@ -837,19 +845,19 @@ namespace MediaBrowser.Api.Playback.Hls
                 args += " -ar " + state.OutputAudioSampleRate.Value.ToString(UsCulture);
             }
 
-            args += " " + EncodingHelper.GetAudioFilterParam(state, ApiEntryPoint.Instance.GetEncodingOptions(), true);
+            args += " " + EncodingHelper.GetAudioFilterParam(state, encodingOptions, true);
 
             return args;
         }
 
-        protected override string GetVideoArguments(StreamState state)
+        protected override string GetVideoArguments(StreamState state, EncodingOptions encodingOptions)
         {
             if (!state.IsOutputVideo)
             {
                 return string.Empty;
             }
 
-            var codec = EncodingHelper.GetVideoEncoder(state, ApiEntryPoint.Instance.GetEncodingOptions());
+            var codec = EncodingHelper.GetVideoEncoder(state, encodingOptions);
 
             var args = "-codec:v:0 " + codec;
 
@@ -874,8 +882,6 @@ namespace MediaBrowser.Api.Playback.Hls
                     state.SegmentLength.ToString(UsCulture));
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
-
-                var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
 
                 args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultH264Preset()) + keyFrameArg;
 
@@ -911,9 +917,8 @@ namespace MediaBrowser.Api.Playback.Hls
             return args;
         }
 
-        protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
+        protected override string GetCommandLineArguments(string outputPath, EncodingOptions encodingOptions, StreamState state, bool isEncoding)
         {
-            var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
             var threads = EncodingHelper.GetNumberOfThreads(state, encodingOptions, false);
 
             var inputModifier = EncodingHelper.GetInputModifier(state, encodingOptions);
@@ -940,7 +945,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 segmentFormat = "mpegts";
             }
 
-            var videoCodec = EncodingHelper.GetVideoEncoder(state, ApiEntryPoint.Instance.GetEncodingOptions());
+            var videoCodec = EncodingHelper.GetVideoEncoder(state, encodingOptions);
             var breakOnNonKeyFrames = state.EnableBreakOnNonKeyFrames(videoCodec);
 
             var breakOnNonKeyFramesArg = breakOnNonKeyFrames ? " -break_non_keyframes 1" : "";
@@ -950,8 +955,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 EncodingHelper.GetInputArgument(state, encodingOptions),
                 threads,
                 mapArgs,
-                GetVideoArguments(state),
-                GetAudioArguments(state),
+                GetVideoArguments(state, encodingOptions),
+                GetAudioArguments(state, encodingOptions),
                 state.SegmentLength.ToString(UsCulture),
                 startNumberParam,
                 outputPath,

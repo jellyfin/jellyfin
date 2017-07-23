@@ -24,14 +24,14 @@ namespace Emby.Dlna.Service
             return EventManager.CancelEventSubscription(subscriptionId);
         }
 
-        public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, int? timeoutSeconds)
+        public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string timeoutString)
         {
-            return EventManager.RenewEventSubscription(subscriptionId, timeoutSeconds);
+            return EventManager.RenewEventSubscription(subscriptionId, timeoutString);
         }
 
-        public EventSubscriptionResponse CreateEventSubscription(string notificationType, int? timeoutSeconds, string callbackUrl)
+        public EventSubscriptionResponse CreateEventSubscription(string notificationType, string timeoutString, string callbackUrl)
         {
-            return EventManager.CreateEventSubscription(notificationType, timeoutSeconds, callbackUrl);
+            return EventManager.CreateEventSubscription(notificationType, timeoutString, callbackUrl);
         }
     }
 }

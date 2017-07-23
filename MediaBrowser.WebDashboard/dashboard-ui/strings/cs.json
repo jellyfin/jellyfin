@@ -183,8 +183,6 @@
     "OptionCommunityRating": "Hodnocen\u00ed komunity",
     "OptionNameSort": "N\u00e1zev",
     "OptionFolderSort": "Slo\u017eky",
-    "OptionBudget": "Rozpo\u010det",
-    "OptionRevenue": "P\u0159\u00edjem",
     "OptionPoster": "Plak\u00e1t",
     "OptionPosterCard": "Plak\u00e1t",
     "OptionBackdrop": "Pozad\u00ed",
@@ -1822,8 +1820,6 @@
     "AllowHWTranscodingHelp": "Pokud nastav\u00edte, povol\u00edte tuneru p\u0159ek\u00f3dov\u00e1n\u00ed v re\u00e1ln\u00e9m \u010dase. M\u016f\u017ee sn\u00ed\u017eit z\u00e1t\u011b\u017e p\u0159ek\u00f3dov\u00e1v\u00e1n\u00ed po\u017eadovan\u00e9 Emby Serverem.",
     "OptionRequirePerfectSubtitleMatch": "Stahovat jen titulky, kter\u00e9 perfektn\u011b sed\u00ed k m\u00fdm video soubor\u016fm.",
     "OptionRequirePerfectSubtitleMatchHelp": "Requiring a perfect match will filter subtitles to include only those that have been tested and verified with your exact video file. Unchecking this will increase the likelihood of subtitles being downloaded, but will increase the chances of mistimed or incorrect subtitle text.",
-    "ErrorAddingGuestAccount1": "Do\u0161lo k chyb\u011b p\u0159i p\u0159id\u00e1v\u00e1n\u00ed \u00fa\u010dtu Emby Connect. M\u00e1 v\u00e1\u0161 nov\u00fd u\u017eivatel vytvo\u0159en\u00fd \u00fa\u010det Emby? U\u017eivatel\u00e9 se mohou p\u0159ihl\u00e1sit na {0}.",
-    "ErrorAddingGuestAccount2": "Ujist\u011bte se pros\u00edm, \u017ee v\u00e1\u0161 nov\u00fd u\u017eivatel dokon\u010dil aktivaci dle pokyn\u016f z e-mailu zaslan\u00e9m po vytvo\u0159en\u00ed \u00fa\u010dtu. Jestli\u017ee nedostali takov\u00fd e-mail, pak pros\u00edm po\u0161lete email na {0}, a p\u0159ipojte svoj\u00ed e-mailovou adresu, stejn\u011b jako jejich.",
     "GuestUserNotFound": "U\u017eivatel nenalezen. Pros\u00edm, ujist\u011bte se, \u017ee n\u00e1zev je spr\u00e1vn\u00fd a zkuste to znovu, nebo zkuste zadat jejich e-mailovou adresu.",
     "Yesterday": "V\u010dera",
     "DownloadImagesInAdvanceWarning": "St\u00e1hnut\u00ed v\u0161ech obr\u00e1zk\u016f p\u0159edem m\u016f\u017ee prodlou\u017eit skenov\u00e1n\u00ed knihovny.",
@@ -1937,5 +1933,9 @@
     "ButtonScanAllLibraries": "Scan All Libraries",
     "ScanLibrary": "Scan library",
     "EnableStreamLooping": "Auto-loop live streams",
-    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
+    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested.",
+    "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
+    "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
+    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
 }

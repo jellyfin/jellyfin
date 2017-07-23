@@ -134,7 +134,7 @@ namespace MediaBrowser.Api.Playback
 
                 SetDeviceSpecificData(item, result.MediaSource, profile, authInfo, request.MaxStreamingBitrate,
                     request.StartTimeTicks ?? 0, result.MediaSource.Id, request.AudioStreamIndex,
-                    request.SubtitleStreamIndex, request.MaxAudioChannels, request.PlaySessionId, request.UserId, request.EnableDirectPlay, request.ForceDirectPlayRemoteMediaSource, request.EnableDirectStream, true, true, true);
+                    request.SubtitleStreamIndex, request.MaxAudioChannels, request.PlaySessionId, request.UserId, request.EnableDirectPlay, true, request.EnableDirectStream, true, true, true);
             }
             else
             {
@@ -176,7 +176,7 @@ namespace MediaBrowser.Api.Playback
             {
                 var mediaSourceId = request.MediaSourceId;
 
-                SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate ?? profile.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex, request.MaxAudioChannels, request.UserId, request.EnableDirectPlay, request.ForceDirectPlayRemoteMediaSource, request.EnableDirectStream, request.EnableTranscoding, request.AllowVideoStreamCopy, request.AllowAudioStreamCopy);
+                SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate ?? profile.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex, request.MaxAudioChannels, request.UserId, request.EnableDirectPlay, true, request.EnableDirectStream, request.EnableTranscoding, request.AllowVideoStreamCopy, request.AllowAudioStreamCopy);
             }
 
             if (request.AutoOpenLiveStream)
@@ -191,7 +191,6 @@ namespace MediaBrowser.Api.Playback
                         DeviceProfile = request.DeviceProfile,
                         EnableDirectPlay = request.EnableDirectPlay,
                         EnableDirectStream = request.EnableDirectStream,
-                        ForceDirectPlayRemoteMediaSource = request.ForceDirectPlayRemoteMediaSource,
                         ItemId = request.Id,
                         MaxAudioChannels = request.MaxAudioChannels,
                         MaxStreamingBitrate = request.MaxStreamingBitrate,
@@ -199,7 +198,8 @@ namespace MediaBrowser.Api.Playback
                         StartTimeTicks = request.StartTimeTicks,
                         SubtitleStreamIndex = request.SubtitleStreamIndex,
                         UserId = request.UserId,
-                        OpenToken = mediaSource.OpenToken
+                        OpenToken = mediaSource.OpenToken,
+                        EnableMediaProbe = request.EnableMediaProbe
 
                     }).ConfigureAwait(false);
 

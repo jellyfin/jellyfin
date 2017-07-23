@@ -1,4 +1,4 @@
-﻿<div id="scheduledTaskPage" data-role="page" class="page type-interior scheduledTasksConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Scheduled%20tasks" data-require="jQuery,jqmpopup,scripts/scheduledtaskpage,emby-input,emby-button,emby-select">
+﻿<div id="scheduledTaskPage" data-role="page" class="page type-interior scheduledTasksConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Scheduled%20tasks">
     <div>
         <div class="content-primary">
 
@@ -10,7 +10,7 @@
                     <h2 style="margin: .6em 0; vertical-align: middle; display: inline-block;">
                         ${HeaderTaskTriggers}
                     </h2>
-                    <button is="emby-button" type="button" class="raised btnInvite submit raised-mini" style="margin-left: 1em;" title="${ButtonAddScheduledTaskTrigger}" onclick="ScheduledTaskPage.showAddTriggerPopup();">
+                    <button is="emby-button" type="button" class="raised btnAddTrigger submit raised-mini" style="margin-left: 1em;" title="${ButtonAddScheduledTaskTrigger}">
                         <i class="md-icon">add</i>
                         <span>${ButtonAdd}</span>
                     </button>
@@ -26,7 +26,7 @@
             </div>
             <div data-role="content">
                 <div class="selectContainer">
-                    <select is="emby-select" id="selectTriggerType" name="selectTriggerType" label="${LabelTriggerType}" onchange="ScheduledTaskPage.refreshTriggerFields(this.value);">
+                    <select is="emby-select" id="selectTriggerType" class="selectTriggerType" label="${LabelTriggerType}">
                         <option value="DailyTrigger">${OptionDaily}</option>
                         <option value="WeeklyTrigger">${OptionWeekly}</option>
                         <option value="IntervalTrigger">${OptionOnInterval}</option>

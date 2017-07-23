@@ -50,6 +50,20 @@ namespace MediaBrowser.Api
         }
     }
 
+    [Route("/Environment/ValidatePath", "POST", Summary = "Gets the contents of a given directory in the file system")]
+    public class ValidatePath
+    {
+        /// <summary>
+        /// Gets or sets the path.
+        /// </summary>
+        /// <value>The path.</value>
+        [ApiMember(Name = "Path", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Path { get; set; }
+
+        public bool ValidateWriteable { get; set; }
+        public bool? IsFile { get; set; }
+    }
+
     [Route("/Environment/NetworkShares", "GET", Summary = "Gets shares from a network device")]
     public class GetNetworkShares : IReturn<List<FileSystemEntryInfo>>
     {
@@ -112,7 +126,7 @@ namespace MediaBrowser.Api
         /// The _network manager
         /// </summary>
         private readonly INetworkManager _networkManager;
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EnvironmentService" /> class.
@@ -127,6 +141,48 @@ namespace MediaBrowser.Api
 
             _networkManager = networkManager;
             _fileSystem = fileSystem;
+        }
+
+        public void Post(ValidatePath request)
+        {
+            if (request.IsFile.HasValue)
+            {
+                if (request.IsFile.Value)
+                {
+                    if (!_fileSystem.FileExists(request.Path))
+                    {
+                        throw new FileNotFoundException("File not found", request.Path);
+                    }
+                }
+                else
+                {
+                    if (!_fileSystem.DirectoryExists(request.Path))
+                    {
+                        throw new FileNotFoundException("File not found", request.Path);
+                    }
+                }
+            }
+
+            else
+            {
+                if (!_fileSystem.FileExists(request.Path) && !_fileSystem.DirectoryExists(request.Path))
+                {
+                    throw new FileNotFoundException("Path not found", request.Path);
+                }
+
+                if (request.ValidateWriteable)
+                {
+                    EnsureWriteAccess(request.Path);
+                }
+            }
+        }
+
+        protected void EnsureWriteAccess(string path)
+        {
+            var file = Path.Combine(path, Guid.NewGuid().ToString());
+
+            _fileSystem.WriteAllText(file, string.Empty);
+            _fileSystem.DeleteFile(file);
         }
 
         public object Get(GetDefaultDirectoryBrowser request)

@@ -183,8 +183,6 @@
     "OptionCommunityRating": "Community Rangering",
     "OptionNameSort": "Navn",
     "OptionFolderSort": "Mapper",
-    "OptionBudget": "Budsjett",
-    "OptionRevenue": "Inntjening",
     "OptionPoster": "Plakat",
     "OptionPosterCard": "Plakatkort",
     "OptionBackdrop": "Bakgrunn",
@@ -1822,8 +1820,6 @@
     "AllowHWTranscodingHelp": "Hvis aktivert, vil tuneren \u00e5 omkode str\u00f8mmer. Dette kan bidra til \u00e5 redusere transkoding som kreves av Emby Server.",
     "OptionRequirePerfectSubtitleMatch": "Kun last ned undertekster som er perfekt match for mine filer",
     "OptionRequirePerfectSubtitleMatchHelp": "Requiring a perfect match will filter subtitles to include only those that have been tested and verified with your exact video file. Unchecking this will increase the likelihood of subtitles being downloaded, but will increase the chances of mistimed or incorrect subtitle text.",
-    "ErrorAddingGuestAccount1": "Det oppstod en feil \u00e5 legge den Emby Connect-kontoen. Har din gjest opprettet en Emby konto? De kan melde seg opp her {0}.",
-    "ErrorAddingGuestAccount2": "Vennligst sikre at gjesten har fullf\u00f8rt aktivering ved \u00e5 f\u00f8lge instruksjonene i e-posten som sendes etter at du opprettet kontoen. Hvis de ikke har mottatt denne e-posten s\u00e5 kan du sende en e-post til {0}, og inkluderer e-postadressen din, s\u00e5 vel som deres.",
     "GuestUserNotFound": "Brukernavn ikke funnet. Vennligst sjekk av brukernavn er korrekt og pr\u00f8v igjen. Eller pr\u00f8v med deres epost adresse.",
     "Yesterday": "Ig\u00e5r",
     "DownloadImagesInAdvanceWarning": "Last ned alle bilder i forkant vil resultere i lenger bibliotek indeksering.",
@@ -1937,5 +1933,9 @@
     "ButtonScanAllLibraries": "Scan All Libraries",
     "ScanLibrary": "Scan library",
     "EnableStreamLooping": "Auto-loop live streams",
-    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
+    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested.",
+    "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
+    "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
+    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
 }

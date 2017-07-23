@@ -183,8 +183,6 @@
     "OptionCommunityRating": "Calificaci\u00f3n de la Comunidad",
     "OptionNameSort": "Nombre",
     "OptionFolderSort": "Carpetas",
-    "OptionBudget": "Presupuesto",
-    "OptionRevenue": "Recaudaci\u00f3n",
     "OptionPoster": "P\u00f3ster",
     "OptionPosterCard": "Tarjeta de P\u00f3ster",
     "OptionBackdrop": "Imagen de Fondo",
@@ -1821,9 +1819,7 @@
     "LabelAllowHWTranscoding": "Permitir transcodificacion de hardware",
     "AllowHWTranscodingHelp": "Si se habilita, permite a la sintonizadora transcodificar transmisiones al vuelo. Esto podr\u00eda ayudar a reducir la transcodificacion requer\u00eda por el Servidor Emby.",
     "OptionRequirePerfectSubtitleMatch": "Solo descargar subtitulos que corresponden perfectamente para mis archivos de video.",
-    "OptionRequirePerfectSubtitleMatchHelp": "Requiring a perfect match will filter subtitles to include only those that have been tested and verified with your exact video file. Unchecking this will increase the likelihood of subtitles being downloaded, but will increase the chances of mistimed or incorrect subtitle text.",
-    "ErrorAddingGuestAccount1": "Hubo un error agregando la cuenta de Emby Connect. \u00bfSu invitado ya ha creado una cuenta de Emby Connect? Puede registrarse en {0}.",
-    "ErrorAddingGuestAccount2": "Por favor aseg\u00farese de que su invitado ha completado la activaci\u00f3n siguiendo las instrucciones que le fueron enviadas en el correo electr\u00f3nico despu\u00e9s de crear la cuenta. Si no recibi\u00f3 dicho correo entonces escriba un correo electr\u00f3nico a {0}, e incluya su direcci\u00f3n de correo electr\u00f3nico ademas de la de su invitado.",
+    "OptionRequirePerfectSubtitleMatchHelp": "Solicitar una coincidencia perfecta filtrara los subtitulos para incluir solo aquellos que han sido verificados exactamente con su archivo de video. Desmarcar esta opci\u00f3n incrementara las probabilidades de que los subtitulos sean descargados, a la vez que incrementara las posibilidades de obtener subtitulos mal sincronizados o con texto incorrecto.",
     "GuestUserNotFound": "Usuario no encontrado. Por favor aseg\u00farese de que el nombre es correcto e intente de nuevo, o intente introducir la direcci\u00f3n de correo de su invitado.",
     "Yesterday": "Ayer",
     "DownloadImagesInAdvanceWarning": "Descargar todas las im\u00e1genes por adelantado resultar\u00e1 en un tiempo m\u00e1s largo para escanear la biblioteca.",
@@ -1937,5 +1933,9 @@
     "ButtonScanAllLibraries": "Escanear Todas las Bibliotecas",
     "ScanLibrary": "Escanear biblioteca",
     "EnableStreamLooping": "Repetir autom\u00e1ticamente transmisiones en vivo",
-    "EnableStreamLoopingHelp": "Habilite esta opci\u00f3n si las transmisiones en vivo solo contienen unos segundos de datos y necesitan ser solicitados continuamente."
+    "EnableStreamLoopingHelp": "Habilite esta opci\u00f3n si las transmisiones en vivo solo contienen unos segundos de datos y necesitan ser solicitados continuamente.",
+    "HttpsRequiresCert": "Para habilitar el reporte de https como su direcci\u00f3n externa, necesita suministrar un certificado SSL de confianza, como el de Lets Encrypt.",
+    "HeaderLatestDownloadedVideos": "\u00daltimos Videos Descargados",
+    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
 }

@@ -14,101 +14,155 @@
     <div class="header"><a class="logo" href="http://emby.media" style="text-decoration:none;font-size: 22px;" target="_blank"><img class="imgLogoIcon" src="css/images/logo.png"></a></div>
 
     <div id="itemBackdrop" class="itemBackdrop noBackdrop">
-        <div class="itemBackdropContent">
+        <div class="itemBackdropFader">
         </div>
     </div>
 
-    <div class="detailPageContent" style="position:relative;">
+    <div class="detailLogo"></div>
 
-        <div class="detailImageContainer">
-        </div>
-        <div class="primaryDetailsContainer">
-            <div class="detailNameContainer">
-                <div class="parentName"></div>
-                <h1 class="itemName"></h1>
-                <div class="desktopDetails itemMiscInfo" style="margin-top:.5em;">
+    <div class="detailPageContent padded-bottom-page">
 
-                </div>
+        <div class="detailPagePrimaryContainer padded-left padded-right">
+            <div class="detailImageContainer">
             </div>
-            <div class="desktopDetails" style="padding-top:5px;">
+            <div class="detailPagePrimaryContent">
 
-                <p class="artist"></p>
-                <p class="itemGenres"></p>
-            </div>
-        </div>
-    </div>
+                <div class="detailSection" style="margin-bottom: 0;">
 
-    <div class="mobileDetails" style="text-align:center;clear:both;">
-        <div style="height:10px;"></div>
-        <div class="itemMiscInfo">
-        </div>
-    </div>
+                    <h1 class="parentName" style="margin: .25em 0;"></h1>
+                    <h1 class="itemName" style="margin: .5em 0;"></h1>
 
-    <div style="padding-top:0;clear:both;">
-        <div class="detailPageContent">
+                    <div class="itemMiscInfo itemMiscInfo-primary" style="margin: 1em 0;">
 
-            <div class="detailSection">
-                <div class="mobileDetails">
-                    <p class="artist"></p>
-                    <p class="itemGenres"></p>
-                </div>
-                <h2 class="tagline"></h2>
-                <p id="itemBirthday"></p>
-                <p id="itemBirthLocation"></p>
-                <p id="itemDeathDate"></p>
-                <p id="seriesAirTime"></p>
-                <p class="itemOverview topOverview"></p>
-            </div>
-            <div id="castCollapsible" style="display: none;" class="detailSection">
-                <h1 id="peopleHeader">
-                    ${HeaderCastCrew}
-                </h1>
-                <div id="castContent"></div>
-            </div>
+                    </div>
 
-            <div class="detailSection photoInfo hide">
-                <h1>
-                    ${HeaderPhotoInfo}
-                </h1>
-                <div>
-                    <div class="photoInfoContent"></div>
-                </div>
-            </div>
-            <div id="criticReviewsCollapsible" style="display: none;" class="detailSection">
-                <h1>
-                    ${HeaderAwardsAndReviews}
-                </h1>
-                <div>
-                    <div id="criticReviewsContent"></div>
-                </div>
-            </div>
-            <div class="detailSection detailsSection">
-                <h1>
-                    ${HeaderDetails}
-                </h1>
-                <div>
-                    <div class="tabDetails">
-                        <p class="itemOverview bottomOverview"></p>
-                        <p id="players"></p>
+                    <div class="itemMiscInfo itemMiscInfo-secondary" style="margin: 1em 0;">
+
+                    </div>
+
+                    <div class="detailSectionContent">
+
+                        <p class="itemGenres"></p>
+                        <h1 class="tagline" style="margin-bottom: .7em;"></h1>
+                        <p class="artist"></p>
+                        <p class="overview"></p>
+                        <div class="mediaInfoIcons hide">
+                        </div>
+                        <p id="itemBirthday"></p>
+                        <p id="itemBirthLocation"></p>
+                        <p id="itemDeathDate"></p>
+                        <p id="seriesAirTime"></p>
                         <p class="itemExternalLinks"></p>
                         <p class="itemStudios"></p>
                         <p class="itemTags"></p>
+
+                        <div class="seriesRecordingEditor">
+
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <div id="scenesCollapsible" style="display: none;" class="detailSection">
-                <h1>
-                    ${HeaderScenes}
-                </h1>
-                <div id="scenesContent"></div>
+        </div>
+        <div class="seriesTimerScheduleSection verticalSection detailVerticalSection hide" style="margin-top:-3em;">
+            <h2 class="sectionTitle padded-left">
+                ${HeaderSchedule}
+            </h2>
+            <div class="seriesTimerSchedule padded-left padded-right">
             </div>
+        </div>
+        <div class="collectionItems"></div>
+        <div class="nextUpSection verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left">
+                ${HeaderNextUp}
+            </h2>
+            <div is="emby-itemscontainer" class="nextUpItems vertical-wrap padded-left padded-right"></div>
+        </div>
+        <div id="childrenCollapsible" class="hide verticalSection detailVerticalSection">
+            <h2 class="childrenSectionHeader sectionTitle sectionTitle-cards padded-left">
+                <span id="childrenTitle"></span>
+            </h2>
+            <div id="childrenContent">
+                <div is="emby-itemscontainer" class="childrenItemsContainer itemsContainer padded-left padded-right" style="text-align: left;"></div>
+            </div>
+        </div>
+        <div id="additionalPartsCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left">
+                ${HeaderAdditionalParts}
+            </h2>
+            <div id="additionalPartsContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right"></div>
+        </div>
+        <div id="castCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 id="peopleHeader" class="sectionTitle sectionTitle-cards padded-left">
+                ${HeaderCastCrew}
+            </h2>
+            <div id="castContent" is="emby-itemscontainer" class="itemsContainer padded-left padded-right"></div>
+            <div class="padded-left">
+                <button is="emby-button" type="button" class="raised more morePeople hide">${ButtonMore}</button>
+            </div>
+        </div>
+        <div id="seriesScheduleSection" class="verticalSection detailVerticalSection hide">
+            <h1>
+                ${HeaderUpcomingOnTV}
+            </h1>
+            <div id="seriesScheduleList" is="emby-itemscontainer" class="itemsContainer vertical-list padded-left padded-right"></div>
+        </div>
 
-            <div class="detailSection audioVideoMediaInfo hide">
-                <h1>${HeaderMediaInfo}</h1>
-                <div>
-                    <div id="mediaInfoContent" class="mediaInfoContent"></div>
-                </div>
+        <div class="verticalSection detailVerticalSection photoInfo hide">
+            <h2 class="sectionTitle padded-left">
+                ${HeaderPhotoInfo}
+            </h2>
+            <div class="photoInfoContent padded-left padded-right"></div>
+        </div>
+
+        <div id="specialsCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left">
+                ${HeaderSpecialFeatures}
+            </h2>
+            <div id="specialsContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right"></div>
+        </div>
+        <div id="musicVideosCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left">
+                ${HeaderMusicVideos}
+            </h2>
+            <div id="musicVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right"></div>
+        </div>
+        <div id="moreFromSection" class="verticalSection detailVerticalSection hide">
+            <h2 class="moreFromHeader sectionTitle sectionTitle-cards padded-left"></h2>
+            <div id="moreFromItems"></div>
+        </div>
+        <div id="criticReviewsCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle padded-left">
+                ${HeaderAwardsAndReviews}
+            </h2>
+            <div class="padded-left padded-right">
+                <div id="criticReviewsContent"></div>
+            </div>
+        </div>
+
+        <div id="scenesCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left">
+                ${HeaderScenes}
+            </h2>
+            <div is="emby-itemscontainer" id="scenesContent" class="itemsContainer padded-left padded-right"></div>
+        </div>
+        <div id="themeSongsCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle padded-left">
+                ${HeaderThemeSongs}
+            </h2>
+            <div id="themeSongsContent" is="emby-itemscontainer" class="padded-left padded-right"></div>
+        </div>
+
+        <div id="themeVideosCollapsible" class="verticalSection detailVerticalSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left">
+                ${HeaderThemeVideos}
+            </h2>
+            <div id="themeVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right"></div>
+        </div>
+
+        <div class="verticalSection detailVerticalSection audioVideoMediaInfo hide">
+            <h2 class="sectionTitle padded-left">${HeaderMediaInfo}</h2>
+            <div class="padded-left padded-right">
+                <div id="mediaInfoContent" class="mediaInfoContent"></div>
             </div>
         </div>
     </div>

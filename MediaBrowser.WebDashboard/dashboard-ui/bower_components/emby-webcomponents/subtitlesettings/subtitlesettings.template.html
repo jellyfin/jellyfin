@@ -1,0 +1,95 @@
+﻿<form style="margin:0 auto;">
+
+    <div class="verticalSection">
+
+        <br />
+        <h1 class="sectionTitle">
+            ${HeaderSubtitleSettings}
+        </h1>
+
+        <br />
+        <div class="selectContainer">
+            <select is="emby-select" id="selectSubtitleLanguage" label="${LabelPreferredSubtitleLanguage}"></select>
+        </div>
+        <div class="selectContainer">
+            <select is="emby-select" id="selectSubtitlePlaybackMode" label="${LabelSubtitlePlaybackMode}">
+                <option value="Default">${Default}</option>
+                <option value="Smart">${Smart}</option>
+                <option value="OnlyForced">${OnlyForcedSubtitles}</option>
+                <option value="Always">${AlwaysPlaySubtitles}</option>
+                <option value="None">${NoSubtitles}</option>
+            </select>
+            <div class="fieldDescription subtitlesDefaultHelp subtitlesHelp hide">${DefaultSubtitlesHelp}</div>
+            <div class="fieldDescription subtitlesSmartHelp subtitlesHelp hide">${SmartSubtitlesHelp}</div>
+            <div class="fieldDescription subtitlesAlwaysHelp subtitlesHelp hide">${AlwaysPlaySubtitlesHelp}</div>
+            <div class="fieldDescription subtitlesOnlyForcedHelp subtitlesHelp hide">${OnlyForcedSubtitlesHelp}</div>
+            <div class="fieldDescription subtitlesNoneHelp subtitlesHelp hide">${NoSubtitlesHelp}</div>
+        </div>
+        <div class="selectContainer fldBurnIn hide">
+            <select is="emby-select" id="selectSubtitleBurnIn" label="${LabelBurnSubtitles}">
+                <option value="">${Auto}</option>
+                <option value="onlyimageformats">${OnlyImageFormats}</option>
+                <option value="allcomplexformats">${AllComplexFormats}</option>
+            </select>
+            <div class="fieldDescription">${BurnSubtitlesHelp}</div>
+        </div>
+    </div>
+
+    <div class="verticalSection subtitleAppearanceSection hide">
+
+        <h1 class="sectionTitle">
+            ${HeaderSubtitleAppearance}
+        </h1>
+
+        <div style="margin: 2em 0 2em;">
+            <div class="subtitleappearance-preview flex align-items-center justify-content-center" style="border: 1px solid gray; color: black; background: lightblue url(https://github.com/MediaBrowser/Emby.Resources/raw/master/images/subtitles/previewbg.jpg) no-repeat center center; background-size: cover; min-height: 4em;padding:1em;">
+                <div class="subtitleappearance-preview-window flex align-items-center justify-content-center" style="width: 90%; padding: .25em;">
+                    <div class="subtitleappearance-preview-text flex align-items-center justify-content-center">
+                        ${TheseSettingsAffectSubtitlesOnThisDevice}
+                    </div>
+                </div>
+            </div>
+            <div class="fieldDescription">${SubtitleAppearanceSettingsDisclaimer}</div>
+            <div class="fieldDescription">${SubtitleAppearanceSettingsAlsoPassedToCastDevices}</div>
+        </div>
+
+        <div class="selectContainer">
+            <select is="emby-select" id="selectTextSize" label="${LabelTextSize}">
+                <option value="small">${Small}</option>
+                <option value="">${Normal}</option>
+                <option value="large">${Large}</option>
+                <option value="larger">${Larger}</option>
+                <option value="extralarge">${ExtraLarge}</option>
+            </select>
+        </div>
+        <div class="selectContainer">
+            <select is="emby-select" id="selectFont" label="${LabelFont}">
+                <option value="">${Default}</option>
+                <option value="typewriter">${Typewriter}</option>
+                <option value="print">${Print}</option>
+                <option value="console">${Console}</option>
+                <option value="casual">${Casual}</option>
+                <option value="smallcaps">${SmallCaps}</option>
+            </select>
+        </div>
+        <div class="inputContainer hide">
+            <input is="emby-input" id="inputTextBackground" label="${LabelTextBackgroundColor}" type="text" />
+        </div>
+        <div class="inputContainer hide">
+            <input is="emby-input" id="inputTextColor" label="${LabelTextColor}" type="text" />
+        </div>
+        <div class="selectContainer">
+            <select is="emby-select" id="selectDropShadow" label="${LabelDropShadow}">
+                <option value="none">${None}</option>
+                <option value="raised">${Raised}</option>
+                <option value="depressed">${Depressed}</option>
+                <option value="uniform">${Uniform}</option>
+                <option value="">${DropShadow}</option>
+            </select>
+        </div>
+    </div>
+
+    <button is="emby-button" type="submit" class="raised button-submit block btnSave hide">
+        <span>${Save}</span>
+    </button>
+</form>

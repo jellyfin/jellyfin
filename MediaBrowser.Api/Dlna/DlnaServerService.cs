@@ -219,20 +219,20 @@ namespace MediaBrowser.Api.Dlna
         private object ProcessEventRequest(IEventManager eventManager)
         {
             var subscriptionId = GetHeader("SID");
-            var notificationType = GetHeader("NT");
-            var callback = GetHeader("CALLBACK");
-            var timeoutString = GetHeader("TIMEOUT");
-
-            var timeout = ParseTimeout(timeoutString);
 
             if (string.Equals(Request.Verb, "SUBSCRIBE", StringComparison.OrdinalIgnoreCase))
             {
+                var notificationType = GetHeader("NT");
+
+                var callback = GetHeader("CALLBACK");
+                var timeoutString = GetHeader("TIMEOUT");
+
                 if (string.IsNullOrEmpty(notificationType))
                 {
-                    return GetSubscriptionResponse(eventManager.RenewEventSubscription(subscriptionId, timeout));
+                    return GetSubscriptionResponse(eventManager.RenewEventSubscription(subscriptionId, timeoutString));
                 }
 
-                return GetSubscriptionResponse(eventManager.CreateEventSubscription(notificationType, timeout, callback));
+                return GetSubscriptionResponse(eventManager.CreateEventSubscription(notificationType, timeoutString, callback));
             }
 
             return GetSubscriptionResponse(eventManager.CancelEventSubscription(subscriptionId));
@@ -241,25 +241,6 @@ namespace MediaBrowser.Api.Dlna
         private object GetSubscriptionResponse(EventSubscriptionResponse response)
         {
             return ResultFactory.GetResult(response.Content, response.ContentType, response.Headers);
-        }
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private int? ParseTimeout(string header)
-        {
-            if (!string.IsNullOrEmpty(header))
-            {
-                // Starts with SECOND-
-                header = header.Split('-').Last();
-
-                int val;
-
-                if (int.TryParse(header, NumberStyles.Any, _usCulture, out val))
-                {
-                    return val;
-                }
-            }
-
-            return null;
         }
     }
 }

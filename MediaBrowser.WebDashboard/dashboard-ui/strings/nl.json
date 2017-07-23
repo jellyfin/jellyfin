@@ -183,8 +183,6 @@
     "OptionCommunityRating": "Gemeenschaps Waardering",
     "OptionNameSort": "Naam",
     "OptionFolderSort": "Mappen",
-    "OptionBudget": "Budget",
-    "OptionRevenue": "Inkomsten",
     "OptionPoster": "Poster",
     "OptionPosterCard": "Poster kaart",
     "OptionBackdrop": "Achtergrond",
@@ -1822,8 +1820,6 @@
     "AllowHWTranscodingHelp": "Wanneer ingeschakeld zal de tuner streams direct transcoderen streams. Dit kan helpen de transcodering vereist door Emby Server te verlagen.",
     "OptionRequirePerfectSubtitleMatch": "Alleen ondertitels downloaden die een perfecte match geven voor mijn video bestanden",
     "OptionRequirePerfectSubtitleMatchHelp": "Requiring a perfect match will filter subtitles to include only those that have been tested and verified with your exact video file. Unchecking this will increase the likelihood of subtitles being downloaded, but will increase the chances of mistimed or incorrect subtitle text.",
-    "ErrorAddingGuestAccount1": "Er is een fout opgetreden bij het toevoegen van het Emby Connect-account. Heeft uw gast een Emby-account aangemaakt? Zij kunnen zich aanmelden op {0}.",
-    "ErrorAddingGuestAccount2": "Zorg ervoor dat uw gasten activering voltooien door het volgen van de instructies in de verzonden e-mail nadat u de account hebt gemaakt. Als ze deze e-mail niet ontvangen stuur dan alstublieft een mailtje naar {0}, met daarin uw e-mailadres, als ook het e-mailadres van uw gast.",
     "GuestUserNotFound": "Gebruiker is niet gevonden. Zorg er voor dat de naam klopt en probeer het opnieuw, of probeer hun e-mailadres in te voeren.",
     "Yesterday": "Gisteren",
     "DownloadImagesInAdvanceWarning": "Alle foto's van te voren downloaden zal resulteren in langere bibliotheek scantijden.",
@@ -1937,5 +1933,9 @@
     "ButtonScanAllLibraries": "Scan All Libraries",
     "ScanLibrary": "Scan library",
     "EnableStreamLooping": "Auto-loop live streams",
-    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
+    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested.",
+    "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
+    "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
+    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
 }

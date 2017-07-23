@@ -183,8 +183,6 @@
     "OptionCommunityRating": "Community Rating",
     "OptionNameSort": "Name",
     "OptionFolderSort": "Folders",
-    "OptionBudget": "Budget",
-    "OptionRevenue": "Revenue",
     "OptionPoster": "Poster",
     "OptionPosterCard": "Poster card",
     "OptionBackdrop": "Backdrop",
@@ -1822,8 +1820,6 @@
     "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
     "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files",
     "OptionRequirePerfectSubtitleMatchHelp": "Requiring a perfect match will filter subtitles to include only those that have been tested and verified with your exact video file. Unticking this will increase the likelihood of subtitles being downloaded and will increase the chances of mistimed or incorrect subtitle text.",
-    "ErrorAddingGuestAccount1": "There was an error adding the Emby Connect account. Has your guest created an Emby account? They can sign up at {0}.",
-    "ErrorAddingGuestAccount2": "Please ensure your guest has completed activation by following the instructions in the email sent after creating the account. If they did not receive this email then please send an email to {0}, and include your email address as well as theirs.",
     "GuestUserNotFound": "User not found. Please ensure the name is correct and try again, or try entering their email address.",
     "Yesterday": "Yesterday",
     "DownloadImagesInAdvanceWarning": "Downloading all images in advance will result in longer library scan times.",
@@ -1937,5 +1933,9 @@
     "ButtonScanAllLibraries": "Scan All Libraries",
     "ScanLibrary": "Scan library",
     "EnableStreamLooping": "Auto-loop live streams",
-    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
+    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested.",
+    "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
+    "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
+    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
 }

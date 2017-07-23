@@ -104,6 +104,7 @@ namespace Emby.Server.Implementations.HttpServer
         readonly Dictionary<Type, int> _mapExceptionToStatusCode = new Dictionary<Type, int>
             {
                 {typeof (ResourceNotFoundException), 404},
+                {typeof (RemoteServiceUnavailableException), 502},
                 {typeof (FileNotFoundException), 404},
                 //{typeof (DirectoryNotFoundException), 404},
                 {typeof (SecurityException), 401},
@@ -268,6 +269,29 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
+        private Exception GetActualException(Exception ex)
+        {
+            var agg = ex as AggregateException;
+            if (agg != null)
+            {
+                var inner = agg.InnerException;
+                if (inner != null)
+                {
+                    return GetActualException(inner);
+                }
+                else
+                {
+                    var inners = agg.InnerExceptions;
+                    if (inners != null && inners.Count > 0)
+                    {
+                        return GetActualException(inners[0]);
+                    }
+                }
+            }
+
+            return ex;
+        }
+
         private int GetStatusCode(Exception ex)
         {
             if (ex is ArgumentException)
@@ -280,7 +304,7 @@ namespace Emby.Server.Implementations.HttpServer
             int statusCode;
             if (!_mapExceptionToStatusCode.TryGetValue(exceptionType, out statusCode))
             {
-                if (string.Equals(exceptionType.Name, "DirectoryNotFoundException", StringComparison.OrdinalIgnoreCase))
+                if (ex is DirectoryNotFoundException)
                 {
                     statusCode = 404;
                 }
@@ -297,6 +321,8 @@ namespace Emby.Server.Implementations.HttpServer
         {
             try
             {
+                ex = GetActualException(ex);
+
                 if (logException)
                 {
                     _logger.ErrorException("Error processing request", ex);
