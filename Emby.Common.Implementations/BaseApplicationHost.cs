@@ -169,14 +169,15 @@ namespace Emby.Common.Implementations
                 {
                     _deviceId = new DeviceId(ApplicationPaths, LogManager.GetLogger("SystemId"), FileSystemManager);
                 }
-             
+
                 return _deviceId.Value;
             }
         }
 
         public PackageVersionClass SystemUpdateLevel
         {
-            get {
+            get
+            {
 
 #if BETA
                 return PackageVersionClass.Beta;
@@ -216,7 +217,7 @@ namespace Emby.Common.Implementations
 
             // hack alert, until common can target .net core
             BaseExtensions.CryptographyProvider = CryptographyProvider;
-            
+
             XmlSerializer = new MyXmlSerializer(fileSystem, logManager.GetLogger("XmlSerializer"));
             FailedAssemblies = new List<string>();
 
@@ -556,7 +557,7 @@ namespace Emby.Common.Implementations
         /// <param name="assembly">The assembly.</param>
         /// <returns>IEnumerable{Type}.</returns>
         /// <exception cref="System.ArgumentNullException">assembly</exception>
-        protected IEnumerable<Type> GetTypes(Assembly assembly)
+        protected List<Type> GetTypes(Assembly assembly)
         {
             if (assembly == null)
             {
@@ -568,7 +569,7 @@ namespace Emby.Common.Implementations
                 // This null checking really shouldn't be needed but adding it due to some
                 // unhandled exceptions in mono 5.0 that are a little hard to hunt down
                 var types = assembly.GetTypes() ?? new Type[] { };
-                return types.Where(t => t != null);
+                return types.Where(t => t != null).ToList();
             }
             catch (ReflectionTypeLoadException ex)
             {
@@ -576,13 +577,16 @@ namespace Emby.Common.Implementations
                 {
                     foreach (var loaderException in ex.LoaderExceptions)
                     {
-                        Logger.Error("LoaderException: " + loaderException.Message);
+                        if (loaderException != null)
+                        {
+                            Logger.Error("LoaderException: " + loaderException.Message);
+                        }
                     }
                 }
 
                 // If it fails we can still get a list of the Types it was able to resolve
                 var types = ex.Types ?? new Type[] { };
-                return types.Where(t => t != null);
+                return types.Where(t => t != null).ToList();
             }
             catch (Exception ex)
             {
