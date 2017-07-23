@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Diagnostics;
 
 namespace MediaBrowser.Api.Playback
@@ -100,11 +101,7 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the command line arguments.
         /// </summary>
-        /// <param name="outputPath">The output path.</param>
-        /// <param name="state">The state.</param>
-        /// <param name="isEncoding">if set to <c>true</c> [is encoding].</param>
-        /// <returns>System.String.</returns>
-        protected abstract string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding);
+        protected abstract string GetCommandLineArguments(string outputPath, EncodingOptions encodingOptions, StreamState state, bool isEncoding);
 
         /// <summary>
         /// Gets the type of the transcoding job.
@@ -125,11 +122,11 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the output file path.
         /// </summary>
-        private string GetOutputFilePath(StreamState state, string outputFileExtension)
+        private string GetOutputFilePath(StreamState state, EncodingOptions encodingOptions, string outputFileExtension)
         {
             var folder = ServerConfigurationManager.ApplicationPaths.TranscodingTempPath;
 
-            var data = GetCommandLineArguments("dummy\\dummy", state, false);
+            var data = GetCommandLineArguments("dummy\\dummy", encodingOptions, state, false);
 
             data += "-" + (state.Request.DeviceId ?? string.Empty);
             data += "-" + (state.Request.PlaySessionId ?? string.Empty);
@@ -217,8 +214,10 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
+            var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+
             var transcodingId = Guid.NewGuid().ToString("N");
-            var commandLineArgs = GetCommandLineArguments(outputPath, state, true);
+            var commandLineArgs = GetCommandLineArguments(outputPath, encodingOptions, state, true);
 
             var process = ApiEntryPoint.Instance.ProcessFactory.Create(new ProcessOptions
             {
@@ -826,7 +825,10 @@ namespace MediaBrowser.Api.Playback
             var ext = string.IsNullOrWhiteSpace(state.OutputContainer)
                 ? GetOutputFileExtension(state)
                 : ("." + state.OutputContainer);
-            state.OutputFilePath = GetOutputFilePath(state, ext);
+
+            var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+
+            state.OutputFilePath = GetOutputFilePath(state, encodingOptions, ext);
 
             return state;
         }

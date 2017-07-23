@@ -10,6 +10,7 @@ using MediaBrowser.Model.Serialization;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
@@ -58,10 +59,8 @@ namespace MediaBrowser.Api.Playback.Progressive
             return ProcessRequest(request, true);
         }
 
-        protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
+        protected override string GetCommandLineArguments(string outputPath, EncodingOptions encodingOptions, StreamState state, bool isEncoding)
         {
-            var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
-
             return EncodingHelper.GetProgressiveAudioFullCommandLine(state, encodingOptions, outputPath);
         }
     }
