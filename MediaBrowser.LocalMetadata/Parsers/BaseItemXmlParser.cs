@@ -638,22 +638,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         break;
                     }
 
-                case "PlotKeywords":
-                    {
-                        if (!reader.IsEmptyElement)
-                        {
-                            using (var subtree = reader.ReadSubtree())
-                            {
-                                FetchFromKeywordsNode(subtree, item);
-                            }
-                        }
-                        else
-                        {
-                            reader.Read();
-                        }
-                        break;
-                    }
-
                 case "Persons":
                     {
                         if (!reader.IsEmptyElement)
@@ -975,41 +959,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 if (!string.IsNullOrWhiteSpace(tag))
                                 {
                                     item.AddTag(tag);
-                                }
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
-                {
-                    reader.Read();
-                }
-            }
-        }
-
-        private void FetchFromKeywordsNode(XmlReader reader, BaseItem item)
-        {
-            reader.MoveToContent();
-            reader.Read();
-
-            // Loop through each element
-            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "PlotKeyword":
-                            {
-                                var tag = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(tag))
-                                {
-                                    item.AddKeyword(tag);
                                 }
                                 break;
                             }

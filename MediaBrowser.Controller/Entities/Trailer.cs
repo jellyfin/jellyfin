@@ -15,7 +15,6 @@ namespace MediaBrowser.Controller.Entities
         public Trailer()
         {
             RemoteTrailers = new List<MediaUrl>();
-            Keywords = new List<string>();
             TrailerTypes = new List<TrailerType> { TrailerType.LocalTrailer };
         }
 
