@@ -251,7 +251,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "SeriesId", "GUID", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "ExternalSeriesId", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "Tagline", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "Keywords", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "ProviderIds", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "Images", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "ProductionLocations", "Text", existingColumnNames);
@@ -454,7 +453,6 @@ namespace Emby.Server.Implementations.Data
             "InheritedTags",
             "ExternalSeriesId",
             "Tagline",
-            "Keywords",
             "ProviderIds",
             "Images",
             "ProductionLocations",
@@ -578,7 +576,6 @@ namespace Emby.Server.Implementations.Data
                 "SeriesId",
                 "ExternalSeriesId",
                 "Tagline",
-                "Keywords",
                 "ProviderIds",
                 "Images",
                 "ProductionLocations",
@@ -1010,15 +1007,6 @@ namespace Emby.Server.Implementations.Data
 
             saveItemStatement.TryBind("@ExternalSeriesId", item.ExternalSeriesId);
             saveItemStatement.TryBind("@Tagline", item.Tagline);
-
-            if (item.Keywords.Count > 0)
-            {
-                saveItemStatement.TryBind("@Keywords", string.Join("|", item.Keywords.ToArray()));
-            }
-            else
-            {
-                saveItemStatement.TryBindNull("@Keywords");
-            }
 
             saveItemStatement.TryBind("@ProviderIds", SerializeProviderIds(item));
             saveItemStatement.TryBind("@Images", SerializeImages(item));
@@ -1874,15 +1862,6 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (HasField(query, ItemFields.Keywords))
-            {
-                if (!reader.IsDBNull(index))
-                {
-                    item.Keywords = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
-                }
-                index++;
-            }
-
             if (!reader.IsDBNull(index))
             {
                 DeserializeProviderIds(reader.GetString(index), item);
@@ -2287,7 +2266,6 @@ namespace Emby.Server.Implementations.Data
             switch (name)
             {
                 case ItemFields.HomePageUrl:
-                case ItemFields.Keywords:
                 case ItemFields.DisplayMediaType:
                 case ItemFields.CustomRating:
                 case ItemFields.ProductionLocations:
@@ -4221,23 +4199,6 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add(clause);
             }
 
-            if (query.Keywords.Length > 0)
-            {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var item in query.Keywords)
-                {
-                    clauses.Add("@Keyword" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=5)");
-                    if (statement != null)
-                    {
-                        statement.TryBind("@Keyword" + index, GetCleanValue(item));
-                    }
-                    index++;
-                }
-                var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
-                whereClauses.Add(clause);
-            }
-
             if (query.OfficialRatings.Length > 0)
             {
                 var clauses = new List<string>();
@@ -5435,7 +5396,6 @@ namespace Emby.Server.Implementations.Data
             list.AddRange(item.Genres.Select(i => new Tuple<int, string>(2, i)));
             list.AddRange(item.Studios.Select(i => new Tuple<int, string>(3, i)));
             list.AddRange(item.Tags.Select(i => new Tuple<int, string>(4, i)));
-            list.AddRange(item.Keywords.Select(i => new Tuple<int, string>(5, i)));
 
             return list;
         }

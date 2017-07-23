@@ -77,7 +77,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "style",
                     "imdbid",
                     "imdb_id",
-                    "plotkeyword",
                     "country",
                     "audiodbalbumid",
                     "audiodbartistid",
@@ -713,11 +712,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 {
                     writer.WriteElementString("tag", tag);
                 }
-            }
-
-            foreach (var tag in item.Keywords)
-            {
-                writer.WriteElementString("plotkeyword", tag);
             }
 
             var externalId = item.GetProviderId(MetadataProviders.AudioDbArtist);

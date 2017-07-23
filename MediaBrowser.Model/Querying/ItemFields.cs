@@ -93,11 +93,6 @@
         ItemCounts,
 
         /// <summary>
-        /// The keywords
-        /// </summary>
-        Keywords,
-
-        /// <summary>
         /// The media source count
         /// </summary>
         MediaSourceCount,
