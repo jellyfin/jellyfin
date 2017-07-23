@@ -307,10 +307,10 @@ namespace MediaBrowser.Providers.Movies
                 }
             }
 
-            if (movieData.keywords != null && movieData.keywords.keywords != null)
-            {
-                movie.Keywords = movieData.keywords.keywords.Select(i => i.name).ToList();
-            }
+            //if (movieData.keywords != null && movieData.keywords.keywords != null)
+            //{
+            //    movie.Keywords = movieData.keywords.keywords.Select(i => i.name).ToList();
+            //}
 
             if (movieData.trailers != null && movieData.trailers.youtube != null &&
                 movieData.trailers.youtube.Count > 0)

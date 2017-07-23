@@ -268,8 +268,6 @@ namespace MediaBrowser.Api
                 item.Tagline = request.Taglines.FirstOrDefault();
             }
 
-            item.Keywords = request.Keywords;
-
             if (request.Studios != null)
             {
                 item.Studios = request.Studios.Select(x => x.Name).ToList();

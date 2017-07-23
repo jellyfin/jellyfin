@@ -1675,7 +1675,6 @@ namespace Emby.Server.Implementations.Session
                 dtoOptions.Fields.Remove(ItemFields.ExternalEtag);
                 dtoOptions.Fields.Remove(ItemFields.InheritedParentalRatingValue);
                 dtoOptions.Fields.Remove(ItemFields.ItemCounts);
-                dtoOptions.Fields.Remove(ItemFields.Keywords);
                 dtoOptions.Fields.Remove(ItemFields.MediaSourceCount);
                 dtoOptions.Fields.Remove(ItemFields.MediaStreams);
                 dtoOptions.Fields.Remove(ItemFields.MediaSources);

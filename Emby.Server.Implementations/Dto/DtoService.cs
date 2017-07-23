@@ -894,11 +894,6 @@ namespace Emby.Server.Implementations.Dto
                 dto.Tags = item.Tags;
             }
 
-            if (fields.Contains(ItemFields.Keywords))
-            {
-                dto.Keywords = item.Keywords;
-            }
-
             var hasAspectRatio = item as IHasAspectRatio;
             if (hasAspectRatio != null)
             {

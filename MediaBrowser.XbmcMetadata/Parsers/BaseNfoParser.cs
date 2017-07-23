@@ -733,17 +733,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                case "plotkeyword":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.AddKeyword(val);
-                        }
-                        break;
-                    }
-
                 case "fileinfo":
                     {
                         if (!reader.IsEmptyElement)

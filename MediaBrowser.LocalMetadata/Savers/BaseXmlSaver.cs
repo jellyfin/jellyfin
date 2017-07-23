@@ -80,7 +80,6 @@ namespace MediaBrowser.LocalMetadata.Savers
 
                     "Overview",
                     "Persons",
-                    "PlotKeywords",
                     "PremiereDate",
                     "ProductionYear",
                     "Rating",
@@ -495,18 +494,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                 foreach (var tag in item.Tags)
                 {
                     writer.WriteElementString("Tag", tag);
-                }
-
-                writer.WriteEndElement();
-            }
-
-            if (item.Keywords.Count > 0)
-            {
-                writer.WriteStartElement("PlotKeywords");
-
-                foreach (var tag in item.Keywords)
-                {
-                    writer.WriteElementString("PlotKeyword", tag);
                 }
 
                 writer.WriteEndElement();
