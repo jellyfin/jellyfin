@@ -371,7 +371,7 @@ namespace Emby.Server.Implementations.Library
                 var tuple = GetProvider(request.OpenToken);
                 var provider = tuple.Item1;
 
-                var mediaSourceTuple = await provider.OpenMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
+                var mediaSourceTuple = await provider.OpenMediaSource(tuple.Item2, request.EnableMediaProbe, cancellationToken).ConfigureAwait(false);
 
                 var mediaSource = mediaSourceTuple.Item1;
 

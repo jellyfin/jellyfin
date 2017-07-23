@@ -492,51 +492,44 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (var profile in directPlayProfiles)
             {
-                if (profile.Container.Length > 0)
+                // Check container type
+                if (profile.SupportsContainer(item.Container))
                 {
-                    // Check container type
-                    string mediaContainer = item.Container ?? string.Empty;
-                    foreach (string i in profile.GetContainers())
+                    containerSupported = true;
+
+                    if (videoStream != null)
                     {
-                        if (StringHelper.EqualsIgnoreCase(i, mediaContainer))
+                        // Check video codec
+                        List<string> videoCodecs = profile.GetVideoCodecs();
+                        if (videoCodecs.Count > 0)
                         {
-                            containerSupported = true;
-
-                            if (videoStream != null)
+                            string videoCodec = videoStream.Codec;
+                            if (!string.IsNullOrEmpty(videoCodec) && ListHelper.ContainsIgnoreCase(videoCodecs, videoCodec))
                             {
-                                // Check video codec
-                                List<string> videoCodecs = profile.GetVideoCodecs();
-                                if (videoCodecs.Count > 0)
-                                {
-                                    string videoCodec = videoStream.Codec;
-                                    if (!string.IsNullOrEmpty(videoCodec) && ListHelper.ContainsIgnoreCase(videoCodecs, videoCodec))
-                                    {
-                                        videoSupported = true;
-                                    }
-                                }
-                                else
-                                {
-                                    videoSupported = true;
-                                }
+                                videoSupported = true;
                             }
+                        }
+                        else
+                        {
+                            videoSupported = true;
+                        }
+                    }
 
-                            if (audioStream != null)
+                    if (audioStream != null)
+                    {
+                        // Check audio codec
+                        List<string> audioCodecs = profile.GetAudioCodecs();
+                        if (audioCodecs.Count > 0)
+                        {
+                            string audioCodec = audioStream.Codec;
+                            if (!string.IsNullOrEmpty(audioCodec) && ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec))
                             {
-                                // Check audio codec
-                                List<string> audioCodecs = profile.GetAudioCodecs();
-                                if (audioCodecs.Count > 0)
-                                {
-                                    string audioCodec = audioStream.Codec;
-                                    if (!string.IsNullOrEmpty(audioCodec) && ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec))
-                                    {
-                                        audioSupported = true;
-                                    }
-                                }
-                                else
-                                {
-                                    audioSupported = true;
-                                }
+                                audioSupported = true;
                             }
+                        }
+                        else
+                        {
+                            audioSupported = true;
                         }
                     }
                 }
@@ -635,8 +628,10 @@ namespace MediaBrowser.Model.Dlna
             MediaStream videoStream = item.VideoStream;
 
             // TODO: This doesn't accout for situation of device being able to handle media bitrate, but wifi connection not fast enough
-            bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true), subtitleStream, options, PlayMethod.DirectPlay));
-            bool isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || IsEligibleForDirectPlay(item, options.GetMaxBitrate(false), subtitleStream, options, PlayMethod.DirectStream));
+            var directPlayEligibilityResult = IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true), subtitleStream, options, PlayMethod.DirectPlay);
+            var directStreamEligibilityResult = IsEligibleForDirectPlay(item, options.GetMaxBitrate(false), subtitleStream, options, PlayMethod.DirectStream);
+            bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || directPlayEligibilityResult.Item1);
+            bool isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || directStreamEligibilityResult.Item1);
 
             _logger.Info("Profile: {0}, Path: {1}, isEligibleForDirectPlay: {2}, isEligibleForDirectStream: {3}",
                 options.Profile.Name ?? "Unknown Profile",
@@ -667,6 +662,16 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 transcodeReasons.AddRange(directPlayInfo.Item2);
+            }
+
+            if (directPlayEligibilityResult.Item2.HasValue)
+            {
+                transcodeReasons.Add(directPlayEligibilityResult.Item2.Value);
+            }
+
+            if (directStreamEligibilityResult.Item2.HasValue)
+            {
+                transcodeReasons.Add(directStreamEligibilityResult.Item2.Value);
             }
 
             // Can't direct play, find the transcoding profile
@@ -1136,7 +1141,7 @@ namespace MediaBrowser.Model.Dlna
                 mediaSource.Path ?? "Unknown path");
         }
 
-        private bool IsEligibleForDirectPlay(MediaSourceInfo item,
+        private Tuple<bool, TranscodeReason?> IsEligibleForDirectPlay(MediaSourceInfo item,
             long? maxBitrate,
             MediaStream subtitleStream,
             VideoOptions options,
@@ -1149,11 +1154,18 @@ namespace MediaBrowser.Model.Dlna
                 if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
                     _logger.Info("Not eligible for {0} due to unsupported subtitles", playMethod);
-                    return false;
+                    return new Tuple<bool, TranscodeReason?>(false, TranscodeReason.SubtitleCodecNotSupported);
                 }
             }
 
-            return IsAudioEligibleForDirectPlay(item, maxBitrate, playMethod);
+            var result = IsAudioEligibleForDirectPlay(item, maxBitrate, playMethod);
+
+            if (result)
+            {
+                return new Tuple<bool, TranscodeReason?>(result, null);
+            }
+
+            return new Tuple<bool, TranscodeReason?>(result, TranscodeReason.ContainerBitrateExceedsLimit);
         }
 
         public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, string transcodingSubProtocol, string transcodingContainer)
@@ -1519,23 +1531,10 @@ namespace MediaBrowser.Model.Dlna
 
         private bool IsAudioDirectPlaySupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream audioStream)
         {
-            if (profile.Container.Length > 0)
+            // Check container type
+            if (!profile.SupportsContainer(item.Container))
             {
-                // Check container type
-                string mediaContainer = item.Container ?? string.Empty;
-                bool any = false;
-                foreach (string i in profile.GetContainers())
-                {
-                    if (StringHelper.EqualsIgnoreCase(i, mediaContainer))
-                    {
-                        any = true;
-                        break;
-                    }
-                }
-                if (!any)
-                {
-                    return false;
-                }
+                return false;
             }
 
             // Check audio codec
@@ -1555,23 +1554,10 @@ namespace MediaBrowser.Model.Dlna
 
         private bool IsVideoDirectPlaySupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream videoStream, MediaStream audioStream)
         {
-            if (profile.Container.Length > 0)
+            // Check container type
+            if (!profile.SupportsContainer(item.Container))
             {
-                // Check container type
-                string mediaContainer = item.Container ?? string.Empty;
-                bool any = false;
-                foreach (string i in profile.GetContainers())
-                {
-                    if (StringHelper.EqualsIgnoreCase(i, mediaContainer))
-                    {
-                        any = true;
-                        break;
-                    }
-                }
-                if (!any)
-                {
-                    return false;
-                }
+                return false;
             }
 
             // Check video codec

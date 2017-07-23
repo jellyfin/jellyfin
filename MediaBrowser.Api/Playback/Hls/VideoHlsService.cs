@@ -7,6 +7,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using System;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Services;
 
@@ -31,9 +32,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <summary>
         /// Gets the audio arguments.
         /// </summary>
-        /// <param name="state">The state.</param>
-        /// <returns>System.String.</returns>
-        protected override string GetAudioArguments(StreamState state)
+        protected override string GetAudioArguments(StreamState state, EncodingOptions encodingOptions)
         {
             var codec = EncodingHelper.GetAudioEncoder(state);
 
@@ -63,7 +62,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 args += " -ar " + state.OutputAudioSampleRate.Value.ToString(UsCulture);
             }
 
-            args += " " + EncodingHelper.GetAudioFilterParam(state, ApiEntryPoint.Instance.GetEncodingOptions(), true);
+            args += " " + EncodingHelper.GetAudioFilterParam(state, encodingOptions, true);
 
             return args;
         }
@@ -71,11 +70,14 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <summary>
         /// Gets the video arguments.
         /// </summary>
-        /// <param name="state">The state.</param>
-        /// <returns>System.String.</returns>
-        protected override string GetVideoArguments(StreamState state)
+        protected override string GetVideoArguments(StreamState state, EncodingOptions encodingOptions)
         {
-            var codec = EncodingHelper.GetVideoEncoder(state, ApiEntryPoint.Instance.GetEncodingOptions());
+            if (!state.IsOutputVideo)
+            {
+                return string.Empty;
+            }
+
+            var codec = EncodingHelper.GetVideoEncoder(state, encodingOptions);
 
             var args = "-codec:v:0 " + codec;
 
@@ -101,7 +103,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
-                var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
                 args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultH264Preset()) + keyFrameArg;
 
                 // Add resolution params, if specified

@@ -26,32 +26,34 @@ namespace Emby.Dlna.Eventing
             _logger = logger;
         }
 
-        public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, int? timeoutSeconds)
+        public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string requestedTimeoutString)
         {
-            var timeout = timeoutSeconds ?? 300;
-
             var subscription = GetSubscription(subscriptionId, true);
 
-            _logger.Debug("Renewing event subscription for {0} with timeout of {1} to {2}",
-                subscription.NotificationType,
-                timeout,
-                subscription.CallbackUrl);
+            // Remove logging for now because some devices are sending this very frequently
+            // TODO re-enable with dlna debug logging setting
+            //_logger.Debug("Renewing event subscription for {0} with timeout of {1} to {2}",
+            //    subscription.NotificationType,
+            //    timeout,
+            //    subscription.CallbackUrl);
 
-            subscription.TimeoutSeconds = timeout;
+            subscription.TimeoutSeconds = ParseTimeout(requestedTimeoutString) ?? 300;
             subscription.SubscriptionTime = DateTime.UtcNow;
 
-            return GetEventSubscriptionResponse(subscriptionId, timeout);
+            return GetEventSubscriptionResponse(subscriptionId, requestedTimeoutString, subscription.TimeoutSeconds);
         }
 
-        public EventSubscriptionResponse CreateEventSubscription(string notificationType, int? timeoutSeconds, string callbackUrl)
+        public EventSubscriptionResponse CreateEventSubscription(string notificationType, string requestedTimeoutString, string callbackUrl)
         {
-            var timeout = timeoutSeconds ?? 300;
+            var timeout = ParseTimeout(requestedTimeoutString) ?? 300;
             var id = "uuid:" + Guid.NewGuid().ToString("N");
 
-            _logger.Debug("Creating event subscription for {0} with timeout of {1} to {2}",
-                notificationType,
-                timeout,
-                callbackUrl);
+            // Remove logging for now because some devices are sending this very frequently
+            // TODO re-enable with dlna debug logging setting
+            //_logger.Debug("Creating event subscription for {0} with timeout of {1} to {2}",
+            //    notificationType,
+            //    timeout,
+            //    callbackUrl);
 
             _subscriptions.TryAdd(id, new EventSubscription
             {
@@ -61,7 +63,25 @@ namespace Emby.Dlna.Eventing
                 TimeoutSeconds = timeout
             });
 
-            return GetEventSubscriptionResponse(id, timeout);
+            return GetEventSubscriptionResponse(id, requestedTimeoutString, timeout);
+        }
+
+        private int? ParseTimeout(string header)
+        {
+            if (!string.IsNullOrEmpty(header))
+            {
+                // Starts with SECOND-
+                header = header.Split('-').Last();
+
+                int val;
+
+                if (int.TryParse(header, NumberStyles.Any, _usCulture, out val))
+                {
+                    return val;
+                }
+            }
+
+            return null;
         }
 
         public EventSubscriptionResponse CancelEventSubscription(string subscriptionId)
@@ -73,22 +93,22 @@ namespace Emby.Dlna.Eventing
 
             return new EventSubscriptionResponse
             {
-                Content = "\r\n",
+                Content = string.Empty,
                 ContentType = "text/plain"
             };
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private EventSubscriptionResponse GetEventSubscriptionResponse(string subscriptionId, int timeoutSeconds)
+        private EventSubscriptionResponse GetEventSubscriptionResponse(string subscriptionId, string requestedTimeoutString, int timeoutSeconds)
         {
             var response = new EventSubscriptionResponse
             {
-                Content = "\r\n",
+                Content = string.Empty,
                 ContentType = "text/plain"
             };
 
             response.Headers["SID"] = subscriptionId;
-            response.Headers["TIMEOUT"] = "SECOND-" + timeoutSeconds.ToString(_usCulture);
+            response.Headers["TIMEOUT"] = string.IsNullOrWhiteSpace(requestedTimeoutString) ? ("SECOND-" + timeoutSeconds.ToString(_usCulture)) : requestedTimeoutString;
 
             return response;
         }

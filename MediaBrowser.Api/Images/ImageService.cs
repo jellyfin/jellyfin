@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 
@@ -567,7 +568,9 @@ namespace MediaBrowser.Api.Images
 
             }).ToList() : new List<IImageEnhancer>();
 
-            var cropwhitespace = request.Type == ImageType.Logo || request.Type == ImageType.Art;
+            var cropwhitespace = request.Type == ImageType.Logo || 
+                request.Type == ImageType.Art
+                || (request.Type == ImageType.Primary && item is LiveTvChannel);
 
             if (request.CropWhitespace.HasValue)
             {

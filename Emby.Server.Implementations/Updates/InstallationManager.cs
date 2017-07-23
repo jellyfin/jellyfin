@@ -513,8 +513,6 @@ namespace Emby.Server.Implementations.Updates
                     CurrentInstallations.Remove(tuple);
                 }
 
-                progress.Report(100);
-
                 CompletedInstallationsInternal.Add(installationInfo);
 
                 EventHelper.FireEventIfNotNull(PackageInstallationCompleted, this, installationEventArgs, _logger);

@@ -25,15 +25,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public class M3UTunerHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
-        private readonly IFileSystem _fileSystem;
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
         private readonly IEnvironmentInfo _environment;
 
-        public M3UTunerHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost, IEnvironmentInfo environment)
-            : base(config, logger, jsonSerializer, mediaEncoder)
+        public M3UTunerHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost, IEnvironmentInfo environment) : base(config, logger, jsonSerializer, mediaEncoder, fileSystem)
         {
-            _fileSystem = fileSystem;
             _httpClient = httpClient;
             _appHost = appHost;
             _environment = environment;
@@ -51,7 +48,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         protected override async Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            var result = await new M3uParser(Logger, _fileSystem, _httpClient, _appHost).Parse(info.Url, ChannelIdPrefix, info.Id, !info.EnableTvgId, cancellationToken).ConfigureAwait(false);
+            var result = await new M3uParser(Logger, FileSystem, _httpClient, _appHost).Parse(info.Url, ChannelIdPrefix, info.Id, !info.EnableTvgId, cancellationToken).ConfigureAwait(false);
 
             return result.Cast<ChannelInfo>().ToList();
         }
@@ -76,13 +73,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             var sources = await GetChannelStreamMediaSources(info, channelId, cancellationToken).ConfigureAwait(false);
 
-            var liveStream = new LiveStream(sources.First(), _environment, _fileSystem);
+            var liveStream = new LiveStream(sources.First(), _environment, FileSystem);
             return liveStream;
         }
 
         public async Task Validate(TunerHostInfo info)
         {
-            using (var stream = await new M3uParser(Logger, _fileSystem, _httpClient, _appHost).GetListingsStream(info.Url, CancellationToken.None).ConfigureAwait(false))
+            using (var stream = await new M3uParser(Logger, FileSystem, _httpClient, _appHost).GetListingsStream(info.Url, CancellationToken.None).ConfigureAwait(false))
             {
 
             }
@@ -154,7 +151,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                     Id = channel.Path.GetMD5().ToString("N"),
                     IsInfiniteStream = true,
-                    IsRemote = true
+                    IsRemote = true,
+
+                    IgnoreDts = true
                 };
 
                 mediaSource.InferTotalBitrate();

@@ -16,8 +16,8 @@ namespace Emby.Server.Implementations.LiveTv
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILogger _logger;
 
-        const int ProbeAnalyzeDurationMs = 2000;
-        const int PlaybackAnalyzeDurationMs = 2000;
+        const int ProbeAnalyzeDurationMs = 3000;
+        const int PlaybackAnalyzeDurationMs = 3000;
 
         public LiveStreamHelper(IMediaEncoder mediaEncoder, ILogger logger)
         {

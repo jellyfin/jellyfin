@@ -11,6 +11,8 @@ namespace MediaBrowser.Controller.Sync
         /// <value>The name.</value>
         string Name { get; }
 
+        bool SupportsRemoteSync { get; }
+
         /// <summary>
         /// Gets the synchronize targets.
         /// </summary>
@@ -27,6 +29,6 @@ namespace MediaBrowser.Controller.Sync
 
     public interface IHasUniqueTargetIds
     {
-        
+
     }
 }

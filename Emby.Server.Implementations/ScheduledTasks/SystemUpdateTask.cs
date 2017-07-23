@@ -68,23 +68,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <returns>Task.</returns>
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            EventHandler<double> innerProgressHandler = (sender, e) => progress.Report(e * .1);
-
             // Create a progress object for the update check
-            var innerProgress = new SimpleProgress<double>();
-            innerProgress.ProgressChanged += innerProgressHandler;
-
-            var updateInfo = await _appHost.CheckForApplicationUpdate(cancellationToken, innerProgress).ConfigureAwait(false);
-
-            // Release the event handler
-            innerProgress.ProgressChanged -= innerProgressHandler;
-
-            progress.Report(10);
+            var updateInfo = await _appHost.CheckForApplicationUpdate(cancellationToken, new SimpleProgress<double>()).ConfigureAwait(false);
 
             if (!updateInfo.IsUpdateAvailable)
             {
                 Logger.Debug("No application update available.");
-                progress.Report(100);
                 return;
             }
 
@@ -96,22 +85,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 Logger.Info("Update Revision {0} available.  Updating...", updateInfo.AvailableVersion);
 
-                innerProgressHandler = (sender, e) => progress.Report(e * .9 + .1);
-
-                innerProgress = new SimpleProgress<double>();
-                innerProgress.ProgressChanged += innerProgressHandler;
-
-                await _appHost.UpdateApplication(updateInfo.Package, cancellationToken, innerProgress).ConfigureAwait(false);
-
-                // Release the event handler
-                innerProgress.ProgressChanged -= innerProgressHandler;
+                await _appHost.UpdateApplication(updateInfo.Package, cancellationToken, progress).ConfigureAwait(false);
             }
             else
             {
                 Logger.Info("A new version of " + _appHost.Name + " is available.");
             }
-
-            progress.Report(100);
         }
 
         /// <summary>
