@@ -1935,5 +1935,7 @@
   "EnableStreamLooping": "Auto-loop live streams",
   "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested.",
   "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
-  "HeaderLatestDownloadedVideos": "Latest Downloaded Videos"
+  "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
+  "EnableNextVideoInfoOverlay": "Enable next video info during playback",
+  "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
 }

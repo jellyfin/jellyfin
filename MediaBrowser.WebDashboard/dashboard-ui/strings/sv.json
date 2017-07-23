@@ -1,6 +1,4 @@
 {
-    "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
-    "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
     "LabelPrevious": "F\u00f6reg\u00e5ende",
     "LabelFinish": "Klart",
     "LabelNext": "N\u00e4sta",
@@ -185,8 +183,6 @@
     "OptionCommunityRating": "Allm\u00e4nhetens betyg",
     "OptionNameSort": "Namn",
     "OptionFolderSort": "Mappar",
-    "OptionBudget": "Budget",
-    "OptionRevenue": "Int\u00e4kter",
     "OptionPoster": "Affisch",
     "OptionPosterCard": "Affischkort",
     "OptionBackdrop": "Fondbild",
@@ -1824,8 +1820,6 @@
     "AllowHWTranscodingHelp": "Aktivera f\u00f6r att l\u00e5ta TV-mottagaren omkoda str\u00f6mmar. Det kan minska behovet av omkodning p\u00e5 Emby Server.",
     "OptionRequirePerfectSubtitleMatch": "Ladda endast ner undertexter som matchar mina videofiler exakt",
     "OptionRequirePerfectSubtitleMatchHelp": "Requiring a perfect match will filter subtitles to include only those that have been tested and verified with your exact video file. Unchecking this will increase the likelihood of subtitles being downloaded, but will increase the chances of mistimed or incorrect subtitle text.",
-    "ErrorAddingGuestAccount1": "Det gick inte att l\u00e4gga till Emby Connect-kontot. Har din g\u00e4st ett Emby-konto? Dom kan skapa ett p\u00e5 {0}",
-    "ErrorAddingGuestAccount2": "If you're still having a problem, please send an email to {0}.",
     "GuestUserNotFound": "Anv\u00e4ndaren kunde inte hittas. Se till s\u00e5 att namnet \u00e4r korrekt och f\u00f6rs\u00f6k igen, eller pr\u00f6va att ange emailadressen ist\u00e4llet.",
     "Yesterday": "Ig\u00e5r",
     "DownloadImagesInAdvanceWarning": "Nedladdning av alla bilder i f\u00f6rv\u00e4g kommer resutera i l\u00e4ngre scanningstider av biblioteket.",
@@ -1939,5 +1933,9 @@
     "ButtonScanAllLibraries": "Scanna alla bibliotek",
     "ScanLibrary": "Scanna bibliotek",
     "EnableStreamLooping": "Auto-loop live streams",
-    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
+    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested.",
+    "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
+    "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
+    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
 }

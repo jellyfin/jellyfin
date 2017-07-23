@@ -1,6 +1,4 @@
 {
-    "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
-    "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
     "LabelPrevious": "\u041d\u0430\u0437\u0430\u0434",
     "LabelFinish": "Finish",
     "LabelNext": "\u0412\u043f\u0435\u0440\u0435\u0434",
@@ -185,8 +183,6 @@
     "OptionCommunityRating": "Community Rating",
     "OptionNameSort": "\u0406\u043c\u2019\u044f",
     "OptionFolderSort": "\u0422\u0435\u043a\u0438",
-    "OptionBudget": "\u0411\u044e\u0434\u0436\u0435\u0442",
-    "OptionRevenue": "\u0417\u0431\u043e\u0440\u0438",
     "OptionPoster": "Poster",
     "OptionPosterCard": "Poster card",
     "OptionBackdrop": "Backdrop",
@@ -1824,8 +1820,6 @@
     "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
     "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files",
     "OptionRequirePerfectSubtitleMatchHelp": "Requiring a perfect match will filter subtitles to include only those that have been tested and verified with your exact video file. Unchecking this will increase the likelihood of subtitles being downloaded, but will increase the chances of mistimed or incorrect subtitle text.",
-    "ErrorAddingGuestAccount1": "There was an error adding the Emby Connect account. Has your guest created an Emby account? They can sign up at {0}.",
-    "ErrorAddingGuestAccount2": "If you're still having a problem, please send an email to {0}.",
     "GuestUserNotFound": "User not found. Please ensure the name is correct and try again, or try entering their email address.",
     "Yesterday": "Yesterday",
     "DownloadImagesInAdvanceWarning": "Downloading all images in advance will result in longer library scan times.",
@@ -1939,5 +1933,9 @@
     "ButtonScanAllLibraries": "Scan All Libraries",
     "ScanLibrary": "Scan library",
     "EnableStreamLooping": "Auto-loop live streams",
-    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested."
+    "EnableStreamLoopingHelp": "Enable this if live streams only contain a few seconds of data and need to be continuously requested.",
+    "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
+    "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
+    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
 }

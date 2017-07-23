@@ -1,6 +1,4 @@
 {
-    "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
-    "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Terminar",
     "LabelNext": "Siguiente",
@@ -185,8 +183,6 @@
     "OptionCommunityRating": "Valoraci\u00f3n comunidad",
     "OptionNameSort": "Nombre",
     "OptionFolderSort": "Carpetas",
-    "OptionBudget": "Presupuesto",
-    "OptionRevenue": "Recaudaci\u00f3n",
     "OptionPoster": "Poster",
     "OptionPosterCard": "Cartelera",
     "OptionBackdrop": "Imagen de fondo",
@@ -1824,8 +1820,6 @@
     "AllowHWTranscodingHelp": "Si est\u00e1 habilitado, permita que el sintonizador transcodifique secuencias sobre la marcha. Esto puede ayudar a reducir la transcodificaci\u00f3n requerida por Emby Server.",
     "OptionRequirePerfectSubtitleMatch": "S\u00f3lo descargar subt\u00edtulos que son una combinaci\u00f3n perfecta para mis archivos de v\u00eddeo",
     "OptionRequirePerfectSubtitleMatchHelp": "Requerir una coincidencia perfecta filtra los subt\u00edtulos para incluir s\u00f3lo aquellos que coinciden con el archivo de v\u00eddeo. Desmarcando esta opci\u00f3n, aumentar\u00e1 la probabilidad de que los subt\u00edtulos se descarguen, pero puede que el texto del subt\u00edtulo no coincida con el v\u00eddeo.",
-    "ErrorAddingGuestAccount1": "Se ha producido un error al agregar la cuenta Emby Connect. \u00bfHa creado su invitado una cuenta de Emby? Pueden registrarse en {0}.",
-    "ErrorAddingGuestAccount2": "Aseg\u00farese de que su invitado ha completado la activaci\u00f3n siguiendo las instrucciones del correo electr\u00f3nico enviado despu\u00e9s de crear la cuenta. Si no recibieron este correo electr\u00f3nico, env\u00ede un correo electr\u00f3nico a {0} e incluya su direcci\u00f3n de correo electr\u00f3nico, as\u00ed como la suya.",
     "GuestUserNotFound": "Usuario no encontrado. Aseg\u00farese de que el nombre es correcto y vuelva a intentarlo o intente ingresar su direcci\u00f3n de correo electr\u00f3nico.",
     "Yesterday": "Ayer",
     "DownloadImagesInAdvanceWarning": "Al descargar todas las im\u00e1genes con antelaci\u00f3n, se obtendr\u00e1n tiempos m\u00e1s largos de exploraci\u00f3n de la biblioteca.",
@@ -1939,5 +1933,9 @@
     "ButtonScanAllLibraries": "Escanear todas las bibliotecas",
     "ScanLibrary": "Escanear biblioteca",
     "EnableStreamLooping": "Bucle autom\u00e1tico de los streams en directo",
-    "EnableStreamLoopingHelp": "Habilite esto si las emisiones en directo s\u00f3lo contienen unos pocos segundos de datos y necesitan ser solicitados continuamente."
+    "EnableStreamLoopingHelp": "Habilite esto si las emisiones en directo s\u00f3lo contienen unos pocos segundos de datos y necesitan ser solicitados continuamente.",
+    "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
+    "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
+    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
 }
