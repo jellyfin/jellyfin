@@ -116,10 +116,10 @@
       <HintPath>..\packages\SkiaSharp.1.58.0\lib\net45\SkiaSharp.dll</HintPath>
     </Reference>
     <Reference Include="SQLitePCLRaw.core">
-      <HintPath>..\packages\SQLitePCLRaw.core.1.1.6\lib\net45\SQLitePCLRaw.core.dll</HintPath>
+      <HintPath>..\packages\SQLitePCLRaw.core.1.1.7\lib\net45\SQLitePCLRaw.core.dll</HintPath>
     </Reference>
     <Reference Include="SQLitePCLRaw.provider.sqlite3">
-      <HintPath>..\packages\SQLitePCLRaw.provider.sqlite3.net45.1.1.6\lib\net45\SQLitePCLRaw.provider.sqlite3.dll</HintPath>
+      <HintPath>..\packages\SQLitePCLRaw.provider.sqlite3.net45.1.1.7\lib\net45\SQLitePCLRaw.provider.sqlite3.dll</HintPath>
     </Reference>
     <Reference Include="Emby.Server.Connect">
       <HintPath>..\ThirdParty\emby\Emby.Server.Connect.dll</HintPath>
@@ -410,6 +410,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\mypreferencesmenu.html">
       <Link>Resources\dashboard-ui\mypreferencesmenu.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\mypreferencessubtitles.html">
+      <Link>Resources\dashboard-ui\mypreferencessubtitles.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\myprofile.html">
       <Link>Resources\dashboard-ui\myprofile.html</Link>
@@ -917,6 +920,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-radio\emby-radio.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-radio\emby-radio.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-scrollbuttons\emby-scrollbuttons.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-scrollbuttons\emby-scrollbuttons.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-scrollbuttons\emby-scrollbuttons.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-scrollbuttons\emby-scrollbuttons.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-scroller\emby-scroller.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-scroller\emby-scroller.js</Link>
@@ -1476,6 +1485,15 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\subtitleeditor\subtitleeditor.template.html">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\subtitleeditor\subtitleeditor.template.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\subtitlesettings\subtitleappearancehelper.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\subtitlesettings\subtitleappearancehelper.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\subtitlesettings\subtitlesettings.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\subtitlesettings\subtitlesettings.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\subtitlesettings\subtitlesettings.template.html">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\subtitlesettings\subtitlesettings.template.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\sync\emby-downloadbutton.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\sync\emby-downloadbutton.js</Link>
     </BundleResource>
@@ -1488,14 +1506,17 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\sync\syncjoblist.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\sync\syncjoblist.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\sync\synctoggle.js">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\sync\synctoggle.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\toast\toast.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\toast\toast.css</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\toast\toast.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\toast\toast.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\upnextdialog\upnextdialog.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\upnextdialog\upnextdialog.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\upnextdialog\upnextdialog.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\upnextdialog\upnextdialog.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\userdatabuttons\emby-playstatebutton.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\userdatabuttons\emby-playstatebutton.js</Link>
@@ -1788,9 +1809,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\librarybrowser.css">
       <Link>Resources\dashboard-ui\css\librarybrowser.css</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\librarymenu.css">
-      <Link>Resources\dashboard-ui\css\librarymenu.css</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\livetv.css">
       <Link>Resources\dashboard-ui\css\livetv.css</Link>
     </BundleResource>
@@ -2082,84 +2100,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\ios\ios.css">
       <Link>Resources\dashboard-ui\devices\ios\ios.css</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\-l14jk06m6puhb-5mxqqnrjtnkitppoi_ivcxxdnrsc.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\-l14jk06m6puhb-5mxqqnrjtnkitppoi_ivcxxdnrsc.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\0ec6fl06luxeywpbsjvxcbjtnkitppoi_ivcxxdnrsc.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\0ec6fl06luxeywpbsjvxcbjtnkitppoi_ivcxxdnrsc.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\2tsd397wlxj96qwhynikxpeszw2xoq-xsnqo47m55da.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\2tsd397wlxj96qwhynikxpeszw2xoq-xsnqo47m55da.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\97uahxiqzroncbacei3awxjtnkitppoi_ivcxxdnrsc.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\97uahxiqzroncbacei3awxjtnkitppoi_ivcxxdnrsc.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\azmswpodyevhtrvuabjwvbtbgvql8ndjpwnre27mub0.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\azmswpodyevhtrvuabjwvbtbgvql8ndjpwnre27mub0.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\cwb0xya8bzo0ksthx0utua.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\cwb0xya8bzo0ksthx0utua.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\d-6iyplofoccackzxwxsoftxra8tvwticgirnjhmvjw.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\d-6iyplofoccackzxwxsoftxra8tvwticgirnjhmvjw.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\e7mevayvogmqfwwl61pkhbtbgvql8ndjpwnre27mub0.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\e7mevayvogmqfwwl61pkhbtbgvql8ndjpwnre27mub0.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\fcx7wwv8ozt71a3e1xoajveszw2xoq-xsnqo47m55da.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\fcx7wwv8ozt71a3e1xoajveszw2xoq-xsnqo47m55da.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\fl4y0qdoxyythegmxx8kcrjtnkitppoi_ivcxxdnrsc.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\fl4y0qdoxyythegmxx8kcrjtnkitppoi_ivcxxdnrsc.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\frnv30oaydlfrth2vnzzdhtbgvql8ndjpwnre27mub0.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\frnv30oaydlfrth2vnzzdhtbgvql8ndjpwnre27mub0.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\gwvjdern2amz39wrsoz7fxtbgvql8ndjpwnre27mub0.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\gwvjdern2amz39wrsoz7fxtbgvql8ndjpwnre27mub0.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\hgo13k-tfspn0qi1sfdufvtxra8tvwticgirnjhmvjw.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\hgo13k-tfspn0qi1sfdufvtxra8tvwticgirnjhmvjw.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\i3s1wsgsg9ycurv6puktorjtnkitppoi_ivcxxdnrsc.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\i3s1wsgsg9ycurv6puktorjtnkitppoi_ivcxxdnrsc.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\nydwbdd4giq26g5xybhsfbjtnkitppoi_ivcxxdnrsc.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\nydwbdd4giq26g5xybhsfbjtnkitppoi_ivcxxdnrsc.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\ooefwznlrtefzlymlvv1ubjtnkitppoi_ivcxxdnrsc.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\ooefwznlrtefzlymlvv1ubjtnkitppoi_ivcxxdnrsc.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\pru33qjshpzsmg3z6vywnrjtnkitppoi_ivcxxdnrsc.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\pru33qjshpzsmg3z6vywnrjtnkitppoi_ivcxxdnrsc.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\robotobold.woff">
-      <Link>Resources\dashboard-ui\fonts\roboto\robotobold.woff</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\robotolight.woff">
-      <Link>Resources\dashboard-ui\fonts\roboto\robotolight.woff</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\robotomedium.woff">
-      <Link>Resources\dashboard-ui\fonts\roboto\robotomedium.woff</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\robotoregular.woff">
-      <Link>Resources\dashboard-ui\fonts\roboto\robotoregular.woff</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\robotothin.woff">
-      <Link>Resources\dashboard-ui\fonts\roboto\robotothin.woff</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\rxzjdnzeo3r5zsexge8uuvtxra8tvwticgirnjhmvjw.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\rxzjdnzeo3r5zsexge8uuvtxra8tvwticgirnjhmvjw.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\style.css">
-      <Link>Resources\dashboard-ui\fonts\roboto\style.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\ty9dfvlaziwdqq2dhoyjphtbgvql8ndjpwnre27mub0.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\ty9dfvlaziwdqq2dhoyjphtbgvql8ndjpwnre27mub0.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\fonts\roboto\vvxugkzxbhtx_s_vctlpghtbgvql8ndjpwnre27mub0.woff2">
-      <Link>Resources\dashboard-ui\fonts\roboto\vvxugkzxbhtx_s_vctlpghtbgvql8ndjpwnre27mub0.woff2</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\legacy\buttonenabled.js">
       <Link>Resources\dashboard-ui\legacy\buttonenabled.js</Link>
     </BundleResource>
@@ -2357,6 +2297,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\mypreferenceslanguages.js">
       <Link>Resources\dashboard-ui\scripts\mypreferenceslanguages.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\mypreferencessubtitles.js">
+      <Link>Resources\dashboard-ui\scripts\mypreferencessubtitles.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\myprofile.js">
       <Link>Resources\dashboard-ui\scripts\myprofile.js</Link>
@@ -2657,9 +2600,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\themes\holiday\theme.js">
       <Link>Resources\dashboard-ui\themes\holiday\theme.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\paper-button-style.css">
-      <Link>Resources\dashboard-ui\thirdparty\paper-button-style.css</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.listview.css">
       <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.listview.css</Link>
