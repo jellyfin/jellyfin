@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.FFMpeg
             }
             if (!string.IsNullOrWhiteSpace(customffProbePath))
             {
-                info.EncoderPath = customffProbePath;
+                info.ProbePath = customffProbePath;
             }
 
             return info;
