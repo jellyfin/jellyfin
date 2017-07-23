@@ -1,6 +1,4 @@
 {
-    "HttpsRequiresCert": "Per abilitare https come indirizzo esterno, sar\u00e0 necessario fornire un certificato SSL attendibile, ad esempio Lets Encrypt.",
-    "HeaderLatestDownloadedVideos": "Ultimi Video Scaricati",
     "LabelPrevious": "Precedente",
     "LabelFinish": "Finito",
     "LabelNext": "Prossimo",
@@ -185,8 +183,6 @@
     "OptionCommunityRating": "Voto del pubblico",
     "OptionNameSort": "Nome",
     "OptionFolderSort": "Cartelle",
-    "OptionBudget": "Budget",
-    "OptionRevenue": "Incasso",
     "OptionPoster": "Locandina",
     "OptionPosterCard": "Scheda locandina",
     "OptionBackdrop": "Sfondo",
@@ -1824,8 +1820,6 @@
     "AllowHWTranscodingHelp": "Se abilitato, abilita il sintonizzatore per codificare i flussi al volo. Ci\u00f2 potrebbe contribuire a ridurre la transcodifica richiesta da Emby Server.",
     "OptionRequirePerfectSubtitleMatch": "Scarica solo i sottotitoli che corrispondono perfettamente ai miei file video",
     "OptionRequirePerfectSubtitleMatchHelp": "La richiesta di una corrispondenza perfetta filtrer\u00e0 i sottotitoli per includere solo quelli che sono stati testati e verificati con il file video esatto. Deselezionando questo aumenter\u00e0 la probabilit\u00e0 che i sottotitoli vengono scaricati, ma aumenteranno le probabilit\u00e0 di testo sottotitolato impreciso o errato.",
-    "ErrorAddingGuestAccount1": "C'\u00e8 stato un errore nell'aggiunta dell'account Emby Connect. Il tuo ospite ha creato un account Emby? Si pu\u00f2 registrare su {0}.",
-    "ErrorAddingGuestAccount2": "Assicurati che i tuoi ospiti abbiano completato l'attivazione seguendo le istruzioni contenute nell'email inviata dopo la creazione dell'account. Se non ha ricevuto questa email, invia una email a {0}, e includi il tuo indirizzo email cos\u00ec come il loro.",
     "GuestUserNotFound": "Utente non trovato. Assicurati che il nome sia corretto e riprovare o provare ad inserire l'indirizzo email.",
     "Yesterday": "Ieri",
     "DownloadImagesInAdvanceWarning": "Scaricare in anteprima tutte le immagini provocher\u00e0 tempi di scansione pi\u00f9 lunghi.",
@@ -1939,5 +1933,9 @@
     "ButtonScanAllLibraries": "Scansiona Tutte le Librerie",
     "ScanLibrary": "Scansione libreria",
     "EnableStreamLooping": "Auto-loop streaming in diretta",
-    "EnableStreamLoopingHelp": "Abilita questo se gli streaming in diretta contengono solo pochi secondi di dati e devono essere costantemente richiesti."
+    "EnableStreamLoopingHelp": "Abilita questo se gli streaming in diretta contengono solo pochi secondi di dati e devono essere costantemente richiesti.",
+    "HttpsRequiresCert": "Per abilitare https come indirizzo esterno, sar\u00e0 necessario fornire un certificato SSL attendibile, ad esempio Lets Encrypt.",
+    "HeaderLatestDownloadedVideos": "Ultimi Video Scaricati",
+    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
 }

@@ -1,6 +1,4 @@
 {
-    "HttpsRequiresCert": "Pour pouvoir utiliser HTTPS comme adresse externe, vous devez fournir un certificat SSL v\u00e9rifi\u00e9, fourni par Let's Encrypt par exemple.",
-    "HeaderLatestDownloadedVideos": "Derni\u00e8res vid\u00e9os t\u00e9l\u00e9charg\u00e9es",
     "LabelPrevious": "Pr\u00e9c\u00e9dent",
     "LabelFinish": "Terminer",
     "LabelNext": "Suivant",
@@ -185,8 +183,6 @@
     "OptionCommunityRating": "Note de la communaut\u00e9",
     "OptionNameSort": "Nom",
     "OptionFolderSort": "R\u00e9pertoires",
-    "OptionBudget": "Budget",
-    "OptionRevenue": "Recette",
     "OptionPoster": "Affiche",
     "OptionPosterCard": "Carte d'affiche",
     "OptionBackdrop": "Image d'arri\u00e8re-plan",
@@ -1795,8 +1791,8 @@
     "PleaseAddAtLeastOneFolder": "Veuillez ajouter au moins un dossier \u00e0 cette m\u00e9diath\u00e8que en cliquant sur le bouton Ajouter.",
     "ErrorAddingMediaPathToVirtualFolder": "Une erreur est survenue pendant l'ajout du chemin des m\u00e9dias. Veuillez v\u00e9rifier que le chemin est valide et que le processus du serveur Emby peut y acc\u00e9der.",
     "ErrorRemovingEmbyConnectAccount": "Une erreur est survenue pendant la suppression du compte Emby Connect. Veuillez vous assurer que vous avez une connexion internet active puis r\u00e9essayez.",
-    "ErrorAddingEmbyConnectAccount1": "Une erreur est survenue lors de l'ajout du compte Emby Connect. Avez-vous cr\u00e9\u00e9 un compte Emby\u00a0? Inscrivez-vous sur {0}.",
-    "ErrorAddingEmbyConnectAccount2": "Veuillez vous assurez que votre compte Emby a bien \u00e9t\u00e9 activ\u00e9 avec les instructions fournies dans le courriel envoy\u00e9 apr\u00e8s la cr\u00e9ation de votre compte. Si vous n'avez pas re\u00e7u ce courriel veuillez envoyer un courriel \u00e0 {0} avec l'adresse utilis\u00e9e lors de la cr\u00e9ation de votre compte Emby.",
+    "ErrorAddingEmbyConnectAccount1": "Une erreur est survenue lors de l'ajout du compte Emby Connect. Avez-vous cr\u00e9\u00e9 un compte Emby\u00a0? Vous pouvez vous inscrire sur {0}.",
+    "ErrorAddingEmbyConnectAccount2": "Si le probl\u00e8me persiste, veuillez envoyer un courriel \u00e0 {0}.",
     "ErrorAddingEmbyConnectAccount3": "Le compte Emby  est d\u00e9j\u00e0 li\u00e9 \u00e0 un utilisateur local existant. Un compte Emby ne peut \u00eatre li\u00e9 qu'\u00e0 un seul utilisateur local \u00e0 la fois.",
     "HeaderFavoriteArtists": "Artistes pr\u00e9f\u00e9r\u00e9s",
     "HeaderFavoriteSongs": "Chansons pr\u00e9f\u00e9r\u00e9es",
@@ -1824,8 +1820,6 @@
     "AllowHWTranscodingHelp": "Si l'option est activ\u00e9e, permet au tuner de transcoder les flux \u00e0 la vol\u00e9e. Cela peut aider \u00e0 r\u00e9duire le transcodage requis par le serveur Emby.",
     "OptionRequirePerfectSubtitleMatch": "T\u00e9l\u00e9charger uniquement les sous-titres qui correspondent parfaitement \u00e0 mes fichiers vid\u00e9o.",
     "OptionRequirePerfectSubtitleMatchHelp": "En activant cette option, seuls les sous-titres ayant \u00e9t\u00e9 test\u00e9s et v\u00e9rifi\u00e9s avec votre fichier vid\u00e9o seront t\u00e9l\u00e9charg\u00e9s. En d\u00e9sactivant cette option, vous aurez plus de chance que des sous-titres soient t\u00e9l\u00e9charg\u00e9s, mais ils risquent d'\u00eatre d\u00e9cal\u00e9s ou incorrects.",
-    "ErrorAddingGuestAccount1": "Une erreur est survenue lors de l'ajout du compte Emby Connect. Avez-vous cr\u00e9\u00e9 un compte Emby\u00a0? Inscrivez-vous sur {0}.",
-    "ErrorAddingGuestAccount2": "Veuillez vous assurez que votre invit\u00e9 a bien activ\u00e9 son compte en suivant les instructions fournies dans le courriel envoy\u00e9 apr\u00e8s la cr\u00e9ation de votre compte. S'il n'a pas re\u00e7u ce courriel, veuillez envoyer un courriel \u00e0 {0} en pr\u00e9cisant votre adresse courriel ainsi que la sienne.",
     "GuestUserNotFound": "Utilisateur non trouv\u00e9. Veuillez v\u00e9rifier que le nom est correct et essayez \u00e0 nouveau, ou essayez d'entrer votre adresse courriel.",
     "Yesterday": "Hier",
     "DownloadImagesInAdvanceWarning": "Le t\u00e9l\u00e9chargement de toutes les images \u00e0 l'avance se traduira par un allongement de la dur\u00e9e d'actualisation de la m\u00e9diath\u00e8que.",
@@ -1939,5 +1933,9 @@
     "ButtonScanAllLibraries": "Actualiser toutes les m\u00e9diath\u00e8ques",
     "ScanLibrary": "Actualiser la m\u00e9diath\u00e8que",
     "EnableStreamLooping": "Reboucler les streaming en direct",
-    "EnableStreamLoopingHelp": "Activez cette option si les streaming en direct ne contiennent que quelques secondes de donn\u00e9es et doivent \u00eatre redemand\u00e9s continuellement."
+    "EnableStreamLoopingHelp": "Activez cette option si les streaming en direct ne contiennent que quelques secondes de donn\u00e9es et doivent \u00eatre redemand\u00e9s continuellement.",
+    "HttpsRequiresCert": "Pour pouvoir utiliser HTTPS comme adresse externe, vous devez fournir un certificat SSL v\u00e9rifi\u00e9, fourni par Let's Encrypt par exemple.",
+    "HeaderLatestDownloadedVideos": "Derni\u00e8res vid\u00e9os t\u00e9l\u00e9charg\u00e9es",
+    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
 }

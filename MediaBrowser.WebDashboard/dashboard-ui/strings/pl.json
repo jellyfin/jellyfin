@@ -1,6 +1,4 @@
 {
-    "HttpsRequiresCert": "Zg\u0142aszanie si\u0119 serwera na na zewn\u0119trznym adresie HTTPS, wymaga dostarczenia zaufanego certyfikatu SSL takiego, jak Lets Encrypt.",
-    "HeaderLatestDownloadedVideos": "Wideo ostatnio pobrane",
     "LabelPrevious": "Wstecz",
     "LabelFinish": "Zako\u0144cz",
     "LabelNext": "Dalej",
@@ -185,8 +183,6 @@
     "OptionCommunityRating": "Ocena spo\u0142eczno\u015bci",
     "OptionNameSort": "Nazwa",
     "OptionFolderSort": "Foldery",
-    "OptionBudget": "Bud\u017cet",
-    "OptionRevenue": "Doch\u00f3d",
     "OptionPoster": "Plakat",
     "OptionPosterCard": "Plakat",
     "OptionBackdrop": "Zrzut",
@@ -1824,8 +1820,6 @@
     "AllowHWTranscodingHelp": "Je\u015bli w\u0142\u0105czone, zezwalaj tunerowi na transkodowanie strumieni w locie. To mo\u017ce pom\u00f3c zmniejszy\u0107 pro\u015bby serwera Emby na transkodowanie.",
     "OptionRequirePerfectSubtitleMatch": "Pobieraj tylko napisy, kt\u00f3re pasuj\u0105 idealnie do plik\u00f3w wideo",
     "OptionRequirePerfectSubtitleMatchHelp": "Wymaganie perfekcyjnego dopasowania ograniczy list\u0119 napis\u00f3w tylko do tych, kt\u00f3re zosta\u0142y przetestowane i zweryfikowane jako dok\u0142adnie pasuj\u0105ce. Odznaczenie tej opcji zwi\u0119kszy szans\u0119 pobrania napis\u00f3w, ale zwi\u0119kszy tak\u017ce szans\u0119 na pobranie napis\u00f3w b\u0142\u0119dnych lub o b\u0142\u0119dnej sygnaturze czasowej.",
-    "ErrorAddingGuestAccount1": "Wyst\u0105pi\u0142 b\u0142\u0105d podczas dodawania konta Emby Connect. Czy tw\u00f3j go\u015b\u0107 posiada konto Emby? Mo\u017ce zarejestrowa\u0107 si\u0119 na {0}.",
-    "ErrorAddingGuestAccount2": "Upewnij si\u0119, \u017ce tw\u00f3j go\u015b\u0107 zako\u0144czy\u0142 aktywacj\u0119 post\u0119puj\u0105c zgodnie z instrukcjami zawartymi w wiadomo\u015bci e-mail wysy\u0142anej po utworzeniu konta. Je\u015bli nie otrzyma\u0142 tej wiadomo\u015bci, prosz\u0119 wy\u015blij e-mail na {0} z zawieraj\u0105cego tw\u00f3j adres e-mail, jak i jego.",
     "GuestUserNotFound": "Brak u\u017cytkownika o podanej nazwie. Upewnij si\u0119, \u017ce nazwa jest poprawna i spr\u00f3buj ponownie albo wprowad\u017a jego adres pocztowy.",
     "Yesterday": "Wczoraj",
     "DownloadImagesInAdvanceWarning": "Pobieranie wszystkich obraz\u00f3w z wyprzedzeniem mo\u017ce skutkowa\u0107 d\u0142u\u017cszym czasem skanowania biblioteki",
@@ -1939,5 +1933,9 @@
     "ButtonScanAllLibraries": "Skanuj biblioteki",
     "ScanLibrary": "Skanuj bibliotek\u0119",
     "EnableStreamLooping": "Zap\u0119tlaj \u017c\u0105dania transmisji",
-    "EnableStreamLoopingHelp": "Aktywuj t\u0119 opcj\u0119 w przypadku, gdy transmisje na \u017cywo zawieraj\u0105 tylko kilka sekund danych i wymagaj\u0105 ci\u0105g\u0142ego ponawiania \u017c\u0105da\u0144 transmisji."
+    "EnableStreamLoopingHelp": "Aktywuj t\u0119 opcj\u0119 w przypadku, gdy transmisje na \u017cywo zawieraj\u0105 tylko kilka sekund danych i wymagaj\u0105 ci\u0105g\u0142ego ponawiania \u017c\u0105da\u0144 transmisji.",
+    "HttpsRequiresCert": "Zg\u0142aszanie si\u0119 serwera na na zewn\u0119trznym adresie HTTPS, wymaga dostarczenia zaufanego certyfikatu SSL takiego, jak Lets Encrypt.",
+    "HeaderLatestDownloadedVideos": "Wideo ostatnio pobrane",
+    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
 }
