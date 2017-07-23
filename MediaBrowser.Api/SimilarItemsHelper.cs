@@ -142,11 +142,6 @@ namespace MediaBrowser.Api
             return item.Tags;
         }
 
-        private static IEnumerable<string> GetKeywords(BaseItem item)
-        {
-            return item.Keywords;
-        }
-
         /// <summary>
         /// Gets the similiarity score.
         /// </summary>
@@ -169,9 +164,6 @@ namespace MediaBrowser.Api
 
             // Find common tags
             points += GetTags(item1).Where(i => GetTags(item2).Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 10);
-
-            // Find common keywords
-            points += GetKeywords(item1).Where(i => GetKeywords(item2).Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 10);
 
             // Find common studios
             points += item1.Studios.Where(i => item2.Studios.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 3);

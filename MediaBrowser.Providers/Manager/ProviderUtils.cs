@@ -164,14 +164,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (!lockedFields.Contains(MetadataFields.Keywords))
-            {
-                if (replaceData || target.Keywords.Count == 0)
-                {
-                    target.Keywords = source.Keywords;
-                }
-            }
-
             if (!lockedFields.Contains(MetadataFields.ProductionLocations))
             {
                 if (replaceData || target.ProductionLocations.Count == 0)

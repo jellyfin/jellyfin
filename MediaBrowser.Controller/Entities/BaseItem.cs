@@ -45,7 +45,6 @@ namespace MediaBrowser.Controller.Entities
         {
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
-            Keywords = new List<string>();
             Tags = new List<string>();
             Genres = new List<string>();
             Studios = new List<string>();
@@ -881,7 +880,6 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public List<string> Tags { get; set; }
 
-        public List<string> Keywords { get; set; }
         public List<string> ProductionLocations { get; set; }
 
         /// <summary>
@@ -2278,11 +2276,6 @@ namespace MediaBrowser.Controller.Entities
                 {
                     newOptions.ForceSave = true;
                     ownedItem.ProductionLocations = item.ProductionLocations.ToList();
-                }
-                if (!item.Keywords.SequenceEqual(ownedItem.Keywords, StringComparer.Ordinal))
-                {
-                    newOptions.ForceSave = true;
-                    ownedItem.Keywords = item.Keywords.ToList();
                 }
                 if (item.CommunityRating != ownedItem.CommunityRating)
                 {

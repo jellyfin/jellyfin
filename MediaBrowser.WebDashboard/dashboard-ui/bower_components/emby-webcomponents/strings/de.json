@@ -182,7 +182,6 @@
     "LabelDisplayOrder": "Anzeigereihenfolge:",
     "Countries": "L\u00e4nder",
     "Genres": "Genres",
-    "HeaderPlotKeywords": "Handlungsstichworte",
     "Studios": "Studios",
     "Tags": "Tags",
     "HeaderMetadataSettings": "Metadaten Einstellungen",
@@ -210,7 +209,6 @@
     "HeaderEnabledFieldsHelp": "W\u00e4hle Felder ab um das \u00c4ndern von Daten zu verhindern.",
     "Backdrops": "Hintergr\u00fcnde",
     "Images": "Bilder",
-    "Keywords": "Stichworte",
     "Runtime": "Laufzeit",
     "ProductionLocations": "Drehorte",
     "BirthLocation": "Geburtsort",
@@ -473,9 +471,9 @@
     "GuestUserNotFound": "Benutzer nicht gefunden. Bitte stelle die korrekte Schreibweise sicher und versuche es erneut. Du kannst auch die Emailadresse verwenden.",
     "ErrorReachingEmbyConnect": "Fehler bei der Verbindung zum Emby Connect Server. Stelle bitte sicher, dass du \u00fcber eine aktive Internetverbindung verf\u00fcgst und versuche es erneut.",
     "ErrorAddingEmbyConnectAccount1": "Ein Fehler trat beim hinzuf\u00fcgen des Emby-Connect Kontos auf. Hast du bereits ein Emby Konto? Melde dich hier an: {0}.",
-    "ErrorAddingEmbyConnectAccount2": "Bitte stelle sicher, dass Dein Emby Konto nach den Anweisungen aus der Email, die du nach Erstellung des Kontos erhalten hast, aktiviert wurde. Wenn du keine Email erhalten hast, sende bitte eine Email an {0}. Benutze dazu bitte die Email-Adresse, die Du bereits zur Erstellung deines Emby Kontos verwendet hast.",
+    "ErrorAddingEmbyConnectAccount2": "Wenn du immer noch ein Problem hast, sende bitte eine E-Mail an {0} von der E-Mail-Adresse die du mit dem Emby-Account nutzt.",
     "ErrorAddingGuestAccount1": "Ein Fehler trat beim Hinzuf\u00fcgen des Emby Connect Kontos auf. Hat Ihr Gast ein Emby Konto erstellt? Sie k\u00f6nnen sich hier anmelden {0}.",
-    "ErrorAddingGuestAccount2": "Bitte stellen Sie sicher, dass Ihre G\u00e4ste die Aktivierung vervollst\u00e4ndigt haben, welche wir ihm in einer Email nach der Erstellung des Kontos zugesandt haben. Sollte diese Email nicht angekommen sein, senden Sie bitte eine Email an {0}. Bitte geben Sie Ihre Emailadresse und die des Gastes mit an.",
+    "ErrorAddingGuestAccount2": "Wenn du immer noch ein Problem hast, sende bitte eine E-Mail an {0} mit deiner E-Mail-Adresse und die der anderen als Inhalt.",
     "MessageEmbyAccountAdded": "Das Emby Konto wurde diesem Benutzer hinzugef\u00fcgt.",
     "MessagePendingEmbyAccountAdded": "Das Emby Konto wurde diesem Benutzer hinzugef\u00fcgt. Eine Emails wird an den Besitzer dieses Kontos gesendet. Die Einladung muss mit einem Klick auf den Link in der Email best\u00e4tigt werden.",
     "HeaderEmbyAccountAdded": "Emby Konto hinzugef\u00fcgt",
@@ -525,5 +523,5 @@
     "HeaderNextVideoPlayingInValue": "N\u00e4chstes Video wird abgespielt in {0}",
     "HeaderNextEpisodePlayingInValue": "N\u00e4chste Episode wird abgespielt in {0}",
     "HeaderSecondsValue": "{0} Sekunden",
-    "ErrorConnectServerUnreachable": "There was an error performing the requested operation. Your server is unable to contact our Emby Connect Server at {0}. Please ensure your server has an active internet connection and that the communications are being allowed by any firewall or security software you have installed."
+    "ErrorConnectServerUnreachable": "Es gab einen Fehler bei bei der Ausf\u00fchrung des Funktion. Dein Server ist nicht in der Lage unsere Emby-Connect-Server zu erreichen um {0}. Stelle bitte sicher, dass dein Server eine aktive Internetverbindung hat und die Kommunikations durch die Firewall oder andere installierte Sicherheitssoftware erlaubt wurde."
 }

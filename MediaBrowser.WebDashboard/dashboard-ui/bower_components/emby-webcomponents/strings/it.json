@@ -182,7 +182,6 @@
     "LabelDisplayOrder": "Ordine di visualizzazione:",
     "Countries": "Nazioni",
     "Genres": "Generi",
-    "HeaderPlotKeywords": "Parole Chiave Trama",
     "Studios": "Studios",
     "Tags": "Tag",
     "HeaderMetadataSettings": "Impostazioni Metadati",
@@ -210,7 +209,6 @@
     "HeaderEnabledFieldsHelp": "Deseleziona un campo per bloccarlo ed impedire che venga modificato.",
     "Backdrops": "Sfondi",
     "Images": "Immagini",
-    "Keywords": "Parole chiave",
     "Runtime": "Durata",
     "ProductionLocations": "Sedi di produzione",
     "BirthLocation": "Luogo di nascita",
@@ -473,9 +471,9 @@
     "GuestUserNotFound": "Utente non trovato. Assicurati che il nome sia corretto e riprovare o provare ad inserire l'indirizzo email.",
     "ErrorReachingEmbyConnect": "Si \u00e8 verificato un errore durante la connessione al server Emby Connect. Per favore verifica la tua connessione ad Internet e riprova.",
     "ErrorAddingEmbyConnectAccount1": "C'\u00e8 stato un errore nell'aggiunta dell'account Emby Connect. Hai creato un account Emby? Registrati su {0}.",
-    "ErrorAddingEmbyConnectAccount2": "Assicurati che l'account Emby sia stato attivato seguendo le istruzioni contenute nell'email inviata dopo la creazione dell'account. Se non hai ricevuto questa email, invia una email a {0} dall'indirizzo email utilizzato con l'account Emby.",
+    "ErrorAddingEmbyConnectAccount2": "Se stai ancora avendo un problema, per piacere invia una email a {0} dall'indirizzo email utilizzato con l'account Emby.",
     "ErrorAddingGuestAccount1": "C'\u00e8 stato un errore nell'aggiunta dell'account Emby Connect. Il tuo ospite ha creato un account Emby? Si pu\u00f2 registrare su {0}.",
-    "ErrorAddingGuestAccount2": "Assicurati che i tuoi ospiti abbiano completato l'attivazione seguendo le istruzioni contenute nell'email inviata dopo la creazione dell'account. Se non ha ricevuto questa email, invia una email a {0}, e includi il tuo indirizzo email cos\u00ec come il loro.",
+    "ErrorAddingGuestAccount2": "Se stai avendo ancora dei problemi,per piacere invia una email a {0}, e includi il tuo indirizzo email cos\u00ec come il loro.",
     "MessageEmbyAccountAdded": "L'account Emby \u00e8 stato aggiunto a questo utente",
     "MessagePendingEmbyAccountAdded": "L'account Emby \u00e8 stato aggiunto a questo utente. Un'email sar\u00e0 inviata al proprietario dell'account. L'invito dovr\u00e0 essere confermato selezionando il link contenuto nell'email",
     "HeaderEmbyAccountAdded": "Account Emby Aggiunto",
@@ -525,5 +523,5 @@
     "HeaderNextVideoPlayingInValue": "Il prossimo Video verr\u00e0 riprodotto in {0}",
     "HeaderNextEpisodePlayingInValue": "Il prossimo Episodio verr\u00e0 riprodotto in {0}",
     "HeaderSecondsValue": "{0} Secondi",
-    "ErrorConnectServerUnreachable": "There was an error performing the requested operation. Your server is unable to contact our Emby Connect Server at {0}. Please ensure your server has an active internet connection and that the communications are being allowed by any firewall or security software you have installed."
+    "ErrorConnectServerUnreachable": "Si \u00e8 verificato un errore durante l'esecuzione dell'operazione richiesta. Il tuo server non \u00e8 in grado di contattare il nostro Server Emby Connect al {0}. Assicurarsi che il server disponga di una connessione Internet attiva e che le comunicazioni siano consentite da qualsiasi firewall o software di protezione installato."
 }
