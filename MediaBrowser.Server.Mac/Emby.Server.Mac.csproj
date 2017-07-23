@@ -116,10 +116,10 @@
       <HintPath>..\packages\SkiaSharp.1.58.0\lib\net45\SkiaSharp.dll</HintPath>
     </Reference>
     <Reference Include="SQLitePCLRaw.core">
-      <HintPath>..\packages\SQLitePCLRaw.core.1.1.6\lib\net45\SQLitePCLRaw.core.dll</HintPath>
+      <HintPath>..\packages\SQLitePCLRaw.core.1.1.7\lib\net45\SQLitePCLRaw.core.dll</HintPath>
     </Reference>
     <Reference Include="SQLitePCLRaw.provider.sqlite3">
-      <HintPath>..\packages\SQLitePCLRaw.provider.sqlite3.net45.1.1.6\lib\net45\SQLitePCLRaw.provider.sqlite3.dll</HintPath>
+      <HintPath>..\packages\SQLitePCLRaw.provider.sqlite3.net45.1.1.7\lib\net45\SQLitePCLRaw.provider.sqlite3.dll</HintPath>
     </Reference>
     <Reference Include="Emby.Server.Connect">
       <HintPath>..\ThirdParty\emby\Emby.Server.Connect.dll</HintPath>
