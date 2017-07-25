@@ -1937,5 +1937,7 @@
   "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
   "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
   "EnableNextVideoInfoOverlay": "Enable next video info during playback",
-  "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
+  "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist.",
+  "ServerRestartNeededAfterPluginInstall": "Emby Server will need to be restarted after installing a plugin.",
+  "PluginInstalledMessage": "The plugin has been successfully installed. Emby Server will need to be restarted for changes to take effect."
 }
