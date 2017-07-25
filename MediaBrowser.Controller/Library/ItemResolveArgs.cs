@@ -238,21 +238,6 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
-        /// Determines whether [contains meta file by name] [the specified name].
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns><c>true</c> if [contains meta file by name] [the specified name]; otherwise, <c>false</c>.</returns>
-        public bool ContainsMetaFileByName(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException();
-            }
-
-            return GetFileSystemEntryByName(name) != null;
-        }
-
-        /// <summary>
         /// Determines whether [contains file system entry by name] [the specified name].
         /// </summary>
         /// <param name="name">The name.</param>
