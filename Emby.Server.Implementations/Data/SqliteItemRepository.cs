@@ -233,7 +233,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "InheritedParentalRatingValue", "INT", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "UnratedType", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "TopParentId", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "IsItemByName", "BIT", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "CriticRating", "Float", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "InheritedTags", "Text", existingColumnNames);
@@ -558,7 +557,6 @@ namespace Emby.Server.Implementations.Data
                 "IsFolder",
                 "UnratedType",
                 "TopParentId",
-                "IsItemByName",
                 "TrailerTypes",
                 "CriticRating",
                 "InheritedTags",
@@ -896,15 +894,6 @@ namespace Emby.Server.Implementations.Data
                 //Logger.Debug("Item {0} has null top parent", item.Id);
                 saveItemStatement.TryBindNull("@TopParentId");
             }
-
-            var isByName = false;
-            var byName = item as IItemByName;
-            if (byName != null)
-            {
-                var dualAccess = item as IHasDualAccess;
-                isByName = dualAccess == null || dualAccess.IsAccessedByName;
-            }
-            saveItemStatement.TryBind("@IsItemByName", isByName);
 
             var trailer = item as Trailer;
             if (trailer != null && trailer.TrailerTypes.Count > 0)
@@ -1656,7 +1645,11 @@ namespace Emby.Server.Implementations.Data
 
             if (!reader.IsDBNull(index))
             {
-                item.Audio = (ProgramAudio)Enum.Parse(typeof(ProgramAudio), reader.GetString(index), true);
+                ProgramAudio audio;
+                if (Enum.TryParse(reader.GetString(index), true, out audio))
+                {
+                    item.Audio = audio;
+                }
             }
             index++;
 
@@ -1687,7 +1680,17 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.LockedFields = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => (MetadataFields)Enum.Parse(typeof(MetadataFields), i, true)).ToList();
+                    item.LockedFields = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(
+                        i =>
+                        {
+                            MetadataFields parsedValue;
+
+                            if (Enum.TryParse(i, true, out parsedValue))
+                            {
+                                return parsedValue;
+                            }
+                            return (MetadataFields?)null;
+                        }).Where(i => i.HasValue).Select(i => i.Value).ToList();
                 }
                 index++;
             }
@@ -1717,7 +1720,18 @@ namespace Emby.Server.Implementations.Data
                 {
                     if (!reader.IsDBNull(index))
                     {
-                        trailer.TrailerTypes = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => (TrailerType)Enum.Parse(typeof(TrailerType), i, true)).ToList();
+                        trailer.TrailerTypes = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(
+                        i =>
+                        {
+                            TrailerType parsedValue;
+
+                            if (Enum.TryParse(i, true, out parsedValue))
+                            {
+                                return parsedValue;
+                            }
+                            return (TrailerType?)null;
+
+                        }).Where(i => i.HasValue).Select(i => i.Value).ToList();
                     }
                 }
                 index++;
@@ -1912,7 +1926,11 @@ namespace Emby.Server.Implementations.Data
 
             if (!reader.IsDBNull(index))
             {
-                item.ExtraType = (ExtraType)Enum.Parse(typeof(ExtraType), reader.GetString(index), true);
+                ExtraType extraType;
+                if (Enum.TryParse(reader.GetString(index), true, out extraType))
+                {
+                    item.ExtraType = extraType;
+                }
             }
             index++;
 
@@ -4444,20 +4462,26 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            //var enableItemsByName = query.IncludeItemsByName ?? query.IncludeItemTypes.Length > 0;
-            var enableItemsByName = query.IncludeItemsByName ?? false;
+
+            var includedItemByNameTypes = GetItemByNameTypesInQuery(query).SelectMany(MapIncludeItemTypes).ToList();
+            var enableItemsByName = (query.IncludeItemsByName ?? false) && includedItemByNameTypes.Count > 0;
 
             var queryTopParentIds = query.TopParentIds.Where(IsValidId).ToArray();
 
             if (queryTopParentIds.Length == 1)
             {
-                if (enableItemsByName)
+                if (enableItemsByName && includedItemByNameTypes.Count == 1)
                 {
-                    whereClauses.Add("(TopParentId=@TopParentId or IsItemByName=@IsItemByName)");
+                    whereClauses.Add("(TopParentId=@TopParentId or Type=@IncludedItemByNameType)");
                     if (statement != null)
                     {
-                        statement.TryBind("@IsItemByName", true);
+                        statement.TryBind("@IncludedItemByNameType", includedItemByNameTypes[0]);
                     }
+                }
+                else if (enableItemsByName && includedItemByNameTypes.Count > 1)
+                {
+                    var itemByNameTypeVal = string.Join(",", includedItemByNameTypes.Select(i => "'" + i + "'").ToArray());
+                    whereClauses.Add("(TopParentId=@TopParentId or Type in (" + itemByNameTypeVal + "))");
                 }
                 else
                 {
@@ -4472,13 +4496,18 @@ namespace Emby.Server.Implementations.Data
             {
                 var val = string.Join(",", queryTopParentIds.Select(i => "'" + i + "'").ToArray());
 
-                if (enableItemsByName)
+                if (enableItemsByName && includedItemByNameTypes.Count == 1)
                 {
-                    whereClauses.Add("(IsItemByName=@IsItemByName or TopParentId in (" + val + "))");
+                    whereClauses.Add("(Type=@IncludedItemByNameType or TopParentId in (" + val + "))");
                     if (statement != null)
                     {
-                        statement.TryBind("@IsItemByName", true);
+                        statement.TryBind("@IncludedItemByNameType", includedItemByNameTypes[0]);
                     }
+                }
+                else if (enableItemsByName && includedItemByNameTypes.Count > 1)
+                {
+                    var itemByNameTypeVal = string.Join(",", includedItemByNameTypes.Select(i => "'" + i + "'").ToArray());
+                    whereClauses.Add("(Type in (" + itemByNameTypeVal + ") or TopParentId in (" + val + "))");
                 }
                 else
                 {
@@ -4557,6 +4586,48 @@ namespace Emby.Server.Implementations.Data
             }
 
             return whereClauses;
+        }
+
+        private List<string> GetItemByNameTypesInQuery(InternalItemsQuery query)
+        {
+            var list = new List<string>();
+
+            if (IsTypeInQuery(typeof(Person).Name, query))
+            {
+                list.Add(typeof(Person).Name);
+            }
+            if (IsTypeInQuery(typeof(Genre).Name, query))
+            {
+                list.Add(typeof(Genre).Name);
+            }
+            if (IsTypeInQuery(typeof(MusicGenre).Name, query))
+            {
+                list.Add(typeof(MusicGenre).Name);
+            }
+            if (IsTypeInQuery(typeof(GameGenre).Name, query))
+            {
+                list.Add(typeof(GameGenre).Name);
+            }
+            if (IsTypeInQuery(typeof(MusicArtist).Name, query))
+            {
+                list.Add(typeof(MusicArtist).Name);
+            }
+            if (IsTypeInQuery(typeof(Studio).Name, query))
+            {
+                list.Add(typeof(Studio).Name);
+            }
+
+            return list;
+        }
+
+        private bool IsTypeInQuery(string type, InternalItemsQuery query)
+        {
+            if (query.ExcludeItemTypes.Contains(type, StringComparer.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(type, StringComparer.OrdinalIgnoreCase);
         }
 
         private string GetCleanValue(string value)
