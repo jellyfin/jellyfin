@@ -46,7 +46,7 @@ namespace Emby.Server.Implementations.Library
             var fileInfo = directoryService.GetFile(item.Path);
             SetDateCreated(item, fileSystem, fileInfo);
 
-            EnsureName(item, fileInfo);
+            EnsureName(item, item.Path, fileInfo);
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.Library
             item.Id = libraryManager.GetNewItemId(item.Path, item.GetType());
 
             // Make sure the item has a name
-            EnsureName(item, args.FileInfo);
+            EnsureName(item, item.Path, args.FileInfo);
 
             item.IsLocked = item.Path.IndexOf("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) != -1 ||
                 item.GetParents().Any(i => i.IsLocked);
@@ -85,14 +85,14 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// Ensures the name.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="fileInfo">The file information.</param>
-        private static void EnsureName(BaseItem item, FileSystemMetadata fileInfo)
+        private static void EnsureName(BaseItem item, string fullPath, FileSystemMetadata fileInfo)
         {
             // If the subclass didn't supply a name, add it here
-            if (string.IsNullOrEmpty(item.Name) && !string.IsNullOrEmpty(item.Path))
+            if (string.IsNullOrEmpty(item.Name) && !string.IsNullOrEmpty(fullPath))
             {
-                item.Name = GetDisplayName(fileInfo.Name, fileInfo.IsDirectory);
+                var fileName = fileInfo == null ? Path.GetFileName(fullPath) : fileInfo.Name;
+
+                item.Name = GetDisplayName(fileName, fileInfo != null && fileInfo.IsDirectory);
             }
         }
 
@@ -170,7 +170,11 @@ namespace Emby.Server.Implementations.Library
 
             if (config.UseFileCreationTimeForDateAdded)
             {
-                item.DateCreated = fileSystem.GetCreationTimeUtc(info);
+                // directoryService.getFile may return null
+                if (info != null)
+                {
+                    item.DateCreated = fileSystem.GetCreationTimeUtc(info);
+                }
             }
             else
             {

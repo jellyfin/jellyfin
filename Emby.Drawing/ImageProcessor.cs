@@ -171,6 +171,13 @@ namespace Emby.Drawing
             return _imageEncoder.SupportedOutputFormats;
         }
 
+        private static readonly string[] TransparentImageTypes = new string[] { ".png", ".webp" };
+        private bool SupportsTransparency(string path)
+        {
+            return TransparentImageTypes.Contains(Path.GetExtension(path) ?? string.Empty);
+            ;
+        }
+
         public async Task<Tuple<string, string, DateTime>> ProcessImage(ImageProcessingOptions options)
         {
             if (options == null)
@@ -258,6 +265,11 @@ namespace Emby.Drawing
                     if (item == null && string.Equals(options.ItemType, typeof(Photo).Name, StringComparison.OrdinalIgnoreCase))
                     {
                         item = _libraryManager().GetItemById(options.ItemId);
+                    }
+
+                    if (options.CropWhiteSpace && !SupportsTransparency(originalImagePath))
+                    {
+                        options.CropWhiteSpace = false;
                     }
 
                     var resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, tmpPath, autoOrient, orientation, quality, options, outputFormat);
