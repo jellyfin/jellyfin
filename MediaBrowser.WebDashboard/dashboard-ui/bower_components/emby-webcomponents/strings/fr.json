@@ -449,6 +449,7 @@
     "DirectPlaying": "Lecture directe",
     "DirectStreaming": "Streaming direct",
     "Transcoding": "Transcodage",
+    "ContainerBitrateExceedsLimit": "Le d\u00e9bit du m\u00e9dia d\u00e9passe la limite.",
     "VideoCodecNotSupported": "Codec vid\u00e9o non support\u00e9",
     "AudioCodecNotSupported": "Codec audio non support\u00e9",
     "SubtitleCodecNotSupported": "Format des sous-titres non pris en charge",
@@ -523,5 +524,10 @@
     "HeaderNextVideoPlayingInValue": "Lecture de la prochaine vid\u00e9o dans {0}",
     "HeaderNextEpisodePlayingInValue": "Lecture du prochain \u00e9pisode dans {0}",
     "HeaderSecondsValue": "{0} secondes",
+    "AudioBitDepthNotSupported": "Profondeur des \u00e9chantillons de l'audio non prise en charge",
+    "VideoProfileNotSupported": "Profil vid\u00e9o non pris en charge",
+    "VideoFramerateNotSupported": "Nombre d'images par seconde de la vid\u00e9o non pris en charge",
+    "VideoBitDepthNotSupported": "Profondeur des couleurs de la vid\u00e9o non prise en charge",
+    "RefFramesNotSupported": "Nombre d'images de r\u00e9f\u00e9rence de la vid\u00e9o non pris en charge",
     "ErrorConnectServerUnreachable": "Une erreur est survenue pendant l'ex\u00e9cution de l'op\u00e9ration demand\u00e9e. Votre serveur est dans l'incapacit\u00e9 de joindre le serveur d'Emby Connect \u00e0 {0}. Veuillez v\u00e9rifier que votre serveur est bien connect\u00e9 \u00e0 Internet et qu'aucun pare-feu ou autre logiciel de s\u00e9curit\u00e9 ne bloque les communications."
 }

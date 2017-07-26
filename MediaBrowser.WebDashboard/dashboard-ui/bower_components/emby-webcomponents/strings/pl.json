@@ -114,7 +114,7 @@
     "Identify": "Identyfikuj",
     "EditImages": "Edytuj obrazy",
     "EditInfo": "Edytuj informacje",
-    "Sync": "Synchronizuj",
+    "Sync": "Synchronizacja",
     "InstantMix": "Szybki remiks",
     "ViewAlbum": "Podejrzyj album",
     "ViewArtist": "Podejrzyj wykonawc\u0119",
@@ -449,6 +449,7 @@
     "DirectPlaying": "Odtwarzanie bezpo\u015brednie",
     "DirectStreaming": "Transmisja bezpo\u015brednia",
     "Transcoding": "Transkodowanie",
+    "ContainerBitrateExceedsLimit": "Media bitrate exceeds limit.",
     "VideoCodecNotSupported": "Nieobs\u0142ugiwany kodek wideo",
     "AudioCodecNotSupported": "Nieobs\u0142ugiwany kodek d\u017awi\u0119ku",
     "SubtitleCodecNotSupported": "Nieobs\u0142ugiwany format napis\u00f3w",
@@ -523,5 +524,10 @@
     "HeaderNextVideoPlayingInValue": "Nast\u0119pne wideo za {0}",
     "HeaderNextEpisodePlayingInValue": "Nast\u0119pne odcinek za {0}",
     "HeaderSecondsValue": "{0} sekund",
+    "AudioBitDepthNotSupported": "Audio bit depth not supported",
+    "VideoProfileNotSupported": "Video profile not supported",
+    "VideoFramerateNotSupported": "Video framerate not supported",
+    "VideoBitDepthNotSupported": "Video bit depth not supported",
+    "RefFramesNotSupported": "Number of video reference frames not supported",
     "ErrorConnectServerUnreachable": "There was an error performing the requested operation. Your server is unable to contact our Emby Connect Server at {0}. Please ensure your server has an active internet connection and that the communications are being allowed by any firewall or security software you have installed."
 }

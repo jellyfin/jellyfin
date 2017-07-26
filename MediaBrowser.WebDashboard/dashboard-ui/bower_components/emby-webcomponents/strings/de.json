@@ -449,6 +449,7 @@
     "DirectPlaying": "Direktes Abspielen",
     "DirectStreaming": "Direktes Streaming",
     "Transcoding": "Transcoding",
+    "ContainerBitrateExceedsLimit": "Medienbitrate \u00fcberschreitet das Limit.",
     "VideoCodecNotSupported": "Video Codec nicht unterst\u00fctzt",
     "AudioCodecNotSupported": "Audio Codec nicht unterst\u00fctzt",
     "SubtitleCodecNotSupported": "Untertitelformat nicht unterst\u00fctzt",
@@ -523,5 +524,10 @@
     "HeaderNextVideoPlayingInValue": "N\u00e4chstes Video wird abgespielt in {0}",
     "HeaderNextEpisodePlayingInValue": "N\u00e4chste Episode wird abgespielt in {0}",
     "HeaderSecondsValue": "{0} Sekunden",
+    "AudioBitDepthNotSupported": "Audiobittiefe nicht unterst\u00fctzt",
+    "VideoProfileNotSupported": "Videoprofil nicht unterst\u00fctzt",
+    "VideoFramerateNotSupported": "Videoframerate nicht unterst\u00fctzt",
+    "VideoBitDepthNotSupported": "Videobittiefe nicht unterst\u00fctzt",
+    "RefFramesNotSupported": "Anzahl der Videoreferenzframes nicht unterst\u00fctzt",
     "ErrorConnectServerUnreachable": "Es gab einen Fehler bei bei der Ausf\u00fchrung des Funktion. Dein Server ist nicht in der Lage unsere Emby-Connect-Server zu erreichen um {0}. Stelle bitte sicher, dass dein Server eine aktive Internetverbindung hat und die Kommunikations durch die Firewall oder andere installierte Sicherheitssoftware erlaubt wurde."
 }

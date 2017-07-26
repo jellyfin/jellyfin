@@ -449,6 +449,7 @@
     "DirectPlaying": "Riproduzione Diretta",
     "DirectStreaming": "Streaming Diretto",
     "Transcoding": "Trascodifica",
+    "ContainerBitrateExceedsLimit": "Il bitrate del file multimediale supera il limite.",
     "VideoCodecNotSupported": "Il codec video non \u00e8 supportato",
     "AudioCodecNotSupported": "Il codec audio non \u00e8 supportato",
     "SubtitleCodecNotSupported": "Il formato del sottotitolo non \u00e8 supportato",
@@ -523,5 +524,10 @@
     "HeaderNextVideoPlayingInValue": "Il prossimo Video verr\u00e0 riprodotto in {0}",
     "HeaderNextEpisodePlayingInValue": "Il prossimo Episodio verr\u00e0 riprodotto in {0}",
     "HeaderSecondsValue": "{0} Secondi",
+    "AudioBitDepthNotSupported": "La profondit\u00e0 bit audio non \u00e8 supportata",
+    "VideoProfileNotSupported": "Profilo video non supportato",
+    "VideoFramerateNotSupported": "Framerate video non supportato",
+    "VideoBitDepthNotSupported": "La profondit\u00e0 di bit video non \u00e8 supportata",
+    "RefFramesNotSupported": "Il numero di frame di riferimento video non \u00e8 supportato",
     "ErrorConnectServerUnreachable": "Si \u00e8 verificato un errore durante l'esecuzione dell'operazione richiesta. Il tuo server non \u00e8 in grado di contattare il nostro Server Emby Connect al {0}. Assicurarsi che il server disponga di una connessione Internet attiva e che le comunicazioni siano consentite da qualsiasi firewall o software di protezione installato."
 }
