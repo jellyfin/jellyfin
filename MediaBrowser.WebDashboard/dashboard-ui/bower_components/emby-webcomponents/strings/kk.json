@@ -449,6 +449,7 @@
     "DirectPlaying": "\u0422\u0456\u043a\u0435\u043b\u0435\u0439 \u043e\u0439\u043d\u0430\u0442\u0443\u0434\u0430",
     "DirectStreaming": "\u0422\u0456\u043a\u0435\u043b\u0435\u0439 \u0442\u0430\u0441\u044b\u043c\u0430\u043b\u0434\u0430\u043d\u0443\u0434\u0430",
     "Transcoding": "\u049a\u0430\u0439\u0442\u0430 \u043a\u043e\u0434\u0442\u0430\u0443\u0434\u0430",
+    "ContainerBitrateExceedsLimit": "Media bitrate exceeds limit.",
     "VideoCodecNotSupported": "\u0411\u0435\u0439\u043d\u0435 \u043a\u043e\u0434\u0435\u043a \u04af\u0448\u0456\u043d \u049b\u043e\u043b\u0434\u0430\u0443 \u043a\u04e9\u0440\u0441\u0435\u0442\u0456\u043b\u043c\u0435\u0439\u0434\u0456",
     "AudioCodecNotSupported": "\u0414\u044b\u0431\u044b\u0441 \u043a\u043e\u0434\u0435\u043a \u049b\u043e\u043b\u0434\u0430\u0443\u0434\u0430 \u0435\u043c\u0435\u0441",
     "SubtitleCodecNotSupported": "\u0421\u0443\u0431\u0442\u0438\u0442\u0440\u043b\u0435\u0440 \u043f\u0456\u0448\u0456\u043c \u04af\u0448\u0456\u043d \u049b\u043e\u043b\u0434\u0430\u0443 \u043a\u04e9\u0440\u0441\u0435\u0442\u0456\u043b\u043c\u0435\u0439\u0434\u0456",
@@ -523,5 +524,10 @@
     "HeaderNextVideoPlayingInValue": "\u041a\u0435\u043b\u0435\u0441\u0456 \u0431\u0435\u0439\u043d\u0435 {0} \u0456\u0448\u0456\u043d\u0434\u0435 \u043e\u0439\u043d\u0430\u0442\u044b\u043b\u0430\u0434\u044b",
     "HeaderNextEpisodePlayingInValue": "\u041a\u0435\u043b\u0435\u0441\u0456 \u0431\u04e9\u043b\u0456\u043c {0} \u0456\u0448\u0456\u043d\u0434\u0435 \u043e\u0439\u043d\u0430\u0442\u044b\u043b\u0430\u0434\u044b",
     "HeaderSecondsValue": "{0} \u0441\u0435\u043a\u04e9\u043d\u0434",
+    "AudioBitDepthNotSupported": "Audio bit depth not supported",
+    "VideoProfileNotSupported": "Video profile not supported",
+    "VideoFramerateNotSupported": "Video framerate not supported",
+    "VideoBitDepthNotSupported": "Video bit depth not supported",
+    "RefFramesNotSupported": "Number of video reference frames not supported",
     "ErrorConnectServerUnreachable": "There was an error performing the requested operation. Your server is unable to contact our Emby Connect Server at {0}. Please ensure your server has an active internet connection and that the communications are being allowed by any firewall or security software you have installed."
 }

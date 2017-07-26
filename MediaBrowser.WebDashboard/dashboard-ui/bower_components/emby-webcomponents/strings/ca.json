@@ -449,6 +449,7 @@
     "DirectPlaying": "Direct playing",
     "DirectStreaming": "Direct streaming",
     "Transcoding": "Transcoding",
+    "ContainerBitrateExceedsLimit": "Media bitrate exceeds limit.",
     "VideoCodecNotSupported": "Video codec not supported",
     "AudioCodecNotSupported": "Audio codec not supported",
     "SubtitleCodecNotSupported": "Format de subt\u00edtol no suportat",
@@ -523,5 +524,10 @@
     "HeaderNextVideoPlayingInValue": "Reproduint proper v\u00eddeo en {0}",
     "HeaderNextEpisodePlayingInValue": "Reproduint proper episodi en {0}",
     "HeaderSecondsValue": "{0} segons",
+    "AudioBitDepthNotSupported": "Audio bit depth not supported",
+    "VideoProfileNotSupported": "Video profile not supported",
+    "VideoFramerateNotSupported": "Video framerate not supported",
+    "VideoBitDepthNotSupported": "Video bit depth not supported",
+    "RefFramesNotSupported": "Number of video reference frames not supported",
     "ErrorConnectServerUnreachable": "There was an error performing the requested operation. Your server is unable to contact our Emby Connect Server at {0}. Please ensure your server has an active internet connection and that the communications are being allowed by any firewall or security software you have installed."
 }
