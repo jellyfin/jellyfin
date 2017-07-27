@@ -143,7 +143,6 @@
     <Compile Include="System\IPowerManagement.cs" />
     <Compile Include="Text\ITextEncoding.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
-    <Compile Include="FileOrganization\SmartMatchInfo.cs" />
     <Compile Include="Health\IHealthMonitor.cs" />
     <Compile Include="IO\FileSystemMetadata.cs" />
     <Compile Include="IO\IFileSystem.cs" />
@@ -160,8 +159,6 @@
     <Compile Include="Configuration\DynamicDayOfWeek.cs" />
     <Compile Include="Entities\ExtraType.cs" />
     <Compile Include="Entities\TrailerType.cs" />
-    <Compile Include="FileOrganization\AutoOrganizeOptions.cs" />
-    <Compile Include="FileOrganization\TvFileOrganizationOptions.cs" />
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Configuration\DlnaOptions.cs" />
     <Compile Include="Configuration\ImageOption.cs" />
@@ -248,11 +245,6 @@
     <Compile Include="Events\GenericEventArgs.cs" />
     <Compile Include="Extensions\ListHelper.cs" />
     <Compile Include="Extensions\StringHelper.cs" />
-    <Compile Include="FileOrganization\EpisodeFileOrganizationRequest.cs" />
-    <Compile Include="FileOrganization\FileOrganizationResult.cs" />
-    <Compile Include="FileOrganization\FileOrganizationResultQuery.cs" />
-    <Compile Include="FileOrganization\FileOrganizerType.cs" />
-    <Compile Include="FileOrganization\FileSortingStatus.cs" />
     <Compile Include="Globalization\LocalizatonOption.cs" />
     <Compile Include="IO\FileSystemEntryType.cs" />
     <Compile Include="Library\PlayAccess.cs" />

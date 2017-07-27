@@ -4,7 +4,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
@@ -36,7 +35,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Diagnostics;
-using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Threading;
 using MediaBrowser.Model.Extensions;
@@ -61,7 +59,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly ILibraryManager _libraryManager;
         private readonly IProviderManager _providerManager;
-        private readonly IFileOrganizationService _organizationService;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IProcessFactory _processFactory;
         private readonly ISystemEvents _systemEvents;
@@ -74,7 +71,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings =
             new ConcurrentDictionary<string, ActiveRecordingInfo>(StringComparer.OrdinalIgnoreCase);
 
-        public EmbyTV(IServerApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IServerConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IProviderManager providerManager, IFileOrganizationService organizationService, IMediaEncoder mediaEncoder, ITimerFactory timerFactory, IProcessFactory processFactory, ISystemEvents systemEvents)
+        public EmbyTV(IServerApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IServerConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IProviderManager providerManager, IMediaEncoder mediaEncoder, ITimerFactory timerFactory, IProcessFactory processFactory, ISystemEvents systemEvents)
         {
             Current = this;
 
@@ -86,7 +83,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _libraryManager = libraryManager;
             _libraryMonitor = libraryMonitor;
             _providerManager = providerManager;
-            _organizationService = organizationService;
             _mediaEncoder = mediaEncoder;
             _processFactory = processFactory;
             _systemEvents = systemEvents;
