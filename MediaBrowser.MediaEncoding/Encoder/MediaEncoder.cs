@@ -597,21 +597,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         }
                     }
 
-                    var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem, _memoryStreamProvider).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
-
-                    var videoStream = mediaInfo.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-
-                    if (videoStream != null && !videoStream.IsInterlaced)
-                    {
-                        var isInterlaced = DetectInterlaced(mediaInfo, videoStream);
-
-                        if (isInterlaced)
-                        {
-                            videoStream.IsInterlaced = true;
-                        }
-                    }
-
-                    return mediaInfo;
+                    return new ProbeResultNormalizer(_logger, FileSystem, _memoryStreamProvider).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
                 }
                 catch
                 {
@@ -620,23 +606,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     throw;
                 }
             }
-        }
-
-        private bool DetectInterlaced(MediaSourceInfo video, MediaStream videoStream)
-        {
-            // If it's mpeg based, assume true
-            if ((videoStream.Codec ?? string.Empty).IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                var formats = (video.Container ?? string.Empty).Split(',').ToList();
-                return formats.Contains("vob", StringComparer.OrdinalIgnoreCase) ||
-                                              formats.Contains("m2ts", StringComparer.OrdinalIgnoreCase) ||
-                                              formats.Contains("ts", StringComparer.OrdinalIgnoreCase) ||
-                                              formats.Contains("mpegts", StringComparer.OrdinalIgnoreCase) ||
-                                              formats.Contains("wtv", StringComparer.OrdinalIgnoreCase);
-
-            }
-
-            return false;
         }
 
         /// <summary>

@@ -174,6 +174,9 @@ namespace MediaBrowser.WebDashboard.Api
             IPlugin plugin = null;
             Stream stream = null;
 
+            var isJs = false;
+            var isTemplate = false;
+
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.FirstOrDefault(p => string.Equals(p.Name, request.Name, StringComparison.OrdinalIgnoreCase));
             if (page != null)
             {
@@ -188,11 +191,23 @@ namespace MediaBrowser.WebDashboard.Api
                 {
                     plugin = altPage.Item2;
                     stream = _assemblyInfo.GetManifestResourceStream(plugin.GetType(), altPage.Item1.EmbeddedResourcePath);
+
+                    isJs = string.Equals(Path.GetExtension(altPage.Item1.EmbeddedResourcePath), ".js", StringComparison.OrdinalIgnoreCase);
+                    isTemplate = altPage.Item1.EmbeddedResourcePath.EndsWith(".template.html");
                 }
             }
 
             if (plugin != null && stream != null)
             {
+                if (isJs)
+                {
+                    return _resultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.js"), () => Task.FromResult(stream));
+                }
+                if (isTemplate)
+                {
+                    return _resultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => Task.FromResult(stream));
+                }
+
                 return _resultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator(DashboardUIPath).ModifyHtml("dummy.html", stream, null, _appHost.ApplicationVersion.ToString(), null));
             }
 
