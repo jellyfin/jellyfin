@@ -54,7 +54,6 @@
     <Compile Include="Configuration\ServerConfigurationManager.cs" />
     <Compile Include="Data\ManagedConnection.cs" />
     <Compile Include="Data\SqliteDisplayPreferencesRepository.cs" />
-    <Compile Include="Data\SqliteFileOrganizationRepository.cs" />
     <Compile Include="Data\SqliteItemRepository.cs" />
     <Compile Include="Data\SqliteUserDataRepository.cs" />
     <Compile Include="Data\SqliteUserRepository.cs" />
@@ -79,13 +78,6 @@
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
     <Compile Include="FFMpeg\FFMpegInstallInfo.cs" />
     <Compile Include="FFMpeg\FFMpegLoader.cs" />
-    <Compile Include="FileOrganization\EpisodeFileOrganizer.cs" />
-    <Compile Include="FileOrganization\Extensions.cs" />
-    <Compile Include="FileOrganization\FileOrganizationNotifier.cs" />
-    <Compile Include="FileOrganization\FileOrganizationService.cs" />
-    <Compile Include="FileOrganization\NameUtils.cs" />
-    <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
-    <Compile Include="FileOrganization\TvFolderOrganizer.cs" />
     <Compile Include="HttpServer\FileWriter.cs" />
     <Compile Include="HttpServer\HttpListenerHost.cs" />
     <Compile Include="HttpServer\HttpResultFactory.cs" />

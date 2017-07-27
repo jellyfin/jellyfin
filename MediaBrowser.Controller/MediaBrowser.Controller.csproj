@@ -128,7 +128,6 @@
     <Compile Include="Entities\UserView.cs" />
     <Compile Include="Entities\UserViewBuilder.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="FileOrganization\IFileOrganizationService.cs" />
     <Compile Include="IO\StreamHelper.cs" />
     <Compile Include="Library\DeleteOptions.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
@@ -205,7 +204,6 @@
     <Compile Include="Notifications\INotificationTypeFactory.cs" />
     <Compile Include="Notifications\NotificationUpdateEventArgs.cs" />
     <Compile Include="Notifications\UserNotification.cs" />
-    <Compile Include="Persistence\IFileOrganizationRepository.cs" />
     <Compile Include="Persistence\MediaStreamQuery.cs" />
     <Compile Include="Playlists\IPlaylistManager.cs" />
     <Compile Include="Playlists\Playlist.cs" />

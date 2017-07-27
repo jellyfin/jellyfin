@@ -17,7 +17,6 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
@@ -94,7 +93,6 @@ using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
 using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.IO;
-using Emby.Server.Implementations.FileOrganization;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.Library;
@@ -216,7 +214,6 @@ namespace Emby.Server.Core
         internal IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
         internal IItemRepository ItemRepository { get; set; }
         private INotificationsRepository NotificationsRepository { get; set; }
-        private IFileOrganizationRepository FileOrganizationRepository { get; set; }
 
         private INotificationManager NotificationManager { get; set; }
         private ISubtitleManager SubtitleManager { get; set; }
@@ -583,9 +580,6 @@ namespace Emby.Server.Core
             ItemRepository = itemRepo;
             RegisterSingleInstance(ItemRepository);
 
-            FileOrganizationRepository = GetFileOrganizationRepository();
-            RegisterSingleInstance(FileOrganizationRepository);
-
             AuthenticationRepository = GetAuthenticationRepository();
             RegisterSingleInstance(AuthenticationRepository);
 
@@ -643,9 +637,6 @@ namespace Emby.Server.Core
 
             var newsService = new Emby.Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
             RegisterSingleInstance<INewsService>(newsService);
-
-            var fileOrganizationService = new FileOrganizationService(TaskManager, FileOrganizationRepository, LogManager.GetLogger("FileOrganizationService"), LibraryMonitor, LibraryManager, ServerConfigurationManager, FileSystemManager, ProviderManager);
-            RegisterSingleInstance<IFileOrganizationService>(fileOrganizationService);
 
             progress.Report(15);
 
@@ -926,19 +917,6 @@ namespace Emby.Server.Core
         private IUserRepository GetUserRepository()
         {
             var repo = new SqliteUserRepository(LogManager.GetLogger("SqliteUserRepository"), ApplicationPaths, JsonSerializer, MemoryStreamFactory);
-
-            repo.Initialize();
-
-            return repo;
-        }
-
-        /// <summary>
-        /// Gets the file organization repository.
-        /// </summary>
-        /// <returns>Task{IUserRepository}.</returns>
-        private IFileOrganizationRepository GetFileOrganizationRepository()
-        {
-            var repo = new SqliteFileOrganizationRepository(LogManager.GetLogger("SqliteFileOrganizationRepository"), ServerConfigurationManager.ApplicationPaths);
 
             repo.Initialize();
 
