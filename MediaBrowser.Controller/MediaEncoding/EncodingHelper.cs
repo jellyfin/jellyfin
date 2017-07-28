@@ -1551,6 +1551,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             inputModifier += " " + GetFastSeekCommandLineParameter(state.BaseRequest);
             inputModifier = inputModifier.Trim();
+            
+            if (state.InputProtocol == MediaProtocol.Rtsp)
+            {
+                inputModifier += " -rtsp_transport tcp";
+            }
 
             if (!string.IsNullOrEmpty(state.InputAudioSync))
             {
@@ -1562,7 +1567,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 inputModifier += " -vsync " + state.InputVideoSync;
             }
 
-            if (state.ReadInputAtNativeFramerate)
+            if (state.ReadInputAtNativeFramerate && state.InputProtocol != MediaProtocol.Rtsp)
             {
                 inputModifier += " -re";
             }
