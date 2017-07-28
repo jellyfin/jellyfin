@@ -39,8 +39,6 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (resourceStream != null)
             {
-                // Don't apply any caching for html pages
-                // jQuery ajax doesn't seem to handle if-modified-since correctly
                 if (IsFormat(virtualPath, "html"))
                 {
                     if (IsCoreHtml(virtualPath))
