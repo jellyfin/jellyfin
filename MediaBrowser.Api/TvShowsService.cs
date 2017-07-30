@@ -199,6 +199,12 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableUserData { get; set; }
+
+        [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string SortBy { get; set; }
+
+        [ApiMember(Name = "SortOrder", Description = "Sort Order - Ascending,Descending", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public SortOrder? SortOrder { get; set; }
     }
 
     [Route("/Shows/{Id}/Seasons", "GET", Summary = "Gets seasons for a tv series")]
@@ -539,6 +545,11 @@ namespace MediaBrowser.Api
             if (!string.IsNullOrEmpty(request.AdjacentTo))
             {
                 returnItems = UserViewBuilder.FilterForAdjacency(returnItems, request.AdjacentTo);
+            }
+
+            if (string.Equals(request.SortBy, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
+            {
+                returnItems = returnItems.OrderBy(i => Guid.NewGuid());
             }
 
             var returnList = returnItems.ToList();
