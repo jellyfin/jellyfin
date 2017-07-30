@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -11,12 +10,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
@@ -46,9 +43,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             get { return "M3U Tuner"; }
         }
 
+        private string GetFullChannelIdPrefix(TunerHostInfo info)
+        {
+            return ChannelIdPrefix + info.Url.GetMD5().ToString("N");
+        }
+
         protected override async Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            var result = await new M3uParser(Logger, FileSystem, _httpClient, _appHost).Parse(info.Url, ChannelIdPrefix, info.Id, !info.EnableTvgId, cancellationToken).ConfigureAwait(false);
+            var channelIdPrefix = GetFullChannelIdPrefix(info);
+
+            var result = await new M3uParser(Logger, FileSystem, _httpClient, _appHost).Parse(info.Url, channelIdPrefix, info.Id, cancellationToken).ConfigureAwait(false);
 
             return result.Cast<ChannelInfo>().ToList();
         }
@@ -87,9 +91,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         protected override async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, string channelId, CancellationToken cancellationToken)
         {
-            var urlHash = info.Url.GetMD5().ToString("N");
-            var prefix = ChannelIdPrefix + urlHash;
-            if (!channelId.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            var channelIdPrefix = GetFullChannelIdPrefix(info);
+
+            if (!channelId.StartsWith(channelIdPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }

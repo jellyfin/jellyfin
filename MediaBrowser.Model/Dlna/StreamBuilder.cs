@@ -1089,7 +1089,7 @@ namespace MediaBrowser.Model.Dlna
                         {
                             if (!conditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, isSecondaryAudio))
                             {
-                                LogConditionFailure(profile, "VideoAudioCodecProfile", applyCondition, mediaSource);
+                                LogConditionFailure(profile, "VideoAudioCodecProfile.ApplyConditions", applyCondition, mediaSource);
                                 applyConditions = false;
                                 break;
                             }
