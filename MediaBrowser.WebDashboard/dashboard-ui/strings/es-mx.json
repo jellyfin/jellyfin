@@ -1792,7 +1792,7 @@
     "ErrorAddingMediaPathToVirtualFolder": "Hubo un error agregando la ruta de medios. Por favor aseg\u00farese de que la ruta es valida y que el proceso del Servidor Emby tenga acceso a ese destino.",
     "ErrorRemovingEmbyConnectAccount": "Hubo un error retirando la cuenta de Emby Connect. Por favor aseg\u00farese que su conexi\u00f3n a internet esta activa e intente de nuevo.",
     "ErrorAddingEmbyConnectAccount1": "Hubo un error agregando la cuenta de Emby Connect. \u00bfYa ha creado una cuenta de Emby? Registrese en {0}.",
-    "ErrorAddingEmbyConnectAccount2": "Por favor aseg\u00farese que la cuenta Emby ha sido activada siguiendo las instrucciones incluidas en el correo electr\u00f3nico que recibi\u00f3 al crear la cuenta. Si no recibi\u00f3 dicho correo electr\u00f3nico por favor escriba uno a {0} desde la direcci\u00f3n de correo electr\u00f3nico usada con la cuenta Emby.",
+    "ErrorAddingEmbyConnectAccount2": "Si continua teniendo problemas, por favor envi\u00e9 un correo electr\u00f3nico a {0}.",
     "ErrorAddingEmbyConnectAccount3": "La cuenta Emby ya se encuentra vinculada a un usuario local. Una cuenta Emby solo puede estar vinculada a un usuario local a la vez.",
     "HeaderFavoriteArtists": "Artistas Favoritos",
     "HeaderFavoriteSongs": "Canciones Favoritas",
@@ -1936,6 +1936,11 @@
     "EnableStreamLoopingHelp": "Habilite esta opci\u00f3n si las transmisiones en vivo solo contienen unos segundos de datos y necesitan ser solicitados continuamente.",
     "HttpsRequiresCert": "Para habilitar el reporte de https como su direcci\u00f3n externa, necesita suministrar un certificado SSL de confianza, como el de Lets Encrypt.",
     "HeaderLatestDownloadedVideos": "\u00daltimos Videos Descargados",
-    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
-    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
+    "EnableNextVideoInfoOverlay": "Habilitar ver la informaci\u00f3n del siguiente video durante la reproducci\u00f3n",
+    "EnableNextVideoInfoOverlayHelp": "Al finalizar un video, mostrar informaci\u00f3n sobre el siguiente video a reproducir en la lista de reproducci\u00f3n.",
+    "ServerRestartNeededAfterPluginInstall": "El Servidor Emby necesitara reiniciarse despu\u00e9s de instalar un complemento.",
+    "PluginInstalledMessage": "El complemento ha sido instalado exitosamente. El Servidor Emby necesitara reiniciarse para que los cambios surtan efecto.",
+    "Themes": "Themes",
+    "LabelTheme": "Theme:",
+    "LabelDashboardTheme": "Server dashboard theme:"
 }

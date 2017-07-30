@@ -1791,8 +1791,8 @@
     "PleaseAddAtLeastOneFolder": "Bitte f\u00fcgen Sie mindestens ein Verzeichniss zur Bibliothek durch Klicken der \"Hinzuf\u00fcgen\"-Schaltfl\u00e4che hinzu.",
     "ErrorAddingMediaPathToVirtualFolder": "Ein Fehler trat beim Hinzuf\u00fcgen eines Medienverzeichnisses auf. Bitte stellen Sie sicher, dass der Pfad g\u00fcltig ist und der Emby Server Prozess die notwendigen Zugriffsrechte besitzt.",
     "ErrorRemovingEmbyConnectAccount": "Fehler beim Entfernen des Emby Connect Kontos. Bitte stelle sicher, dass du \u00fcber eine aktive Internetverbindung verf\u00fcgst und versuche es erneut.",
-    "ErrorAddingEmbyConnectAccount1": "Ein Fehler trat beim hinzuf\u00fcgen des Emby-Connect Kontos auf. Haben Sie bereits ein Emby Konto? Melden Sie sich hier an: {0}.",
-    "ErrorAddingEmbyConnectAccount2": "Bitte stellen Sie sicher, dass Ihr Emby Konto nach den Anweisungen aus der Email, die Sie nach Erstellung des Kontos erhielten, aktiviert wurde. Wenn Sie keine Email erhalten haben, so senden Sie und bitte eine email an {0}. Benutzen Sie dazu bitte die Email-Adresse, die Sie bereits zur Erstellung Ihres Emby Kontos verwendet haben.",
+    "ErrorAddingEmbyConnectAccount1": "Ein Fehler trat beim hinzuf\u00fcgen des Emby-Connect Kontos auf. Hast du bereits ein Emby Konto? Melde dich hier an: {0}.",
+    "ErrorAddingEmbyConnectAccount2": "Wenn du immer noch ein Problem hast, sende bitte eine E-Mail an {0}.",
     "ErrorAddingEmbyConnectAccount3": "Der Emby Account ist schon mit einem existierenden lokalen Nutzer verkn\u00fcpft. Ein Emby Account kann nur mit einem lokelen Nutzer gleichzeitig verbunden sein.",
     "HeaderFavoriteArtists": "Lieblings K\u00fcnstler",
     "HeaderFavoriteSongs": "Lieblings Songs",
@@ -1936,6 +1936,11 @@
     "EnableStreamLoopingHelp": "Aktivieren, wenn Live Streams nur ein paar Sekunden Daten enthalten und st\u00e4ndig angefragt werden m\u00fcssen.",
     "HttpsRequiresCert": "Um https als externe Adresse zu aktivieren, ben\u00f6tigst du ein vertrauensw\u00fcrdiges SSL-Zertifikat wie Let's Encrypt.",
     "HeaderLatestDownloadedVideos": "Neueste heruntergeladene Videos",
-    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
-    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
+    "EnableNextVideoInfoOverlay": "Aktiviere \"Next-Video-Info\" w\u00e4hrend der Wiedergabe",
+    "EnableNextVideoInfoOverlayHelp": "Zeige Informationen \u00fcber das n\u00e4chste abzuspielende Video in der aktuellen Abspielliste am Ende des laufenden Videos an.",
+    "ServerRestartNeededAfterPluginInstall": "Der Emby-Server muss nach der Installation eines Plugins neu gestartet werden.",
+    "PluginInstalledMessage": "Das Plugin wurde erfolgreich installiert. Der Emby-Server muss neu gestartet werden, um die \u00c4nderungen zu \u00fcbernehmen.",
+    "Themes": "Themes",
+    "LabelTheme": "Theme:",
+    "LabelDashboardTheme": "Server dashboard theme:"
 }
