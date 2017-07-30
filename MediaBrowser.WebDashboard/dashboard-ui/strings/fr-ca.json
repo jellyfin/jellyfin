@@ -1009,7 +1009,7 @@
     "HeaderChapterSettings": "Chapter Settings",
     "HeaderCameraUploadHelp": "Emby apps can automatically upload photos and videos taken from your mobile devices into Emby Server.",
     "LabelCameraUploadPath": "Camera upload path:",
-    "LabelCameraUploadPathHelp": "Select a custom upload path, if desired. If unspecified a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
+    "LabelCameraUploadPathHelp": "Select a custom upload path. This will override any default settings set in the Camera Upload section. If left blank, a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
     "LabelCreateCameraUploadSubfolder": "Create a subfolder for each device",
     "LabelCreateCameraUploadSubfolderHelp": "Specific folders can be assigned to a device by clicking on it from the Devices page.",
     "LabelCustomDeviceDisplayName": "Display name:",
@@ -1937,5 +1937,10 @@
     "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
     "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
     "EnableNextVideoInfoOverlay": "Enable next video info during playback",
-    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist.",
+    "ServerRestartNeededAfterPluginInstall": "Emby Server will need to be restarted after installing a plugin.",
+    "PluginInstalledMessage": "The plugin has been successfully installed. Emby Server will need to be restarted for changes to take effect.",
+    "Themes": "Themes",
+    "LabelTheme": "Theme:",
+    "LabelDashboardTheme": "Server dashboard theme:"
 }

@@ -105,7 +105,7 @@
     "LabelAudioLanguagePreference": "Lingua audio preferita:",
     "LabelSubtitleLanguagePreference": "Lingua dei sottotitoli preferita:",
     "OptionDefaultSubtitles": "Predefinito",
-    "OptionSmartSubtitles": "Smart",
+    "OptionSmartSubtitles": "Intelligente",
     "OptionSmartSubtitlesHelp": "I sottotitoli che corrispondono alle tue preferenze sulla lingua saranno caricati quando l'audio \u00e8 in lingua straniera.",
     "OptionOnlyForcedSubtitles": "Solo i sottotitoli forzati",
     "OptionAlwaysPlaySubtitles": "Visualizza sempre i sottotitoli",
@@ -1791,8 +1791,8 @@
     "PleaseAddAtLeastOneFolder": "Per favore aggiungi almeno una cartella alla raccolta cliccando sul pulsante Aggiungi.",
     "ErrorAddingMediaPathToVirtualFolder": "C'\u00e8 stato un errore durante l'aggiunta del percorso. Per favore controlla che sia valido, e che Emby Server abbia l'accesso alla posizione indicata.",
     "ErrorRemovingEmbyConnectAccount": "C'\u00e8 stato un errore nella rimozione dell'account Emby Connect. Per favore assicurati di avere una connessione a internet attiva e riprova.",
-    "ErrorAddingEmbyConnectAccount1": "C'\u00e8 stato un errore nell'aggiunta dell'account Emby Connect. Hai creato un account Emby? Registrati su {0}.",
-    "ErrorAddingEmbyConnectAccount2": "Assicurati che l'account Emby sia stato attivato seguendo le istruzioni contenute nell'email inviata dopo la creazione dell'account. Se non hai ricevuto questa email, invia una email a {0} dall'indirizzo email utilizzato con l'account Emby.",
+    "ErrorAddingEmbyConnectAccount1": "C'\u00e8 stato un errore nell'aggiunta dell'account Emby Connect. Hai creato un account Emby? Puoi Registrarti su {0}.",
+    "ErrorAddingEmbyConnectAccount2": "Se stai ancora avendo un problema, per piacere invia una email a {0}.",
     "ErrorAddingEmbyConnectAccount3": "L'account Emby \u00e8 gi\u00e0 collegato ad un utente locale esistente. Un account Emby pu\u00f2 essere collegato solo ad un utente locale alla volta.",
     "HeaderFavoriteArtists": "Artisti preferiti",
     "HeaderFavoriteSongs": "Brani Preferiti",
@@ -1936,6 +1936,11 @@
     "EnableStreamLoopingHelp": "Abilita questo se gli streaming in diretta contengono solo pochi secondi di dati e devono essere costantemente richiesti.",
     "HttpsRequiresCert": "Per abilitare https come indirizzo esterno, sar\u00e0 necessario fornire un certificato SSL attendibile, ad esempio Lets Encrypt.",
     "HeaderLatestDownloadedVideos": "Ultimi Video Scaricati",
-    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
-    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
+    "EnableNextVideoInfoOverlay": "Abilita le informazioni del prossimo video durante la riproduzione",
+    "EnableNextVideoInfoOverlayHelp": "Alla fine di un video, visualizza informazioni sul video successivo che compare nella playlist corrente.",
+    "ServerRestartNeededAfterPluginInstall": "Il server Emby dovr\u00e0 essere riavviato dopo l'installazione di un plugin.",
+    "PluginInstalledMessage": "Il plugin \u00e8 stato installato correttamente. Il server Emby dovr\u00e0 essere riavviato affinch\u00e9 le modifiche abbiano effetto.",
+    "Themes": "Themes",
+    "LabelTheme": "Theme:",
+    "LabelDashboardTheme": "Server dashboard theme:"
 }

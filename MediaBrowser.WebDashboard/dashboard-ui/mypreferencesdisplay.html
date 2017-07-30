@@ -1,6 +1,28 @@
 ﻿<div id="displayPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderDisplaySettings}" data-backbutton="true">
     <div class="padded-left padded-right padded-bottom-page">
         <form class="displayPreferencesForm userProfileSettingsForm" style="margin: 0 auto;">
+            <div class="detailSection">
+                <h1>
+                    ${Themes}
+                </h1>
+                <br />
+                <div class="selectContainer">
+                    <select id="selectTheme" is="emby-select" label="${LabelTheme}">
+                        <option value="">Dark</option>
+                        <option value="light">Light</option>
+                        <option value="light-blue">Light (blue accent)</option>
+                        <option value="light-green">Light (green accent)</option>
+                    </select>
+                </div>
+                <div class="selectContainer">
+                    <select id="selectDashboardTheme" is="emby-select" label="${LabelDashboardTheme}">
+                        <option value="dark">Dark</option>
+                        <option value="">Light</option>
+                        <option value="light-blue">Light (blue accent)</option>
+                        <option value="light-green">Light (green accent)</option>
+                    </select>
+                </div>
+            </div>
             <div class="detailSection languageSection hide">
                 <h1>
                     ${HeaderLanguage}

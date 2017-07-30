@@ -1009,7 +1009,7 @@
     "HeaderChapterSettings": "Chapter Settings",
     "HeaderCameraUploadHelp": "\uc0ac\uc6a9\uc790\uc758 \ubaa8\ubc14\uc77c \uc7a5\uce58\uc5d0\uc11c \ucc0d\uc740 \uc0ac\uc9c4\uacfc \ube44\ub514\uc624\ub97c \uc790\ub3d9\uc73c\ub85c Emby\uc5d0 \uc5c5\ub85c\ub4dc\ud569\ub2c8\ub2e4.",
     "LabelCameraUploadPath": "\uce74\uba54\ub77c \uc5c5\ub85c\ub4dc \uacbd\ub85c:",
-    "LabelCameraUploadPathHelp": "Select a custom upload path, if desired. If unspecified a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
+    "LabelCameraUploadPathHelp": "Select a custom upload path. This will override any default settings set in the Camera Upload section. If left blank, a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
     "LabelCreateCameraUploadSubfolder": "\uac01 \uc7a5\uce58\ubcc4 \ud558\uc704 \ud3f4\ub354 \uc0dd\uc131",
     "LabelCreateCameraUploadSubfolderHelp": "Specific folders can be assigned to a device by clicking on it from the Devices page.",
     "LabelCustomDeviceDisplayName": "\ud45c\uc2dc \uc774\ub984:",
@@ -1937,5 +1937,10 @@
     "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
     "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
     "EnableNextVideoInfoOverlay": "Enable next video info during playback",
-    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist.",
+    "ServerRestartNeededAfterPluginInstall": "Emby Server will need to be restarted after installing a plugin.",
+    "PluginInstalledMessage": "The plugin has been successfully installed. Emby Server will need to be restarted for changes to take effect.",
+    "Themes": "Themes",
+    "LabelTheme": "Theme:",
+    "LabelDashboardTheme": "Server dashboard theme:"
 }

@@ -1791,8 +1791,8 @@
     "PleaseAddAtLeastOneFolder": "Please add at least one folder to this library by clicking the Add button.",
     "ErrorAddingMediaPathToVirtualFolder": "There was an error adding the media path. Please ensure the path is valid and the Emby Server process has access to that location.",
     "ErrorRemovingEmbyConnectAccount": "There was an error removing the Emby Connect account. Please ensure you have an active internet connection and try again.",
-    "ErrorAddingEmbyConnectAccount1": "There was an error adding the Emby Connect account. Have you created an Emby account? Sign up at {0}.",
-    "ErrorAddingEmbyConnectAccount2": "Please ensure the Emby account has been activated by following the instructions in the email sent after creating the account. If you did not receive this email then please send an email to {0} from the email address used with the Emby account.",
+    "ErrorAddingEmbyConnectAccount1": "Une erreur est survenue lors de l'ajout du compte Emby Connect. Avez-vous cr\u00e9\u00e9 un compte Emby\u00a0? Vous pouvez vous inscrire sur {0}.",
+    "ErrorAddingEmbyConnectAccount2": "Si le probl\u00e8me persiste, veuillez envoyer un courriel \u00e0 {0}.",
     "ErrorAddingEmbyConnectAccount3": "Le compte Emby est d\u00e9j\u00e0 li\u00e9 \u00e0 un utilisateurs local existant. Un compte Emby peut seulement \u00eatre li\u00e9 \u00e0 un utilisateur \u00e0 la fois.",
     "HeaderFavoriteArtists": "Favorite Artists",
     "HeaderFavoriteSongs": "Favorite Songs",
@@ -1936,6 +1936,11 @@
     "EnableStreamLoopingHelp": "Activez cette option si les streaming en direct ne contiennent que quelques secondes de donn\u00e9es et doivent \u00eatre redemand\u00e9s continuellement.",
     "HttpsRequiresCert": "Pour pouvoir utiliser HTTPS comme adresse externe, vous devez fournir un certificat SSL v\u00e9rifi\u00e9, fourni par Let's Encrypt par exemple.",
     "HeaderLatestDownloadedVideos": "Derni\u00e8res vid\u00e9os t\u00e9l\u00e9charg\u00e9es",
-    "EnableNextVideoInfoOverlay": "Enable next video info during playback",
-    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
+    "EnableNextVideoInfoOverlay": "Activer les informations de la vid\u00e9o suivante pendant la lecture",
+    "EnableNextVideoInfoOverlayHelp": "\u00c0 la fin d'une vid\u00e9o, afficher les informations sur la vid\u00e9o suivante dans la file d'attente.",
+    "ServerRestartNeededAfterPluginInstall": "Emby Server will need to be restarted after installing a plugin.",
+    "PluginInstalledMessage": "The plugin has been successfully installed. Emby Server will need to be restarted for changes to take effect.",
+    "Themes": "Themes",
+    "LabelTheme": "Theme:",
+    "LabelDashboardTheme": "Server dashboard theme:"
 }
