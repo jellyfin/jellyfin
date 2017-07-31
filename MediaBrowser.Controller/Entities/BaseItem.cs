@@ -129,12 +129,6 @@ namespace MediaBrowser.Controller.Entities
         public bool IsInMixedFolder { get; set; }
 
         [IgnoreDataMember]
-        protected virtual bool SupportsIsInMixedFolderDetection
-        {
-            get { return false; }
-        }
-
-        [IgnoreDataMember]
         public virtual bool SupportsPlayedStatus
         {
             get
@@ -150,16 +144,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
-        }
-
-        public bool DetectIsInMixedFolder()
-        {
-            if (SupportsIsInMixedFolderDetection)
-            {
-
-            }
-
-            return IsInMixedFolder;
         }
 
         [IgnoreDataMember]
@@ -1156,7 +1140,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (SupportsThemeMedia)
                 {
-                    if (!DetectIsInMixedFolder())
+                    if (!IsInMixedFolder)
                     {
                         themeSongsChanged = await RefreshThemeSongs(this, options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
@@ -1311,12 +1295,9 @@ namespace MediaBrowser.Controller.Entities
         {
             var current = this;
 
-            if (!SupportsIsInMixedFolderDetection)
+            if (current.IsInMixedFolder != newItem.IsInMixedFolder)
             {
-                if (current.IsInMixedFolder != newItem.IsInMixedFolder)
-                {
-                    return false;
-                }
+                return false;
             }
 
             return true;
