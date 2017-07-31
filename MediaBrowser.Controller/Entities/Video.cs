@@ -77,15 +77,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        [IgnoreDataMember]
-        protected override bool SupportsIsInMixedFolderDetection
-        {
-            get
-            {
-                return true;
-            }
-        }
-
         public override string CreatePresentationUniqueKey()
         {
             if (!string.IsNullOrWhiteSpace(PrimaryVersionId))
@@ -500,7 +491,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override IEnumerable<FileSystemMetadata> GetDeletePaths()
         {
-            if (!DetectIsInMixedFolder())
+            if (!IsInMixedFolder)
             {
                 return new[] {
                     new FileSystemMetadata

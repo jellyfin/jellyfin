@@ -47,7 +47,7 @@ namespace MediaBrowser.Controller.Entities
 
             info.IsLocalTrailer = TrailerTypes.Contains(TrailerType.LocalTrailer);
 
-            if (!DetectIsInMixedFolder() && LocationType == LocationType.FileSystem)
+            if (!IsInMixedFolder && LocationType == LocationType.FileSystem)
             {
                 info.Name = System.IO.Path.GetFileName(ContainingFolderPath);
             }
@@ -73,7 +73,7 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     // Try to get the year from the folder name
-                    if (!DetectIsInMixedFolder())
+                    if (!IsInMixedFolder)
                     {
                         info = LibraryManager.ParseName(System.IO.Path.GetFileName(ContainingFolderPath));
 

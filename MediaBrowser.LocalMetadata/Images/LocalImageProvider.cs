@@ -144,7 +144,7 @@ namespace MediaBrowser.LocalMetadata.Images
             }
 
             var imagePrefix = item.FileNameWithoutExtension + "-";
-            var isInMixedFolder = item.DetectIsInMixedFolder();
+            var isInMixedFolder = item.IsInMixedFolder;
 
             PopulatePrimaryImages(item, images, files, imagePrefix, isInMixedFolder);
 
