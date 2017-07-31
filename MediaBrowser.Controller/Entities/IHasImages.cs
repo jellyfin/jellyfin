@@ -152,7 +152,7 @@ namespace MediaBrowser.Controller.Entities
         /// <value><c>true</c> if [supports local metadata]; otherwise, <c>false</c>.</value>
         bool SupportsLocalMetadata { get; }
 
-        bool DetectIsInMixedFolder();
+        bool IsInMixedFolder { get; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is locked.

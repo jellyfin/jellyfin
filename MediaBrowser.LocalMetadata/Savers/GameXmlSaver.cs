@@ -65,7 +65,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
         public static string GetGameSavePath(Game item)
         {
-            if (item.DetectIsInMixedFolder())
+            if (item.IsInMixedFolder)
             {
                 return Path.ChangeExtension(item.Path, ".xml");
             }

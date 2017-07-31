@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override IEnumerable<FileSystemMetadata> GetDeletePaths()
         {
-            if (!DetectIsInMixedFolder())
+            if (!IsInMixedFolder)
             {
                 return new[] {
                     new FileSystemMetadata

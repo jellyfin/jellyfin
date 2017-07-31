@@ -55,22 +55,13 @@ namespace MediaBrowser.Controller.Entities.Movies
             return value;
         }
 
-        [IgnoreDataMember]
-        protected override bool SupportsIsInMixedFolderDetection
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
             // Must have a parent to have special features
             // In other words, it must be part of the Parent/Child tree
-            if (LocationType == LocationType.FileSystem && GetParent() != null && !DetectIsInMixedFolder())
+            if (LocationType == LocationType.FileSystem && GetParent() != null && !IsInMixedFolder)
             {
                 var specialFeaturesChanged = await RefreshSpecialFeatures(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
@@ -108,7 +99,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             var info = GetItemLookupInfo<MovieInfo>();
 
-            if (!DetectIsInMixedFolder())
+            if (!IsInMixedFolder)
             {
                 var name = System.IO.Path.GetFileName(ContainingFolderPath);
 
@@ -145,7 +136,7 @@ namespace MediaBrowser.Controller.Entities.Movies
                 else
                 {
                     // Try to get the year from the folder name
-                    if (!DetectIsInMixedFolder())
+                    if (!IsInMixedFolder)
                     {
                         info = LibraryManager.ParseName(System.IO.Path.GetFileName(ContainingFolderPath));
 

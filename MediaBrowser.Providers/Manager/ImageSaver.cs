@@ -355,7 +355,7 @@ namespace MediaBrowser.Providers.Manager
                     return Path.Combine(seriesFolder, imageFilename);
                 }
 
-                if (item.DetectIsInMixedFolder())
+                if (item.IsInMixedFolder)
                 {
                     return GetSavePathForItemInMixedFolder(item, type, "landscape", extension);
                 }
@@ -432,7 +432,7 @@ namespace MediaBrowser.Providers.Manager
                     path = Path.Combine(_fileSystem.GetDirectoryName(item.Path), "metadata", filename + extension);
                 }
 
-                else if (item.DetectIsInMixedFolder())
+                else if (item.IsInMixedFolder)
                 {
                     path = GetSavePathForItemInMixedFolder(item, type, filename, extension);
                 }
@@ -499,7 +499,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (imageIndex.Value == 0)
                 {
-                    if (item.DetectIsInMixedFolder())
+                    if (item.IsInMixedFolder)
                     {
                         return new[] { GetSavePathForItemInMixedFolder(item, type, "fanart", extension) };
                     }
@@ -525,7 +525,7 @@ namespace MediaBrowser.Providers.Manager
 
                 var outputIndex = imageIndex.Value;
 
-                if (item.DetectIsInMixedFolder())
+                if (item.IsInMixedFolder)
                 {
                     return new[] { GetSavePathForItemInMixedFolder(item, type, "fanart" + outputIndex.ToString(UsCulture), extension) };
                 }
@@ -568,7 +568,7 @@ namespace MediaBrowser.Providers.Manager
                     return new[] { Path.Combine(seasonFolder, imageFilename) };
                 }
 
-                if (item.DetectIsInMixedFolder() || item is MusicVideo)
+                if (item.IsInMixedFolder || item is MusicVideo)
                 {
                     return new[] { GetSavePathForItemInMixedFolder(item, type, string.Empty, extension) };
                 }
