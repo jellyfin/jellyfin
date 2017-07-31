@@ -2104,6 +2104,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var vn = string.Empty;
 
             var hasArt = !string.IsNullOrWhiteSpace(state.AlbumCoverPath);
+            hasArt = false;
 
             if (hasArt)
             {
