@@ -24,15 +24,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        [IgnoreDataMember]
-        protected override bool SupportsIsInMixedFolderDetection
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Music;
@@ -61,7 +52,7 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     // Try to get the year from the folder name
-                    if (!DetectIsInMixedFolder())
+                    if (!IsInMixedFolder)
                     {
                         info = LibraryManager.ParseName(System.IO.Path.GetFileName(ContainingFolderPath));
 
