@@ -193,7 +193,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             if (query.IncludeItemTypes.Length == 0)
             {
-                query.IncludeItemTypes = new[] { typeof(Episode).Name, typeof(Season).Name };
+                query.IncludeItemTypes = new[] { typeof(Episode).Name };
             }
             query.IsVirtualItem = false;
             query.Limit = 0;

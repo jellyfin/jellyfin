@@ -1845,6 +1845,9 @@ namespace Emby.Server.Implementations.LiveTv
         public async Task AddInfoToProgramDto(List<Tuple<BaseItem, BaseItemDto>> tuples, List<ItemFields> fields, User user = null)
         {
             var programTuples = new List<Tuple<BaseItemDto, string, string, string>>();
+            var hasChannelImage = fields.Contains(ItemFields.ChannelImage);
+            var hasChannelInfo = fields.Contains(ItemFields.ChannelInfo);
+            var hasServiceName = fields.Contains(ItemFields.ServiceName);
 
             foreach (var tuple in tuples)
             {
@@ -1887,7 +1890,7 @@ namespace Emby.Server.Implementations.LiveTv
                     dto.IsPremiere = program.IsPremiere;
                 }
 
-                if (fields.Contains(ItemFields.ChannelInfo))
+                if (hasChannelInfo || hasChannelImage)
                 {
                     var channel = GetInternalChannel(program.ChannelId);
 
@@ -1897,7 +1900,7 @@ namespace Emby.Server.Implementations.LiveTv
                         dto.MediaType = channel.MediaType;
                         dto.ChannelNumber = channel.Number;
 
-                        if (channel.HasImage(ImageType.Primary))
+                        if (hasChannelImage && channel.HasImage(ImageType.Primary))
                         {
                             dto.ChannelPrimaryImageTag = _tvDtoService.GetImageTag(channel);
                         }
@@ -1906,7 +1909,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 var serviceName = program.ServiceName;
 
-                if (fields.Contains(ItemFields.ServiceName))
+                if (hasServiceName)
                 {
                     dto.ServiceName = serviceName;
                 }

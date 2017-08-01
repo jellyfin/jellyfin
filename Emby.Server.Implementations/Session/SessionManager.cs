@@ -1089,7 +1089,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var folder = (Folder)item;
 
-                var itemsResult = folder.GetItems(new InternalItemsQuery(user)
+                var itemsResult = folder.GetItemList(new InternalItemsQuery(user)
                 {
                     Recursive = true,
                     IsFolder = false,
@@ -1104,7 +1104,7 @@ namespace Emby.Server.Implementations.Session
 
                 });
 
-                return FilterToSingleMediaType(itemsResult.Items)
+                return FilterToSingleMediaType(itemsResult)
                     .OrderBy(i => i.SortName)
                     .ToList();
             }

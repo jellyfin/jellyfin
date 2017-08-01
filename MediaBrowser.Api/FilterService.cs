@@ -61,9 +61,9 @@ namespace MediaBrowser.Api
                user == null ? _libraryManager.RootFolder : user.RootFolder :
                parentItem;
 
-            var result = ((Folder)item).GetItems(GetItemsQuery(request, user));
+            var result = ((Folder)item).GetItemList(GetItemsQuery(request, user));
 
-            return ToOptimizedResult(GetFilters(result.Items));
+            return ToOptimizedResult(GetFilters(result.ToArray()));
         }
 
         private QueryFilters GetFilters(BaseItem[] items)

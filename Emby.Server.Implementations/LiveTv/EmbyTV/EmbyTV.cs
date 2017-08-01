@@ -1632,7 +1632,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     return;
                 }
 
-                var episodesToDelete = (librarySeries.GetItems(new InternalItemsQuery
+                var episodesToDelete = (librarySeries.GetItemList(new InternalItemsQuery
                 {
                     SortBy = new[] { ItemSortBy.DateCreated },
                     SortOrder = SortOrder.Descending,
@@ -1642,7 +1642,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     DtoOptions = new DtoOptions(true)
 
                 }))
-                    .Items
                     .Where(i => i.LocationType == LocationType.FileSystem && _fileSystem.FileExists(i.Path))
                     .Skip(seriesTimer.KeepUpTo - 1)
                     .ToList();
