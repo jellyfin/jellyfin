@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.TV
             int? limit = null;
             if (!string.IsNullOrWhiteSpace(request.SeriesId))
             {
-                var series = _libraryManager.GetItemById(request.SeriesId);
+                var series = _libraryManager.GetItemById(request.SeriesId) as Series;
 
                 if (series != null)
                 {
@@ -51,17 +51,22 @@ namespace Emby.Server.Implementations.TV
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(presentationUniqueKey) && limit.HasValue)
+            if (!string.IsNullOrWhiteSpace(presentationUniqueKey))
+            {
+                return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, dtoOptions), request);
+            }
+
+            if (limit.HasValue)
             {
                 limit = limit.Value + 10;
             }
 
             var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { typeof(Series).Name },
-                SortBy = new[] { ItemSortBy.SeriesDatePlayed },
+                IncludeItemTypes = new[] { typeof(Episode).Name },
+                SortBy = new[] { ItemSortBy.DatePlayed },
                 SortOrder = SortOrder.Descending,
-                PresentationUniqueKey = presentationUniqueKey,
+                SeriesPresentationUniqueKey = presentationUniqueKey,
                 Limit = limit,
                 ParentId = parentIdGuid,
                 Recursive = true,
@@ -69,11 +74,12 @@ namespace Emby.Server.Implementations.TV
                 {
                     Fields = new List<ItemFields>
                     {
-                        ItemFields.PresentationUniqueKey
+                        ItemFields.SeriesPresentationUniqueKey
                     }
-                }
+                },
+                GroupBySeriesPresentationUniqueKey = true
 
-            }).Cast<Series>().Select(GetUniqueSeriesKey);
+            }).Cast<Episode>().Select(GetUniqueSeriesKey);
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items, dtoOptions);
@@ -94,7 +100,7 @@ namespace Emby.Server.Implementations.TV
             int? limit = null;
             if (!string.IsNullOrWhiteSpace(request.SeriesId))
             {
-                var series = _libraryManager.GetItemById(request.SeriesId);
+                var series = _libraryManager.GetItemById(request.SeriesId) as Series;
 
                 if (series != null)
                 {
@@ -103,28 +109,34 @@ namespace Emby.Server.Implementations.TV
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(presentationUniqueKey) && limit.HasValue)
+            if (!string.IsNullOrWhiteSpace(presentationUniqueKey))
+            {
+                return GetResult(GetNextUpEpisodes(request, user, new [] { presentationUniqueKey }, dtoOptions), request);
+            }
+
+            if (limit.HasValue)
             {
                 limit = limit.Value + 10;
             }
 
             var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { typeof(Series).Name },
-                SortBy = new[] { ItemSortBy.SeriesDatePlayed },
+                IncludeItemTypes = new[] { typeof(Episode).Name },
+                SortBy = new[] { ItemSortBy.DatePlayed },
                 SortOrder = SortOrder.Descending,
-                PresentationUniqueKey = presentationUniqueKey,
+                SeriesPresentationUniqueKey = presentationUniqueKey,
                 Limit = limit,
                 DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions
                 {
                     Fields = new List<ItemFields>
                     {
-                        ItemFields.PresentationUniqueKey
+                        ItemFields.SeriesPresentationUniqueKey
                     },
                     EnableImages = false
-                }
+                },
+                GroupBySeriesPresentationUniqueKey = true
 
-            }, parentsFolders.Cast<BaseItem>().ToList()).Cast<Series>().Select(GetUniqueSeriesKey);
+            }, parentsFolders.Cast<BaseItem>().ToList()).Cast<Episode>().Select(GetUniqueSeriesKey);
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items, dtoOptions);
@@ -167,7 +179,12 @@ namespace Emby.Server.Implementations.TV
                 .Where(i => i != null);
         }
 
-        private string GetUniqueSeriesKey(BaseItem series)
+        private string GetUniqueSeriesKey(Episode episode)
+        {
+            return episode.SeriesPresentationUniqueKey;
+        }
+
+        private string GetUniqueSeriesKey(Series series)
         {
             return series.GetPresentationUniqueKey();
         }

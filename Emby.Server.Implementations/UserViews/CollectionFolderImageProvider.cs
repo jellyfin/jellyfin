@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.UserViews
 
             var recursive = !new[] { CollectionType.Playlists, CollectionType.Channels }.Contains(view.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
-            var result = view.GetItems(new InternalItemsQuery
+            var result = view.GetItemList(new InternalItemsQuery
             {
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.UserViews
 
             });
 
-            var items = result.Items.Select(i =>
+            var items = result.Select(i =>
             {
                 var episode = i as Episode;
                 if (episode != null)

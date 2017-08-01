@@ -224,6 +224,7 @@
         SeriesPresentationUniqueKey,
         DateLastRefreshed,
         DateLastSaved,
-        RefreshState
+        RefreshState,
+        ChannelImage
     }
 }

@@ -970,6 +970,27 @@ namespace MediaBrowser.Controller.Entities
             return GetItemsInternal(query);
         }
 
+        public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query)
+        {
+            query.EnableTotalRecordCount = false;
+
+            if (query.ItemIds.Length > 0)
+            {
+                var result = LibraryManager.GetItemList(query);
+
+                if (query.SortBy.Length == 0)
+                {
+                    var ids = query.ItemIds.ToList();
+
+                    // Try to preserve order
+                    result = result.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToArray();
+                }
+                return result;
+            }
+
+            return GetItemsInternal(query).Items;
+        }
+
         protected virtual QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
             if (SourceType == SourceType.Channel)
@@ -1375,10 +1396,10 @@ namespace MediaBrowser.Controller.Entities
                 query.IsVirtualItem = false;
             }
 
-            var itemsResult = GetItems(query);
+            var itemsResult = GetItemList(query);
 
             // Sweep through recursively and update status
-            var tasks = itemsResult.Items.Select(c => c.MarkPlayed(user, datePlayed, resetPosition));
+            var tasks = itemsResult.Select(c => c.MarkPlayed(user, datePlayed, resetPosition));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
@@ -1390,7 +1411,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public override async Task MarkUnplayed(User user)
         {
-            var itemsResult = GetItems(new InternalItemsQuery
+            var itemsResult = GetItemList(new InternalItemsQuery
             {
                 User = user,
                 Recursive = true,
@@ -1400,14 +1421,14 @@ namespace MediaBrowser.Controller.Entities
             });
 
             // Sweep through recursively and update status
-            var tasks = itemsResult.Items.Select(c => c.MarkUnplayed(user));
+            var tasks = itemsResult.Select(c => c.MarkUnplayed(user));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
         public override bool IsPlayed(User user)
         {
-            var itemsResult = GetItems(new InternalItemsQuery(user)
+            var itemsResult = GetItemList(new InternalItemsQuery(user)
             {
                 Recursive = true,
                 IsFolder = false,
@@ -1416,7 +1437,7 @@ namespace MediaBrowser.Controller.Entities
 
             });
 
-            return itemsResult.Items
+            return itemsResult
                 .All(i => i.IsPlayed(user));
         }
 
