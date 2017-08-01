@@ -615,20 +615,20 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public Task<string> ExtractAudioImage(string path, int? imageStreamIndex, CancellationToken cancellationToken)
         {
-            return ExtractImage(new[] { path }, null, imageStreamIndex, MediaProtocol.File, true, null, null, cancellationToken);
+            return ExtractImage(new[] { path }, null, null, imageStreamIndex, MediaProtocol.File, true, null, null, cancellationToken);
         }
 
-        public Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
+        public Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, MediaStream videoStream, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFiles, container, null, protocol, false, threedFormat, offset, cancellationToken);
+            return ExtractImage(inputFiles, container, videoStream, null, protocol, false, threedFormat, offset, cancellationToken);
         }
 
-        public Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, int? imageStreamIndex, CancellationToken cancellationToken)
+        public Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, MediaStream imageStream, int? imageStreamIndex, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFiles, container, imageStreamIndex, protocol, false, null, null, cancellationToken);
+            return ExtractImage(inputFiles, container, imageStream, imageStreamIndex, protocol, false, null, null, cancellationToken);
         }
 
-        private async Task<string> ExtractImage(string[] inputFiles, string container, int? imageStreamIndex, MediaProtocol protocol, bool isAudio,
+        private async Task<string> ExtractImage(string[] inputFiles, string container, MediaStream videoStream, int? imageStreamIndex, MediaProtocol protocol, bool isAudio,
             Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
             var inputArgument = GetInputArgument(inputFiles, protocol);
@@ -645,7 +645,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, imageStreamIndex, protocol, threedFormat, offset, true, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -657,10 +657,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return await ExtractImageInternal(inputArgument, container, imageStreamIndex, protocol, threedFormat, offset, false, cancellationToken).ConfigureAwait(false);
+            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<string> ExtractImageInternal(string inputPath, string container, int? imageStreamIndex, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, CancellationToken cancellationToken)
+        private async Task<string> ExtractImageInternal(string inputPath, string container, MediaStream videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -698,7 +698,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         break;
                 }
             }
-
+            
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
 
             var enableThumbnail = !new List<string> { "wtv" }.Contains(container ?? string.Empty, StringComparer.OrdinalIgnoreCase);
@@ -724,6 +724,25 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (offset.HasValue)
             {
                 args = string.Format("-ss {0} ", GetTimeParameter(offset.Value)) + args;
+            }
+
+            var encodinghelper = new EncodingHelper(this, FileSystem, SubtitleEncoder());
+            if (videoStream != null)
+            {
+                var decoder = encodinghelper.GetVideoDecoder(VideoType.VideoFile, videoStream, GetEncodingOptions());
+                if (!string.IsNullOrWhiteSpace(decoder))
+                {
+                    args = decoder + " " + args;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(container))
+            {
+                var inputFormat = encodinghelper.GetInputFormat(container);
+                if (!string.IsNullOrWhiteSpace(inputFormat))
+                {
+                    args = "-f " + inputFormat + " " + args;
+                }
             }
 
             var process = _processFactory.Create(new ProcessOptions
@@ -786,6 +805,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         public async Task ExtractVideoImagesOnInterval(string[] inputFiles,
+            string container,
+            MediaStream videoStream,
             MediaProtocol protocol,
             Video3DFormat? threedFormat,
             TimeSpan interval,
@@ -823,6 +844,25 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (!string.IsNullOrWhiteSpace(analyzeDurationArgument))
             {
                 args = analyzeDurationArgument + " " + args;
+            }
+
+            var encodinghelper = new EncodingHelper(this, FileSystem, SubtitleEncoder());
+            if (videoStream != null)
+            {
+                var decoder = encodinghelper.GetVideoDecoder(VideoType.VideoFile, videoStream, GetEncodingOptions());
+                if (!string.IsNullOrWhiteSpace(decoder))
+                {
+                    args = decoder + " " + args;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(container))
+            {
+                var inputFormat = encodinghelper.GetInputFormat(container);
+                if (!string.IsNullOrWhiteSpace(inputFormat))
+                {
+                    args = "-f " + inputFormat + " " + args;
+                }
             }
 
             var process = _processFactory.Create(new ProcessOptions

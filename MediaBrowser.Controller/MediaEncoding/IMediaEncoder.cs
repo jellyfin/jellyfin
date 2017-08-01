@@ -39,29 +39,16 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Extracts the video image.
         /// </summary>
-        /// <param name="inputFiles">The input files.</param>
-        /// <param name="protocol">The protocol.</param>
-        /// <param name="threedFormat">The threed format.</param>
-        /// <param name="offset">The offset.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Stream}.</returns>
-        Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken);
+        Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, MediaStream videoStream, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken);
 
-        Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, int? imageStreamIndex, CancellationToken cancellationToken);
+        Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, MediaStream imageStream, int? imageStreamIndex, CancellationToken cancellationToken);
 
         /// <summary>
         /// Extracts the video images on interval.
         /// </summary>
-        /// <param name="inputFiles">The input files.</param>
-        /// <param name="protocol">The protocol.</param>
-        /// <param name="threedFormat">The threed format.</param>
-        /// <param name="interval">The interval.</param>
-        /// <param name="targetDirectory">The target directory.</param>
-        /// <param name="filenamePrefix">The filename prefix.</param>
-        /// <param name="maxWidth">The maximum width.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
         Task ExtractVideoImagesOnInterval(string[] inputFiles,
+            string container,
+            MediaStream videoStream,
             MediaProtocol protocol,
             Video3DFormat? threedFormat,
             TimeSpan interval,

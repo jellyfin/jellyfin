@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -19,14 +18,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly ISubtitleEncoder _subtitleEncoder;
 
-        public EncodingHelper(IMediaEncoder mediaEncoder, IServerConfigurationManager config, IFileSystem fileSystem, ISubtitleEncoder subtitleEncoder)
+        public EncodingHelper(IMediaEncoder mediaEncoder, IFileSystem fileSystem, ISubtitleEncoder subtitleEncoder)
         {
             _mediaEncoder = mediaEncoder;
-            _config = config;
             _fileSystem = fileSystem;
             _subtitleEncoder = subtitleEncoder;
         }
@@ -1771,29 +1768,34 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return null;
             }
 
+            return GetVideoDecoder(state.MediaSource.VideoType ?? VideoType.VideoFile, state.VideoStream, encodingOptions);
+        }
+
+        public string GetVideoDecoder(VideoType videoType, MediaStream videoStream, EncodingOptions encodingOptions)
+        {
             // Only use alternative encoders for video files.
             // When using concat with folder rips, if the mfx session fails to initialize, ffmpeg will be stuck retrying and will not exit gracefully
             // Since transcoding of folder rips is expiremental anyway, it's not worth adding additional variables such as this.
-            if (state.VideoType != VideoType.VideoFile)
+            if (videoType != VideoType.VideoFile)
             {
                 return null;
             }
 
-            if (state.VideoStream != null && 
-                !string.IsNullOrWhiteSpace(state.VideoStream.Codec) && 
+            if (videoStream != null &&
+                !string.IsNullOrWhiteSpace(videoStream.Codec) &&
                 !string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType) &&
                 encodingOptions.EnableHardwareDecoding)
             {
                 if (string.Equals(encodingOptions.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
                 {
-                    switch (state.MediaSource.VideoStream.Codec.ToLower())
+                    switch (videoStream.Codec.ToLower())
                     {
                         case "avc":
                         case "h264":
                             if (_mediaEncoder.SupportsDecoder("h264_qsv"))
                             {
                                 // qsv decoder does not support 10-bit input
-                                if ((state.VideoStream.BitDepth ?? 8) > 8)
+                                if ((videoStream.BitDepth ?? 8) > 8)
                                 {
                                     return null;
                                 }
@@ -1824,7 +1826,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 else if (string.Equals(encodingOptions.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase))
                 {
-                    switch (state.MediaSource.VideoStream.Codec.ToLower())
+                    switch (videoStream.Codec.ToLower())
                     {
                         case "avc":
                         case "h264":
