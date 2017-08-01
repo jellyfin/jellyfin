@@ -182,10 +182,7 @@ namespace MediaBrowser.Controller.Playlists
                     DtoOptions = options
                 };
 
-                var itemsResult = folder.GetItems(query);
-                var items = itemsResult.Items;
-
-                return items;
+                return folder.GetItemList(query);
             }
 
             return new[] { item };

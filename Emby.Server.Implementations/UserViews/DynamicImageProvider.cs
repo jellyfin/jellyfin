@@ -70,19 +70,19 @@ namespace Emby.Server.Implementations.UserViews
             if (string.Equals(view.ViewType, SpecialFolder.MovieGenre, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(view.ViewType, SpecialFolder.TvGenre, StringComparison.OrdinalIgnoreCase))
             {
-                var userItemsResult = view.GetItems(new InternalItemsQuery
+                var userItemsResult = view.GetItemList(new InternalItemsQuery
                 {
                     CollapseBoxSetItems = false,
                     DtoOptions = new DtoOptions(false)
                 });
 
-                return userItemsResult.Items.ToList();
+                return userItemsResult.ToList();
             }
 
             var isUsingCollectionStrip = IsUsingCollectionStrip(view);
             var recursive = isUsingCollectionStrip && !new[] { CollectionType.Channels, CollectionType.BoxSets, CollectionType.Playlists }.Contains(view.ViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
-            var result = view.GetItems(new InternalItemsQuery
+            var result = view.GetItemList(new InternalItemsQuery
             {
                 User = view.UserId.HasValue ? _userManager.GetUserById(view.UserId.Value) : null,
                 CollapseBoxSetItems = false,
@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.UserViews
                 DtoOptions = new DtoOptions(false)
             });
 
-            var items = result.Items.Select(i =>
+            var items = result.Select(i =>
             {
                 var episode = i as Episode;
                 if (episode != null)

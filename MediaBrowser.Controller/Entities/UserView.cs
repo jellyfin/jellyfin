@@ -82,7 +82,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
-            var result = GetItems(new InternalItemsQuery
+            var result = GetItemList(new InternalItemsQuery
             {
                 User = user,
                 EnableTotalRecordCount = false,
@@ -90,7 +90,7 @@ namespace MediaBrowser.Controller.Entities
 
             });
 
-            return result.Items;
+            return result;
         }
 
         public override bool CanDelete()
@@ -105,7 +105,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
-            var result = GetItems(new InternalItemsQuery
+            var result = GetItemList(new InternalItemsQuery
             {
                 User = user,
                 Recursive = true,
@@ -117,7 +117,7 @@ namespace MediaBrowser.Controller.Entities
 
             });
 
-            return result.Items.Where(i => UserViewBuilder.FilterItem(i, query));
+            return result.Where(i => UserViewBuilder.FilterItem(i, query));
         }
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
