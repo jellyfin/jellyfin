@@ -438,14 +438,14 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("Series not found");
             }
 
-            var seasons = (series.GetItems(new InternalItemsQuery(user)
+            var seasons = (series.GetItemList(new InternalItemsQuery(user)
             {
                 IsMissing = request.IsMissing,
                 IsVirtualUnaired = request.IsVirtualUnaired,
                 IsSpecialSeason = request.IsSpecialSeason,
                 AdjacentTo = request.AdjacentTo
 
-            })).Items.OfType<Season>();
+            })).OfType<Season>();
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
