@@ -142,7 +142,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
                             var container = video.Container;
 
-                            var tempFile = await _encoder.ExtractVideoImage(inputPath, container, protocol, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
+                            var tempFile = await _encoder.ExtractVideoImage(inputPath, container, protocol, video.GetDefaultVideoStream(), video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
                             _fileSystem.CopyFile(tempFile, path, true);
 
                             try

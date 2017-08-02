@@ -164,7 +164,7 @@ namespace MediaBrowser.Model.Dto
             {
                 foreach (MediaStream i in MediaStreams)
                 {
-                    if (i.Type == MediaStreamType.Video && StringHelper.IndexOfIgnoreCase(i.Codec ?? string.Empty, "jpeg") == -1)
+                    if (i.Type == MediaStreamType.Video)
                     {
                         return i;
                     }

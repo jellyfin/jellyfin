@@ -95,7 +95,7 @@ namespace MediaBrowser.Api.Playback
             LibraryManager = libraryManager;
             IsoManager = isoManager;
             MediaEncoder = mediaEncoder;
-            EncodingHelper = new EncodingHelper(MediaEncoder, serverConfig, FileSystem, SubtitleEncoder);
+            EncodingHelper = new EncodingHelper(MediaEncoder, FileSystem, SubtitleEncoder);
         }
 
         /// <summary>
