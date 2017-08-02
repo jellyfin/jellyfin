@@ -439,6 +439,38 @@ namespace Emby.Dlna.Didl
             {
                 return _localization.GetLocalizedString("ViewTypeMusicFavoriteSongs");
             }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.ContinueWatching)
+            {
+                return _localization.GetLocalizedString("ViewTypeMovieResume");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.Movies)
+            {
+                return _localization.GetLocalizedString("ViewTypeMovieMovies");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.Collections)
+            {
+                return _localization.GetLocalizedString("ViewTypeMovieCollections");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.Favorites)
+            {
+                return _localization.GetLocalizedString("ViewTypeMovieFavorites");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.NextUp)
+            {
+                return _localization.GetLocalizedString("ViewTypeTvNextUp");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteSeries)
+            {
+                return _localization.GetLocalizedString("ViewTypeTvFavoriteSeries");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteEpisodes)
+            {
+                return _localization.GetLocalizedString("ViewTypeTvFavoriteEpisodes");
+            }
+            if (itemStubType.HasValue && itemStubType.Value == StubType.Series)
+            {
+                return _localization.GetLocalizedString("ViewTypeTvShowSeries");
+            }
 
             var episode = item as Episode;
             var season = context as Season;
