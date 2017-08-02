@@ -60,10 +60,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             movie.SetProviderId(MetadataProviders.TmdbCollection, tmdbcolid);
                         }
 
-                        var val = reader.ReadElementContentAsString();
+                        var val = reader.ReadInnerXml();
+
                         if (!string.IsNullOrWhiteSpace(val) && movie != null)
                         {
-                            movie.CollectionName = val;
+                            // TODO Handle this better later
+                            if (val.IndexOf('<') == -1)
+                            {
+                                movie.CollectionName = val;
+                            }
                         }
 
                         break;
