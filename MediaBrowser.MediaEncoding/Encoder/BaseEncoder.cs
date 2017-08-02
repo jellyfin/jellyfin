@@ -59,7 +59,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             MediaSourceManager = mediaSourceManager;
             ProcessFactory = processFactory;
 
-            EncodingHelper = new EncodingHelper(MediaEncoder, ConfigurationManager, FileSystem, SubtitleEncoder);
+            EncodingHelper = new EncodingHelper(MediaEncoder, FileSystem, SubtitleEncoder);
         }
 
         public async Task<EncodingJob> Start(EncodingJobOptions options,
