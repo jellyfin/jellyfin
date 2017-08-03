@@ -128,11 +128,21 @@ namespace MediaBrowser.Api.Playback
 
             var directPlayProfiles = new List<DirectPlayProfile>();
 
-            directPlayProfiles.Add(new DirectPlayProfile
+            var containers = (request.Container ?? string.Empty).Split(new [] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var container in containers)
             {
-                Type = DlnaProfileType.Audio,
-                Container = request.Container
-            });
+                var parts = container.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+
+                var audioCodecs = parts.Length == 1 ? null : string.Join(",", parts.Skip(1).ToArray());
+
+                directPlayProfiles.Add(new DirectPlayProfile
+                {
+                    Type = DlnaProfileType.Audio,
+                    Container = parts[0],
+                    AudioCodec = audioCodecs
+                });
+            }
 
             deviceProfile.DirectPlayProfiles = directPlayProfiles.ToArray();
 

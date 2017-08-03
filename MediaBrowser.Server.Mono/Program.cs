@@ -97,7 +97,7 @@ namespace MediaBrowser.Server.Mono
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options)
         {
             // Allow all https requests
-            //ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
             var environmentInfo = GetEnvironmentInfo();
 
