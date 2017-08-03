@@ -242,7 +242,6 @@ namespace MediaBrowser.Api
 
             item.CriticRating = request.CriticRating;
 
-            item.DisplayMediaType = request.DisplayMediaType;
             item.CommunityRating = request.CommunityRating;
             item.HomePageUrl = request.HomePageUrl;
             item.IndexNumber = request.IndexNumber;
