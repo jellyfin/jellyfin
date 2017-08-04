@@ -131,14 +131,14 @@ namespace MediaBrowser.Api.Playback
 
         public long? EncodingDurationTicks { get; set; }
 
-        public string GetMimeType(string outputPath)
+        public string GetMimeType(string outputPath, bool enableStreamDefault = true)
         {
             if (!string.IsNullOrEmpty(MimeType))
             {
                 return MimeType;
             }
 
-            return MimeTypes.GetMimeType(outputPath);
+            return MimeTypes.GetMimeType(outputPath, enableStreamDefault);
         }
 
         public bool EnableDlnaHeaders { get; set; }

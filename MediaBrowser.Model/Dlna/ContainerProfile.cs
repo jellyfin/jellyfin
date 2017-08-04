@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Extensions;
@@ -21,10 +22,15 @@ namespace MediaBrowser.Model.Dlna
 
         public List<string> GetContainers()
         {
+            return SplitValue(Container);
+        }
+
+        public static List<string> SplitValue(string value)
+        {
             List<string> list = new List<string>();
-            foreach (string i in (Container ?? string.Empty).Split(','))
+            foreach (string i in (value ?? string.Empty).Split(','))
             {
-                if (!string.IsNullOrEmpty(i)) list.Add(i);
+                if (!string.IsNullOrWhiteSpace(i)) list.Add(i);
             }
             return list;
         }
@@ -33,7 +39,32 @@ namespace MediaBrowser.Model.Dlna
         {
             List<string> containers = GetContainers();
 
-            return containers.Count == 0 || ListHelper.ContainsIgnoreCase(containers, container ?? string.Empty);
+            return ContainsContainer(containers, container);
+        }
+
+        public static bool ContainsContainer(string profileContainers, string inputContainer)
+        {
+            return ContainsContainer(SplitValue(profileContainers), inputContainer);
+        }
+
+        public static bool ContainsContainer(List<string> profileContainers, string inputContainer)
+        {
+            if (profileContainers.Count == 0)
+            {
+                return true;
+            }
+
+            var allInputContainers = SplitValue(inputContainer);
+
+            foreach (var container in allInputContainers)
+            {
+                if (ListHelper.ContainsIgnoreCase(profileContainers, container))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -197,6 +197,40 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
+        public static string NormalizeMediaSourceFormatIntoSingleContainer(string inputContainer, DeviceProfile profile, DlnaProfileType type)
+        {
+            if (string.IsNullOrWhiteSpace(inputContainer))
+            {
+                return null;
+            }
+
+            var formats = ContainerProfile.SplitValue(inputContainer);
+
+            if (formats.Count == 1)
+            {
+                return formats[0];
+            }
+
+            if (profile != null)
+            {
+                foreach (var format in formats)
+                {
+                    foreach (var directPlayProfile in profile.DirectPlayProfiles)
+                    {
+                        if (directPlayProfile.Type == type)
+                        {
+                            if (directPlayProfile.SupportsContainer(format))
+                            {
+                                return format;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return formats[0];
+        }
+
         private StreamInfo BuildAudioItem(MediaSourceInfo item, AudioOptions options)
         {
             List<TranscodeReason> transcodeReasons = new List<TranscodeReason>();
@@ -214,14 +248,14 @@ namespace MediaBrowser.Model.Dlna
             if (options.ForceDirectPlay)
             {
                 playlistItem.PlayMethod = PlayMethod.DirectPlay;
-                playlistItem.Container = item.Container;
+                playlistItem.Container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, options.Profile, DlnaProfileType.Audio);
                 return playlistItem;
             }
 
             if (options.ForceDirectStream)
             {
                 playlistItem.PlayMethod = PlayMethod.DirectStream;
-                playlistItem.Container = item.Container;
+                playlistItem.Container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, options.Profile, DlnaProfileType.Audio);
                 return playlistItem;
             }
 
@@ -295,7 +329,7 @@ namespace MediaBrowser.Model.Dlna
                             playlistItem.PlayMethod = PlayMethod.DirectStream;
                         }
 
-                        playlistItem.Container = item.Container;
+                        playlistItem.Container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, options.Profile, DlnaProfileType.Audio);
 
                         return playlistItem;
                     }
@@ -648,7 +682,7 @@ namespace MediaBrowser.Model.Dlna
                 if (directPlay != null)
                 {
                     playlistItem.PlayMethod = directPlay.Value;
-                    playlistItem.Container = item.Container;
+                    playlistItem.Container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, options.Profile, DlnaProfileType.Video);
 
                     if (subtitleStream != null)
                     {
@@ -1231,21 +1265,27 @@ namespace MediaBrowser.Model.Dlna
 
         private static bool IsSubtitleEmbedSupported(MediaStream subtitleStream, SubtitleProfile subtitleProfile, string transcodingSubProtocol, string transcodingContainer)
         {
-            if (string.Equals(transcodingContainer, "ts", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(transcodingContainer))
             {
-                return false;
-            }
-            if (string.Equals(transcodingContainer, "mpegts", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-            if (string.Equals(transcodingContainer, "mp4", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-            if (string.Equals(transcodingContainer, "mkv", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
+                var normalizedContainers = ContainerProfile.SplitValue(transcodingContainer);
+
+                if (ContainerProfile.ContainsContainer(normalizedContainers, "ts"))
+                {
+                    return false;
+                }
+                if (ContainerProfile.ContainsContainer(normalizedContainers, "mpegts"))
+                {
+                    return false;
+                }
+                if (ContainerProfile.ContainsContainer(normalizedContainers, "mp4"))
+                {
+                    return false;
+                }
+                if (ContainerProfile.ContainsContainer(normalizedContainers, "mkv") ||
+                    ContainerProfile.ContainsContainer(normalizedContainers, "matroska"))
+                {
+                    return true;
+                }
             }
 
             return false;
@@ -1572,14 +1612,17 @@ namespace MediaBrowser.Model.Dlna
             }
 
             // Check audio codec
-            List<string> audioCodecs = profile.GetAudioCodecs();
-            if (audioCodecs.Count > 0)
+            if (audioStream != null)
             {
-                // Check audio codecs
-                string audioCodec = audioStream == null ? null : audioStream.Codec;
-                if (string.IsNullOrEmpty(audioCodec) || !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec))
+                List<string> audioCodecs = profile.GetAudioCodecs();
+                if (audioCodecs.Count > 0)
                 {
-                    return false;
+                    // Check audio codecs
+                    string audioCodec = audioStream == null ? null : audioStream.Codec;
+                    if (string.IsNullOrEmpty(audioCodec) || !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec))
+                    {
+                        return false;
+                    }
                 }
             }
 

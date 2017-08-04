@@ -53,7 +53,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (data.format != null)
             {
-                info.Container = data.format.format_name;
+                info.Container = NormalizeFormat(data.format.format_name);
 
                 if (!string.IsNullOrEmpty(data.format.bit_rate))
                 {
@@ -193,6 +193,23 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             return info;
+        }
+
+        private string NormalizeFormat(string format)
+        {
+            if (string.IsNullOrWhiteSpace(format))
+            {
+                return null;
+            }
+
+            if (string.Equals(format, "mpegvideo", StringComparison.OrdinalIgnoreCase))
+            {
+                return "mpeg";
+            }
+
+            format = format.Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
+
+            return format;
         }
 
         private int? GetEstimatedAudioBitrate(string codec, int? channels)
