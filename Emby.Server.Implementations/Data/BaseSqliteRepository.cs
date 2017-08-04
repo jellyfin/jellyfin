@@ -131,6 +131,10 @@ namespace Emby.Server.Implementations.Data
                 {
                     queries.Add("PRAGMA temp_store = memory");
                 }
+                else
+                {
+                    queries.Add("PRAGMA temp_store = file");
+                }
 
                 ////foreach (var query in queries)
                 ////{

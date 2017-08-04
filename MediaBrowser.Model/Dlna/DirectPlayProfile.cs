@@ -19,27 +19,9 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("type")]
         public DlnaProfileType Type { get; set; }
 
-        public List<string> GetContainers()
-        {
-            List<string> list = new List<string>();
-            foreach (string i in (Container ?? string.Empty).Split(','))
-            {
-                if (!string.IsNullOrEmpty(i)) list.Add(i);
-            }
-            return list;
-        }
-
         public bool SupportsContainer(string container)
         {
-            var all = GetContainers();
-
-            // Only allow unknown container if the profile is all inclusive
-            if (string.IsNullOrWhiteSpace(container))
-            {
-                return all.Count == 0;
-            }
-
-            return all.Count == 0 || all.Contains(container, StringComparer.OrdinalIgnoreCase);
+            return ContainerProfile.ContainsContainer(Container, container);
         }
 
         public List<string> GetAudioCodecs()

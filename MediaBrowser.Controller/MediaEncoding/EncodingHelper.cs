@@ -10,6 +10,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -148,10 +149,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetInputFormat(string container)
         {
-            if (string.Equals(container, "mkv", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(container))
             {
-                return "matroska";
+                return null;
             }
+
+            container = container.Replace("mkv", "matroska", StringComparison.OrdinalIgnoreCase);
+
             if (string.Equals(container, "ts", StringComparison.OrdinalIgnoreCase))
             {
                 return "mpegts";
@@ -1694,7 +1698,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 state.InputAudioSync = "1";
             }
 
-            if (string.Equals(mediaSource.Container, "wma", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(mediaSource.Container, "wma", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(mediaSource.Container, "asf", StringComparison.OrdinalIgnoreCase))
             {
                 // Seeing some stuttering when transcoding wma to audio-only HLS
                 state.InputAudioSync = "1";

@@ -106,14 +106,15 @@ namespace MediaBrowser.Model.Net
             return dict;
         }
 
+        public static string GetMimeType(string path)
+        {
+            return GetMimeType(path, true);
+        }
+
         /// <summary>
         /// Gets the type of the MIME.
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">path</exception>
-        /// <exception cref="InvalidOperationException">Argument not supported:  + path</exception>
-        public static string GetMimeType(string path)
+        public static string GetMimeType(string path, bool enableStreamDefault)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -329,7 +330,12 @@ namespace MediaBrowser.Model.Net
                 return "application/ttml+xml";
             }
 
-            return "application/octet-stream";
+            if (enableStreamDefault)
+            {
+                return "application/octet-stream";
+            }
+
+            return null;
         }
 
         public static string ToExtension(string mimeType)
