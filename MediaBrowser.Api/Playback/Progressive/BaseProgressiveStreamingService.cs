@@ -167,7 +167,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Static stream
             if (request.Static)
             {
-                var contentType = state.GetMimeType(state.MediaPath);
+                var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
 
                 using (state)
                 {

@@ -117,7 +117,7 @@ namespace MediaBrowser.Api.Playback
             var authInfo = _authContext.GetAuthorizationInfo(Request);
 
             var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None).ConfigureAwait(false);
-
+           
             var profile = request.DeviceProfile;
             if (profile == null)
             {
@@ -142,6 +142,11 @@ namespace MediaBrowser.Api.Playback
                 {
                     result.MediaSource.TranscodingUrl += "&LiveStreamId=" + result.MediaSource.LiveStreamId;
                 }
+            }
+
+            if (result.MediaSource != null)
+            {
+                NormalizeMediaSourceContainer(result.MediaSource, profile, DlnaProfileType.Video);
             }
 
             return result;
@@ -207,7 +212,20 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
+            if (info.MediaSources != null)
+            {
+                foreach (var mediaSource in info.MediaSources)
+                {
+                    NormalizeMediaSourceContainer(mediaSource, profile, DlnaProfileType.Video);
+                }
+            }
+
             return info;
+        }
+
+        private void NormalizeMediaSourceContainer(MediaSourceInfo mediaSource, DeviceProfile profile, DlnaProfileType type)
+        {
+            mediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(mediaSource.Container, profile, type);
         }
 
         public async Task<object> Post(GetPostedPlaybackInfo request)

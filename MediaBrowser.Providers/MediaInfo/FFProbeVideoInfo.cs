@@ -187,6 +187,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 video.Container = null;
             }
+            video.Container = mediaInfo.Container;
 
             var chapters = mediaInfo.Chapters ?? new List<ChapterInfo>();
             if (blurayInfo != null)

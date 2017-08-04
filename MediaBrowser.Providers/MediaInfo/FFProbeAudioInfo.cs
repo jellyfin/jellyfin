@@ -95,14 +95,14 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var mediaStreams = mediaInfo.MediaStreams;
 
-            //audio.FormatName = mediaInfo.Container;
+            audio.Container = mediaInfo.Container;
             audio.TotalBitrate = mediaInfo.Bitrate;
 
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
             audio.Size = mediaInfo.Size;
 
             var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
-            audio.Container = extension;
+            //audio.Container = extension;
 
             await FetchDataFromTags(audio, mediaInfo).ConfigureAwait(false);
 

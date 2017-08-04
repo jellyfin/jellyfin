@@ -779,7 +779,7 @@ namespace MediaBrowser.Api.Playback
             if (string.IsNullOrEmpty(container))
             {
                 container = request.Static ?
-                    state.InputContainer :
+                    StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, null, DlnaProfileType.Audio) :
                     GetOutputFileExtension(state);
             }
 
