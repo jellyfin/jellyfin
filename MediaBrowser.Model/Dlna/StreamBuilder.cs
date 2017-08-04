@@ -1231,21 +1231,27 @@ namespace MediaBrowser.Model.Dlna
 
         private static bool IsSubtitleEmbedSupported(MediaStream subtitleStream, SubtitleProfile subtitleProfile, string transcodingSubProtocol, string transcodingContainer)
         {
-            if (string.Equals(transcodingContainer, "ts", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(transcodingContainer))
             {
-                return false;
-            }
-            if (string.Equals(transcodingContainer, "mpegts", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-            if (string.Equals(transcodingContainer, "mp4", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-            if (string.Equals(transcodingContainer, "mkv", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
+                var normalizedContainers = ContainerProfile.SplitValue(transcodingContainer);
+
+                if (ContainerProfile.ContainsContainer(normalizedContainers, "ts"))
+                {
+                    return false;
+                }
+                if (ContainerProfile.ContainsContainer(normalizedContainers, "mpegts"))
+                {
+                    return false;
+                }
+                if (ContainerProfile.ContainsContainer(normalizedContainers, "mp4"))
+                {
+                    return false;
+                }
+                if (ContainerProfile.ContainsContainer(normalizedContainers, "mkv") ||
+                    ContainerProfile.ContainsContainer(normalizedContainers, "matroska"))
+                {
+                    return true;
+                }
             }
 
             return false;
@@ -1572,14 +1578,17 @@ namespace MediaBrowser.Model.Dlna
             }
 
             // Check audio codec
-            List<string> audioCodecs = profile.GetAudioCodecs();
-            if (audioCodecs.Count > 0)
+            if (audioStream != null)
             {
-                // Check audio codecs
-                string audioCodec = audioStream == null ? null : audioStream.Codec;
-                if (string.IsNullOrEmpty(audioCodec) || !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec))
+                List<string> audioCodecs = profile.GetAudioCodecs();
+                if (audioCodecs.Count > 0)
                 {
-                    return false;
+                    // Check audio codecs
+                    string audioCodec = audioStream == null ? null : audioStream.Codec;
+                    if (string.IsNullOrEmpty(audioCodec) || !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec))
+                    {
+                        return false;
+                    }
                 }
             }
 

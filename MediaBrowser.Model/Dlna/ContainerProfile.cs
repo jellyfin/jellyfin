@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.Dlna
             return SplitValue(Container);
         }
 
-        private static List<string> SplitValue(string value)
+        public static List<string> SplitValue(string value)
         {
             List<string> list = new List<string>();
             foreach (string i in (value ?? string.Empty).Split(','))
