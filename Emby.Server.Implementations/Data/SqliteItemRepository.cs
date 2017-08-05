@@ -113,7 +113,7 @@ namespace Emby.Server.Implementations.Data
         {
             get
             {
-                return true;
+                return false;
             }
         }
 
@@ -1972,20 +1972,7 @@ namespace Emby.Server.Implementations.Data
         /// <returns>Task{IEnumerable{ItemReview}}.</returns>
         public IEnumerable<ItemReview> GetCriticReviews(Guid itemId)
         {
-            try
-            {
-                var path = Path.Combine(_criticReviewsPath, itemId + ".json");
-
-                return _jsonSerializer.DeserializeFromFile<List<ItemReview>>(path);
-            }
-            catch (FileNotFoundException)
-            {
-                return new List<ItemReview>();
-            }
-            catch (IOException)
-            {
-                return new List<ItemReview>();
-            }
+            return new List<ItemReview>();
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);
@@ -1997,12 +1984,6 @@ namespace Emby.Server.Implementations.Data
         /// <returns>Task.</returns>
         public Task SaveCriticReviews(Guid itemId, IEnumerable<ItemReview> criticReviews)
         {
-            _fileSystem.CreateDirectory(_criticReviewsPath);
-
-            var path = Path.Combine(_criticReviewsPath, itemId + ".json");
-
-            _jsonSerializer.SerializeToFile(criticReviews.ToList(), path);
-
             return _cachedTask;
         }
 
@@ -5610,7 +5591,7 @@ namespace Emby.Server.Implementations.Data
             return item;
         }
 
-        public IEnumerable<MediaStream> GetMediaStreams(MediaStreamQuery query)
+        public List<MediaStream> GetMediaStreams(MediaStreamQuery query)
         {
             CheckDisposed();
 

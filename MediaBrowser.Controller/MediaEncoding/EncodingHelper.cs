@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -1671,14 +1672,33 @@ namespace MediaBrowser.Controller.MediaEncoding
             state.RunTimeTicks = mediaSource.RunTimeTicks;
             state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
 
+            state.IsoType = mediaSource.IsoType;
+
             if (mediaSource.VideoType.HasValue)
             {
                 state.VideoType = mediaSource.VideoType.Value;
+
+                if (mediaSource.VideoType.Value == VideoType.BluRay || mediaSource.VideoType.Value == VideoType.Dvd)
+                {
+                    state.PlayableStreamFileNames = Video.QueryPlayableStreamFiles(state.MediaPath, mediaSource.VideoType.Value);
+                }
+                else if (mediaSource.VideoType.Value == VideoType.Iso && state.IsoType == IsoType.BluRay)
+                {
+                    state.PlayableStreamFileNames = Video.QueryPlayableStreamFiles(state.MediaPath, VideoType.BluRay);
+                }
+                else if (mediaSource.VideoType.Value == VideoType.Iso && state.IsoType == IsoType.Dvd)
+                {
+                    state.PlayableStreamFileNames = Video.QueryPlayableStreamFiles(state.MediaPath, VideoType.Dvd);
+                }
+                else
+                {
+                    state.PlayableStreamFileNames = new List<string>();
+                }
             }
-
-            state.IsoType = mediaSource.IsoType;
-
-            state.PlayableStreamFileNames = mediaSource.PlayableStreamFileNames.ToList();
+            else
+            {
+                state.PlayableStreamFileNames = new List<string>();
+            }
 
             if (mediaSource.Timestamp.HasValue)
             {

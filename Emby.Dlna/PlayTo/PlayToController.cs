@@ -503,7 +503,7 @@ namespace Emby.Dlna.PlayTo
 
             var hasMediaSources = item as IHasMediaSources;
             var mediaSources = hasMediaSources != null
-                ? (_mediaSourceManager.GetStaticMediaSources(hasMediaSources, true, user)).ToList()
+                ? (_mediaSourceManager.GetStaticMediaSources(hasMediaSources, true, user))
                 : new List<MediaSourceInfo>();
 
             var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
