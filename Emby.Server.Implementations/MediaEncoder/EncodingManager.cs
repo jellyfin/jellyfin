@@ -29,9 +29,9 @@ namespace Emby.Server.Implementations.MediaEncoder
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
 
-        public EncodingManager(IFileSystem fileSystem, 
-            ILogger logger, 
-            IMediaEncoder encoder, 
+        public EncodingManager(IFileSystem fileSystem,
+            ILogger logger,
+            IMediaEncoder encoder,
             IChapterManager chapterManager, ILibraryManager libraryManager)
         {
             _fileSystem = fileSystem;
@@ -121,12 +121,16 @@ namespace Emby.Server.Implementations.MediaEncoder
                         {
                             continue;
                         }
+
+                        List<string> playableStreamFileNames = null;
                         if (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd)
                         {
-                            if (video.PlayableStreamFileNames.Count != 1)
-                            {
-                                continue;
-                            }
+                            continue;
+                        }
+
+                        if (playableStreamFileNames == null)
+                        {
+                            playableStreamFileNames = new List<string>();
                         }
 
                         try
@@ -136,7 +140,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
                             var protocol = MediaProtocol.File;
 
-                            var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, protocol, null, video.PlayableStreamFileNames);
+                            var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, protocol, null, playableStreamFileNames);
 
                             _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
@@ -151,7 +155,7 @@ namespace Emby.Server.Implementations.MediaEncoder
                             }
                             catch
                             {
-                                
+
                             }
 
                             chapter.ImagePath = path;

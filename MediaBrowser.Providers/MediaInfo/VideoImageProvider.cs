@@ -18,42 +18,15 @@ namespace MediaBrowser.Providers.MediaInfo
 {
     public class VideoImageProvider : IDynamicImageProvider, IHasItemChangeMonitor, IHasOrder
     {
-        private readonly IIsoManager _isoManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IServerConfigurationManager _config;
-        private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        public VideoImageProvider(IIsoManager isoManager, IMediaEncoder mediaEncoder, IServerConfigurationManager config, ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem)
+        public VideoImageProvider(IMediaEncoder mediaEncoder, ILogger logger, IFileSystem fileSystem)
         {
-            _isoManager = isoManager;
             _mediaEncoder = mediaEncoder;
-            _config = config;
-            _libraryManager = libraryManager;
             _logger = logger;
             _fileSystem = fileSystem;
-        }
-
-        /// <summary>
-        /// The null mount task result
-        /// </summary>
-        protected readonly Task<IIsoMount> NullMountTaskResult = Task.FromResult<IIsoMount>(null);
-
-        /// <summary>
-        /// Mounts the iso if needed.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IIsoMount}.</returns>
-        protected Task<IIsoMount> MountIsoIfNeeded(Video item, CancellationToken cancellationToken)
-        {
-            if (item.VideoType == VideoType.Iso)
-            {
-                return _isoManager.Mount(item.Path, cancellationToken);
-            }
-
-            return NullMountTaskResult;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
@@ -71,8 +44,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
 
-            // Can't extract from iso's if we weren't unable to determine iso type
-            if (video.VideoType == VideoType.Iso && !video.IsoType.HasValue)
+            // No support for this
+            if (video.VideoType == VideoType.Iso)
             {
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
@@ -89,81 +62,66 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public async Task<DynamicImageResponse> GetVideoImage(Video item, CancellationToken cancellationToken)
         {
-            var isoMount = await MountIsoIfNeeded(item, cancellationToken).ConfigureAwait(false);
+            var protocol = item.LocationType == LocationType.Remote
+                ? MediaProtocol.Http
+                : MediaProtocol.File;
 
-            try
+            var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, item.Path, protocol, null, item.GetPlayableStreamFileNames());
+
+            var mediaStreams =
+                item.GetMediaStreams();
+
+            var imageStreams =
+                mediaStreams
+                    .Where(i => i.Type == MediaStreamType.EmbeddedImage)
+                    .ToList();
+
+            var imageStream = imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("front", StringComparison.OrdinalIgnoreCase) != -1) ??
+                imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("cover", StringComparison.OrdinalIgnoreCase) != -1) ??
+                imageStreams.FirstOrDefault();
+
+            string extractedImagePath;
+
+            if (imageStream != null)
             {
-                var protocol = item.LocationType == LocationType.Remote
-                    ? MediaProtocol.Http
-                    : MediaProtocol.File;
-
-                var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, item.Path, protocol, isoMount, item.PlayableStreamFileNames);
-
-                var mediaStreams =
-                    item.GetMediaSources(false)
-                        .Take(1)
-                        .SelectMany(i => i.MediaStreams)
-                        .ToList();
-
-                var imageStreams =
-                    mediaStreams
-                        .Where(i => i.Type == MediaStreamType.EmbeddedImage)
-                        .ToList();
-
-                var imageStream = imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("front", StringComparison.OrdinalIgnoreCase) != -1) ??
-                    imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("cover", StringComparison.OrdinalIgnoreCase) != -1) ??
-                    imageStreams.FirstOrDefault();
-
-                string extractedImagePath;
-
-                if (imageStream != null)
+                // Instead of using the raw stream index, we need to use nth video/embedded image stream
+                var videoIndex = -1;
+                foreach (var mediaStream in mediaStreams)
                 {
-                    // Instead of using the raw stream index, we need to use nth video/embedded image stream
-                    var videoIndex = -1;
-                    foreach (var mediaStream in mediaStreams)
+                    if (mediaStream.Type == MediaStreamType.Video ||
+                        mediaStream.Type == MediaStreamType.EmbeddedImage)
                     {
-                        if (mediaStream.Type == MediaStreamType.Video ||
-                            mediaStream.Type == MediaStreamType.EmbeddedImage)
-                        {
-                            videoIndex++;
-                        }
-                        if (mediaStream == imageStream)
-                        {
-                            break;
-                        }
+                        videoIndex++;
                     }
-
-                    extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, protocol, imageStream, videoIndex, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    // If we know the duration, grab it from 10% into the video. Otherwise just 10 seconds in.
-                    // Always use 10 seconds for dvd because our duration could be out of whack
-                    var imageOffset = item.VideoType != VideoType.Dvd && item.RunTimeTicks.HasValue &&
-                                      item.RunTimeTicks.Value > 0
-                                          ? TimeSpan.FromTicks(Convert.ToInt64(item.RunTimeTicks.Value * .1))
-                                          : TimeSpan.FromSeconds(10);
-
-                    var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-
-                    extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, protocol, videoStream, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
+                    if (mediaStream == imageStream)
+                    {
+                        break;
+                    }
                 }
 
-                return new DynamicImageResponse
-                {
-                    Format = ImageFormat.Jpg,
-                    HasImage = true,
-                    Path = extractedImagePath,
-                    Protocol = MediaProtocol.File
-                };
+                extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, protocol, imageStream, videoIndex, cancellationToken).ConfigureAwait(false);
             }
-            finally
+            else
             {
-                if (isoMount != null)
-                {
-                    isoMount.Dispose();
-                }
+                // If we know the duration, grab it from 10% into the video. Otherwise just 10 seconds in.
+                // Always use 10 seconds for dvd because our duration could be out of whack
+                var imageOffset = item.VideoType != VideoType.Dvd && item.RunTimeTicks.HasValue &&
+                                  item.RunTimeTicks.Value > 0
+                                      ? TimeSpan.FromTicks(Convert.ToInt64(item.RunTimeTicks.Value * .1))
+                                      : TimeSpan.FromSeconds(10);
+
+                var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
+
+                extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, protocol, videoStream, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
             }
+
+            return new DynamicImageResponse
+            {
+                Format = ImageFormat.Jpg,
+                HasImage = true,
+                Path = extractedImagePath,
+                Protocol = MediaProtocol.File
+            };
         }
 
         public string Name

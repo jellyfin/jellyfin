@@ -300,9 +300,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
             writer.WriteStartElement("fileinfo");
             writer.WriteStartElement("streamdetails");
 
-            var mediaSource = item.GetMediaSources(false).First();
+            var mediaStreams = item.GetMediaStreams();
 
-            foreach (var stream in mediaSource.MediaStreams)
+            foreach (var stream in mediaStreams)
             {
                 writer.WriteStartElement(stream.Type.ToString().ToLower());
 
@@ -378,9 +378,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (stream.Type == MediaStreamType.Video)
                 {
-                    if (mediaSource.RunTimeTicks.HasValue)
+                    var runtimeTicks = ((IHasMetadata) item).RunTimeTicks;
+                    if (runtimeTicks.HasValue)
                     {
-                        var timespan = TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value);
+                        var timespan = TimeSpan.FromTicks(runtimeTicks.Value);
 
                         writer.WriteElementString("duration", Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture));
                         writer.WriteElementString("durationinseconds", Convert.ToInt32(timespan.TotalSeconds).ToString(UsCulture));

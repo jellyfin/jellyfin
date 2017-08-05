@@ -78,8 +78,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 var hasMediaSources = (IHasMediaSources)item;
 
-                sources = _mediaSourceManager.GetStaticMediaSources(hasMediaSources, false)
-                   .ToList();
+                sources = _mediaSourceManager.GetStaticMediaSources(hasMediaSources, false);
 
                 forceRequireOpening = true;
             }
