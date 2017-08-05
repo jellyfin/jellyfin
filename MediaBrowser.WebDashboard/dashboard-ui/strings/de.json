@@ -1009,7 +1009,7 @@
     "HeaderChapterSettings": "Kapiteleinstellungen",
     "HeaderCameraUploadHelp": "Emby Apps k\u00f6nnen automatisch Fotos und Videos von dem Ger\u00e4t, auf dem sie aufgenommen wurden, auf den Emby Server hochladen.",
     "LabelCameraUploadPath": "Kamera-Upload Pfad:",
-    "LabelCameraUploadPathHelp": "W\u00e4hle, falls gew\u00fcnscht, einen eigenen Upload Pfad. Wird keiner festgelegt, so wird der Standard-Pfad verwendet. Ein eigener Pfad muss zus\u00e4tzlich in der Medien Bibliothek hinzugef\u00fcgt werden!",
+    "LabelCameraUploadPathHelp": "W\u00e4hle einen eigenen Upload-Pfad. Diese Einstellung \u00fcberschreibt die Standardeinstellung die in den Kamera-Uploadeinstellungen festgelegt wurde. Wird kein eigener Upload-Pfad festgelegt, so wird der Standard-Pfad verwendet. Ein eigener Pfad muss zus\u00e4tzlich in der Medienbibliothek hinzugef\u00fcgt werden!",
     "LabelCreateCameraUploadSubfolder": "Erstelle ein Unterverzeichnis f\u00fcr jedes Ger\u00e4t",
     "LabelCreateCameraUploadSubfolderHelp": "Bestimmte Verzeichnisse k\u00f6nnen Ger\u00e4ten durch einen Klick auf der Ger\u00e4teseite zugewiesen werden.",
     "LabelCustomDeviceDisplayName": "Angezeigter Name:",
@@ -1940,7 +1940,7 @@
     "EnableNextVideoInfoOverlayHelp": "Zeige Informationen \u00fcber das n\u00e4chste abzuspielende Video in der aktuellen Abspielliste am Ende des laufenden Videos an.",
     "ServerRestartNeededAfterPluginInstall": "Der Emby-Server muss nach der Installation eines Plugins neu gestartet werden.",
     "PluginInstalledMessage": "Das Plugin wurde erfolgreich installiert. Der Emby-Server muss neu gestartet werden, um die \u00c4nderungen zu \u00fcbernehmen.",
-    "Themes": "Themes",
-    "LabelTheme": "Theme:",
-    "LabelDashboardTheme": "Server dashboard theme:"
+    "Themes": "Themen",
+    "LabelTheme": "Thema:",
+    "LabelDashboardTheme": "Server Dashboard Thema:"
 }

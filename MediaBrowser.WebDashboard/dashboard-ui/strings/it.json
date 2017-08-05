@@ -1009,7 +1009,7 @@
     "HeaderChapterSettings": "Impostazioni dei Capitoli",
     "HeaderCameraUploadHelp": "Le app di Emby possono caricare automaticamente foto e video scattati dai tuoi dispositivi mobile nel server Emby. ",
     "LabelCameraUploadPath": "Fotocamera percorso di upload:",
-    "LabelCameraUploadPathHelp": "Selezionare un percorso di caricamento personalizzato, se lo si desidera. Se non specificato verr\u00e0 utilizzata una cartella predefinita. Se si utilizza un percorso personalizzato che dovr\u00e0 anche essere aggiunti nella zona di installazione della libreria.",
+    "LabelCameraUploadPathHelp": "Selezionare un percorso di caricamento personalizzato.Ci\u00f2 sovrascriver\u00e0 le impostazioni predefinite impostate nella sezione Caricamenti Fotocamera. Se lasciato vuoto, verr\u00e0 utilizzata una cartella predefinita. Se si utilizza un percorso personalizzato, sar\u00e0 anche necessario aggiungerlo nell'area di configurazione della libreria.",
     "LabelCreateCameraUploadSubfolder": "Creare una sottocartella per ogni dispositivo",
     "LabelCreateCameraUploadSubfolderHelp": "Cartelle specifici possono essere assegnati a un dispositivo facendo clic su di esso dalla pagina Dispositivi.",
     "LabelCustomDeviceDisplayName": "Nome da visualizzare:",
