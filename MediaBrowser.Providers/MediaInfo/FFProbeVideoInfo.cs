@@ -80,35 +80,45 @@ namespace MediaBrowser.Providers.MediaInfo
 
             try
             {
-                if (item.VideoType == VideoType.BluRay || (item.IsoType.HasValue && item.IsoType == IsoType.BluRay))
-                {
-                    var inputPath = isoMount != null ? isoMount.MountedPath : item.Path;
+                List<string> streamFileNames = null;
 
-                    blurayDiscInfo = GetBDInfo(inputPath);
+                if (item.VideoType == VideoType.Iso)
+                {
+                    item.IsoType = DetermineIsoType(isoMount);
                 }
 
-                OnPreFetch(item, isoMount, blurayDiscInfo);
-
-                // If we didn't find any satisfying the min length, just take them all
                 if (item.VideoType == VideoType.Dvd || (item.IsoType.HasValue && item.IsoType == IsoType.Dvd))
                 {
-                    if (item.PlayableStreamFileNames.Count == 0)
+                    streamFileNames = FetchFromDvdLib(item, isoMount);
+
+                    if (streamFileNames.Count == 0)
                     {
                         _logger.Error("No playable vobs found in dvd structure, skipping ffprobe.");
                         return ItemUpdateType.MetadataImport;
                     }
                 }
 
-                if (item.VideoType == VideoType.BluRay || (item.IsoType.HasValue && item.IsoType == IsoType.BluRay))
+                else if (item.VideoType == VideoType.BluRay || (item.IsoType.HasValue && item.IsoType == IsoType.BluRay))
                 {
-                    if (item.PlayableStreamFileNames.Count == 0)
+                    var inputPath = isoMount != null ? isoMount.MountedPath : item.Path;
+
+                    blurayDiscInfo = GetBDInfo(inputPath);
+
+                    streamFileNames = blurayDiscInfo.Files;
+
+                    if (streamFileNames.Count == 0)
                     {
                         _logger.Error("No playable vobs found in bluray structure, skipping ffprobe.");
                         return ItemUpdateType.MetadataImport;
                     }
                 }
 
-                var result = await GetMediaInfo(item, isoMount, cancellationToken).ConfigureAwait(false);
+                if (streamFileNames == null)
+                {
+                    streamFileNames = new List<string>();
+                }
+
+                var result = await GetMediaInfo(item, isoMount, streamFileNames, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -126,10 +136,9 @@ namespace MediaBrowser.Providers.MediaInfo
             return ItemUpdateType.MetadataImport;
         }
 
-        private const string SchemaVersion = "6";
-
-        private async Task<Model.MediaInfo.MediaInfo> GetMediaInfo(Video item,
+        private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(Video item,
             IIsoMount isoMount,
+            List<string> streamFileNames,
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -138,9 +147,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 ? MediaProtocol.Http
                 : MediaProtocol.File;
 
-            var result = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
+            return _mediaEncoder.GetMediaInfo(new MediaInfoRequest
             {
-                PlayableStreamFileNames = item.PlayableStreamFileNames,
+                PlayableStreamFileNames = streamFileNames,
                 MountedIso = isoMount,
                 ExtractChapters = true,
                 VideoType = item.VideoType,
@@ -148,12 +157,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 InputPath = item.Path,
                 Protocol = protocol
 
-            }, cancellationToken).ConfigureAwait(false);
-
-            //Directory.CreateDirectory(_fileSystem.GetDirectoryName(cachePath));
-            //_json.SerializeToFile(result, cachePath);
-
-            return result;
+            }, cancellationToken);
         }
 
         protected async Task Fetch(Video video,
@@ -266,7 +270,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var video = (Video)item;
 
-            video.PlayableStreamFileNames = blurayInfo.Files.ToList();
+            //video.PlayableStreamFileNames = blurayInfo.Files.ToList();
 
             // Use BD Info if it has multiple m2ts. Otherwise, treat it like a video file and rely more on ffprobe output
             if (blurayInfo.Files.Count > 1)
@@ -559,31 +563,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        /// <summary>
-        /// Called when [pre fetch].
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="mount">The mount.</param>
-        /// <param name="blurayDiscInfo">The bluray disc information.</param>
-        private void OnPreFetch(Video item, IIsoMount mount, BlurayDiscInfo blurayDiscInfo)
-        {
-            if (item.VideoType == VideoType.Iso)
-            {
-                item.IsoType = DetermineIsoType(mount);
-            }
-
-            if (item.VideoType == VideoType.Dvd || (item.IsoType.HasValue && item.IsoType == IsoType.Dvd))
-            {
-                FetchFromDvdLib(item, mount);
-            }
-
-            if (blurayDiscInfo != null)
-            {
-                item.PlayableStreamFileNames = blurayDiscInfo.Files.ToList();
-            }
-        }
-
-        private void FetchFromDvdLib(Video item, IIsoMount mount)
+        private List<string> FetchFromDvdLib(Video item, IIsoMount mount)
         {
             var path = mount == null ? item.Path : mount.MountedPath;
             var dvd = new Dvd(path, _fileSystem);
@@ -598,7 +578,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 item.RunTimeTicks = GetRuntime(primaryTitle);
             }
 
-            item.PlayableStreamFileNames = GetPrimaryPlaylistVobFiles(item, mount, titleNumber)
+            return GetPrimaryPlaylistVobFiles(item, mount, titleNumber)
                 .Select(Path.GetFileName)
                 .ToList();
         }

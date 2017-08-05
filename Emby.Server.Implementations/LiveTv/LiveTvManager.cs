@@ -1957,7 +1957,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (dto.MediaSources == null)
             {
-                dto.MediaSources = recording.GetMediaSources(true).ToList();
+                dto.MediaSources = recording.GetMediaSources(true);
             }
 
             if (dto.MediaStreams == null)
@@ -2365,7 +2365,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 if (addMediaSources)
                 {
-                    dto.MediaSources = channel.GetMediaSources(true).ToList();
+                    dto.MediaSources = channel.GetMediaSources(true);
                 }
 
                 if (addCurrentProgram)

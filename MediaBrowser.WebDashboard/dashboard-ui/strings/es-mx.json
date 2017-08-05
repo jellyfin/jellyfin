@@ -1009,7 +1009,7 @@
     "HeaderChapterSettings": "Configuraciones de Capitulos",
     "HeaderCameraUploadHelp": "Las aplicaciones de Emby pueden subir autom\u00e1ticamente fotograf\u00edas y videos tomados desde sus dispositivos m\u00f3viles al Servidor Emby.",
     "LabelCameraUploadPath": "Ruta para subir desde la c\u00e1mara:",
-    "LabelCameraUploadPathHelp": "Seleccione una ruta personalizada de subida. Si no se especifica, una carpeta por omisi\u00f3n ser\u00e1 usada. Si usa una ruta personalizada, tambi\u00e9n ser\u00e1 necesario agregarla en el \u00e1rea de configuraci\u00f3n de la biblioteca.",
+    "LabelCameraUploadPathHelp": "Seleccione una ruta personalizada de subida. Esto tendr\u00e1 prioridad sobre cualquier configuraci\u00f3n predeterminada en la secci\u00f3n de \"Cargar desde Camara\". Si se deja en blanco, se utilizara una carpeta predeterminada. Si se usa una ruta personalizada necesita se agregada tambi\u00e9n en las configuraciones  de biblioteca.",
     "LabelCreateCameraUploadSubfolder": "Crear una subcarpeta para cada dispositivo",
     "LabelCreateCameraUploadSubfolderHelp": "Se pueden especificar carpetas espec\u00edficas para un dispositivo haciendo clic en \u00e9l desde la p\u00e1gina de Dispositivos.",
     "LabelCustomDeviceDisplayName": "Nombre a mostrar:",
@@ -1940,7 +1940,7 @@
     "EnableNextVideoInfoOverlayHelp": "Al finalizar un video, mostrar informaci\u00f3n sobre el siguiente video a reproducir en la lista de reproducci\u00f3n.",
     "ServerRestartNeededAfterPluginInstall": "El Servidor Emby necesitara reiniciarse despu\u00e9s de instalar un complemento.",
     "PluginInstalledMessage": "El complemento ha sido instalado exitosamente. El Servidor Emby necesitara reiniciarse para que los cambios surtan efecto.",
-    "Themes": "Themes",
-    "LabelTheme": "Theme:",
-    "LabelDashboardTheme": "Server dashboard theme:"
+    "Themes": "Temas",
+    "LabelTheme": "Tema:",
+    "LabelDashboardTheme": "Tema del panel de control del servidor:"
 }

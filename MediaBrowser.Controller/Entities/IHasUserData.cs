@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -8,7 +9,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Interface IHasUserData
     /// </summary>
-    public interface IHasUserData : IHasId
+    public interface IHasUserData
     {
         List<string> GetUserDataKeys();
 
@@ -20,5 +21,7 @@ namespace MediaBrowser.Controller.Entities
         bool EnableRememberingTrackSelections { get; }
 
         bool SupportsPlayedStatus { get; }
+
+        Guid Id { get; }
     }
 }
