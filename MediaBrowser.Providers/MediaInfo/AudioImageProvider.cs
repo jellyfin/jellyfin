@@ -41,9 +41,7 @@ namespace MediaBrowser.Providers.MediaInfo
             var audio = (Audio)item;
 
             var imageStreams =
-                audio.GetMediaSources(false)
-                    .Take(1)
-                    .SelectMany(i => i.MediaStreams)
+                audio.GetMediaStreams(MediaStreamType.EmbeddedImage)
                     .Where(i => i.Type == MediaStreamType.EmbeddedImage)
                     .ToList();
 

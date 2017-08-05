@@ -10,7 +10,7 @@ using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public interface IHasImages : IHasProviderIds, IHasId
+    public interface IHasImages : IHasProviderIds, IHasUserData
     {
         /// <summary>
         /// Gets the name.

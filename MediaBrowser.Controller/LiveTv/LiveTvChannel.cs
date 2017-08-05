@@ -122,7 +122,7 @@ namespace MediaBrowser.Controller.LiveTv
             return new List<BaseItem>();
         }
 
-        public IEnumerable<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
+        public List<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
         {
             var list = new List<MediaSourceInfo>();
 
@@ -142,6 +142,11 @@ namespace MediaBrowser.Controller.LiveTv
             list.Add(info);
 
             return list;
+        }
+
+        public List<MediaStream> GetMediaStreams()
+        {
+            return new List<MediaStream>();
         }
 
         protected override string GetInternalMetadataPath(string basePath)

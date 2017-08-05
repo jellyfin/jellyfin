@@ -359,11 +359,11 @@ namespace Emby.Server.Implementations.Dto
                 {
                     if (user == null)
                     {
-                        dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(hasMediaSources, true).ToList();
+                        dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(hasMediaSources, true);
                     }
                     else
                     {
-                        dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(hasMediaSources, true, user).ToList();
+                        dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(hasMediaSources, true, user);
                     }
                 }
             }

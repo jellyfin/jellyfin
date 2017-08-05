@@ -89,7 +89,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>IEnumerable{MediaStream}.</returns>
-        IEnumerable<MediaStream> GetMediaStreams(MediaStreamQuery query);
+        List<MediaStream> GetMediaStreams(MediaStreamQuery query);
 
         /// <summary>
         /// Saves the media streams.

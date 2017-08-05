@@ -99,7 +99,6 @@
     <Compile Include="Entities\GameSystem.cs" />
     <Compile Include="Entities\IHasAspectRatio.cs" />
     <Compile Include="Entities\IHasDisplayOrder.cs" />
-    <Compile Include="Entities\IHasId.cs" />
     <Compile Include="Entities\IHasImages.cs" />
     <Compile Include="Entities\IHasMediaSources.cs" />
     <Compile Include="Entities\IHasProgramAttributes.cs" />
