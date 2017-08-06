@@ -302,13 +302,6 @@ namespace MediaBrowser.Providers.Manager
                 updateType |= ItemUpdateType.MetadataImport;
             }
 
-            var inheritedTags = item.GetInheritedTags();
-            if (!inheritedTags.SequenceEqual(item.InheritedTags, StringComparer.Ordinal))
-            {
-                item.InheritedTags = inheritedTags;
-                updateType |= ItemUpdateType.MetadataImport;
-            }
-
             return updateType;
         }
 

@@ -316,10 +316,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                case "type":
-                    item.DisplayMediaType = reader.ReadElementContentAsString();
-                    break;
-
                 case "title":
                 case "localtitle":
                     item.Name = reader.ReadElementContentAsString();
@@ -925,17 +921,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         case "name":
                             name = reader.ReadElementContentAsString() ?? string.Empty;
                             break;
-
-                        case "type":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    type = val;
-                                }
-                                break;
-                            }
 
                         case "role":
                             {

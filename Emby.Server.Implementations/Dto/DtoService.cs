@@ -517,7 +517,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            if (!(item is LiveTvProgram) || fields.Contains(ItemFields.PlayAccess))
+            if (/*!(item is LiveTvProgram) ||*/ fields.Contains(ItemFields.PlayAccess))
             {
                 dto.PlayAccess = item.GetPlayAccess(user);
             }
@@ -862,11 +862,6 @@ namespace Emby.Server.Implementations.Dto
             if (fields.Contains(ItemFields.DateCreated))
             {
                 dto.DateCreated = item.DateCreated;
-            }
-
-            if (fields.Contains(ItemFields.DisplayMediaType))
-            {
-                dto.DisplayMediaType = item.DisplayMediaType;
             }
 
             if (fields.Contains(ItemFields.Settings))

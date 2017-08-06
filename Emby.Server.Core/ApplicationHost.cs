@@ -410,7 +410,7 @@ namespace Emby.Server.Core
                 {
                     Logger.ErrorException("Error in {0}", ex, name);
                 }
-                Logger.Info("Entry point completed: {0}. Duration: {1} seconds", name, (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture));
+                Logger.Info("Entry point completed: {0}. Duration: {1} seconds", name, (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture), "ImageInfos");
             }
             Logger.Info("All entry points have started");
 
@@ -431,41 +431,41 @@ namespace Emby.Server.Core
 
             var result = new JsonSerializer(FileSystemManager, LogManager.GetLogger("JsonSerializer"));
 
-            ServiceStack.Text.JsConfig<LiveTvProgram>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<LiveTvChannel>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<LiveTvVideoRecording>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<LiveTvAudioRecording>.ExcludePropertyNames = new[] { "Artists", "AlbumArtists", "ChannelMediaSources", "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Series>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Audio>.ExcludePropertyNames = new[] { "Artists", "AlbumArtists", "ChannelMediaSources", "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<MusicAlbum>.ExcludePropertyNames = new[] { "Artists", "AlbumArtists", "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<MusicArtist>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<MusicGenre>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<MusicVideo>.ExcludePropertyNames = new[] { "Artists", "AlbumArtists", "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Playlist>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<AudioPodcast>.ExcludePropertyNames = new[] { "Artists", "AlbumArtists", "ChannelMediaSources", "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<AudioBook>.ExcludePropertyNames = new[] { "Artists", "AlbumArtists", "ChannelMediaSources", "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Trailer>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<BoxSet>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Episode>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Season>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Book>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<CollectionFolder>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Folder>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Game>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<GameGenre>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<GameSystem>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Genre>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Person>.ExcludePropertyNames = new[] { "PlaceOfBirth", "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Photo>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<PhotoAlbum>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Studio>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<UserRootFolder>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<UserView>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Video>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Year>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<Channel>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
-            ServiceStack.Text.JsConfig<AggregateFolder>.ExcludePropertyNames = new[] { "ProviderIds", "ImageInfos", "ProductionLocations", "ThemeSongIds", "ThemeVideoIds", "TotalBitrate", "Taglines", "ExtraType" };
+            ServiceStack.Text.JsConfig<LiveTvProgram>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<LiveTvChannel>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<LiveTvVideoRecording>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<LiveTvAudioRecording>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Series>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Audio>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<MusicAlbum>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<MusicArtist>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<MusicGenre>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<MusicVideo>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Playlist>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<AudioPodcast>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<AudioBook>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Trailer>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<BoxSet>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Episode>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Season>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Book>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<CollectionFolder>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Folder>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Game>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<GameGenre>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<GameSystem>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Genre>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Person>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Photo>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<PhotoAlbum>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Studio>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<UserRootFolder>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<UserView>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Video>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Year>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Channel>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<AggregateFolder>.ExcludePropertyNames = new[] { "ProviderIds" };
 
             return result;
         }
