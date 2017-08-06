@@ -122,15 +122,9 @@ namespace Emby.Server.Implementations.MediaEncoder
                             continue;
                         }
 
-                        List<string> playableStreamFileNames = null;
                         if (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd)
                         {
                             continue;
-                        }
-
-                        if (playableStreamFileNames == null)
-                        {
-                            playableStreamFileNames = new List<string>();
                         }
 
                         try
@@ -140,7 +134,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
                             var protocol = MediaProtocol.File;
 
-                            var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, protocol, null, playableStreamFileNames);
+                            var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, protocol, null, new List<string>());
 
                             _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 

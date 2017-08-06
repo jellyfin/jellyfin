@@ -198,7 +198,6 @@ namespace MediaBrowser.Api
                 Type = item.GetClientTypeName(),
                 MediaType = item.MediaType,
                 MatchedTerm = hintInfo.MatchedTerm,
-                DisplayMediaType = item.DisplayMediaType,
                 RunTimeTicks = item.RunTimeTicks,
                 ProductionYear = item.ProductionYear,
                 ChannelId = item.ChannelId,

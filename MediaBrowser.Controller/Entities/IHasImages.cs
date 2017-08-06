@@ -98,12 +98,6 @@ namespace MediaBrowser.Controller.Entities
         Task SwapImages(ImageType type, int index1, int index2);
 
         /// <summary>
-        /// Gets the display type of the media.
-        /// </summary>
-        /// <value>The display type of the media.</value>
-        string DisplayMediaType { get; set; }
-
-        /// <summary>
         /// Gets or sets the primary image path.
         /// </summary>
         /// <value>The primary image path.</value>
@@ -208,6 +202,8 @@ namespace MediaBrowser.Controller.Entities
         double? GetDefaultPrimaryImageAspectRatio();
 
         int? ProductionYear { get; set; }
+
+        List<string> Tags { get; set; }
     }
 
     public static class HasImagesExtensions

@@ -2350,6 +2350,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var addCurrentProgram = options.AddCurrentProgram;
             var addMediaSources = options.Fields.Contains(ItemFields.MediaSources);
+            var addServiceName = options.Fields.Contains(ItemFields.ServiceName);
 
             foreach (var tuple in tuples)
             {
@@ -2359,7 +2360,11 @@ namespace Emby.Server.Implementations.LiveTv
                 dto.Number = channel.Number;
                 dto.ChannelNumber = channel.Number;
                 dto.ChannelType = channel.ChannelType;
-                dto.ServiceName = channel.ServiceName;
+
+                if (addServiceName)
+                {
+                    dto.ServiceName = channel.ServiceName;
+                }
 
                 currentChannelsDict[dto.Id] = dto;
 

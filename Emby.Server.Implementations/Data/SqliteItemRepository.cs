@@ -228,7 +228,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "TopParentId", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "CriticRating", "Float", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "InheritedTags", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "CleanName", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "PresentationUniqueKey", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "OriginalTitle", "Text", existingColumnNames);
@@ -442,7 +441,6 @@ namespace Emby.Server.Implementations.Data
             "SeriesId",
             "PresentationUniqueKey",
             "InheritedParentalRatingValue",
-            "InheritedTags",
             "ExternalSeriesId",
             "Tagline",
             "ProviderIds",
@@ -552,7 +550,6 @@ namespace Emby.Server.Implementations.Data
                 "TopParentId",
                 "TrailerTypes",
                 "CriticRating",
-                "InheritedTags",
                 "CleanName",
                 "PresentationUniqueKey",
                 "OriginalTitle",
@@ -633,7 +630,7 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            var tuples = new List<Tuple<BaseItem, List<Guid>, BaseItem, string>>();
+            var tuples = new List<Tuple<BaseItem, List<Guid>, BaseItem, string, List<string>>>();
             foreach (var item in items)
             {
                 var ancestorIds = item.SupportsAncestors ?
@@ -643,8 +640,9 @@ namespace Emby.Server.Implementations.Data
                 var topParent = item.GetTopParent();
 
                 var userdataKey = item.GetUserDataKeys().FirstOrDefault();
+                var inheritedTags = item.GetInheritedTags();
 
-                tuples.Add(new Tuple<BaseItem, List<Guid>, BaseItem, string>(item, ancestorIds, topParent, userdataKey));
+                tuples.Add(new Tuple<BaseItem, List<Guid>, BaseItem, string, List<string>>(item, ancestorIds, topParent, userdataKey, inheritedTags));
             }
 
             using (WriteLock.Write())
@@ -654,12 +652,13 @@ namespace Emby.Server.Implementations.Data
                     connection.RunInTransaction(db =>
                     {
                         SaveItemsInTranscation(db, tuples);
+
                     }, TransactionMode);
                 }
             }
         }
 
-        private void SaveItemsInTranscation(IDatabaseConnection db, List<Tuple<BaseItem, List<Guid>, BaseItem, string>> tuples)
+        private void SaveItemsInTranscation(IDatabaseConnection db, List<Tuple<BaseItem, List<Guid>, BaseItem, string, List<string>>> tuples)
         {
             var requiresReset = false;
 
@@ -690,12 +689,14 @@ namespace Emby.Server.Implementations.Data
                             SaveItem(item, topParent, userDataKey, saveItemStatement);
                             //Logger.Debug(_saveItemCommand.CommandText);
 
+                            var inheritedTags = tuple.Item5;
+
                             if (item.SupportsAncestors)
                             {
                                 UpdateAncestors(item.Id, tuple.Item2, db, deleteAncestorsStatement, updateAncestorsStatement);
                             }
 
-                            UpdateItemValues(item.Id, GetItemValuesToSave(item), db);
+                            UpdateItemValues(item.Id, GetItemValuesToSave(item, inheritedTags), db);
 
                             requiresReset = true;
                         }
@@ -806,7 +807,7 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@RunTimeTicks", item.RunTimeTicks);
 
             saveItemStatement.TryBind("@HomePageUrl", item.HomePageUrl);
-            saveItemStatement.TryBind("@DisplayMediaType", item.DisplayMediaType);
+            saveItemStatement.TryBindNull("@DisplayMediaType");
             saveItemStatement.TryBind("@DateCreated", item.DateCreated);
             saveItemStatement.TryBind("@DateModified", item.DateModified);
 
@@ -899,16 +900,6 @@ namespace Emby.Server.Implementations.Data
             }
 
             saveItemStatement.TryBind("@CriticRating", item.CriticRating);
-
-            var inheritedTags = item.InheritedTags;
-            if (inheritedTags.Count > 0)
-            {
-                saveItemStatement.TryBind("@InheritedTags", string.Join("|", inheritedTags.ToArray()));
-            }
-            else
-            {
-                saveItemStatement.TryBindNull("@InheritedTags");
-            }
 
             if (string.IsNullOrWhiteSpace(item.Name))
             {
@@ -1579,11 +1570,15 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
+            var video = item as Video;
             if (HasField(query, ItemFields.DisplayMediaType))
             {
-                if (!reader.IsDBNull(index))
+                if (video != null)
                 {
-                    item.DisplayMediaType = reader.GetString(index);
+                    if (!reader.IsDBNull(index))
+                    {
+                        video.DisplayMediaType = reader.GetString(index);
+                    }
                 }
                 index++;
             }
@@ -1739,7 +1734,6 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            var video = item as Video;
             if (video != null)
             {
                 if (!reader.IsDBNull(index))
@@ -1838,15 +1832,6 @@ namespace Emby.Server.Implementations.Data
                 if (!reader.IsDBNull(index))
                 {
                     item.InheritedParentalRatingValue = reader.GetInt32(index);
-                }
-                index++;
-            }
-
-            if (HasField(query, ItemFields.Tags))
-            {
-                if (!reader.IsDBNull(index))
-                {
-                    item.InheritedTags = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
                 }
                 index++;
             }
@@ -2245,7 +2230,7 @@ namespace Emby.Server.Implementations.Data
             }
             if (field == ItemFields.Tags)
             {
-                return new[] { "Tags", "InheritedTags" };
+                return new[] { "Tags" };
             }
 
             return new[] { field.ToString() };
@@ -2258,8 +2243,8 @@ namespace Emby.Server.Implementations.Data
             switch (name)
             {
                 case ItemFields.HomePageUrl:
-                case ItemFields.DisplayMediaType:
                 case ItemFields.CustomRating:
+                case ItemFields.DisplayMediaType:
                 case ItemFields.ProductionLocations:
                 case ItemFields.Settings:
                 case ItemFields.OriginalTitle:
@@ -4555,26 +4540,12 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add(string.Format("(InheritedParentalRatingValue > 0 or UnratedType not in ({0}))", inClause));
             }
 
-            var excludeTagIndex = 0;
-            foreach (var excludeTag in query.ExcludeTags)
+            if (query.ExcludeInheritedTags.Length > 0)
             {
-                whereClauses.Add("(Tags is null OR Tags not like @excludeTag" + excludeTagIndex + ")");
-                if (statement != null)
-                {
-                    statement.TryBind("@excludeTag" + excludeTagIndex, "%" + excludeTag + "%");
-                }
-                excludeTagIndex++;
-            }
+                var tagValues = query.ExcludeInheritedTags.Select(i => "'" + GetCleanValue(i) + "'").ToArray();
+                var tagValuesList = string.Join(",", tagValues);
 
-            excludeTagIndex = 0;
-            foreach (var excludeTag in query.ExcludeInheritedTags)
-            {
-                whereClauses.Add("(InheritedTags is null OR InheritedTags not like @excludeInheritedTag" + excludeTagIndex + ")");
-                if (statement != null)
-                {
-                    statement.TryBind("@excludeInheritedTag" + excludeTagIndex, "%" + excludeTag + "%");
-                }
-                excludeTagIndex++;
+                whereClauses.Add("((select CleanValue from itemvalues where ItemId=Guid and Type=6 and cleanvalue in (" + tagValuesList + ")) is null)");
             }
 
             return whereClauses;
@@ -4724,7 +4695,7 @@ namespace Emby.Server.Implementations.Data
         {
             var newValues = new List<Tuple<Guid, string>>();
 
-            var commandText = "select Guid,InheritedTags,(select group_concat(Tags, '|') from TypedBaseItems where (guid=outer.guid) OR (guid in (Select AncestorId from AncestorIds where ItemId=Outer.guid))) as NewInheritedTags from typedbaseitems as Outer where NewInheritedTags <> InheritedTags";
+            var commandText = "select Guid,(select group_concat(Tags, '|') from TypedBaseItems where (guid=outer.guid) OR (guid in (Select AncestorId from AncestorIds where ItemId=Outer.guid))) as NewInheritedTags from typedbaseitems as Outer";
 
             using (WriteLock.Write())
             {
@@ -5445,7 +5416,7 @@ namespace Emby.Server.Implementations.Data
             return counts;
         }
 
-        private List<Tuple<int, string>> GetItemValuesToSave(BaseItem item)
+        private List<Tuple<int, string>> GetItemValuesToSave(BaseItem item, List<string> inheritedTags)
         {
             var list = new List<Tuple<int, string>>();
 
@@ -5464,6 +5435,10 @@ namespace Emby.Server.Implementations.Data
             list.AddRange(item.Genres.Select(i => new Tuple<int, string>(2, i)));
             list.AddRange(item.Studios.Select(i => new Tuple<int, string>(3, i)));
             list.AddRange(item.Tags.Select(i => new Tuple<int, string>(4, i)));
+
+            // keywords was 5
+
+            list.AddRange(inheritedTags.Select(i => new Tuple<int, string>(6, i)));
 
             return list;
         }

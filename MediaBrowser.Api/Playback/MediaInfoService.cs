@@ -438,7 +438,7 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsDirectStream)
             {
-                options.MaxBitrate = GetMaxBitrate(maxBitrate);
+                options.MaxBitrate = GetMaxBitrate(maxBitrate, user);
 
                 if (item is Audio)
                 {
@@ -473,7 +473,7 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsTranscoding)
             {
-                options.MaxBitrate = GetMaxBitrate(maxBitrate);
+                options.MaxBitrate = GetMaxBitrate(maxBitrate, user);
 
                 // The MediaSource supports direct stream, now test to see if the client supports it
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
@@ -507,10 +507,15 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        private long? GetMaxBitrate(long? clientMaxBitrate)
+        private long? GetMaxBitrate(long? clientMaxBitrate, User user)
         {
             var maxBitrate = clientMaxBitrate;
-            var remoteClientMaxBitrate = _config.Configuration.RemoteClientBitrateLimit;
+            var remoteClientMaxBitrate = user == null ? 0 : user.Policy.RemoteClientBitrateLimit;
+
+            if (remoteClientMaxBitrate <= 0)
+            {
+                remoteClientMaxBitrate = _config.Configuration.RemoteClientBitrateLimit;
+            }
 
             if (remoteClientMaxBitrate > 0)
             {
