@@ -204,12 +204,17 @@ namespace MediaBrowser.Providers.Manager
 
             //if (!lockedFields.Contains(MetadataFields.DisplayMediaType))
             {
-                if (replaceData || string.IsNullOrEmpty(target.DisplayMediaType))
+                var targetVideo = target as Video;
+                var sourceVideo = source as Video;
+                if (sourceVideo != null && targetVideo != null)
                 {
-                    // Safeguard against incoming data having an emtpy name
-                    if (!string.IsNullOrWhiteSpace(source.DisplayMediaType))
+                    if (replaceData || string.IsNullOrEmpty(targetVideo.DisplayMediaType))
                     {
-                        target.DisplayMediaType = source.DisplayMediaType;
+                        // Safeguard against incoming data having an emtpy name
+                        if (!string.IsNullOrWhiteSpace(sourceVideo.DisplayMediaType))
+                        {
+                            targetVideo.DisplayMediaType = sourceVideo.DisplayMediaType;
+                        }
                     }
                 }
             }

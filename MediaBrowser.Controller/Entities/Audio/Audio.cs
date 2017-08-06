@@ -28,8 +28,10 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Gets or sets the artist.
         /// </summary>
         /// <value>The artist.</value>
+        [IgnoreDataMember]
         public List<string> Artists { get; set; }
 
+        [IgnoreDataMember]
         public List<string> AlbumArtists { get; set; }
 
         [IgnoreDataMember]

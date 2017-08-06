@@ -35,7 +35,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "plot",
                     "customrating",
                     "lockdata",
-                    "type",
                     "dateadded",
                     "title",
                     "rating",
@@ -489,11 +488,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (item.LockedFields.Count > 0)
             {
                 writer.WriteElementString("lockedfields", string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray()));
-            }
-
-            if (!string.IsNullOrEmpty(item.DisplayMediaType))
-            {
-                writer.WriteElementString("type", item.DisplayMediaType);
             }
 
             writer.WriteElementString("dateadded", item.DateCreated.ToLocalTime().ToString(DateAddedFormat));

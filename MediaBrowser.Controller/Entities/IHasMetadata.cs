@@ -64,7 +64,6 @@ namespace MediaBrowser.Controller.Entities
         int? GetInheritedParentalRatingValue();
         int InheritedParentalRatingValue { get; set; }
         List<string> GetInheritedTags();
-        List<string> InheritedTags { get; set; }
         long? RunTimeTicks { get; set; }
     }
 }
