@@ -45,7 +45,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // No support for this
-            if (video.VideoType == VideoType.Iso)
+            if (video.VideoType == VideoType.Iso || video.VideoType == VideoType.Dvd || video.VideoType == VideoType.BluRay)
             {
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }

@@ -130,14 +130,6 @@ namespace Emby.Server.Implementations.IO
                 paths = _affectedPaths.ToList();
             }
 
-            // Extend the timer as long as any of the paths are still being written to.
-            if (paths.Any(IsFileLocked))
-            {
-                Logger.Info("Timer extended.");
-                RestartTimer();
-                return;
-            }
-
             Logger.Debug("Timer stopped.");
 
             DisposeTimer();
@@ -227,90 +219,6 @@ namespace Emby.Server.Implementations.IO
             }
 
             return item;
-        }
-
-        private bool IsFileLocked(string path)
-        {
-            if (_environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
-            {
-                // Causing lockups on linux
-                return false;
-            }
-
-            // Only try to open video files
-            if (!_libraryManager.IsVideoFile(path))
-            {
-                return false;
-            }
-
-            try
-            {
-                var data = _fileSystem.GetFileSystemInfo(path);
-
-                if (!data.Exists
-                    || data.IsDirectory
-
-                    // Opening a writable stream will fail with readonly files
-                    || data.IsReadOnly)
-                {
-                    return false;
-                }
-            }
-            catch (IOException)
-            {
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error getting file system info for: {0}", ex, path);
-                return false;
-            }
-
-            // In order to determine if the file is being written to, we have to request write access
-            // But if the server only has readonly access, this is going to cause this entire algorithm to fail
-            // So we'll take a best guess about our access level
-            //var requestedFileAccess = ConfigurationManager.Configuration.SaveLocalMeta
-            //    ? FileAccessMode.ReadWrite
-            //    : FileAccessMode.Read;
-
-            var requestedFileAccess = FileAccessMode.Read;
-            try
-            {
-                using (_fileSystem.GetFileStream(path, FileOpenMode.Open, requestedFileAccess, FileShareMode.ReadWrite))
-                {
-                    //file is not locked
-                    return false;
-                }
-            }
-            catch (DirectoryNotFoundException)
-            {
-                // File may have been deleted
-                return false;
-            }
-            catch (FileNotFoundException)
-            {
-                // File may have been deleted
-                return false;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                Logger.Debug("No write permission for: {0}.", path);
-                return false;
-            }
-            catch (IOException)
-            {
-                //the file is unavailable because it is:
-                //still being written to
-                //or being processed by another thread
-                //or does not exist (has already been processed)
-                Logger.Debug("{0} is locked.", path);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error determining if file is locked: {0}", ex, path);
-                return false;
-            }
         }
 
         private void DisposeTimer()
