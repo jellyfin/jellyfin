@@ -86,6 +86,12 @@
                     </div>
                     <div class="fieldDescription">${OptionAllowMediaPlaybackTranscodingHelp}</div>
                 </div>
+                <br />
+                <br />
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtRemoteClientBitrateLimit" pattern="[0-9]*" min="0" step=".25" label="${LabelRemoteClientBitrateLimit}" />
+                    <div class="fieldDescription">${LabelRemoteClientBitrateLimitHelp}</div>
+                </div>
                 <div>
                     <br />
                     <h3 class="checkboxListLabel">${HeaderRemoteControl}</h3>
@@ -130,13 +136,6 @@
                         <span>${OptionDisableUser}</span>
                     </label>
                     <div class="fieldDescription checkboxFieldDescription">${OptionDisableUserHelp}</div>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkDisableUserPreferences" />
-                        <span>${OptionDisableUserPreferences}</span>
-                    </label>
-                    <div class="fieldDescription checkboxFieldDescription">${OptionDisableUserPreferencesHelp}</div>
                 </div>
                 <div class="checkboxContainer checkboxContainer-withDescription" id="fldIsHidden">
                     <label>
