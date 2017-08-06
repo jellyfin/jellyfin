@@ -106,7 +106,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                     "Trailers",
                     "TVcomId",
                     "TvDbId",
-                    "Type",
                     "TVRageId",
                     "Website",
                     "Zap2ItId",
@@ -306,11 +305,6 @@ namespace MediaBrowser.LocalMetadata.Savers
             if (item.LockedFields.Count > 0)
             {
                 writer.WriteElementString("LockedFields", string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray()));
-            }
-
-            if (!string.IsNullOrEmpty(item.DisplayMediaType))
-            {
-                writer.WriteElementString("Type", item.DisplayMediaType);
             }
 
             if (item.CriticRating.HasValue)

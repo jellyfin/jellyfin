@@ -8,7 +8,6 @@ namespace MediaBrowser.Controller.Collections
         public ManualCollectionsFolder()
         {
             Name = "Collections";
-            DisplayMediaType = "CollectionFolder";
         }
 
         public override bool IsHidden

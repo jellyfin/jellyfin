@@ -8,6 +8,7 @@ namespace MediaBrowser.Controller.Entities
 {
     public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasLookupInfo<MusicVideoInfo>
     {
+        [IgnoreDataMember]
         public List<string> Artists { get; set; }
 
         public MusicVideo()

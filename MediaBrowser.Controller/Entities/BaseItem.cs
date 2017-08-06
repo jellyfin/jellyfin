@@ -51,7 +51,6 @@ namespace MediaBrowser.Controller.Entities
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             LockedFields = new List<MetadataFields>();
             ImageInfos = new List<ItemImageInfo>();
-            InheritedTags = new List<string>();
             ProductionLocations = new List<string>();
         }
 
@@ -73,7 +72,9 @@ namespace MediaBrowser.Controller.Entities
         public static string ThemeSongFilename = "theme";
         public static string ThemeVideosFolderName = "backdrops";
 
+        [IgnoreDataMember]
         public List<Guid> ThemeSongIds { get; set; }
+        [IgnoreDataMember]
         public List<Guid> ThemeVideoIds { get; set; }
 
         [IgnoreDataMember]
@@ -87,6 +88,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public string Tagline { get; set; }
 
+        [IgnoreDataMember]
         public List<ItemImageInfo> ImageInfos { get; set; }
 
         [IgnoreDataMember]
@@ -197,7 +199,9 @@ namespace MediaBrowser.Controller.Entities
             get { return PremiereDate.HasValue && PremiereDate.Value.ToLocalTime().Date >= DateTime.Now.Date; }
         }
 
+        [IgnoreDataMember]
         public int? TotalBitrate { get; set; }
+        [IgnoreDataMember]
         public ExtraType? ExtraType { get; set; }
 
         [IgnoreDataMember]
@@ -803,13 +807,6 @@ namespace MediaBrowser.Controller.Entities
         public DateTime? EndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the display type of the media.
-        /// </summary>
-        /// <value>The display type of the media.</value>
-        [IgnoreDataMember]
-        public string DisplayMediaType { get; set; }
-
-        /// <summary>
         /// Gets or sets the official rating.
         /// </summary>
         /// <value>The official rating.</value>
@@ -818,9 +815,6 @@ namespace MediaBrowser.Controller.Entities
 
         [IgnoreDataMember]
         public int InheritedParentalRatingValue { get; set; }
-
-        [IgnoreDataMember]
-        public List<string> InheritedTags { get; set; }
 
         /// <summary>
         /// Gets or sets the critic rating.
@@ -864,6 +858,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public List<string> Tags { get; set; }
 
+        [IgnoreDataMember]
         public List<string> ProductionLocations { get; set; }
 
         /// <summary>
