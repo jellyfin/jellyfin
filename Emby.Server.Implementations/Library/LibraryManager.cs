@@ -2856,7 +2856,7 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.UpdatePeople(item.Id, people);
         }
 
-        public async Task<ItemImageInfo> ConvertImageToLocal(IHasImages item, ItemImageInfo image, int imageIndex)
+        public async Task<ItemImageInfo> ConvertImageToLocal(IHasMetadata item, ItemImageInfo image, int imageIndex)
         {
             foreach (var url in image.Path.Split('|'))
             {

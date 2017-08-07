@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public interface ILiveTvRecording : IHasImages, IHasMediaSources, IHasUserData, IHasStartDate, IHasProgramAttributes
+    public interface ILiveTvRecording : IHasMetadata, IHasMediaSources, IHasUserData, IHasStartDate, IHasProgramAttributes
     {
         string ServiceName { get; set; }
         string ExternalId { get; set; }

@@ -18,12 +18,12 @@ namespace Emby.Server.Implementations.Channels
             _channelManager = channelManager;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             return GetChannel(item).GetSupportedChannelImages();
         }
 
-        public Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken)
+        public Task<DynamicImageResponse> GetImage(IHasMetadata item, ImageType type, CancellationToken cancellationToken)
         {
             var channel = GetChannel(item);
 
@@ -35,12 +35,12 @@ namespace Emby.Server.Implementations.Channels
             get { return "Channel Image Provider"; }
         }
 
-        public bool Supports(IHasImages item)
+        public bool Supports(IHasMetadata item)
         {
             return item is Channel;
         }
 
-        private IChannel GetChannel(IHasImages item)
+        private IChannel GetChannel(IHasMetadata item)
         {
             var channel = (Channel)item;
 

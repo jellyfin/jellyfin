@@ -186,7 +186,7 @@ namespace Emby.Drawing
             }
 
             var originalImage = options.Image;
-            IHasImages item = options.Item;
+            IHasMetadata item = options.Item;
 
             if (!originalImage.IsLocalFile)
             {
@@ -606,7 +606,7 @@ namespace Emby.Drawing
         /// <param name="image">The image.</param>
         /// <returns>Guid.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public string GetImageCacheTag(IHasImages item, ItemImageInfo image)
+        public string GetImageCacheTag(IHasMetadata item, ItemImageInfo image)
         {
             if (item == null)
             {
@@ -631,7 +631,7 @@ namespace Emby.Drawing
         /// <param name="imageEnhancers">The image enhancers.</param>
         /// <returns>Guid.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public string GetImageCacheTag(IHasImages item, ItemImageInfo image, List<IImageEnhancer> imageEnhancers)
+        public string GetImageCacheTag(IHasMetadata item, ItemImageInfo image, List<IImageEnhancer> imageEnhancers)
         {
             if (item == null)
             {
@@ -672,7 +672,7 @@ namespace Emby.Drawing
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>Task{System.String}.</returns>
-        public async Task<string> GetEnhancedImage(IHasImages item, ImageType imageType, int imageIndex)
+        public async Task<string> GetEnhancedImage(IHasMetadata item, ImageType imageType, int imageIndex)
         {
             var enhancers = GetSupportedEnhancers(item, imageType).ToList();
 
@@ -684,7 +684,7 @@ namespace Emby.Drawing
         }
 
         private async Task<Tuple<string, DateTime>> GetEnhancedImage(ItemImageInfo image,
-            IHasImages item,
+            IHasMetadata item,
             int imageIndex,
             List<IImageEnhancer> enhancers)
         {
@@ -729,7 +729,7 @@ namespace Emby.Drawing
         /// item
         /// </exception>
         private async Task<string> GetEnhancedImageInternal(string originalImagePath,
-            IHasImages item,
+            IHasMetadata item,
             ImageType imageType,
             int imageIndex,
             IEnumerable<IImageEnhancer> supportedEnhancers,
@@ -783,7 +783,7 @@ namespace Emby.Drawing
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>Task{EnhancedImage}.</returns>
-        private async Task ExecuteImageEnhancers(IEnumerable<IImageEnhancer> imageEnhancers, string inputPath, string outputPath, IHasImages item, ImageType imageType, int imageIndex)
+        private async Task ExecuteImageEnhancers(IEnumerable<IImageEnhancer> imageEnhancers, string inputPath, string outputPath, IHasMetadata item, ImageType imageType, int imageIndex)
         {
             // Run the enhancers sequentially in order of priority
             foreach (var enhancer in imageEnhancers)
@@ -868,7 +868,7 @@ namespace Emby.Drawing
             _logger.Info("Completed creation of image collage and saved to {0}", options.OutputPath);
         }
 
-        public IEnumerable<IImageEnhancer> GetSupportedEnhancers(IHasImages item, ImageType imageType)
+        public IEnumerable<IImageEnhancer> GetSupportedEnhancers(IHasMetadata item, ImageType imageType)
         {
             return ImageEnhancers.Where(i =>
             {

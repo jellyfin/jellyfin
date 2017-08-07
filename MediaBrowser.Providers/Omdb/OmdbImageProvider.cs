@@ -32,7 +32,7 @@ namespace MediaBrowser.Providers.Omdb
             _configurationManager = configurationManager;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             return new List<ImageType>
             {
@@ -40,7 +40,7 @@ namespace MediaBrowser.Providers.Omdb
             };
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, CancellationToken cancellationToken)
         {
             var imdbId = item.GetProviderId(MetadataProviders.Imdb);
 
@@ -91,7 +91,7 @@ namespace MediaBrowser.Providers.Omdb
             get { return "The Open Movie Database"; }
         }
 
-        public bool Supports(IHasImages item)
+        public bool Supports(IHasMetadata item)
         {
             return item is Movie || item is Trailer || item is Episode;
         }

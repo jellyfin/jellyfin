@@ -31,7 +31,7 @@ namespace Emby.Server.Implementations.UserViews
             _libraryManager = libraryManager;
         }
 
-        public override IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public override IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             var view = (UserView)item;
             if (IsUsingCollectionStrip(view))
@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.UserViews
             };
         }
 
-        protected override List<BaseItem> GetItemsWithImages(IHasImages item)
+        protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
         {
             var view = (UserView)item;
 
@@ -139,7 +139,7 @@ namespace Emby.Server.Implementations.UserViews
             return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary)).ToList());
         }
 
-        protected override bool Supports(IHasImages item)
+        protected override bool Supports(IHasMetadata item)
         {
             var view = item as UserView;
             if (view != null)
@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations.UserViews
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
         }
 
-        protected override string CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override string CreateImage(IHasMetadata item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             if (itemsWithImages.Count == 0)
             {

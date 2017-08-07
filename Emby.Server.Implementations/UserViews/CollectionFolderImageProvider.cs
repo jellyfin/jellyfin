@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.UserViews
         {
         }
 
-        public override IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public override IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             return new List<ImageType>
                 {
@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.UserViews
                 };
         }
 
-        protected override List<BaseItem> GetItemsWithImages(IHasImages item)
+        protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
         {
             var view = (CollectionFolder)item;
 
@@ -94,12 +94,12 @@ namespace Emby.Server.Implementations.UserViews
             return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)).ToList(), 8);
         }
 
-        protected override bool Supports(IHasImages item)
+        protected override bool Supports(IHasMetadata item)
         {
             return item is CollectionFolder;
         }
 
-        protected override string CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override string CreateImage(IHasMetadata item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             var outputPath = Path.ChangeExtension(outputPathWithoutExtension, ".png");
 
@@ -126,7 +126,7 @@ namespace Emby.Server.Implementations.UserViews
             _libraryManager = libraryManager;
         }
 
-        public override IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public override IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             return new List<ImageType>
                 {
@@ -134,7 +134,7 @@ namespace Emby.Server.Implementations.UserViews
                 };
         }
 
-        protected override List<BaseItem> GetItemsWithImages(IHasImages item)
+        protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
         {
             var view = (ManualCollectionsFolder)item;
 
@@ -152,12 +152,12 @@ namespace Emby.Server.Implementations.UserViews
             return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)).ToList(), 8);
         }
 
-        protected override bool Supports(IHasImages item)
+        protected override bool Supports(IHasMetadata item)
         {
             return item is ManualCollectionsFolder;
         }
 
-        protected override string CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override string CreateImage(IHasMetadata item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             var outputPath = Path.ChangeExtension(outputPathWithoutExtension, ".png");
 
