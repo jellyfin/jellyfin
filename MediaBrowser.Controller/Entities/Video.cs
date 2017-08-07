@@ -184,8 +184,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool CanDownload()
         {
-            if (VideoType == VideoType.HdDvd || VideoType == VideoType.Dvd ||
-                VideoType == VideoType.BluRay)
+            if (VideoType == VideoType.Dvd || VideoType == VideoType.BluRay)
             {
                 return false;
             }
@@ -335,8 +334,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (!IsPlaceHolder)
                 {
-                    if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd ||
-                        VideoType == VideoType.HdDvd)
+                    if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd)
                     {
                         return Path;
                     }
@@ -353,7 +351,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (LocationType == LocationType.FileSystem)
                 {
-                    if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd || VideoType == VideoType.HdDvd)
+                    if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd)
                     {
                         return System.IO.Path.GetFileName(Path);
                     }
@@ -398,6 +396,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>List{System.String}.</returns>
         public List<string> GetPlayableStreamFiles(string rootPath)
         {
+            if (VideoType == VideoType.VideoFile)
+            {
+                return new List<string>();
+            }
+
             var allFiles = FileSystem.GetFilePaths(rootPath, true).ToList();
 
             var videoType = VideoType;
@@ -736,10 +739,6 @@ namespace MediaBrowser.Controller.Entities
             else if (video.VideoType == VideoType.Dvd)
             {
                 terms.Add("DVD");
-            }
-            else if (video.VideoType == VideoType.HdDvd)
-            {
-                terms.Add("HD-DVD");
             }
             else if (video.VideoType == VideoType.Iso)
             {
