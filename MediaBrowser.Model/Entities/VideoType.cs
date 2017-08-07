@@ -21,10 +21,6 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The blu ray
         /// </summary>
-        BluRay,
-        /// <summary>
-        /// The hd DVD
-        /// </summary>
-        HdDvd
+        BluRay
     }
 }

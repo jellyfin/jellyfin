@@ -2395,8 +2395,7 @@ namespace Emby.Server.Implementations.Library
             var resolver = new EpisodeResolver(GetNamingOptions(),
                 new NullLogger());
 
-            var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd ||
-                           episode.VideoType == VideoType.HdDvd;
+            var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd;
 
             var locationType = episode.LocationType;
 
