@@ -178,11 +178,6 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 {
                     video.VideoType = VideoType.Dvd;
                 }
-                else if (string.Equals(videoInfo.StubType, "hddvd", StringComparison.OrdinalIgnoreCase))
-                {
-                    video.VideoType = VideoType.HdDvd;
-                    video.IsHD = true;
-                }
                 else if (string.Equals(videoInfo.StubType, "bluray", StringComparison.OrdinalIgnoreCase))
                 {
                     video.VideoType = VideoType.BluRay;

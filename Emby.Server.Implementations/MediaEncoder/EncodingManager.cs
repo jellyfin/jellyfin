@@ -117,7 +117,7 @@ namespace Emby.Server.Implementations.MediaEncoder
                 {
                     if (extractImages)
                     {
-                        if (video.VideoType == VideoType.HdDvd || video.VideoType == VideoType.Iso)
+                        if (video.VideoType == VideoType.Iso)
                         {
                             continue;
                         }
