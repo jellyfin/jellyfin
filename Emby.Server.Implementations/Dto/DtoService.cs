@@ -1581,12 +1581,12 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        public void AttachPrimaryImageAspectRatio(IItemDto dto, IHasImages item)
+        public void AttachPrimaryImageAspectRatio(IItemDto dto, IHasMetadata item)
         {
             dto.PrimaryImageAspectRatio = GetPrimaryImageAspectRatio(item);
         }
 
-        public double? GetPrimaryImageAspectRatio(IHasImages item)
+        public double? GetPrimaryImageAspectRatio(IHasMetadata item)
         {
             var imageInfo = item.GetImageInfo(ImageType.Primary, 0);
 

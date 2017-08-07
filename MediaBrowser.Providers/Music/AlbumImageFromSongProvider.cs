@@ -11,12 +11,12 @@ namespace MediaBrowser.Providers.Music
 {
     public class AlbumImageFromSongProvider : IDynamicImageProvider
     {
-        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             return new List<ImageType> { ImageType.Primary };
         }
 
-        public Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken)
+        public Task<DynamicImageResponse> GetImage(IHasMetadata item, ImageType type, CancellationToken cancellationToken)
         {
             var album = (MusicAlbum)item;
 
@@ -38,7 +38,7 @@ namespace MediaBrowser.Providers.Music
             get { return "Image Extractor"; }
         }
 
-        public bool Supports(IHasImages item)
+        public bool Supports(IHasMetadata item)
         {
             return item is MusicAlbum;
         }

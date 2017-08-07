@@ -406,7 +406,7 @@ namespace Emby.Server.Implementations.LiveTv
             return dto;
         }
 
-        internal string GetImageTag(IHasImages info)
+        internal string GetImageTag(IHasMetadata info)
         {
             try
             {

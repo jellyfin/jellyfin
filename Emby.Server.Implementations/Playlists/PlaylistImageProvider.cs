@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.Playlists
         {
         }
 
-        protected override List<BaseItem> GetItemsWithImages(IHasImages item)
+        protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
         {
             var playlist = (Playlist)item;
 
@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.Playlists
             _libraryManager = libraryManager;
         }
 
-        protected override List<BaseItem> GetItemsWithImages(IHasImages item)
+        protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
         {
             var items = _libraryManager.GetItemList(new InternalItemsQuery
             {
@@ -98,7 +98,7 @@ namespace Emby.Server.Implementations.Playlists
             return GetFinalItems(items);
         }
 
-        //protected override Task<string> CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        //protected override Task<string> CreateImage(IHasMetadata item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         //{
         //    return CreateSingleImage(itemsWithImages, outputPathWithoutExtension, ImageType.Primary);
         //}
@@ -113,7 +113,7 @@ namespace Emby.Server.Implementations.Playlists
             _libraryManager = libraryManager;
         }
 
-        protected override List<BaseItem> GetItemsWithImages(IHasImages item)
+        protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
         {
             var items = _libraryManager.GetItemList(new InternalItemsQuery
             {
@@ -130,7 +130,7 @@ namespace Emby.Server.Implementations.Playlists
             return GetFinalItems(items);
         }
 
-        //protected override Task<string> CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        //protected override Task<string> CreateImage(IHasMetadata item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         //{
         //    return CreateSingleImage(itemsWithImages, outputPathWithoutExtension, ImageType.Primary);
         //}

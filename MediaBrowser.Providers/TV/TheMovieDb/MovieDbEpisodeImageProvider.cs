@@ -29,7 +29,7 @@ namespace MediaBrowser.Providers.TV
             : base(httpClient, configurationManager, jsonSerializer, fileSystem, localization, logManager)
         {}
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             return new List<ImageType>
             {
@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.TV
             };
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, CancellationToken cancellationToken)
         {
             var episode = (Controller.Entities.TV.Episode)item;
             var series = episode.Series;
@@ -125,7 +125,7 @@ namespace MediaBrowser.Providers.TV
             get { return "TheMovieDb"; }
         }
 
-        public bool Supports(IHasImages item)
+        public bool Supports(IHasMetadata item)
         {
             return item is Controller.Entities.TV.Episode;
         }

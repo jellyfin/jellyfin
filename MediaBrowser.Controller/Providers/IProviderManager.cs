@@ -50,7 +50,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveImage(IHasImages item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken);
+        Task SaveImage(IHasMetadata item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken);
 
         /// <summary>
         /// Saves the image.
@@ -62,13 +62,13 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveImage(IHasImages item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken);
+        Task SaveImage(IHasMetadata item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken);
 
         /// <summary>
         /// Saves the image.
         /// </summary>
         /// <returns>Task.</returns>
-        Task SaveImage(IHasImages item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken);
+        Task SaveImage(IHasMetadata item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the metadata providers.
@@ -84,14 +84,14 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
-        Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(IHasImages item, RemoteImageQuery query, CancellationToken cancellationToken);
+        Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(IHasMetadata item, RemoteImageQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the image providers.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{ImageProviderInfo}.</returns>
-        IEnumerable<ImageProviderInfo> GetRemoteImageProviderInfo(IHasImages item);
+        IEnumerable<ImageProviderInfo> GetRemoteImageProviderInfo(IHasMetadata item);
 
         /// <summary>
         /// Gets all metadata plugins.
@@ -135,7 +135,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>MetadataOptions.</returns>
-        MetadataOptions GetMetadataOptions(IHasImages item);
+        MetadataOptions GetMetadataOptions(IHasMetadata item);
 
         /// <summary>
         /// Gets the remote search results.

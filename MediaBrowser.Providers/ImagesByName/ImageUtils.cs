@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.ImagesByName
             return file;
         }
 
-        public static string FindMatch(IHasImages item, IEnumerable<string> images)
+        public static string FindMatch(IHasMetadata item, IEnumerable<string> images)
         {
             var name = GetComparableName(item.Name);
 
