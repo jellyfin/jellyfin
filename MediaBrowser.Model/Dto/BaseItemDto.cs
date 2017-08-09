@@ -163,7 +163,7 @@ namespace MediaBrowser.Model.Dto
 
         public string[] ProductionLocations { get; set; }
 
-        public List<string> MultiPartGameFiles { get; set; }
+        public string[] MultiPartGameFiles { get; set; }
 
         /// <summary>
         /// Gets or sets the path.
@@ -201,7 +201,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the taglines.
         /// </summary>
         /// <value>The taglines.</value>
-        public List<string> Taglines { get; set; }
+        public string[] Taglines { get; set; }
 
         /// <summary>
         /// Gets or sets the genres.
@@ -360,7 +360,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the parent backdrop image tags.
         /// </summary>
         /// <value>The parent backdrop image tags.</value>
-        public List<string> ParentBackdropImageTags { get; set; }
+        public string[] ParentBackdropImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the local trailer count.
@@ -438,7 +438,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the tags.
         /// </summary>
         /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
+        public string[] Tags { get; set; }
 
         /// <summary>
         /// Gets or sets the primary image aspect ratio, after image enhancements.
@@ -560,13 +560,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the backdrop image tags.
         /// </summary>
         /// <value>The backdrop image tags.</value>
-        public List<string> BackdropImageTags { get; set; }
+        public string[] BackdropImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the screenshot image tags.
         /// </summary>
         /// <value>The screenshot image tags.</value>
-        public List<string> ScreenshotImageTags { get; set; }
+        public string[] ScreenshotImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the parent logo image tag.
@@ -664,7 +664,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the locked fields.
         /// </summary>
         /// <value>The locked fields.</value>
-        public List<MetadataFields> LockedFields { get; set; }
+        public MetadataFields[] LockedFields { get; set; }
 
         /// <summary>
         /// Gets or sets the trailer count.
@@ -778,27 +778,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool HasBackdrop
         {
-            get { return (BackdropImageTags != null && BackdropImageTags.Count > 0) || (ParentBackdropImageTags != null && ParentBackdropImageTags.Count > 0); }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has primary image.
-        /// </summary>
-        /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool HasPrimaryImage
-        {
-            get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Primary); }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is video.
-        /// </summary>
-        /// <value><c>true</c> if this instance is video; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool IsVideo
-        {
-            get { return StringHelper.EqualsIgnoreCase(MediaType, Entities.MediaType.Video); }
+            get { return (BackdropImageTags != null && BackdropImageTags.Length > 0) || (ParentBackdropImageTags != null && ParentBackdropImageTags.Length > 0); }
         }
 
         /// <summary>

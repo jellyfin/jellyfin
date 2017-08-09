@@ -56,7 +56,7 @@ namespace MediaBrowser.XbmcMetadata
                         PersonIds = new [] { person.Id.ToString("N") },
                         DtoOptions = new DtoOptions(true)
 
-                    }).ToList();
+                    });
 
                     foreach (var item in items)
                     {

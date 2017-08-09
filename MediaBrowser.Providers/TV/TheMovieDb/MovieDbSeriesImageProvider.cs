@@ -118,8 +118,7 @@ namespace MediaBrowser.Providers.TV
                 return 0;
             })
                 .ThenByDescending(i => i.CommunityRating ?? 0)
-                .ThenByDescending(i => i.VoteCount ?? 0)
-                .ToList();
+                .ThenByDescending(i => i.VoteCount ?? 0);
         }
 
         /// <summary>
@@ -138,8 +137,7 @@ namespace MediaBrowser.Providers.TV
         private IEnumerable<MovieDbSeriesProvider.Backdrop> GetBackdrops(MovieDbSeriesProvider.Images images)
         {
             var eligibleBackdrops = images.backdrops == null ? new List<MovieDbSeriesProvider.Backdrop>() :
-                images.backdrops
-                .ToList();
+                images.backdrops;
 
             return eligibleBackdrops.OrderByDescending(i => i.vote_average)
                 .ThenByDescending(i => i.vote_count);

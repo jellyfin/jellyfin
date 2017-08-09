@@ -10,12 +10,13 @@ using System.Linq;
 
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.Music
 {
     class MusicVideoMetadataService : MetadataService<MusicVideo, MusicVideoInfo>
     {
-        protected override void MergeData(MetadataResult<MusicVideo> source, MetadataResult<MusicVideo> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<MusicVideo> source, MetadataResult<MusicVideo> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
@@ -29,7 +30,7 @@ namespace MediaBrowser.Providers.Music
 
             if (replaceData || targetItem.Artists.Count == 0)
             {
-                targetItem.Artists = sourceItem.Artists.ToList();
+                targetItem.Artists = sourceItem.Artists.ToList(sourceItem.Artists.Count);
             }
         }
 

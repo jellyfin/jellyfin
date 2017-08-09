@@ -1,23 +1,19 @@
-﻿using MediaBrowser.Model.Logging;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.Net;
-using System.Collections.Generic;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 
-namespace MediaBrowser.Api.Playback.Progressive
+namespace MediaBrowser.Api.LiveTv
 {
     public class ProgressiveFileCopier : IAsyncStreamWriter, IHasHeaders
     {
         private readonly IFileSystem _fileSystem;
-        private readonly TranscodingJob _job;
         private readonly ILogger _logger;
         private readonly string _path;
         private readonly CancellationToken _cancellationToken;
@@ -32,22 +28,20 @@ namespace MediaBrowser.Api.Playback.Progressive
         private readonly IDirectStreamProvider _directStreamProvider;
         private readonly IEnvironmentInfo _environment;
 
-        public ProgressiveFileCopier(IFileSystem fileSystem, string path, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, IEnvironmentInfo environment, CancellationToken cancellationToken)
+        public ProgressiveFileCopier(IFileSystem fileSystem, string path, Dictionary<string, string> outputHeaders, ILogger logger, IEnvironmentInfo environment, CancellationToken cancellationToken)
         {
             _fileSystem = fileSystem;
             _path = path;
             _outputHeaders = outputHeaders;
-            _job = job;
             _logger = logger;
             _cancellationToken = cancellationToken;
             _environment = environment;
         }
 
-        public ProgressiveFileCopier(IDirectStreamProvider directStreamProvider, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, IEnvironmentInfo environment, CancellationToken cancellationToken)
+        public ProgressiveFileCopier(IDirectStreamProvider directStreamProvider, Dictionary<string, string> outputHeaders, ILogger logger, IEnvironmentInfo environment, CancellationToken cancellationToken)
         {
             _directStreamProvider = directStreamProvider;
             _outputHeaders = outputHeaders;
-            _job = job;
             _logger = logger;
             _cancellationToken = cancellationToken;
             _environment = environment;
@@ -77,61 +71,48 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationToken).Token;
 
-            try
+            if (_directStreamProvider != null)
             {
-                if (_directStreamProvider != null)
-                {
-                    await _directStreamProvider.CopyToAsync(outputStream, cancellationToken).ConfigureAwait(false);
-                    return;
-                }
-
-                var eofCount = 0;
-
-                // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
-                var allowAsyncFileRead = _environment.OperatingSystem != OperatingSystem.Windows;
-
-                using (var inputStream = GetInputStream(allowAsyncFileRead))
-                {
-                    if (StartPosition > 0)
-                    {
-                        inputStream.Position = StartPosition;
-                    }
-
-                    while (eofCount < 20 || !AllowEndOfFile)
-                    {
-                        int bytesRead;
-                        if (allowAsyncFileRead)
-                        {
-                            bytesRead = await CopyToInternalAsync(inputStream, outputStream, cancellationToken).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            bytesRead = await CopyToInternalAsyncWithSyncRead(inputStream, outputStream, cancellationToken).ConfigureAwait(false);
-                        }
-
-                        //var position = fs.Position;
-                        //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
-
-                        if (bytesRead == 0)
-                        {
-                            if (_job == null || _job.HasExited)
-                            {
-                                eofCount++;
-                            }
-                            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            eofCount = 0;
-                        }
-                    }
-                }
+                await _directStreamProvider.CopyToAsync(outputStream, cancellationToken).ConfigureAwait(false);
+                return;
             }
-            finally
+
+            var eofCount = 0;
+
+            // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
+            var allowAsyncFileRead = _environment.OperatingSystem != OperatingSystem.Windows;
+
+            using (var inputStream = GetInputStream(allowAsyncFileRead))
             {
-                if (_job != null)
+                if (StartPosition > 0)
                 {
-                    ApiEntryPoint.Instance.OnTranscodeEndRequest(_job);
+                    inputStream.Position = StartPosition;
+                }
+
+                while (eofCount < 20 || !AllowEndOfFile)
+                {
+                    int bytesRead;
+                    if (allowAsyncFileRead)
+                    {
+                        bytesRead = await CopyToInternalAsync(inputStream, outputStream, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        bytesRead = await CopyToInternalAsyncWithSyncRead(inputStream, outputStream, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    //var position = fs.Position;
+                    //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
+
+                    if (bytesRead == 0)
+                    {
+                        eofCount++;
+                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        eofCount = 0;
+                    }
                 }
             }
         }
@@ -152,11 +133,6 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                     _bytesWritten += bytesRead;
                     totalBytesRead += bytesRead;
-
-                    if (_job != null)
-                    {
-                        _job.BytesDownloaded = Math.Max(_job.BytesDownloaded ?? _bytesWritten, _bytesWritten);
-                    }
                 }
             }
 
@@ -179,11 +155,6 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                     _bytesWritten += bytesRead;
                     totalBytesRead += bytesRead;
-
-                    if (_job != null)
-                    {
-                        _job.BytesDownloaded = Math.Max(_job.BytesDownloaded ?? _bytesWritten, _bytesWritten);
-                    }
                 }
             }
 

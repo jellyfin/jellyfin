@@ -146,7 +146,7 @@ namespace MediaBrowser.Providers.Movies
                 movie.ProductionLocations = movieData
                     .production_countries
                     .Select(i => i.name)
-                    .ToList();
+                    .ToArray(movieData.production_countries.Count);
             }
 
             movie.SetProviderId(MetadataProviders.Tmdb, movieData.id.ToString(_usCulture));
@@ -213,12 +213,7 @@ namespace MediaBrowser.Providers.Movies
             //studios
             if (movieData.production_companies != null)
             {
-                movie.Studios.Clear();
-
-                foreach (var studio in movieData.production_companies.Select(c => c.name))
-                {
-                    movie.AddStudio(studio);
-                }
+                movie.SetStudios(movieData.production_companies.Select(c => c.name));
             }
 
             // genres

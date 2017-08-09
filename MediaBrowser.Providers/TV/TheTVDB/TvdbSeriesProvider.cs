@@ -482,7 +482,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task{System.String}.</returns>
         private async Task<IEnumerable<RemoteSearchResult>> FindSeries(string name, int? year, string language, CancellationToken cancellationToken)
         {
-            var results = (await FindSeriesInternal(name, language, cancellationToken).ConfigureAwait(false)).ToList();
+            var results = (await FindSeriesInternal(name, language, cancellationToken).ConfigureAwait(false));
 
             if (results.Count == 0)
             {
@@ -491,7 +491,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (!string.IsNullOrWhiteSpace(nameWithoutYear) && !string.Equals(nameWithoutYear, name, StringComparison.OrdinalIgnoreCase))
                 {
-                    results = (await FindSeriesInternal(nameWithoutYear, language, cancellationToken).ConfigureAwait(false)).ToList();
+                    results = (await FindSeriesInternal(nameWithoutYear, language, cancellationToken).ConfigureAwait(false));
                 }
             }
 
@@ -507,7 +507,7 @@ namespace MediaBrowser.Providers.TV
             });
         }
 
-        private async Task<IEnumerable<RemoteSearchResult>> FindSeriesInternal(string name, string language, CancellationToken cancellationToken)
+        private async Task<List<RemoteSearchResult>> FindSeriesInternal(string name, string language, CancellationToken cancellationToken)
         {
             var url = string.Format(SeriesSearchUrl, WebUtility.UrlEncode(name), NormalizeLanguage(language));
             var searchResults = new List<RemoteSearchResult>();
@@ -1273,12 +1273,7 @@ namespace MediaBrowser.Providers.TV
 
                                     if (vals.Count > 0)
                                     {
-                                        item.Studios.Clear();
-
-                                        foreach (var genre in vals)
-                                        {
-                                            item.AddStudio(genre);
-                                        }
+                                        item.SetStudios(vals);
                                     }
                                 }
 

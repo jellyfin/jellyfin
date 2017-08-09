@@ -116,8 +116,7 @@ namespace MediaBrowser.Providers.People
                 return 0;
             })
                 .ThenByDescending(i => i.CommunityRating ?? 0)
-                .ThenByDescending(i => i.VoteCount ?? 0)
-                .ToList();
+                .ThenByDescending(i => i.VoteCount ?? 0);
         }
 
         private string GetLanguage(MovieDbPersonProvider.Profile profile)

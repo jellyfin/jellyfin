@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -92,7 +93,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private string GetAudioImagePath(Audio item)
         {
             var filename = item.Album ?? string.Empty;
-            filename += string.Join(",", item.Artists.ToArray());
+            filename += string.Join(",", item.Artists.ToArray(item.Artists.Count));
 
             if (!string.IsNullOrWhiteSpace(item.Album))
             {

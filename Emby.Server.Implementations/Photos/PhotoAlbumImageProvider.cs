@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.Photos
         protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
         {
             var photoAlbum = (PhotoAlbum)item;
-            var items = GetFinalItems(photoAlbum.Children.ToList());
+            var items = GetFinalItems(photoAlbum.Children);
 
             return items;
         }

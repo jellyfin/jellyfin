@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.MusicGenres
 {
     public class MusicGenreMetadataService : MetadataService<MusicGenre, ItemLookupInfo>
     {
-        protected override void MergeData(MetadataResult<MusicGenre> source, MetadataResult<MusicGenre> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<MusicGenre> source, MetadataResult<MusicGenre> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

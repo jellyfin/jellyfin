@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.Music
 
                 using (var stream = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
                 {
-                    var results = GetResultsFromResponse(stream).ToList();
+                    var results = GetResultsFromResponse(stream);
 
                     if (results.Count > 0)
                     {
@@ -73,7 +73,7 @@ namespace MediaBrowser.Providers.Music
             return new List<RemoteSearchResult>();
         }
 
-        private IEnumerable<RemoteSearchResult> GetResultsFromResponse(Stream stream)
+        private List<RemoteSearchResult> GetResultsFromResponse(Stream stream)
         {
             using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
@@ -125,7 +125,7 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
-        private IEnumerable<RemoteSearchResult> ParseArtistList(XmlReader reader)
+        private List<RemoteSearchResult> ParseArtistList(XmlReader reader)
         {
             var list = new List<RemoteSearchResult>();
 

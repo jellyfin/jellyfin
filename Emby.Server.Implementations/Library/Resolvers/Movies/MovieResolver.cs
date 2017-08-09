@@ -23,11 +23,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
     /// </summary>
     public class MovieResolver : BaseVideoResolver<Video>, IMultiItemResolver
     {
-        public MovieResolver(ILibraryManager libraryManager)
-            : base(libraryManager)
-        {
-        }
-
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -452,8 +447,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             var folderPaths = multiDiscFolders.Select(i => i.FullName).Where(i =>
             {
-                var subFileEntries = directoryService.GetFileSystemEntries(i)
-                    .ToList();
+                var subFileEntries = directoryService.GetFileSystemEntries(i);
 
                 var subfolders = subFileEntries
                  .Where(e => e.IsDirectory)
@@ -546,6 +540,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             }
 
             return !validCollectionTypes.Contains(collectionType, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public MovieResolver(ILibraryManager libraryManager, IFileSystem fileSystem) : base(libraryManager, fileSystem)
+        {
         }
     }
 }

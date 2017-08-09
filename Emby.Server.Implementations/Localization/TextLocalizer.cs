@@ -3,9 +3,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Emby.Server.Implementations.Localization;
 
-namespace Emby.Server.Core.Localization
+namespace Emby.Server.Implementations.Localization
 {
     public class TextLocalizer : ITextLocalizer
     {

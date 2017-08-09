@@ -10,6 +10,7 @@ using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using SQLitePCL.pretty;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Activity
 {
@@ -94,13 +95,13 @@ namespace Emby.Server.Implementations.Activity
 
                     var whereTextWithoutPaging = whereClauses.Count == 0 ?
                       string.Empty :
-                      " where " + string.Join(" AND ", whereClauses.ToArray());
+                      " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
 
                     if (startIndex.HasValue && startIndex.Value > 0)
                     {
                         var pagingWhereText = whereClauses.Count == 0 ?
                             string.Empty :
-                            " where " + string.Join(" AND ", whereClauses.ToArray());
+                            " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
 
                         whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM ActivityLogEntries {0} ORDER BY DateCreated DESC LIMIT {1})",
                             pagingWhereText,
@@ -109,7 +110,7 @@ namespace Emby.Server.Implementations.Activity
 
                     var whereText = whereClauses.Count == 0 ?
                         string.Empty :
-                        " where " + string.Join(" AND ", whereClauses.ToArray());
+                        " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
 
                     commandText += whereText;
 
@@ -154,7 +155,7 @@ namespace Emby.Server.Implementations.Activity
                             result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                         }
 
-                        result.Items = list.ToArray();
+                        result.Items = list.ToArray(list.Count);
                         return result;
 
                     }, ReadTransactionMode);

@@ -17,12 +17,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using Emby.Drawing.Common;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Threading;
-using TagLib;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Drawing
 {
@@ -662,7 +660,7 @@ namespace Emby.Drawing
             var cacheKeys = imageEnhancers.Select(i => i.GetConfigurationCacheKey(item, imageType)).ToList();
             cacheKeys.Add(originalImagePath + dateModified.Ticks);
 
-            return string.Join("|", cacheKeys.ToArray()).GetMD5().ToString("N");
+            return string.Join("|", cacheKeys.ToArray(cacheKeys.Count)).GetMD5().ToString("N");
         }
 
         /// <summary>

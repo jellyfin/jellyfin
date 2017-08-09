@@ -80,9 +80,9 @@ namespace MediaBrowser.Controller.Entities
 
         public List<string> PhysicalLocationsList { get; set; }
 
-        protected override IEnumerable<FileSystemMetadata> GetFileSystemChildren(IDirectoryService directoryService)
+        protected override FileSystemMetadata[] GetFileSystemChildren(IDirectoryService directoryService)
         {
-            return CreateResolveArgs(directoryService, true).FileSystemChildren;
+            return CreateResolveArgs(directoryService, true).FileSystemChildren.ToArray();
         }
 
         private List<Guid> _childrenIds = null;

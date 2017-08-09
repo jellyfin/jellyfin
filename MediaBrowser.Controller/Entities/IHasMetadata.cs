@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the locked fields.
         /// </summary>
         /// <value>The locked fields.</value>
-        List<MetadataFields> LockedFields { get; }
+        MetadataFields[] LockedFields { get; }
 
         /// <summary>
         /// Gets the images.
@@ -244,6 +244,8 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="image">The image.</param>
         void RemoveImage(ItemImageInfo image);
 
+        void RemoveImages(List<ItemImageInfo> images);
+
         /// <summary>
         /// Updates to repository.
         /// </summary>
@@ -263,7 +265,7 @@ namespace MediaBrowser.Controller.Entities
 
         int? ProductionYear { get; set; }
 
-        List<string> Tags { get; set; }
+        string[] Tags { get; set; }
     }
 
     public static class HasMetadataExtensions

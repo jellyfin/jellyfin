@@ -16,6 +16,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -312,7 +313,7 @@ namespace MediaBrowser.Api.UserLibrary
             var list = _userViewManager.GetLatestItems(new LatestItemsQuery
             {
                 GroupItems = request.GroupItems,
-                IncludeItemTypes = (request.IncludeItemTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
+                IncludeItemTypes = ApiEntryPoint.Split(request.IncludeItemTypes, ',', true),
                 IsPlayed = request.IsPlayed,
                 Limit = request.Limit,
                 ParentId = request.ParentId,
@@ -486,8 +487,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var dtos = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
-                .ToArray();
+            var dtos = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray();
 
             var result = new ItemsResult
             {

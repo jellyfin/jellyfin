@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using MediaBrowser.Model.Dlna;
-using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
 {

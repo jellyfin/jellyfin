@@ -279,13 +279,16 @@ namespace MediaBrowser.Api.Images
 
             var itemImages = item.ImageInfos;
 
-            foreach (var image in itemImages.Where(i => !item.AllowsMultipleImages(i.Type)))
+            foreach (var image in itemImages)
             {
-                var info = GetImageInfo(item, image, null);
-
-                if (info != null)
+                if (!item.AllowsMultipleImages(image.Type))
                 {
-                    list.Add(info);
+                    var info = GetImageInfo(item, image, null);
+
+                    if (info != null)
+                    {
+                        list.Add(info);
+                    }
                 }
             }
 

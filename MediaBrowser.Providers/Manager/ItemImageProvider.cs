@@ -23,6 +23,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -60,7 +61,7 @@ namespace MediaBrowser.Providers.Manager
             return hasChanges;
         }
 
-        public async Task<RefreshResult> RefreshImages(IHasMetadata item, LibraryOptions libraryOptions, IEnumerable<IImageProvider> imageProviders, ImageRefreshOptions refreshOptions, MetadataOptions savedOptions, CancellationToken cancellationToken)
+        public async Task<RefreshResult> RefreshImages(IHasMetadata item, LibraryOptions libraryOptions, List<IImageProvider> providers, ImageRefreshOptions refreshOptions, MetadataOptions savedOptions, CancellationToken cancellationToken)
         {
             if (refreshOptions.IsReplacingImage(ImageType.Backdrop))
             {
@@ -72,8 +73,6 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var result = new RefreshResult { UpdateType = ItemUpdateType.None };
-
-            var providers = imageProviders.ToList();
 
             var providerIds = new List<Guid>();
 
@@ -384,10 +383,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            foreach (var image in deletedImages)
-            {
-                item.RemoveImage(image);
-            }
+            item.RemoveImages(deletedImages);
 
             if (deleted)
             {
@@ -461,7 +457,7 @@ namespace MediaBrowser.Providers.Manager
 
             var newImageFileInfos = newImages
                     .Select(i => i.FileInfo)
-                    .ToList();
+                    .ToList(newImages.Count);
 
             if (item.AddImages(type, newImageFileInfos))
             {

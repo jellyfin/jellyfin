@@ -649,12 +649,12 @@ namespace Emby.Server.Implementations.Dto
             dto.GameSystem = item.GameSystemName;
         }
 
-        private List<string> GetImageTags(BaseItem item, List<ItemImageInfo> images)
+        private string[] GetImageTags(BaseItem item, List<ItemImageInfo> images)
         {
             return images
                 .Select(p => GetImageCacheTag(item, p))
                 .Where(i => i != null)
-                .ToList();
+                .ToArray();
         }
 
         private string GetImageCacheTag(BaseItem item, ImageType type)
@@ -766,7 +766,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            dto.People = list.ToArray();
+            dto.People = list.ToArray(list.Count);
         }
 
         /// <summary>
@@ -1049,12 +1049,12 @@ namespace Emby.Server.Implementations.Dto
             {
                 if (!string.IsNullOrWhiteSpace(item.Tagline))
                 {
-                    dto.Taglines = new List<string> { item.Tagline };
+                    dto.Taglines = new string[] { item.Tagline };
                 }
 
                 if (dto.Taglines == null)
                 {
-                    dto.Taglines = new List<string>();
+                    dto.Taglines = new string[]{};
                 }
             }
 
@@ -1430,9 +1430,9 @@ namespace Emby.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.ProductionLocations))
             {
-                if (item.ProductionLocations.Count > 0 || item is Movie)
+                if (item.ProductionLocations.Length > 0 || item is Movie)
                 {
-                    dto.ProductionLocations = item.ProductionLocations.ToArray();
+                    dto.ProductionLocations = item.ProductionLocations;
                 }
             }
 

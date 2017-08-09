@@ -169,8 +169,7 @@ namespace MediaBrowser.Providers.TV
                 return 0;
             })
                 .ThenByDescending(i => i.CommunityRating ?? 0)
-                .ThenByDescending(i => i.VoteCount ?? 0)
-                .ToList();
+                .ThenByDescending(i => i.VoteCount ?? 0);
         }
 
         private void AddImage(XmlReader reader, List<RemoteImageInfo> images)

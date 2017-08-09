@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.LiveTv
 {
@@ -102,7 +103,7 @@ namespace Emby.Server.Implementations.LiveTv
                     openKeys.Add(item.GetType().Name);
                     openKeys.Add(item.Id.ToString("N"));
                     openKeys.Add(source.Id ?? string.Empty);
-                    source.OpenToken = string.Join(StreamIdDelimeterString, openKeys.ToArray());
+                    source.OpenToken = string.Join(StreamIdDelimeterString, openKeys.ToArray(openKeys.Count));
                 }
 
                 // Dummy this up so that direct play checks can still run

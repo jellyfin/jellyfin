@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
@@ -9,11 +10,6 @@ namespace Emby.Server.Implementations.Library.Resolvers
     /// </summary>
     public class VideoResolver : BaseVideoResolver<Video>
     {
-        public VideoResolver(ILibraryManager libraryManager)
-            : base(libraryManager)
-        {
-        }
-
         protected override Video Resolve(ItemResolveArgs args)
         {
             if (args.Parent != null)
@@ -33,12 +29,16 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             get { return ResolverPriority.Last; }
         }
+
+        public VideoResolver(ILibraryManager libraryManager, IFileSystem fileSystem) : base(libraryManager, fileSystem)
+        {
+        }
     }
 
     public class GenericVideoResolver<T> : BaseVideoResolver<T>
         where T : Video, new ()
     {
-        public GenericVideoResolver(ILibraryManager libraryManager) : base(libraryManager)
+        public GenericVideoResolver(ILibraryManager libraryManager, IFileSystem fileSystem) : base(libraryManager, fileSystem)
         {
         }
     }

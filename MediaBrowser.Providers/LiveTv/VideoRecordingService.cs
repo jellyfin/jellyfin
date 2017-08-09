@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.LiveTv
 {
     public class VideoRecordingService : MetadataService<LiveTvVideoRecording, ItemLookupInfo>
     {
-        protected override void MergeData(MetadataResult<LiveTvVideoRecording> source, MetadataResult<LiveTvVideoRecording> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<LiveTvVideoRecording> source, MetadataResult<LiveTvVideoRecording> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

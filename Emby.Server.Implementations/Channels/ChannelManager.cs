@@ -159,7 +159,7 @@ namespace Emby.Server.Implementations.Channels
                 all = all.Take(query.Limit.Value).ToList();
             }
 
-            var returnItems = all.ToArray();
+            var returnItems = all.ToArray(all.Count);
 
             var result = new QueryResult<Channel>
             {
@@ -182,8 +182,10 @@ namespace Emby.Server.Implementations.Channels
             {
             };
 
-            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
-                .ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+                .ConfigureAwait(false));
+            var returnItems = returnList
+                .ToArray(returnList.Count);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -567,8 +569,9 @@ namespace Emby.Server.Implementations.Channels
                 Fields = query.Fields.ToList()
             };
 
-            var returnItems = (await _dtoService.GetBaseItemDtos(items, dtoOptions, user).ConfigureAwait(false))
-                .ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(items, dtoOptions, user).ConfigureAwait(false));
+            var returnItems = returnList
+                .ToArray(returnList.Count);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -676,12 +679,10 @@ namespace Emby.Server.Implementations.Channels
                 internalItems = internalItems.Take(query.Limit.Value).ToArray();
             }
 
-            var returnItemArray = internalItems.ToArray();
-
             return new QueryResult<BaseItem>
             {
                 TotalRecordCount = totalCount,
-                Items = returnItemArray
+                Items = internalItems
             };
         }
 
@@ -813,12 +814,10 @@ namespace Emby.Server.Implementations.Channels
 
             var internalItems = await Task.WhenAll(itemTasks).ConfigureAwait(false);
 
-            var returnItemArray = internalItems.ToArray();
-
             return new QueryResult<BaseItem>
             {
                 TotalRecordCount = totalCount,
-                Items = returnItemArray
+                Items = internalItems
             };
         }
 
@@ -837,8 +836,10 @@ namespace Emby.Server.Implementations.Channels
                 Fields = query.Fields.ToList()
             };
 
-            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
-                .ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+                .ConfigureAwait(false));
+            var returnItems = returnList
+                .ToArray(returnList.Count);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -989,8 +990,10 @@ namespace Emby.Server.Implementations.Channels
                 Fields = query.Fields.ToList()
             };
 
-            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
-                .ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+                .ConfigureAwait(false));
+            var returnItems = returnList
+                .ToArray(returnList.Count);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -1191,7 +1194,7 @@ namespace Emby.Server.Implementations.Channels
                 }
             }
 
-            var returnItemArray = all.ToArray();
+            var returnItemArray = all.ToArray(all.Count);
             RefreshIfNeeded(returnItemArray);
 
             return new QueryResult<BaseItem>
@@ -1309,7 +1312,7 @@ namespace Emby.Server.Implementations.Channels
             {
                 item.Name = info.Name;
                 item.Genres = info.Genres;
-                item.Studios = info.Studios;
+                item.Studios = info.Studios.ToArray(info.Studios.Count);
                 item.CommunityRating = info.CommunityRating;
                 item.Overview = info.Overview;
                 item.IndexNumber = info.IndexNumber;
@@ -1319,7 +1322,7 @@ namespace Emby.Server.Implementations.Channels
                 item.ProviderIds = info.ProviderIds;
                 item.OfficialRating = info.OfficialRating;
                 item.DateCreated = info.DateCreated ?? DateTime.UtcNow;
-                item.Tags = info.Tags;
+                item.Tags = info.Tags.ToArray(info.Tags.Count);
                 item.HomePageUrl = info.HomePageUrl;
             }
             else if (info.Type == ChannelItemType.Folder && info.FolderType == ChannelFolderType.Container)

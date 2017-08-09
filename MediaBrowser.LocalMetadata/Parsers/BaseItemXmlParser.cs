@@ -246,7 +246,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             var person = item as Person;
                             if (person != null)
                             {
-                                person.ProductionLocations = new List<string> { val };
+                                person.ProductionLocations = new string[] { val };
                             }
                         }
 
@@ -267,13 +267,11 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "LockedFields":
                     {
-                        var fields = new List<MetadataFields>();
-
                         var val = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            var list = val.Split('|').Select(i =>
+                            item.LockedFields = val.Split('|').Select(i =>
                             {
                                 MetadataFields field;
 
@@ -284,12 +282,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                                 return null;
 
-                            }).Where(i => i.HasValue).Select(i => i.Value);
-
-                            fields.AddRange(list);
+                            }).Where(i => i.HasValue).Select(i => i.Value).ToArray();
                         }
-
-                        item.LockedFields = fields;
 
                         break;
                     }
@@ -933,6 +927,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
             reader.MoveToContent();
             reader.Read();
 
+            var tags = new List<string>();
+
             // Loop through each element
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
@@ -946,7 +942,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                                 if (!string.IsNullOrWhiteSpace(tag))
                                 {
-                                    item.AddTag(tag);
+                                    tags.Add(tag);
                                 }
                                 break;
                             }
@@ -961,6 +957,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     reader.Read();
                 }
             }
+
+            item.Tags = tags.Distinct(StringComparer.Ordinal).ToArray();
         }
 
         /// <summary>

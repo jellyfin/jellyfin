@@ -31,6 +31,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Extensions;
 
 namespace Mono.Nat.Pmp
 {
@@ -86,7 +87,7 @@ namespace Mono.Nat.Pmp
 
             try
             {
-                byte[] buffer = package.ToArray();
+                byte[] buffer = package.ToArray(package.Count);
                 int attempt = 0;
                 int delay = PmpConstants.RetryDelay;
 
