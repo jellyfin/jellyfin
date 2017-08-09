@@ -39,7 +39,6 @@
     <Compile Include="BaseXmlProvider.cs" />
     <Compile Include="Images\CollectionFolderImageProvider.cs" />
     <Compile Include="Images\EpisodeLocalImageProvider.cs" />
-    <Compile Include="Images\ImagesByNameImageProvider.cs" />
     <Compile Include="Images\InternalMetadataFolderImageProvider.cs" />
     <Compile Include="Images\LocalImageProvider.cs" />
     <Compile Include="Parsers\BaseItemXmlParser.cs" />

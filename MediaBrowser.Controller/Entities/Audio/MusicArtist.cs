@@ -212,7 +212,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var items = GetRecursiveChildren().ToList();
+            var items = GetRecursiveChildren();
 
             var songs = items.OfType<Audio>().ToList();
 

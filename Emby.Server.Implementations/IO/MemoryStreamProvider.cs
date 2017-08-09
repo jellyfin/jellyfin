@@ -2,7 +2,7 @@
 using MediaBrowser.Model.IO;
 using Microsoft.IO;
 
-namespace Emby.Server.Core.IO
+namespace Emby.Server.Implementations.IO
 {
     public class RecyclableMemoryStreamProvider : IMemoryStreamFactory
     {

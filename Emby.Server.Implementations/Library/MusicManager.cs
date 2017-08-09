@@ -19,27 +19,27 @@ namespace Emby.Server.Implementations.Library
             _libraryManager = libraryManager;
         }
 
-        public IEnumerable<Audio> GetInstantMixFromSong(Audio item, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromSong(Audio item, User user, DtoOptions dtoOptions)
         {
             var list = new List<Audio>
             {
                 item
             };
 
-            return list.Concat(GetInstantMixFromGenres(item.Genres, user, dtoOptions));
+            return list.Concat(GetInstantMixFromGenres(item.Genres, user, dtoOptions)).ToList();
         }
 
-        public IEnumerable<Audio> GetInstantMixFromArtist(MusicArtist item, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromArtist(MusicArtist item, User user, DtoOptions dtoOptions)
         {
             return GetInstantMixFromGenres(item.Genres, user, dtoOptions);
         }
 
-        public IEnumerable<Audio> GetInstantMixFromAlbum(MusicAlbum item, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromAlbum(MusicAlbum item, User user, DtoOptions dtoOptions)
         {
             return GetInstantMixFromGenres(item.Genres, user, dtoOptions);
         }
 
-        public IEnumerable<Audio> GetInstantMixFromFolder(Folder item, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromFolder(Folder item, User user, DtoOptions dtoOptions)
         {
             var genres = item
                .GetRecursiveChildren(user, new InternalItemsQuery(user)
@@ -55,12 +55,12 @@ namespace Emby.Server.Implementations.Library
             return GetInstantMixFromGenres(genres, user, dtoOptions);
         }
 
-        public IEnumerable<Audio> GetInstantMixFromPlaylist(Playlist item, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromPlaylist(Playlist item, User user, DtoOptions dtoOptions)
         {
             return GetInstantMixFromGenres(item.Genres, user, dtoOptions);
         }
 
-        public IEnumerable<Audio> GetInstantMixFromGenres(IEnumerable<string> genres, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromGenres(IEnumerable<string> genres, User user, DtoOptions dtoOptions)
         {
             var genreIds = genres.DistinctNames().Select(i =>
             {
@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.Library
             return GetInstantMixFromGenreIds(genreIds, user, dtoOptions);
         }
 
-        public IEnumerable<Audio> GetInstantMixFromGenreIds(IEnumerable<string> genreIds, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromGenreIds(IEnumerable<string> genreIds, User user, DtoOptions dtoOptions)
         {
             return _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
@@ -92,10 +92,10 @@ namespace Emby.Server.Implementations.Library
 
                 DtoOptions = dtoOptions
 
-            }).Cast<Audio>();
+            });
         }
 
-        public IEnumerable<Audio> GetInstantMixFromItem(BaseItem item, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromItem(BaseItem item, User user, DtoOptions dtoOptions)
         {
             var genre = item as MusicGenre;
             if (genre != null)
@@ -133,7 +133,7 @@ namespace Emby.Server.Implementations.Library
                 return GetInstantMixFromFolder(folder, user, dtoOptions);
             }
 
-            return new Audio[] { };
+            return new List<BaseItem>();
         }
     }
 }

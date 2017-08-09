@@ -11,6 +11,7 @@ using System.Xml;
 using Emby.Dlna.Didl;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Xml;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Dlna.Service
 {
@@ -235,26 +236,29 @@ namespace Emby.Dlna.Service
 
         private void LogRequest(ControlRequest request)
         {
-            var builder = new StringBuilder();
+            if (!Config.GetDlnaConfiguration().EnableDebugLog)
+            {
+                return;
+            }
 
-            var headers = string.Join(", ", request.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray());
-            builder.AppendFormat("Headers: {0}", headers);
-            builder.AppendLine();
-            //builder.Append(request.InputXml);
+            var originalHeaders = request.Headers;
+            var headers = string.Join(", ", originalHeaders.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray(originalHeaders.Count));
 
-            Logger.LogMultiline("Control request", LogSeverity.Debug, builder);
+            Logger.Debug("Control request. Headers: {0}", headers);
         }
 
         private void LogResponse(ControlResponse response)
         {
-            var builder = new StringBuilder();
+            if (!Config.GetDlnaConfiguration().EnableDebugLog)
+            {
+                return;
+            }
 
-            var headers = string.Join(", ", response.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray());
-            builder.AppendFormat("Headers: {0}", headers);
-            builder.AppendLine();
-            builder.Append(response.Xml);
+            var originalHeaders = response.Headers;
+            var headers = string.Join(", ", originalHeaders.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray(originalHeaders.Count));
+            //builder.Append(response.Xml);
 
-            Logger.LogMultiline("Control response", LogSeverity.Debug, builder);
+            Logger.Debug("Control response. Headers: {0}", headers);
         }
     }
 }

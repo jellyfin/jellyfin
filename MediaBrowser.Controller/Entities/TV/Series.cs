@@ -231,7 +231,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>List&lt;Guid&gt;.</returns>
         public List<Guid> GetTrailerIds()
         {
-            var list = LocalTrailerIds.ToList();
+            var list = LocalTrailerIds.ToList(LocalTrailerIds.Count);
             list.AddRange(RemoteTrailerIds);
             return list;
         }
@@ -345,14 +345,13 @@ namespace MediaBrowser.Controller.Entities.TV
                 query.IsVirtualUnaired = false;
             }
 
-            var allItems = LibraryManager.GetItemList(query).ToList();
+            var allItems = LibraryManager.GetItemList(query);
 
-            var allSeriesEpisodes = allItems.OfType<Episode>().ToList();
+            var allSeriesEpisodes = allItems.OfType<Episode>();
 
             var allEpisodes = allItems.OfType<Season>()
                 .SelectMany(i => i.GetEpisodes(this, user, allSeriesEpisodes, options))
-                .Reverse()
-                .ToList();
+                .Reverse();
 
             // Specials could appear twice based on above - once in season 0, once in the aired season
             // This depends on settings for that series
@@ -365,20 +364,22 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             // Refresh bottom up, children first, then the boxset
             // By then hopefully the  movies within will have Tmdb collection values
-            var items = GetRecursiveChildren().ToList();
+            var items = GetRecursiveChildren();
 
-            var seasons = items.OfType<Season>().ToList();
-            var otherItems = items.Except(seasons).ToList();
-
-            var totalItems = seasons.Count + otherItems.Count;
+            var totalItems = items.Count;
             var numComplete = 0;
 
             // Refresh current item
             await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
             // Refresh seasons
-            foreach (var item in seasons)
+            foreach (var item in items)
             {
+                if (!(item is Season))
+                {
+                    continue;
+                }
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
@@ -390,8 +391,13 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             // Refresh episodes and other children
-            foreach (var item in otherItems)
+            foreach (var item in items)
             {
+                if ((item is Season))
+                {
+                    continue;
+                }
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var skipItem = false;

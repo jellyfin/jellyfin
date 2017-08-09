@@ -48,12 +48,12 @@ namespace MediaBrowser.Providers.TV
             get { return "TheTVDB"; }
         }
 
-        public bool Supports(IHasImages item)
+        public bool Supports(IHasMetadata item)
         {
             return item is Season;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             return new List<ImageType>
             {
@@ -63,7 +63,7 @@ namespace MediaBrowser.Providers.TV
             };
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, CancellationToken cancellationToken)
         {
             var season = (Season)item;
             var series = season.Series;
@@ -175,8 +175,7 @@ namespace MediaBrowser.Providers.TV
                     return 0;
                 })
                 .ThenByDescending(i => i.CommunityRating ?? 0)
-                .ThenByDescending(i => i.VoteCount ?? 0)
-                .ToList();
+                .ThenByDescending(i => i.VoteCount ?? 0);
         }
 
         private static void AddImage(XmlReader reader, List<RemoteImageInfo> images, int seasonNumber)

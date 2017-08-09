@@ -13,9 +13,8 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Threading;
-using Emby.Server.Implementations.IO;
 
-namespace Emby.Server.Core.IO
+namespace Emby.Server.Implementations.IO
 {
     public class LibraryMonitor : ILibraryMonitor
     {

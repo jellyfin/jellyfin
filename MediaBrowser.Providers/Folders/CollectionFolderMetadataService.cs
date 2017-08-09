@@ -15,7 +15,7 @@ namespace MediaBrowser.Providers.Folders
 {
     public class CollectionFolderMetadataService : MetadataService<CollectionFolder, ItemLookupInfo>
     {
-        protected override void MergeData(MetadataResult<CollectionFolder> source, MetadataResult<CollectionFolder> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<CollectionFolder> source, MetadataResult<CollectionFolder> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
@@ -27,7 +27,7 @@ namespace MediaBrowser.Providers.Folders
 
     public class ManualCollectionsFolderMetadataService : MetadataService<ManualCollectionsFolder, ItemLookupInfo>
     {
-        protected override void MergeData(MetadataResult<ManualCollectionsFolder> source, MetadataResult<ManualCollectionsFolder> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<ManualCollectionsFolder> source, MetadataResult<ManualCollectionsFolder> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

@@ -159,9 +159,9 @@ namespace MediaBrowser.Api
                 IncludeStudios = request.IncludeStudios,
                 StartIndex = request.StartIndex,
                 UserId = request.UserId,
-                IncludeItemTypes = (request.IncludeItemTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
-                ExcludeItemTypes = (request.ExcludeItemTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
-                MediaTypes = (request.MediaTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
+                IncludeItemTypes = ApiEntryPoint.Split(request.IncludeItemTypes, ',', true),
+                ExcludeItemTypes = ApiEntryPoint.Split(request.ExcludeItemTypes, ',', true),
+                MediaTypes = ApiEntryPoint.Split(request.MediaTypes, ',', true),
                 ParentId = request.ParentId,
 
                 IsKids = request.IsKids,

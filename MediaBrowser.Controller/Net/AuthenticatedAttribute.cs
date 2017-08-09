@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
@@ -53,8 +52,7 @@ namespace MediaBrowser.Controller.Net
 
         public IEnumerable<string> GetRoles()
         {
-            return (Roles ?? string.Empty).Split(',')
-                .Where(i => !string.IsNullOrWhiteSpace(i));
+            return (Roles ?? string.Empty).Split(new []{ ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
     }
 

@@ -63,7 +63,7 @@ namespace MediaBrowser.Api
 
             var result = ((Folder)item).GetItemList(GetItemsQuery(request, user));
 
-            return ToOptimizedResult(GetFilters(result.ToArray()));
+            return ToOptimizedResult(GetFilters(result));
         }
 
         private QueryFilters GetFilters(BaseItem[] items)

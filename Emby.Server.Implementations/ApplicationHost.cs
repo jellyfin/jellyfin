@@ -1,11 +1,52 @@
-﻿using MediaBrowser.Api;
+﻿using Emby.Common.Implementations;
+using Emby.Common.Implementations.Archiving;
+using Emby.Common.Implementations.IO;
+using Emby.Common.Implementations.Reflection;
+using Emby.Common.Implementations.ScheduledTasks;
+using Emby.Common.Implementations.Serialization;
+using Emby.Common.Implementations.TextEncoding;
+using Emby.Common.Implementations.Xml;
+using Emby.Dlna;
+using Emby.Dlna.ConnectionManager;
+using Emby.Dlna.ContentDirectory;
+using Emby.Dlna.Main;
+using Emby.Dlna.MediaReceiverRegistrar;
+using Emby.Dlna.Ssdp;
+using Emby.Drawing;
+using Emby.Photos;
+using Emby.Server.Implementations.Activity;
+using Emby.Server.Implementations.Channels;
+using Emby.Server.Implementations.Collections;
+using Emby.Server.Implementations.Configuration;
+using Emby.Server.Implementations.Data;
+using Emby.Server.Implementations.Devices;
+using Emby.Server.Implementations.Dto;
+using Emby.Server.Implementations.FFMpeg;
+using Emby.Server.Implementations.HttpServer;
+using Emby.Server.Implementations.HttpServer.Security;
+using Emby.Server.Implementations.IO;
+using Emby.Server.Implementations.Library;
+using Emby.Server.Implementations.LiveTv;
+using Emby.Server.Implementations.Localization;
+using Emby.Server.Implementations.MediaEncoder;
+using Emby.Server.Implementations.Migrations;
+using Emby.Server.Implementations.Notifications;
+using Emby.Server.Implementations.Playlists;
+using Emby.Server.Implementations.Security;
+using Emby.Server.Implementations.Session;
+using Emby.Server.Implementations.Social;
+using Emby.Server.Implementations.TV;
+using Emby.Server.Implementations.Updates;
+using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
-using Emby.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
+using MediaBrowser.Common.Security;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
@@ -17,6 +58,9 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
@@ -34,102 +78,47 @@ using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.LocalMetadata.Savers;
-using MediaBrowser.MediaEncoding.BdInfo;
-using MediaBrowser.MediaEncoding.Encoder;
-using MediaBrowser.MediaEncoding.Subtitles;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.System;
-using MediaBrowser.Model.Updates;
-using MediaBrowser.Providers.Chapters;
-using MediaBrowser.Providers.Manager;
-using MediaBrowser.Providers.Subtitles;
-using MediaBrowser.WebDashboard.Api;
-using MediaBrowser.XbmcMetadata.Providers;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
-using Emby.Common.Implementations;
-using Emby.Common.Implementations.Archiving;
-using Emby.Common.Implementations.IO;
-using Emby.Common.Implementations.Reflection;
-using Emby.Common.Implementations.Serialization;
-using Emby.Common.Implementations.TextEncoding;
-using Emby.Common.Implementations.Xml;
-using Emby.Photos;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Api.Playback;
-using MediaBrowser.Common.Plugins;
-using MediaBrowser.Common.Security;
-using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
-using Emby.Dlna;
-using Emby.Dlna.ConnectionManager;
-using Emby.Dlna.ContentDirectory;
-using Emby.Dlna.Main;
-using Emby.Dlna.MediaReceiverRegistrar;
-using Emby.Dlna.Ssdp;
-using Emby.Server.Core;
-using Emby.Server.Implementations.Activity;
-using Emby.Server.Implementations.Devices;
-using Emby.Server.Implementations.FFMpeg;
-using Emby.Server.Core.IO;
-using Emby.Server.Core.Localization;
-using Emby.Server.Implementations.Migrations;
-using Emby.Server.Implementations.Security;
-using Emby.Server.Implementations.Social;
-using Emby.Server.Implementations.Channels;
-using Emby.Server.Implementations.Collections;
-using Emby.Server.Implementations.Dto;
-using Emby.Server.Implementations.IO;
-using Emby.Server.Implementations.HttpServer;
-using Emby.Server.Implementations.HttpServer.Security;
-using Emby.Server.Implementations.Library;
-using Emby.Server.Implementations.LiveTv;
-using Emby.Server.Implementations.Localization;
-using Emby.Server.Implementations.MediaEncoder;
-using Emby.Server.Implementations.Notifications;
-using Emby.Server.Implementations.Data;
-using Emby.Server.Implementations.Playlists;
-using Emby.Server.Implementations;
-using Emby.Server.Implementations.ServerManager;
-using Emby.Server.Implementations.Session;
-using Emby.Server.Implementations.TV;
-using Emby.Server.Implementations.Updates;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.News;
 using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Social;
+using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
+using MediaBrowser.Model.Updates;
 using MediaBrowser.Model.Xml;
+using MediaBrowser.Providers.Chapters;
+using MediaBrowser.Providers.Manager;
+using MediaBrowser.Providers.Subtitles;
+using MediaBrowser.WebDashboard.Api;
+using MediaBrowser.XbmcMetadata.Providers;
 using OpenSubtitlesHandler;
 using ServiceStack;
 using SocketHttpListener.Primitives;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
+using Emby.Server.MediaEncoding.Subtitles;
+using MediaBrowser.MediaEncoding.BdInfo;
 using StringExtensions = MediaBrowser.Controller.Extensions.StringExtensions;
-using Emby.Drawing;
-using Emby.Server.Implementations.Migrations;
-using MediaBrowser.Model.Diagnostics;
-using Emby.Common.Implementations.Diagnostics;
-using Emby.Server.Implementations.Configuration;
 
-namespace Emby.Server.Core
+namespace Emby.Server.Implementations
 {
     /// <summary>
     /// Class CompositionRoot
@@ -356,13 +345,6 @@ namespace Emby.Server.Core
         private void SetBaseExceptionMessage()
         {
             var builder = GetBaseExceptionMessage(ApplicationPaths);
-
-            // Skip if plugins haven't been loaded yet
-            //if (Plugins != null)
-            //{
-            //    var pluginString = string.Join("|", Plugins.Select(i => i.Name + "-" + i.Version.ToString()).ToArray());
-            //    builder.Insert(0, string.Format("Plugins: {0}{1}", pluginString, Environment.NewLine));
-            //}
 
             builder.Insert(0, string.Format("Version: {0}{1}", ApplicationVersion, Environment.NewLine));
             builder.Insert(0, "*** Error Report ***" + Environment.NewLine);
@@ -608,7 +590,7 @@ namespace Emby.Server.Core
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 
-            ServerManager = new ServerManager(this, JsonSerializer, LogManager.GetLogger("ServerManager"), ServerConfigurationManager, MemoryStreamFactory, textEncoding);
+            ServerManager = new ServerManager.ServerManager(this, JsonSerializer, LogManager.GetLogger("ServerManager"), ServerConfigurationManager, MemoryStreamFactory, textEncoding);
             RegisterSingleInstance(ServerManager);
 
             var innerProgress = new ActionableProgress<double>();
@@ -884,7 +866,7 @@ namespace Emby.Server.Core
             probePath = info.ProbePath;
             var hasExternalEncoder = string.Equals(info.Version, "external", StringComparison.OrdinalIgnoreCase);
 
-            var mediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"),
+            var mediaEncoder = new MediaEncoding.Encoder.MediaEncoder(LogManager.GetLogger("MediaEncoder"),
                 JsonSerializer,
                 encoderPath,
                 probePath,
@@ -980,8 +962,6 @@ namespace Emby.Server.Core
             BaseItem.CollectionManager = CollectionManager;
             BaseItem.MediaSourceManager = MediaSourceManager;
             CollectionFolder.XmlSerializer = XmlSerializer;
-            BaseStreamingService.AppHost = this;
-            BaseStreamingService.HttpClient = HttpClient;
             Utilities.CryptographyProvider = CryptographyProvider;
             AuthenticatedAttribute.AuthService = AuthService;
         }
@@ -1254,7 +1234,7 @@ namespace Emby.Server.Core
             list.Add(GetAssembly(typeof(InstallationManager)));
 
             // MediaEncoding
-            list.Add(GetAssembly(typeof(MediaEncoder)));
+            list.Add(GetAssembly(typeof(MediaEncoding.Encoder.MediaEncoder)));
 
             // Dlna 
             list.Add(GetAssembly(typeof(DlnaEntryPoint)));
@@ -1267,10 +1247,7 @@ namespace Emby.Server.Core
 
             list.AddRange(GetAssembliesWithPartsInternal());
 
-            // Include composable parts in the running assembly
-            list.Add(GetAssembly(typeof(ApplicationHost)));
-
-            return list;
+            return list.ToList();
         }
 
         protected abstract List<Assembly> GetAssembliesWithPartsInternal();

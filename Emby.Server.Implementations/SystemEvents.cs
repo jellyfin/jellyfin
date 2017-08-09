@@ -3,7 +3,7 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
 
-namespace MediaBrowser.Server.Startup.Common
+namespace Emby.Server.Implementations
 {
     public class SystemEvents : ISystemEvents
     {

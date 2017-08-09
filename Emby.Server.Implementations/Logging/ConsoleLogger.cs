@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Logging;
 
-namespace Emby.Server.Core.Logging
+namespace Emby.Server.Implementations.Logging
 {
     public class ConsoleLogger : IConsoleLogger
     {

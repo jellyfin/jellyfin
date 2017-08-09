@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Emby.Dlna.Server;
 using MediaBrowser.Model.Threading;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -890,7 +891,7 @@ namespace Emby.Dlna.PlayTo
             if (room != null && !string.IsNullOrWhiteSpace(room.Value))
                 friendlyNames.Add(room.Value);
 
-            deviceProperties.Name = string.Join(" ", friendlyNames.ToArray());
+            deviceProperties.Name = string.Join(" ", friendlyNames.ToArray(friendlyNames.Count));
 
             var model = document.Descendants(uPnpNamespaces.ud.GetName("modelName")).FirstOrDefault();
             if (model != null)

@@ -2,7 +2,7 @@
 using System.Configuration;
 using System.IO;
 
-namespace Emby.Server.Core
+namespace Emby.Server.Implementations
 {
     public static class ApplicationPathHelper
     {
