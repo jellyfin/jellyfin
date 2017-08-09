@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api
 {
@@ -326,11 +327,13 @@ namespace MediaBrowser.Api
                 SimilarTo = item,
                 DtoOptions = dtoOptions
 
-            }).ToList();
+            });
+
+            var returnList = (await _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user).ConfigureAwait(false));
 
             var result = new QueryResult<BaseItemDto>
             {
-                Items = (await _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user).ConfigureAwait(false)).ToArray(),
+                Items = returnList.ToArray(returnList.Count),
 
                 TotalRecordCount = itemsResult.Count
             };
@@ -360,9 +363,10 @@ namespace MediaBrowser.Api
                 Recursive = true,
                 DtoOptions = options
 
-            }).ToList();
+            });
 
-            var returnItems = (await _dtoService.GetBaseItemDtos(itemsResult, options, user).ConfigureAwait(false)).ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(itemsResult, options, user).ConfigureAwait(false));
+            var returnItems = returnList.ToArray(returnList.Count);
 
             var result = new ItemsResult
             {
@@ -394,7 +398,8 @@ namespace MediaBrowser.Api
 
             var user = _userManager.GetUserById(request.UserId);
 
-            var returnItems = (await _dtoService.GetBaseItemDtos(result.Items, options, user).ConfigureAwait(false)).ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(result.Items, options, user).ConfigureAwait(false));
+            var returnItems = returnList.ToArray(returnList.Count);
 
             return ToOptimizedSerializedResultUsingCache(new ItemsResult
             {
@@ -449,8 +454,8 @@ namespace MediaBrowser.Api
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var returnItems = (await _dtoService.GetBaseItemDtos(seasons, dtoOptions, user).ConfigureAwait(false))
-                .ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(seasons, dtoOptions, user).ConfigureAwait(false));
+            var returnItems = returnList.ToArray(returnList.Count);
 
             return new ItemsResult
             {
@@ -556,8 +561,8 @@ namespace MediaBrowser.Api
 
             var pagedItems = ApplyPaging(returnList, request.StartIndex, request.Limit);
 
-            var dtos = (await _dtoService.GetBaseItemDtos(pagedItems, dtoOptions, user).ConfigureAwait(false))
-                .ToArray();
+            var returnDtos = (await _dtoService.GetBaseItemDtos(pagedItems, dtoOptions, user).ConfigureAwait(false));
+            var dtos = returnDtos.ToArray(returnDtos.Count);
 
             return new ItemsResult
             {

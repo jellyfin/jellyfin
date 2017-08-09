@@ -182,9 +182,7 @@ namespace MediaBrowser.Providers.Manager
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            var images = results.SelectMany(i => i.ToList());
-
-            return images;
+            return results.SelectMany(i => i.ToList());
         }
 
         /// <summary>

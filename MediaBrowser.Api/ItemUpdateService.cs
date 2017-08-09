@@ -66,8 +66,8 @@ namespace MediaBrowser.Api
             {
                 ParentalRatingOptions = _localizationManager.GetParentalRatings().ToList(),
                 ExternalIdInfos = _providerManager.GetExternalIdInfos(item).ToList(),
-                Countries = _localizationManager.GetCountries().ToList(),
-                Cultures = _localizationManager.GetCultures().ToList()
+                Countries = _localizationManager.GetCountries(),
+                Cultures = _localizationManager.GetCultures()
             };
 
             if (!item.IsVirtualItem && !(item is ICollectionFolder) && !(item is UserView) && !(item is AggregateFolder) && !(item is LiveTvChannel) && !(item is IItemByName) &&
@@ -269,7 +269,7 @@ namespace MediaBrowser.Api
 
             if (request.Studios != null)
             {
-                item.Studios = request.Studios.Select(x => x.Name).ToList();
+                item.Studios = request.Studios.Select(x => x.Name).ToArray();
             }
 
             if (request.DateCreated.HasValue)
@@ -285,7 +285,7 @@ namespace MediaBrowser.Api
 
             if (request.ProductionLocations != null)
             {
-                item.ProductionLocations = request.ProductionLocations.ToList();
+                item.ProductionLocations = request.ProductionLocations;
             }
 
             item.PreferredMetadataCountryCode = request.PreferredMetadataCountryCode;

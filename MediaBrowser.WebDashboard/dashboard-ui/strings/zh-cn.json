@@ -1,4 +1,6 @@
 {
+    "MovieLibraryHelp": "Review the {0}Emby movie naming guide{1}.",
+    "TvLibraryHelp": "Review the {0}Emby TV naming guide{1}.",
     "LabelPrevious": "\u4e0a\u4e00\u4e2a",
     "LabelFinish": "\u5b8c\u6210",
     "LabelNext": "\u4e0b\u4e00\u4e2a",
@@ -1091,7 +1093,7 @@
     "OptionAllowMediaPlaybackTranscodingHelp": "Users will receive friendly messages when content is unplayable based on policy.",
     "TabStreaming": "Streaming",
     "LabelRemoteClientBitrateLimit": "Internet streaming bitrate limit (Mbps):",
-    "LabelRemoteClientBitrateLimitHelp": "An optional streaming bitrate limit for all out of network devices. This is useful to prevent devices from requesting a higher bitrate than your internet connection can handle.",
+    "LabelRemoteClientBitrateLimitHelp": "An optional per-stream bitrate limit for all out of network devices. This is useful to prevent devices from requesting a higher bitrate than your internet connection can handle. This may result in increased CPU load on your server in order to transcode videos on the fly to a lower bitrate.",
     "LabelConversionCpuCoreLimit": "CPU \u6838\u9650\u5236\uff1a",
     "LabelConversionCpuCoreLimitHelp": "\u9650\u5236\u540c\u6b65\u8f6c\u6362\u65f6\u4f7f\u7528\u7684 CPU \u6838\u6570\u3002",
     "OptionEnableFullSpeedConversion": "Enable full speed conversion",

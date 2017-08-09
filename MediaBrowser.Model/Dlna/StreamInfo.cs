@@ -149,7 +149,7 @@ namespace MediaBrowser.Model.Dlna
                 list.Add(string.Format("{0}={1}", pair.Name, pair.Value));
             }
 
-            string queryString = string.Join("&", list.ToArray());
+            string queryString = string.Join("&", list.ToArray(list.Count));
 
             return GetUrl(baseUrl, queryString);
         }
@@ -203,7 +203,7 @@ namespace MediaBrowser.Model.Dlna
                 list.Add(pair.Value);
             }
 
-            return string.Format("Params={0}", string.Join(";", list.ToArray()));
+            return string.Format("Params={0}", string.Join(";", list.ToArray(list.Count)));
         }
 
         private static List<NameValuePair> BuildParams(StreamInfo item, string accessToken, bool isDlna)

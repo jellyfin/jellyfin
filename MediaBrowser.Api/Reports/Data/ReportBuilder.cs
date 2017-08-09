@@ -458,7 +458,7 @@ namespace MediaBrowser.Api.Reports
                     break;
 
                 case HeaderMetadata.Network:
-                    option.Column = (i, r) => this.GetListAsString(i.Studios);
+                    option.Column = (i, r) => this.GetListAsString(i.Studios.ToList());
                     option.ItemID = (i) => this.GetStudioID(i.Studios.FirstOrDefault());
                     option.Header.ItemViewType = ItemViewType.ItemByNameDetails;
                     option.Header.SortField = "Studio,SortName";

@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.Years
 {
     public class YearMetadataService : MetadataService<Year, ItemLookupInfo>
     {
-        protected override void MergeData(MetadataResult<Year> source, MetadataResult<Year> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Year> source, MetadataResult<Year> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

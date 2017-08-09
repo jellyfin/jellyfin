@@ -1,4 +1,6 @@
 {
+    "MovieLibraryHelp": "Vea la {0}Gu\u00eda para nombrar pel\u00edculas en Emby{1}",
+    "TvLibraryHelp": "Vea la {0}Gu\u00eda para nombrar series de TV en Emby{1}",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Terminar",
     "LabelNext": "Siguiente",
@@ -1091,7 +1093,7 @@
     "OptionAllowMediaPlaybackTranscodingHelp": "Los usuarios recibir\u00e1n mensajes amigables cuando el contenido no pueda ser reproducido de acuerdo a su pol\u00edtica.",
     "TabStreaming": "Transmisi\u00f3n",
     "LabelRemoteClientBitrateLimit": "Limite de tasa de bits para transmisi\u00f3n por Internet (Mbps):",
-    "LabelRemoteClientBitrateLimitHelp": "L\u00edmite opcional en la tasa de bits de transmisi\u00f3n para todos las aplicaciones Emby fuera de la red local. Esto es \u00fatil para evitar que los clientes soliciten una tasa de bits mayor a la que su conexi\u00f3n de internet puede soportar.",
+    "LabelRemoteClientBitrateLimitHelp": "Un l\u00edmite opcional en la tasa de bits para cada transmisi\u00f3n para todos los dispositivos fuera de la red local. Esto es \u00fatil para evitar que los clientes soliciten una tasa de bits mayor a la que su conexi\u00f3n de internet puede soportar. Puede resultar en un incremente en la carga del CPU de su servidor para poder transmitir videos al vuelo a una resoluci\u00f3n baja.",
     "LabelConversionCpuCoreLimit": "L\u00edmite de n\u00facleos de CPU:",
     "LabelConversionCpuCoreLimitHelp": "L\u00edmitar el n\u00famero de n\u00facleos del CPI que ser\u00e1n utilizados durante la conversi\u00f3n de sincronizaci\u00f3n.",
     "OptionEnableFullSpeedConversion": "Habilitar conversi\u00f3n a m\u00e1xima velocidad",

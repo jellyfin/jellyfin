@@ -1,4 +1,6 @@
 {
+    "MovieLibraryHelp": "Rivedere la {0} guida di denominazione del film Emby {1}.",
+    "TvLibraryHelp": "Rivedere la {0} guida di denominazione Emby TV {1}.",
     "LabelPrevious": "Precedente",
     "LabelFinish": "Finito",
     "LabelNext": "Prossimo",
@@ -1091,7 +1093,7 @@
     "OptionAllowMediaPlaybackTranscodingHelp": "Gli utenti riceveranno messaggi esplicativi quando il contenuto non \u00e8 riproducibile a causa della policy.",
     "TabStreaming": "Streaming",
     "LabelRemoteClientBitrateLimit": "Bitrate limite per lo streaming via internet (Mbps):",
-    "LabelRemoteClientBitrateLimitHelp": "Un limite opzionale al bitrate in streaming per tutti i dispositivi all'esterno della rete. Pu\u00f2 essere utile per evitare che i dispositivi richiedano un bitrate pi\u00f9 alto di quanto possa gestire la tua connessione ad Internet.",
+    "LabelRemoteClientBitrateLimitHelp": "Un limite bitrate per-stream opzionale per tutti i dispositivi di rete. Ci\u00f2 \u00e8 utile per impedire ai dispositivi di richiedere un bitrate superiore a quello in grado di gestire la connessione a Internet. Questo pu\u00f2 provocare un aumento del carico della CPU sul server per transcodificare i video in volo ad un bitrate inferiore.",
     "LabelConversionCpuCoreLimit": "Limite della CPU:",
     "LabelConversionCpuCoreLimitHelp": "Limiita il numero di CPU da utilizzare durante l'operazione di sincronizzazione.",
     "OptionEnableFullSpeedConversion": "Abilita conversione a velocit\u00e0 piena",
@@ -1940,7 +1942,7 @@
     "EnableNextVideoInfoOverlayHelp": "Alla fine di un video, visualizza informazioni sul video successivo che compare nella playlist corrente.",
     "ServerRestartNeededAfterPluginInstall": "Il server Emby dovr\u00e0 essere riavviato dopo l'installazione di un plugin.",
     "PluginInstalledMessage": "Il plugin \u00e8 stato installato correttamente. Il server Emby dovr\u00e0 essere riavviato affinch\u00e9 le modifiche abbiano effetto.",
-    "Themes": "Themes",
-    "LabelTheme": "Theme:",
-    "LabelDashboardTheme": "Server dashboard theme:"
+    "Themes": "Temi",
+    "LabelTheme": "Tema:",
+    "LabelDashboardTheme": "Tema dashboard del server:"
 }

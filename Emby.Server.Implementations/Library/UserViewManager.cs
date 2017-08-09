@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -231,7 +232,7 @@ namespace Emby.Server.Implementations.Library
             return list;
         }
 
-        private IEnumerable<BaseItem> GetItemsForLatestItems(User user, LatestItemsQuery request, DtoOptions options)
+        private List<BaseItem> GetItemsForLatestItems(User user, LatestItemsQuery request, DtoOptions options)
         {
             var parentId = request.ParentId;
 
@@ -325,7 +326,7 @@ namespace Emby.Server.Implementations.Library
                 Limit = limit * 5,
                 IsPlayed = isPlayed,
                 DtoOptions = options,
-                MediaTypes = mediaTypes.ToArray()
+                MediaTypes = mediaTypes.ToArray(mediaTypes.Count)
             };
 
             if (parents.Count == 0)

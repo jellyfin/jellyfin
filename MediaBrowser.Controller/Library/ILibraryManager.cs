@@ -185,13 +185,6 @@ namespace MediaBrowser.Controller.Library
                                    SortOrder sortOrder);
 
         /// <summary>
-        /// Ensure supplied item has only one instance throughout
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>The proper instance to the item</returns>
-        BaseItem GetOrAddByReferenceItem(BaseItem item);
-
-        /// <summary>
         /// Gets the user root folder.
         /// </summary>
         /// <returns>UserRootFolder.</returns>
@@ -527,14 +520,14 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
-        IEnumerable<BaseItem> GetItemList(InternalItemsQuery query);
+        List<BaseItem> GetItemList(InternalItemsQuery query);
 
-        IEnumerable<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent);
+        List<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent);
 
         /// <summary>
         /// Gets the items.
         /// </summary>
-        IEnumerable<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
+        List<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
 
         /// <summary>
         /// Gets the items result.

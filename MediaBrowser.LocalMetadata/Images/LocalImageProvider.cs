@@ -103,23 +103,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
         public List<LocalImageInfo> GetImages(IHasMetadata item, IEnumerable<string> paths, bool arePathsInMediaFolders, IDirectoryService directoryService)
         {
-            IEnumerable<FileSystemMetadata> files;
-
-            if (arePathsInMediaFolders)
-            {
-                files = paths.SelectMany(i => _fileSystem.GetFiles(i, BaseItem.SupportedImageExtensions, true, false));
-            }
-            else
-            {
-                files = paths.SelectMany(directoryService.GetFiles)
-                    .Where(i =>
-                    {
-                        var ext = i.Extension;
-
-                        return !string.IsNullOrEmpty(ext) &&
-                               BaseItem.SupportedImageExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
-                    });
-            }
+            IEnumerable<FileSystemMetadata> files = paths.SelectMany(i => _fileSystem.GetFiles(i, BaseItem.SupportedImageExtensions, true, false));
 
             files = files
                 .OrderBy(i => BaseItem.SupportedImageExtensionsList.IndexOf(i.Extension ?? string.Empty));

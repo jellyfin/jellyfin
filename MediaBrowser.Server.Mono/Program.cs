@@ -16,8 +16,6 @@ using Emby.Common.Implementations.Logging;
 using Emby.Common.Implementations.Networking;
 using Emby.Server.Core.Cryptography;
 using Emby.Server.Core;
-using Emby.Server.Core.IO;
-using Emby.Server.Core.Logging;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Logging;
@@ -115,7 +113,7 @@ namespace MediaBrowser.Server.Mono
                 "emby.mono.zip",
                 environmentInfo,
                 imageEncoder,
-                new Startup.Common.SystemEvents(logManager.GetLogger("SystemEvents")),
+                new SystemEvents(logManager.GetLogger("SystemEvents")),
                 new MemoryStreamProvider(),
                 new NetworkManager(logManager.GetLogger("NetworkManager")),
                 GenerateCertificate,

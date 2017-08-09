@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <returns>Task{IEnumerable{ItemReview}}.</returns>
-        IEnumerable<ItemReview> GetCriticReviews(Guid itemId);
+        List<ItemReview> GetCriticReviews(Guid itemId);
 
         /// <summary>
         /// Saves the critic reviews.

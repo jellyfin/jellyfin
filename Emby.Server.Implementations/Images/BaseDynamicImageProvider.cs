@@ -293,20 +293,16 @@ namespace Emby.Server.Implementations.Images
             return true;
         }
 
-        protected List<BaseItem> GetFinalItems(List<BaseItem> items)
+        protected List<BaseItem> GetFinalItems(IEnumerable<BaseItem> items)
         {
             return GetFinalItems(items, 4);
         }
 
-        protected virtual List<BaseItem> GetFinalItems(List<BaseItem> items, int limit)
+        protected virtual List<BaseItem> GetFinalItems(IEnumerable<BaseItem> items, int limit)
         {
-            // Rotate the images once every x days
-            var random = DateTime.Now.DayOfYear % MaxImageAgeDays;
-
             return items
-                .OrderBy(i => (random + string.Empty + items.IndexOf(i)).GetMD5())
+                .OrderBy(i => Guid.NewGuid())
                 .Take(limit)
-                .OrderBy(i => i.Name)
                 .ToList();
         }
 

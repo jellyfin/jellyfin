@@ -165,9 +165,9 @@ namespace MediaBrowser.Controller.Entities
         public List<string> PhysicalLocationsList { get; set; }
         public List<Guid> PhysicalFolderIds { get; set; }
 
-        protected override IEnumerable<FileSystemMetadata> GetFileSystemChildren(IDirectoryService directoryService)
+        protected override FileSystemMetadata[] GetFileSystemChildren(IDirectoryService directoryService)
         {
-            return CreateResolveArgs(directoryService, true).FileSystemChildren;
+            return CreateResolveArgs(directoryService, true).FileSystemChildren.ToArray();
         }
 
         private bool _requiresRefresh;

@@ -123,8 +123,7 @@ namespace MediaBrowser.Providers.BoxSets
                 return 0;
             })
                 .ThenByDescending(i => i.CommunityRating ?? 0)
-                .ThenByDescending(i => i.VoteCount ?? 0)
-                .ToList();
+                .ThenByDescending(i => i.VoteCount ?? 0);
         }
 
         /// <summary>
@@ -145,8 +144,7 @@ namespace MediaBrowser.Providers.BoxSets
         private IEnumerable<MovieDbBoxSetProvider.Backdrop> GetBackdrops(MovieDbBoxSetProvider.Images images)
         {
             var eligibleBackdrops = images.backdrops == null ? new List<MovieDbBoxSetProvider.Backdrop>() :
-                images.backdrops
-                .ToList();
+                images.backdrops;
 
             return eligibleBackdrops.OrderByDescending(i => i.vote_average)
                 .ThenByDescending(i => i.vote_count);

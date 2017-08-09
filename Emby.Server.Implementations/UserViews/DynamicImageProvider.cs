@@ -62,9 +62,9 @@ namespace Emby.Server.Implementations.UserViews
                     IsMovie = true,
                     DtoOptions = new DtoOptions(false)
 
-                }).ToList();
+                });
 
-                return GetFinalItems(programs).ToList();
+                return GetFinalItems(programs);
             }
 
             if (string.Equals(view.ViewType, SpecialFolder.MovieGenre, StringComparison.OrdinalIgnoreCase) ||
@@ -133,10 +133,10 @@ namespace Emby.Server.Implementations.UserViews
 
             if (isUsingCollectionStrip)
             {
-                return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)).ToList(), 8);
+                return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)), 8);
             }
 
-            return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary)).ToList());
+            return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary)));
         }
 
         protected override bool Supports(IHasMetadata item)

@@ -12,7 +12,7 @@ namespace MediaBrowser.Providers.Photos
 {
     class PhotoMetadataService : MetadataService<Photo, ItemLookupInfo>
     {
-        protected override void MergeData(MetadataResult<Photo> source, MetadataResult<Photo> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Photo> source, MetadataResult<Photo> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

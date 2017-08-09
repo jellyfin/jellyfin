@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.Games
 {
     public class GameMetadataService : MetadataService<Game, GameInfo>
     {
-        protected override void MergeData(MetadataResult<Game> source, MetadataResult<Game> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Game> source, MetadataResult<Game> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 

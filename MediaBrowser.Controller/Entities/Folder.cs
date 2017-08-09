@@ -20,6 +20,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -791,7 +792,7 @@ namespace MediaBrowser.Controller.Entities
             query.StartIndex = null;
             query.Limit = null;
 
-            var itemsList = LibraryManager.GetItemList(query);
+            IEnumerable<BaseItem> itemsList = LibraryManager.GetItemList(query);
             var user = query.User;
 
             if (user != null)
@@ -970,7 +971,7 @@ namespace MediaBrowser.Controller.Entities
             return GetItemsInternal(query);
         }
 
-        public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query)
+        public BaseItem[] GetItemList(InternalItemsQuery query)
         {
             query.EnableTotalRecordCount = false;
 
@@ -983,9 +984,9 @@ namespace MediaBrowser.Controller.Entities
                     var ids = query.ItemIds.ToList();
 
                     // Try to preserve order
-                    result = result.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToArray();
+                    return result.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToArray();
                 }
-                return result;
+                return result.ToArray(result.Count);
             }
 
             return GetItemsInternal(query).Items;

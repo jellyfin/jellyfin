@@ -13,6 +13,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -165,12 +166,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!audio.LockedFields.Contains(MetadataFields.Studios))
             {
-                audio.Studios.Clear();
-
-                foreach (var studio in data.Studios)
-                {
-                    audio.AddStudio(studio);
-                }
+                audio.SetStudios(data.Studios);
             }
 
             audio.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, data.GetProviderId(MetadataProviders.MusicBrainzAlbumArtist));

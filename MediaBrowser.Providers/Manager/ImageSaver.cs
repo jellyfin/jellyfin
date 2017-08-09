@@ -17,6 +17,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -541,7 +542,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     list.Add(Path.Combine(item.ContainingFolderPath, "extrathumbs", "thumb" + outputIndex.ToString(UsCulture) + extension));
                 }
-                return list.ToArray();
+                return list.ToArray(list.Count);
             }
 
             if (type == ImageType.Primary)

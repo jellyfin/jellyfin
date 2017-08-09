@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.TV
             return updateType;
         }
 
-        protected override void MergeData(MetadataResult<Season> source, MetadataResult<Season> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Season> source, MetadataResult<Season> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

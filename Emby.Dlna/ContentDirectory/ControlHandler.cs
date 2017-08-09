@@ -30,6 +30,7 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Xml;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Dlna.ContentDirectory
 {
@@ -457,14 +458,14 @@ namespace Emby.Dlna.ContentDirectory
             {
                 Limit = limit,
                 StartIndex = startIndex,
-                SortBy = sortOrders.ToArray(),
+                SortBy = sortOrders.ToArray(sortOrders.Count),
                 SortOrder = sort.SortOrder,
                 User = user,
                 Recursive = true,
                 IsMissing = false,
                 ExcludeItemTypes = new[] { typeof(Game).Name, typeof(Book).Name },
                 IsFolder = isFolder,
-                MediaTypes = mediaTypes.ToArray(),
+                MediaTypes = mediaTypes.ToArray(mediaTypes.Count),
                 DtoOptions = GetDtoOptions()
             });
         }
@@ -508,12 +509,12 @@ namespace Emby.Dlna.ContentDirectory
                     {
                         ItemId = item.Id
 
-                    }).ToArray();
+                    });
 
                     var result = new QueryResult<ServerItem>
                     {
-                        Items = items.Select(i => new ServerItem(i)).ToArray(),
-                        TotalRecordCount = items.Length
+                        Items = items.Select(i => new ServerItem(i)).ToArray(items.Count),
+                        TotalRecordCount = items.Count
                     };
 
                     return ApplyPaging(result, startIndex, limit);
@@ -662,7 +663,7 @@ namespace Emby.Dlna.ContentDirectory
 
             return new QueryResult<ServerItem>
             {
-                Items = list.ToArray(),
+                Items = list.ToArray(list.Count),
                 TotalRecordCount = list.Count
             };
         }
@@ -740,7 +741,7 @@ namespace Emby.Dlna.ContentDirectory
 
             return new QueryResult<ServerItem>
             {
-                Items = list.ToArray(),
+                Items = list.ToArray(list.Count),
                 TotalRecordCount = list.Count
             };
         }
@@ -828,7 +829,7 @@ namespace Emby.Dlna.ContentDirectory
 
             return new QueryResult<ServerItem>
             {
-                Items = list.ToArray(),
+                Items = list.ToArray(list.Count),
                 TotalRecordCount = list.Count
             };
         }
@@ -995,7 +996,7 @@ namespace Emby.Dlna.ContentDirectory
             var result = new QueryResult<BaseItem>
             {
                 TotalRecordCount = genresResult.TotalRecordCount,
-                Items = genresResult.Items.Select(i => i.Item1).ToArray()
+                Items = genresResult.Items.Select(i => i.Item1).ToArray(genresResult.Items.Length)
             };
 
             return ToResult(result);
@@ -1013,7 +1014,7 @@ namespace Emby.Dlna.ContentDirectory
             var result = new QueryResult<BaseItem>
             {
                 TotalRecordCount = genresResult.TotalRecordCount,
-                Items = genresResult.Items.Select(i => i.Item1).ToArray()
+                Items = genresResult.Items.Select(i => i.Item1).ToArray(genresResult.Items.Length)
             };
 
             return ToResult(result);
@@ -1031,7 +1032,7 @@ namespace Emby.Dlna.ContentDirectory
             var result = new QueryResult<BaseItem>
             {
                 TotalRecordCount = artists.TotalRecordCount,
-                Items = artists.Items.Select(i => i.Item1).ToArray()
+                Items = artists.Items.Select(i => i.Item1).ToArray(artists.Items.Length)
             };
 
             return ToResult(result);
@@ -1049,7 +1050,7 @@ namespace Emby.Dlna.ContentDirectory
             var result = new QueryResult<BaseItem>
             {
                 TotalRecordCount = artists.TotalRecordCount,
-                Items = artists.Items.Select(i => i.Item1).ToArray()
+                Items = artists.Items.Select(i => i.Item1).ToArray(artists.Items.Length)
             };
 
             return ToResult(result);
@@ -1068,7 +1069,7 @@ namespace Emby.Dlna.ContentDirectory
             var result = new QueryResult<BaseItem>
             {
                 TotalRecordCount = artists.TotalRecordCount,
-                Items = artists.Items.Select(i => i.Item1).ToArray()
+                Items = artists.Items.Select(i => i.Item1).ToArray(artists.Items.Length)
             };
 
             return ToResult(result);
@@ -1196,7 +1197,7 @@ namespace Emby.Dlna.ContentDirectory
         {
             var serverItems = result
                 .Select(i => new ServerItem(i))
-                .ToArray();
+                .ToArray(result.Count);
 
             return new QueryResult<ServerItem>
             {
@@ -1210,7 +1211,7 @@ namespace Emby.Dlna.ContentDirectory
             var serverItems = result
                 .Items
                 .Select(i => new ServerItem(i))
-                .ToArray();
+                .ToArray(result.Items.Length);
 
             return new QueryResult<ServerItem>
             {
@@ -1227,7 +1228,7 @@ namespace Emby.Dlna.ContentDirectory
                 sortOrders.Add(ItemSortBy.SortName);
             }
 
-            query.SortBy = sortOrders.ToArray();
+            query.SortBy = sortOrders.ToArray(sortOrders.Count);
             query.SortOrder = sort.SortOrder;
         }
 
@@ -1243,8 +1244,7 @@ namespace Emby.Dlna.ContentDirectory
                 DtoOptions = GetDtoOptions()
             });
 
-            var serverItems = itemsResult.Items.Select(i => new ServerItem(i))
-            .ToArray();
+            var serverItems = itemsResult.Items.Select(i => new ServerItem(i)).ToArray(itemsResult.Items.Length);
 
             return new QueryResult<ServerItem>
             {

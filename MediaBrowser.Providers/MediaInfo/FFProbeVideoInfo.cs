@@ -376,14 +376,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Studios))
             {
-                if (video.Studios.Count == 0 || isFullRefresh)
+                if (video.Studios.Length == 0 || isFullRefresh)
                 {
-                    video.Studios.Clear();
-
-                    foreach (var studio in data.Studios)
-                    {
-                        video.AddStudio(studio);
-                    }
+                    video.SetStudios(data.Studios);
                 }
             }
 

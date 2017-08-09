@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -58,7 +59,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     session.ApplicationVersion
                 };
 
-                var key = string.Join("_", keys.ToArray()).GetMD5();
+                var key = string.Join("_", keys.ToArray(keys.Count)).GetMD5();
 
                 _apps.GetOrAdd(key, guid => GetNewClientInfo(session));
             }

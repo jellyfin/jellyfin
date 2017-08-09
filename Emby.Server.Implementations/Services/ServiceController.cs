@@ -15,17 +15,15 @@ namespace Emby.Server.Implementations.Services
     public class ServiceController
     {
         public static ServiceController Instance;
-        private readonly Func<IEnumerable<Type>> _resolveServicesFn;
 
-        public ServiceController(Func<IEnumerable<Type>> resolveServicesFn)
+        public ServiceController()
         {
             Instance = this;
-            _resolveServicesFn = resolveServicesFn;
         }
 
-        public void Init(HttpListenerHost appHost)
+        public void Init(HttpListenerHost appHost, Type[] serviceTypes)
         {
-            foreach (var serviceType in _resolveServicesFn())
+            foreach (var serviceType in serviceTypes)
             {
                 RegisterService(appHost, serviceType);
             }

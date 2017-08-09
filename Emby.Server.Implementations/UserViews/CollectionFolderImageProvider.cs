@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.UserViews
 
             }).DistinctBy(i => i.Id);
 
-            return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)).ToList(), 8);
+            return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)), 8);
         }
 
         protected override bool Supports(IHasMetadata item)
@@ -149,7 +149,7 @@ namespace Emby.Server.Implementations.UserViews
                 DtoOptions = new DtoOptions(false)
             });
 
-            return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)).ToList(), 8);
+            return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)), 8);
         }
 
         protected override bool Supports(IHasMetadata item)

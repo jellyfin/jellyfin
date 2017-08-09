@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.Folders
 {
     public class UserViewMetadataService : MetadataService<UserView, ItemLookupInfo>
     {
-        protected override void MergeData(MetadataResult<UserView> source, MetadataResult<UserView> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<UserView> source, MetadataResult<UserView> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

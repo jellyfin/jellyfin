@@ -8,6 +8,7 @@ using MediaBrowser.Model.Querying;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api
 {
@@ -192,8 +193,10 @@ namespace MediaBrowser.Api
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var dtos = (await _dtoService.GetBaseItemDtos(items.Select(i => i.Item2), dtoOptions, user).ConfigureAwait(false))
-                   .ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(items.Select(i => i.Item2), dtoOptions, user)
+                .ConfigureAwait(false));
+            var dtos = returnList
+                   .ToArray(returnList.Count);
 
             var index = 0;
             foreach (var item in dtos)

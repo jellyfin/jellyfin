@@ -65,8 +65,7 @@ namespace Emby.Server.Implementations.Playlists
                     return null;
                 })
                 .Where(i => i != null)
-                .DistinctBy(i => i.Id)
-                .ToList();
+                .DistinctBy(i => i.Id);
 
             return GetFinalItems(items);
         }
@@ -93,7 +92,7 @@ namespace Emby.Server.Implementations.Playlists
                 ImageTypes = new[] { ImageType.Primary },
                 DtoOptions = new DtoOptions(false)
 
-            }).ToList();
+            });
 
             return GetFinalItems(items);
         }
@@ -125,7 +124,7 @@ namespace Emby.Server.Implementations.Playlists
                 ImageTypes = new[] { ImageType.Primary },
                 DtoOptions = new DtoOptions(false)
 
-            }).ToList();
+            });
 
             return GetFinalItems(items);
         }

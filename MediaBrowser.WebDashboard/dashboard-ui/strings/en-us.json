@@ -1089,6 +1089,7 @@
   "TabStreaming": "Streaming",
   "LabelRemoteClientBitrateLimit": "Internet streaming bitrate limit (Mbps):",
   "LabelRemoteClientBitrateLimitHelp": "An optional per-stream bitrate limit for all out of network devices. This is useful to prevent devices from requesting a higher bitrate than your internet connection can handle. This may result in increased CPU load on your server in order to transcode videos on the fly to a lower bitrate.",
+  "LabelUserRemoteClientBitrateLimitHelp": "This will override the default global value set in server playback settings.",
   "LabelConversionCpuCoreLimit": "CPU core limit:",
   "LabelConversionCpuCoreLimitHelp": "Limit the number of CPU cores that will be used during sync conversion.",
   "OptionEnableFullSpeedConversion": "Enable full speed conversion",

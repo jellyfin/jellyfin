@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using MediaBrowser.Model.Services;
 using SocketHttpListener.Net;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -29,7 +30,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             else
             {
-                var headerText = string.Join(", ", headers.Select(i => i.Name + "=" + i.Value).ToArray());
+                var headerText = string.Join(", ", headers.Select(i => i.Name + "=" + i.Value).ToArray(headers.Count));
 
                 logger.Info("HTTP {0} {1}. {2}", method, url, headerText);
             }

@@ -111,7 +111,7 @@ namespace Emby.Photos
                         }
 
                         item.Genres = image.ImageTag.Genres.ToList();
-                        item.Tags = image.ImageTag.Keywords.ToList();
+                        item.Tags = image.ImageTag.Keywords;
                         item.Software = image.ImageTag.Software;
 
                         if (image.ImageTag.Orientation == TagLib.Image.ImageOrientation.None)

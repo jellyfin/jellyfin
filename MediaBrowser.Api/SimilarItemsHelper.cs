@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api
 {
@@ -80,7 +81,7 @@ namespace MediaBrowser.Api
 
             var query = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = includeTypes.Select(i => i.Name).ToArray(),
+                IncludeItemTypes = includeTypes.Select(i => i.Name).ToArray(includeTypes.Length),
                 Recursive = true,
                 DtoOptions = dtoOptions
             };
@@ -107,7 +108,7 @@ namespace MediaBrowser.Api
 
             return new QueryResult<BaseItemDto>
             {
-                Items = dtos.ToArray(),
+                Items = dtos.ToArray(dtos.Count),
 
                 TotalRecordCount = items.Count
             };

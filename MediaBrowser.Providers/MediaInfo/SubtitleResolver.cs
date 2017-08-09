@@ -133,7 +133,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 throw new ArgumentException(string.Format("Cannot search for items that don't have a path: {0} {1}", video.Name, video.Id));
             }
 
-            var files = directoryService.GetFilePaths(containingPath, clearCache);
+            var files = fileSystem.GetFilePaths(containingPath, clearCache);
 
             var videoFileNameWithoutExtension = fileSystem.GetFileNameWithoutExtension(video.Path);
 
