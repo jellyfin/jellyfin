@@ -125,7 +125,7 @@ namespace MediaBrowser.Providers.Music
 
                         return result;
 
-                    }).ToList(results.Count);
+                    }).ToList();
                 }
             }
         }
@@ -621,7 +621,7 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            _mbzUrls = list.ToList(list.Count);
+            _mbzUrls = list.ToList();
 
             return list;
         }
