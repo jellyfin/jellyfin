@@ -30,7 +30,7 @@ namespace MediaBrowser.Providers.Music
 
             if (replaceData || targetItem.Artists.Count == 0)
             {
-                targetItem.Artists = sourceItem.Artists.ToList(sourceItem.Artists.Count);
+                targetItem.Artists = sourceItem.Artists.ToList();
             }
         }
 
