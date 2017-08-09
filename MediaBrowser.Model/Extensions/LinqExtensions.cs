@@ -55,19 +55,6 @@ namespace MediaBrowser.Model.Extensions
             return array;
         }
 
-        public static List<TSource> ToList<TSource>(this IEnumerable<TSource> source, int count)
-        {
-            if (source == null) throw new ArgumentNullException("source");
-            if (count < 0) throw new ArgumentOutOfRangeException("count");
-            var array = new List<TSource>(count);
-            int i = 0;
-            foreach (var item in source)
-            {
-                array[i++] = item;
-            }
-            return array;
-        }
-
         /// <summary>
         /// Returns all distinct elements of the given source, where "distinctness"
         /// is determined via a projection and the specified comparer for the projected type.

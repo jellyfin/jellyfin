@@ -457,7 +457,7 @@ namespace MediaBrowser.Providers.Manager
 
             var newImageFileInfos = newImages
                     .Select(i => i.FileInfo)
-                    .ToList(newImages.Count);
+                    .ToList();
 
             if (item.AddImages(type, newImageFileInfos))
             {

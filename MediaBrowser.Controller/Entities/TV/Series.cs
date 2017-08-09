@@ -231,7 +231,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>List&lt;Guid&gt;.</returns>
         public List<Guid> GetTrailerIds()
         {
-            var list = LocalTrailerIds.ToList(LocalTrailerIds.Count);
+            var list = LocalTrailerIds.ToList();
             list.AddRange(RemoteTrailerIds);
             return list;
         }

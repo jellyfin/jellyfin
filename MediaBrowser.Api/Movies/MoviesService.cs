@@ -414,7 +414,7 @@ namespace MediaBrowser.Api.Movies
                 MaxListOrder = 3
             });
 
-            var itemIds = items.Select(i => i.Id).ToList(items.Count);
+            var itemIds = items.Select(i => i.Id).ToList();
 
             return people
                 .Where(i => itemIds.Contains(i.ItemId))
@@ -432,7 +432,7 @@ namespace MediaBrowser.Api.Movies
                 }
             });
 
-            var itemIds = items.Select(i => i.Id).ToList(items.Count);
+            var itemIds = items.Select(i => i.Id).ToList();
 
             return people
                 .Where(i => itemIds.Contains(i.ItemId))
