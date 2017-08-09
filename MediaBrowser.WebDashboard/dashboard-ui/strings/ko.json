@@ -1,4 +1,6 @@
 {
+    "MovieLibraryHelp": "Review the {0}Emby movie naming guide{1}.",
+    "TvLibraryHelp": "Review the {0}Emby TV naming guide{1}.",
     "LabelPrevious": "\uc774\uc804",
     "LabelFinish": "\ub05d\ub0b4\uae30",
     "LabelNext": "\ub2e4\uc74c",
@@ -1091,7 +1093,7 @@
     "OptionAllowMediaPlaybackTranscodingHelp": "Users will receive friendly messages when content is unplayable based on policy.",
     "TabStreaming": "\uc2a4\ud2b8\ub9ac\ubc0d",
     "LabelRemoteClientBitrateLimit": "\uc778\ud130\ub137 \uc2a4\ud2b8\ub9ac\ubc0d \ube44\ud2b8\ub808\uc774\ud2b8 \uc81c\ud55c (Mbps):",
-    "LabelRemoteClientBitrateLimitHelp": "An optional streaming bitrate limit for all out of network devices. This is useful to prevent devices from requesting a higher bitrate than your internet connection can handle.",
+    "LabelRemoteClientBitrateLimitHelp": "An optional per-stream bitrate limit for all out of network devices. This is useful to prevent devices from requesting a higher bitrate than your internet connection can handle. This may result in increased CPU load on your server in order to transcode videos on the fly to a lower bitrate.",
     "LabelConversionCpuCoreLimit": "CPU \ucf54\uc5b4 \uc81c\ud55c:",
     "LabelConversionCpuCoreLimitHelp": "\ub3d9\uae30\ud654 \ubcc0\ud658 \uc911 \uc0ac\uc6a9\ud560 CPU \ucf54\uc5b4 \uc218\ub97c \uc81c\ud55c\ud569\ub2c8\ub2e4.",
     "OptionEnableFullSpeedConversion": "\ucd5c\ub300 \ubcc0\ud658 \uc18d\ub3c4 \uc0ac\uc6a9",

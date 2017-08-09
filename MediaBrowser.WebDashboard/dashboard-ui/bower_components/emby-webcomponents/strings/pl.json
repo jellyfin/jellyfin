@@ -260,7 +260,7 @@
     "ConfirmDeleteItems": "Usuni\u0119cie tej pozycji usunie j\u0105 zar\u00f3wno z systemu plik\u00f3w jak i z biblioteki medi\u00f3w. Czy chcesz kontynuowa\u0107?",
     "PleaseRestartServerName": "Prosz\u0119 ponownie uruchomi\u0107 serwer Emby - {0}",
     "LabelSyncJobName": "Nazwa zadania synchronizacji",
-    "SyncJobCreated": "Utworzono zadanie synchronizacji.",
+    "SyncJobCreated": "Utworzono zadanie synchronizacji",
     "LabelQuality": "Jako\u015b\u0107:",
     "LabelSyncNoTargetsHelp": "Wygl\u0105da na to, \u017ce nie posiadasz \u017cadnych aplikacji obs\u0142uguj\u0105cych pobieranie w trybie offline.",
     "DownloadingDots": "Trwa pobieranie...",

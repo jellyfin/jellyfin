@@ -85,7 +85,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetCountries request)
         {
-            var result = _localization.GetCountries().ToList();
+            var result = _localization.GetCountries();
 
             return ToOptimizedResult(result);
         }
@@ -97,7 +97,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetCultures request)
         {
-            var result = _localization.GetCultures().ToList();
+            var result = _localization.GetCultures();
 
             return ToOptimizedResult(result);
         }

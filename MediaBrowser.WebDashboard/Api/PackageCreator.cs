@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.WebDashboard.Api
 {
@@ -282,7 +283,7 @@ namespace MediaBrowser.WebDashboard.Api
                 files.Insert(0, "cordova.js");
             }
 
-            var tags = files.Select(s => string.Format("<script src=\"{0}\" defer></script>", s)).ToArray();
+            var tags = files.Select(s => string.Format("<script src=\"{0}\" defer></script>", s)).ToArray(files.Count);
 
             builder.Append(string.Join(string.Empty, tags));
 

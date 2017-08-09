@@ -136,24 +136,6 @@ namespace Emby.Server.Implementations.Data
                     queries.Add("PRAGMA temp_store = file");
                 }
 
-                ////foreach (var query in queries)
-                ////{
-                ////    db.Execute(query);
-                ////}
-
-                //Logger.Info("synchronous: " + db.Query("PRAGMA synchronous").SelectScalarString().First());
-                //Logger.Info("temp_store: " + db.Query("PRAGMA temp_store").SelectScalarString().First());
-
-                /*if (!string.Equals(_defaultWal, "wal", StringComparison.OrdinalIgnoreCase))
-                {
-                    queries.Add("PRAGMA journal_mode=WAL");
-
-                    using (WriteLock.Write())
-                    {
-                        db.ExecuteAll(string.Join(";", queries.ToArray()));
-                    }
-                }
-                else*/
                 foreach (var query in queries)
                 {
                     db.Execute(query);
@@ -210,6 +192,13 @@ namespace Emby.Server.Implementations.Data
                 {
                     "pragma default_temp_store = memory",
                     "pragma temp_store = memory"
+                });
+            }
+            else
+            {
+                queries.AddRange(new List<string>
+                {
+                    "pragma temp_store = file"
                 });
             }
 

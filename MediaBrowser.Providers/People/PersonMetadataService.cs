@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.People
 {
     public class PersonMetadataService : MetadataService<Person, PersonLookupInfo>
     {
-        protected override void MergeData(MetadataResult<Person> source, MetadataResult<Person> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Person> source, MetadataResult<Person> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

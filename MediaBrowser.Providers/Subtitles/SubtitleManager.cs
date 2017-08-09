@@ -295,8 +295,7 @@ namespace MediaBrowser.Providers.Subtitles
             }
 
             var providers = _subtitleProviders
-                .Where(i => i.SupportedMediaTypes.Contains(mediaType))
-                .ToList();
+                .Where(i => i.SupportedMediaTypes.Contains(mediaType));
 
             return providers.Select(i => new SubtitleProviderInfo
             {

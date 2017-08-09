@@ -37,12 +37,12 @@ namespace MediaBrowser.Providers.Studios
             get { return "Emby Designs"; }
         }
 
-        public bool Supports(IHasImages item)
+        public bool Supports(IHasMetadata item)
         {
             return item is Studio;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             return new List<ImageType>
             {
@@ -51,12 +51,12 @@ namespace MediaBrowser.Providers.Studios
             };
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, CancellationToken cancellationToken)
         {
             return GetImages(item, true, true, cancellationToken);
         }
 
-        private async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, bool posters, bool thumbs, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, bool posters, bool thumbs, CancellationToken cancellationToken)
         {
             var list = new List<RemoteImageInfo>();
 
@@ -83,7 +83,7 @@ namespace MediaBrowser.Providers.Studios
             return list.Where(i => i != null);
         }
 
-        private RemoteImageInfo GetImage(IHasImages item, string filename, ImageType type, string remoteFilename)
+        private RemoteImageInfo GetImage(IHasMetadata item, string filename, ImageType type, string remoteFilename)
         {
             var list = ImageUtils.GetAvailableImages(filename, _fileSystem);
 

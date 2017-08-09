@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.MediaEncoder
         /// Gets the chapter images data path.
         /// </summary>
         /// <value>The chapter images data path.</value>
-        private string GetChapterImagesPath(IHasImages item)
+        private string GetChapterImagesPath(IHasMetadata item)
         {
             return Path.Combine(item.GetInternalMetadataPath(), "chapters");
         }

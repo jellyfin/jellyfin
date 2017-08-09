@@ -461,7 +461,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets the image types.
         /// </summary>
         /// <returns>IEnumerable{ImageType}.</returns>
-        public IEnumerable<ImageType> GetImageTypes()
+        public ImageType[] GetImageTypes()
         {
             var val = ImageTypes;
 
@@ -470,7 +470,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return new ImageType[] { };
             }
 
-            return val.Split(',').Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true));
+            return val.Split(',').Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToArray();
         }
 
         /// <summary>

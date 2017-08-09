@@ -12,12 +12,12 @@ namespace MediaBrowser.Model.Globalization
         /// Gets the cultures.
         /// </summary>
         /// <returns>IEnumerable{CultureDto}.</returns>
-        IEnumerable<CultureDto> GetCultures();
+        List<CultureDto> GetCultures();
         /// <summary>
         /// Gets the countries.
         /// </summary>
         /// <returns>IEnumerable{CountryInfo}.</returns>
-        IEnumerable<CountryInfo> GetCountries();
+        List<CountryInfo> GetCountries();
         /// <summary>
         /// Gets the parental ratings.
         /// </summary>

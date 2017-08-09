@@ -31,12 +31,12 @@ namespace MediaBrowser.LocalMetadata.Images
             get { return 0; }
         }
 
-        public bool Supports(IHasImages item)
+        public bool Supports(IHasMetadata item)
         {
             return item is Episode && item.SupportsLocalMetadata;
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item, IDirectoryService directoryService)
+        public List<LocalImageInfo> GetImages(IHasMetadata item, IDirectoryService directoryService)
         {
             var parentPath = _fileSystem.GetDirectoryName(item.Path);
 

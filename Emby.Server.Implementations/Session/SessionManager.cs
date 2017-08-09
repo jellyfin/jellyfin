@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Threading;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Session
 {
@@ -1000,7 +1001,7 @@ namespace Emby.Server.Implementations.Session
                 command.PlayCommand = PlayCommand.PlayNow;
             }
 
-            command.ItemIds = items.Select(i => i.Id.ToString("N")).ToArray();
+            command.ItemIds = items.Select(i => i.Id.ToString("N")).ToArray(items.Count);
 
             if (user != null)
             {
@@ -1033,7 +1034,7 @@ namespace Emby.Server.Implementations.Session
 
                         if (episodes.Count > 0)
                         {
-                            command.ItemIds = episodes.Select(i => i.Id.ToString("N")).ToArray();
+                            command.ItemIds = episodes.Select(i => i.Id.ToString("N")).ToArray(episodes.Count);
                         }
                     }
                 }

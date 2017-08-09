@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Xml;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -123,7 +124,8 @@ namespace MediaBrowser.Providers.Music
                         }
 
                         return result;
-                    }).ToList();
+
+                    }).ToList(results.Count);
                 }
             }
         }
@@ -619,7 +621,7 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            _mbzUrls = list.ToList();
+            _mbzUrls = list.ToList(list.Count);
 
             return list;
         }

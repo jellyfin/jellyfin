@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Entities
     {
         public Game()
         {
-            MultiPartGameFiles = new List<string>();
+            MultiPartGameFiles = EmptyStringArray;
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
             RemoteTrailerIds = new List<Guid>();
@@ -84,7 +84,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Holds the paths to the game files in the event this is a multipart game
         /// </summary>
-        public List<string> MultiPartGameFiles { get; set; }
+        public string[] MultiPartGameFiles { get; set; }
 
         public override List<string> GetUserDataKeys()
         {

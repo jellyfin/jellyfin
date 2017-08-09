@@ -302,9 +302,9 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             writer.WriteElementString("LockData", item.IsLocked.ToString().ToLower());
 
-            if (item.LockedFields.Count > 0)
+            if (item.LockedFields.Length > 0)
             {
-                writer.WriteElementString("LockedFields", string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray()));
+                writer.WriteElementString("LockedFields", string.Join("|", item.LockedFields));
             }
 
             if (item.CriticRating.HasValue)
@@ -377,7 +377,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 }
             }
 
-            if (item.ProductionLocations.Count > 0)
+            if (item.ProductionLocations.Length > 0)
             {
                 writer.WriteStartElement("Countries");
 
@@ -469,7 +469,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteEndElement();
             }
 
-            if (item.Studios.Count > 0)
+            if (item.Studios.Length > 0)
             {
                 writer.WriteStartElement("Studios");
 
@@ -481,7 +481,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteEndElement();
             }
 
-            if (item.Tags.Count > 0)
+            if (item.Tags.Length > 0)
             {
                 writer.WriteStartElement("Tags");
 

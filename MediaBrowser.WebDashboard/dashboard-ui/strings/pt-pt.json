@@ -1,4 +1,6 @@
 {
+    "MovieLibraryHelp": "Review the {0}Emby movie naming guide{1}.",
+    "TvLibraryHelp": "Review the {0}Emby TV naming guide{1}.",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Terminar",
     "LabelNext": "Seguinte",

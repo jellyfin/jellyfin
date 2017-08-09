@@ -16,6 +16,7 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -803,7 +804,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return string.Join("/", terms.ToArray());
+            return string.Join("/", terms.ToArray(terms.Count));
         }
 
     }

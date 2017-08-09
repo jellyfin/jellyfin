@@ -1,4 +1,6 @@
 {
+    "MovieLibraryHelp": "Consultez le {0}guide Emby pour nommer les films{1}.",
+    "TvLibraryHelp": "Consultez le {0}guide Emby pour nommer les \u00e9missions{1}.",
     "LabelPrevious": "Pr\u00e9c\u00e9dent",
     "LabelFinish": "Terminer",
     "LabelNext": "Suivant",
@@ -1091,7 +1093,7 @@
     "OptionAllowMediaPlaybackTranscodingHelp": "Les utilisateurs recevront un message d'erreur compr\u00e9hensible lorsque le contenu n'est pas lisible en raison des restrictions appliqu\u00e9es.",
     "TabStreaming": "Streaming",
     "LabelRemoteClientBitrateLimit": "Limite de d\u00e9bit de streaming Internet (Mbps)\u00a0:",
-    "LabelRemoteClientBitrateLimitHelp": "Une limite de d\u00e9bit optionnelle du streaming pour toutes les connexions r\u00e9seau. Utile pour \u00e9viter que les appareils ne demandent une bande passante sup\u00e9rieure \u00e0 ce que votre connexion peu fournir.",
+    "LabelRemoteClientBitrateLimitHelp": "Une limite de d\u00e9bit optionnelle par streaming pour les connexions hors du r\u00e9seau local. Utile pour \u00e9viter que les appareils ne demandent un d\u00e9bit sup\u00e9rieur \u00e0 ce que votre connexion internet peu fournir. Cela peut augmenter la charge du processeur de votre serveur pour transcoder les vid\u00e9os \u00e0 la vol\u00e9e \u00e0 un d\u00e9bit plus faible.",
     "LabelConversionCpuCoreLimit": "Limite de c\u0153urs CPU\u00a0:",
     "LabelConversionCpuCoreLimitHelp": "Limite le nombre de c\u0153urs du processeur utilis\u00e9s pendant le transcodage.",
     "OptionEnableFullSpeedConversion": "Autoriser le transcodage rapide",
@@ -1940,7 +1942,7 @@
     "EnableNextVideoInfoOverlayHelp": "\u00c0 la fin d'une vid\u00e9o, afficher les informations sur la vid\u00e9o suivante dans la file d'attente.",
     "ServerRestartNeededAfterPluginInstall": "Le serveur Emby devra \u00eatre red\u00e9marr\u00e9 apr\u00e8s l'installation d'une extension.",
     "PluginInstalledMessage": "Cette extension a \u00e9t\u00e9 install\u00e9e avec succ\u00e8s. Le serveur Emby doit \u00eatre red\u00e9marr\u00e9 afin que les modifications soient prises en compte.",
-    "Themes": "Themes",
-    "LabelTheme": "Theme:",
-    "LabelDashboardTheme": "Server dashboard theme:"
+    "Themes": "Th\u00e8mes",
+    "LabelTheme": "Th\u00e8me\u00a0:",
+    "LabelDashboardTheme": "Th\u00e8me du tableau de bord du serveur\u00a0:"
 }

@@ -16,6 +16,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Configuration
 {
@@ -216,7 +217,7 @@ namespace Emby.Server.Implementations.Configuration
 
                 list.Add(service);
 
-                options.DisabledMetadataSavers = list.ToArray();
+                options.DisabledMetadataSavers = list.ToArray(list.Count);
             }
         }
 
@@ -236,7 +237,7 @@ namespace Emby.Server.Implementations.Configuration
 
                 list.Add(options);
 
-                config.MetadataOptions = list.ToArray();
+                config.MetadataOptions = list.ToArray(list.Count);
             }
 
             return options;

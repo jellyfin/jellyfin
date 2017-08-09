@@ -70,7 +70,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     return "ts";
                 }
 
-                return "mp4";
+                return "mkv";
             }
         }
 

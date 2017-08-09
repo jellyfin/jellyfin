@@ -15,6 +15,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -142,7 +143,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                         _fileSystem.CreateDirectory(parentPath);
 
-                        _fileSystem.WriteAllText(failHistoryPath, string.Join("|", previouslyFailedImages.ToArray()));
+                        _fileSystem.WriteAllText(failHistoryPath, string.Join("|", previouslyFailedImages.ToArray(previouslyFailedImages.Count)));
                     }
 
                     numComplete++;

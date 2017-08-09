@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Extensions;
 
 namespace SocketHttpListener.Net
 {
@@ -176,7 +177,7 @@ namespace SocketHttpListener.Net
                 }
 
                 if (separated != null)
-                    return separated.ToArray();
+                    return separated.ToArray(separated.Count);
             }
 
             return values;

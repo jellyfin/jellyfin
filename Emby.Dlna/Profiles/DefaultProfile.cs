@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Dlna;
 using System.Linq;
 using System.Xml.Serialization;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Dlna.Profiles
 {
@@ -164,7 +165,7 @@ namespace Emby.Dlna.Profiles
         public void AddXmlRootAttribute(string name, string value)
         {
             var atts = XmlRootAttributes ?? new XmlAttribute[] { };
-            var list = atts.ToList();
+            var list = atts.ToList(atts.Length);
 
             list.Add(new XmlAttribute
             {
@@ -172,7 +173,7 @@ namespace Emby.Dlna.Profiles
                 Value = value
             });
 
-            XmlRootAttributes = list.ToArray();
+            XmlRootAttributes = list.ToArray(list.Count);
         }
     }
 }

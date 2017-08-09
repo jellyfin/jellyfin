@@ -35,7 +35,7 @@ namespace MediaBrowser.Providers.BoxSets
             return updateType;
         }
 
-        protected override void MergeData(MetadataResult<BoxSet> source, MetadataResult<BoxSet> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<BoxSet> source, MetadataResult<BoxSet> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
