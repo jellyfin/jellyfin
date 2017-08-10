@@ -364,7 +364,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             var hasTrailers = item as IHasTrailers;
             if (hasTrailers != null)
             {
-                if (hasTrailers.RemoteTrailers.Count > 0)
+                if (hasTrailers.RemoteTrailers.Length > 0)
                 {
                     writer.WriteStartElement("Trailers");
 

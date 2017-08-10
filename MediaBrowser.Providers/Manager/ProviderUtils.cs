@@ -284,7 +284,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (sourceHasAlbumArtist != null && targetHasAlbumArtist != null)
             {
-                if (replaceData || targetHasAlbumArtist.AlbumArtists.Count == 0)
+                if (replaceData || targetHasAlbumArtist.AlbumArtists.Length == 0)
                 {
                     targetHasAlbumArtist.AlbumArtists = sourceHasAlbumArtist.AlbumArtists;
                 }
@@ -306,7 +306,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (sourceCast != null && targetCast != null)
             {
-                if (replaceData || targetCast.RemoteTrailers.Count == 0)
+                if (replaceData || targetCast.RemoteTrailers.Length == 0)
                 {
                     targetCast.RemoteTrailers = sourceCast.RemoteTrailers;
                 }

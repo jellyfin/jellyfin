@@ -1344,7 +1344,7 @@ namespace Emby.Server.Implementations.Channels
             var hasAlbumArtists = item as IHasAlbumArtist;
             if (hasAlbumArtists != null)
             {
-                hasAlbumArtists.AlbumArtists = info.AlbumArtists;
+                hasAlbumArtists.AlbumArtists = info.AlbumArtists.ToArray(info.AlbumArtists.Count);
             }
 
             var trailer = item as Trailer;

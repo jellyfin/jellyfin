@@ -31,9 +31,9 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public string PrimaryVersionId { get; set; }
 
-        public List<string> AdditionalParts { get; set; }
-        public List<string> LocalAlternateVersions { get; set; }
-        public List<LinkedChild> LinkedAlternateVersions { get; set; }
+        public string[] AdditionalParts { get; set; }
+        public string[] LocalAlternateVersions { get; set; }
+        public LinkedChild[] LinkedAlternateVersions { get; set; }
 
         [IgnoreDataMember]
         public override bool SupportsPlayedStatus
@@ -119,7 +119,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the subtitle paths.
         /// </summary>
         /// <value>The subtitle paths.</value>
-        public List<string> SubtitleFiles { get; set; }
+        public string[] SubtitleFiles { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has subtitles.
@@ -177,10 +177,10 @@ namespace MediaBrowser.Controller.Entities
 
         public Video()
         {
-            AdditionalParts = new List<string>();
-            LocalAlternateVersions = new List<string>();
-            SubtitleFiles = new List<string>();
-            LinkedAlternateVersions = new List<LinkedChild>();
+            AdditionalParts = EmptyStringArray;
+            LocalAlternateVersions = EmptyStringArray;
+            SubtitleFiles = EmptyStringArray;
+            LinkedAlternateVersions = EmptyLinkedChildArray;
         }
 
         public override bool CanDownload()
@@ -214,20 +214,20 @@ namespace MediaBrowser.Controller.Entities
                         return item.MediaSourceCount;
                     }
                 }
-                return LinkedAlternateVersions.Count + LocalAlternateVersions.Count + 1;
+                return LinkedAlternateVersions.Length + LocalAlternateVersions.Length + 1;
             }
         }
 
         [IgnoreDataMember]
         public bool IsStacked
         {
-            get { return AdditionalParts.Count > 0; }
+            get { return AdditionalParts.Length > 0; }
         }
 
         [IgnoreDataMember]
         public bool HasLocalAlternateVersions
         {
-            get { return LocalAlternateVersions.Count > 0; }
+            get { return LocalAlternateVersions.Length > 0; }
         }
 
         public IEnumerable<Guid> GetAdditionalPartIds()

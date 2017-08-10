@@ -249,7 +249,7 @@ namespace MediaBrowser.Controller.Entities
 
             var changed = !linkedChildren.SequenceEqual(LinkedChildren, new LinkedChildComparer(FileSystem));
 
-            LinkedChildren = linkedChildren;
+            LinkedChildren = linkedChildren.ToArray(linkedChildren.Count);
 
             var folderIds = PhysicalFolderIds.ToList();
             var newFolderIds = physicalFolders.Select(i => i.Id).ToList();

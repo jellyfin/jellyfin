@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         public List<string> Artists { get; set; }
 
         [IgnoreDataMember]
-        public List<string> AlbumArtists { get; set; }
+        public string[] AlbumArtists { get; set; }
 
         [IgnoreDataMember]
         public override bool EnableRefreshOnDateModifiedChange
@@ -43,7 +43,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         public Audio()
         {
             Artists = new List<string>();
-            AlbumArtists = new List<string>();
+            AlbumArtists = EmptyStringArray;
         }
 
         public override double? GetDefaultPrimaryImageAspectRatio()

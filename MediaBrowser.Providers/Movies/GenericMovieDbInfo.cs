@@ -318,7 +318,7 @@ namespace MediaBrowser.Providers.Movies
                         Url = string.Format("https://www.youtube.com/watch?v={0}", i.source),
                         Name = i.name
 
-                    }).ToList();
+                    }).ToArray();
                 }
             }
         }

@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.Library
             });
 
             var trailerIds = trailers.Select(i => i.Id)
-                .ToList();
+                .ToArray();
 
             if (!trailerIds.SequenceEqual(item.RemoteTrailerIds))
             {

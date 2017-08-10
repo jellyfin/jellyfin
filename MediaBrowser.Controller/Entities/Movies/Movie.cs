@@ -24,15 +24,15 @@ namespace MediaBrowser.Controller.Entities.Movies
         public Movie()
         {
             SpecialFeatureIds = new List<Guid>();
-            RemoteTrailers = new List<MediaUrl>();
-            LocalTrailerIds = new List<Guid>();
-            RemoteTrailerIds = new List<Guid>();
+            RemoteTrailers = EmptyMediaUrlArray;
+            LocalTrailerIds = EmptyGuidArray;
+            RemoteTrailerIds = EmptyGuidArray;
         }
 
-        public List<Guid> LocalTrailerIds { get; set; }
-        public List<Guid> RemoteTrailerIds { get; set; }
+        public Guid[] LocalTrailerIds { get; set; }
+        public Guid[] RemoteTrailerIds { get; set; }
 
-        public List<MediaUrl> RemoteTrailers { get; set; }
+        public MediaUrl[] RemoteTrailers { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the TMDB collection.

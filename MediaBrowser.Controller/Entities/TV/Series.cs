@@ -24,9 +24,9 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             AirDays = new List<DayOfWeek>();
 
-            RemoteTrailers = new List<MediaUrl>();
-            LocalTrailerIds = new List<Guid>();
-            RemoteTrailerIds = new List<Guid>();
+            RemoteTrailers = EmptyMediaUrlArray;
+            LocalTrailerIds = EmptyGuidArray;
+            RemoteTrailerIds = EmptyGuidArray;
         }
 
         [IgnoreDataMember]
@@ -62,10 +62,10 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
-        public List<Guid> LocalTrailerIds { get; set; }
-        public List<Guid> RemoteTrailerIds { get; set; }
+        public Guid[] LocalTrailerIds { get; set; }
+        public Guid[] RemoteTrailerIds { get; set; }
 
-        public List<MediaUrl> RemoteTrailers { get; set; }
+        public MediaUrl[] RemoteTrailers { get; set; }
 
         /// <summary>
         /// airdate, dvd or absolute
@@ -222,17 +222,6 @@ namespace MediaBrowser.Controller.Entities.TV
                 list.Insert(0, key);
             }
 
-            return list;
-        }
-
-        /// <summary>
-        /// Gets the trailer ids.
-        /// </summary>
-        /// <returns>List&lt;Guid&gt;.</returns>
-        public List<Guid> GetTrailerIds()
-        {
-            var list = LocalTrailerIds.ToList();
-            list.AddRange(RemoteTrailerIds);
             return list;
         }
 

@@ -513,7 +513,7 @@ namespace MediaBrowser.Api.Reports
                     internalHeader = HeaderMetadata.AlbumArtist;
                     break;
                 case HeaderMetadata.AudioAlbumArtist:
-                    option.Column = (i, r) => this.GetListAsString(this.GetObject<Audio, List<string>>(i, (x) => x.AlbumArtists));
+                    option.Column = (i, r) => this.GetListAsString(this.GetObject<Audio, List<string>>(i, (x) => x.AlbumArtists.ToList()));
                     option.Header.SortField = "AlbumArtist,Album,SortName";
                     internalHeader = HeaderMetadata.AlbumArtist;
                     break;
