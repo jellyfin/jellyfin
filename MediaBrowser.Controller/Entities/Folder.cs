@@ -38,14 +38,14 @@ namespace MediaBrowser.Controller.Entities
         /// <value><c>true</c> if this instance is root; otherwise, <c>false</c>.</value>
         public bool IsRoot { get; set; }
 
-        public virtual List<LinkedChild> LinkedChildren { get; set; }
+        public LinkedChild[] LinkedChildren { get; set; }
 
         [IgnoreDataMember]
         public DateTime? DateLastMediaAdded { get; set; }
 
         public Folder()
         {
-            LinkedChildren = new List<LinkedChild>();
+            LinkedChildren = EmptyLinkedChildArray;
         }
 
         [IgnoreDataMember]
@@ -707,7 +707,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual int GetChildCount(User user)
         {
-            if (LinkedChildren.Count > 0)
+            if (LinkedChildren.Length > 0)
             {
                 if (!(this is ICollectionFolder))
                 {
@@ -844,7 +844,7 @@ namespace MediaBrowser.Controller.Entities
 
         private bool RequiresPostFiltering(InternalItemsQuery query)
         {
-            if (LinkedChildren.Count > 0)
+            if (LinkedChildren.Length > 0)
             {
                 if (!(this is ICollectionFolder))
                 {
@@ -1225,7 +1225,7 @@ namespace MediaBrowser.Controller.Entities
                 return GetLinkedChildren();
             }
 
-            if (LinkedChildren.Count == 0)
+            if (LinkedChildren.Length == 0)
             {
                 return new List<BaseItem>();
             }
@@ -1314,14 +1314,9 @@ namespace MediaBrowser.Controller.Entities
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected virtual bool RefreshLinkedChildren(IEnumerable<FileSystemMetadata> fileSystemChildren)
         {
-            var currentManualLinks = LinkedChildren.Where(i => i.Type == LinkedChildType.Manual).ToList();
-            var currentShortcutLinks = LinkedChildren.Where(i => i.Type == LinkedChildType.Shortcut).ToList();
-
-            List<LinkedChild> newShortcutLinks;
-
             if (SupportsShortcutChildren)
             {
-                newShortcutLinks = fileSystemChildren
+                var newShortcutLinks = fileSystemChildren
                     .Where(i => !i.IsDirectory && FileSystem.IsShortcut(i.FullName))
                     .Select(i =>
                     {
@@ -1352,16 +1347,17 @@ namespace MediaBrowser.Controller.Entities
                     })
                     .Where(i => i != null)
                     .ToList();
-            }
-            else { newShortcutLinks = new List<LinkedChild>(); }
 
-            if (!newShortcutLinks.SequenceEqual(currentShortcutLinks, new LinkedChildComparer(FileSystem)))
-            {
-                Logger.Info("Shortcut links have changed for {0}", Path);
+                var currentShortcutLinks = LinkedChildren.Where(i => i.Type == LinkedChildType.Shortcut).ToList();
 
-                newShortcutLinks.AddRange(currentManualLinks);
-                LinkedChildren = newShortcutLinks;
-                return true;
+                if (!newShortcutLinks.SequenceEqual(currentShortcutLinks, new LinkedChildComparer(FileSystem)))
+                {
+                    Logger.Info("Shortcut links have changed for {0}", Path);
+
+                    newShortcutLinks.AddRange(LinkedChildren.Where(i => i.Type == LinkedChildType.Manual));
+                    LinkedChildren = newShortcutLinks.ToArray(newShortcutLinks.Count);
+                    return true;
+                }
             }
 
             foreach (var child in LinkedChildren)

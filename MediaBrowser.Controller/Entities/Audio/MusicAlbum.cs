@@ -19,13 +19,13 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
-        public List<string> AlbumArtists { get; set; }
+        public string[] AlbumArtists { get; set; }
         public List<string> Artists { get; set; }
 
         public MusicAlbum()
         {
             Artists = new List<string>();
-            AlbumArtists = new List<string>();
+            AlbumArtists = EmptyStringArray;
         }
 
         [IgnoreDataMember]

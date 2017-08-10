@@ -84,13 +84,8 @@ namespace Emby.Server.Implementations.MediaEncoder
         /// </summary>
         private static readonly long FirstChapterTicks = TimeSpan.FromSeconds(15).Ticks;
 
-        public async Task<bool> RefreshChapterImages(ChapterImageRefreshOptions options, CancellationToken cancellationToken)
+        public async Task<bool> RefreshChapterImages(Video video, List<ChapterInfo> chapters, bool extractImages, bool saveChapters, CancellationToken cancellationToken)
         {
-            var extractImages = options.ExtractImages;
-            var video = options.Video;
-            var chapters = options.Chapters;
-            var saveChapters = options.SaveChapters;
-
             if (!IsEligibleForChapterImageExtraction(video))
             {
                 extractImages = false;
@@ -179,7 +174,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
             if (saveChapters && changesMade)
             {
-                await _chapterManager.SaveChapters(video.Id.ToString(), chapters, cancellationToken).ConfigureAwait(false);
+                await _chapterManager.SaveChapters(video.Id.ToString(), chapters).ConfigureAwait(false);
             }
 
             DeleteDeadImages(currentImages, chapters);

@@ -1622,26 +1622,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                         inputModifier += " -f " + inputFormat;
                     }
                 }
-
-                // Only do this for video files due to sometimes unpredictable codec names coming from BDInfo
-                if (state.VideoType == VideoType.VideoFile && state.RunTimeTicks.HasValue && string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
-                {
-                    foreach (var stream in state.MediaSource.MediaStreams)
-                    {
-                        if (!stream.IsExternal && stream.Type != MediaStreamType.Subtitle)
-                        {
-                            if (!string.IsNullOrWhiteSpace(stream.Codec) && stream.Index != -1)
-                            {
-                                var decoder = GetDecoderFromCodec(stream.Codec);
-
-                                if (!string.IsNullOrWhiteSpace(decoder))
-                                {
-                                    inputModifier += " -codec:" + stream.Index.ToString(_usCulture) + " " + decoder;
-                                }
-                            }
-                        }
-                    }
-                }
             }
 
             if (state.MediaSource.RequiresLooping)

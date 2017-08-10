@@ -166,7 +166,6 @@
     <Compile Include="LiveTv\TimerEventInfo.cs" />
     <Compile Include="LiveTv\TimerInfo.cs" />
     <Compile Include="LiveTv\TunerChannelMapping.cs" />
-    <Compile Include="MediaEncoding\ChapterImageRefreshOptions.cs" />
     <Compile Include="MediaEncoding\EncodingHelper.cs" />
     <Compile Include="MediaEncoding\EncodingJobInfo.cs" />
     <Compile Include="MediaEncoding\EncodingJobOptions.cs" />

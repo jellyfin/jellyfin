@@ -599,7 +599,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 val = val.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", "https://www.youtube.com/watch?v=", StringComparison.OrdinalIgnoreCase);
 
-                                hasTrailer.AddTrailerUrl(val, false);
+                                hasTrailer.AddTrailerUrl(val);
                             }
                         }
                         break;
