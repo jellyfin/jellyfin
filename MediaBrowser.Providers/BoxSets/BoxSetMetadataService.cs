@@ -6,12 +6,9 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.BoxSets
 {
@@ -48,7 +45,7 @@ namespace MediaBrowser.Providers.BoxSets
                 var linkedChildren = sourceItem.LinkedChildren.ToList();
                 linkedChildren.AddRange(sourceItem.LinkedChildren.Where(i => i.Type == LinkedChildType.Shortcut));
 
-                targetItem.LinkedChildren = linkedChildren;
+                targetItem.LinkedChildren = linkedChildren.ToArray(linkedChildren.Count);
                 targetItem.Shares = sourceItem.Shares;
             }
         }

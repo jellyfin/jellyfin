@@ -993,7 +993,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.RemoteTrailers = hasTrailers != null ?
                     hasTrailers.RemoteTrailers :
-                    new List<MediaUrl>();
+                    new MediaUrl[] {};
             }
 
             dto.Name = item.Name;
@@ -1172,8 +1172,7 @@ namespace Emby.Server.Implementations.Dto
                 //    })
                 //    .ToList();
 
-                dto.AlbumArtists = new List<NameIdPair>();
-                dto.AlbumArtists.AddRange(hasAlbumArtist.AlbumArtists
+                dto.AlbumArtists = hasAlbumArtist.AlbumArtists
                     //.Except(foundArtists, new DistinctNameComparer())
                     .Select(i =>
                     {
@@ -1198,7 +1197,7 @@ namespace Emby.Server.Implementations.Dto
 
                         return null;
 
-                    }).Where(i => i != null));
+                    }).Where(i => i != null).ToArray();
             }
 
             // Add video info
@@ -1214,9 +1213,9 @@ namespace Emby.Server.Implementations.Dto
                     dto.HasSubtitles = video.HasSubtitles;
                 }
 
-                if (video.AdditionalParts.Count != 0)
+                if (video.AdditionalParts.Length != 0)
                 {
-                    dto.PartCount = video.AdditionalParts.Count + 1;
+                    dto.PartCount = video.AdditionalParts.Length + 1;
                 }
 
                 if (fields.Contains(ItemFields.MediaSourceCount))

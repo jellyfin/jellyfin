@@ -1037,9 +1037,9 @@ namespace Emby.Server.Implementations.Data
             var hasAlbumArtists = item as IHasAlbumArtist;
             if (hasAlbumArtists != null)
             {
-                if (hasAlbumArtists.AlbumArtists.Count > 0)
+                if (hasAlbumArtists.AlbumArtists.Length > 0)
                 {
-                    albumArtists = string.Join("|", hasAlbumArtists.AlbumArtists.ToArray());
+                    albumArtists = string.Join("|", hasAlbumArtists.AlbumArtists);
                 }
             }
             saveItemStatement.TryBind("@AlbumArtists", albumArtists);
@@ -1927,7 +1927,7 @@ namespace Emby.Server.Implementations.Data
                 var hasAlbumArtists = item as IHasAlbumArtist;
                 if (hasAlbumArtists != null && !reader.IsDBNull(index))
                 {
-                    hasAlbumArtists.AlbumArtists = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+                    hasAlbumArtists.AlbumArtists = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
                 }
                 index++;
             }
@@ -1995,7 +1995,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="id">The id.</param>
         /// <returns>IEnumerable{ChapterInfo}.</returns>
         /// <exception cref="System.ArgumentNullException">id</exception>
-        public IEnumerable<ChapterInfo> GetChapters(Guid id)
+        public List<ChapterInfo> GetChapters(Guid id)
         {
             CheckDisposed();
             if (id == Guid.Empty)
@@ -2091,18 +2091,7 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Saves the chapters.
         /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="chapters">The chapters.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// id
-        /// or
-        /// chapters
-        /// or
-        /// cancellationToken
-        /// </exception>
-        public async Task SaveChapters(Guid id, List<ChapterInfo> chapters, CancellationToken cancellationToken)
+        public async Task SaveChapters(Guid id, List<ChapterInfo> chapters)
         {
             CheckDisposed();
 
@@ -2115,8 +2104,6 @@ namespace Emby.Server.Implementations.Data
             {
                 throw new ArgumentNullException("chapters");
             }
-
-            cancellationToken.ThrowIfCancellationRequested();
 
             var index = 0;
 
@@ -2826,7 +2813,7 @@ namespace Emby.Server.Implementations.Data
             var slowThreshold = 1000;
 
 #if DEBUG
-            slowThreshold = 2;
+            slowThreshold = 10;
 #endif
 
             if (elapsed >= slowThreshold)

@@ -159,8 +159,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     IsInMixedFolder = isInMixedFolder,
                     ProductionYear = video.Year,
                     Name = video.Name,
-                    AdditionalParts = video.Files.Skip(1).Select(i => i.Path).ToList(),
-                    LocalAlternateVersions = video.AlternateVersions.Select(i => i.Path).ToList()
+                    AdditionalParts = video.Files.Skip(1).Select(i => i.Path).ToArray(),
+                    LocalAlternateVersions = video.AlternateVersions.Select(i => i.Path).ToArray()
                 };
 
                 SetVideoType(videoItem, firstVideo);
@@ -503,7 +503,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             {
                 Path = folderPaths[0],
 
-                AdditionalParts = folderPaths.Skip(1).ToList(),
+                AdditionalParts = folderPaths.Skip(1).ToArray(),
 
                 VideoType = videoTypes[0],
 

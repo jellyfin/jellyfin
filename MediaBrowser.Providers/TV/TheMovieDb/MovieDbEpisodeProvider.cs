@@ -134,7 +134,7 @@ namespace MediaBrowser.Providers.TV
                             if (video.site.Equals("youtube", System.StringComparison.OrdinalIgnoreCase))
                             {
                                 var videoUrl = string.Format("http://www.youtube.com/watch?v={0}", video.key);
-                                item.AddTrailerUrl(videoUrl, true);
+                                item.AddTrailerUrl(videoUrl);
                             }
                         }
                     }

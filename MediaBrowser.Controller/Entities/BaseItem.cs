@@ -44,7 +44,9 @@ namespace MediaBrowser.Controller.Entities
         protected static Guid[] EmptyGuidArray = new Guid[] { };
         protected static MetadataFields[] EmptyMetadataFieldsArray = new MetadataFields[] { };
         protected static string[] EmptyStringArray = new string[] { };
+        protected static MediaUrl[] EmptyMediaUrlArray = new MediaUrl[] { };
         protected static ItemImageInfo[] EmptyItemImageInfoArray = new ItemImageInfo[] { };
+        public static readonly LinkedChild[] EmptyLinkedChildArray = new LinkedChild[] { };
 
         protected BaseItem()
         {
@@ -1169,7 +1171,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var newItems = LibraryManager.FindTrailers(this, fileSystemChildren, options.DirectoryService).ToList();
 
-            var newItemIds = newItems.Select(i => i.Id).ToList();
+            var newItemIds = newItems.Select(i => i.Id).ToArray();
 
             var itemsChanged = !item.LocalTrailerIds.SequenceEqual(newItemIds);
 

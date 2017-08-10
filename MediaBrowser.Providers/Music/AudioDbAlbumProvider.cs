@@ -74,7 +74,7 @@ namespace MediaBrowser.Providers.Music
         {
             if (!string.IsNullOrWhiteSpace(result.strArtist))
             {
-                item.AlbumArtists = new List<string> { result.strArtist };
+                item.AlbumArtists = new string[] { result.strArtist };
             }
 
             if (!string.IsNullOrEmpty(result.intYearReleased))

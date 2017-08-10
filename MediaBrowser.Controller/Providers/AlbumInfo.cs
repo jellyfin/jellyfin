@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.Providers
         /// Gets or sets the album artist.
         /// </summary>
         /// <value>The album artist.</value>
-        public List<string> AlbumArtists { get; set; }
+        public string[] AlbumArtists { get; set; }
 
         /// <summary>
         /// Gets or sets the artist provider ids.
@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Providers
         {
             ArtistProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             SongInfos = new List<SongInfo>();
-            AlbumArtists = new List<string>();
+            AlbumArtists = EmptyStringArray;
         }
     }
 }

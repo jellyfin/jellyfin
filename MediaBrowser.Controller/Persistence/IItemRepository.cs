@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        IEnumerable<ChapterInfo> GetChapters(Guid id);
+        List<ChapterInfo> GetChapters(Guid id);
 
         /// <summary>
         /// Gets a single chapter for an item
@@ -78,11 +78,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Saves the chapters.
         /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="chapters">The chapters.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SaveChapters(Guid id, List<ChapterInfo> chapters, CancellationToken cancellationToken);
+        Task SaveChapters(Guid id, List<ChapterInfo> chapters);
 
         /// <summary>
         /// Gets the media streams.

@@ -87,7 +87,7 @@ namespace MediaBrowser.Providers.Music
                 .SelectMany(i => i.AlbumArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(i => i)
-                .ToList();
+                .ToArray();
 
             if (!item.AlbumArtists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
             {

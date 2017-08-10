@@ -234,16 +234,9 @@ namespace MediaBrowser.Providers.MediaInfo
                     extractDuringScan = libraryOptions.ExtractChapterImagesDuringLibraryScan;
                 }
 
-                await _encodingManager.RefreshChapterImages(new ChapterImageRefreshOptions
-                {
-                    Chapters = chapters,
-                    Video = video,
-                    ExtractImages = extractDuringScan,
-                    SaveChapters = false
+                await _encodingManager.RefreshChapterImages(video, chapters, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
 
-                }, cancellationToken).ConfigureAwait(false);
-
-                await _chapterManager.SaveChapters(video.Id.ToString(), chapters, cancellationToken).ConfigureAwait(false);
+                await _chapterManager.SaveChapters(video.Id.ToString(), chapters).ConfigureAwait(false);
             }
         }
 
@@ -513,7 +506,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            video.SubtitleFiles = externalSubtitleStreams.Select(i => i.Path).OrderBy(i => i).ToList();
+            video.SubtitleFiles = externalSubtitleStreams.Select(i => i.Path).OrderBy(i => i).ToArray();
 
             currentStreams.AddRange(externalSubtitleStreams);
         }
