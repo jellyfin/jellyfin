@@ -7,6 +7,8 @@ namespace MediaBrowser.Model.MediaInfo
 {
     public class MediaInfo : MediaSourceInfo, IHasProviderIds
     {
+        private static readonly string[] EmptyStringArray = new string[] { };
+
         public List<ChapterInfo> Chapters { get; set; }
 
         /// <summary>
@@ -23,7 +25,7 @@ namespace MediaBrowser.Model.MediaInfo
         /// Gets or sets the album artists.
         /// </summary>
         /// <value>The album artists.</value>
-        public List<string> AlbumArtists { get; set; }
+        public string[] AlbumArtists { get; set; }
         /// <summary>
         /// Gets or sets the studios.
         /// </summary>
@@ -56,7 +58,7 @@ namespace MediaBrowser.Model.MediaInfo
         {
             Chapters = new List<ChapterInfo>();
             Artists = new List<string>();
-            AlbumArtists = new List<string>();
+            AlbumArtists = EmptyStringArray;
             Studios = new List<string>();
             Genres = new List<string>();
             People = new List<BaseItemPerson>();

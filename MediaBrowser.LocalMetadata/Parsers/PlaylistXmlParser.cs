@@ -8,6 +8,7 @@ using System.Linq;
 using System.Xml;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
@@ -124,7 +125,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 }
             }
 
-            item.LinkedChildren = list;
+            item.LinkedChildren = list.ToArray(list.Count);
         }
 
         private void FetchFromSharesNode(XmlReader reader, Playlist item)

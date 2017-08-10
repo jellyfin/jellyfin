@@ -298,7 +298,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the trailer urls.
         /// </summary>
         /// <value>The trailer urls.</value>
-        public List<MediaUrl> RemoteTrailers { get; set; }
+        public MediaUrl[] RemoteTrailers { get; set; }
 
         /// <summary>
         /// Gets or sets the provider ids.
@@ -503,7 +503,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the album artists.
         /// </summary>
         /// <value>The album artists.</value>
-        public List<NameIdPair> AlbumArtists { get; set; }
+        public NameIdPair[] AlbumArtists { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the season.
