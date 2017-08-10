@@ -1686,7 +1686,6 @@ namespace Emby.Server.Implementations.Session
                 dtoOptions.Fields.Remove(ItemFields.RecursiveItemCount);
                 dtoOptions.Fields.Remove(ItemFields.RemoteTrailers);
                 dtoOptions.Fields.Remove(ItemFields.SeasonUserData);
-                dtoOptions.Fields.Remove(ItemFields.SeriesGenres);
                 dtoOptions.Fields.Remove(ItemFields.Settings);
                 dtoOptions.Fields.Remove(ItemFields.SortName);
                 dtoOptions.Fields.Remove(ItemFields.Tags);

@@ -153,11 +153,6 @@
         /// </summary>
         ScreenshotImageTags,
 
-        /// <summary>
-        /// The series genres
-        /// </summary>
-        SeriesGenres,
-
         SeriesPrimaryImage,
 
         /// <summary>

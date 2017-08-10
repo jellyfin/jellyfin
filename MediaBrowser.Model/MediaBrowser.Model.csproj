@@ -284,7 +284,6 @@
     <Compile Include="Providers\ExternalUrl.cs" />
     <Compile Include="Providers\ImageProviderInfo.cs" />
     <Compile Include="Providers\RemoteImageInfo.cs" />
-    <Compile Include="Dto\StudioDto.cs" />
     <Compile Include="Entities\CollectionType.cs" />
     <Compile Include="Entities\ItemReview.cs" />
     <Compile Include="Entities\MediaUrl.cs" />

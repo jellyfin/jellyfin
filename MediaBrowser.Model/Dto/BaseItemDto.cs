@@ -210,12 +210,6 @@ namespace MediaBrowser.Model.Dto
         public List<string> Genres { get; set; }
 
         /// <summary>
-        /// Gets or sets the series genres.
-        /// </summary>
-        /// <value>The series genres.</value>
-        public List<string> SeriesGenres { get; set; }
-
-        /// <summary>
         /// Gets or sets the community rating.
         /// </summary>
         /// <value>The community rating.</value>
@@ -256,12 +250,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The production year.</value>
         public int? ProductionYear { get; set; }
-
-        /// <summary>
-        /// Gets or sets the players supported by a game.
-        /// </summary>
-        /// <value>The players.</value>
-        public int? Players { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is place holder.
@@ -432,7 +420,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the air days.
         /// </summary>
         /// <value>The air days.</value>
-        public List<DayOfWeek> AirDays { get; set; }
+        public DayOfWeek[] AirDays { get; set; }
 
         /// <summary>
         /// Gets or sets the tags.
@@ -598,8 +586,6 @@ namespace MediaBrowser.Model.Dto
         /// <value>The series studio.</value>
         public string SeriesStudio { get; set; }
 
-        public StudioDto SeriesStudioInfo { get; set; }
-
         /// <summary>
         /// Gets or sets the parent thumb item id.
         /// </summary>
@@ -740,46 +726,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The series timer identifier.</value>
         public string SeriesTimerId { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has art.
-        /// </summary>
-        /// <value><c>true</c> if this instance has art; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool HasArtImage
-        {
-            get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Art); }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has logo.
-        /// </summary>
-        /// <value><c>true</c> if this instance has logo; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool HasLogo
-        {
-            get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Logo); }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has thumb.
-        /// </summary>
-        /// <value><c>true</c> if this instance has thumb; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool HasThumb
-        {
-            get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Thumb); }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has thumb.
-        /// </summary>
-        /// <value><c>true</c> if this instance has thumb; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool HasBackdrop
-        {
-            get { return (BackdropImageTags != null && BackdropImageTags.Length > 0) || (ParentBackdropImageTags != null && ParentBackdropImageTags.Length > 0); }
-        }
 
         /// <summary>
         /// Gets or sets the program identifier.
