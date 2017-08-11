@@ -96,27 +96,4 @@ namespace MediaBrowser.Providers.TV
             return item is Episode;
         }
     }
-
-    public class TvComSeriesExternalId : IExternalId
-    {
-        public string Name
-        {
-            get { return "TV.com"; }
-        }
-
-        public string Key
-        {
-            get { return MetadataProviders.Tvcom.ToString(); }
-        }
-
-        public string UrlFormatString
-        {
-            get { return null; }
-        }
-
-        public bool Supports(IHasProviderIds item)
-        {
-            return item is Series;
-        }
-    }
 }

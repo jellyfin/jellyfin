@@ -69,20 +69,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 writer.WriteElementString("status", series.Status.Value.ToString());
             }
-
-            if (!string.IsNullOrEmpty(series.AirTime))
-            {
-                writer.WriteElementString("airs_time", series.AirTime);
-            }
-
-            if (series.AirDays.Count == 7)
-            {
-                writer.WriteElementString("airs_dayofweek", "Daily");
-            }
-            else if (series.AirDays.Count > 0)
-            {
-                writer.WriteElementString("airs_dayofweek", series.AirDays[0].ToString());
-            }
         }
 
         protected override List<string> GetTagsUsed(IHasMetadata item)
@@ -94,9 +80,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 "episodeguide",
                 "season",
                 "episode",
-                "status",
-                "airs_time",
-                "airs_dayofweek"
+                "status"
             });
             return list;
         }

@@ -22,8 +22,6 @@ namespace MediaBrowser.Controller.Entities.TV
     {
         public Series()
         {
-            AirDays = new List<DayOfWeek>();
-
             RemoteTrailers = EmptyMediaUrlArray;
             LocalTrailerIds = EmptyGuidArray;
             RemoteTrailerIds = EmptyGuidArray;
@@ -77,16 +75,6 @@ namespace MediaBrowser.Controller.Entities.TV
         /// </summary>
         /// <value>The status.</value>
         public SeriesStatus? Status { get; set; }
-        /// <summary>
-        /// Gets or sets the air days.
-        /// </summary>
-        /// <value>The air days.</value>
-        public List<DayOfWeek> AirDays { get; set; }
-        /// <summary>
-        /// Gets or sets the air time.
-        /// </summary>
-        /// <value>The air time.</value>
-        public string AirTime { get; set; }
 
         /// <summary>
         /// Gets or sets the date last episode added.

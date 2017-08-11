@@ -372,8 +372,6 @@ namespace MediaBrowser.Api
             if (series != null)
             {
                 series.Status = GetSeriesStatus(request);
-                series.AirDays = request.AirDays;
-                series.AirTime = request.AirTime;
             }
         }
 

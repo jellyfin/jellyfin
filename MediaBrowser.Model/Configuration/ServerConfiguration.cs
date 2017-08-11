@@ -162,7 +162,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableAutomaticRestart { get; set; }
         public bool SkipDeserializationForBasicTypes { get; set; }
-        public bool SkipDeserializationForAudio { get; set; }
 
         public string ServerName { get; set; }
         public string WanDdns { get; set; }
