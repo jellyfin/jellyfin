@@ -19,11 +19,11 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// </summary>
     public class Movie : Video, IHasSpecialFeatures, IHasTrailers, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {
-        public List<Guid> SpecialFeatureIds { get; set; }
+        public Guid[] SpecialFeatureIds { get; set; }
 
         public Movie()
         {
-            SpecialFeatureIds = new List<Guid>();
+            SpecialFeatureIds = EmptyGuidArray;
             RemoteTrailers = EmptyMediaUrlArray;
             LocalTrailerIds = EmptyGuidArray;
             RemoteTrailerIds = EmptyGuidArray;
@@ -77,7 +77,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         private async Task<bool> RefreshSpecialFeatures(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newItems = LibraryManager.FindExtras(this, fileSystemChildren, options.DirectoryService).ToList();
-            var newItemIds = newItems.Select(i => i.Id).ToList();
+            var newItemIds = newItems.Select(i => i.Id).ToArray();
 
             var itemsChanged = !SpecialFeatureIds.SequenceEqual(newItemIds);
 

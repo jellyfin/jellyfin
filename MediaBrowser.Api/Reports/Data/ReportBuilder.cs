@@ -613,7 +613,7 @@ namespace MediaBrowser.Api.Reports
                 HasImageTagsPrimary = item.ImageInfos != null && item.ImageInfos.Count(n => n.Type == ImageType.Primary) > 0,
                 HasImageTagsBackdrop = item.ImageInfos != null && item.ImageInfos.Count(n => n.Type == ImageType.Backdrop) > 0,
                 HasImageTagsLogo = item.ImageInfos != null && item.ImageInfos.Count(n => n.Type == ImageType.Logo) > 0,
-                HasSpecials = hasSpecialFeatures != null ? hasSpecialFeatures.SpecialFeatureIds.Count > 0 : false,
+                HasSpecials = hasSpecialFeatures != null ? hasSpecialFeatures.SpecialFeatureIds.Length > 0 : false,
                 HasSubtitles = video != null ? video.HasSubtitles : false,
                 RowType = ReportHelper.GetRowType(item.GetClientTypeName())
             };
