@@ -1119,8 +1119,7 @@ namespace Emby.Server.Implementations.Dto
 
                 // Include artists that are not in the database yet, e.g., just added via metadata editor
                 //var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
-                dto.ArtistItems = new List<NameIdPair>();
-                dto.ArtistItems.AddRange(hasArtist.Artists
+                dto.ArtistItems = hasArtist.Artists
                     //.Except(foundArtists, new DistinctNameComparer())
                     .Select(i =>
                     {
@@ -1145,7 +1144,7 @@ namespace Emby.Server.Implementations.Dto
 
                         return null;
 
-                    }).Where(i => i != null));
+                    }).Where(i => i != null).ToArray();
             }
 
             var hasAlbumArtist = item as IHasAlbumArtist;
@@ -1332,8 +1331,7 @@ namespace Emby.Server.Implementations.Dto
             var series = item as Series;
             if (series != null)
             {
-                dto.AirDays = series.AirDays.ToArray();
-                dto.AirTime = series.AirTime;
+                dto.AirDays = new DayOfWeek[] {};
                 dto.Status = series.Status.HasValue ? series.Status.Value.ToString() : null;
             }
 

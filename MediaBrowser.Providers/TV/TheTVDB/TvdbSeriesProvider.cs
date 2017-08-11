@@ -1090,28 +1090,6 @@ namespace MediaBrowser.Providers.TV
                                 break;
                             }
 
-                        case "Airs_DayOfWeek":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    item.AirDays = TVUtils.GetAirDays(val);
-                                }
-                                break;
-                            }
-
-                        case "Airs_Time":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    item.AirTime = val;
-                                }
-                                break;
-                            }
-
                         case "ContentRating":
                             {
                                 var val = reader.ReadElementContentAsString();

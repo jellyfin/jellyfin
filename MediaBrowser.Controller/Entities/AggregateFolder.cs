@@ -23,18 +23,6 @@ namespace MediaBrowser.Controller.Entities
             PhysicalLocationsList = new List<string>();
         }
 
-        /// <summary>
-        /// We don't support manual shortcuts
-        /// </summary>
-        [IgnoreDataMember]
-        protected override bool SupportsShortcutChildren
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         [IgnoreDataMember]
         public override bool IsPhysicalRoot
         {

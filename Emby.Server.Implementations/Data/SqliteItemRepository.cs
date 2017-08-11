@@ -345,7 +345,10 @@ namespace Emby.Server.Implementations.Data
 
                 // items by name
                 "create index if not exists idx_ItemValues6 on ItemValues(ItemId,Type,CleanValue)",
-                "create index if not exists idx_ItemValues7 on ItemValues(Type,CleanValue,ItemId)"
+                "create index if not exists idx_ItemValues7 on ItemValues(Type,CleanValue,ItemId)",
+
+                // Used to update inherited tags
+                "create index if not exists idx_ItemValues8 on ItemValues(Type, ItemId, Value)",
                 };
 
                 connection.RunQueries(postQueries);
@@ -1293,16 +1296,13 @@ namespace Emby.Server.Implementations.Data
                 return false;
             }
 
-            if (_config.Configuration.SkipDeserializationForAudio)
+            if (type == typeof(Audio))
             {
-                if (type == typeof(Audio))
-                {
-                    return false;
-                }
-                if (type == typeof(MusicAlbum))
-                {
-                    return false;
-                }
+                return false;
+            }
+            if (type == typeof(MusicAlbum))
+            {
+                return false;
             }
 
             return true;
@@ -4695,41 +4695,65 @@ namespace Emby.Server.Implementations.Data
 
         private async Task UpdateInheritedTags(CancellationToken cancellationToken)
         {
-            var newValues = new List<Tuple<Guid, string>>();
+            var newValues = new List<Tuple<Guid, string[]>>();
 
-            var commandText = "select Guid,(select group_concat(Tags, '|') from TypedBaseItems where (guid=outer.guid) OR (guid in (Select AncestorId from AncestorIds where ItemId=Outer.guid))) as NewInheritedTags from typedbaseitems as Outer";
+            var commandText = @"select guid, 
+(select group_concat(Value, '|') from ItemValues where (ItemValues.ItemId = Outer.Guid OR ItemValues.ItemId in ((Select AncestorId from AncestorIds where AncestorIds.ItemId=Outer.guid))) and ItemValues.Type = 4) NewInheritedTags,
+(select group_concat(Value, '|') from ItemValues where ItemValues.ItemId = Outer.Guid and ItemValues.Type = 6) CurrentInheritedTags
+from typedbaseitems as Outer
+where (NewInheritedTags <> CurrentInheritedTags or (NewInheritedTags is null) <> (CurrentInheritedTags is null))
+limit 100";
 
             using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
-                    foreach (var row in connection.Query(commandText))
+                    connection.RunInTransaction(db =>
                     {
-                        var id = row.GetGuid(0);
-                        string value = row.IsDBNull(2) ? null : row.GetString(2);
-
-                        newValues.Add(new Tuple<Guid, string>(id, value));
-                    }
-
-                    Logger.Debug("UpdateInheritedTags - {0} rows", newValues.Count);
-                    if (newValues.Count == 0)
-                    {
-                        return;
-                    }
-
-                    // write lock here
-                    using (var statement = PrepareStatement(connection, "Update TypedBaseItems set InheritedTags=@InheritedTags where Guid=@Guid"))
-                    {
-                        foreach (var item in newValues)
+                        foreach (var row in connection.Query(commandText))
                         {
-                            var paramList = new List<object>();
+                            var id = row.GetGuid(0);
+                            string value = row.IsDBNull(1) ? null : row.GetString(1);
 
-                            paramList.Add(item.Item1);
-                            paramList.Add(item.Item2);
+                            var valuesArray = string.IsNullOrWhiteSpace(value) ? new string[] { } : value.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
 
-                            statement.Execute(paramList.ToArray());
+                            newValues.Add(new Tuple<Guid, string[]>(id, valuesArray));
                         }
-                    }
+
+                        Logger.Debug("UpdateInheritedTags - {0} rows", newValues.Count);
+                        if (newValues.Count == 0)
+                        {
+                            return;
+                        }
+
+                        using (var insertStatement = PrepareStatement(connection, "insert into ItemValues (ItemId, Type, Value, CleanValue) values (@ItemId, 6, @Value, @CleanValue)"))
+                        {
+                            using (var deleteStatement = PrepareStatement(connection, "delete from ItemValues where ItemId=@ItemId and Type=6"))
+                            {
+                                foreach (var item in newValues)
+                                {
+                                    var guidBlob = item.Item1.ToGuidBlob();
+
+                                    deleteStatement.Reset();
+                                    deleteStatement.TryBind("@ItemId", guidBlob);
+                                    deleteStatement.MoveNext();
+
+                                    foreach (var itemValue in item.Item2)
+                                    {
+                                        insertStatement.Reset();
+
+                                        insertStatement.TryBind("@ItemId", guidBlob);
+                                        insertStatement.TryBind("@Value", itemValue);
+
+                                        insertStatement.TryBind("@CleanValue", GetCleanValue(itemValue));
+
+                                        insertStatement.MoveNext();
+                                    }
+                                }
+                            }
+                        }
+
+                    }, TransactionMode);
                 }
             }
         }
@@ -5458,8 +5482,10 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
+            var guidBlob = itemId.ToGuidBlob();
+
             // First delete 
-            db.Execute("delete from ItemValues where ItemId=@Id", itemId.ToGuidBlob());
+            db.Execute("delete from ItemValues where ItemId=@Id", guidBlob);
 
             using (var statement = PrepareStatement(db, "insert into ItemValues (ItemId, Type, Value, CleanValue) values (@ItemId, @Type, @Value, @CleanValue)"))
             {
@@ -5475,7 +5501,7 @@ namespace Emby.Server.Implementations.Data
 
                     statement.Reset();
 
-                    statement.TryBind("@ItemId", itemId.ToGuidBlob());
+                    statement.TryBind("@ItemId", guidBlob);
                     statement.TryBind("@Type", pair.Item1);
                     statement.TryBind("@Value", itemValue);
 

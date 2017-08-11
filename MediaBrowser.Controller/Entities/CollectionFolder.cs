@@ -32,15 +32,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        protected override bool SupportsShortcutChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        [IgnoreDataMember]
         public override bool SupportsPlayedStatus
         {
             get
