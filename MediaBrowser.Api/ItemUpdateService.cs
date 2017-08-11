@@ -332,13 +332,6 @@ namespace MediaBrowser.Api
                 video.Video3DFormat = request.Video3DFormat;
             }
 
-            var game = item as Game;
-
-            if (game != null)
-            {
-                game.PlayersSupported = request.Players;
-            }
-
             if (request.AlbumArtists != null)
             {
                 var hasAlbumArtists = item as IHasAlbumArtist;
@@ -379,8 +372,6 @@ namespace MediaBrowser.Api
             if (series != null)
             {
                 series.Status = GetSeriesStatus(request);
-                series.AirDays = request.AirDays;
-                series.AirTime = request.AirTime;
             }
         }
 

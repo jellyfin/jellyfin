@@ -1172,6 +1172,8 @@ namespace Emby.Server.Implementations.Library
                 progress.Report(percent * 100);
             }
 
+            await ItemRepository.UpdateInheritedValues(cancellationToken).ConfigureAwait(false);
+
             progress.Report(100);
         }
 

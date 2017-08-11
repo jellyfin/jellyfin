@@ -249,7 +249,6 @@
     <Compile Include="Social\SharingManager.cs" />
     <Compile Include="Social\SharingRepository.cs" />
     <Compile Include="Sorting\AiredEpisodeOrderComparer.cs" />
-    <Compile Include="Sorting\AirTimeComparer.cs" />
     <Compile Include="Sorting\AlbumArtistComparer.cs" />
     <Compile Include="Sorting\AlbumComparer.cs" />
     <Compile Include="Sorting\AlphanumComparator.cs" />
