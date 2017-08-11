@@ -212,7 +212,6 @@ namespace Emby.Server.Implementations
         internal IUserViewManager UserViewManager { get; set; }
 
         private IAuthenticationRepository AuthenticationRepository { get; set; }
-        private ISyncRepository SyncRepository { get; set; }
         private ITVSeriesManager TVSeriesManager { get; set; }
         private ICollectionManager CollectionManager { get; set; }
         private IMediaSourceManager MediaSourceManager { get; set; }

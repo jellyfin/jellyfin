@@ -69,7 +69,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideos<MusicVideo>(parent, files, directoryService, false, collectionType);
+                return ResolveVideos<MusicVideo>(parent, files, directoryService, true, collectionType);
             }
 
             if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) ||

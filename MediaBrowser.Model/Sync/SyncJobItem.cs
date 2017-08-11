@@ -92,11 +92,6 @@ namespace MediaBrowser.Model.Sync
         /// <value>The additional files.</value>
         public List<ItemFileInfo> AdditionalFiles { get; set; }
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is marked for removal.
-        /// </summary>
-        /// <value><c>true</c> if this instance is marked for removal; otherwise, <c>false</c>.</value>
-        public bool IsMarkedForRemoval { get; set; }
-        /// <summary>
         /// Gets or sets the index of the job item.
         /// </summary>
         /// <value>The index of the job item.</value>
