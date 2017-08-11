@@ -1387,8 +1387,8 @@ namespace MediaBrowser.Controller.Entities
                 if (movie != null)
                 {
                     var ok = filterValue
-                        ? movie.SpecialFeatureIds.Count > 0
-                        : movie.SpecialFeatureIds.Count == 0;
+                        ? movie.SpecialFeatureIds.Length > 0
+                        : movie.SpecialFeatureIds.Length == 0;
 
                     if (!ok)
                     {

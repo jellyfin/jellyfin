@@ -1263,7 +1263,7 @@ namespace Emby.Server.Implementations.Dto
             var hasSpecialFeatures = item as IHasSpecialFeatures;
             if (hasSpecialFeatures != null)
             {
-                var specialFeatureCount = hasSpecialFeatures.SpecialFeatureIds.Count;
+                var specialFeatureCount = hasSpecialFeatures.SpecialFeatureIds.Length;
 
                 if (specialFeatureCount > 0)
                 {
