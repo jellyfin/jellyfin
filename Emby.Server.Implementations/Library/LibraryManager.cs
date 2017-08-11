@@ -2610,7 +2610,7 @@ namespace Emby.Server.Implementations.Library
                     return video;
 
                     // Sort them so that the list can be easily compared for changes
-                }).OrderBy(i => i.Path).ToList();
+                }).OrderBy(i => i.Path);
         }
 
         private static readonly string[] ExtrasSubfolderNames = new[] { "extras", "specials", "shorts", "scenes", "featurettes", "behind the scenes", "deleted scenes", "interviews" };
@@ -2652,7 +2652,7 @@ namespace Emby.Server.Implementations.Library
                     return video;
 
                     // Sort them so that the list can be easily compared for changes
-                }).OrderBy(i => i.Path).ToList();
+                }).OrderBy(i => i.Path);
         }
 
         public string GetPathAfterNetworkSubstitution(string path, BaseItem ownerItem)

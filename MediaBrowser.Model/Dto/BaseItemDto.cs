@@ -222,12 +222,6 @@ namespace MediaBrowser.Model.Dto
         public long? CumulativeRunTimeTicks { get; set; }
 
         /// <summary>
-        /// Gets or sets the original run time ticks.
-        /// </summary>
-        /// <value>The original run time ticks.</value>
-        public long? OriginalRunTimeTicks { get; set; }
-
-        /// <summary>
         /// Gets or sets the run time ticks.
         /// </summary>
         /// <value>The run time ticks.</value>
@@ -409,12 +403,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The status.</value>
         public string Status { get; set; }
-
-        /// <summary>
-        /// Gets or sets the air time.
-        /// </summary>
-        /// <value>The air time.</value>
-        public string AirTime { get; set; }
 
         /// <summary>
         /// Gets or sets the air days.
