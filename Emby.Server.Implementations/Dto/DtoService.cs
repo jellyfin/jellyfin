@@ -639,7 +639,6 @@ namespace Emby.Server.Implementations.Dto
 
         private void SetGameProperties(BaseItemDto dto, Game item)
         {
-            dto.Players = item.PlayersSupported;
             dto.GameSystem = item.GameSystem;
             dto.MultiPartGameFiles = item.MultiPartGameFiles;
         }
@@ -1120,8 +1119,7 @@ namespace Emby.Server.Implementations.Dto
 
                 // Include artists that are not in the database yet, e.g., just added via metadata editor
                 //var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
-                dto.ArtistItems = new List<NameIdPair>();
-                dto.ArtistItems.AddRange(hasArtist.Artists
+                dto.ArtistItems = hasArtist.Artists
                     //.Except(foundArtists, new DistinctNameComparer())
                     .Select(i =>
                     {
@@ -1146,7 +1144,7 @@ namespace Emby.Server.Implementations.Dto
 
                         return null;
 
-                    }).Where(i => i != null));
+                    }).Where(i => i != null).ToArray();
             }
 
             var hasAlbumArtist = item as IHasAlbumArtist;
@@ -1310,15 +1308,6 @@ namespace Emby.Server.Implementations.Dto
 
                 Series episodeSeries = null;
 
-                if (fields.Contains(ItemFields.SeriesGenres))
-                {
-                    episodeSeries = episodeSeries ?? episode.Series;
-                    if (episodeSeries != null)
-                    {
-                        dto.SeriesGenres = episodeSeries.Genres.ToList();
-                    }
-                }
-
                 //if (fields.Contains(ItemFields.SeriesPrimaryImage))
                 {
                     episodeSeries = episodeSeries ?? episode.Series;
@@ -1334,27 +1323,6 @@ namespace Emby.Server.Implementations.Dto
                     if (episodeSeries != null)
                     {
                         dto.SeriesStudio = episodeSeries.Studios.FirstOrDefault();
-                        if (!string.IsNullOrWhiteSpace(dto.SeriesStudio))
-                        {
-                            try
-                            {
-                                var studio = _libraryManager.GetStudio(dto.SeriesStudio);
-
-                                if (studio != null)
-                                {
-                                    dto.SeriesStudioInfo = new StudioDto
-                                    {
-                                        Name = dto.SeriesStudio,
-                                        Id = studio.Id.ToString("N"),
-                                        PrimaryImageTag = GetImageCacheTag(studio, ImageType.Primary)
-                                    };
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-
-                            }
-                        }
                     }
                 }
             }
@@ -1363,8 +1331,7 @@ namespace Emby.Server.Implementations.Dto
             var series = item as Series;
             if (series != null)
             {
-                dto.AirDays = series.AirDays;
-                dto.AirTime = series.AirTime;
+                dto.AirDays = new DayOfWeek[] {};
                 dto.Status = series.Status.HasValue ? series.Status.Value.ToString() : null;
             }
 
@@ -1498,7 +1465,9 @@ namespace Emby.Server.Implementations.Dto
             BaseItem parent = null;
             var isFirst = true;
 
-            while (((!dto.HasLogo && logoLimit > 0) || (!dto.HasArtImage && artLimit > 0) || (!dto.HasThumb && thumbLimit > 0) || parent is Series) &&
+            var imageTags = dto.ImageTags;
+
+            while (((!(imageTags != null && imageTags.ContainsKey(ImageType.Logo)) && logoLimit > 0) || (!(imageTags != null && imageTags.ContainsKey(ImageType.Art)) && artLimit > 0) || (!(imageTags != null && imageTags.ContainsKey(ImageType.Thumb)) && thumbLimit > 0) || parent is Series) &&
                 (parent = parent ?? (isFirst ? GetImageDisplayParent(item, item) ?? owner : parent)) != null)
             {
                 if (parent == null)
@@ -1508,7 +1477,7 @@ namespace Emby.Server.Implementations.Dto
 
                 var allImages = parent.ImageInfos;
 
-                if (logoLimit > 0 && !dto.HasLogo && dto.ParentLogoItemId == null)
+                if (logoLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Logo)) && dto.ParentLogoItemId == null)
                 {
                     var image = allImages.FirstOrDefault(i => i.Type == ImageType.Logo);
 
@@ -1518,7 +1487,7 @@ namespace Emby.Server.Implementations.Dto
                         dto.ParentLogoImageTag = GetImageCacheTag(parent, image);
                     }
                 }
-                if (artLimit > 0 && !dto.HasArtImage && dto.ParentArtItemId == null)
+                if (artLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Art)) && dto.ParentArtItemId == null)
                 {
                     var image = allImages.FirstOrDefault(i => i.Type == ImageType.Art);
 
@@ -1528,7 +1497,7 @@ namespace Emby.Server.Implementations.Dto
                         dto.ParentArtImageTag = GetImageCacheTag(parent, image);
                     }
                 }
-                if (thumbLimit > 0 && !dto.HasThumb && (dto.ParentThumbItemId == null || parent is Series) && !(parent is ICollectionFolder) && !(parent is UserView))
+                if (thumbLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Thumb)) && (dto.ParentThumbItemId == null || parent is Series) && !(parent is ICollectionFolder) && !(parent is UserView))
                 {
                     var image = allImages.FirstOrDefault(i => i.Type == ImageType.Thumb);
 
@@ -1538,7 +1507,7 @@ namespace Emby.Server.Implementations.Dto
                         dto.ParentThumbImageTag = GetImageCacheTag(parent, image);
                     }
                 }
-                if (backdropLimit > 0 && !dto.HasBackdrop)
+                if (backdropLimit > 0 && !((dto.BackdropImageTags != null && dto.BackdropImageTags.Length > 0) || (dto.ParentBackdropImageTags != null && dto.ParentBackdropImageTags.Length > 0)))
                 {
                     var images = allImages.Where(i => i.Type == ImageType.Backdrop).Take(backdropLimit).ToList();
 

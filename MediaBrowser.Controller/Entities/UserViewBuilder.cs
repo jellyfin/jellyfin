@@ -1674,15 +1674,6 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            if (query.AirDays.Length > 0)
-            {
-                var ok = new[] { item }.OfType<Series>().Any(p => p.AirDays != null && query.AirDays.Any(d => p.AirDays.Contains(d)));
-                if (!ok)
-                {
-                    return false;
-                }
-            }
-
             if (query.SeriesStatuses.Length > 0)
             {
                 var ok = new[] { item }.OfType<Series>().Any(p => p.Status.HasValue && query.SeriesStatuses.Contains(p.Status.Value));

@@ -611,13 +611,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writtenProviderIds.Add(MetadataProviders.Tmdb.ToString());
             }
 
-            var tvcom = item.GetProviderId(MetadataProviders.Tvcom);
-            if (!string.IsNullOrEmpty(tvcom))
-            {
-                writer.WriteElementString("tvcomid", tvcom);
-                writtenProviderIds.Add(MetadataProviders.Tvcom.ToString());
-            }
-
             if (!string.IsNullOrEmpty(item.PreferredMetadataLanguage))
             {
                 writer.WriteElementString("language", item.PreferredMetadataLanguage);
