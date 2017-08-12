@@ -1788,8 +1788,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (videoStream != null &&
                 !string.IsNullOrWhiteSpace(videoStream.Codec) &&
-                !string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType) &&
-                encodingOptions.EnableHardwareDecoding)
+                !string.IsNullOrWhiteSpace(encodingOptions.HardwareAccelerationType))
             {
                 if (string.Equals(encodingOptions.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1797,7 +1796,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         case "avc":
                         case "h264":
-                            if (_mediaEncoder.SupportsDecoder("h264_qsv"))
+                            if (_mediaEncoder.SupportsDecoder("h264_qsv") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
                             {
                                 // qsv decoder does not support 10-bit input
                                 if ((videoStream.BitDepth ?? 8) > 8)
@@ -1807,21 +1806,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 return "-c:v h264_qsv ";
                             }
                             break;
-                        //case "hevc":
-                        //case "h265":
-                        //    if (_mediaEncoder.SupportsDecoder("hevc_qsv"))
-                        //    {
-                        //        return "-c:v hevc_qsv ";
-                        //    }
-                        //    break;
+                        case "hevc":
+                        case "h265":
+                            if (_mediaEncoder.SupportsDecoder("hevc_qsv") && encodingOptions.HardwareDecodingCodecs.Contains("hevc", StringComparer.OrdinalIgnoreCase))
+                            {
+                                return "-c:v hevc_qsv ";
+                            }
+                            break;
                         case "mpeg2video":
-                            if (_mediaEncoder.SupportsDecoder("mpeg2_qsv"))
+                            if (_mediaEncoder.SupportsDecoder("mpeg2_qsv") && encodingOptions.HardwareDecodingCodecs.Contains("mpeg2video", StringComparer.OrdinalIgnoreCase))
                             {
                                 return "-c:v mpeg2_qsv ";
                             }
                             break;
                         case "vc1":
-                            if (_mediaEncoder.SupportsDecoder("vc1_qsv"))
+                            if (_mediaEncoder.SupportsDecoder("vc1_qsv") && encodingOptions.HardwareDecodingCodecs.Contains("vc1", StringComparer.OrdinalIgnoreCase))
                             {
                                 return "-c:v vc1_qsv ";
                             }
@@ -1835,14 +1834,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         case "avc":
                         case "h264":
-                            if (_mediaEncoder.SupportsDecoder("h264_cuvid"))
+                            if (_mediaEncoder.SupportsDecoder("h264_cuvid") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
                             {
                                 return "-c:v h264_cuvid ";
                             }
                             break;
                         case "hevc":
                         case "h265":
-                            if (_mediaEncoder.SupportsDecoder("hevc_cuvid"))
+                            if (_mediaEncoder.SupportsDecoder("hevc_cuvid") && encodingOptions.HardwareDecodingCodecs.Contains("hevc", StringComparer.OrdinalIgnoreCase))
                             {
                                 return "-c:v hevc_cuvid ";
                             }

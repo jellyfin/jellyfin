@@ -116,7 +116,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             {
                 if (IsLegacyBoxSet)
                 {
-                    return true;
+                    return false;
                 }
 
                 return false;

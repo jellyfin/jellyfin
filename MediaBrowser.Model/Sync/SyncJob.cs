@@ -105,12 +105,9 @@ namespace MediaBrowser.Model.Sync
         public string PrimaryImageItemId { get; set; }
         public string PrimaryImageTag { get; set; }
 
-        public bool EnableAutomaticResync { get; set; }
-
         public SyncJob()
         {
             RequestedItemIds = new List<string>();
-            EnableAutomaticResync = true;
         }
     }
 }
