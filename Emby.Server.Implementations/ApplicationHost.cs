@@ -1590,14 +1590,10 @@ namespace Emby.Server.Implementations
         /// <returns>Task{CheckForUpdateResult}.</returns>
         public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var cacheLength = TimeSpan.FromHours(3);
+            var cacheLength = TimeSpan.FromHours(1);
             var updateLevel = SystemUpdateLevel;
 
-            if (updateLevel == PackageVersionClass.Beta)
-            {
-                cacheLength = TimeSpan.FromHours(1);
-            }
-            else if (updateLevel == PackageVersionClass.Dev)
+            if (updateLevel != PackageVersionClass.Release)
             {
                 cacheLength = TimeSpan.FromMinutes(5);
             }

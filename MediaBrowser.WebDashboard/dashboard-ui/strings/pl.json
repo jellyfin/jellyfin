@@ -1,4 +1,5 @@
 {
+    "LabelEnableHardwareDecodingFor": "Enable hardware decoding for:",
     "LabelPrevious": "Wstecz",
     "LabelFinish": "Zako\u0144cz",
     "LabelNext": "Dalej",
@@ -1089,7 +1090,7 @@
     "TabStreaming": "Transmisja",
     "LabelRemoteClientBitrateLimit": "Limit przep\u0142ywno\u015bci transmisji (Mbps):",
     "LabelRemoteClientBitrateLimitHelp": "Opcjonalny limit przep\u0142ywno\u015bci transmisji dla urz\u0105dze\u0144 z poza sieci domowej. U\u017cywaj tej opcji, w celu zapobiegania \u017c\u0105daniom o wy\u017csze przep\u0142ywno\u015bci, ni\u017c Twojej po\u0142\u0105czenie internetowe mo\u017ce obs\u0142u\u017cy\u0107.",
-    "LabelUserRemoteClientBitrateLimitHelp": "This will override the default global value set in server playback settings.",
+    "LabelUserRemoteClientBitrateLimitHelp": "Umo\u017cliwia nadpisanie domy\u015blnej globalnej warto\u015bci wprowadzonej w ustawieniach odtwarzania serwera.",
     "LabelConversionCpuCoreLimit": "Limit rdzeni procesora:",
     "LabelConversionCpuCoreLimitHelp": "Okre\u015bl limit rdzeni procesora kt\u00f3re b\u0119d\u0105 u\u017cyte podczas konwersji przy synchronizacji.",
     "OptionEnableFullSpeedConversion": "Konwertuj z pe\u0142n\u0105 pr\u0119dko\u015bci\u0105",
@@ -1713,8 +1714,8 @@
     "SyncMedia": "Synchronizuj media",
     "HeaderCancelSyncJob": "Anuluj synchronizacj\u0119",
     "LabelQuality": "Jako\u015b\u0107:",
-    "MovieLibraryHelp": "Review the {0}Emby movie naming guide{1}.",
-    "TvLibraryHelp": "Review the {0}Emby TV naming guide{1}.",
+    "MovieLibraryHelp": "Zapoznaj si\u0119 z instrukcj\u0105{1} nazewnictwa film\u00f3w {0}Emby.",
+    "TvLibraryHelp": "Zapoznaj si\u0119 z instrukcj\u0105{1} nazewnictwa seriali {0}Emby.",
     "BookLibraryHelp": "Wspierane s\u0105 wersje tekstowe oraz d\u017awi\u0119kowe",
     "MessageGamePluginRequired": "Wymaga instalacji wtyczki GameBrowser",
     "MessageUnsetContentHelp": "Zawarto\u015b\u0107 b\u0119dzie wy\u015bwietlana jako proste foldery. W celu uzyskania najlepszych wynik\u00f3w, u\u017cyj menad\u017cera metadanych do ustawienia typu zawarto\u015bci podfolder\u00f3w.",
@@ -1940,7 +1941,7 @@
     "EnableNextVideoInfoOverlayHelp": "Umo\u017cliwia wy\u015bwietlanie, pod koniec odtwarzania, informacji o nast\u0119pnym odcinku na aktualnej li\u015bcie odtwarzania.",
     "ServerRestartNeededAfterPluginInstall": "Serwer Emby b\u0119dzie wymaga\u0142 ponownego uruchomienia po zainstalowaniu wtyczki.",
     "PluginInstalledMessage": "Wtyczka zosta\u0142a poprawnie zainstalowana. Serwer Emby b\u0119dzie wymaga\u0142a ponownego uruchomienia w celu zastosowania zmian.",
-    "Themes": "Themes",
-    "LabelTheme": "Theme:",
-    "LabelDashboardTheme": "Server dashboard theme:"
+    "Themes": "Motywy",
+    "LabelTheme": "Motyw:",
+    "LabelDashboardTheme": "Motyw kokpitu serwera:"
 }

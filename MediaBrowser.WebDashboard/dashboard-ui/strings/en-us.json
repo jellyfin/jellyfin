@@ -1927,7 +1927,7 @@
   "Programs": "Programs",
   "News": "News",
   "HeaderDownloadSync": "Download & Sync",
-  "EnableHardwareDecoding": "Enable hardware decoding",
+  "LabelEnableHardwareDecodingFor": "Enable hardware decoding for:",
   "EnableHardwareEncoding": "Enable hardware encoding",
   "Rate": "Rate",
   "ButtonScanAllLibraries": "Scan All Libraries",

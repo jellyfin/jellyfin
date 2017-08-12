@@ -1,4 +1,5 @@
 {
+    "LabelEnableHardwareDecodingFor": "Enable hardware decoding for:",
     "LabelPrevious": "Pr\u00e9c\u00e9dent",
     "LabelFinish": "Terminer",
     "LabelNext": "Suivant",
@@ -1089,7 +1090,7 @@
     "TabStreaming": "Streaming",
     "LabelRemoteClientBitrateLimit": "Limite de d\u00e9bit de streaming Internet (Mbps)\u00a0:",
     "LabelRemoteClientBitrateLimitHelp": "Une limite de d\u00e9bit optionnelle par streaming pour les connexions hors du r\u00e9seau local. Utile pour \u00e9viter que les appareils ne demandent un d\u00e9bit sup\u00e9rieur \u00e0 ce que votre connexion internet peu fournir. Cela peut augmenter la charge du processeur de votre serveur pour transcoder les vid\u00e9os \u00e0 la vol\u00e9e \u00e0 un d\u00e9bit plus faible.",
-    "LabelUserRemoteClientBitrateLimitHelp": "This will override the default global value set in server playback settings.",
+    "LabelUserRemoteClientBitrateLimitHelp": "Cela va \u00e9craser les valeurs globales par d\u00e9faut configur\u00e9s dans les param\u00e8tres de lecture vid\u00e9o du serveur.",
     "LabelConversionCpuCoreLimit": "Limite de c\u0153urs CPU\u00a0:",
     "LabelConversionCpuCoreLimitHelp": "Limite le nombre de c\u0153urs du processeur utilis\u00e9s pendant le transcodage.",
     "OptionEnableFullSpeedConversion": "Autoriser le transcodage rapide",
