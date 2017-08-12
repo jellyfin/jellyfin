@@ -1,4 +1,5 @@
 {
+    "LabelEnableHardwareDecodingFor": "Enable hardware decoding for:",
     "LabelPrevious": "Precedente",
     "LabelFinish": "Finito",
     "LabelNext": "Prossimo",
@@ -1089,7 +1090,7 @@
     "TabStreaming": "Streaming",
     "LabelRemoteClientBitrateLimit": "Bitrate limite per lo streaming via internet (Mbps):",
     "LabelRemoteClientBitrateLimitHelp": "Un limite bitrate per-stream opzionale per tutti i dispositivi di rete. Ci\u00f2 \u00e8 utile per impedire ai dispositivi di richiedere un bitrate superiore a quello in grado di gestire la connessione a Internet. Questo pu\u00f2 provocare un aumento del carico della CPU sul server per transcodificare i video in volo ad un bitrate inferiore.",
-    "LabelUserRemoteClientBitrateLimitHelp": "This will override the default global value set in server playback settings.",
+    "LabelUserRemoteClientBitrateLimitHelp": "Questo sovrascriver\u00e0 il valore globale predefinito impostato nelle impostazioni di riproduzione del server.",
     "LabelConversionCpuCoreLimit": "Limite della CPU:",
     "LabelConversionCpuCoreLimitHelp": "Limiita il numero di CPU da utilizzare durante l'operazione di sincronizzazione.",
     "OptionEnableFullSpeedConversion": "Abilita conversione a velocit\u00e0 piena",
