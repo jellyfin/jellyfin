@@ -19,7 +19,6 @@ using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 using Emby.Server.Core;
 using Emby.Server.Core.Cryptography;
-using Emby.Server.Core.IO;
 using Emby.Server.Implementations;
 using Emby.Common.Implementations.Logging;
 using Emby.Server.Implementations.Logging;
@@ -31,7 +30,7 @@ using Emby.Common.Implementations.Cryptography;
 using Mono.Unix.Native;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.IO;
-using Emby.Server.Core.Logging;
+using Emby.Server.Implementations.Logging;
 using Emby.Drawing;
 using Emby.Drawing.Skia;
 using MediaBrowser.Controller.Drawing;
@@ -125,7 +124,7 @@ namespace MediaBrowser.Server.Mac
 									 "Emby.Server.Mac.pkg",
 									 environmentInfo,
 									 imageEncoder,
-									 new Startup.Common.SystemEvents(logManager.GetLogger("SystemEvents")),
+									 new SystemEvents(logManager.GetLogger("SystemEvents")),
 									 new MemoryStreamProvider(),
 			                         new NetworkManager(logManager.GetLogger("NetworkManager")),
 									 GenerateCertificate,
