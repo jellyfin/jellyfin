@@ -925,19 +925,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return false;
             }
 
-            // Video bitrate must fall within requested value
-            if (request.AudioBitRate.HasValue)
-            {
-                if (!audioStream.BitRate.HasValue || audioStream.BitRate.Value <= 0)
-                {
-                    return false;
-                }
-                if (audioStream.BitRate.Value > request.AudioBitRate.Value)
-                {
-                    return false;
-                }
-            }
-
             // Channels must fall within requested value
             var channels = request.AudioChannels ?? request.MaxAudioChannels;
             if (channels.HasValue)
@@ -960,6 +947,19 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return false;
                 }
                 if (audioStream.SampleRate.Value > request.AudioSampleRate.Value)
+                {
+                    return false;
+                }
+            }
+
+            // Video bitrate must fall within requested value
+            if (request.AudioBitRate.HasValue)
+            {
+                if (!audioStream.BitRate.HasValue || audioStream.BitRate.Value <= 0)
+                {
+                    return false;
+                }
+                if (audioStream.BitRate.Value > request.AudioBitRate.Value)
                 {
                     return false;
                 }

@@ -536,8 +536,8 @@ namespace Emby.Dlna.ContentDirectory
                 Limit = limit,
                 StartIndex = startIndex,
                 User = user,
-                IsMissing = false,
-                PresetViews = new[] { CollectionType.Movies, CollectionType.TvShows },
+                IsVirtualItem = false,
+                PresetViews = new string[] { },
                 ExcludeItemTypes = new[] { typeof(Game).Name, typeof(Book).Name },
                 IsPlaceHolder = false,
                 DtoOptions = GetDtoOptions()
@@ -1129,7 +1129,7 @@ namespace Emby.Dlna.ContentDirectory
                 Limit = 50,
                 IncludeItemTypes = new[] { typeof(Episode).Name },
                 ParentId = parent == null ? null : parent.Id.ToString("N"),
-                GroupItems = true
+                GroupItems = false
 
             }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToList();
 

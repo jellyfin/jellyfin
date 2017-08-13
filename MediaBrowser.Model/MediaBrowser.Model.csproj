@@ -302,7 +302,6 @@
     <Compile Include="Querying\NextUpQuery.cs" />
     <Compile Include="Querying\QueryFilters.cs" />
     <Compile Include="Querying\QueryResult.cs" />
-    <Compile Include="Querying\SeasonQuery.cs" />
     <Compile Include="Querying\SessionQuery.cs" />
     <Compile Include="Querying\SimilarItemsQuery.cs" />
     <Compile Include="Querying\UpcomingEpisodesQuery.cs" />
@@ -339,7 +338,6 @@
     <Compile Include="IO\FileSystemEntryInfo.cs" />
     <Compile Include="Dto\ImageOptions.cs" />
     <Compile Include="Querying\ItemFilter.cs" />
-    <Compile Include="Querying\ItemQuery.cs" />
     <Compile Include="Entities\LibraryUpdateInfo.cs" />
     <Compile Include="Entities\ParentalRating.cs" />
     <Compile Include="Entities\VirtualFolderInfo.cs" />
