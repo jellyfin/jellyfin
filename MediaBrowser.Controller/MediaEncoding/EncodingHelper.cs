@@ -1846,6 +1846,24 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 return "-c:v hevc_cuvid ";
                             }
                             break;
+                        case "mpeg2video":
+                            if (_mediaEncoder.SupportsDecoder("mpeg2_cuvid") && encodingOptions.HardwareDecodingCodecs.Contains("mpeg2video", StringComparer.OrdinalIgnoreCase))
+                            {
+                                return "-c:v mpeg2_cuvid ";
+                            }
+                            break;
+                        case "vc1":
+                            if (_mediaEncoder.SupportsDecoder("vc1_cuvid") && encodingOptions.HardwareDecodingCodecs.Contains("vc1", StringComparer.OrdinalIgnoreCase))
+                            {
+                                return "-c:v vc1_cuvid ";
+                            }
+                            break;
+                        case "mpeg4":
+                            if (_mediaEncoder.SupportsDecoder("mpeg4_cuvid") && encodingOptions.HardwareDecodingCodecs.Contains("mpeg4", StringComparer.OrdinalIgnoreCase))
+                            {
+                                return "-c:v mpeg4_cuvid ";
+                            }
+                            break;
                     }
                 }
             }
