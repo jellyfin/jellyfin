@@ -27,7 +27,7 @@ namespace MediaBrowser.Model.Configuration
             H264Crf = 23;
             EnableHardwareEncoding = true;
 
-            HardwareDecodingCodecs = new string[] { "h264", "mpeg2video", "vc1" };
+            HardwareDecodingCodecs = new string[] { "h264", "vc1" };
         }
     }
 }
