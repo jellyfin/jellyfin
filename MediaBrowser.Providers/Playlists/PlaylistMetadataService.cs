@@ -15,7 +15,7 @@ namespace MediaBrowser.Providers.Playlists
 {
     class PlaylistMetadataService : MetadataService<Playlist, ItemLookupInfo>
     {
-        protected override void MergeData(MetadataResult<Playlist> source, MetadataResult<Playlist> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Playlist> source, MetadataResult<Playlist> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 

@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api
 {
@@ -71,7 +72,7 @@ namespace MediaBrowser.Api
             return new QueryResult<BaseItemDto>
             {
                 TotalRecordCount = result.TotalRecordCount,
-                Items = dtoList.ToArray()
+                Items = dtoList.ToArray(dtoList.Count)
             };
         }
 

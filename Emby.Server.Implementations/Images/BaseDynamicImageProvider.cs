@@ -37,12 +37,12 @@ namespace Emby.Server.Implementations.Images
             ImageProcessor = imageProcessor;
         }
 
-        protected virtual bool Supports(IHasImages item)
+        protected virtual bool Supports(IHasMetadata item)
         {
             return true;
         }
 
-        public virtual IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public virtual IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             return new List<ImageType>
             {
@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.Images
             };
         }
 
-        private IEnumerable<ImageType> GetEnabledImages(IHasImages item)
+        private IEnumerable<ImageType> GetEnabledImages(IHasMetadata item)
         {
             //var options = ProviderManager.GetMetadataOptions(item);
 
@@ -84,7 +84,7 @@ namespace Emby.Server.Implementations.Images
             return updateType;
         }
 
-        protected async Task<ItemUpdateType> FetchAsync(IHasImages item, ImageType imageType, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        protected async Task<ItemUpdateType> FetchAsync(IHasMetadata item, ImageType imageType, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var image = item.GetImageInfo(imageType, 0);
 
@@ -106,7 +106,7 @@ namespace Emby.Server.Implementations.Images
             return await FetchToFileInternal(item, items, imageType, cancellationToken).ConfigureAwait(false);
         }
 
-        protected async Task<ItemUpdateType> FetchToFileInternal(IHasImages item,
+        protected async Task<ItemUpdateType> FetchToFileInternal(IHasMetadata item,
             List<BaseItem> itemsWithImages,
             ImageType imageType,
             CancellationToken cancellationToken)
@@ -132,14 +132,14 @@ namespace Emby.Server.Implementations.Images
             return ItemUpdateType.ImageUpdate;
         }
 
-        protected abstract List<BaseItem> GetItemsWithImages(IHasImages item);
+        protected abstract List<BaseItem> GetItemsWithImages(IHasMetadata item);
 
-        protected string CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
+        protected string CreateThumbCollage(IHasMetadata primaryItem, List<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 640, 360);
         }
 
-        protected virtual IEnumerable<string> GetStripCollageImagePaths(IHasImages primaryItem, IEnumerable<BaseItem> items)
+        protected virtual IEnumerable<string> GetStripCollageImagePaths(IHasMetadata primaryItem, IEnumerable<BaseItem> items)
         {
             return items
                 .Select(i =>
@@ -161,22 +161,22 @@ namespace Emby.Server.Implementations.Images
                 .Where(i => !string.IsNullOrWhiteSpace(i));
         }
 
-        protected string CreatePosterCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
+        protected string CreatePosterCollage(IHasMetadata primaryItem, List<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 400, 600);
         }
 
-        protected string CreateSquareCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
+        protected string CreateSquareCollage(IHasMetadata primaryItem, List<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 600, 600);
         }
 
-        protected string CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height)
+        protected string CreateThumbCollage(IHasMetadata primaryItem, List<BaseItem> items, string outputPath, int width, int height)
         {
             return CreateCollage(primaryItem, items, outputPath, width, height);
         }
 
-        private string CreateCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height)
+        private string CreateCollage(IHasMetadata primaryItem, List<BaseItem> items, string outputPath, int width, int height)
         {
             FileSystem.CreateDirectory(FileSystem.GetDirectoryName(outputPath));
 
@@ -207,7 +207,7 @@ namespace Emby.Server.Implementations.Images
             get { return "Dynamic Image Provider"; }
         }
 
-        protected virtual string CreateImage(IHasImages item,
+        protected virtual string CreateImage(IHasMetadata item,
             List<BaseItem> itemsWithImages,
             string outputPathWithoutExtension,
             ImageType imageType,
@@ -267,7 +267,7 @@ namespace Emby.Server.Implementations.Images
             return false;
         }
 
-        protected bool HasChanged(IHasImages item, ImageType type)
+        protected bool HasChanged(IHasMetadata item, ImageType type)
         {
             var image = item.GetImageInfo(type, 0);
 
@@ -293,20 +293,16 @@ namespace Emby.Server.Implementations.Images
             return true;
         }
 
-        protected List<BaseItem> GetFinalItems(List<BaseItem> items)
+        protected List<BaseItem> GetFinalItems(IEnumerable<BaseItem> items)
         {
             return GetFinalItems(items, 4);
         }
 
-        protected virtual List<BaseItem> GetFinalItems(List<BaseItem> items, int limit)
+        protected virtual List<BaseItem> GetFinalItems(IEnumerable<BaseItem> items, int limit)
         {
-            // Rotate the images once every x days
-            var random = DateTime.Now.DayOfYear % MaxImageAgeDays;
-
             return items
-                .OrderBy(i => (random + string.Empty + items.IndexOf(i)).GetMD5())
+                .OrderBy(i => Guid.NewGuid())
                 .Take(limit)
-                .OrderBy(i => i.Name)
                 .ToList();
         }
 

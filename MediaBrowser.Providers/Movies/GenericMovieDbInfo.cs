@@ -146,7 +146,7 @@ namespace MediaBrowser.Providers.Movies
                 movie.ProductionLocations = movieData
                     .production_countries
                     .Select(i => i.name)
-                    .ToList();
+                    .ToArray(movieData.production_countries.Count);
             }
 
             movie.SetProviderId(MetadataProviders.Tmdb, movieData.id.ToString(_usCulture));
@@ -213,12 +213,7 @@ namespace MediaBrowser.Providers.Movies
             //studios
             if (movieData.production_companies != null)
             {
-                movie.Studios.Clear();
-
-                foreach (var studio in movieData.production_companies.Select(c => c.name))
-                {
-                    movie.AddStudio(studio);
-                }
+                movie.SetStudios(movieData.production_companies.Select(c => c.name));
             }
 
             // genres
@@ -307,10 +302,10 @@ namespace MediaBrowser.Providers.Movies
                 }
             }
 
-            if (movieData.keywords != null && movieData.keywords.keywords != null)
-            {
-                movie.Keywords = movieData.keywords.keywords.Select(i => i.name).ToList();
-            }
+            //if (movieData.keywords != null && movieData.keywords.keywords != null)
+            //{
+            //    movie.Keywords = movieData.keywords.keywords.Select(i => i.name).ToList();
+            //}
 
             if (movieData.trailers != null && movieData.trailers.youtube != null &&
                 movieData.trailers.youtube.Count > 0)
@@ -323,7 +318,7 @@ namespace MediaBrowser.Providers.Movies
                         Url = string.Format("https://www.youtube.com/watch?v={0}", i.source),
                         Name = i.name
 
-                    }).ToList();
+                    }).ToArray();
                 }
             }
         }

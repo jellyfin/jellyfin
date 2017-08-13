@@ -21,9 +21,9 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public BoxSet()
         {
-            RemoteTrailers = new List<MediaUrl>();
-            LocalTrailerIds = new List<Guid>();
-            RemoteTrailerIds = new List<Guid>();
+            RemoteTrailers = EmptyMediaUrlArray;
+            LocalTrailerIds = EmptyGuidArray;
+            RemoteTrailerIds = EmptyGuidArray;
 
             DisplayOrder = ItemSortBy.PremiereDate;
             Shares = new List<Share>();
@@ -47,14 +47,14 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
         }
 
-        public List<Guid> LocalTrailerIds { get; set; }
-        public List<Guid> RemoteTrailerIds { get; set; }
+        public Guid[] LocalTrailerIds { get; set; }
+        public Guid[] RemoteTrailerIds { get; set; }
 
         /// <summary>
         /// Gets or sets the remote trailers.
         /// </summary>
         /// <value>The remote trailers.</value>
-        public List<MediaUrl> RemoteTrailers { get; set; }
+        public MediaUrl[] RemoteTrailers { get; set; }
 
         /// <summary>
         /// Gets or sets the display order.
@@ -116,7 +116,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             {
                 if (IsLegacyBoxSet)
                 {
-                    return true;
+                    return false;
                 }
 
                 return false;
@@ -145,17 +145,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         public override bool IsSaveLocalMetadataEnabled()
         {
             return true;
-        }
-
-        /// <summary>
-        /// Gets the trailer ids.
-        /// </summary>
-        /// <returns>List&lt;Guid&gt;.</returns>
-        public List<Guid> GetTrailerIds()
-        {
-            var list = LocalTrailerIds.ToList();
-            list.AddRange(RemoteTrailerIds);
-            return list;
         }
 
         /// <summary>

@@ -187,17 +187,14 @@ namespace MediaBrowser.Model.Dlna
 
         public ResponseProfile GetAudioMediaProfile(string container, string audioCodec, int? audioChannels, int? audioBitrate, int? audioSampleRate, int? audioBitDepth)
         {
-            container = StringHelper.TrimStart(container ?? string.Empty, '.');
-
             foreach (var i in ResponseProfiles)
             {
-                if (i.Type != MediaBrowser.Model.Dlna.DlnaProfileType.Audio)
+                if (i.Type != DlnaProfileType.Audio)
                 {
                     continue;
                 }
 
-                List<string> containers = i.GetContainers();
-                if (containers.Count > 0 && !ListHelper.ContainsIgnoreCase(containers, container))
+                if (!ContainerProfile.ContainsContainer(i.GetContainers(), container))
                 {
                     continue;
                 }
@@ -208,7 +205,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                var conditionProcessor = new MediaBrowser.Model.Dlna.ConditionProcessor();
+                var conditionProcessor = new ConditionProcessor();
 
                 var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
@@ -230,9 +227,9 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        private MediaBrowser.Model.Dlna.ProfileCondition GetModelProfileCondition(ProfileCondition c)
+        private ProfileCondition GetModelProfileCondition(ProfileCondition c)
         {
-            return new MediaBrowser.Model.Dlna.ProfileCondition
+            return new ProfileCondition
             {
                 Condition = c.Condition,
                 IsRequired = c.IsRequired,
@@ -243,22 +240,19 @@ namespace MediaBrowser.Model.Dlna
 
         public ResponseProfile GetImageMediaProfile(string container, int? width, int? height)
         {
-            container = StringHelper.TrimStart(container ?? string.Empty, '.');
-
             foreach (var i in ResponseProfiles)
             {
-                if (i.Type != MediaBrowser.Model.Dlna.DlnaProfileType.Photo)
+                if (i.Type != DlnaProfileType.Photo)
                 {
                     continue;
                 }
 
-                List<string> containers = i.GetContainers();
-                if (containers.Count > 0 && !ListHelper.ContainsIgnoreCase(containers, container))
+                if (!ContainerProfile.ContainsContainer(i.GetContainers(), container))
                 {
                     continue;
                 }
 
-                var conditionProcessor = new MediaBrowser.Model.Dlna.ConditionProcessor();
+                var conditionProcessor = new ConditionProcessor();
 
                 var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
@@ -300,17 +294,14 @@ namespace MediaBrowser.Model.Dlna
             string videoCodecTag,
             bool? isAvc)
         {
-            container = StringHelper.TrimStart(container ?? string.Empty, '.');
-
             foreach (var i in ResponseProfiles)
             {
-                if (i.Type != MediaBrowser.Model.Dlna.DlnaProfileType.Video)
+                if (i.Type != DlnaProfileType.Video)
                 {
                     continue;
                 }
 
-                List<string> containers = i.GetContainers();
-                if (containers.Count > 0 && !ListHelper.ContainsIgnoreCase(containers, container ?? string.Empty))
+                if (!ContainerProfile.ContainsContainer(i.GetContainers(), container))
                 {
                     continue;
                 }
@@ -327,7 +318,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                var conditionProcessor = new MediaBrowser.Model.Dlna.ConditionProcessor();
+                var conditionProcessor = new ConditionProcessor();
 
                 var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)

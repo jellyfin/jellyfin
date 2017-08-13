@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{ImageType}.</returns>
-        IEnumerable<ImageType> GetSupportedImages(IHasImages item);
+        IEnumerable<ImageType> GetSupportedImages(IHasMetadata item);
 
         /// <summary>
         /// Gets the image.
@@ -22,6 +22,6 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="type">The type.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{DynamicImageResponse}.</returns>
-        Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken);
+        Task<DynamicImageResponse> GetImage(IHasMetadata item, ImageType type, CancellationToken cancellationToken);
     }
 }

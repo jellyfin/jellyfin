@@ -1,4 +1,4 @@
-﻿<div class="convertRecordingsContainer hide" style="padding: 1.25em 1.5em; background: #242424; border-radius: 3px; margin: 1em 0 2em;">
+﻿<div class="convertRecordingsContainer hide infoBanner" style="margin: 1em 0 2em;">
     <h1 style="margin: .25em 0 .5em;">${HeaderConvertYourRecordings}</h1>
     <div class="fieldDescription">${PromoConvertRecordingsToStreamingFormat}</div>
     <br />
@@ -6,7 +6,7 @@
         <span>${HeaderLearnMore}</span>
     </button>
 </div>
-<div class="supporterContainer hide" style="padding: 1.25em 1.5em; background: #242424; border-radius: 3px; margin: 1em 0 2em;">
+<div class="supporterContainer hide infoBanner" style="margin: 1em 0 2em;">
     <div class="supporterContainerText"></div>
     <br />
     <button is="emby-button" type="button" class="btnSupporter raised button-submit block">
@@ -15,9 +15,9 @@
 </div>
 <div class="recordingFields hide">
 
-    <div class="recordSeriesContainer recordingFields-buttons hide">
+    <div class="recordSeriesContainer recordingFields-buttons flex align-items-center hide">
         <div>
-            <button is="emby-button" type="button" class="raised button-cancel recordingButton seriesRecordingButton">
+            <button is="emby-button" type="button" class="raised recordingButton seriesRecordingButton">
                 <i class="md-icon recordingIcon">&#xE062;</i>
                 <span class="buttonText">${RecordSeries}</span>
             </button>
@@ -27,9 +27,9 @@
         </button>
     </div>
 
-    <div class="recordingFields-buttons">
+    <div class="recordingFields-buttons flex align-items-center">
         <div>
-            <button is="emby-button" type="button" class="raised button-cancel recordingButton singleRecordingButton">
+            <button is="emby-button" type="button" class="raised recordingButton singleRecordingButton">
                 <i class="md-icon recordingIcon">&#xE061;</i>
                 <span class="buttonText">${Record}</span>
             </button>

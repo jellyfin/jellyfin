@@ -31,7 +31,7 @@ namespace Emby.Server.Implementations.UserViews
             _libraryManager = libraryManager;
         }
 
-        public override IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public override IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             var view = (UserView)item;
             if (IsUsingCollectionStrip(view))
@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.UserViews
             };
         }
 
-        protected override List<BaseItem> GetItemsWithImages(IHasImages item)
+        protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
         {
             var view = (UserView)item;
 
@@ -62,27 +62,27 @@ namespace Emby.Server.Implementations.UserViews
                     IsMovie = true,
                     DtoOptions = new DtoOptions(false)
 
-                }).ToList();
+                });
 
-                return GetFinalItems(programs).ToList();
+                return GetFinalItems(programs);
             }
 
             if (string.Equals(view.ViewType, SpecialFolder.MovieGenre, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(view.ViewType, SpecialFolder.TvGenre, StringComparison.OrdinalIgnoreCase))
             {
-                var userItemsResult = view.GetItems(new InternalItemsQuery
+                var userItemsResult = view.GetItemList(new InternalItemsQuery
                 {
                     CollapseBoxSetItems = false,
                     DtoOptions = new DtoOptions(false)
                 });
 
-                return userItemsResult.Items.ToList();
+                return userItemsResult.ToList();
             }
 
             var isUsingCollectionStrip = IsUsingCollectionStrip(view);
             var recursive = isUsingCollectionStrip && !new[] { CollectionType.Channels, CollectionType.BoxSets, CollectionType.Playlists }.Contains(view.ViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
-            var result = view.GetItems(new InternalItemsQuery
+            var result = view.GetItemList(new InternalItemsQuery
             {
                 User = view.UserId.HasValue ? _userManager.GetUserById(view.UserId.Value) : null,
                 CollapseBoxSetItems = false,
@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.UserViews
                 DtoOptions = new DtoOptions(false)
             });
 
-            var items = result.Items.Select(i =>
+            var items = result.Select(i =>
             {
                 var episode = i as Episode;
                 if (episode != null)
@@ -133,13 +133,13 @@ namespace Emby.Server.Implementations.UserViews
 
             if (isUsingCollectionStrip)
             {
-                return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)).ToList(), 8);
+                return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)), 8);
             }
 
-            return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary)).ToList());
+            return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary)));
         }
 
-        protected override bool Supports(IHasImages item)
+        protected override bool Supports(IHasMetadata item)
         {
             var view = item as UserView;
             if (view != null)
@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations.UserViews
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
         }
 
-        protected override string CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override string CreateImage(IHasMetadata item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             if (itemsWithImages.Count == 0)
             {

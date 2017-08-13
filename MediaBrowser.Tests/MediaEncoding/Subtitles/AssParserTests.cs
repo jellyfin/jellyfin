@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Emby.Server.MediaEncoding.Subtitles;
 
 namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
 

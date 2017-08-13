@@ -137,9 +137,6 @@
                 <div id="fldOriginalAspectRatio" class="inputContainer hide">
                     <input is="emby-input" id="txtOriginalAspectRatio" type="text" label="${LabelOriginalAspectRatio}" />
                 </div>
-                <div id="fldPlayers" class="inputContainer hide">
-                    <input is="emby-input" id="txtPlayers" type="number" pattern="[0-9]*" label="${LabelPlayers}" />
-                </div>
                 <div id="fld3dFormat" class="selectContainer hide">
                     <select is="emby-select" id="select3dFormat" label="${Label3DFormat}">
                         <option value=""></option>
@@ -195,9 +192,6 @@
                 <h1>
                     ${HeaderDisplaySettings}
                 </h1>
-                <div id="fldSourceType" class="hide fldDisplaySetting inputContainer">
-                    <input is="emby-input" id="txtDisplayMediaType" type="text" label="${LabelTreatImageAs}" />
-                </div>
                 <div id="fldDisplayOrder" class="fldDisplaySetting selectContainer">
                     <select is="emby-select" id="selectDisplayOrder" label="${LabelDisplayOrder}"></select>
                 </div>
@@ -223,16 +217,6 @@
                 </button>
                 <div id="peopleList" class="paperList">
                 </div>
-            </div>
-            <div id="keywordsCollapsible" class="editableListviewContainer hide" style="margin-top: 3em;">
-                <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
-                    ${HeaderPlotKeywords}
-                </h1>
-                <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
-                    <i class="md-icon">add</i>
-                    <span>${Add}</span>
-                </button>
-                <div class="paperList" id="listKeywords"></div>
             </div>
             <div id="studiosCollapsible" class="editableListviewContainer hide" style="margin-top: 3em;">
                 <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">

@@ -41,12 +41,12 @@ namespace MediaBrowser.Providers.Movies
             get { return "TheMovieDb"; }
         }
 
-        public bool Supports(IHasImages item)
+        public bool Supports(IHasMetadata item)
         {
             return item is Movie || item is MusicVideo || item is Trailer;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             return new List<ImageType>
             {
@@ -55,7 +55,7 @@ namespace MediaBrowser.Providers.Movies
             };
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, CancellationToken cancellationToken)
         {
             var list = new List<RemoteImageInfo>();
 
@@ -127,8 +127,7 @@ namespace MediaBrowser.Providers.Movies
                 return 0;
             })
                 .ThenByDescending(i => i.CommunityRating ?? 0)
-                .ThenByDescending(i => i.VoteCount ?? 0)
-                .ToList();
+                .ThenByDescending(i => i.VoteCount ?? 0);
         }
 
         /// <summary>
@@ -149,8 +148,7 @@ namespace MediaBrowser.Providers.Movies
         private IEnumerable<MovieDbProvider.Backdrop> GetBackdrops(MovieDbProvider.Images images)
         {
             var eligibleBackdrops = images.backdrops == null ? new List<MovieDbProvider.Backdrop>() :
-                images.backdrops
-                .ToList();
+                images.backdrops;
 
             return eligibleBackdrops.OrderByDescending(i => i.vote_average)
                 .ThenByDescending(i => i.vote_count);

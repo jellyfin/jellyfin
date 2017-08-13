@@ -118,12 +118,11 @@ namespace MediaBrowser.Api.System
 
         public object Get(GetServerLogs request)
         {
-            List<FileSystemMetadata> files;
+            IEnumerable<FileSystemMetadata> files;
 
             try
             {
-                files = _fileSystem.GetFiles(_appPaths.LogDirectoryPath, new[] { ".txt" }, true, false)
-                    .ToList();
+                files = _fileSystem.GetFiles(_appPaths.LogDirectoryPath, new[] { ".txt" }, true, false);
             }
             catch (IOException)
             {

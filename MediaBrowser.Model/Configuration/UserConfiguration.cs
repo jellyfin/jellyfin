@@ -25,7 +25,6 @@ namespace MediaBrowser.Model.Configuration
         public string SubtitleLanguagePreference { get; set; }
 
         public bool DisplayMissingEpisodes { get; set; }
-        public bool DisplayUnairedEpisodes { get; set; }
 
         public string[] GroupedFolders { get; set; }
 

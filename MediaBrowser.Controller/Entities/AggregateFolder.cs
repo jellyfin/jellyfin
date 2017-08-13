@@ -23,18 +23,6 @@ namespace MediaBrowser.Controller.Entities
             PhysicalLocationsList = new List<string>();
         }
 
-        /// <summary>
-        /// We don't support manual shortcuts
-        /// </summary>
-        [IgnoreDataMember]
-        protected override bool SupportsShortcutChildren
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         [IgnoreDataMember]
         public override bool IsPhysicalRoot
         {
@@ -80,9 +68,9 @@ namespace MediaBrowser.Controller.Entities
 
         public List<string> PhysicalLocationsList { get; set; }
 
-        protected override IEnumerable<FileSystemMetadata> GetFileSystemChildren(IDirectoryService directoryService)
+        protected override FileSystemMetadata[] GetFileSystemChildren(IDirectoryService directoryService)
         {
-            return CreateResolveArgs(directoryService, true).FileSystemChildren;
+            return CreateResolveArgs(directoryService, true).FileSystemChildren.ToArray();
         }
 
         private List<Guid> _childrenIds = null;

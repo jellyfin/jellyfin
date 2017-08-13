@@ -39,9 +39,9 @@ namespace MediaBrowser.Providers.Chapters
             return _itemRepo.GetChapters(new Guid(itemId));
         }
 
-        public Task SaveChapters(string itemId, List<ChapterInfo> chapters, CancellationToken cancellationToken)
+        public Task SaveChapters(string itemId, List<ChapterInfo> chapters)
         {
-            return _itemRepo.SaveChapters(new Guid(itemId), chapters, cancellationToken);
+            return _itemRepo.SaveChapters(new Guid(itemId), chapters);
         }
     }
 }

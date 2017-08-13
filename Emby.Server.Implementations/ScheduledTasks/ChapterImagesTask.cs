@@ -15,6 +15,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -123,16 +124,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 try
                 {
-                    var chapters = _itemRepo.GetChapters(video.Id).ToList();
+                    var chapters = _itemRepo.GetChapters(video.Id);
 
-                    var success = await _encodingManager.RefreshChapterImages(new ChapterImageRefreshOptions
-                    {
-                        SaveChapters = true,
-                        ExtractImages = extract,
-                        Video = video,
-                        Chapters = chapters
-
-                    }, CancellationToken.None);
+                    var success = await _encodingManager.RefreshChapterImages(video, chapters, extract, true, CancellationToken.None);
 
                     if (!success)
                     {
@@ -142,7 +136,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                         _fileSystem.CreateDirectory(parentPath);
 
-                        _fileSystem.WriteAllText(failHistoryPath, string.Join("|", previouslyFailedImages.ToArray()));
+                        _fileSystem.WriteAllText(failHistoryPath, string.Join("|", previouslyFailedImages.ToArray(previouslyFailedImages.Count)));
                     }
 
                     numComplete++;

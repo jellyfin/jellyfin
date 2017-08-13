@@ -29,9 +29,9 @@ namespace Emby.Server.Implementations.MediaEncoder
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
 
-        public EncodingManager(IFileSystem fileSystem, 
-            ILogger logger, 
-            IMediaEncoder encoder, 
+        public EncodingManager(IFileSystem fileSystem,
+            ILogger logger,
+            IMediaEncoder encoder,
             IChapterManager chapterManager, ILibraryManager libraryManager)
         {
             _fileSystem = fileSystem;
@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.MediaEncoder
         /// Gets the chapter images data path.
         /// </summary>
         /// <value>The chapter images data path.</value>
-        private string GetChapterImagesPath(IHasImages item)
+        private string GetChapterImagesPath(IHasMetadata item)
         {
             return Path.Combine(item.GetInternalMetadataPath(), "chapters");
         }
@@ -84,13 +84,8 @@ namespace Emby.Server.Implementations.MediaEncoder
         /// </summary>
         private static readonly long FirstChapterTicks = TimeSpan.FromSeconds(15).Ticks;
 
-        public async Task<bool> RefreshChapterImages(ChapterImageRefreshOptions options, CancellationToken cancellationToken)
+        public async Task<bool> RefreshChapterImages(Video video, List<ChapterInfo> chapters, bool extractImages, bool saveChapters, CancellationToken cancellationToken)
         {
-            var extractImages = options.ExtractImages;
-            var video = options.Video;
-            var chapters = options.Chapters;
-            var saveChapters = options.SaveChapters;
-
             if (!IsEligibleForChapterImageExtraction(video))
             {
                 extractImages = false;
@@ -117,16 +112,14 @@ namespace Emby.Server.Implementations.MediaEncoder
                 {
                     if (extractImages)
                     {
-                        if (video.VideoType == VideoType.HdDvd || video.VideoType == VideoType.Iso)
+                        if (video.VideoType == VideoType.Iso)
                         {
                             continue;
                         }
+
                         if (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd)
                         {
-                            if (video.PlayableStreamFileNames.Count != 1)
-                            {
-                                continue;
-                            }
+                            continue;
                         }
 
                         try
@@ -136,13 +129,13 @@ namespace Emby.Server.Implementations.MediaEncoder
 
                             var protocol = MediaProtocol.File;
 
-                            var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, protocol, null, video.PlayableStreamFileNames);
+                            var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, protocol, null, new List<string>());
 
                             _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
                             var container = video.Container;
 
-                            var tempFile = await _encoder.ExtractVideoImage(inputPath, container, protocol, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
+                            var tempFile = await _encoder.ExtractVideoImage(inputPath, container, protocol, video.GetDefaultVideoStream(), video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
                             _fileSystem.CopyFile(tempFile, path, true);
 
                             try
@@ -151,7 +144,7 @@ namespace Emby.Server.Implementations.MediaEncoder
                             }
                             catch
                             {
-                                
+
                             }
 
                             chapter.ImagePath = path;
@@ -181,7 +174,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
             if (saveChapters && changesMade)
             {
-                await _chapterManager.SaveChapters(video.Id.ToString(), chapters, cancellationToken).ConfigureAwait(false);
+                await _chapterManager.SaveChapters(video.Id.ToString(), chapters).ConfigureAwait(false);
             }
 
             DeleteDeadImages(currentImages, chapters);

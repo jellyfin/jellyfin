@@ -105,7 +105,7 @@ namespace MediaBrowser.Controller.Playlists
 
             if (query != null)
             {
-                items = items.Where(i => UserViewBuilder.FilterItem(i, query));
+                items = items.Where(i => UserViewBuilder.FilterItem(i, query)).ToList();
             }
 
             return items;
@@ -116,12 +116,12 @@ namespace MediaBrowser.Controller.Playlists
             return GetLinkedChildrenInfos();
         }
 
-        private IEnumerable<BaseItem> GetPlayableItems(User user, DtoOptions options)
+        private List<BaseItem> GetPlayableItems(User user, DtoOptions options)
         {
             return GetPlaylistItems(MediaType, base.GetChildren(user, true), user, options);
         }
 
-        public static IEnumerable<BaseItem> GetPlaylistItems(string playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
+        public static List<BaseItem> GetPlaylistItems(string playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
         {
             if (user != null)
             {
@@ -182,10 +182,7 @@ namespace MediaBrowser.Controller.Playlists
                     DtoOptions = options
                 };
 
-                var itemsResult = folder.GetItems(query);
-                var items = itemsResult.Items;
-
-                return items;
+                return folder.GetItemList(query);
             }
 
             return new[] { item };

@@ -17,14 +17,14 @@ namespace MediaBrowser.Controller.Entities.TV
     {
         public Episode()
         {
-            RemoteTrailers = new List<MediaUrl>();
-            LocalTrailerIds = new List<Guid>();
-            RemoteTrailerIds = new List<Guid>();
+            RemoteTrailers = EmptyMediaUrlArray;
+            LocalTrailerIds = EmptyGuidArray;
+            RemoteTrailerIds = EmptyGuidArray;
         }
 
-        public List<Guid> LocalTrailerIds { get; set; }
-        public List<Guid> RemoteTrailerIds { get; set; }
-        public List<MediaUrl> RemoteTrailers { get; set; }
+        public Guid[] LocalTrailerIds { get; set; }
+        public Guid[] RemoteTrailerIds { get; set; }
+        public MediaUrl[] RemoteTrailers { get; set; }
 
         /// <summary>
         /// Gets the season in which it aired.
@@ -282,14 +282,8 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return LocationType == LocationType.Virtual && !IsUnaired;
+                return LocationType == LocationType.Virtual;
             }
-        }
-
-        [IgnoreDataMember]
-        public bool IsVirtualUnaired
-        {
-            get { return LocationType == LocationType.Virtual && IsUnaired; }
         }
 
         [IgnoreDataMember]
@@ -346,7 +340,6 @@ namespace MediaBrowser.Controller.Entities.TV
 
             id.IsMissingEpisode = IsMissingEpisode;
             id.IndexNumberEnd = IndexNumberEnd;
-            id.IsVirtualUnaired = IsVirtualUnaired;
 
             return id;
         }

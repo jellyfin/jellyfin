@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -31,19 +32,17 @@ namespace MediaBrowser.Providers.MediaInfo
             _fileSystem = fileSystem;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             return new List<ImageType> { ImageType.Primary };
         }
 
-        public Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken)
+        public Task<DynamicImageResponse> GetImage(IHasMetadata item, ImageType type, CancellationToken cancellationToken)
         {
             var audio = (Audio)item;
 
             var imageStreams =
-                audio.GetMediaSources(false)
-                    .Take(1)
-                    .SelectMany(i => i.MediaStreams)
+                audio.GetMediaStreams(MediaStreamType.EmbeddedImage)
                     .Where(i => i.Type == MediaStreamType.EmbeddedImage)
                     .ToList();
 
@@ -94,7 +93,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private string GetAudioImagePath(Audio item)
         {
             var filename = item.Album ?? string.Empty;
-            filename += string.Join(",", item.Artists.ToArray());
+            filename += string.Join(",", item.Artists.ToArray(item.Artists.Count));
 
             if (!string.IsNullOrWhiteSpace(item.Album))
             {
@@ -129,7 +128,7 @@ namespace MediaBrowser.Providers.MediaInfo
             get { return "Image Extractor"; }
         }
 
-        public bool Supports(IHasImages item)
+        public bool Supports(IHasMetadata item)
         {
             var audio = item as Audio;
 

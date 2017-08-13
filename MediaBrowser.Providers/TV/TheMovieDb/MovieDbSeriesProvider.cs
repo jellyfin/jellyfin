@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -231,7 +232,7 @@ namespace MediaBrowser.Providers.TV
 
             if (seriesInfo.networks != null)
             {
-                series.Studios = seriesInfo.networks.Select(i => i.name).ToList();
+                series.Studios = seriesInfo.networks.Select(i => i.name).ToArray(seriesInfo.networks.Count);
             }
 
             if (seriesInfo.genres != null)
@@ -301,7 +302,7 @@ namespace MediaBrowser.Providers.TV
                         if (video.site.Equals("youtube", System.StringComparison.OrdinalIgnoreCase))
                         {
                             var videoUrl = string.Format("http://www.youtube.com/watch?v={0}", video.key);
-                            series.AddTrailerUrl(videoUrl, true);
+                            series.AddTrailerUrl(videoUrl);
                         }
                     }
                 }

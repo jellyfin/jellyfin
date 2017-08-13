@@ -33,13 +33,7 @@
                 </div>
 
                 <br /><br />
-                <div class="selectContainer fldSelectEncoderPathType hide">
-                    <select is="emby-select" id="selectEncoderPath" label="${LabelffmpegVersion}">
-                        <option value="System">${OptionUseSystemInstalledVersion}</option>
-                        <option value="Custom">${OptionUseMyCustomVersion}</option>
-                    </select>
-                </div>
-                <div class="inputContainer fldEncoderPath hide">
+                <div class="inputContainer fldEncoderPath">
                     <div style="display: flex; align-items: center;">
                         <div style="flex-grow:1;">
                             <input is="emby-input" class="txtEncoderPath" label="${LabelffmpegPath}" autocomplete="off" required />

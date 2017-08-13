@@ -35,7 +35,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "plot",
                     "customrating",
                     "lockdata",
-                    "type",
                     "dateadded",
                     "title",
                     "rating",
@@ -77,7 +76,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "style",
                     "imdbid",
                     "imdb_id",
-                    "plotkeyword",
                     "country",
                     "audiodbalbumid",
                     "audiodbartistid",
@@ -301,9 +299,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
             writer.WriteStartElement("fileinfo");
             writer.WriteStartElement("streamdetails");
 
-            var mediaSource = item.GetMediaSources(false).First();
+            var mediaStreams = item.GetMediaStreams();
 
-            foreach (var stream in mediaSource.MediaStreams)
+            foreach (var stream in mediaStreams)
             {
                 writer.WriteStartElement(stream.Type.ToString().ToLower());
 
@@ -379,9 +377,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (stream.Type == MediaStreamType.Video)
                 {
-                    if (mediaSource.RunTimeTicks.HasValue)
+                    var runtimeTicks = ((IHasMetadata) item).RunTimeTicks;
+                    if (runtimeTicks.HasValue)
                     {
-                        var timespan = TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value);
+                        var timespan = TimeSpan.FromTicks(runtimeTicks.Value);
 
                         writer.WriteElementString("duration", Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture));
                         writer.WriteElementString("durationinseconds", Convert.ToInt32(timespan.TotalSeconds).ToString(UsCulture));
@@ -486,14 +485,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             writer.WriteElementString("lockdata", item.IsLocked.ToString().ToLower());
 
-            if (item.LockedFields.Count > 0)
+            if (item.LockedFields.Length > 0)
             {
-                writer.WriteElementString("lockedfields", string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray()));
-            }
-
-            if (!string.IsNullOrEmpty(item.DisplayMediaType))
-            {
-                writer.WriteElementString("type", item.DisplayMediaType);
+                writer.WriteElementString("lockedfields", string.Join("|", item.LockedFields));
             }
 
             writer.WriteElementString("dateadded", item.DateCreated.ToLocalTime().ToString(DateAddedFormat));
@@ -617,13 +611,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writtenProviderIds.Add(MetadataProviders.Tmdb.ToString());
             }
 
-            var tvcom = item.GetProviderId(MetadataProviders.Tvcom);
-            if (!string.IsNullOrEmpty(tvcom))
-            {
-                writer.WriteElementString("tvcomid", tvcom);
-                writtenProviderIds.Add(MetadataProviders.Tvcom.ToString());
-            }
-
             if (!string.IsNullOrEmpty(item.PreferredMetadataLanguage))
             {
                 writer.WriteElementString("language", item.PreferredMetadataLanguage);
@@ -713,11 +700,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 {
                     writer.WriteElementString("tag", tag);
                 }
-            }
-
-            foreach (var tag in item.Keywords)
-            {
-                writer.WriteElementString("plotkeyword", tag);
             }
 
             var externalId = item.GetProviderId(MetadataProviders.AudioDbArtist);

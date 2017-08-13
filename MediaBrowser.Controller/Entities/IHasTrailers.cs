@@ -11,14 +11,14 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the remote trailers.
         /// </summary>
         /// <value>The remote trailers.</value>
-        List<MediaUrl> RemoteTrailers { get; set; }
+        MediaUrl[] RemoteTrailers { get; set; }
 
         /// <summary>
         /// Gets or sets the local trailer ids.
         /// </summary>
         /// <value>The local trailer ids.</value>
-        List<Guid> LocalTrailerIds { get; set; }
-        List<Guid> RemoteTrailerIds { get; set; }
+        Guid[] LocalTrailerIds { get; set; }
+        Guid[] RemoteTrailerIds { get; set; }
     }
 
     public static class HasTrailerExtensions

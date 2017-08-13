@@ -22,13 +22,13 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="day">The day.</param>
         /// <returns>List{DayOfWeek}.</returns>
-        public static List<DayOfWeek> GetAirDays(string day)
+        public static DayOfWeek[] GetAirDays(string day)
         {
             if (!string.IsNullOrWhiteSpace(day))
             {
                 if (day.Equals("Daily", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new List<DayOfWeek>
+                    return new DayOfWeek[]
                                {
                                    DayOfWeek.Sunday,
                                    DayOfWeek.Monday,
@@ -44,13 +44,13 @@ namespace MediaBrowser.Controller.Library
 
                 if (Enum.TryParse(day, true, out value))
                 {
-                    return new List<DayOfWeek>
+                    return new DayOfWeek[]
                                {
                                    value
                                };
                 }
 
-                return new List<DayOfWeek>();
+                return new DayOfWeek[]{};
             }
             return null;
         }

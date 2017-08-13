@@ -1,4 +1,4 @@
-﻿<div id="serverSecurityPage" data-role="page" class="page type-interior advancedConfigurationPage withTabs fullWidthContent" data-require="jqmtable,scripts/serversecurity,detailtablecss,emby-button">
+﻿<div id="serverSecurityPage" data-role="page" class="page type-interior advancedConfigurationPage withTabs fullWidthContent" data-require="scripts/serversecurity,detailtablecss,emby-button">
     <div>
         <div class="content-primary">
             <div class="detailSectionHeader">
@@ -12,15 +12,15 @@
             </div>
             <p>${HeaderApiKeysHelp}</p>
             <br />
-            <table data-role="table" data-mode="reflow" class="tblApiKeys stripedTable ui-responsive table-stroke" style="display: table;">
+            <table class="tblApiKeys detailTable">
                 <thead>
                     <tr>
-                        <th></th>
-                        <th>${HeaderApiKey}</th>
-                        <th>${HeaderApp}</th>
-                        <th>${HeaderDevice}</th>
-                        <th>${HeaderUser}</th>
-                        <th>${HeaderDateIssued}</th>
+                        <th class="detailTableHeaderCell"></th>
+                        <th class="detailTableHeaderCell">${HeaderApiKey}</th>
+                        <th class="detailTableHeaderCell">${HeaderApp}</th>
+                        <th class="detailTableHeaderCell">${HeaderDevice}</th>
+                        <th class="detailTableHeaderCell">${HeaderUser}</th>
+                        <th class="detailTableHeaderCell">${HeaderDateIssued}</th>
                     </tr>
                 </thead>
                 <tbody class="resultBody"></tbody>

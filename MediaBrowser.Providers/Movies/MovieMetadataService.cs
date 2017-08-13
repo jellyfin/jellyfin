@@ -28,7 +28,7 @@ namespace MediaBrowser.Providers.Movies
             return base.IsFullLocalMetadata(item);
         }
 
-        protected override void MergeData(MetadataResult<Movie> source, MetadataResult<Movie> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Movie> source, MetadataResult<Movie> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.Movies
             return base.IsFullLocalMetadata(item);
         }
 
-        protected override void MergeData(MetadataResult<Trailer> source, MetadataResult<Trailer> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Trailer> source, MetadataResult<Trailer> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using MediaBrowser.Model.Dlna;
-using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -42,16 +41,9 @@ namespace MediaBrowser.Model.Dlna
             return SplitValue(Codec);
         }
 
-        public List<string> GetContainers()
-        {
-            return SplitValue(Container);
-        }
-
         private bool ContainsContainer(string container)
         {
-            List<string> containers = GetContainers();
-
-            return containers.Count == 0 || ListHelper.ContainsIgnoreCase(containers, container ?? string.Empty);
+            return ContainerProfile.ContainsContainer(Container, container);
         }
 
         public bool ContainsCodec(string codec, string container)

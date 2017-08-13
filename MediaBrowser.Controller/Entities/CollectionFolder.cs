@@ -32,15 +32,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        protected override bool SupportsShortcutChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        [IgnoreDataMember]
         public override bool SupportsPlayedStatus
         {
             get
@@ -165,9 +156,9 @@ namespace MediaBrowser.Controller.Entities
         public List<string> PhysicalLocationsList { get; set; }
         public List<Guid> PhysicalFolderIds { get; set; }
 
-        protected override IEnumerable<FileSystemMetadata> GetFileSystemChildren(IDirectoryService directoryService)
+        protected override FileSystemMetadata[] GetFileSystemChildren(IDirectoryService directoryService)
         {
-            return CreateResolveArgs(directoryService, true).FileSystemChildren;
+            return CreateResolveArgs(directoryService, true).FileSystemChildren.ToArray();
         }
 
         private bool _requiresRefresh;
@@ -249,7 +240,7 @@ namespace MediaBrowser.Controller.Entities
 
             var changed = !linkedChildren.SequenceEqual(LinkedChildren, new LinkedChildComparer(FileSystem));
 
-            LinkedChildren = linkedChildren;
+            LinkedChildren = linkedChildren.ToArray(linkedChildren.Count);
 
             var folderIds = PhysicalFolderIds.ToList();
             var newFolderIds = physicalFolders.Select(i => i.Id).ToList();

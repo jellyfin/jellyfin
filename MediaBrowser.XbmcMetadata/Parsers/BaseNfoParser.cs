@@ -316,10 +316,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                case "type":
-                    item.DisplayMediaType = reader.ReadElementContentAsString();
-                    break;
-
                 case "title":
                 case "localtitle":
                     item.Name = reader.ReadElementContentAsString();
@@ -398,13 +394,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "lockedfields":
                     {
-                        var fields = new List<MetadataFields>();
-
                         var val = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            var list = val.Split('|').Select(i =>
+                            item.LockedFields = val.Split('|').Select(i =>
                             {
                                 MetadataFields field;
 
@@ -415,12 +409,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                                 return null;
 
-                            }).Where(i => i.HasValue).Select(i => i.Value);
-
-                            fields.AddRange(list);
+                            }).Where(i => i.HasValue).Select(i => i.Value).ToArray();
                         }
-
-                        item.LockedFields = fields;
 
                         break;
                     }
@@ -442,9 +432,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            item.ProductionLocations.AddRange(val.Split('/')
+                            item.ProductionLocations = val.Split('/')
                                 .Select(i => i.Trim())
-                                .Where(i => !string.IsNullOrWhiteSpace(i)));
+                                .Where(i => !string.IsNullOrWhiteSpace(i))
+                                .ToArray();
                         }
                         break;
                     }
@@ -608,7 +599,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 val = val.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", "https://www.youtube.com/watch?v=", StringComparison.OrdinalIgnoreCase);
 
-                                hasTrailer.AddTrailerUrl(val, false);
+                                hasTrailer.AddTrailerUrl(val);
                             }
                         }
                         break;
@@ -729,17 +720,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (!string.IsNullOrWhiteSpace(val))
                         {
                             item.AddTag(val);
-                        }
-                        break;
-                    }
-
-                case "plotkeyword":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.AddKeyword(val);
                         }
                         break;
                     }
@@ -936,17 +916,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         case "name":
                             name = reader.ReadElementContentAsString() ?? string.Empty;
                             break;
-
-                        case "type":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    type = val;
-                                }
-                                break;
-                            }
 
                         case "role":
                             {

@@ -779,7 +779,6 @@ namespace MediaBrowser.Controller.Entities
 
             items = FilterVirtualEpisodes(items,
                 query.IsMissing,
-                query.IsVirtualUnaired,
                 query.IsUnaired);
 
             if (collapseBoxSetItems && user != null)
@@ -1065,7 +1064,6 @@ namespace MediaBrowser.Controller.Entities
         private static IEnumerable<BaseItem> FilterVirtualEpisodes(
             IEnumerable<BaseItem> items,
             bool? isMissing,
-            bool? isVirtualUnaired,
             bool? isUnaired)
         {
             if (isMissing.HasValue)
@@ -1091,20 +1089,6 @@ namespace MediaBrowser.Controller.Entities
                     if (e != null)
                     {
                         return e.IsUnaired == val;
-                    }
-                    return true;
-                });
-            }
-
-            if (isVirtualUnaired.HasValue)
-            {
-                var val = isVirtualUnaired.Value;
-                items = items.Where(i =>
-                {
-                    var e = i as Episode;
-                    if (e != null)
-                    {
-                        return e.IsVirtualUnaired == val;
                     }
                     return true;
                 });
@@ -1387,8 +1371,8 @@ namespace MediaBrowser.Controller.Entities
                 if (movie != null)
                 {
                     var ok = filterValue
-                        ? movie.SpecialFeatureIds.Count > 0
-                        : movie.SpecialFeatureIds.Count == 0;
+                        ? movie.SpecialFeatureIds.Length > 0
+                        : movie.SpecialFeatureIds.Length == 0;
 
                     if (!ok)
                     {
@@ -1463,7 +1447,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasThemeSong.Value;
 
-                var themeCount = item.ThemeSongIds.Count;
+                var themeCount = item.ThemeSongIds.Length;
                 var ok = filterValue ? themeCount > 0 : themeCount == 0;
 
                 if (!ok)
@@ -1476,7 +1460,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasThemeVideo.Value;
 
-                var themeCount = item.ThemeVideoIds.Count;
+                var themeCount = item.ThemeVideoIds.Length;
                 var ok = filterValue ? themeCount > 0 : themeCount == 0;
 
                 if (!ok)
@@ -1669,15 +1653,6 @@ namespace MediaBrowser.Controller.Entities
                 var filterValue = query.ParentIndexNumber.Value;
 
                 if (item.ParentIndexNumber.HasValue && item.ParentIndexNumber.Value != filterValue)
-                {
-                    return false;
-                }
-            }
-
-            if (query.AirDays.Length > 0)
-            {
-                var ok = new[] { item }.OfType<Series>().Any(p => p.AirDays != null && query.AirDays.Any(d => p.AirDays.Contains(d)));
-                if (!ok)
                 {
                     return false;
                 }

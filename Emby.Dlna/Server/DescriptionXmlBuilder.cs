@@ -226,7 +226,7 @@ namespace Emby.Dlna.Server
                 }
             }
 
-            var characters = characterList.ToArray();
+            var characters = characterList.ToArray(characterList.Count);
 
             var serverName = new string(characters);
 

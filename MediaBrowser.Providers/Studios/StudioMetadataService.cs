@@ -12,7 +12,7 @@ namespace MediaBrowser.Providers.Studios
 {
     public class StudioMetadataService : MetadataService<Studio, ItemLookupInfo>
     {
-        protected override void MergeData(MetadataResult<Studio> source, MetadataResult<Studio> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Studio> source, MetadataResult<Studio> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

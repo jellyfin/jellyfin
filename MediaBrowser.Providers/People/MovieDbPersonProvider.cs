@@ -184,7 +184,7 @@ namespace MediaBrowser.Providers.People
 
                 if (!string.IsNullOrWhiteSpace(info.place_of_birth))
                 {
-                    item.ProductionLocations = new List<string> { info.place_of_birth };
+                    item.ProductionLocations = new string[] { info.place_of_birth };
                 }
                 item.Overview = info.biography;
 

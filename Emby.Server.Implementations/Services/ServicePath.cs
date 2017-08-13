@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Services
 {
@@ -142,13 +143,13 @@ namespace Emby.Server.Implementations.Services
                 }
             }
 
-            var components = componentsList.ToArray();
+            var components = componentsList.ToArray(componentsList.Count);
             this.TotalComponentsCount = components.Length;
 
             this.literalsToMatch = new string[this.TotalComponentsCount];
             this.variablesNames = new string[this.TotalComponentsCount];
             this.isWildcard = new bool[this.TotalComponentsCount];
-            this.componentsWithSeparators = hasSeparators.ToArray();
+            this.componentsWithSeparators = hasSeparators.ToArray(hasSeparators.Count);
             this.PathComponentsCount = this.componentsWithSeparators.Length;
             string firstLiteralMatch = null;
 
@@ -268,7 +269,7 @@ namespace Emby.Server.Implementations.Services
                     propertyInfos.InsertRange(0, newPropertyInfos);
                 }
 
-                return propertyInfos.ToArray();
+                return propertyInfos.ToArray(propertyInfos.Count);
             }
 
             return GetTypesPublicProperties(type)
@@ -285,7 +286,7 @@ namespace Emby.Server.Implementations.Services
                 if (mi != null && mi.IsStatic) continue;
                 pis.Add(pi);
             }
-            return pis.ToArray();
+            return pis.ToArray(pis.Count);
         }
 
 
@@ -450,7 +451,7 @@ namespace Emby.Server.Implementations.Services
                 }
             }
 
-            withPathInfoParts = totalComponents.ToArray();
+            withPathInfoParts = totalComponents.ToArray(totalComponents.Count);
             return true;
         }
 

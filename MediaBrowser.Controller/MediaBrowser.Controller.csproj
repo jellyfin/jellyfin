@@ -99,9 +99,6 @@
     <Compile Include="Entities\GameSystem.cs" />
     <Compile Include="Entities\IHasAspectRatio.cs" />
     <Compile Include="Entities\IHasDisplayOrder.cs" />
-    <Compile Include="Entities\IHasId.cs" />
-    <Compile Include="Entities\IHasImages.cs" />
-    <Compile Include="Entities\KeywordExtensions.cs" />
     <Compile Include="Entities\IHasMediaSources.cs" />
     <Compile Include="Entities\IHasProgramAttributes.cs" />
     <Compile Include="Entities\IHasScreenshots.cs" />
@@ -129,7 +126,6 @@
     <Compile Include="Entities\UserView.cs" />
     <Compile Include="Entities\UserViewBuilder.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="FileOrganization\IFileOrganizationService.cs" />
     <Compile Include="IO\StreamHelper.cs" />
     <Compile Include="Library\DeleteOptions.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
@@ -170,7 +166,6 @@
     <Compile Include="LiveTv\TimerEventInfo.cs" />
     <Compile Include="LiveTv\TimerInfo.cs" />
     <Compile Include="LiveTv\TunerChannelMapping.cs" />
-    <Compile Include="MediaEncoding\ChapterImageRefreshOptions.cs" />
     <Compile Include="MediaEncoding\EncodingHelper.cs" />
     <Compile Include="MediaEncoding\EncodingJobInfo.cs" />
     <Compile Include="MediaEncoding\EncodingJobOptions.cs" />
@@ -178,7 +173,6 @@
     <Compile Include="MediaEncoding\ImageEncodingOptions.cs" />
     <Compile Include="MediaEncoding\IMediaEncoder.cs" />
     <Compile Include="MediaEncoding\ISubtitleEncoder.cs" />
-    <Compile Include="MediaEncoding\JobLogger.cs" />
     <Compile Include="MediaEncoding\MediaInfoRequest.cs" />
     <Compile Include="MediaEncoding\MediaStreamSelector.cs" />
     <Compile Include="Net\AuthenticatedAttribute.cs" />
@@ -206,7 +200,6 @@
     <Compile Include="Notifications\INotificationTypeFactory.cs" />
     <Compile Include="Notifications\NotificationUpdateEventArgs.cs" />
     <Compile Include="Notifications\UserNotification.cs" />
-    <Compile Include="Persistence\IFileOrganizationRepository.cs" />
     <Compile Include="Persistence\MediaStreamQuery.cs" />
     <Compile Include="Playlists\IPlaylistManager.cs" />
     <Compile Include="Playlists\Playlist.cs" />
@@ -342,7 +335,6 @@
     <Compile Include="Sync\ISyncDataProvider.cs" />
     <Compile Include="Sync\ISyncManager.cs" />
     <Compile Include="Sync\ISyncProvider.cs" />
-    <Compile Include="Sync\ISyncRepository.cs" />
     <Compile Include="Sync\SyncedFileInfo.cs" />
     <Compile Include="Sync\SyncedItemProgress.cs" />
     <Compile Include="TV\ITVSeriesManager.cs" />

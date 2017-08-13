@@ -23,11 +23,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
     /// </summary>
     public class MovieResolver : BaseVideoResolver<Video>, IMultiItemResolver
     {
-        public MovieResolver(ILibraryManager libraryManager)
-            : base(libraryManager)
-        {
-        }
-
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -74,7 +69,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideos<MusicVideo>(parent, files, directoryService, false, collectionType);
+                return ResolveVideos<MusicVideo>(parent, files, directoryService, true, collectionType);
             }
 
             if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) ||
@@ -164,8 +159,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     IsInMixedFolder = isInMixedFolder,
                     ProductionYear = video.Year,
                     Name = video.Name,
-                    AdditionalParts = video.Files.Skip(1).Select(i => i.Path).ToList(),
-                    LocalAlternateVersions = video.AlternateVersions.Select(i => i.Path).ToList()
+                    AdditionalParts = video.Files.Skip(1).Select(i => i.Path).ToArray(),
+                    LocalAlternateVersions = video.AlternateVersions.Select(i => i.Path).ToArray()
                 };
 
                 SetVideoType(videoItem, firstVideo);
@@ -452,8 +447,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             var folderPaths = multiDiscFolders.Select(i => i.FullName).Where(i =>
             {
-                var subFileEntries = directoryService.GetFileSystemEntries(i)
-                    .ToList();
+                var subFileEntries = directoryService.GetFileSystemEntries(i);
 
                 var subfolders = subFileEntries
                  .Where(e => e.IsDirectory)
@@ -509,7 +503,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             {
                 Path = folderPaths[0],
 
-                AdditionalParts = folderPaths.Skip(1).ToList(),
+                AdditionalParts = folderPaths.Skip(1).ToArray(),
 
                 VideoType = videoTypes[0],
 
@@ -546,6 +540,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             }
 
             return !validCollectionTypes.Contains(collectionType, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public MovieResolver(ILibraryManager libraryManager, IFileSystem fileSystem) : base(libraryManager, fileSystem)
+        {
         }
     }
 }

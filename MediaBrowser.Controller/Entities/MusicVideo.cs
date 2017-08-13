@@ -8,6 +8,7 @@ namespace MediaBrowser.Controller.Entities
 {
     public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasLookupInfo<MusicVideoInfo>
     {
+        [IgnoreDataMember]
         public List<string> Artists { get; set; }
 
         public MusicVideo()
@@ -21,15 +22,6 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 return Artists;
-            }
-        }
-
-        [IgnoreDataMember]
-        protected override bool SupportsIsInMixedFolderDetection
-        {
-            get
-            {
-                return false;
             }
         }
 
@@ -61,7 +53,7 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     // Try to get the year from the folder name
-                    if (!DetectIsInMixedFolder())
+                    if (!IsInMixedFolder)
                     {
                         info = LibraryManager.ParseName(System.IO.Path.GetFileName(ContainingFolderPath));
 

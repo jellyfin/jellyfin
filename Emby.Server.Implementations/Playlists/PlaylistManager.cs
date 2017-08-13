@@ -12,10 +12,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Playlists
 {
@@ -164,7 +163,7 @@ namespace Emby.Server.Implementations.Playlists
             return path;
         }
 
-        private IEnumerable<BaseItem> GetPlaylistItems(IEnumerable<string> itemIds, string playlistMediaType, User user, DtoOptions options)
+        private List<BaseItem> GetPlaylistItems(IEnumerable<string> itemIds, string playlistMediaType, User user, DtoOptions options)
         {
             var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null);
 
@@ -206,7 +205,9 @@ namespace Emby.Server.Implementations.Playlists
                 list.Add(LinkedChild.Create(item));
             }
 
-            playlist.LinkedChildren.AddRange(list);
+            var newList = playlist.LinkedChildren.ToList();
+            newList.AddRange(list);
+            playlist.LinkedChildren = newList.ToArray(newList.Count);
 
             await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
@@ -234,7 +235,7 @@ namespace Emby.Server.Implementations.Playlists
 
             playlist.LinkedChildren = children.Except(removals)
                 .Select(i => i.Item1)
-                .ToList();
+                .ToArray();
 
             await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
@@ -265,16 +266,20 @@ namespace Emby.Server.Implementations.Playlists
 
             var item = playlist.LinkedChildren[oldIndex];
 
-            playlist.LinkedChildren.Remove(item);
+            var newList = playlist.LinkedChildren.ToList();
 
-            if (newIndex >= playlist.LinkedChildren.Count)
+            newList.Remove(item);
+
+            if (newIndex >= newList.Count)
             {
-                playlist.LinkedChildren.Add(item);
+                newList.Add(item);
             }
             else
             {
-                playlist.LinkedChildren.Insert(newIndex, item);
+                newList.Insert(newIndex, item);
             }
+
+            playlist.LinkedChildren = newList.ToArray(newList.Count);
 
             await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }

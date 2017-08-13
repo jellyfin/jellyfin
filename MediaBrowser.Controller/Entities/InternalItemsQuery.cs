@@ -38,12 +38,10 @@ namespace MediaBrowser.Controller.Entities
         public string[] ExcludeTags { get; set; }
         public string[] ExcludeInheritedTags { get; set; }
         public string[] Genres { get; set; }
-        public string[] Keywords { get; set; }
 
         public bool? IsSpecialSeason { get; set; }
         public bool? IsMissing { get; set; }
         public bool? IsUnaired { get; set; }
-        public bool? IsVirtualUnaired { get; set; }
         public bool? CollapseBoxSetItems { get; set; }
 
         public string NameStartsWithOrGreater { get; set; }
@@ -150,7 +148,6 @@ namespace MediaBrowser.Controller.Entities
         public TrailerType[] TrailerTypes { get; set; }
         public SourceType[] SourceTypes { get; set; }
 
-        public DayOfWeek[] AirDays { get; set; }
         public SeriesStatus[] SeriesStatuses { get; set; }
         public string ExternalSeriesId { get; set; }
         public string ExternalId { get; set; }
@@ -162,6 +159,7 @@ namespace MediaBrowser.Controller.Entities
         public string SeriesPresentationUniqueKey { get; set; }
 
         public bool GroupByPresentationUniqueKey { get; set; }
+        public bool GroupBySeriesPresentationUniqueKey { get; set; }
         public bool EnableTotalRecordCount { get; set; }
         public bool ForceDirect { get; set; }
         public Dictionary<string, string> ExcludeProviderIds { get; set; }
@@ -194,7 +192,6 @@ namespace MediaBrowser.Controller.Entities
             OfficialRatings = new string[] { };
             SortBy = new string[] { };
             MediaTypes = new string[] { };
-            Keywords = new string[] { };
             IncludeItemTypes = new string[] { };
             ExcludeItemTypes = new string[] { };
             Genres = new string[] { };
@@ -215,7 +212,6 @@ namespace MediaBrowser.Controller.Entities
             PresetViews = new string[] { };
             TrailerTypes = new TrailerType[] { };
             SourceTypes = new SourceType[] { };
-            AirDays = new DayOfWeek[] { };
             SeriesStatuses = new SeriesStatus[] { };
             OrderBy = new List<Tuple<string, SortOrder>>();
         }

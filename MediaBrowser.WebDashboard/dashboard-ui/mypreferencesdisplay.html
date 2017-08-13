@@ -1,6 +1,22 @@
 ﻿<div id="displayPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderDisplaySettings}" data-backbutton="true">
     <div class="padded-left padded-right padded-bottom-page">
         <form class="displayPreferencesForm userProfileSettingsForm" style="margin: 0 auto;">
+            <div class="detailSection">
+                <h1>
+                    ${Themes}
+                </h1>
+                <br />
+                <div class="selectContainer">
+                    <select id="selectTheme" is="emby-select" label="${LabelTheme}">
+                    </select>
+                    <div class="fieldDescription">${FeatureRequiresEmbyPremiere}</div>
+                </div>
+                <div class="selectContainer selectDashboardThemeContainer hide">
+                    <select id="selectDashboardTheme" is="emby-select" label="${LabelDashboardTheme}">
+                    </select>
+                    <div class="fieldDescription">${FeatureRequiresEmbyPremiere}</div>
+                </div>
+            </div>
             <div class="detailSection languageSection hide">
                 <h1>
                     ${HeaderLanguage}
@@ -83,10 +99,6 @@
                     </label>
                     <div class="fieldDescription checkboxFieldDescription">${LabelDisplayMissingEpisodesWithinSeasonsHelp}</div>
                 </div>
-                <label class="checkboxContainer">
-                    <input type="checkbox" is="emby-checkbox" class="chkDisplayUnairedEpisodes" />
-                    <span>${LabelUnairedMissingEpisodesWithinSeasons}</span>
-                </label>
             </div>
             <button is="emby-button" type="submit" class="raised button-submit block btnSave hide">
                 <span>${ButtonSave}</span>

@@ -1,4 +1,5 @@
 {
+    "LabelEnableHardwareDecodingFor": "Enable hardware decoding for:",
     "LabelPrevious": "Vorige",
     "LabelFinish": "Voltooien",
     "LabelNext": "Volgende",
@@ -280,7 +281,6 @@
     "OptionMissingTmdbId": "TMDB Id ontbreekt",
     "OptionIsHD": "HD",
     "OptionIsSD": "SD",
-    "OptionMetascore": "Metascore",
     "ButtonSelect": "Selecteer",
     "PismoMessage": "Pismo File Mount (met een geschonken licentie).",
     "TangibleSoftwareMessage": "Gebruik makend van concrete oplossingen als Java \/ C converters door een geschonken licentie.",
@@ -1038,8 +1038,6 @@
     "HeaderNewUsers": "Nieuwe gebruikers",
     "ButtonSignUp": "Aanmelden",
     "ButtonForgotPassword": "Wachtwoord vergeten",
-    "OptionDisableUserPreferences": "Voorkom toegang tot gebruikers voorkeuren",
-    "OptionDisableUserPreferencesHelp": "Indien ingeschakeld kunnen alleen beheerders profielafbeeldingen, wachtwoorden en taalinstellingen wijzigen.",
     "HeaderSelectServer": "Selecteer server",
     "MessageNoServersAvailableToConnect": "Er zijn geen servers beschikbaar om mee te verbinden. Als u uitgenodigd bent om een server te delen accepteer dit hieronder of door op de link in het emailbericht te klikken.",
     "TitleNewUser": "Nieuwe gebruiker",
@@ -1092,6 +1090,7 @@
     "TabStreaming": "Streaming",
     "LabelRemoteClientBitrateLimit": "Internet streaming bitrate limiet (Mbps):",
     "LabelRemoteClientBitrateLimitHelp": "Een optionele streaming bitrate limiet voor alle netwerk-clients. Dit wordt gebruikt om te voorkomen dat clients een hogere bitrate aanvragen dan uw internet verbinding aankan.",
+    "LabelUserRemoteClientBitrateLimitHelp": "This will override the default global value set in server playback settings.",
     "LabelConversionCpuCoreLimit": "CPU core limiet:",
     "LabelConversionCpuCoreLimitHelp": "Limiteer het aantal CPU cores dat gebruikt mag worden bij een omzetting om te synchroniseren.",
     "OptionEnableFullSpeedConversion": "Inschakelen conversie op hoge snelheid",
@@ -1715,6 +1714,8 @@
     "SyncMedia": "Synchroniseer media",
     "HeaderCancelSyncJob": "Annuleer synchronisatie",
     "LabelQuality": "Kwaliteit",
+    "MovieLibraryHelp": "Review the {0}Emby movie naming guide{1}.",
+    "TvLibraryHelp": "Review the {0}Emby TV naming guide{1}.",
     "BookLibraryHelp": "Audio en tekst boeken worden ondersteund",
     "MessageGamePluginRequired": "Vereist installatie van de GameBrowser plugin",
     "MessageUnsetContentHelp": "Inhoud zal als gewone folders worden getoond. Gebruik voor het beste resultaat de Metadata Manager om de inhoud types voor subfolders in te stellen.",
@@ -1937,5 +1938,10 @@
     "HttpsRequiresCert": "To enable reporting https as your external address, you will need to supply a trusted SSL certificate, such as Lets Encrypt.",
     "HeaderLatestDownloadedVideos": "Latest Downloaded Videos",
     "EnableNextVideoInfoOverlay": "Enable next video info during playback",
-    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist."
+    "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist.",
+    "ServerRestartNeededAfterPluginInstall": "Emby Server will need to be restarted after installing a plugin.",
+    "PluginInstalledMessage": "The plugin has been successfully installed. Emby Server will need to be restarted for changes to take effect.",
+    "Themes": "Themes",
+    "LabelTheme": "Theme:",
+    "LabelDashboardTheme": "Server dashboard theme:"
 }

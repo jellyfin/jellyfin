@@ -54,15 +54,6 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         [IgnoreDataMember]
-        protected override bool SupportsIsInMixedFolderDetection
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        [IgnoreDataMember]
         public override bool SupportsPlayedStatus
         {
             get
@@ -159,9 +150,9 @@ namespace MediaBrowser.Controller.LiveTv
             return user.Policy.EnableLiveTvManagement;
         }
 
-        public override IEnumerable<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
+        public override List<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
         {
-            var list = base.GetMediaSources(enablePathSubstitution).ToList();
+            var list = base.GetMediaSources(enablePathSubstitution);
 
             foreach (var mediaSource in list)
             {

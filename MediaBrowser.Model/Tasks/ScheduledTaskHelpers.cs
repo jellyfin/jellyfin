@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-
+﻿
 namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
@@ -26,12 +24,6 @@ namespace MediaBrowser.Model.Tasks
 
             string key = task.ScheduledTask.Key;
 
-            var triggers = task.Triggers
-                .OrderBy(i => i.Type)
-                .ThenBy(i => i.DayOfWeek ?? DayOfWeek.Sunday)
-                .ThenBy(i => i.TimeOfDayTicks ?? 0)
-                .ToList();
-
             return new TaskInfo
             {
                 Name = task.Name,
@@ -40,7 +32,7 @@ namespace MediaBrowser.Model.Tasks
                 Id = task.Id,
                 LastExecutionResult = task.LastExecutionResult,
 
-                Triggers = triggers,
+                Triggers = task.Triggers,
 
                 Description = task.Description,
                 Category = task.Category,

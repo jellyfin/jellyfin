@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Emby.Dlna.Server;
 using MediaBrowser.Model.Threading;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -112,7 +113,7 @@ namespace Emby.Dlna.PlayTo
 
         private int GetInactiveTimerIntervalMs()
         {
-            return 30000;
+            return Timeout.Infinite;
         }
 
         public void Start()
@@ -160,18 +161,15 @@ namespace Emby.Dlna.PlayTo
             if (_disposed)
                 return;
 
-            if (!_timerActive)
+            lock (_timerLock)
             {
-                lock (_timerLock)
+                if (!_timerActive)
                 {
-                    if (!_timerActive)
-                    {
-                        _logger.Debug("RestartTimer");
-                        _timer.Change(10, GetPlaybackTimerIntervalMs());
-                    }
-
-                    _timerActive = true;
+                    _logger.Debug("RestartTimer");
+                    _timer.Change(10, GetPlaybackTimerIntervalMs());
                 }
+
+                _timerActive = true;
             }
         }
 
@@ -183,23 +181,20 @@ namespace Emby.Dlna.PlayTo
             if (_disposed)
                 return;
 
-            if (_timerActive)
+            lock (_timerLock)
             {
-                lock (_timerLock)
+                if (_timerActive)
                 {
-                    if (_timerActive)
+                    _logger.Debug("RestartTimerInactive");
+                    var interval = GetInactiveTimerIntervalMs();
+
+                    if (_timer != null)
                     {
-                        _logger.Debug("RestartTimerInactive");
-                        var interval = GetInactiveTimerIntervalMs();
-
-                        if (_timer != null)
-                        {
-                            _timer.Change(interval, interval);
-                        }
+                        _timer.Change(interval, interval);
                     }
-
-                    _timerActive = false;
                 }
+
+                _timerActive = false;
             }
         }
 
@@ -491,6 +486,10 @@ namespace Emby.Dlna.PlayTo
                         _successiveStopCount = 0;
                         RestartTimer();
                     }
+                }
+                else
+                {
+                    RestartTimerInactive();
                 }
             }
             catch (HttpException ex)
@@ -890,7 +889,7 @@ namespace Emby.Dlna.PlayTo
             if (room != null && !string.IsNullOrWhiteSpace(room.Value))
                 friendlyNames.Add(room.Value);
 
-            deviceProperties.Name = string.Join(" ", friendlyNames.ToArray());
+            deviceProperties.Name = string.Join(" ", friendlyNames.ToArray(friendlyNames.Count));
 
             var model = document.Descendants(uPnpNamespaces.ud.GetName("modelName")).FirstOrDefault();
             if (model != null)

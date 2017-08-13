@@ -66,8 +66,8 @@ namespace MediaBrowser.Api
             {
                 ParentalRatingOptions = _localizationManager.GetParentalRatings().ToList(),
                 ExternalIdInfos = _providerManager.GetExternalIdInfos(item).ToList(),
-                Countries = _localizationManager.GetCountries().ToList(),
-                Cultures = _localizationManager.GetCultures().ToList()
+                Countries = _localizationManager.GetCountries(),
+                Cultures = _localizationManager.GetCultures()
             };
 
             if (!item.IsVirtualItem && !(item is ICollectionFolder) && !(item is UserView) && !(item is AggregateFolder) && !(item is LiveTvChannel) && !(item is IItemByName) &&
@@ -242,7 +242,6 @@ namespace MediaBrowser.Api
 
             item.CriticRating = request.CriticRating;
 
-            item.DisplayMediaType = request.DisplayMediaType;
             item.CommunityRating = request.CommunityRating;
             item.HomePageUrl = request.HomePageUrl;
             item.IndexNumber = request.IndexNumber;
@@ -268,11 +267,9 @@ namespace MediaBrowser.Api
                 item.Tagline = request.Taglines.FirstOrDefault();
             }
 
-            item.Keywords = request.Keywords;
-
             if (request.Studios != null)
             {
-                item.Studios = request.Studios.Select(x => x.Name).ToList();
+                item.Studios = request.Studios.Select(x => x.Name).ToArray();
             }
 
             if (request.DateCreated.HasValue)
@@ -288,7 +285,7 @@ namespace MediaBrowser.Api
 
             if (request.ProductionLocations != null)
             {
-                item.ProductionLocations = request.ProductionLocations.ToList();
+                item.ProductionLocations = request.ProductionLocations;
             }
 
             item.PreferredMetadataCountryCode = request.PreferredMetadataCountryCode;
@@ -335,13 +332,6 @@ namespace MediaBrowser.Api
                 video.Video3DFormat = request.Video3DFormat;
             }
 
-            var game = item as Game;
-
-            if (game != null)
-            {
-                game.PlayersSupported = request.Players;
-            }
-
             if (request.AlbumArtists != null)
             {
                 var hasAlbumArtists = item as IHasAlbumArtist;
@@ -350,7 +340,7 @@ namespace MediaBrowser.Api
                     hasAlbumArtists.AlbumArtists = request
                         .AlbumArtists
                         .Select(i => i.Name)
-                        .ToList();
+                        .ToArray();
                 }
             }
 
@@ -382,8 +372,12 @@ namespace MediaBrowser.Api
             if (series != null)
             {
                 series.Status = GetSeriesStatus(request);
-                series.AirDays = request.AirDays;
-                series.AirTime = request.AirTime;
+
+                if (request.AirDays != null)
+                {
+                    series.AirDays = request.AirDays;
+                    series.AirTime = request.AirTime;
+                }
             }
         }
 

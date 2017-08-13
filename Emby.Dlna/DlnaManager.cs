@@ -18,6 +18,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Reflection;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Dlna
 {
@@ -106,7 +107,6 @@ namespace Emby.Dlna
             }
             else
             {
-                _logger.Debug("No matching device profile found. The default will need to be used.");
                 LogUnmatchedProfile(deviceInfo);
             }
 
@@ -220,12 +220,8 @@ namespace Emby.Dlna
             }
             else
             {
-                var msg = new StringBuilder();
-                foreach (var header in headers)
-                {
-                    msg.AppendLine(header.Key + ": " + header.Value);
-                }
-                _logger.LogMultiline("No matching device profile found. The default will need to be used.", LogSeverity.Info, msg);
+                var headerString = string.Join(", ", headers.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray(headers.Count));
+                _logger.Debug("No matching device profile found. {0}", headerString);
             }
 
             return profile;

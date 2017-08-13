@@ -10,6 +10,7 @@ using System.Linq;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -210,7 +211,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             return new ItemsResult
             {
-                Items = dtos.ToArray(),
+                Items = dtos.ToArray(result.Items.Length),
                 TotalRecordCount = result.TotalRecordCount
             };
         }

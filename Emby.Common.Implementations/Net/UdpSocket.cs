@@ -37,8 +37,6 @@ namespace Emby.Common.Implementations.Net
         private TaskCompletionSource<SocketReceiveResult> _currentReceiveTaskCompletionSource;
         private TaskCompletionSource<int> _currentSendTaskCompletionSource;
 
-        private readonly SemaphoreSlim _sendLock = new SemaphoreSlim(1, 1);
-
         public UdpSocket(Socket socket, int localPort, IPAddress ip)
         {
             if (socket == null) throw new ArgumentNullException("socket");
@@ -233,8 +231,6 @@ namespace Emby.Common.Implementations.Net
                 var socket = _Socket;
                 if (socket != null)
                     socket.Dispose();
-
-                _sendLock.Dispose();
 
                 var tcs = _currentReceiveTaskCompletionSource;
                 if (tcs != null)

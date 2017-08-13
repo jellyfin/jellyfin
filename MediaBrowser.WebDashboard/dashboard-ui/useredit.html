@@ -10,7 +10,7 @@
                 <a href="#" is="emby-linkbutton" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
             </div>
             <p class="lnkEditUserPreferencesContainer">
-                <a class="lnkEditUserPreferences button-link" href="#" is="emby-linkbutton" target="_blank">${ButtonEditOtherUserPreferences}</a>
+                <a class="lnkEditUserPreferences button-link" href="#" is="emby-linkbutton">${ButtonEditOtherUserPreferences}</a>
             </p>
             <form class="editUserProfileForm">
 
@@ -86,8 +86,14 @@
                     </div>
                     <div class="fieldDescription">${OptionAllowMediaPlaybackTranscodingHelp}</div>
                 </div>
+                <br />
+                <br />
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtRemoteClientBitrateLimit" pattern="[0-9]*" min="0" step=".25" label="${LabelRemoteClientBitrateLimit}" />
+                    <div class="fieldDescription">${LabelRemoteClientBitrateLimitHelp}</div>
+                    <div class="fieldDescription">${LabelUserRemoteClientBitrateLimitHelp}</div>
+                </div>
                 <div>
-                    <br />
                     <h3 class="checkboxListLabel">${HeaderRemoteControl}</h3>
                     <div class="checkboxList paperList" style="padding:.5em 1em;">
                         <label>
@@ -130,13 +136,6 @@
                         <span>${OptionDisableUser}</span>
                     </label>
                     <div class="fieldDescription checkboxFieldDescription">${OptionDisableUserHelp}</div>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkDisableUserPreferences" />
-                        <span>${OptionDisableUserPreferences}</span>
-                    </label>
-                    <div class="fieldDescription checkboxFieldDescription">${OptionDisableUserPreferencesHelp}</div>
                 </div>
                 <div class="checkboxContainer checkboxContainer-withDescription" id="fldIsHidden">
                     <label>

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Xml;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
@@ -84,7 +85,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 }
             }
 
-            item.Item.LinkedChildren = list;
+            item.Item.LinkedChildren = list.ToArray(list.Count);
         }
 
         public BoxSetXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem) : base(logger, providerManager, xmlReaderSettingsFactory, fileSystem)

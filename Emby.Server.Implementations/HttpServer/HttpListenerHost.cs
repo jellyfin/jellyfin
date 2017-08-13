@@ -125,13 +125,6 @@ namespace Emby.Server.Implementations.HttpServer
             return _appHost.CreateInstance(type);
         }
 
-        private ServiceController CreateServiceController()
-        {
-            var types = _restServices.Select(r => r.GetType()).ToArray();
-
-            return new ServiceController(() => types);
-        }
-
         /// <summary>
         /// Applies the request filters. Returns whether or not the request has been handled 
         /// and no more processing should be done.
@@ -186,7 +179,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             attributes.Sort((x, y) => x.Priority - y.Priority);
 
-            return attributes.ToArray();
+            return attributes.ToArray(attributes.Count);
         }
 
         /// <summary>
@@ -697,11 +690,13 @@ namespace Emby.Server.Implementations.HttpServer
         {
             _restServices.AddRange(services);
 
-            ServiceController = CreateServiceController();
+            ServiceController = new ServiceController();
 
             _logger.Info("Calling ServiceStack AppHost.Init");
 
-            ServiceController.Init(this);
+            var types = _restServices.Select(r => r.GetType()).ToArray();
+
+            ServiceController.Init(this, types);
 
             var requestFilters = _appHost.GetExports<IRequestFilter>().ToList();
             foreach (var filter in requestFilters)
@@ -741,7 +736,7 @@ namespace Emby.Server.Implementations.HttpServer
                 });
             }
 
-            return routes.ToArray();
+            return routes.ToArray(routes.Count);
         }
 
         public Func<string, object> GetParseFn(Type propertyType)

@@ -506,7 +506,7 @@ namespace Emby.Common.Implementations.Networking
         public async Task<IpAddressInfo[]> GetHostAddressesAsync(string host)
         {
             var addresses = await Dns.GetHostAddressesAsync(host).ConfigureAwait(false);
-            return addresses.Select(ToIpAddressInfo).ToArray();
+            return addresses.Select(ToIpAddressInfo).ToArray(addresses.Length);
         }
 
         /// <summary>

@@ -37,6 +37,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Emby.Server.MediaEncoding">
+      <HintPath>..\ThirdParty\emby\Emby.Server.MediaEncoding.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.XML" />
   </ItemGroup>
@@ -69,10 +72,6 @@
       <Project>{1e37a338-9f57-4b70-bd6d-bb9c591e319b}</Project>
       <Name>Emby.Common.Implementations</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Emby.Server.Core\Emby.Server.Core.csproj">
-      <Project>{776b9f0c-5195-45e3-9a36-1cc1f0d8e0b0}</Project>
-      <Name>Emby.Server.Core</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj">
       <Project>{e383961b-9356-4d5d-8233-9a1079d03055}</Project>
       <Name>Emby.Server.Implementations</Name>
@@ -84,10 +83,6 @@
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
       <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
       <Name>MediaBrowser.Controller</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj">
-      <Project>{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}</Project>
-      <Name>MediaBrowser.MediaEncoding</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
@@ -108,20 +103,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="MediaEncoding\Subtitles\TestSubtitles\expected.vtt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="MediaEncoding\Subtitles\TestSubtitles\data.ass">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="MediaEncoding\Subtitles\TestSubtitles\data2.ass">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="MediaEncoding\Subtitles\TestSubtitles\unit.srt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="MediaEncoding\Subtitles\TestSubtitles\data.ass" />
+    <None Include="MediaEncoding\Subtitles\TestSubtitles\data2.ass" />
+    <None Include="MediaEncoding\Subtitles\TestSubtitles\expected.vtt" />
+    <None Include="MediaEncoding\Subtitles\TestSubtitles\unit.srt" />
   </ItemGroup>
   <ItemGroup>
     <ContentWithTargetPath Include="ConsistencyTests\Resources\StringCheck.xslt">
