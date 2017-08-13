@@ -250,17 +250,9 @@ namespace MediaBrowser.Controller.Entities.TV
             query.IncludeItemTypes = new[] { typeof(Season).Name };
             query.SortBy = new[] {ItemSortBy.SortName};
 
-            if (!config.DisplayMissingEpisodes && !config.DisplayUnairedEpisodes)
-            {
-                query.IsVirtualItem = false;
-            }
-            else if (!config.DisplayMissingEpisodes)
+            if (!config.DisplayMissingEpisodes)
             {
                 query.IsMissing = false;
-            }
-            else if (!config.DisplayUnairedEpisodes)
-            {
-                query.IsVirtualUnaired = false;
             }
         }
 
@@ -309,17 +301,9 @@ namespace MediaBrowser.Controller.Entities.TV
                 DtoOptions = options
             };
             var config = user.Configuration;
-            if (!config.DisplayMissingEpisodes && !config.DisplayUnairedEpisodes)
-            {
-                query.IsVirtualItem = false;
-            }
-            else if (!config.DisplayMissingEpisodes)
+            if (!config.DisplayMissingEpisodes)
             {
                 query.IsMissing = false;
-            }
-            else if (!config.DisplayUnairedEpisodes)
-            {
-                query.IsVirtualUnaired = false;
             }
 
             var allItems = LibraryManager.GetItemList(query);
@@ -428,17 +412,9 @@ namespace MediaBrowser.Controller.Entities.TV
             if (user != null)
             {
                 var config = user.Configuration;
-                if (!config.DisplayMissingEpisodes && !config.DisplayUnairedEpisodes)
-                {
-                    query.IsVirtualItem = false;
-                }
-                else if (!config.DisplayMissingEpisodes)
+                if (!config.DisplayMissingEpisodes)
                 {
                     query.IsMissing = false;
-                }
-                else if (!config.DisplayUnairedEpisodes)
-                {
-                    query.IsVirtualUnaired = false;
                 }
             }
 

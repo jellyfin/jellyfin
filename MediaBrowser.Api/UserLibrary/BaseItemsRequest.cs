@@ -70,9 +70,6 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "IsUnaired", Description = "Optional filter by items that are unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsUnaired { get; set; }
 
-        [ApiMember(Name = "IsVirtualUnaired", Description = "Optional filter by items that are virtual unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public bool? IsVirtualUnaired { get; set; }
-
         [ApiMember(Name = "MinCommunityRating", Description = "Optional filter by minimum community rating.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public double? MinCommunityRating { get; set; }
 
@@ -298,13 +295,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The video types.</value>
         [ApiMember(Name = "VideoTypes", Description = "Optional filter by VideoType (videofile, dvd, bluray, iso). Allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string VideoTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the air days.
-        /// </summary>
-        /// <value>The air days.</value>
-        [ApiMember(Name = "AirDays", Description = "Optional filter by Series Air Days. Allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string AirDays { get; set; }
 
         /// <summary>
         /// Gets or sets the user id.
