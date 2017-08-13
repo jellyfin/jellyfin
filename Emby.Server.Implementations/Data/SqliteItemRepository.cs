@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.Data
         {
             get
             {
-                return false;
+                return true;
             }
         }
 

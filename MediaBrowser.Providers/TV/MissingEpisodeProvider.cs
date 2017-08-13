@@ -329,7 +329,7 @@ namespace MediaBrowser.Providers.TV
                             return true;
                         }
 
-                        if (!allowMissingEpisodes && i.Episode.IsMissingEpisode)
+                        if (!allowMissingEpisodes && i.Episode.IsMissingEpisode && !i.Episode.IsUnaired)
                         {
                             return true;
                         }
