@@ -64,9 +64,19 @@ namespace MediaBrowser.Providers.TV
             var sourceItem = source.Item;
             var targetItem = target.Item;
 
+            if (replaceData || string.IsNullOrEmpty(targetItem.AirTime))
+            {
+                targetItem.AirTime = sourceItem.AirTime;
+            }
+
             if (replaceData || !targetItem.Status.HasValue)
             {
                 targetItem.Status = sourceItem.Status;
+            }
+
+            if (replaceData || targetItem.AirDays == null || targetItem.AirDays.Length == 0)
+            {
+                targetItem.AirDays = sourceItem.AirDays;
             }
         }
     }
