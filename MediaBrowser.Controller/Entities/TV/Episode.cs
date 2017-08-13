@@ -282,14 +282,8 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return LocationType == LocationType.Virtual && !IsUnaired;
+                return LocationType == LocationType.Virtual;
             }
-        }
-
-        [IgnoreDataMember]
-        public bool IsVirtualUnaired
-        {
-            get { return LocationType == LocationType.Virtual && IsUnaired; }
         }
 
         [IgnoreDataMember]
@@ -346,7 +340,6 @@ namespace MediaBrowser.Controller.Entities.TV
 
             id.IsMissingEpisode = IsMissingEpisode;
             id.IndexNumberEnd = IndexNumberEnd;
-            id.IsVirtualUnaired = IsVirtualUnaired;
 
             return id;
         }

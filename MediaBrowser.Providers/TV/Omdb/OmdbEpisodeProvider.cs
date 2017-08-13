@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.TV
             };
 
             // Allowing this will dramatically increase scan times
-            if (info.IsMissingEpisode || info.IsVirtualUnaired)
+            if (info.IsMissingEpisode)
             {
                 return result;
             }

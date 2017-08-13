@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.TV
             var result = new MetadataResult<Episode>();
 
             // Allowing this will dramatically increase scan times
-            if (info.IsMissingEpisode || info.IsVirtualUnaired)
+            if (info.IsMissingEpisode)
             {
                 return result;
             }

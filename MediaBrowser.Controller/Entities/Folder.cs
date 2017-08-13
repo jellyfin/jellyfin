@@ -922,12 +922,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.AirDays.Length > 0)
-            {
-                Logger.Debug("Query requires post-filtering due to AirDays");
-                return true;
-            }
-
             if (query.SeriesStatuses.Length > 0)
             {
                 Logger.Debug("Query requires post-filtering due to SeriesStatuses");
@@ -1388,7 +1382,7 @@ namespace MediaBrowser.Controller.Entities
                 EnableTotalRecordCount = false
             };
 
-            if (!user.Configuration.DisplayMissingEpisodes || !user.Configuration.DisplayUnairedEpisodes)
+            if (!user.Configuration.DisplayMissingEpisodes)
             {
                 query.IsVirtualItem = false;
             }
