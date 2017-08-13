@@ -405,6 +405,12 @@ namespace MediaBrowser.Model.Dto
         public string Status { get; set; }
 
         /// <summary>
+        /// Gets or sets the air time.
+        /// </summary>
+        /// <value>The air time.</value>
+        public string AirTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the air days.
         /// </summary>
         /// <value>The air days.</value>

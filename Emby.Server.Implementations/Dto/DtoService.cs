@@ -1331,7 +1331,8 @@ namespace Emby.Server.Implementations.Dto
             var series = item as Series;
             if (series != null)
             {
-                dto.AirDays = new DayOfWeek[] {};
+                dto.AirDays = series.AirDays;
+                dto.AirTime = series.AirTime;
                 dto.Status = series.Status.HasValue ? series.Status.Value.ToString() : null;
             }
 
