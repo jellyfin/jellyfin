@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <returns>Task{IEnumerable{ItemReview}}.</returns>
-        IEnumerable<ItemReview> GetCriticReviews(Guid itemId);
+        List<ItemReview> GetCriticReviews(Guid itemId);
 
         /// <summary>
         /// Saves the critic reviews.
@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        IEnumerable<ChapterInfo> GetChapters(Guid id);
+        List<ChapterInfo> GetChapters(Guid id);
 
         /// <summary>
         /// Gets a single chapter for an item
@@ -78,18 +78,14 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Saves the chapters.
         /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="chapters">The chapters.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SaveChapters(Guid id, List<ChapterInfo> chapters, CancellationToken cancellationToken);
+        Task SaveChapters(Guid id, List<ChapterInfo> chapters);
 
         /// <summary>
         /// Gets the media streams.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>IEnumerable{MediaStream}.</returns>
-        IEnumerable<MediaStream> GetMediaStreams(MediaStreamQuery query);
+        List<MediaStream> GetMediaStreams(MediaStreamQuery query);
 
         /// <summary>
         /// Saves the media streams.

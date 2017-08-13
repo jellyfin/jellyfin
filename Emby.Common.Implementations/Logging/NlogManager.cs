@@ -152,13 +152,23 @@ namespace Emby.Common.Implementations.Logging
 
             RemoveTarget("ApplicationLogFileWrapper");
 
-            var wrapper = new AsyncTargetWrapper();
+            // https://github.com/NLog/NLog/wiki/Performance
+            var wrapper = new AsyncTargetWrapper
+            {
+                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
+                QueueLimit = 10000,
+                BatchSize = 500,
+                TimeToSleepBetweenBatches = 50
+            };
+
             wrapper.Name = "ApplicationLogFileWrapper";
 
             var logFile = new FileTarget
             {
                 FileName = path,
-                Layout = "${longdate} ${level} ${logger}: ${message}"
+                Layout = "${longdate} ${level} ${logger}: ${message}",
+                KeepFileOpen = true,
+                ConcurrentWrites = false
             };
 
             logFile.Name = "ApplicationLogFile";

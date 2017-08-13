@@ -12,6 +12,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
 using SQLitePCL.pretty;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Notifications
 {
@@ -83,13 +84,13 @@ namespace Emby.Server.Implementations.Notifications
             clauses.Add("UserId=?");
             paramList.Add(query.UserId.ToGuidBlob());
 
-            var whereClause = " where " + string.Join(" And ", clauses.ToArray());
+            var whereClause = " where " + string.Join(" And ", clauses.ToArray(clauses.Count));
 
             using (WriteLock.Read())
             {
                 using (var connection = CreateConnection(true))
                 {
-                    result.TotalRecordCount = connection.Query("select count(Id) from Notifications" + whereClause, paramList.ToArray()).SelectScalarInt().First();
+                    result.TotalRecordCount = connection.Query("select count(Id) from Notifications" + whereClause, paramList.ToArray(paramList.Count)).SelectScalarInt().First();
 
                     var commandText = string.Format("select Id,UserId,Date,Name,Description,Url,Level,IsRead,Category,RelatedId from Notifications{0} order by IsRead asc, Date desc", whereClause);
 
@@ -110,12 +111,12 @@ namespace Emby.Server.Implementations.Notifications
 
                     var resultList = new List<Notification>();
 
-                    foreach (var row in connection.Query(commandText, paramList.ToArray()))
+                    foreach (var row in connection.Query(commandText, paramList.ToArray(paramList.Count)))
                     {
                         resultList.Add(GetNotification(row));
                     }
 
-                    result.Notifications = resultList.ToArray();
+                    result.Notifications = resultList.ToArray(resultList.Count);
                 }
             }
 
@@ -280,7 +281,7 @@ namespace Emby.Server.Implementations.Notifications
         public async Task MarkRead(IEnumerable<string> notificationIdList, string userId, bool isRead, CancellationToken cancellationToken)
         {
             var list = notificationIdList.ToList();
-            var idArray = list.Select(i => new Guid(i)).ToArray();
+            var idArray = list.Select(i => new Guid(i)).ToArray(list.Count);
 
             await MarkReadInternal(idArray, userId, isRead, cancellationToken).ConfigureAwait(false);
 
@@ -290,7 +291,7 @@ namespace Emby.Server.Implementations.Notifications
                 {
                     NotificationsMarkedRead(this, new NotificationReadEventArgs
                     {
-                        IdList = list.ToArray(),
+                        IdList = list.ToArray(list.Count),
                         IsRead = isRead,
                         UserId = userId
                     });

@@ -37,12 +37,12 @@ namespace MediaBrowser.Providers.People
             get { return "TheMovieDb"; }
         }
 
-        public bool Supports(IHasImages item)
+        public bool Supports(IHasMetadata item)
         {
             return item is Person;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             return new List<ImageType>
             {
@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.People
             };
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, CancellationToken cancellationToken)
         {
             var person = (Person)item;
             var id = person.GetProviderId(MetadataProviders.Tmdb);
@@ -116,8 +116,7 @@ namespace MediaBrowser.Providers.People
                 return 0;
             })
                 .ThenByDescending(i => i.CommunityRating ?? 0)
-                .ThenByDescending(i => i.VoteCount ?? 0)
-                .ToList();
+                .ThenByDescending(i => i.VoteCount ?? 0);
         }
 
         private string GetLanguage(MovieDbPersonProvider.Profile profile)

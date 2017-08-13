@@ -48,22 +48,19 @@ namespace MediaBrowser.Controller.LiveTv
             return list;
         }
 
+        private static string EmbyServiceName = "Emby";
         public override double? GetDefaultPrimaryImageAspectRatio()
         {
-            if (IsMovie)
+            var serviceName = ServiceName;
+            if (!IsMovie && !string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(serviceName))
             {
-                double value = 2;
-                value /= 3;
-
-                return value;
+                return null;
             }
-            else
-            {
-                double value = 2;
-                value /= 3;
 
-                return value;
-            }
+            double value = 2;
+            value /= 3;
+
+            return value;
         }
 
         [IgnoreDataMember]
@@ -227,7 +224,7 @@ namespace MediaBrowser.Controller.LiveTv
         public LiveTvProgramLookupInfo GetLookupInfo()
         {
             var info = GetItemLookupInfo<LiveTvProgramLookupInfo>();
-            info.IsMovie = IsMovie; 
+            info.IsMovie = IsMovie;
             return info;
         }
 

@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -231,7 +232,7 @@ namespace Emby.Server.Implementations.Library
             return list;
         }
 
-        private IEnumerable<BaseItem> GetItemsForLatestItems(User user, LatestItemsQuery request, DtoOptions options)
+        private List<BaseItem> GetItemsForLatestItems(User user, LatestItemsQuery request, DtoOptions options)
         {
             var parentId = request.ParentId;
 
@@ -269,7 +270,41 @@ namespace Emby.Server.Implementations.Library
                 return new List<BaseItem>();
             }
 
-            var excludeItemTypes = includeItemTypes.Length == 0 ? new[]
+            var mediaTypes = new List<string>();
+
+            if (includeItemTypes.Length == 0)
+            {
+                foreach (var parent in parents.OfType<ICollectionFolder>())
+                {
+                    switch (parent.CollectionType)
+                    {
+                        case CollectionType.Books:
+                            mediaTypes.Add(MediaType.Book);
+                            break;
+                        case CollectionType.Games:
+                            mediaTypes.Add(MediaType.Game);
+                            break;
+                        case CollectionType.Music:
+                            mediaTypes.Add(MediaType.Audio);
+                            break;
+                        case CollectionType.Photos:
+                            mediaTypes.Add(MediaType.Photo);
+                            mediaTypes.Add(MediaType.Video);
+                            break;
+                        case CollectionType.HomeVideos:
+                            mediaTypes.Add(MediaType.Photo);
+                            mediaTypes.Add(MediaType.Video);
+                            break;
+                        default:
+                            mediaTypes.Add(MediaType.Video);
+                            break;
+                    }
+                }
+
+                mediaTypes = mediaTypes.Distinct().ToList();
+            }
+
+            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Count == 0 ? new[]
             {
                 typeof(Person).Name,
                 typeof(Studio).Name,
@@ -290,7 +325,8 @@ namespace Emby.Server.Implementations.Library
                 IsVirtualItem = false,
                 Limit = limit * 5,
                 IsPlayed = isPlayed,
-                DtoOptions = options
+                DtoOptions = options,
+                MediaTypes = mediaTypes.ToArray(mediaTypes.Count)
             };
 
             if (parents.Count == 0)

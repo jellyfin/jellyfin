@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api
 {
@@ -165,9 +166,6 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "IsMissing", Description = "Optional filter by items that are missing episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsMissing { get; set; }
 
-        [ApiMember(Name = "IsVirtualUnaired", Description = "Optional filter by items that are virtual unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public bool? IsVirtualUnaired { get; set; }
-
         [ApiMember(Name = "AdjacentTo", Description = "Optional. Return items that are siblings of a supplied item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string AdjacentTo { get; set; }
 
@@ -199,6 +197,12 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableUserData { get; set; }
+
+        [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string SortBy { get; set; }
+
+        [ApiMember(Name = "SortOrder", Description = "Sort Order - Ascending,Descending", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public SortOrder? SortOrder { get; set; }
     }
 
     [Route("/Shows/{Id}/Seasons", "GET", Summary = "Gets seasons for a tv series")]
@@ -226,9 +230,6 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "IsMissing", Description = "Optional filter by items that are missing episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsMissing { get; set; }
-
-        [ApiMember(Name = "IsVirtualUnaired", Description = "Optional filter by items that are virtual unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public bool? IsVirtualUnaired { get; set; }
 
         [ApiMember(Name = "AdjacentTo", Description = "Optional. Return items that are siblings of a supplied item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string AdjacentTo { get; set; }
@@ -320,11 +321,13 @@ namespace MediaBrowser.Api
                 SimilarTo = item,
                 DtoOptions = dtoOptions
 
-            }).ToList();
+            });
+
+            var returnList = (await _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user).ConfigureAwait(false));
 
             var result = new QueryResult<BaseItemDto>
             {
-                Items = (await _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user).ConfigureAwait(false)).ToArray(),
+                Items = returnList.ToArray(returnList.Count),
 
                 TotalRecordCount = itemsResult.Count
             };
@@ -354,9 +357,10 @@ namespace MediaBrowser.Api
                 Recursive = true,
                 DtoOptions = options
 
-            }).ToList();
+            });
 
-            var returnItems = (await _dtoService.GetBaseItemDtos(itemsResult, options, user).ConfigureAwait(false)).ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(itemsResult, options, user).ConfigureAwait(false));
+            var returnItems = returnList.ToArray(returnList.Count);
 
             var result = new ItemsResult
             {
@@ -388,7 +392,8 @@ namespace MediaBrowser.Api
 
             var user = _userManager.GetUserById(request.UserId);
 
-            var returnItems = (await _dtoService.GetBaseItemDtos(result.Items, options, user).ConfigureAwait(false)).ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(result.Items, options, user).ConfigureAwait(false));
+            var returnItems = returnList.ToArray(returnList.Count);
 
             return ToOptimizedSerializedResultUsingCache(new ItemsResult
             {
@@ -432,19 +437,18 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("Series not found");
             }
 
-            var seasons = (series.GetItems(new InternalItemsQuery(user)
+            var seasons = (series.GetItemList(new InternalItemsQuery(user)
             {
                 IsMissing = request.IsMissing,
-                IsVirtualUnaired = request.IsVirtualUnaired,
                 IsSpecialSeason = request.IsSpecialSeason,
                 AdjacentTo = request.AdjacentTo
 
-            })).Items.OfType<Season>();
+            })).OfType<Season>();
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var returnItems = (await _dtoService.GetBaseItemDtos(seasons, dtoOptions, user).ConfigureAwait(false))
-                .ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(seasons, dtoOptions, user).ConfigureAwait(false));
+            var returnItems = returnList.ToArray(returnList.Count);
 
             return new ItemsResult
             {
@@ -521,13 +525,6 @@ namespace MediaBrowser.Api
                 episodes = episodes.Where(i => i.IsMissingEpisode == val);
             }
 
-            // Filter after the fact in case the ui doesn't want them
-            if (request.IsVirtualUnaired.HasValue)
-            {
-                var val = request.IsVirtualUnaired.Value;
-                episodes = episodes.Where(i => i.IsVirtualUnaired == val);
-            }
-
             if (!string.IsNullOrWhiteSpace(request.StartItemId))
             {
                 episodes = episodes.SkipWhile(i => !string.Equals(i.Id.ToString("N"), request.StartItemId, StringComparison.OrdinalIgnoreCase));
@@ -541,12 +538,17 @@ namespace MediaBrowser.Api
                 returnItems = UserViewBuilder.FilterForAdjacency(returnItems, request.AdjacentTo);
             }
 
+            if (string.Equals(request.SortBy, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
+            {
+                returnItems = returnItems.OrderBy(i => Guid.NewGuid());
+            }
+
             var returnList = returnItems.ToList();
 
             var pagedItems = ApplyPaging(returnList, request.StartIndex, request.Limit);
 
-            var dtos = (await _dtoService.GetBaseItemDtos(pagedItems, dtoOptions, user).ConfigureAwait(false))
-                .ToArray();
+            var returnDtos = (await _dtoService.GetBaseItemDtos(pagedItems, dtoOptions, user).ConfigureAwait(false));
+            var dtos = returnDtos.ToArray(returnDtos.Count);
 
             return new ItemsResult
             {

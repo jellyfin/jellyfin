@@ -24,14 +24,13 @@ using Emby.Common.Implementations.Networking;
 using Emby.Server.Core.Cryptography;
 using Emby.Drawing;
 using Emby.Server.Core;
-using Emby.Server.Core.IO;
-using Emby.Server.Core.Logging;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Browser;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Logging;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
+using SystemEvents = Emby.Server.Implementations.SystemEvents;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -320,8 +319,8 @@ namespace MediaBrowser.ServerApplication
                 "emby.windows.zip",
                 environmentInfo,
                 new NullImageEncoder(),
-                new Server.Startup.Common.SystemEvents(logManager.GetLogger("SystemEvents")),
-                new RecyclableMemoryStreamProvider(),
+                new SystemEvents(logManager.GetLogger("SystemEvents")),
+                new MemoryStreamProvider(),
                 new Networking.NetworkManager(logManager.GetLogger("NetworkManager")),
                 GenerateCertificate,
                 () => Environment.UserDomainName);

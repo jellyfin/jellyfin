@@ -173,7 +173,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
         }
 
-        public async Task<QueryResult<LiveTvChannel>> GetInternalChannels(LiveTvChannelQuery query, DtoOptions dtoOptions, CancellationToken cancellationToken)
+        public async Task<QueryResult<BaseItem>> GetInternalChannels(LiveTvChannelQuery query, DtoOptions dtoOptions, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
 
@@ -208,15 +208,7 @@ namespace Emby.Server.Implementations.LiveTv
                 internalQuery.OrderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending));
             }
 
-            var channelResult = _libraryManager.GetItemsResult(internalQuery);
-
-            var result = new QueryResult<LiveTvChannel>
-            {
-                Items = channelResult.Items.Cast<LiveTvChannel>().ToArray(),
-                TotalRecordCount = channelResult.TotalRecordCount
-            };
-
-            return result;
+            return _libraryManager.GetItemsResult(internalQuery);
         }
 
         public LiveTvChannel GetInternalChannel(string id)
@@ -993,7 +985,9 @@ namespace Emby.Server.Implementations.LiveTv
 
             var queryResult = _libraryManager.QueryItems(internalQuery);
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(queryResult.Items, options, user).ConfigureAwait(false)).ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(queryResult.Items, options, user)
+                .ConfigureAwait(false));
+            var returnArray = returnList.ToArray(returnList.Count);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -1077,7 +1071,9 @@ namespace Emby.Server.Implementations.LiveTv
 
             var user = _userManager.GetUserById(query.UserId);
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(internalResult.Items, options, user).ConfigureAwait(false)).ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(internalResult.Items, options, user)
+                .ConfigureAwait(false));
+            var returnArray = returnList.ToArray(returnList.Count);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -1639,7 +1635,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 MediaTypes = new[] { MediaType.Video },
                 Recursive = true,
-                AncestorIds = folderIds.Select(i => i.ToString("N")).ToArray(),
+                AncestorIds = folderIds.Select(i => i.ToString("N")).ToArray(folderIds.Count),
                 IsFolder = false,
                 IsVirtualItem = false,
                 Limit = query.Limit,
@@ -1647,9 +1643,9 @@ namespace Emby.Server.Implementations.LiveTv
                 SortBy = new[] { ItemSortBy.DateCreated },
                 SortOrder = SortOrder.Descending,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
-                IncludeItemTypes = includeItemTypes.ToArray(),
-                ExcludeItemTypes = excludeItemTypes.ToArray(),
-                Genres = genres.ToArray(),
+                IncludeItemTypes = includeItemTypes.ToArray(includeItemTypes.Count),
+                ExcludeItemTypes = excludeItemTypes.ToArray(excludeItemTypes.Count),
+                Genres = genres.ToArray(genres.Count),
                 DtoOptions = dtoOptions
             });
         }
@@ -1695,17 +1691,20 @@ namespace Emby.Server.Implementations.LiveTv
             var internalResult = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
                 Recursive = true,
-                AncestorIds = folders.Select(i => i.Id.ToString("N")).ToArray(),
+                AncestorIds = folders.Select(i => i.Id.ToString("N")).ToArray(folders.Count),
                 Limit = query.Limit,
                 SortBy = new[] { ItemSortBy.DateCreated },
                 SortOrder = SortOrder.Descending,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
-                IncludeItemTypes = includeItemTypes.ToArray(),
-                ExcludeItemTypes = excludeItemTypes.ToArray(),
+                IncludeItemTypes = includeItemTypes.ToArray(includeItemTypes.Count),
+                ExcludeItemTypes = excludeItemTypes.ToArray(excludeItemTypes.Count),
                 DtoOptions = options
             });
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(internalResult.Items, options, user).ConfigureAwait(false)).ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(internalResult.Items, options, user)
+                .ConfigureAwait(false));
+
+            var returnArray = returnList.ToArray(returnList.Count);
 
             return new QueryResult<BaseItemDto>
             {
@@ -1845,6 +1844,9 @@ namespace Emby.Server.Implementations.LiveTv
         public async Task AddInfoToProgramDto(List<Tuple<BaseItem, BaseItemDto>> tuples, List<ItemFields> fields, User user = null)
         {
             var programTuples = new List<Tuple<BaseItemDto, string, string, string>>();
+            var hasChannelImage = fields.Contains(ItemFields.ChannelImage);
+            var hasChannelInfo = fields.Contains(ItemFields.ChannelInfo);
+            var hasServiceName = fields.Contains(ItemFields.ServiceName);
 
             foreach (var tuple in tuples)
             {
@@ -1887,7 +1889,7 @@ namespace Emby.Server.Implementations.LiveTv
                     dto.IsPremiere = program.IsPremiere;
                 }
 
-                if (fields.Contains(ItemFields.ChannelInfo))
+                if (hasChannelInfo || hasChannelImage)
                 {
                     var channel = GetInternalChannel(program.ChannelId);
 
@@ -1897,7 +1899,7 @@ namespace Emby.Server.Implementations.LiveTv
                         dto.MediaType = channel.MediaType;
                         dto.ChannelNumber = channel.Number;
 
-                        if (channel.HasImage(ImageType.Primary))
+                        if (hasChannelImage && channel.HasImage(ImageType.Primary))
                         {
                             dto.ChannelPrimaryImageTag = _tvDtoService.GetImageTag(channel);
                         }
@@ -1906,7 +1908,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 var serviceName = program.ServiceName;
 
-                if (fields.Contains(ItemFields.ServiceName))
+                if (hasServiceName)
                 {
                     dto.ServiceName = serviceName;
                 }
@@ -1954,7 +1956,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (dto.MediaSources == null)
             {
-                dto.MediaSources = recording.GetMediaSources(true).ToList();
+                dto.MediaSources = recording.GetMediaSources(true);
             }
 
             if (dto.MediaStreams == null)
@@ -1993,7 +1995,9 @@ namespace Emby.Server.Implementations.LiveTv
 
             var internalResult = await GetInternalRecordings(query, options, cancellationToken).ConfigureAwait(false);
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(internalResult.Items, options, user).ConfigureAwait(false)).ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(internalResult.Items, options, user)
+                .ConfigureAwait(false));
+            var returnArray = returnList.ToArray(returnList.Count);
 
             return new QueryResult<BaseItemDto>
             {
@@ -2081,7 +2085,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var returnArray = returnList
                 .OrderBy(i => i.StartDate)
-                .ToArray();
+                .ToArray(returnList.Count);
 
             return new QueryResult<TimerInfoDto>
             {
@@ -2154,7 +2158,7 @@ namespace Emby.Server.Implementations.LiveTv
             await service.CancelTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
             _lastRecordingRefreshTime = DateTime.MinValue;
 
-            EventHelper.QueueEventIfNotNull(TimerCancelled, this, new GenericEventArgs<TimerEventInfo>
+            EventHelper.FireEventIfNotNull(TimerCancelled, this, new GenericEventArgs<TimerEventInfo>
             {
                 Argument = new TimerEventInfo
                 {
@@ -2177,7 +2181,7 @@ namespace Emby.Server.Implementations.LiveTv
             await service.CancelSeriesTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
             _lastRecordingRefreshTime = DateTime.MinValue;
 
-            EventHelper.QueueEventIfNotNull(SeriesTimerCancelled, this, new GenericEventArgs<TimerEventInfo>
+            EventHelper.FireEventIfNotNull(SeriesTimerCancelled, this, new GenericEventArgs<TimerEventInfo>
             {
                 Argument = new TimerEventInfo
                 {
@@ -2338,7 +2342,7 @@ namespace Emby.Server.Implementations.LiveTv
                 TopParentIds = new[] { GetInternalLiveTvFolder(CancellationToken.None).Result.Id.ToString("N") },
                 DtoOptions = options
 
-            }).ToList() : new List<BaseItem>();
+            }) : new List<BaseItem>();
 
             RemoveFields(options);
 
@@ -2347,6 +2351,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var addCurrentProgram = options.AddCurrentProgram;
             var addMediaSources = options.Fields.Contains(ItemFields.MediaSources);
+            var addServiceName = options.Fields.Contains(ItemFields.ServiceName);
 
             foreach (var tuple in tuples)
             {
@@ -2356,13 +2361,17 @@ namespace Emby.Server.Implementations.LiveTv
                 dto.Number = channel.Number;
                 dto.ChannelNumber = channel.Number;
                 dto.ChannelType = channel.ChannelType;
-                dto.ServiceName = channel.ServiceName;
+
+                if (addServiceName)
+                {
+                    dto.ServiceName = channel.ServiceName;
+                }
 
                 currentChannelsDict[dto.Id] = dto;
 
                 if (addMediaSources)
                 {
-                    dto.MediaSources = channel.GetMediaSources(true).ToList();
+                    dto.MediaSources = channel.GetMediaSources(true);
                 }
 
                 if (addCurrentProgram)
@@ -2516,7 +2525,7 @@ namespace Emby.Server.Implementations.LiveTv
             _lastRecordingRefreshTime = DateTime.MinValue;
             _logger.Info("New recording scheduled");
 
-            EventHelper.QueueEventIfNotNull(TimerCreated, this, new GenericEventArgs<TimerEventInfo>
+            EventHelper.FireEventIfNotNull(TimerCreated, this, new GenericEventArgs<TimerEventInfo>
             {
                 Argument = new TimerEventInfo
                 {
@@ -2558,7 +2567,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             _lastRecordingRefreshTime = DateTime.MinValue;
 
-            EventHelper.QueueEventIfNotNull(SeriesTimerCreated, this, new GenericEventArgs<TimerEventInfo>
+            EventHelper.FireEventIfNotNull(SeriesTimerCreated, this, new GenericEventArgs<TimerEventInfo>
             {
                 Argument = new TimerEventInfo
                 {
@@ -2697,7 +2706,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             return new QueryResult<BaseItemDto>
             {
-                Items = groups.ToArray(),
+                Items = groups.ToArray(groups.Count),
                 TotalRecordCount = groups.Count
             };
         }
@@ -2984,7 +2993,7 @@ namespace Emby.Server.Implementations.LiveTv
                     Name = tunerChannelId,
                     Value = providerChannelId
                 });
-                listingsProviderInfo.ChannelMappings = list.ToArray();
+                listingsProviderInfo.ChannelMappings = list.ToArray(list.Count);
             }
 
             _config.SaveConfiguration("livetv", config);

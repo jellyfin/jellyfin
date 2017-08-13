@@ -19,20 +19,20 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// </summary>
     public class Movie : Video, IHasSpecialFeatures, IHasTrailers, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {
-        public List<Guid> SpecialFeatureIds { get; set; }
+        public Guid[] SpecialFeatureIds { get; set; }
 
         public Movie()
         {
-            SpecialFeatureIds = new List<Guid>();
-            RemoteTrailers = new List<MediaUrl>();
-            LocalTrailerIds = new List<Guid>();
-            RemoteTrailerIds = new List<Guid>();
+            SpecialFeatureIds = EmptyGuidArray;
+            RemoteTrailers = EmptyMediaUrlArray;
+            LocalTrailerIds = EmptyGuidArray;
+            RemoteTrailerIds = EmptyGuidArray;
         }
 
-        public List<Guid> LocalTrailerIds { get; set; }
-        public List<Guid> RemoteTrailerIds { get; set; }
+        public Guid[] LocalTrailerIds { get; set; }
+        public Guid[] RemoteTrailerIds { get; set; }
 
-        public List<MediaUrl> RemoteTrailers { get; set; }
+        public MediaUrl[] RemoteTrailers { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the TMDB collection.
@@ -55,22 +55,13 @@ namespace MediaBrowser.Controller.Entities.Movies
             return value;
         }
 
-        [IgnoreDataMember]
-        protected override bool SupportsIsInMixedFolderDetection
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
             // Must have a parent to have special features
             // In other words, it must be part of the Parent/Child tree
-            if (LocationType == LocationType.FileSystem && GetParent() != null && !DetectIsInMixedFolder())
+            if (LocationType == LocationType.FileSystem && GetParent() != null && !IsInMixedFolder)
             {
                 var specialFeaturesChanged = await RefreshSpecialFeatures(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
@@ -86,7 +77,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         private async Task<bool> RefreshSpecialFeatures(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newItems = LibraryManager.FindExtras(this, fileSystemChildren, options.DirectoryService).ToList();
-            var newItemIds = newItems.Select(i => i.Id).ToList();
+            var newItemIds = newItems.Select(i => i.Id).ToArray();
 
             var itemsChanged = !SpecialFeatureIds.SequenceEqual(newItemIds);
 
@@ -108,7 +99,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             var info = GetItemLookupInfo<MovieInfo>();
 
-            if (!DetectIsInMixedFolder())
+            if (!IsInMixedFolder)
             {
                 var name = System.IO.Path.GetFileName(ContainingFolderPath);
 
@@ -145,7 +136,7 @@ namespace MediaBrowser.Controller.Entities.Movies
                 else
                 {
                     // Try to get the year from the folder name
-                    if (!DetectIsInMixedFolder())
+                    if (!IsInMixedFolder)
                     {
                         info = LibraryManager.ParseName(System.IO.Path.GetFileName(ContainingFolderPath));
 

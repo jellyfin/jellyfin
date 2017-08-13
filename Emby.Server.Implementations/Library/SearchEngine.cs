@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -163,8 +164,8 @@ namespace Emby.Server.Implementations.Library
             var mediaItems = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 NameContains = searchTerm,
-                ExcludeItemTypes = excludeItemTypes.ToArray(),
-                IncludeItemTypes = includeItemTypes.ToArray(),
+                ExcludeItemTypes = excludeItemTypes.ToArray(excludeItemTypes.Count),
+                IncludeItemTypes = includeItemTypes.ToArray(includeItemTypes.Count),
                 Limit = query.Limit,
                 IncludeItemsByName = string.IsNullOrWhiteSpace(query.ParentId),
                 ParentId = string.IsNullOrWhiteSpace(query.ParentId) ? (Guid?)null : new Guid(query.ParentId),

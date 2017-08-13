@@ -122,7 +122,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="user">The user.</param>
         private void OnUserDeleted(User user)
         {
-            EventHelper.QueueEventIfNotNull(UserDeleted, this, new GenericEventArgs<User> { Argument = user }, _logger);
+            EventHelper.FireEventIfNotNull(UserDeleted, this, new GenericEventArgs<User> { Argument = user }, _logger);
         }
         #endregion
 

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -12,9 +14,21 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("name");
             }
 
-            if (!item.Tags.Contains(name, StringComparer.OrdinalIgnoreCase))
+            var current = item.Tags;
+
+            if (!current.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
-                item.Tags.Add(name);
+                if (current.Length == 0)
+                {
+                    item.Tags = new[] { name };
+                }
+                else
+                {
+                    var list = current.ToArray(current.Length + 1);
+                    list[list.Length - 1] = name;
+
+                    item.Tags = list;
+                }
             }
         }
     }

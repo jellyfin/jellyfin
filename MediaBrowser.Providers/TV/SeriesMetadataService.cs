@@ -57,7 +57,7 @@ namespace MediaBrowser.Providers.TV
             return base.IsFullLocalMetadata(item);
         }
 
-        protected override void MergeData(MetadataResult<Series> source, MetadataResult<Series> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Series> source, MetadataResult<Series> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
@@ -74,7 +74,7 @@ namespace MediaBrowser.Providers.TV
                 targetItem.Status = sourceItem.Status;
             }
 
-            if (replaceData || targetItem.AirDays == null || targetItem.AirDays.Count == 0)
+            if (replaceData || targetItem.AirDays == null || targetItem.AirDays.Length == 0)
             {
                 targetItem.AirDays = sourceItem.AirDays;
             }

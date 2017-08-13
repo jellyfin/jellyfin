@@ -126,7 +126,7 @@ namespace MediaBrowser.Api
                 await link.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             }
 
-            video.LinkedAlternateVersions.Clear();
+            video.LinkedAlternateVersions = Video.EmptyLinkedChildArray;
             await video.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -185,18 +185,22 @@ namespace MediaBrowser.Api
                     }).First();
             }
 
+            var list = primaryVersion.LinkedAlternateVersions.ToList();
+
             foreach (var item in items.Where(i => i.Id != primaryVersion.Id))
             {
                 item.PrimaryVersionId = primaryVersion.Id.ToString("N");
 
                 await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
-                primaryVersion.LinkedAlternateVersions.Add(new LinkedChild
+                list.Add(new LinkedChild
                 {
                     Path = item.Path,
                     ItemId = item.Id
                 });
             }
+
+            primaryVersion.LinkedAlternateVersions = list.ToArray();
 
             await primaryVersion.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }

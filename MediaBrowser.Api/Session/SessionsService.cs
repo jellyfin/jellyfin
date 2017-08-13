@@ -477,7 +477,7 @@ namespace MediaBrowser.Api.Session
         {
             var command = new PlayRequest
             {
-                ItemIds = request.ItemIds.Split(',').ToArray(),
+                ItemIds = request.ItemIds.Split(','),
 
                 PlayCommand = request.PlayCommand,
                 StartPositionTicks = request.StartPositionTicks

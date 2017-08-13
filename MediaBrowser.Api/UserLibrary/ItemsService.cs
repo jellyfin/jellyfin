@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -127,7 +128,7 @@ namespace MediaBrowser.Api.UserLibrary
             return new ItemsResult
             {
                 TotalRecordCount = result.TotalRecordCount,
-                Items = dtoList.ToArray()
+                Items = dtoList.ToArray(dtoList.Count)
             };
         }
 
@@ -206,7 +207,6 @@ namespace MediaBrowser.Api.UserLibrary
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
                 IsMissing = request.IsMissing,
-                IsVirtualUnaired = request.IsVirtualUnaired,
                 IsUnaired = request.IsUnaired,
                 CollapseBoxSetItems = request.CollapseBoxSetItems,
                 NameLessThan = request.NameLessThan,
@@ -238,8 +238,8 @@ namespace MediaBrowser.Api.UserLibrary
                 PersonIds = request.GetPersonIds(),
                 PersonTypes = request.GetPersonTypes(),
                 Years = request.GetYears(),
-                ImageTypes = request.GetImageTypes().ToArray(),
-                VideoTypes = request.GetVideoTypes().ToArray(),
+                ImageTypes = request.GetImageTypes(),
+                VideoTypes = request.GetVideoTypes(),
                 AdjacentTo = request.AdjacentTo,
                 ItemIds = request.GetItemIds(),
                 MinPlayers = request.MinPlayers,
@@ -317,12 +317,6 @@ namespace MediaBrowser.Api.UserLibrary
             if (!string.IsNullOrEmpty(request.SeriesStatus))
             {
                 query.SeriesStatuses = request.SeriesStatus.Split(',').Select(d => (SeriesStatus)Enum.Parse(typeof(SeriesStatus), d, true)).ToArray();
-            }
-
-            // Filter by Series AirDays
-            if (!string.IsNullOrEmpty(request.AirDays))
-            {
-                query.AirDays = request.AirDays.Split(',').Select(d => (DayOfWeek)Enum.Parse(typeof(DayOfWeek), d, true)).ToArray();
             }
 
             // ExcludeLocationTypes

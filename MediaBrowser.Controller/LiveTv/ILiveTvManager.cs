@@ -284,7 +284,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets the internal channels.
         /// </summary>
-        Task<QueryResult<LiveTvChannel>> GetInternalChannels(LiveTvChannelQuery query, DtoOptions dtoOptions, CancellationToken cancellationToken);
+        Task<QueryResult<BaseItem>> GetInternalChannels(LiveTvChannelQuery query, DtoOptions dtoOptions, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the internal recordings.

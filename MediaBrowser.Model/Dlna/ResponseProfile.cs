@@ -33,12 +33,7 @@ namespace MediaBrowser.Model.Dlna
 
         public List<string> GetContainers()
         {
-            List<string> list = new List<string>();
-            foreach (string i in (Container ?? string.Empty).Split(','))
-            {
-                if (!string.IsNullOrEmpty(i)) list.Add(i);
-            }
-            return list;
+            return ContainerProfile.SplitValue(Container);
         }
 
         public List<string> GetAudioCodecs()

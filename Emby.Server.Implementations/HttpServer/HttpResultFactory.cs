@@ -6,19 +6,16 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.Services;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using IRequest = MediaBrowser.Model.Services.IRequest;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
-using StreamWriter = Emby.Server.Implementations.HttpServer.StreamWriter;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -193,48 +190,35 @@ namespace Emby.Server.Implementations.HttpServer
         /// <returns></returns>
         public object ToOptimizedResult<T>(IRequest request, T dto)
         {
-            var compressionType = GetCompressionType(request);
-            if (compressionType == null)
+            var contentType = request.ResponseContentType;
+
+            switch (GetRealContentType(contentType))
             {
-                var contentType = request.ResponseContentType;
+                case "application/xml":
+                case "text/xml":
+                case "text/xml; charset=utf-8": //"text/xml; charset=utf-8" also matches xml
+                    return SerializeToXmlString(dto);
 
-                switch (GetRealContentType(contentType))
-                {
-                    case "application/xml":
-                    case "text/xml":
-                    case "text/xml; charset=utf-8": //"text/xml; charset=utf-8" also matches xml
-                        return SerializeToXmlString(dto);
+                case "application/json":
+                case "text/json":
+                    return _jsonSerializer.SerializeToString(dto);
+                default:
+                    {
+                        var ms = new MemoryStream();
+                        var writerFn = RequestHelper.GetResponseWriter(HttpListenerHost.Instance, contentType);
 
-                    case "application/json":
-                    case "text/json":
-                        return _jsonSerializer.SerializeToString(dto);
-                }
+                        writerFn(dto, ms);
+                        
+                        ms.Position = 0;
+
+                        if (string.Equals(request.Verb, "head", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return GetHttpResult(new byte[] { }, contentType, true);
+                        }
+
+                        return GetHttpResult(ms, contentType, true);
+                    }
             }
-
-            // Do not use the memoryStreamFactory here, they don't place nice with compression
-            using (var ms = new MemoryStream())
-            {
-                var contentType = request.ResponseContentType;
-                var writerFn = RequestHelper.GetResponseWriter(HttpListenerHost.Instance, contentType);
-
-                writerFn(dto, ms);
-
-                ms.Position = 0;
-
-                var responseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-                return GetCompressedResult(ms, compressionType, responseHeaders, false, request.ResponseContentType).Result;
-            }
-        }
-
-        private static Stream GetCompressionStream(Stream outputStream, string compressionType)
-        {
-            if (compressionType == "deflate")
-                return new DeflateStream(outputStream, CompressionMode.Compress, true);
-            if (compressionType == "gzip")
-                return new GZipStream(outputStream, CompressionMode.Compress, true);
-
-            throw new NotSupportedException(compressionType);
         }
 
         public static string GetRealContentType(string contentType)
@@ -568,123 +552,47 @@ namespace Emby.Server.Implementations.HttpServer
             var contentType = options.ContentType;
             var responseHeaders = options.ResponseHeaders;
 
-            var requestedCompressionType = GetCompressionType(requestContext);
+            //var requestedCompressionType = GetCompressionType(requestContext);
 
-            if (!compress || string.IsNullOrEmpty(requestedCompressionType))
+            var rangeHeader = requestContext.Headers.Get("Range");
+
+            if (!isHeadRequest && !string.IsNullOrWhiteSpace(options.Path))
             {
-                var rangeHeader = requestContext.Headers.Get("Range");
-
-                if (!isHeadRequest && !string.IsNullOrWhiteSpace(options.Path))
+                return new FileWriter(options.Path, contentType, rangeHeader, _logger, _fileSystem)
                 {
-                    return new FileWriter(options.Path, contentType, rangeHeader, _logger, _fileSystem)
-                    {
-                        OnComplete = options.OnComplete,
-                        OnError = options.OnError,
-                        FileShare = options.FileShare
-                    };
-                }
-
-                if (!string.IsNullOrWhiteSpace(rangeHeader))
-                {
-                    var stream = await factoryFn().ConfigureAwait(false);
-
-                    return new RangeRequestWriter(rangeHeader, stream, contentType, isHeadRequest, _logger)
-                    {
-                        OnComplete = options.OnComplete
-                    };
-                }
-                else
-                {
-                    var stream = await factoryFn().ConfigureAwait(false);
-
-                    responseHeaders["Content-Length"] = stream.Length.ToString(UsCulture);
-
-                    if (isHeadRequest)
-                    {
-                        stream.Dispose();
-
-                        return GetHttpResult(new byte[] { }, contentType, true);
-                    }
-
-                    return new StreamWriter(stream, contentType, _logger)
-                    {
-                        OnComplete = options.OnComplete,
-                        OnError = options.OnError
-                    };
-                }
+                    OnComplete = options.OnComplete,
+                    OnError = options.OnError,
+                    FileShare = options.FileShare
+                };
             }
 
-            using (var stream = await factoryFn().ConfigureAwait(false))
+            if (!string.IsNullOrWhiteSpace(rangeHeader))
             {
-                return await GetCompressedResult(stream, requestedCompressionType, responseHeaders, isHeadRequest, contentType).ConfigureAwait(false);
-            }
-        }
+                var stream = await factoryFn().ConfigureAwait(false);
 
-        private async Task<IHasHeaders> GetCompressedResult(Stream stream,
-            string requestedCompressionType,
-            IDictionary<string, string> responseHeaders,
-            bool isHeadRequest,
-            string contentType)
-        {
-            using (var reader = new MemoryStream())
-            {
-                await stream.CopyToAsync(reader).ConfigureAwait(false);
-
-                reader.Position = 0;
-                var content = reader.ToArray();
-
-                if (content.Length >= 1024)
+                return new RangeRequestWriter(rangeHeader, stream, contentType, isHeadRequest, _logger)
                 {
-                    content = Compress(content, requestedCompressionType);
-                    responseHeaders["Content-Encoding"] = requestedCompressionType;
-                }
+                    OnComplete = options.OnComplete
+                };
+            }
+            else
+            {
+                var stream = await factoryFn().ConfigureAwait(false);
 
-                responseHeaders["Vary"] = "Accept-Encoding";
-                responseHeaders["Content-Length"] = content.Length.ToString(UsCulture);
+                responseHeaders["Content-Length"] = stream.Length.ToString(UsCulture);
 
                 if (isHeadRequest)
                 {
+                    stream.Dispose();
+
                     return GetHttpResult(new byte[] { }, contentType, true);
                 }
 
-                return GetHttpResult(content, contentType, true, responseHeaders);
-            }
-        }
-
-        private byte[] Compress(byte[] bytes, string compressionType)
-        {
-            if (compressionType == "deflate")
-                return Deflate(bytes);
-
-            if (compressionType == "gzip")
-                return GZip(bytes);
-
-            throw new NotSupportedException(compressionType);
-        }
-
-        private byte[] Deflate(byte[] bytes)
-        {
-            // In .NET FX incompat-ville, you can't access compressed bytes without closing DeflateStream
-            // Which means we must use MemoryStream since you have to use ToArray() on a closed Stream
-            using (var ms = new MemoryStream())
-            using (var zipStream = new DeflateStream(ms, CompressionMode.Compress))
-            {
-                zipStream.Write(bytes, 0, bytes.Length);
-                zipStream.Dispose();
-
-                return ms.ToArray();
-            }
-        }
-
-        private byte[] GZip(byte[] buffer)
-        {
-            using (var ms = new MemoryStream())
-            using (var zipStream = new GZipStream(ms, CompressionMode.Compress))
-            {
-                zipStream.Write(buffer, 0, buffer.Length);
-                zipStream.Dispose();
-
-                return ms.ToArray();
+                return new StreamWriter(stream, contentType, _logger)
+                {
+                    OnComplete = options.OnComplete,
+                    OnError = options.OnError
+                };
             }
         }
 

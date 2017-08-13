@@ -183,7 +183,6 @@ namespace MediaBrowser.Api.Reports
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
                 IsMissing = request.IsMissing,
-                IsVirtualUnaired = request.IsVirtualUnaired,
                 IsUnaired = request.IsUnaired,
                 CollapseBoxSetItems = request.CollapseBoxSetItems,
                 NameLessThan = request.NameLessThan,
@@ -281,12 +280,6 @@ namespace MediaBrowser.Api.Reports
             if (!string.IsNullOrEmpty(request.SeriesStatus))
             {
                 query.SeriesStatuses = request.SeriesStatus.Split(',').Select(d => (SeriesStatus)Enum.Parse(typeof(SeriesStatus), d, true)).ToArray();
-            }
-
-            // Filter by Series AirDays
-            if (!string.IsNullOrEmpty(request.AirDays))
-            {
-                query.AirDays = request.AirDays.Split(',').Select(d => (DayOfWeek)Enum.Parse(typeof(DayOfWeek), d, true)).ToArray();
             }
 
             // ExcludeLocationTypes

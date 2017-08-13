@@ -70,9 +70,6 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "IsUnaired", Description = "Optional filter by items that are unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsUnaired { get; set; }
 
-        [ApiMember(Name = "IsVirtualUnaired", Description = "Optional filter by items that are virtual unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public bool? IsVirtualUnaired { get; set; }
-
         [ApiMember(Name = "MinCommunityRating", Description = "Optional filter by minimum community rating.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public double? MinCommunityRating { get; set; }
 
@@ -300,13 +297,6 @@ namespace MediaBrowser.Api.UserLibrary
         public string VideoTypes { get; set; }
 
         /// <summary>
-        /// Gets or sets the air days.
-        /// </summary>
-        /// <value>The air days.</value>
-        [ApiMember(Name = "AirDays", Description = "Optional filter by Series Air Days. Allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string AirDays { get; set; }
-
-        /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
@@ -461,7 +451,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets the image types.
         /// </summary>
         /// <returns>IEnumerable{ImageType}.</returns>
-        public IEnumerable<ImageType> GetImageTypes()
+        public ImageType[] GetImageTypes()
         {
             var val = ImageTypes;
 
@@ -470,7 +460,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return new ImageType[] { };
             }
 
-            return val.Split(',').Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true));
+            return val.Split(',').Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToArray();
         }
 
         /// <summary>

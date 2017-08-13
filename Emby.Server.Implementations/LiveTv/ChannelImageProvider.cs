@@ -28,12 +28,12 @@ namespace Emby.Server.Implementations.LiveTv
             _appHost = appHost;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
         {
             return new[] { ImageType.Primary };
         }
 
-        public async Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken)
+        public async Task<DynamicImageResponse> GetImage(IHasMetadata item, ImageType type, CancellationToken cancellationToken)
         {
             var liveTvItem = (LiveTvChannel)item;
 
@@ -67,7 +67,7 @@ namespace Emby.Server.Implementations.LiveTv
             get { return "Live TV Service Provider"; }
         }
 
-        public bool Supports(IHasImages item)
+        public bool Supports(IHasMetadata item)
         {
             return item is LiveTvChannel;
         }

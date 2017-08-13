@@ -201,7 +201,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 var baseItem = result.Item as BaseItem;
 
-                await LibraryManager.UpdatePeople(baseItem, result.People.ToList());
+                await LibraryManager.UpdatePeople(baseItem, result.People);
                 await SavePeopleMetadata(result.People, libraryOptions, cancellationToken).ConfigureAwait(false);
             }
             await result.Item.UpdateToRepository(reason, cancellationToken).ConfigureAwait(false);
@@ -302,13 +302,6 @@ namespace MediaBrowser.Providers.Manager
                 updateType |= ItemUpdateType.MetadataImport;
             }
 
-            var inheritedTags = item.GetInheritedTags();
-            if (!inheritedTags.SequenceEqual(item.InheritedTags, StringComparer.Ordinal))
-            {
-                item.InheritedTags = inheritedTags;
-                updateType |= ItemUpdateType.MetadataImport;
-            }
-
             return updateType;
         }
 
@@ -321,7 +314,7 @@ namespace MediaBrowser.Providers.Manager
                 var folder = item as Folder;
                 if (folder != null && folder.SupportsCumulativeRunTimeTicks)
                 {
-                    var items = folder.GetRecursiveChildren(i => !i.IsFolder).ToList();
+                    var items = folder.GetRecursiveChildren(i => !i.IsFolder);
                     var ticks = items.Select(i => i.RunTimeTicks ?? 0).Sum();
 
                     if (!folder.RunTimeTicks.HasValue || folder.RunTimeTicks.Value != ticks)
@@ -526,7 +519,7 @@ namespace MediaBrowser.Providers.Manager
                             userDataList.AddRange(localItem.UserDataList);
                         }
 
-                        MergeData(localItem, temp, new List<MetadataFields>(), !options.ReplaceAllMetadata, true);
+                        MergeData(localItem, temp, new MetadataFields[]{}, !options.ReplaceAllMetadata, true);
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
@@ -574,7 +567,7 @@ namespace MediaBrowser.Providers.Manager
                     else
                     {
                         // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
-                        MergeData(metadata, temp, new List<MetadataFields>(), false, false);
+                        MergeData(metadata, temp, new MetadataFields[]{}, false, false);
                         MergeData(temp, metadata, item.LockedFields, true, false);
                     }
                 }
@@ -711,7 +704,7 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var result in results)
             {
-                MergeData(result, temp, new List<MetadataFields>(), false, false);
+                MergeData(result, temp, new MetadataFields[]{}, false, false);
             }
 
             return refreshResult;
@@ -743,7 +736,7 @@ namespace MediaBrowser.Providers.Manager
 
         protected abstract void MergeData(MetadataResult<TItemType> source,
             MetadataResult<TItemType> target,
-            List<MetadataFields> lockedFields,
+            MetadataFields[] lockedFields,
             bool replaceData,
             bool mergeMetadataSettings);
 

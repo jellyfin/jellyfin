@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Threading;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Session
 {
@@ -1000,7 +1001,7 @@ namespace Emby.Server.Implementations.Session
                 command.PlayCommand = PlayCommand.PlayNow;
             }
 
-            command.ItemIds = items.Select(i => i.Id.ToString("N")).ToArray();
+            command.ItemIds = items.Select(i => i.Id.ToString("N")).ToArray(items.Count);
 
             if (user != null)
             {
@@ -1033,7 +1034,7 @@ namespace Emby.Server.Implementations.Session
 
                         if (episodes.Count > 0)
                         {
-                            command.ItemIds = episodes.Select(i => i.Id.ToString("N")).ToArray();
+                            command.ItemIds = episodes.Select(i => i.Id.ToString("N")).ToArray(episodes.Count);
                         }
                     }
                 }
@@ -1089,7 +1090,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var folder = (Folder)item;
 
-                var itemsResult = folder.GetItems(new InternalItemsQuery(user)
+                var itemsResult = folder.GetItemList(new InternalItemsQuery(user)
                 {
                     Recursive = true,
                     IsFolder = false,
@@ -1104,7 +1105,7 @@ namespace Emby.Server.Implementations.Session
 
                 });
 
-                return FilterToSingleMediaType(itemsResult.Items)
+                return FilterToSingleMediaType(itemsResult)
                     .OrderBy(i => i.SortName)
                     .ToList();
             }
@@ -1675,7 +1676,6 @@ namespace Emby.Server.Implementations.Session
                 dtoOptions.Fields.Remove(ItemFields.ExternalEtag);
                 dtoOptions.Fields.Remove(ItemFields.InheritedParentalRatingValue);
                 dtoOptions.Fields.Remove(ItemFields.ItemCounts);
-                dtoOptions.Fields.Remove(ItemFields.Keywords);
                 dtoOptions.Fields.Remove(ItemFields.MediaSourceCount);
                 dtoOptions.Fields.Remove(ItemFields.MediaStreams);
                 dtoOptions.Fields.Remove(ItemFields.MediaSources);
@@ -1686,7 +1686,6 @@ namespace Emby.Server.Implementations.Session
                 dtoOptions.Fields.Remove(ItemFields.RecursiveItemCount);
                 dtoOptions.Fields.Remove(ItemFields.RemoteTrailers);
                 dtoOptions.Fields.Remove(ItemFields.SeasonUserData);
-                dtoOptions.Fields.Remove(ItemFields.SeriesGenres);
                 dtoOptions.Fields.Remove(ItemFields.Settings);
                 dtoOptions.Fields.Remove(ItemFields.SortName);
                 dtoOptions.Fields.Remove(ItemFields.Tags);

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.HttpServer.SocketSharp
 {
@@ -585,7 +586,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
                     WriteCharBytes(bytes, ch, e);
             }
 
-            byte[] buf = bytes.ToArray();
+            byte[] buf = bytes.ToArray(bytes.Count);
             bytes = null;
             return e.GetString(buf, 0, buf.Length);
 

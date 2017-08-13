@@ -13,10 +13,10 @@ namespace MediaBrowser.Controller.Providers
     public class DirectoryService : IDirectoryService
     {
         private readonly ILogger _logger;
-		private readonly IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
 
-        private readonly ConcurrentDictionary<string, Dictionary<string, FileSystemMetadata>> _cache =
-            new ConcurrentDictionary<string, Dictionary<string, FileSystemMetadata>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache =
+            new ConcurrentDictionary<string, FileSystemMetadata[]>(StringComparer.OrdinalIgnoreCase);
 
         private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache =
         new ConcurrentDictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Providers
         public DirectoryService(ILogger logger, IFileSystem fileSystem)
         {
             _logger = logger;
-			_fileSystem = fileSystem;
+            _fileSystem = fileSystem;
         }
 
         public DirectoryService(IFileSystem fileSystem)
@@ -32,28 +32,23 @@ namespace MediaBrowser.Controller.Providers
         {
         }
 
-        public IEnumerable<FileSystemMetadata> GetFileSystemEntries(string path)
+        public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
             return GetFileSystemEntries(path, false);
         }
 
-        public Dictionary<string, FileSystemMetadata> GetFileSystemDictionary(string path)
-        {
-            return GetFileSystemDictionary(path, false);
-        }
-
-        private Dictionary<string, FileSystemMetadata> GetFileSystemDictionary(string path, bool clearCache)
+        private FileSystemMetadata[] GetFileSystemEntries(string path, bool clearCache)
         {
             if (string.IsNullOrWhiteSpace(path))
             {
                 throw new ArgumentNullException("path");
             }
 
-            Dictionary<string, FileSystemMetadata> entries;
+            FileSystemMetadata[] entries;
 
             if (clearCache)
             {
-                Dictionary<string, FileSystemMetadata> removed;
+                FileSystemMetadata[] removed;
 
                 _cache.TryRemove(path, out removed);
             }
@@ -62,35 +57,20 @@ namespace MediaBrowser.Controller.Providers
             {
                 //_logger.Debug("Getting files for " + path);
 
-                entries = new Dictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
-
                 try
                 {
                     // using EnumerateFileSystemInfos doesn't handle reparse points (symlinks)
-                    var list = _fileSystem.GetFileSystemEntries(path)
-                        .ToList();
-
-                    // Seeing dupes on some users file system for some reason
-                    foreach (var item in list)
-                    {
-                        entries[item.FullName] = item;
-                    }
+                    entries = _fileSystem.GetFileSystemEntries(path).ToArray();
                 }
                 catch (IOException)
                 {
+                    entries = new FileSystemMetadata[] { };
                 }
-
-                //var group = entries.ToLookup(i => _fileSystem.GetDirectoryName(i.FullName)).ToList();
 
                 _cache.TryAdd(path, entries);
             }
 
             return entries;
-        }
-
-        private IEnumerable<FileSystemMetadata> GetFileSystemEntries(string path, bool clearCache)
-        {
-            return GetFileSystemDictionary(path, clearCache).Values;
         }
 
         public IEnumerable<FileSystemMetadata> GetFiles(string path)
@@ -101,16 +81,6 @@ namespace MediaBrowser.Controller.Providers
         public IEnumerable<FileSystemMetadata> GetFiles(string path, bool clearCache)
         {
             return GetFileSystemEntries(path, clearCache).Where(i => !i.IsDirectory);
-        }
-
-        public IEnumerable<string> GetFilePaths(string path)
-        {
-            return _fileSystem.GetFilePaths(path);
-        }
-
-        public IEnumerable<string> GetFilePaths(string path, bool clearCache)
-        {
-            return _fileSystem.GetFilePaths(path);
         }
 
         public FileSystemMetadata GetFile(string path)
@@ -132,11 +102,6 @@ namespace MediaBrowser.Controller.Providers
 
             return file;
             //return _fileSystem.GetFileInfo(path);
-        }
-
-        public IEnumerable<FileSystemMetadata> GetDirectories(string path)
-        {
-            return GetFileSystemEntries(path, false).Where(i => i.IsDirectory);
         }
     }
 }

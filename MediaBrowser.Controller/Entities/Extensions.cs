@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
 using System.Linq;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -12,11 +13,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Adds the trailer URL.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="url">The URL.</param>
-        /// <param name="isDirectLink">if set to <c>true</c> [is direct link].</param>
-        /// <exception cref="System.ArgumentNullException">url</exception>
-        public static void AddTrailerUrl(this IHasTrailers item, string url, bool isDirectLink)
+        public static void AddTrailerUrl(this IHasTrailers item, string url)
         {
             if (string.IsNullOrWhiteSpace(url))
             {
@@ -27,10 +24,22 @@ namespace MediaBrowser.Controller.Entities
 
             if (current == null)
             {
-                item.RemoteTrailers.Add(new MediaUrl
+                var mediaUrl = new MediaUrl
                 {
                     Url = url
-                });
+                };
+
+                if (item.RemoteTrailers.Length == 0)
+                {
+                    item.RemoteTrailers = new[] { mediaUrl };
+                }
+                else
+                {
+                    var list = item.RemoteTrailers.ToArray(item.RemoteTrailers.Length + 1);
+                    list[list.Length - 1] = mediaUrl;
+
+                    item.RemoteTrailers = list;
+                }
             }
         }
     }

@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Manager
     {
         public static void MergeBaseItemData<T>(MetadataResult<T> sourceResult,
             MetadataResult<T> targetResult,
-            List<MetadataFields> lockedFields,
+            MetadataFields[] lockedFields,
             bool replaceData,
             bool mergeMetadataSettings)
             where T : BaseItem
@@ -150,7 +150,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataFields.Studios))
             {
-                if (replaceData || target.Studios.Count == 0)
+                if (replaceData || target.Studios.Length == 0)
                 {
                     target.Studios = source.Studios;
                 }
@@ -158,23 +158,15 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataFields.Tags))
             {
-                if (replaceData || target.Tags.Count == 0)
+                if (replaceData || target.Tags.Length == 0)
                 {
                     target.Tags = source.Tags;
                 }
             }
 
-            if (!lockedFields.Contains(MetadataFields.Keywords))
-            {
-                if (replaceData || target.Keywords.Count == 0)
-                {
-                    target.Keywords = source.Keywords;
-                }
-            }
-
             if (!lockedFields.Contains(MetadataFields.ProductionLocations))
             {
-                if (replaceData || target.ProductionLocations.Count == 0)
+                if (replaceData || target.ProductionLocations.Length == 0)
                 {
                     target.ProductionLocations = source.ProductionLocations;
                 }
@@ -212,12 +204,17 @@ namespace MediaBrowser.Providers.Manager
 
             //if (!lockedFields.Contains(MetadataFields.DisplayMediaType))
             {
-                if (replaceData || string.IsNullOrEmpty(target.DisplayMediaType))
+                var targetVideo = target as Video;
+                var sourceVideo = source as Video;
+                if (sourceVideo != null && targetVideo != null)
                 {
-                    // Safeguard against incoming data having an emtpy name
-                    if (!string.IsNullOrWhiteSpace(source.DisplayMediaType))
+                    if (replaceData || string.IsNullOrEmpty(targetVideo.DisplayMediaType))
                     {
-                        target.DisplayMediaType = source.DisplayMediaType;
+                        // Safeguard against incoming data having an emtpy name
+                        if (!string.IsNullOrWhiteSpace(sourceVideo.DisplayMediaType))
+                        {
+                            targetVideo.DisplayMediaType = sourceVideo.DisplayMediaType;
+                        }
                     }
                 }
             }
@@ -269,7 +266,7 @@ namespace MediaBrowser.Providers.Manager
             target.PreferredMetadataLanguage = source.PreferredMetadataLanguage;
         }
 
-        private static void MergeDisplayOrder(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
+        private static void MergeDisplayOrder(BaseItem source, BaseItem target, MetadataFields[] lockedFields, bool replaceData)
         {
             var sourceHasDisplayOrder = source as IHasDisplayOrder;
             var targetHasDisplayOrder = target as IHasDisplayOrder;
@@ -280,21 +277,21 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private static void MergeAlbumArtist(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
+        private static void MergeAlbumArtist(BaseItem source, BaseItem target, MetadataFields[] lockedFields, bool replaceData)
         {
             var sourceHasAlbumArtist = source as IHasAlbumArtist;
             var targetHasAlbumArtist = target as IHasAlbumArtist;
 
             if (sourceHasAlbumArtist != null && targetHasAlbumArtist != null)
             {
-                if (replaceData || targetHasAlbumArtist.AlbumArtists.Count == 0)
+                if (replaceData || targetHasAlbumArtist.AlbumArtists.Length == 0)
                 {
                     targetHasAlbumArtist.AlbumArtists = sourceHasAlbumArtist.AlbumArtists;
                 }
             }
         }
 
-        private static void MergeCriticRating(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
+        private static void MergeCriticRating(BaseItem source, BaseItem target, MetadataFields[] lockedFields, bool replaceData)
         {
             if (replaceData || !target.CriticRating.HasValue)
             {
@@ -302,21 +299,21 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private static void MergeTrailers(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
+        private static void MergeTrailers(BaseItem source, BaseItem target, MetadataFields[] lockedFields, bool replaceData)
         {
             var sourceCast = source as IHasTrailers;
             var targetCast = target as IHasTrailers;
 
             if (sourceCast != null && targetCast != null)
             {
-                if (replaceData || targetCast.RemoteTrailers.Count == 0)
+                if (replaceData || targetCast.RemoteTrailers.Length == 0)
                 {
                     targetCast.RemoteTrailers = sourceCast.RemoteTrailers;
                 }
             }
         }
 
-        private static void MergeVideoInfo(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
+        private static void MergeVideoInfo(BaseItem source, BaseItem target, MetadataFields[] lockedFields, bool replaceData)
         {
             var sourceCast = source as Video;
             var targetCast = target as Video;

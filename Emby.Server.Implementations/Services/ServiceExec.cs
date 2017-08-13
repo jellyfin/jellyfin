@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Services
 {
@@ -123,7 +124,7 @@ namespace Emby.Server.Implementations.Services
                 }
 
                 if (reqFilters.Count > 0)
-                    actionCtx.RequestFilters = reqFilters.OrderBy(i => i.Priority).ToArray();
+                    actionCtx.RequestFilters = reqFilters.OrderBy(i => i.Priority).ToArray(reqFilters.Count);
 
                 actions.Add(actionCtx);
             }

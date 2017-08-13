@@ -9,7 +9,6 @@ namespace MediaBrowser.Model.Sync
         Transferring = 3,
         Completed = 4,
         CompletedWithError = 5,
-        Failed = 6,
-        Cancelled = 7
+        Failed = 6
     }
 }

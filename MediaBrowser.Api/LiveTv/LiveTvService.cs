@@ -16,13 +16,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Api.Playback.Progressive;
 
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api.LiveTv
 {
@@ -734,7 +733,7 @@ namespace MediaBrowser.Api.LiveTv
 
             outputHeaders["Content-Type"] = Model.Net.MimeTypes.GetMimeType(path);
 
-            return new ProgressiveFileCopier(_fileSystem, path, outputHeaders, null, Logger, _environment, CancellationToken.None)
+            return new ProgressiveFileCopier(_fileSystem, path, outputHeaders, Logger, _environment, CancellationToken.None)
             {
                 AllowEndOfFile = false
             };
@@ -753,7 +752,7 @@ namespace MediaBrowser.Api.LiveTv
 
             outputHeaders["Content-Type"] = Model.Net.MimeTypes.GetMimeType("file." + request.Container);
 
-            return new ProgressiveFileCopier(directStreamProvider, outputHeaders, null, Logger, _environment, CancellationToken.None)
+            return new ProgressiveFileCopier(directStreamProvider, outputHeaders, Logger, _environment, CancellationToken.None)
             {
                 AllowEndOfFile = false
             };
@@ -921,7 +920,9 @@ namespace MediaBrowser.Api.LiveTv
 
             options.AddCurrentProgram = request.AddCurrentProgram;
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(channelResult.Items, options, user).ConfigureAwait(false)).ToArray();
+            var returnList = (await _dtoService.GetBaseItemDtos(channelResult.Items, options, user)
+                .ConfigureAwait(false));
+            var returnArray = returnList.ToArray(returnList.Count);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -962,7 +963,7 @@ namespace MediaBrowser.Api.LiveTv
         {
             var query = new ProgramQuery
             {
-                ChannelIds = (request.ChannelIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray(),
+                ChannelIds = ApiEntryPoint.Split(request.ChannelIds, ',', true),
                 UserId = request.UserId,
                 HasAired = request.HasAired,
                 EnableTotalRecordCount = request.EnableTotalRecordCount

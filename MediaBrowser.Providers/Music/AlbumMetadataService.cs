@@ -44,13 +44,13 @@ namespace MediaBrowser.Providers.Music
 
                     if (!item.LockedFields.Contains(MetadataFields.Studios))
                     {
-                        var currentList = item.Studios.ToList();
+                        var currentList = item.Studios;
 
                         item.Studios = songs.SelectMany(i => i.Studios)
                             .Distinct(StringComparer.OrdinalIgnoreCase)
-                            .ToList();
+                            .ToArray();
 
-                        if (currentList.Count != item.Studios.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Studios.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
+                        if (currentList.Length != item.Studios.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Studios.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
                         {
                             updateType = updateType | ItemUpdateType.MetadataEdit;
                         }
@@ -87,7 +87,7 @@ namespace MediaBrowser.Providers.Music
                 .SelectMany(i => i.AlbumArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(i => i)
-                .ToList();
+                .ToArray();
 
             if (!item.AlbumArtists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
             {
@@ -151,7 +151,7 @@ namespace MediaBrowser.Providers.Music
             return updateType;
         }
 
-        protected override void MergeData(MetadataResult<MusicAlbum> source, MetadataResult<MusicAlbum> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<MusicAlbum> source, MetadataResult<MusicAlbum> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 

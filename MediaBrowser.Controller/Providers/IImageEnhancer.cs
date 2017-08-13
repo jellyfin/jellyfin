@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <returns><c>true</c> if this enhancer will enhance the supplied image for the supplied item, <c>false</c> otherwise</returns>
-        bool Supports(IHasImages item, ImageType imageType);
+        bool Supports(IHasMetadata item, ImageType imageType);
 
         /// <summary>
         /// Gets the priority or order in which this enhancer should be run.
@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <returns>Cache key relating to the current state of this item and configuration</returns>
-        string GetConfigurationCacheKey(IHasImages item, ImageType imageType);
+        string GetConfigurationCacheKey(IHasMetadata item, ImageType imageType);
 
         /// <summary>
         /// Gets the size of the enhanced image.
@@ -37,7 +37,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="originalImageSize">Size of the original image.</param>
         /// <returns>ImageSize.</returns>
-        ImageSize GetEnhancedImageSize(IHasImages item, ImageType imageType, int imageIndex, ImageSize originalImageSize);
+        ImageSize GetEnhancedImageSize(IHasMetadata item, ImageType imageType, int imageIndex, ImageSize originalImageSize);
 
         /// <summary>
         /// Enhances the image async.
@@ -49,6 +49,6 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>Task{Image}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        Task EnhanceImageAsync(IHasImages item, string inputFile, string outputFile, ImageType imageType, int imageIndex);
+        Task EnhanceImageAsync(IHasMetadata item, string inputFile, string outputFile, ImageType imageType, int imageIndex);
     }
 }

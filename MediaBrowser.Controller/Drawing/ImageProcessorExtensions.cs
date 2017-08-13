@@ -5,12 +5,12 @@ namespace MediaBrowser.Controller.Drawing
 {
     public static class ImageProcessorExtensions
     {
-        public static string GetImageCacheTag(this IImageProcessor processor, IHasImages item, ImageType imageType)
+        public static string GetImageCacheTag(this IImageProcessor processor, IHasMetadata item, ImageType imageType)
         {
             return processor.GetImageCacheTag(item, imageType, 0);
         }
         
-        public static string GetImageCacheTag(this IImageProcessor processor, IHasImages item, ImageType imageType, int imageIndex)
+        public static string GetImageCacheTag(this IImageProcessor processor, IHasMetadata item, ImageType imageType, int imageIndex)
         {
             var imageInfo = item.GetImageInfo(imageType, imageIndex);
 

@@ -29,6 +29,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api.Library
 {
@@ -460,22 +461,22 @@ namespace MediaBrowser.Api.Library
                     EnableImages = false
                 }
 
-            }).ToArray();
+            });
 
             if (!string.IsNullOrWhiteSpace(request.ImdbId))
             {
-                movies = movies.Where(i => string.Equals(request.ImdbId, i.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+                movies = movies.Where(i => string.Equals(request.ImdbId, i.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase)).ToList();
             }
             else if (!string.IsNullOrWhiteSpace(request.TmdbId))
             {
-                movies = movies.Where(i => string.Equals(request.TmdbId, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+                movies = movies.Where(i => string.Equals(request.TmdbId, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase)).ToList();
             }
             else
             {
-                movies = new BaseItem[] { };
+                movies = new List<BaseItem>();
             }
 
-            if (movies.Length > 0)
+            if (movies.Count > 0)
             {
                 foreach (var item in movies)
                 {
@@ -732,7 +733,8 @@ namespace MediaBrowser.Api.Library
                 {
                     DeleteFileLocation = true
                 });
-            }).ToArray();
+
+            }).ToArray(ids.Length);
 
             Task.WaitAll(tasks);
         }
@@ -758,7 +760,7 @@ namespace MediaBrowser.Api.Library
         {
             var reviews = _itemRepo.GetCriticReviews(new Guid(request.Id));
 
-            var reviewsArray = reviews.ToArray();
+            var reviewsArray = reviews.ToArray(reviews.Count);
 
             var result = new QueryResult<ItemReview>
             {
@@ -833,7 +835,7 @@ namespace MediaBrowser.Api.Library
                 throw new ResourceNotFoundException("Item not found.");
             }
 
-            while (item.ThemeSongIds.Count == 0 && request.InheritFromParent && item.GetParent() != null)
+            while (item.ThemeSongIds.Length == 0 && request.InheritFromParent && item.GetParent() != null)
             {
                 item = item.GetParent();
             }
@@ -882,7 +884,7 @@ namespace MediaBrowser.Api.Library
                 throw new ResourceNotFoundException("Item not found.");
             }
 
-            while (item.ThemeVideoIds.Count == 0 && request.InheritFromParent && item.GetParent() != null)
+            while (item.ThemeVideoIds.Length == 0 && request.InheritFromParent && item.GetParent() != null)
             {
                 item = item.GetParent();
             }

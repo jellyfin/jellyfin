@@ -93,11 +93,6 @@
         ItemCounts,
 
         /// <summary>
-        /// The keywords
-        /// </summary>
-        Keywords,
-
-        /// <summary>
         /// The media source count
         /// </summary>
         MediaSourceCount,
@@ -157,11 +152,6 @@
         /// The screenshot image tags
         /// </summary>
         ScreenshotImageTags,
-
-        /// <summary>
-        /// The series genres
-        /// </summary>
-        SeriesGenres,
 
         SeriesPrimaryImage,
 
@@ -229,6 +219,7 @@
         SeriesPresentationUniqueKey,
         DateLastRefreshed,
         DateLastSaved,
-        RefreshState
+        RefreshState,
+        ChannelImage
     }
 }

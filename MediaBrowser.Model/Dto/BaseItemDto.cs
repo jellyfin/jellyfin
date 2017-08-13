@@ -163,7 +163,7 @@ namespace MediaBrowser.Model.Dto
 
         public string[] ProductionLocations { get; set; }
 
-        public List<string> MultiPartGameFiles { get; set; }
+        public string[] MultiPartGameFiles { get; set; }
 
         /// <summary>
         /// Gets or sets the path.
@@ -201,19 +201,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the taglines.
         /// </summary>
         /// <value>The taglines.</value>
-        public List<string> Taglines { get; set; }
+        public string[] Taglines { get; set; }
 
         /// <summary>
         /// Gets or sets the genres.
         /// </summary>
         /// <value>The genres.</value>
         public List<string> Genres { get; set; }
-
-        /// <summary>
-        /// Gets or sets the series genres.
-        /// </summary>
-        /// <value>The series genres.</value>
-        public List<string> SeriesGenres { get; set; }
 
         /// <summary>
         /// Gets or sets the community rating.
@@ -226,12 +220,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The cumulative run time ticks.</value>
         public long? CumulativeRunTimeTicks { get; set; }
-
-        /// <summary>
-        /// Gets or sets the original run time ticks.
-        /// </summary>
-        /// <value>The original run time ticks.</value>
-        public long? OriginalRunTimeTicks { get; set; }
 
         /// <summary>
         /// Gets or sets the run time ticks.
@@ -256,12 +244,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The production year.</value>
         public int? ProductionYear { get; set; }
-
-        /// <summary>
-        /// Gets or sets the players supported by a game.
-        /// </summary>
-        /// <value>The players.</value>
-        public int? Players { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is place holder.
@@ -298,7 +280,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the trailer urls.
         /// </summary>
         /// <value>The trailer urls.</value>
-        public List<MediaUrl> RemoteTrailers { get; set; }
+        public MediaUrl[] RemoteTrailers { get; set; }
 
         /// <summary>
         /// Gets or sets the provider ids.
@@ -360,7 +342,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the parent backdrop image tags.
         /// </summary>
         /// <value>The parent backdrop image tags.</value>
-        public List<string> ParentBackdropImageTags { get; set; }
+        public string[] ParentBackdropImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the local trailer count.
@@ -432,19 +414,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the air days.
         /// </summary>
         /// <value>The air days.</value>
-        public List<DayOfWeek> AirDays { get; set; }
+        public DayOfWeek[] AirDays { get; set; }
 
         /// <summary>
         /// Gets or sets the tags.
         /// </summary>
         /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
-
-        /// <summary>
-        /// Gets or sets the keywords.
-        /// </summary>
-        /// <value>The keywords.</value>
-        public List<string> Keywords { get; set; }
+        public string[] Tags { get; set; }
 
         /// <summary>
         /// Gets or sets the primary image aspect ratio, after image enhancements.
@@ -462,7 +438,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the artist items.
         /// </summary>
         /// <value>The artist items.</value>
-        public List<NameIdPair> ArtistItems { get; set; }
+        public NameIdPair[] ArtistItems { get; set; }
 
         /// <summary>
         /// Gets or sets the album.
@@ -509,7 +485,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the album artists.
         /// </summary>
         /// <value>The album artists.</value>
-        public List<NameIdPair> AlbumArtists { get; set; }
+        public NameIdPair[] AlbumArtists { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the season.
@@ -528,12 +504,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The type of the video.</value>
         public VideoType? VideoType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the display type of the media.
-        /// </summary>
-        /// <value>The display type of the media.</value>
-        public string DisplayMediaType { get; set; }
 
         /// <summary>
         /// Gets or sets the part count.
@@ -572,13 +542,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the backdrop image tags.
         /// </summary>
         /// <value>The backdrop image tags.</value>
-        public List<string> BackdropImageTags { get; set; }
+        public string[] BackdropImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the screenshot image tags.
         /// </summary>
         /// <value>The screenshot image tags.</value>
-        public List<string> ScreenshotImageTags { get; set; }
+        public string[] ScreenshotImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the parent logo image tag.
@@ -609,8 +579,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The series studio.</value>
         public string SeriesStudio { get; set; }
-
-        public StudioDto SeriesStudioInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the parent thumb item id.
@@ -676,7 +644,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the locked fields.
         /// </summary>
         /// <value>The locked fields.</value>
-        public List<MetadataFields> LockedFields { get; set; }
+        public MetadataFields[] LockedFields { get; set; }
 
         /// <summary>
         /// Gets or sets the trailer count.
@@ -752,66 +720,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The series timer identifier.</value>
         public string SeriesTimerId { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has art.
-        /// </summary>
-        /// <value><c>true</c> if this instance has art; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool HasArtImage
-        {
-            get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Art); }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has logo.
-        /// </summary>
-        /// <value><c>true</c> if this instance has logo; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool HasLogo
-        {
-            get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Logo); }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has thumb.
-        /// </summary>
-        /// <value><c>true</c> if this instance has thumb; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool HasThumb
-        {
-            get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Thumb); }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has thumb.
-        /// </summary>
-        /// <value><c>true</c> if this instance has thumb; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool HasBackdrop
-        {
-            get { return (BackdropImageTags != null && BackdropImageTags.Count > 0) || (ParentBackdropImageTags != null && ParentBackdropImageTags.Count > 0); }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has primary image.
-        /// </summary>
-        /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool HasPrimaryImage
-        {
-            get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Primary); }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is video.
-        /// </summary>
-        /// <value><c>true</c> if this instance is video; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool IsVideo
-        {
-            get { return StringHelper.EqualsIgnoreCase(MediaType, Entities.MediaType.Video); }
-        }
 
         /// <summary>
         /// Gets or sets the program identifier.

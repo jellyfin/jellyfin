@@ -81,7 +81,7 @@ namespace MediaBrowser.Model.Entities
                         attributes.Add("Default");
                     }
 
-                    return string.Join(" ", attributes.ToArray());
+                    return string.Join(" ", attributes.ToArray(attributes.Count));
                 }
 
                 if (Type == MediaStreamType.Subtitle)
@@ -107,7 +107,7 @@ namespace MediaBrowser.Model.Entities
                         attributes.Add("Forced");
                     }
 
-                    string name = string.Join(" ", attributes.ToArray());
+                    string name = string.Join(" ", attributes.ToArray(attributes.Count));
 
                     return name;
                 }

@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.TV
             var result = new MetadataResult<Episode>();
 
             // Allowing this will dramatically increase scan times
-            if (info.IsMissingEpisode || info.IsVirtualUnaired)
+            if (info.IsMissingEpisode)
             {
                 return result;
             }
@@ -134,7 +134,7 @@ namespace MediaBrowser.Providers.TV
                             if (video.site.Equals("youtube", System.StringComparison.OrdinalIgnoreCase))
                             {
                                 var videoUrl = string.Format("http://www.youtube.com/watch?v={0}", video.key);
-                                item.AddTrailerUrl(videoUrl, true);
+                                item.AddTrailerUrl(videoUrl);
                             }
                         }
                     }
