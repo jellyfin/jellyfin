@@ -61,6 +61,22 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         }
                         break;
                     }
+                case "airs_dayofweek":
+                {
+                    item.AirDays = TVUtils.GetAirDays(reader.ReadElementContentAsString());
+                    break;
+                }
+
+                case "airs_time":
+                {
+                    var val = reader.ReadElementContentAsString();
+
+                    if (!string.IsNullOrWhiteSpace(val))
+                    {
+                        item.AirTime = val;
+                    }
+                    break;
+                }
 
                 case "status":
                     {

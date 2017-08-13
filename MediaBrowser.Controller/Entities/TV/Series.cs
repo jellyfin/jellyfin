@@ -25,7 +25,11 @@ namespace MediaBrowser.Controller.Entities.TV
             RemoteTrailers = EmptyMediaUrlArray;
             LocalTrailerIds = EmptyGuidArray;
             RemoteTrailerIds = EmptyGuidArray;
+            AirDays = new DayOfWeek[] { };
         }
+
+        public DayOfWeek[] AirDays { get; set; }
+        public string AirTime { get; set; }
 
         [IgnoreDataMember]
         public override bool SupportsAddingToPlaylist
