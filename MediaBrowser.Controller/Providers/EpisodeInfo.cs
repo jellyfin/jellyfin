@@ -10,7 +10,6 @@ namespace MediaBrowser.Controller.Providers
         public int? IndexNumberEnd { get; set; }
 
         public bool IsMissingEpisode { get; set; }
-        public bool IsVirtualUnaired { get; set; }
 
         public EpisodeInfo()
         {

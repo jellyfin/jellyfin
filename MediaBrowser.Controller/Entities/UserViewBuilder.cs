@@ -779,7 +779,6 @@ namespace MediaBrowser.Controller.Entities
 
             items = FilterVirtualEpisodes(items,
                 query.IsMissing,
-                query.IsVirtualUnaired,
                 query.IsUnaired);
 
             if (collapseBoxSetItems && user != null)
@@ -1065,7 +1064,6 @@ namespace MediaBrowser.Controller.Entities
         private static IEnumerable<BaseItem> FilterVirtualEpisodes(
             IEnumerable<BaseItem> items,
             bool? isMissing,
-            bool? isVirtualUnaired,
             bool? isUnaired)
         {
             if (isMissing.HasValue)
@@ -1091,20 +1089,6 @@ namespace MediaBrowser.Controller.Entities
                     if (e != null)
                     {
                         return e.IsUnaired == val;
-                    }
-                    return true;
-                });
-            }
-
-            if (isVirtualUnaired.HasValue)
-            {
-                var val = isVirtualUnaired.Value;
-                items = items.Where(i =>
-                {
-                    var e = i as Episode;
-                    if (e != null)
-                    {
-                        return e.IsVirtualUnaired == val;
                     }
                     return true;
                 });

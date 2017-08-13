@@ -4275,12 +4275,13 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add("ProductionYear in (" + val + ")");
             }
 
-            if (query.IsVirtualItem.HasValue)
+            var isVirtualItem = query.IsVirtualItem ?? query.IsMissing;
+            if (isVirtualItem.HasValue)
             {
                 whereClauses.Add("IsVirtualItem=@IsVirtualItem");
                 if (statement != null)
                 {
-                    statement.TryBind("@IsVirtualItem", query.IsVirtualItem.Value);
+                    statement.TryBind("@IsVirtualItem", isVirtualItem.Value);
                 }
             }
             if (query.IsSpecialSeason.HasValue)
@@ -4303,28 +4304,6 @@ namespace Emby.Server.Implementations.Data
                 else
                 {
                     whereClauses.Add("PremiereDate < DATETIME('now')");
-                }
-            }
-            if (query.IsMissing.HasValue)
-            {
-                if (query.IsMissing.Value)
-                {
-                    whereClauses.Add("(IsVirtualItem=1 AND PremiereDate < DATETIME('now'))");
-                }
-                else
-                {
-                    whereClauses.Add("(IsVirtualItem=0 OR PremiereDate >= DATETIME('now'))");
-                }
-            }
-            if (query.IsVirtualUnaired.HasValue)
-            {
-                if (query.IsVirtualUnaired.Value)
-                {
-                    whereClauses.Add("(IsVirtualItem=1 AND PremiereDate >= DATETIME('now'))");
-                }
-                else
-                {
-                    whereClauses.Add("(IsVirtualItem=0 OR PremiereDate < DATETIME('now'))");
                 }
             }
             var queryMediaTypes = query.MediaTypes.Where(IsValidMediaType).ToArray();
