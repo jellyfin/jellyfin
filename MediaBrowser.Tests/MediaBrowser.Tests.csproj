@@ -68,10 +68,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Emby.Common.Implementations\Emby.Common.Implementations.csproj">
-      <Project>{1e37a338-9f57-4b70-bd6d-bb9c591e319b}</Project>
-      <Name>Emby.Common.Implementations</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj">
       <Project>{e383961b-9356-4d5d-8233-9a1079d03055}</Project>
       <Name>Emby.Server.Implementations</Name>

@@ -661,7 +661,7 @@ namespace Emby.Dlna.Didl
                 return;
             }
 
-            XmlAttribute secAttribute = null;
+            MediaBrowser.Model.Dlna.XmlAttribute secAttribute = null;
             foreach (var attribute in _profile.XmlRootAttributes)
             {
                 if (string.Equals(attribute.Name, "xmlns:sec", StringComparison.OrdinalIgnoreCase))

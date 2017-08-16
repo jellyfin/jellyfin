@@ -13,7 +13,7 @@ namespace MediaBrowser.ServerApplication.Networking
     /// <summary>
     /// Class NetUtils
     /// </summary>
-    public class NetworkManager : Emby.Common.Implementations.Networking.NetworkManager
+    public class NetworkManager : Emby.Server.Implementations.Networking.NetworkManager
     {
         public NetworkManager(ILogger logger)
             : base(logger)
