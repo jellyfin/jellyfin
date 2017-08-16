@@ -1,14 +1,12 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Entities;
-using System;
-using System.IO;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Server.Implementations.Devices
+namespace Emby.Server.Implementations.Devices
 {
     public class CameraUploadsFolder : BasePluginFolder, ISupportsUserSpecificView
     {
@@ -30,7 +28,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         [IgnoreDataMember]
         public override string CollectionType
         {
-            get { return Model.Entities.CollectionType.Photos; }
+            get { return MediaBrowser.Model.Entities.CollectionType.Photos; }
         }
 
         [IgnoreDataMember]

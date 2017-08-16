@@ -1254,7 +1254,7 @@ namespace Emby.Server.Implementations
         {
             switch (EnvironmentInfo.SystemArchitecture)
             {
-                case Architecture.X64:
+                case MediaBrowser.Model.System.Architecture.X64:
                     return new[]
                     {
                                 "https://embydata.com/downloads/ffmpeg/osx/ffmpeg-x64-20170308.7z"
@@ -1268,12 +1268,12 @@ namespace Emby.Server.Implementations
         {
             switch (EnvironmentInfo.SystemArchitecture)
             {
-                case Architecture.X64:
+                case MediaBrowser.Model.System.Architecture.X64:
                     return new[]
                     {
                                 "https://embydata.com/downloads/ffmpeg/windows/ffmpeg-20170308-win64.7z"
                     };
-                case Architecture.X86:
+                case MediaBrowser.Model.System.Architecture.X86:
                     return new[]
                     {
                                 "https://embydata.com/downloads/ffmpeg/windows/ffmpeg-20170308-win32.7z"
@@ -1287,12 +1287,12 @@ namespace Emby.Server.Implementations
         {
             switch (EnvironmentInfo.SystemArchitecture)
             {
-                case Architecture.X64:
+                case MediaBrowser.Model.System.Architecture.X64:
                     return new[]
                     {
                                 "https://embydata.com/downloads/ffmpeg/linux/ffmpeg-git-20170301-64bit-static.7z"
                     };
-                case Architecture.X86:
+                case MediaBrowser.Model.System.Architecture.X86:
                     return new[]
                     {
                                 "https://embydata.com/downloads/ffmpeg/linux/ffmpeg-git-20170301-32bit-static.7z"
