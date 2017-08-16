@@ -1795,9 +1795,6 @@ namespace Emby.Server.Implementations
             // Include composable parts in the Photos assembly 
             list.Add(GetAssembly(typeof(PhotoProvider)));
 
-            // Common implementations
-            list.Add(GetAssembly(typeof(TaskManager)));
-
             // Emby.Server implementations
             list.Add(GetAssembly(typeof(InstallationManager)));
 

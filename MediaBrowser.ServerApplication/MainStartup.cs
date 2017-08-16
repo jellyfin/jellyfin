@@ -73,7 +73,7 @@ namespace MediaBrowser.ServerApplication
 
             var appPaths = CreateApplicationPaths(ApplicationPath, IsRunningAsService);
 
-            var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
+            var logManager = new SimpleLogManager(appPaths.LogDirectoryPath, "server");
             logManager.ReloadLogger(LogSeverity.Debug);
             logManager.AddConsoleOutput();
 
