@@ -1670,7 +1670,6 @@ namespace Emby.Server.Implementations.Session
                 dtoOptions.Fields.Remove(ItemFields.DateLastMediaAdded);
                 dtoOptions.Fields.Remove(ItemFields.DateLastRefreshed);
                 dtoOptions.Fields.Remove(ItemFields.DateLastSaved);
-                dtoOptions.Fields.Remove(ItemFields.DisplayMediaType);
                 dtoOptions.Fields.Remove(ItemFields.DisplayPreferencesId);
                 dtoOptions.Fields.Remove(ItemFields.Etag);
                 dtoOptions.Fields.Remove(ItemFields.ExternalEtag);

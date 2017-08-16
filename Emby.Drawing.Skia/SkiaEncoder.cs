@@ -74,8 +74,9 @@ namespace Emby.Drawing.Skia
             return typeof(SKBitmap).GetTypeInfo().Assembly.GetName().Version.ToString();
         }
 
-        private static bool IsWhiteSpace(SKColor color)
+        private static bool IsTransparent(SKColor color)
         {
+            
             return (color.Red == 255 && color.Green == 255 && color.Blue == 255) || color.Alpha == 0;
         }
 
@@ -96,11 +97,11 @@ namespace Emby.Drawing.Skia
             }
         }
 
-        private static bool IsAllWhiteRow(SKBitmap bmp, int row)
+        private static bool IsTransparentRow(SKBitmap bmp, int row)
         {
             for (var i = 0; i < bmp.Width; ++i)
             {
-                if (!IsWhiteSpace(bmp.GetPixel(i, row)))
+                if (!IsTransparent(bmp.GetPixel(i, row)))
                 {
                     return false;
                 }
@@ -108,11 +109,11 @@ namespace Emby.Drawing.Skia
             return true;
         }
 
-        private static bool IsAllWhiteColumn(SKBitmap bmp, int col)
+        private static bool IsTransparentColumn(SKBitmap bmp, int col)
         {
             for (var i = 0; i < bmp.Height; ++i)
             {
-                if (!IsWhiteSpace(bmp.GetPixel(col, i)))
+                if (!IsTransparent(bmp.GetPixel(col, i)))
                 {
                     return false;
                 }
@@ -125,7 +126,7 @@ namespace Emby.Drawing.Skia
             var topmost = 0;
             for (int row = 0; row < bitmap.Height; ++row)
             {
-                if (IsAllWhiteRow(bitmap, row))
+                if (IsTransparentRow(bitmap, row))
                     topmost = row + 1;
                 else break;
             }
@@ -133,7 +134,7 @@ namespace Emby.Drawing.Skia
             int bottommost = bitmap.Height;
             for (int row = bitmap.Height - 1; row >= 0; --row)
             {
-                if (IsAllWhiteRow(bitmap, row))
+                if (IsTransparentRow(bitmap, row))
                     bottommost = row;
                 else break;
             }
@@ -141,7 +142,7 @@ namespace Emby.Drawing.Skia
             int leftmost = 0, rightmost = bitmap.Width;
             for (int col = 0; col < bitmap.Width; ++col)
             {
-                if (IsAllWhiteColumn(bitmap, col))
+                if (IsTransparentColumn(bitmap, col))
                     leftmost = col + 1;
                 else
                     break;
@@ -149,7 +150,7 @@ namespace Emby.Drawing.Skia
 
             for (int col = bitmap.Width - 1; col >= 0; --col)
             {
-                if (IsAllWhiteColumn(bitmap, col))
+                if (IsTransparentColumn(bitmap, col))
                     rightmost = col;
                 else
                     break;

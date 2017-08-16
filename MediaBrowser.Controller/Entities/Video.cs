@@ -53,12 +53,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        /// <summary>
-        /// Gets or sets the display type of the media.
-        /// </summary>
-        /// <value>The display type of the media.</value>
-        public string DisplayMediaType { get; set; }
-
         [IgnoreDataMember]
         public override bool SupportsPositionTicksResume
         {
