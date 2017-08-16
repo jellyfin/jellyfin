@@ -199,10 +199,6 @@
       <Project>{713f42b5-878e-499d-a878-e4c652b1d5e8}</Project>
       <Name>DvdLib</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Emby.Common.Implementations\Emby.Common.Implementations.csproj">
-      <Project>{1e37a338-9f57-4b70-bd6d-bb9c591e319b}</Project>
-      <Name>Emby.Common.Implementations</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj">
       <Project>{805844ab-e92f-45e6-9d99-4f6d48d129a5}</Project>
       <Name>Emby.Dlna</Name>
