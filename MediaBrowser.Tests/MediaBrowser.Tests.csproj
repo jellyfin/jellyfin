@@ -88,10 +88,6 @@
       <Project>{442B5058-DCAF-4263-BB6A-F21E31120A1B}</Project>
       <Name>MediaBrowser.Providers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
-      <Project>{2E781478-814D-4A48-9D80-BFF206441A65}</Project>
-      <Name>MediaBrowser.Server.Implementations</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj">
       <Project>{23499896-b135-4527-8574-c26e926ea99e}</Project>
       <Name>MediaBrowser.XbmcMetadata</Name>

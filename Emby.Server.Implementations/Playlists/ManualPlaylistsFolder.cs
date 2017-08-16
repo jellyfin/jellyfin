@@ -1,15 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Playlists;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Server.Implementations.Playlists
+namespace Emby.Server.Implementations.Playlists
 {
     public class PlaylistsFolder : BasePluginFolder
     {

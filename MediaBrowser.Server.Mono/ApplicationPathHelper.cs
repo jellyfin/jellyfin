@@ -2,7 +2,7 @@
 using System.Configuration;
 using System.IO;
 
-namespace Emby.Server.Implementations
+namespace MediaBrowser.Server.Mono
 {
     public static class ApplicationPathHelper
     {
