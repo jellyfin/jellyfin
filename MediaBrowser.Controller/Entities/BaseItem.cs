@@ -1246,6 +1246,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the provider ids.
         /// </summary>
         /// <value>The provider ids.</value>
+        [IgnoreDataMember]
         public Dictionary<string, string> ProviderIds { get; set; }
 
         [IgnoreDataMember]
