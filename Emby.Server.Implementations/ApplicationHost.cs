@@ -356,8 +356,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         public override async Task RunStartupTasks()
         {
-            await PerformPreInitMigrations().ConfigureAwait(false);
-
             await base.RunStartupTasks().ConfigureAwait(false);
 
             await MediaEncoder.Init().ConfigureAwait(false);
@@ -375,7 +373,6 @@ namespace Emby.Server.Implementations
             Logger.Info("Core startup complete");
             HttpServer.GlobalResponse = null;
 
-            PerformPostInitMigrations();
             Logger.Info("Post-init migrations complete");
 
             foreach (var entryPoint in GetExports<IServerEntryPoint>().ToList())
@@ -410,45 +407,7 @@ namespace Emby.Server.Implementations
                 // Failing under mono
             }
 
-            var result = new JsonSerializer(FileSystemManager, LogManager.GetLogger("JsonSerializer"));
-
-            ServiceStack.Text.JsConfig<LiveTvProgram>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<LiveTvChannel>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<LiveTvVideoRecording>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<LiveTvAudioRecording>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Series>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Audio>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<MusicAlbum>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<MusicArtist>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<MusicGenre>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<MusicVideo>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Playlist>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<AudioPodcast>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<AudioBook>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Trailer>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<BoxSet>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Episode>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Season>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Book>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<CollectionFolder>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Folder>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Game>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<GameGenre>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<GameSystem>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Genre>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Person>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Photo>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<PhotoAlbum>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Studio>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<UserRootFolder>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<UserView>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Video>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Year>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<Channel>.ExcludePropertyNames = new[] { "ProviderIds" };
-            ServiceStack.Text.JsConfig<AggregateFolder>.ExcludePropertyNames = new[] { "ProviderIds" };
-
-            return result;
+            return new JsonSerializer(FileSystemManager, LogManager.GetLogger("JsonSerializer"));
         }
 
         public override Task Init(IProgress<double> progress)
@@ -464,44 +423,6 @@ namespace Emby.Server.Implementations
             }
 
             return base.Init(progress);
-        }
-
-        private async Task PerformPreInitMigrations()
-        {
-            var migrations = new List<IVersionMigration>
-            {
-            };
-
-            foreach (var task in migrations)
-            {
-                try
-                {
-                    await task.Run().ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error running migration", ex);
-                }
-            }
-        }
-
-        private void PerformPostInitMigrations()
-        {
-            var migrations = new List<IVersionMigration>
-            {
-            };
-
-            foreach (var task in migrations)
-            {
-                try
-                {
-                    task.Run();
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error running migration", ex);
-                }
-            }
         }
 
         protected abstract IConnectManager CreateConnectManager();

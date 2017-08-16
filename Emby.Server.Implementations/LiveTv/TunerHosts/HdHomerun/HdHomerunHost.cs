@@ -68,7 +68,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var id = ChannelIdPrefix + i.GuideNumber;
 
-            id += '_' + (i.GuideName ?? string.Empty).GetMD5().ToString("N");
+            if (!info.EnableNewHdhrChannelIds)
+            {
+                id += '_' + (i.GuideName ?? string.Empty).GetMD5().ToString("N");
+            }
 
             return id;
         }

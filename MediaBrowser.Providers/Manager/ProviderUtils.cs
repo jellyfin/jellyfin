@@ -202,23 +202,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            //if (!lockedFields.Contains(MetadataFields.DisplayMediaType))
-            {
-                var targetVideo = target as Video;
-                var sourceVideo = source as Video;
-                if (sourceVideo != null && targetVideo != null)
-                {
-                    if (replaceData || string.IsNullOrEmpty(targetVideo.DisplayMediaType))
-                    {
-                        // Safeguard against incoming data having an emtpy name
-                        if (!string.IsNullOrWhiteSpace(sourceVideo.DisplayMediaType))
-                        {
-                            targetVideo.DisplayMediaType = sourceVideo.DisplayMediaType;
-                        }
-                    }
-                }
-            }
-
             if (mergeMetadataSettings)
             {
                 MergeMetadataSettings(source, target);
