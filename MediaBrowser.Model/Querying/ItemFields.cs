@@ -63,11 +63,6 @@
         DisplayPreferencesId,
 
         /// <summary>
-        /// The display media type
-        /// </summary>
-        DisplayMediaType,
-
-        /// <summary>
         /// The etag
         /// </summary>
         Etag,
