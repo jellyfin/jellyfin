@@ -66,8 +66,10 @@ namespace Emby.Server.Implementations.HttpClientManager
             // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
             ServicePointManager.Expect100Continue = false;
 
-            // Trakt requests sometimes fail without this
+#if NET46
+// Trakt requests sometimes fail without this
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls;
+#endif
         }
 
         /// <summary>
@@ -428,7 +430,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                 try
                 {
                     var bytes = options.RequestContentBytes ??
-                        Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
+                                Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
 
                     httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
 
@@ -727,7 +729,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             }
 
             var webException = ex as WebException
-                ?? ex.InnerException as WebException;
+                               ?? ex.InnerException as WebException;
 
             if (webException != null)
             {
@@ -762,7 +764,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             }
 
             var operationCanceledException = ex as OperationCanceledException
-                ?? ex.InnerException as OperationCanceledException;
+                                             ?? ex.InnerException as OperationCanceledException;
 
             if (operationCanceledException != null)
             {

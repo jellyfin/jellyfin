@@ -236,18 +236,16 @@ namespace MediaBrowser.ServerApplication
 
             var resourcesPath = Path.GetDirectoryName(applicationPath);
 
-            Action<string> createDirectoryFn = s => Directory.CreateDirectory(s);
-
             if (runAsService)
             {
                 var systemPath = Path.GetDirectoryName(applicationPath);
 
                 var programDataPath = Path.GetDirectoryName(systemPath);
 
-                return new ServerApplicationPaths(programDataPath, appFolderPath, resourcesPath, createDirectoryFn);
+                return new ServerApplicationPaths(programDataPath, appFolderPath, resourcesPath);
             }
 
-            return new ServerApplicationPaths(ApplicationPathHelper.GetProgramDataPath(applicationPath), appFolderPath, resourcesPath, createDirectoryFn);
+            return new ServerApplicationPaths(ApplicationPathHelper.GetProgramDataPath(applicationPath), appFolderPath, resourcesPath);
         }
 
         /// <summary>
@@ -316,10 +314,7 @@ namespace MediaBrowser.ServerApplication
                 environmentInfo,
                 new NullImageEncoder(),
                 new SystemEvents(logManager.GetLogger("SystemEvents")),
-                new MemoryStreamProvider(),
-                new Networking.NetworkManager(logManager.GetLogger("NetworkManager")),
-                GenerateCertificate,
-                () => Environment.UserDomainName);
+                new Networking.NetworkManager(logManager.GetLogger("NetworkManager")));
 
             var initProgress = new Progress<double>();
 
@@ -364,11 +359,6 @@ namespace MediaBrowser.ServerApplication
 
                 ShowTrayIcon();
             }
-        }
-
-        private static void GenerateCertificate(string certPath, string certHost, string certPassword)
-        {
-            CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, certPassword, _logger);
         }
 
         private static ServerNotifyIcon _serverNotifyIcon;
