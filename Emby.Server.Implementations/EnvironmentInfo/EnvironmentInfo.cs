@@ -6,16 +6,16 @@ namespace Emby.Server.Implementations.EnvironmentInfo
 {
     public class EnvironmentInfo : IEnvironmentInfo
     {
-        public Architecture? CustomArchitecture { get; set; }
-        public MediaBrowser.Model.System.OperatingSystem? CustomOperatingSystem { get; set; }
+        private Architecture? _customArchitecture;
+        private MediaBrowser.Model.System.OperatingSystem? _customOperatingSystem;
 
         public virtual MediaBrowser.Model.System.OperatingSystem OperatingSystem
         {
             get
             {
-                if (CustomOperatingSystem.HasValue)
+                if (_customOperatingSystem.HasValue)
                 {
-                    return CustomOperatingSystem.Value;
+                    return _customOperatingSystem.Value;
                 }
 
                 switch (Environment.OSVersion.Platform)
@@ -29,6 +29,10 @@ namespace Emby.Server.Implementations.EnvironmentInfo
                 }
 
                 return MediaBrowser.Model.System.OperatingSystem.Windows;
+            }
+            set
+            {
+                _customOperatingSystem = value;
             }
         }
 
@@ -60,12 +64,16 @@ namespace Emby.Server.Implementations.EnvironmentInfo
         {
             get
             {
-                if (CustomArchitecture.HasValue)
+                if (_customArchitecture.HasValue)
                 {
-                    return CustomArchitecture.Value;
+                    return _customArchitecture.Value;
                 }
 
                 return Environment.Is64BitOperatingSystem ? MediaBrowser.Model.System.Architecture.X64 : MediaBrowser.Model.System.Architecture.X86;
+            }
+            set
+            {
+                _customArchitecture = value;
             }
         }
 

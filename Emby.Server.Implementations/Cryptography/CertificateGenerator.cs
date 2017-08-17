@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Security.Cryptography;
+using System.Xml;
 
 namespace Emby.Server.Core.Cryptography
 {
@@ -27,7 +28,11 @@ namespace Emby.Server.Core.Cryptography
             DateTime notAfter = DateTime.Now.AddYears(10);
 
             RSA issuerKey = RSA.Create();
+#if NET46
             issuerKey.FromXmlString(MonoTestRootAgency);
+#else
+            RSACryptoServiceProviderExtensions.FromXmlString(issuerKey, MonoTestRootAgency);
+#endif
             RSA subjectKey = RSA.Create();
 
             // serial number MUST be positive
@@ -44,7 +49,7 @@ namespace Emby.Server.Core.Cryptography
             cb.NotAfter = notAfter;
             cb.SubjectName = subject;
             cb.SubjectPublicKey = subjectKey;
-            
+
             // signature
             cb.Hash = "SHA256";
             byte[] rawcert = cb.Sign(issuerKey);
@@ -64,6 +69,41 @@ namespace Emby.Server.Core.Cryptography
 
             p12.AddPkcs8ShroudedKeyBag(subjectKey, attributes);
             p12.SaveToFile(fileName);
+        }
+    }
+
+    public static class RSACryptoServiceProviderExtensions
+    {
+        public static void FromXmlString(RSA rsa, string xmlString)
+        {
+            RSAParameters parameters = new RSAParameters();
+
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(xmlString);
+
+            if (xmlDoc.DocumentElement.Name.Equals("RSAKeyValue"))
+            {
+                foreach (XmlNode node in xmlDoc.DocumentElement.ChildNodes)
+                {
+                    switch (node.Name)
+                    {
+                        case "Modulus": parameters.Modulus = Convert.FromBase64String(node.InnerText); break;
+                        case "Exponent": parameters.Exponent = Convert.FromBase64String(node.InnerText); break;
+                        case "P": parameters.P = Convert.FromBase64String(node.InnerText); break;
+                        case "Q": parameters.Q = Convert.FromBase64String(node.InnerText); break;
+                        case "DP": parameters.DP = Convert.FromBase64String(node.InnerText); break;
+                        case "DQ": parameters.DQ = Convert.FromBase64String(node.InnerText); break;
+                        case "InverseQ": parameters.InverseQ = Convert.FromBase64String(node.InnerText); break;
+                        case "D": parameters.D = Convert.FromBase64String(node.InnerText); break;
+                    }
+                }
+            }
+            else
+            {
+                throw new Exception("Invalid XML RSA key.");
+            }
+
+            rsa.ImportParameters(parameters);
         }
     }
 }

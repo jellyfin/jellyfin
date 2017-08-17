@@ -69,8 +69,8 @@ namespace Emby.Server.Implementations.Net
             if (remotePort < 0) throw new ArgumentException("remotePort cannot be less than zero.", "remotePort");
 
             var addressFamily = remoteAddress.AddressFamily == IpAddressFamily.InterNetwork
-               ? AddressFamily.InterNetwork
-               : AddressFamily.InterNetworkV6;
+                ? AddressFamily.InterNetwork
+                : AddressFamily.InterNetworkV6;
 
             var retVal = new Socket(addressFamily, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
 
@@ -82,7 +82,7 @@ namespace Emby.Server.Implementations.Net
             {
                 // This is not supported on all operating systems (qnap)
             }
-            
+
             try
             {
                 return new UdpSocket(retVal, new IpEndPointInfo(remoteAddress, remotePort));
@@ -139,11 +139,11 @@ namespace Emby.Server.Implementations.Net
                 throw;
             }
         }
-        
+
         /// <summary>
-              /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
-              /// </summary>
-              /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
+        /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
+        /// </summary>
+        /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
         public ISocket CreateSsdpUdpSocket(IpAddressInfo localIpAddress, int localPort)
         {
             if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");
@@ -186,7 +186,16 @@ namespace Emby.Server.Implementations.Net
 
             try
             {
+                // not supported on all platforms. throws on ubuntu with .net core 2.0
                 retVal.ExclusiveAddressUse = false;
+            }
+            catch (SocketException)
+            {
+
+            }
+
+            try
+            {
                 //retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);

@@ -111,6 +111,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Core.Cryptography;
 using Emby.Server.Implementations.Archiving;
 using Emby.Server.Implementations.Cryptography;
 using Emby.Server.Implementations.Diagnostics;
@@ -368,8 +369,6 @@ namespace Emby.Server.Implementations
         internal IPowerManagement PowerManagement { get; private set; }
         internal IImageEncoder ImageEncoder { get; private set; }
 
-        private readonly Action<string, string, string> _certificateGenerator;
-        private readonly Func<string> _defaultUserNameFactory;
         protected IProcessFactory ProcessFactory { get; private set; }
         protected ITimerFactory TimerFactory { get; private set; }
         protected ICryptoProvider CryptographyProvider = new CryptographyProvider();
@@ -394,10 +393,7 @@ namespace Emby.Server.Implementations
             IEnvironmentInfo environmentInfo,
             IImageEncoder imageEncoder,
             ISystemEvents systemEvents,
-            IMemoryStreamFactory memoryStreamFactory,
-            INetworkManager networkManager,
-            Action<string, string, string> certificateGenerator,
-            Func<string> defaultUsernameFactory)
+            INetworkManager networkManager)
         {
             // hack alert, until common can target .net core
             BaseExtensions.CryptographyProvider = CryptographyProvider;
@@ -407,7 +403,7 @@ namespace Emby.Server.Implementations
             NetworkManager = networkManager;
             EnvironmentInfo = environmentInfo;
             SystemEvents = systemEvents;
-            MemoryStreamFactory = memoryStreamFactory;
+            MemoryStreamFactory = new MemoryStreamProvider();
 
             FailedAssemblies = new List<string>();
 
@@ -421,9 +417,7 @@ namespace Emby.Server.Implementations
             Logger = LogManager.GetLogger("App");
 
             StartupOptions = options;
-            _certificateGenerator = certificateGenerator;
             _releaseAssetFilename = releaseAssetFilename;
-            _defaultUserNameFactory = defaultUsernameFactory;
             PowerManagement = powerManagement;
 
             ImageEncoder = imageEncoder;
@@ -917,7 +911,7 @@ namespace Emby.Server.Implementations
             AuthenticationRepository = GetAuthenticationRepository();
             RegisterSingleInstance(AuthenticationRepository);
 
-            UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this, JsonSerializer, FileSystemManager, CryptographyProvider, _defaultUserNameFactory());
+            UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this, JsonSerializer, FileSystemManager, CryptographyProvider);
             RegisterSingleInstance(UserManager);
 
             LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager);
@@ -1257,7 +1251,7 @@ namespace Emby.Server.Implementations
                 case MediaBrowser.Model.System.Architecture.X64:
                     return new[]
                     {
-                                "https://embydata.com/downloads/ffmpeg/osx/ffmpeg-x64-20170308.7z"
+                        "https://embydata.com/downloads/ffmpeg/osx/ffmpeg-x64-20170308.7z"
                     };
             }
 
@@ -1271,12 +1265,12 @@ namespace Emby.Server.Implementations
                 case MediaBrowser.Model.System.Architecture.X64:
                     return new[]
                     {
-                                "https://embydata.com/downloads/ffmpeg/windows/ffmpeg-20170308-win64.7z"
+                        "https://embydata.com/downloads/ffmpeg/windows/ffmpeg-20170308-win64.7z"
                     };
                 case MediaBrowser.Model.System.Architecture.X86:
                     return new[]
                     {
-                                "https://embydata.com/downloads/ffmpeg/windows/ffmpeg-20170308-win32.7z"
+                        "https://embydata.com/downloads/ffmpeg/windows/ffmpeg-20170308-win32.7z"
                     };
             }
 
@@ -1290,12 +1284,12 @@ namespace Emby.Server.Implementations
                 case MediaBrowser.Model.System.Architecture.X64:
                     return new[]
                     {
-                                "https://embydata.com/downloads/ffmpeg/linux/ffmpeg-git-20170301-64bit-static.7z"
+                        "https://embydata.com/downloads/ffmpeg/linux/ffmpeg-git-20170301-64bit-static.7z"
                     };
                 case MediaBrowser.Model.System.Architecture.X86:
                     return new[]
                     {
-                                "https://embydata.com/downloads/ffmpeg/linux/ffmpeg-git-20170301-32bit-static.7z"
+                        "https://embydata.com/downloads/ffmpeg/linux/ffmpeg-git-20170301-32bit-static.7z"
                     };
             }
 
@@ -1442,17 +1436,17 @@ namespace Emby.Server.Implementations
             StartServer();
 
             LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(),
-                                    GetExports<IVirtualFolderCreator>(),
-                                    GetExports<IItemResolver>(),
-                                    GetExports<IIntroProvider>(),
-                                    GetExports<IBaseItemComparer>(),
-                                    GetExports<ILibraryPostScanTask>());
+                GetExports<IVirtualFolderCreator>(),
+                GetExports<IItemResolver>(),
+                GetExports<IIntroProvider>(),
+                GetExports<IBaseItemComparer>(),
+                GetExports<ILibraryPostScanTask>());
 
             ProviderManager.AddParts(GetExports<IImageProvider>(),
-                                     GetExports<IMetadataService>(),
-                                     GetExports<IMetadataProvider>(),
-                                     GetExports<IMetadataSaver>(),
-                                     GetExports<IExternalId>());
+                GetExports<IMetadataService>(),
+                GetExports<IMetadataProvider>(),
+                GetExports<IMetadataSaver>(),
+                GetExports<IExternalId>());
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
 
@@ -1652,7 +1646,7 @@ namespace Emby.Server.Implementations
 
                     try
                     {
-                        _certificateGenerator(certPath, certHost, password);
+                        CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, password, Logger);
                     }
                     catch (Exception ex)
                     {
@@ -2158,7 +2152,7 @@ namespace Emby.Server.Implementations
             list.Remove(plugin);
             Plugins = list.ToArray();
         }
-        
+
         /// <summary>
         /// Checks for update.
         /// </summary>
@@ -2176,7 +2170,7 @@ namespace Emby.Server.Implementations
             }
 
             var result = await new GithubUpdater(HttpClient, JsonSerializer).CheckForUpdateResult("MediaBrowser", "Emby", ApplicationVersion, updateLevel, _releaseAssetFilename,
-                    "MBServer", "Mbserver.zip", cacheLength, cancellationToken).ConfigureAwait(false);
+                "MBServer", "Mbserver.zip", cacheLength, cancellationToken).ConfigureAwait(false);
 
             HasUpdateAvailable = result.IsUpdateAvailable;
 
@@ -2314,12 +2308,18 @@ namespace Emby.Server.Implementations
             NotifyPendingRestart();
         }
 
+        private bool _disposed;
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
         {
-            Dispose(true);
+            if (!_disposed)
+            {
+                _disposed = true;
+
+                Dispose(true);
+            }
         }
 
         /// <summary>
