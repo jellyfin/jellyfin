@@ -122,7 +122,7 @@ namespace Emby.Server.Implementations.Logging
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            _fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
+            _fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, 32768);
             _cancellationTokenSource = new CancellationTokenSource();
 
             Task.Factory.StartNew(LogInternal, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);

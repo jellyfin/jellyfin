@@ -424,11 +424,6 @@ namespace Emby.Server.Implementations
 
             SetBaseExceptionMessage();
 
-            if (environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
-            {
-                fileSystem.AddShortcutHandler(new LnkShortcutHandler());
-            }
-
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
         }
 
