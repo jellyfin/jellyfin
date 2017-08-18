@@ -158,7 +158,7 @@ namespace Emby.Dlna.Main
             {
                 if (_communicationsServer == null)
                 {
-                    var enableMultiSocketBinding = _environmentInfo.OperatingSystem == OperatingSystem.Windows;
+                    var enableMultiSocketBinding = _environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows;
 
                     _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger, enableMultiSocketBinding)
                     {
