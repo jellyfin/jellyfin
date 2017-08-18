@@ -18,8 +18,6 @@ namespace MediaBrowser.Controller.LiveTv
 
         string Container { get; }
 
-        long? RunTimeTicks { get; set; }
-
         string GetClientTypeName();
 
         bool IsParentalAllowed(User user);
@@ -36,8 +34,6 @@ namespace MediaBrowser.Controller.LiveTv
         string TimerId { get; set; }
         RecordingStatus Status { get; set; }
         DateTime? EndDate { get; set; }
-        DateTime DateLastSaved { get; set; }
         DateTime DateCreated { get; set; }
-        DateTime DateModified { get; set; }
     }
 }

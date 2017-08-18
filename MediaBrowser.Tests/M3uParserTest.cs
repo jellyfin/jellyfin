@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Emby.Common.Implementations.Cryptography;
+using Emby.Server.Implementations.Cryptography;
 using Emby.Server.Implementations.LiveTv.TunerHosts;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Logging;

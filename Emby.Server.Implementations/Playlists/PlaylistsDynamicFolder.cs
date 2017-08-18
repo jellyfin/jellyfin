@@ -2,7 +2,6 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Server.Implementations.Playlists;
 
 namespace Emby.Server.Implementations.Playlists
 {

@@ -32,12 +32,6 @@ namespace MediaBrowser.Model.Logging
         void ReloadLogger(LogSeverity severity);
 
         /// <summary>
-        /// Gets the log file path.
-        /// </summary>
-        /// <value>The log file path.</value>
-        string LogFilePath { get; }
-
-        /// <summary>
         /// Occurs when [logger loaded].
         /// </summary>
         event EventHandler LoggerLoaded;

@@ -80,7 +80,7 @@ namespace MediaBrowser.Api.LiveTv
             var eofCount = 0;
 
             // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
-            var allowAsyncFileRead = _environment.OperatingSystem != OperatingSystem.Windows;
+            var allowAsyncFileRead = _environment.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows;
 
             using (var inputStream = GetInputStream(allowAsyncFileRead))
             {

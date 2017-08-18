@@ -71,9 +71,8 @@ namespace Emby.Server.Implementations.Library
         private readonly IServerApplicationHost _appHost;
         private readonly IFileSystem _fileSystem;
         private readonly ICryptoProvider _cryptographyProvider;
-        private readonly string _defaultUserName;
 
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ICryptoProvider cryptographyProvider, string defaultUserName)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ICryptoProvider cryptographyProvider)
         {
             _logger = logger;
             UserRepository = userRepository;
@@ -86,7 +85,6 @@ namespace Emby.Server.Implementations.Library
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
             _cryptographyProvider = cryptographyProvider;
-            _defaultUserName = defaultUserName;
             ConfigurationManager = configurationManager;
             Users = new List<User>();
 
@@ -381,7 +379,7 @@ namespace Emby.Server.Implementations.Library
             // There always has to be at least one user.
             if (users.Count == 0)
             {
-                var name = MakeValidUsername(_defaultUserName);
+                var name = MakeValidUsername(Environment.UserName);
 
                 var user = InstantiateNewUser(name);
 

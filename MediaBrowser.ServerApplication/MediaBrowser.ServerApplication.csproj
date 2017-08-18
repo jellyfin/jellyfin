@@ -73,9 +73,6 @@
     <Reference Include="Emby.Server.Sync">
       <HintPath>..\ThirdParty\emby\Emby.Server.Sync.dll</HintPath>
     </Reference>
-    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.4.12\lib\net45\NLog.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Text, Version=4.5.8.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ServiceStack.Text.4.5.8\lib\net45\ServiceStack.Text.dll</HintPath>
       <Private>True</Private>
@@ -116,6 +113,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="ApplicationPathHelper.cs" />
     <Compile Include="BackgroundService.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -199,17 +197,9 @@
       <Project>{713f42b5-878e-499d-a878-e4c652b1d5e8}</Project>
       <Name>DvdLib</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Emby.Common.Implementations\Emby.Common.Implementations.csproj">
-      <Project>{1e37a338-9f57-4b70-bd6d-bb9c591e319b}</Project>
-      <Name>Emby.Common.Implementations</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj">
       <Project>{805844ab-e92f-45e6-9d99-4f6d48d129a5}</Project>
       <Name>Emby.Dlna</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Emby.Drawing.ImageMagick\Emby.Drawing.ImageMagick.csproj">
-      <Project>{6cfee013-6e7c-432b-ac37-cabf0880c69a}</Project>
-      <Name>Emby.Drawing.ImageMagick</Name>
     </ProjectReference>
     <ProjectReference Include="..\Emby.Drawing.Skia\Emby.Drawing.Skia.csproj">
       <Project>{2312da6d-ff86-4597-9777-bceec32d96dd}</Project>
@@ -250,10 +240,6 @@
     <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
       <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
       <Name>MediaBrowser.Providers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
-      <Project>{2e781478-814d-4a48-9d80-bff206441a65}</Project>
-      <Name>MediaBrowser.Server.Implementations</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj">
       <Project>{5624b7b5-b5a7-41d8-9f10-cc5611109619}</Project>
