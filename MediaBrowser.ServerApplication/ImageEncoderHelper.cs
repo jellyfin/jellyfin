@@ -1,6 +1,5 @@
 ﻿using System;
 using Emby.Drawing;
-using Emby.Drawing.ImageMagick;
 using Emby.Drawing.Skia;
 using Emby.Server.Core;
 using Emby.Server.Implementations;

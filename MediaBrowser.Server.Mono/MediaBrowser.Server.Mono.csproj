@@ -51,9 +51,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
     </Reference>
-    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.4.12\lib\net45\NLog.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Text, Version=4.5.8.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ServiceStack.Text.4.5.8\lib\net45\ServiceStack.Text.dll</HintPath>
       <Private>True</Private>
@@ -89,6 +86,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="ApplicationPathHelper.cs" />
     <Compile Include="ImageEncoderHelper.cs" />
     <Compile Include="MonoAppHost.cs" />
     <Compile Include="Native\MonoFileSystem.cs" />
@@ -105,10 +103,6 @@
     <ProjectReference Include="..\DvdLib\DvdLib.csproj">
       <Project>{713f42b5-878e-499d-a878-e4c652b1d5e8}</Project>
       <Name>DvdLib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Emby.Common.Implementations\Emby.Common.Implementations.csproj">
-      <Project>{1e37a338-9f57-4b70-bd6d-bb9c591e319b}</Project>
-      <Name>Emby.Common.Implementations</Name>
     </ProjectReference>
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj">
       <Project>{805844ab-e92f-45e6-9d99-4f6d48d129a5}</Project>
@@ -137,10 +131,6 @@
     <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj">
       <Project>{5624B7B5-B5A7-41D8-9F10-CC5611109619}</Project>
       <Name>MediaBrowser.WebDashboard</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
-      <Project>{2E781478-814D-4A48-9D80-BFF206441A65}</Project>
-      <Name>MediaBrowser.Server.Implementations</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
       <Project>{442B5058-DCAF-4263-BB6A-F21E31120A1B}</Project>

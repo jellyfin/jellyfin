@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.IO
             RestartTimer();
         }
 
-        private async void OnTimerCallback(object state)
+        private void OnTimerCallback(object state)
         {
             List<string> paths;
 
@@ -137,7 +137,7 @@ namespace Emby.Server.Implementations.IO
 
             try
             {
-                await ProcessPathChanges(paths.ToList()).ConfigureAwait(false);
+                ProcessPathChanges(paths.ToList());
             }
             catch (Exception ex)
             {
@@ -145,7 +145,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        private async Task ProcessPathChanges(List<string> paths)
+        private void ProcessPathChanges(List<string> paths)
         {
             var itemsToRefresh = paths
                 .Distinct(StringComparer.OrdinalIgnoreCase)
