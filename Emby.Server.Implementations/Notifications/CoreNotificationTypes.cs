@@ -28,21 +28,21 @@ namespace Emby.Server.Implementations.Notifications
                      Type = NotificationType.ApplicationUpdateInstalled.ToString(),
                      DefaultDescription = "{ReleaseNotes}",
                      DefaultTitle = "A new version of Emby Server has been installed.",
-                     Variables = new List<string>{"Version"}
+                     Variables = new string[]{"Version"}
                 },
 
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.InstallationFailed.ToString(),
                      DefaultTitle = "{Name} installation failed.",
-                     Variables = new List<string>{"Name", "Version"}
+                     Variables = new string[]{"Name", "Version"}
                 },
 
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.PluginInstalled.ToString(),
                      DefaultTitle = "{Name} was installed.",
-                     Variables = new List<string>{"Name", "Version"}
+                     Variables = new string[]{"Name", "Version"}
                 },
 
                 new NotificationTypeInfo
@@ -50,14 +50,14 @@ namespace Emby.Server.Implementations.Notifications
                      Type = NotificationType.PluginError.ToString(),
                      DefaultTitle = "{Name} has encountered an error.",
                      DefaultDescription = "{ErrorMessage}",
-                     Variables = new List<string>{"Name", "ErrorMessage"}
+                     Variables = new string[]{"Name", "ErrorMessage"}
                 },
 
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.PluginUninstalled.ToString(),
                      DefaultTitle = "{Name} was uninstalled.",
-                     Variables = new List<string>{"Name", "Version"}
+                     Variables = new string[]{"Name", "Version"}
                 },
 
                 new NotificationTypeInfo
@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.Notifications
                      Type = NotificationType.PluginUpdateInstalled.ToString(),
                      DefaultTitle = "{Name} was updated.",
                      DefaultDescription = "{ReleaseNotes}",
-                     Variables = new List<string>{"Name", "ReleaseNotes", "Version"}
+                     Variables = new string[]{"Name", "ReleaseNotes", "Version"}
                 },
 
                 new NotificationTypeInfo
@@ -79,70 +79,70 @@ namespace Emby.Server.Implementations.Notifications
                      Type = NotificationType.TaskFailed.ToString(),
                      DefaultTitle = "{Name} failed.",
                      DefaultDescription = "{ErrorMessage}",
-                     Variables = new List<string>{"Name", "ErrorMessage"}
+                     Variables = new string[]{"Name", "ErrorMessage"}
                 },
 
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.NewLibraryContent.ToString(),
                      DefaultTitle = "{Name} has been added to your media library.",
-                     Variables = new List<string>{"Name"}
+                     Variables = new string[]{"Name"}
                 },
 
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.AudioPlayback.ToString(),
                      DefaultTitle = "{UserName} is playing {ItemName} on {DeviceName}.",
-                     Variables = new List<string>{"UserName", "ItemName", "DeviceName", "AppName"}
+                     Variables = new string[]{"UserName", "ItemName", "DeviceName", "AppName"}
                 },
 
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.GamePlayback.ToString(),
                      DefaultTitle = "{UserName} is playing {ItemName} on {DeviceName}.",
-                     Variables = new List<string>{"UserName", "ItemName", "DeviceName", "AppName"}
+                     Variables = new string[]{"UserName", "ItemName", "DeviceName", "AppName"}
                 },
 
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.VideoPlayback.ToString(),
                      DefaultTitle = "{UserName} is playing {ItemName} on {DeviceName}.",
-                     Variables = new List<string>{"UserName", "ItemName", "DeviceName", "AppName"}
+                     Variables = new string[]{"UserName", "ItemName", "DeviceName", "AppName"}
                 },
 
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.AudioPlaybackStopped.ToString(),
                      DefaultTitle = "{UserName} has finished playing {ItemName} on {DeviceName}.",
-                     Variables = new List<string>{"UserName", "ItemName", "DeviceName", "AppName"}
+                     Variables = new string[]{"UserName", "ItemName", "DeviceName", "AppName"}
                 },
 
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.GamePlaybackStopped.ToString(),
                      DefaultTitle = "{UserName} has finished playing {ItemName} on {DeviceName}.",
-                     Variables = new List<string>{"UserName", "ItemName", "DeviceName", "AppName"}
+                     Variables = new string[]{"UserName", "ItemName", "DeviceName", "AppName"}
                 },
 
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.VideoPlaybackStopped.ToString(),
                      DefaultTitle = "{UserName} has finished playing {ItemName} on {DeviceName}.",
-                     Variables = new List<string>{"UserName", "ItemName", "DeviceName", "AppName"}
+                     Variables = new string[]{"UserName", "ItemName", "DeviceName", "AppName"}
                 },
 
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.CameraImageUploaded.ToString(),
                      DefaultTitle = "A new camera image has been uploaded from {DeviceName}.",
-                     Variables = new List<string>{"DeviceName"}
+                     Variables = new string[]{"DeviceName"}
                 },
 
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.UserLockedOut.ToString(),
                      DefaultTitle = "{UserName} has been locked out.",
-                     Variables = new List<string>{"UserName"}
+                     Variables = new string[]{"UserName"}
                 }
             };
 

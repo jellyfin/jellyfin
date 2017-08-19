@@ -7,21 +7,21 @@ namespace MediaBrowser.Model.Dto
 {
     public class MetadataEditorInfo
     {
-        public List<ParentalRating> ParentalRatingOptions { get; set; }
-        public List<CountryInfo> Countries { get; set; }
-        public List<CultureDto> Cultures { get; set; }
-        public List<ExternalIdInfo> ExternalIdInfos { get; set; }
+        public ParentalRating[] ParentalRatingOptions { get; set; }
+        public CountryInfo[] Countries { get; set; }
+        public CultureDto[] Cultures { get; set; }
+        public ExternalIdInfo[] ExternalIdInfos { get; set; }
 
         public string ContentType { get; set; }
-        public List<NameValuePair> ContentTypeOptions { get; set; }
+        public NameValuePair[] ContentTypeOptions { get; set; }
 
         public MetadataEditorInfo()
         {
-            ParentalRatingOptions = new List<ParentalRating>();
-            Countries = new List<CountryInfo>();
-            Cultures = new List<CultureDto>();
-            ExternalIdInfos = new List<ExternalIdInfo>();
-            ContentTypeOptions = new List<NameValuePair>();
+            ParentalRatingOptions = new ParentalRating[] { };
+            Countries = new CountryInfo[] { };
+            Cultures = new CultureDto[] { };
+            ExternalIdInfos = new ExternalIdInfo[] { };
+            ContentTypeOptions = new NameValuePair[] { };
         }
     }
 }

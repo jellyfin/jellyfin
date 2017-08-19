@@ -52,10 +52,10 @@ namespace MediaBrowser.Model.Channels
             TrailerTypes = new TrailerType[] { };
 
             Filters = new ItemFilter[] { };
-            Fields = new List<ItemFields>();
+            Fields = new ItemFields[]{};
         }
 
         public ItemFilter[] Filters { get; set; }
-        public List<ItemFields> Fields { get; set; }
+        public ItemFields[] Fields { get; set; }
     }
 }

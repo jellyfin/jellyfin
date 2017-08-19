@@ -80,7 +80,7 @@ namespace MediaBrowser.Controller.Entities
                 .GetUserItems(parent, this, ViewType, query).Result;
         }
 
-        public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             var result = GetItemList(new InternalItemsQuery
             {
@@ -90,7 +90,7 @@ namespace MediaBrowser.Controller.Entities
 
             });
 
-            return result;
+            return result.ToList();
         }
 
         public override bool CanDelete()

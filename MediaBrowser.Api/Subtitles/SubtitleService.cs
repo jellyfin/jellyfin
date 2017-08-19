@@ -14,8 +14,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
@@ -39,7 +37,7 @@ namespace MediaBrowser.Api.Subtitles
 
     [Route("/Items/{Id}/RemoteSearch/Subtitles/{Language}", "GET")]
     [Authenticated]
-    public class SearchRemoteSubtitles : IReturn<List<RemoteSubtitleInfo>>
+    public class SearchRemoteSubtitles : IReturn<RemoteSubtitleInfo[]>
     {
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
@@ -52,7 +50,7 @@ namespace MediaBrowser.Api.Subtitles
 
     [Route("/Items/{Id}/RemoteSearch/Subtitles/Providers", "GET")]
     [Authenticated]
-    public class GetSubtitleProviders : IReturn<List<SubtitleProviderInfo>>
+    public class GetSubtitleProviders : IReturn<SubtitleProviderInfo[]>
     {
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }

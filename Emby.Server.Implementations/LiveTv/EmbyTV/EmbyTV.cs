@@ -208,7 +208,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     continue;
                 }
 
-                if (virtualFolder.Locations.Count == 1)
+                if (virtualFolder.Locations.Length == 1)
                 {
                     // remove entire virtual folder
                     try
@@ -458,7 +458,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return GetEpgChannelFromTunerChannel(info, tunerChannel, epgChannels);
         }
 
-        private string GetMappedChannel(string channelId, List<NameValuePair> mappings)
+        private string GetMappedChannel(string channelId, NameValuePair[] mappings)
         {
             foreach (NameValuePair mapping in mappings)
             {
@@ -472,10 +472,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private ChannelInfo GetEpgChannelFromTunerChannel(ListingsProviderInfo info, ChannelInfo tunerChannel, List<ChannelInfo> epgChannels)
         {
-            return GetEpgChannelFromTunerChannel(info.ChannelMappings.ToList(), tunerChannel, epgChannels);
+            return GetEpgChannelFromTunerChannel(info.ChannelMappings, tunerChannel, epgChannels);
         }
 
-        public ChannelInfo GetEpgChannelFromTunerChannel(List<NameValuePair> mappings, ChannelInfo tunerChannel, List<ChannelInfo> epgChannels)
+        public ChannelInfo GetEpgChannelFromTunerChannel(NameValuePair[] mappings, ChannelInfo tunerChannel, List<ChannelInfo> epgChannels)
         {
             if (!string.IsNullOrWhiteSpace(tunerChannel.Id))
             {
@@ -2591,7 +2591,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 list.Add(new VirtualFolderInfo
                 {
-                    Locations = new List<string> { defaultFolder },
+                    Locations = new string[] { defaultFolder },
                     Name = defaultName
                 });
             }
@@ -2601,7 +2601,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 list.Add(new VirtualFolderInfo
                 {
-                    Locations = new List<string> { customPath },
+                    Locations = new string[] { customPath },
                     Name = "Recorded Movies",
                     CollectionType = CollectionType.Movies
                 });
@@ -2612,7 +2612,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 list.Add(new VirtualFolderInfo
                 {
-                    Locations = new List<string> { customPath },
+                    Locations = new string[] { customPath },
                     Name = "Recorded Shows",
                     CollectionType = CollectionType.TvShows
                 });

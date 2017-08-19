@@ -13,7 +13,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
     public class QueueStream
     {
         private readonly Stream _outputStream;
-        private readonly ConcurrentQueue<Tuple<byte[], int, int>> _queue = new ConcurrentQueue<Tuple<byte[], int, int>>();
+        private readonly BlockingCollection<Tuple<byte[], int, int>> _queue = new BlockingCollection<Tuple<byte[], int, int>>();
         public TaskCompletionSource<bool> TaskCompletion { get; private set; }
 
         public Action<QueueStream> OnFinished { get; set; }
@@ -29,23 +29,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public void Queue(byte[] bytes, int offset, int count)
         {
-            _queue.Enqueue(new Tuple<byte[], int, int>(bytes, offset, count));
+            _queue.Add(new Tuple<byte[], int, int>(bytes, offset, count));
         }
 
         public void Start(CancellationToken cancellationToken)
         {
             Task.Run(() => StartInternal(cancellationToken));
-        }
-
-        private Tuple<byte[], int, int> Dequeue()
-        {
-            Tuple<byte[], int, int> result;
-            if (_queue.TryDequeue(out result))
-            {
-                return result;
-            }
-
-            return null;
         }
 
         private void OnClosed()
@@ -79,7 +68,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
         }
 
-        private async Task StartInternal(CancellationToken cancellationToken)
+        private void StartInternal(CancellationToken cancellationToken)
         {
             try
             {
@@ -87,14 +76,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var result = Dequeue();
-                    if (result != null)
+                    foreach (var result in _queue.GetConsumingEnumerable())
                     {
                         _outputStream.Write(result.Item1, result.Item2, result.Item3);
-                    }
-                    else
-                    {
-                        await Task.Delay(50, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }

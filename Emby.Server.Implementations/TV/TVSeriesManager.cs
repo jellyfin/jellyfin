@@ -72,7 +72,7 @@ namespace Emby.Server.Implementations.TV
                 Recursive = true,
                 DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions
                 {
-                    Fields = new List<ItemFields>
+                    Fields = new ItemFields[]
                     {
                         ItemFields.SeriesPresentationUniqueKey
                     }
@@ -128,7 +128,7 @@ namespace Emby.Server.Implementations.TV
                 Limit = limit,
                 DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions
                 {
-                    Fields = new List<ItemFields>
+                    Fields = new ItemFields[]
                     {
                         ItemFields.SeriesPresentationUniqueKey
                     },
@@ -207,7 +207,7 @@ namespace Emby.Server.Implementations.TV
                 ParentIndexNumberNotEquals = 0,
                 DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions
                 {
-                    Fields = new List<ItemFields>
+                    Fields = new ItemFields[]
                     {
                         ItemFields.SortName
                     },

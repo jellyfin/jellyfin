@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.Providers
         /// Gets or sets the images.
         /// </summary>
         /// <value>The images.</value>
-        public List<RemoteImageInfo> Images { get; set; }
+        public RemoteImageInfo[] Images { get; set; }
 
         /// <summary>
         /// Gets or sets the total record count.
@@ -23,6 +23,6 @@ namespace MediaBrowser.Model.Providers
         /// Gets or sets the providers.
         /// </summary>
         /// <value>The providers.</value>
-        public List<string> Providers { get; set; }
+        public string[] Providers { get; set; }
     }
 }

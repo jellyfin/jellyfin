@@ -29,7 +29,7 @@ namespace MediaBrowser.Model.Configuration
 
         public MetadataOptions(int backdropLimit, int minBackdropWidth)
         {
-            List<ImageOption> imageOptions = new List<ImageOption>
+            ImageOptions = new[]
             {
                 new ImageOption
                 {
@@ -39,7 +39,6 @@ namespace MediaBrowser.Model.Configuration
                 }
             };
 
-            ImageOptions = imageOptions.ToArray();
             DisabledMetadataSavers = new string[] { };
             LocalMetadataReaderOrder = new string[] { };
 

@@ -108,7 +108,7 @@ namespace MediaBrowser.Api
                 EnableTotalRecordCount = false,
                 DtoOptions = new Controller.Dto.DtoOptions
                 {
-                    Fields = new List<ItemFields> { ItemFields.Genres, ItemFields.Tags },
+                    Fields = new ItemFields[] { ItemFields.Genres, ItemFields.Tags },
                     EnableImages = false,
                     EnableUserData = false
                 }

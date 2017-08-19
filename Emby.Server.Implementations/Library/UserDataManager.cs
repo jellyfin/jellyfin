@@ -187,11 +187,11 @@ namespace Emby.Server.Implementations.Library
             var userData = GetUserData(user.Id, item);
             var dto = GetUserItemDataDto(userData);
 
-            item.FillUserDataDtoValues(dto, userData, null, user, new List<ItemFields>());
+            item.FillUserDataDtoValues(dto, userData, null, user, new ItemFields[]{});
             return dto;
         }
 
-        public UserItemDataDto GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, List<ItemFields> fields)
+        public UserItemDataDto GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, ItemFields[] fields)
         {
             var userData = GetUserData(user.Id, item);
             var dto = GetUserItemDataDto(userData);

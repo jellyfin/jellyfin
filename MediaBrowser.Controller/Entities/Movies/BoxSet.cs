@@ -170,24 +170,24 @@ namespace MediaBrowser.Controller.Entities.Movies
                 StringComparison.OrdinalIgnoreCase);
         }
 
-        public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             var children = base.GetChildren(user, includeLinkedChildren);
 
             if (string.Equals(DisplayOrder, ItemSortBy.SortName, StringComparison.OrdinalIgnoreCase))
             {
                 // Sort by name
-                return LibraryManager.Sort(children, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending);
+                return LibraryManager.Sort(children, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
             }
 
             if (string.Equals(DisplayOrder, ItemSortBy.PremiereDate, StringComparison.OrdinalIgnoreCase))
             {
                 // Sort by release date
-                return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending);
+                return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending).ToList();
             }
 
             // Default sorting
-            return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending);
+            return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending).ToList();
         }
 
         public BoxSetInfo GetLookupInfo()

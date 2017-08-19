@@ -27,7 +27,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>IEnumerable{ItemFields}.</returns>
-        public static IEnumerable<ItemFields> GetItemFields(this IHasItemFields request)
+        public static ItemFields[] GetItemFields(this IHasItemFields request)
         {
             var val = request.Fields;
 
@@ -46,7 +46,7 @@ namespace MediaBrowser.Api
                 }
                 return null;
 
-            }).Where(i => i.HasValue).Select(i => i.Value);
+            }).Where(i => i.HasValue).Select(i => i.Value).ToArray();
         }
     }
 }

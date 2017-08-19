@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
@@ -32,7 +32,7 @@ namespace MediaBrowser.Providers.TV
 
             if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
             {
-                var episodes = item.GetEpisodes().ToList();
+                var episodes = item.GetEpisodes();
                 updateType |= SavePremiereDate(item, episodes);
                 updateType |= SaveIsVirtualItem(item, episodes);
             }
@@ -66,7 +66,7 @@ namespace MediaBrowser.Providers.TV
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
 
-        private ItemUpdateType SavePremiereDate(Season item, List<Episode> episodes)
+        private ItemUpdateType SavePremiereDate(Season item, List<BaseItem> episodes)
         {
             var dates = episodes.Where(i => i.PremiereDate.HasValue).Select(i => i.PremiereDate.Value).ToList();
 
@@ -86,7 +86,7 @@ namespace MediaBrowser.Providers.TV
             return ItemUpdateType.None;
         }
 
-        private ItemUpdateType SaveIsVirtualItem(Season item, List<Episode> episodes)
+        private ItemUpdateType SaveIsVirtualItem(Season item, List<BaseItem> episodes)
         {
             var isVirtualItem = item.LocationType == LocationType.Virtual && (episodes.Count == 0 || episodes.All(i => i.LocationType == LocationType.Virtual));
 

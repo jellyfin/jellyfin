@@ -24,8 +24,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task CopyUntilCancelled(Stream source, Action onStarted, CancellationToken cancellationToken)
         {
-            byte[] buffer = new byte[BufferSize];
-
             if (source == null)
             {
                 throw new ArgumentNullException("source");
@@ -34,6 +32,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                byte[] buffer = new byte[BufferSize];
 
                 var bytesRead = source.Read(buffer, 0, buffer.Length);
 
@@ -47,12 +47,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     //}
                     //else
                     {
-                        byte[] copy = new byte[bytesRead];
-                        Buffer.BlockCopy(buffer, 0, copy, 0, bytesRead);
+                        //byte[] copy = new byte[bytesRead];
+                        //Buffer.BlockCopy(buffer, 0, copy, 0, bytesRead);
 
                         foreach (var stream in allStreams)
                         {
-                            stream.Value.Queue(copy, 0, copy.Length);
+                            stream.Value.Queue(buffer, 0, bytesRead);
                         }
                     }
 

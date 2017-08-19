@@ -1,10 +1,11 @@
-﻿
+﻿using MediaBrowser.Model.Dto;
+
 namespace MediaBrowser.Model.Querying
 {
     /// <summary>
     /// Class ThemeMediaResult
     /// </summary>
-    public class ThemeMediaResult : ItemsResult
+    public class ThemeMediaResult : QueryResult<BaseItemDto>
     {
         /// <summary>
         /// Gets or sets the owner id.

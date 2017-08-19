@@ -50,11 +50,11 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the additional files.
         /// </summary>
         /// <value>The additional files.</value>
-        public List<ItemFileInfo> AdditionalFiles { get; set; }
+        public ItemFileInfo[] AdditionalFiles { get; set; }
 
         public SyncedItem()
         {
-            AdditionalFiles = new List<ItemFileInfo>();
+            AdditionalFiles = new ItemFileInfo[] { };
         }
     }
 }

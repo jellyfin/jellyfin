@@ -711,7 +711,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (!(this is ICollectionFolder))
                 {
-                    return GetChildren(user, true).Count();
+                    return GetChildren(user, true).Count;
                 }
             }
 
@@ -792,16 +792,16 @@ namespace MediaBrowser.Controller.Entities
             query.StartIndex = null;
             query.Limit = null;
 
-            IEnumerable<BaseItem> itemsList = LibraryManager.GetItemList(query);
+            var itemsList = LibraryManager.GetItemList(query);
             var user = query.User;
 
             if (user != null)
             {
                 // needed for boxsets
-                itemsList = itemsList.Where(i => i.IsVisibleStandalone(query.User));
+                itemsList = itemsList.Where(i => i.IsVisibleStandalone(query.User)).ToList();
             }
 
-            IEnumerable<BaseItem> returnItems;
+            BaseItem[] returnItems;
             int totalCount = 0;
 
             if (query.EnableTotalRecordCount)
@@ -812,16 +812,16 @@ namespace MediaBrowser.Controller.Entities
             }
             else
             {
-                returnItems = itemsList;
+                returnItems = itemsList.ToArray();
             }
 
             if (limit.HasValue)
             {
-                returnItems = returnItems.Skip(startIndex ?? 0).Take(limit.Value);
+                returnItems = returnItems.Skip(startIndex ?? 0).Take(limit.Value).ToArray();
             }
             else if (startIndex.HasValue)
             {
-                returnItems = returnItems.Skip(startIndex.Value);
+                returnItems = returnItems.Skip(startIndex.Value).ToArray();
             }
 
             return new QueryResult<BaseItem>
@@ -1044,7 +1044,7 @@ namespace MediaBrowser.Controller.Entities
             return UserViewBuilder.PostFilterAndSort(items, this, null, query, LibraryManager, ConfigurationManager, collapseBoxSetItems, enableSorting);
         }
 
-        public virtual IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        public virtual List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             if (user == null)
             {
@@ -1058,7 +1058,7 @@ namespace MediaBrowser.Controller.Entities
 
             AddChildren(user, includeLinkedChildren, result, false, null);
 
-            return result.Values;
+            return result.Values.ToList();
         }
 
         protected virtual IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
@@ -1477,7 +1477,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, List<ItemFields> fields)
+        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, ItemFields[] fields)
         {
             if (!SupportsUserDataFromChildren)
             {

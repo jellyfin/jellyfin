@@ -62,7 +62,7 @@ namespace MediaBrowser.Api
 
     [Route("/System/Configuration/MetadataPlugins", "GET", Summary = "Gets all available metadata plugins")]
     [Authenticated(Roles = "Admin")]
-    public class GetMetadataPlugins : IReturn<List<MetadataPluginSummary>>
+    public class GetMetadataPlugins : IReturn<MetadataPluginSummary[]>
     {
 
     }
@@ -170,7 +170,7 @@ namespace MediaBrowser.Api
 
         public object Get(GetMetadataPlugins request)
         {
-            return ToOptimizedSerializedResultUsingCache(_providerManager.GetAllMetadataPlugins().ToList());
+            return ToOptimizedSerializedResultUsingCache(_providerManager.GetAllMetadataPlugins());
         }
     }
 }

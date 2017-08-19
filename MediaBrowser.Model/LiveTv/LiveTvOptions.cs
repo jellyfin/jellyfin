@@ -15,8 +15,8 @@ namespace MediaBrowser.Model.LiveTv
         public bool EnableOriginalAudioWithEncodedRecordings { get; set; }
         public string RecordedVideoCodec { get; set; }
 
-        public List<TunerHostInfo> TunerHosts { get; set; }
-        public List<ListingsProviderInfo> ListingProviders { get; set; }
+        public TunerHostInfo[] TunerHosts { get; set; }
+        public ListingsProviderInfo[] ListingProviders { get; set; }
 
         public int PrePaddingSeconds { get; set; }
         public int PostPaddingSeconds { get; set; }
@@ -28,8 +28,8 @@ namespace MediaBrowser.Model.LiveTv
 
         public LiveTvOptions()
         {
-            TunerHosts = new List<TunerHostInfo>();
-            ListingProviders = new List<ListingsProviderInfo>();
+            TunerHosts = new TunerHostInfo[] { };
+            ListingProviders = new ListingsProviderInfo[] { };
             MediaLocationsCreated = new string[] { };
             RecordingEncodingFormat = "mkv";
             RecordingPostProcessorArguments = "\"{path}\"";

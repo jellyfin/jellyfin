@@ -126,7 +126,7 @@ namespace Emby.Server.Implementations.EntryPoints
                             dto.ItemId = i.Id.ToString("N");
                             return dto;
                         })
-                        .ToList();
+                        .ToArray();
 
                     var info = new UserDataChangeInfo
                     {

@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the locations.
         /// </summary>
         /// <value>The locations.</value>
-        public List<string> Locations { get; set; }
+        public string[] Locations { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the collection.
@@ -33,7 +33,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public VirtualFolderInfo()
         {
-            Locations = new List<string>();
+            Locations = new string[] { };
         }
 
         /// <summary>

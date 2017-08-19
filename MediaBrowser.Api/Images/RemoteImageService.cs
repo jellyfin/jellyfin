@@ -150,7 +150,7 @@ namespace MediaBrowser.Api.Images
 
             }, CancellationToken.None).ConfigureAwait(false);
 
-            var imagesList = images.ToList();
+            var imagesList = images.ToArray();
 
             var allProviders = _providerManager.GetRemoteImageProviderInfo(item);
 
@@ -161,22 +161,22 @@ namespace MediaBrowser.Api.Images
 
             var result = new RemoteImageResult
             {
-                TotalRecordCount = imagesList.Count,
+                TotalRecordCount = imagesList.Length,
                 Providers = allProviders.Select(i => i.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList()
+                .ToArray()
             };
 
             if (request.StartIndex.HasValue)
             {
                 imagesList = imagesList.Skip(request.StartIndex.Value)
-                    .ToList();
+                    .ToArray();
             }
 
             if (request.Limit.HasValue)
             {
                 imagesList = imagesList.Take(request.Limit.Value)
-                    .ToList();
+                    .ToArray();
             }
 
             result.Images = imagesList;
