@@ -67,7 +67,7 @@ namespace MediaBrowser.Model.Session
         /// <value>The position ticks.</value>
         public long? PositionTicks { get; set; }
 
-        public long? playbackStartTimeTicks { get; set; }
+        public long? PlaybackStartTimeTicks { get; set; }
 
         /// <summary>
         /// Gets or sets the volume level.

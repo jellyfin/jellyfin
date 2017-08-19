@@ -13,14 +13,11 @@ namespace Emby.Server.Implementations.AppBase
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths"/> class.
         /// </summary>
-        protected BaseApplicationPaths(string programDataPath, string appFolderPath, Action<string> createDirectoryFn)
+        protected BaseApplicationPaths(string programDataPath, string appFolderPath)
         {
             ProgramDataPath = programDataPath;
             ProgramSystemPath = appFolderPath;
-            CreateDirectoryFn = createDirectoryFn;
         }
-
-        protected Action<string> CreateDirectoryFn;
 
         public string ProgramDataPath { get; private set; }
 
@@ -45,7 +42,7 @@ namespace Emby.Server.Implementations.AppBase
                 {
                     _dataDirectory = Path.Combine(ProgramDataPath, "data");
 
-                    CreateDirectoryFn(_dataDirectory);
+                    Directory.CreateDirectory(_dataDirectory);
                 }
 
                 return _dataDirectory;
@@ -152,7 +149,7 @@ namespace Emby.Server.Implementations.AppBase
                 {
                     _cachePath = Path.Combine(ProgramDataPath, "cache");
 
-                    CreateDirectoryFn(_cachePath);
+                    Directory.CreateDirectory(_cachePath);
                 }
 
                 return _cachePath;

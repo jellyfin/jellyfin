@@ -13,8 +13,8 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths" /> class.
         /// </summary>
-        public ServerApplicationPaths(string programDataPath, string appFolderPath, string applicationResourcesPath, Action<string> createDirectoryFn)
-            : base(programDataPath, appFolderPath, createDirectoryFn)
+        public ServerApplicationPaths(string programDataPath, string appFolderPath, string applicationResourcesPath)
+            : base(programDataPath, appFolderPath)
         {
             ApplicationResourcesPath = applicationResourcesPath;
         }

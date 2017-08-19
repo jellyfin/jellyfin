@@ -7,6 +7,8 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Devices;
+using Emby.Server.Implementations.Playlists;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
@@ -25,8 +27,6 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Server.Implementations.Devices;
-using MediaBrowser.Server.Implementations.Playlists;
 using MediaBrowser.Model.Reflection;
 using SQLitePCL.pretty;
 using MediaBrowser.Model.System;
@@ -202,7 +202,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "ForcedSortName", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "RunTimeTicks", "BIGINT", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "HomePageUrl", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "DisplayMediaType", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "DateCreated", "DATETIME", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "DateModified", "DATETIME", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "IsSeries", "BIT", existingColumnNames);
@@ -307,6 +306,8 @@ namespace Emby.Server.Implementations.Data
                 "drop index if exists idx_TypeSeriesPresentationUniqueKey",
                 "drop index if exists idx_SeriesPresentationUniqueKey",
                 "drop index if exists idx_TypeSeriesPresentationUniqueKey2",
+                "drop index if exists idx_AncestorIds3",
+                "drop index if exists idx_AncestorIds4",
 
                 "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
@@ -417,7 +418,6 @@ namespace Emby.Server.Implementations.Data
             "ProductionYear",
             "OfficialRating",
             "HomePageUrl",
-            "DisplayMediaType",
             "ForcedSortName",
             "RunTimeTicks",
             "DateCreated",
@@ -534,7 +534,6 @@ namespace Emby.Server.Implementations.Data
                 "ForcedSortName",
                 "RunTimeTicks",
                 "HomePageUrl",
-                "DisplayMediaType",
                 "DateCreated",
                 "DateModified",
                 "PreferredMetadataLanguage",
@@ -811,7 +810,6 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@RunTimeTicks", item.RunTimeTicks);
 
             saveItemStatement.TryBind("@HomePageUrl", item.HomePageUrl);
-            saveItemStatement.TryBindNull("@DisplayMediaType");
             saveItemStatement.TryBind("@DateCreated", item.DateCreated);
             saveItemStatement.TryBind("@DateModified", item.DateModified);
 
@@ -1218,14 +1216,15 @@ namespace Emby.Server.Implementations.Data
                 {
                     return false;
                 }
-                if (type == typeof(Season))
-                {
-                    return false;
-                }
-                if (type == typeof(MusicArtist))
-                {
-                    return false;
-                }
+            }
+
+            if (type == typeof(Season))
+            {
+                return false;
+            }
+            if (type == typeof(MusicArtist))
+            {
+                return false;
             }
 
             if (type == typeof(Person))
@@ -1573,19 +1572,6 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            var video = item as Video;
-            if (HasField(query, ItemFields.DisplayMediaType))
-            {
-                if (video != null)
-                {
-                    if (!reader.IsDBNull(index))
-                    {
-                        video.DisplayMediaType = reader.GetString(index);
-                    }
-                }
-                index++;
-            }
-
             if (HasField(query, ItemFields.SortName))
             {
                 if (!reader.IsDBNull(index))
@@ -1737,6 +1723,7 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
+            var video = item as Video;
             if (video != null)
             {
                 if (!reader.IsDBNull(index))
@@ -2248,7 +2235,6 @@ namespace Emby.Server.Implementations.Data
             {
                 case ItemFields.HomePageUrl:
                 case ItemFields.CustomRating:
-                case ItemFields.DisplayMediaType:
                 case ItemFields.ProductionLocations:
                 case ItemFields.Settings:
                 case ItemFields.OriginalTitle:

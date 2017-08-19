@@ -11,18 +11,16 @@ using System.Net.Security;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Emby.Common.Implementations.EnvironmentInfo;
-using Emby.Common.Implementations.Logging;
-using Emby.Common.Implementations.Networking;
 using Emby.Server.Core.Cryptography;
 using Emby.Server.Core;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.EnvironmentInfo;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Logging;
+using Emby.Server.Implementations.Networking;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using Mono.Unix.Native;
-using NLog;
 using ILogger = MediaBrowser.Model.Logging.ILogger;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 
@@ -49,7 +47,7 @@ namespace MediaBrowser.Server.Mono
 
             var appPaths = CreateApplicationPaths(applicationPath, customProgramDataPath);
 
-            var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
+            var logManager = new SimpleLogManager(appPaths.LogDirectoryPath, "server");
             logManager.ReloadLogger(LogSeverity.Info);
             logManager.AddConsoleOutput();
 
@@ -85,9 +83,7 @@ namespace MediaBrowser.Server.Mono
 
             var appFolderPath = Path.GetDirectoryName(applicationPath);
 
-            Action<string> createDirectoryFn = s => Directory.CreateDirectory(s);
-
-            return new ServerApplicationPaths(programDataPath, appFolderPath, Path.GetDirectoryName(applicationPath), createDirectoryFn);
+            return new ServerApplicationPaths(programDataPath, appFolderPath, Path.GetDirectoryName(applicationPath));
         }
 
         private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
@@ -114,10 +110,7 @@ namespace MediaBrowser.Server.Mono
                 environmentInfo,
                 imageEncoder,
                 new SystemEvents(logManager.GetLogger("SystemEvents")),
-                new MemoryStreamProvider(),
-                new NetworkManager(logManager.GetLogger("NetworkManager")),
-                GenerateCertificate,
-                () => Environment.UserName);
+                new NetworkManager(logManager.GetLogger("NetworkManager")));
 
             if (options.ContainsOption("-v"))
             {
@@ -142,11 +135,6 @@ namespace MediaBrowser.Server.Mono
             Task.WaitAll(task);
         }
 
-        private static void GenerateCertificate(string certPath, string certHost, string certPassword)
-        {
-            CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, certPassword, _logger);
-        }
-
         private static MonoEnvironmentInfo GetEnvironmentInfo()
         {
             var info = new MonoEnvironmentInfo();
@@ -157,39 +145,38 @@ namespace MediaBrowser.Server.Mono
 
             if (string.Equals(sysName, "Darwin", StringComparison.OrdinalIgnoreCase))
             {
-                //info.OperatingSystem = Startup.Common.OperatingSystem.Osx;
+                info.OperatingSystem = Model.System.OperatingSystem.OSX;
             }
             else if (string.Equals(sysName, "Linux", StringComparison.OrdinalIgnoreCase))
             {
-                //info.OperatingSystem = Startup.Common.OperatingSystem.Linux;
+                info.OperatingSystem = Model.System.OperatingSystem.Linux;
             }
             else if (string.Equals(sysName, "BSD", StringComparison.OrdinalIgnoreCase))
             {
-                //info.OperatingSystem = Startup.Common.OperatingSystem.Bsd;
-                info.IsBsd = true;
+                info.OperatingSystem = Model.System.OperatingSystem.BSD;
             }
 
             var archX86 = new Regex("(i|I)[3-6]86");
 
             if (archX86.IsMatch(uname.machine))
             {
-                info.CustomArchitecture = Architecture.X86;
+                info.SystemArchitecture = Architecture.X86;
             }
             else if (string.Equals(uname.machine, "x86_64", StringComparison.OrdinalIgnoreCase))
             {
-                info.CustomArchitecture = Architecture.X64;
+                info.SystemArchitecture = Architecture.X64;
             }
             else if (uname.machine.StartsWith("arm", StringComparison.OrdinalIgnoreCase))
             {
-                info.CustomArchitecture = Architecture.Arm;
+                info.SystemArchitecture = Architecture.Arm;
             }
             else if (System.Environment.Is64BitOperatingSystem)
             {
-                info.CustomArchitecture = Architecture.X64;
+                info.SystemArchitecture = Architecture.X64;
             }
             else
             {
-                info.CustomArchitecture = Architecture.X86;
+                info.SystemArchitecture = Architecture.X86;
             }
 
             return info;
@@ -309,24 +296,9 @@ namespace MediaBrowser.Server.Mono
 
     public class MonoEnvironmentInfo : EnvironmentInfo
     {
-        public bool IsBsd { get; set; }
-
         public override string GetUserId()
         {
             return Syscall.getuid().ToString(CultureInfo.InvariantCulture);
-        }
-
-        public override Model.System.OperatingSystem OperatingSystem
-        {
-            get
-            {
-                if (IsBsd)
-                {
-                    return Model.System.OperatingSystem.BSD;
-                }
-
-                return base.OperatingSystem;
-            }
         }
     }
 }
