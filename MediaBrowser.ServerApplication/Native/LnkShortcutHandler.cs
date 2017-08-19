@@ -5,7 +5,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using MediaBrowser.Model.IO;
 
-namespace Emby.Server.Implementations.IO
+namespace MediaBrowser.ServerApplication.Native
 {
     public class LnkShortcutHandler :IShortcutHandler
     {

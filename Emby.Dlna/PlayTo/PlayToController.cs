@@ -20,6 +20,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -589,7 +590,7 @@ namespace Emby.Dlna.PlayTo
                     StreamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger()).BuildVideoItem(new VideoOptions
                     {
                         ItemId = item.Id.ToString("N"),
-                        MediaSources = mediaSources,
+                        MediaSources = mediaSources.ToArray(mediaSources.Count),
                         Profile = profile,
                         DeviceId = deviceId,
                         MaxBitrate = profile.MaxStreamingBitrate,
@@ -609,7 +610,7 @@ namespace Emby.Dlna.PlayTo
                     StreamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger()).BuildAudioItem(new AudioOptions
                     {
                         ItemId = item.Id.ToString("N"),
-                        MediaSources = mediaSources,
+                        MediaSources = mediaSources.ToArray(mediaSources.Count),
                         Profile = profile,
                         DeviceId = deviceId,
                         MaxBitrate = profile.MaxStreamingBitrate,

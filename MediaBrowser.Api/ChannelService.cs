@@ -55,7 +55,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Channels/Features", "GET", Summary = "Gets features for a channel")]
-    public class GetAllChannelFeatures : IReturn<List<ChannelFeatures>>
+    public class GetAllChannelFeatures : IReturn<ChannelFeatures[]>
     {
     }
 
@@ -187,7 +187,7 @@ namespace MediaBrowser.Api
 
         public object Get(GetAllChannelFeatures request)
         {
-            var result = _channelManager.GetAllChannelFeatures().ToList();
+            var result = _channelManager.GetAllChannelFeatures();
 
             return ToOptimizedResult(result);
         }
@@ -247,7 +247,7 @@ namespace MediaBrowser.Api
                 ChannelIds = (request.ChannelIds ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
                 UserId = request.UserId,
                 Filters = request.GetFilters().ToArray(),
-                Fields = request.GetItemFields().ToList()
+                Fields = request.GetItemFields()
 
             }, CancellationToken.None).ConfigureAwait(false);
 

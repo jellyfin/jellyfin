@@ -20,24 +20,26 @@ namespace MediaBrowser.Model.Dlna
             Conditions = new ProfileCondition[] { };
         }
 
-        public List<string> GetContainers()
+        public string[] GetContainers()
         {
             return SplitValue(Container);
         }
 
-        public static List<string> SplitValue(string value)
+        private static readonly string[] EmptyStringArray = new string[] { };
+
+        public static string[] SplitValue(string value)
         {
-            List<string> list = new List<string>();
-            foreach (string i in (value ?? string.Empty).Split(','))
+            if (string.IsNullOrWhiteSpace(value))
             {
-                if (!string.IsNullOrWhiteSpace(i)) list.Add(i);
+                return EmptyStringArray;
             }
-            return list;
+
+            return value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public bool ContainsContainer(string container)
         {
-            List<string> containers = GetContainers();
+            var containers = GetContainers();
 
             return ContainsContainer(containers, container);
         }
@@ -47,9 +49,9 @@ namespace MediaBrowser.Model.Dlna
             return ContainsContainer(SplitValue(profileContainers), inputContainer);
         }
 
-        public static bool ContainsContainer(List<string> profileContainers, string inputContainer)
+        public static bool ContainsContainer(string[] profileContainers, string inputContainer)
         {
-            if (profileContainers.Count == 0)
+            if (profileContainers.Length == 0)
             {
                 return true;
             }

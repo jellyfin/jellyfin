@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Extensions;
@@ -21,7 +22,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     [Route("/Items", "GET", Summary = "Gets items based on a query.")]
     [Route("/Users/{UserId}/Items", "GET", Summary = "Gets items based on a query.")]
-    public class GetItems : BaseItemsRequest, IReturn<ItemsResult>
+    public class GetItems : BaseItemsRequest, IReturn<QueryResult<BaseItemDto>>
     {
     }
 
@@ -100,7 +101,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        private async Task<ItemsResult> GetItems(GetItems request)
+        private async Task<QueryResult<BaseItemDto>> GetItems(GetItems request)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
@@ -125,10 +126,10 @@ namespace MediaBrowser.Api.UserLibrary
                 throw new InvalidOperationException("GetBaseItemDtos returned null");
             }
 
-            return new ItemsResult
+            return new QueryResult<BaseItemDto>
             {
                 TotalRecordCount = result.TotalRecordCount,
-                Items = dtoList.ToArray(dtoList.Count)
+                Items = dtoList
             };
         }
 
@@ -180,9 +181,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return folder.GetItems(GetItemsQuery(request, dtoOptions, user));
             }
 
-            IEnumerable<BaseItem> items = folder.GetChildren(user, true);
-
-            var itemsArray = items.ToArray();
+            var itemsArray = folder.GetChildren(user, true).ToArray();
 
             return new QueryResult<BaseItem>
             {
@@ -332,13 +331,11 @@ namespace MediaBrowser.Api.UserLibrary
             if (!string.IsNullOrEmpty(request.LocationTypes))
             {
                 var requestedLocationTypes =
-                    request.LocationTypes.Split(',')
-                        .Select(d => (LocationType)Enum.Parse(typeof(LocationType), d, true))
-                        .ToList();
+                    request.LocationTypes.Split(',');
 
-                if (requestedLocationTypes.Count > 0 && requestedLocationTypes.Count < 4)
+                if (requestedLocationTypes.Length > 0 && requestedLocationTypes.Length < 4)
                 {
-                    query.IsVirtualItem = requestedLocationTypes.Contains(LocationType.Virtual);
+                    query.IsVirtualItem = requestedLocationTypes.Contains(LocationType.Virtual.ToString());
                 }
             }
 

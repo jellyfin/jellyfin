@@ -35,7 +35,7 @@ namespace Emby.Server.Implementations.IO
         /// <summary>
         /// Any file name ending in any of these will be ignored by the watchers
         /// </summary>
-        private readonly IReadOnlyList<string> _alwaysIgnoreFiles = new List<string>
+        private readonly string[] _alwaysIgnoreFiles = new string[]
         {
             "small.jpg",
             "albumart.jpg",
@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.IO
             "TempSBE"
         };
 
-        private readonly IReadOnlyList<string> _alwaysIgnoreSubstrings = new List<string>
+        private readonly string[] _alwaysIgnoreSubstrings = new string[]
         {
             // Synology
             "eaDir",
@@ -54,7 +54,7 @@ namespace Emby.Server.Implementations.IO
             ".actors"
         };
 
-        private readonly IReadOnlyList<string> _alwaysIgnoreExtensions = new List<string>
+        private readonly string[] _alwaysIgnoreExtensions = new string[]
         {
             // thumbs.db
             ".db",

@@ -72,7 +72,7 @@ namespace MediaBrowser.Api
             return new QueryResult<BaseItemDto>
             {
                 TotalRecordCount = result.TotalRecordCount,
-                Items = dtoList.ToArray(dtoList.Count)
+                Items = dtoList
             };
         }
 

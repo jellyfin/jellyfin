@@ -122,6 +122,7 @@
     </Compile>
     <Compile Include="ImageEncoderHelper.cs" />
     <Compile Include="MainStartup.cs" />
+    <Compile Include="Native\LnkShortcutHandler.cs" />
     <Compile Include="Native\LoopUtil.cs" />
     <Compile Include="Native\PowerManagement.cs" />
     <Compile Include="Native\Standby.cs" />

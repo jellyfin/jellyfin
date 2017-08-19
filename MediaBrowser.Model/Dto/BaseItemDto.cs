@@ -497,7 +497,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the media streams.
         /// </summary>
         /// <value>The media streams.</value>
-        public List<MediaStream> MediaStreams { get; set; }
+        public MediaStream[] MediaStreams { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the video.

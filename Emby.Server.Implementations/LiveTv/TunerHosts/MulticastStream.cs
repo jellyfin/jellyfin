@@ -24,8 +24,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task CopyUntilCancelled(Stream source, Action onStarted, CancellationToken cancellationToken)
         {
-            byte[] buffer = new byte[BufferSize];
-
             if (source == null)
             {
                 throw new ArgumentNullException("source");
@@ -35,25 +33,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                byte[] buffer = new byte[BufferSize];
+
                 var bytesRead = source.Read(buffer, 0, buffer.Length);
 
                 if (bytesRead > 0)
                 {
-                    var allStreams = _outputStreams.ToList();
-
-                    //if (allStreams.Count == 1)
-                    //{
-                    //    allStreams[0].Value.Write(buffer, 0, bytesRead);
-                    //}
-                    //else
+                    foreach (var stream in _outputStreams)
                     {
-                        byte[] copy = new byte[bytesRead];
-                        Buffer.BlockCopy(buffer, 0, copy, 0, bytesRead);
-
-                        foreach (var stream in allStreams)
-                        {
-                            stream.Value.Queue(copy, 0, copy.Length);
-                        }
+                        stream.Value.Queue(buffer, 0, bytesRead);
                     }
 
                     if (onStarted != null)
@@ -73,27 +61,21 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
         {
-            var result = new QueueStream(stream, _logger)
+            var queueStream = new QueueStream(stream, _logger);
+
+            _outputStreams.TryAdd(queueStream.Id, queueStream);
+
+            try
             {
-                OnFinished = OnFinished
-            };
+                queueStream.Start(cancellationToken);
+            }
+            finally
+            {
+                _outputStreams.TryRemove(queueStream.Id, out queueStream);
+                GC.Collect();
+            }
 
-            _outputStreams.TryAdd(result.Id, result);
-
-            result.Start(cancellationToken);
-
-            return result.TaskCompletion.Task;
-        }
-
-        public void RemoveOutputStream(QueueStream stream)
-        {
-            QueueStream removed;
-            _outputStreams.TryRemove(stream.Id, out removed);
-        }
-
-        private void OnFinished(QueueStream queueStream)
-        {
-            RemoveOutputStream(queueStream);
+            return Task.FromResult(true);
         }
     }
 }

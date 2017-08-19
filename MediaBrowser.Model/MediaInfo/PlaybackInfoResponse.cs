@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.MediaInfo
         /// Gets or sets the media sources.
         /// </summary>
         /// <value>The media sources.</value>
-        public List<MediaSourceInfo> MediaSources { get; set; }
+        public MediaSourceInfo[] MediaSources { get; set; }
 
         /// <summary>
         /// Gets or sets the play session identifier.
@@ -26,7 +26,7 @@ namespace MediaBrowser.Model.MediaInfo
 
         public PlaybackInfoResponse()
         {
-            MediaSources = new List<MediaSourceInfo>();
+            MediaSources = new MediaSourceInfo[] { };
         }
     }
 }

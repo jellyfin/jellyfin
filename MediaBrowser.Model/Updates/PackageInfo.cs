@@ -151,7 +151,7 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the versions.
         /// </summary>
         /// <value>The versions.</value>
-        public List<PackageVersionInfo> versions { get; set; }
+        public PackageVersionInfo[] versions { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable in application store].
@@ -170,7 +170,7 @@ namespace MediaBrowser.Model.Updates
         /// </summary>
         public PackageInfo()
         {
-            versions = new List<PackageVersionInfo>();
+            versions = new PackageVersionInfo[] { };
         }
     }
 }

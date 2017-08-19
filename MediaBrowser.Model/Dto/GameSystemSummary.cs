@@ -29,7 +29,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the game extensions.
         /// </summary>
         /// <value>The game extensions.</value>
-        public List<string> GameFileExtensions { get; set; }
+        public string[] GameFileExtensions { get; set; }
 
         /// <summary>
         /// Gets or sets the client installed game count.
@@ -42,7 +42,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         public GameSystemSummary()
         {
-            GameFileExtensions = new List<string>();
+            GameFileExtensions = new string[] { };
         }
     }
 }

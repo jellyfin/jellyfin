@@ -251,7 +251,7 @@ namespace Emby.Server.Implementations.Notifications
             _typeFactories = notificationTypeFactories.ToArray();
         }
 
-        public IEnumerable<NotificationTypeInfo> GetNotificationTypes()
+        public List<NotificationTypeInfo> GetNotificationTypes()
         {
             var list = _typeFactories.Select(i =>
             {

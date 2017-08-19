@@ -84,7 +84,7 @@ namespace Emby.Server.Implementations.Collections
                     ProviderIds = options.ProviderIds,
                     Shares = options.UserIds.Select(i => new Share
                     {
-                        UserId = i.ToString("N"),
+                        UserId = i,
                         CanEdit = true
 
                     }).ToList()
@@ -92,7 +92,7 @@ namespace Emby.Server.Implementations.Collections
 
                 await parentFolder.AddChild(collection, CancellationToken.None).ConfigureAwait(false);
 
-                if (options.ItemIdList.Count > 0)
+                if (options.ItemIdList.Length > 0)
                 {
                     await AddToCollection(collection.Id, options.ItemIdList, false, new MetadataRefreshOptions(_fileSystem)
                     {
@@ -149,12 +149,12 @@ namespace Emby.Server.Implementations.Collections
             return GetCollectionsFolder(string.Empty);
         }
 
-        public Task AddToCollection(Guid collectionId, IEnumerable<Guid> ids)
+        public Task AddToCollection(Guid collectionId, string[] ids)
         {
             return AddToCollection(collectionId, ids, true, new MetadataRefreshOptions(_fileSystem));
         }
 
-        private async Task AddToCollection(Guid collectionId, IEnumerable<Guid> ids, bool fireEvent, MetadataRefreshOptions refreshOptions)
+        private async Task AddToCollection(Guid collectionId, string[] ids, bool fireEvent, MetadataRefreshOptions refreshOptions)
         {
             var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
 
@@ -165,11 +165,12 @@ namespace Emby.Server.Implementations.Collections
 
             var list = new List<LinkedChild>();
             var itemList = new List<BaseItem>();
-            var currentLinkedChildren = collection.GetLinkedChildren().ToList();
+            var currentLinkedChildrenIds = collection.GetLinkedChildren().Select(i => i.Id).ToList();
 
             foreach (var itemId in ids)
             {
-                var item = _libraryManager.GetItemById(itemId);
+                var guidId = new Guid(itemId);
+                var item = _libraryManager.GetItemById(guidId);
 
                 if (string.IsNullOrWhiteSpace(item.Path))
                 {
@@ -183,7 +184,7 @@ namespace Emby.Server.Implementations.Collections
 
                 itemList.Add(item);
 
-                if (currentLinkedChildren.All(i => i.Id != itemId))
+                if (!currentLinkedChildrenIds.Contains(guidId))
                 {
                     list.Add(LinkedChild.Create(item));
                 }
@@ -213,7 +214,7 @@ namespace Emby.Server.Implementations.Collections
             }
         }
 
-        public async Task RemoveFromCollection(Guid collectionId, IEnumerable<Guid> itemIds)
+        public async Task RemoveFromCollection(Guid collectionId, string[] itemIds)
         {
             var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
 
@@ -227,9 +228,10 @@ namespace Emby.Server.Implementations.Collections
 
             foreach (var itemId in itemIds)
             {
-                var childItem = _libraryManager.GetItemById(itemId);
+                var guidId = new Guid(itemId);
+                var childItem = _libraryManager.GetItemById(guidId);
 
-                var child = collection.LinkedChildren.FirstOrDefault(i => (i.ItemId.HasValue && i.ItemId.Value == itemId) || (childItem != null && string.Equals(childItem.Path, i.Path, StringComparison.OrdinalIgnoreCase)));
+                var child = collection.LinkedChildren.FirstOrDefault(i => (i.ItemId.HasValue && i.ItemId.Value == guidId) || (childItem != null && string.Equals(childItem.Path, i.Path, StringComparison.OrdinalIgnoreCase)));
 
                 if (child == null)
                 {

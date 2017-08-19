@@ -15,18 +15,18 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the plugins.
         /// </summary>
         /// <value>The plugins.</value>
-        public List<MetadataPlugin> Plugins { get; set; }
+        public MetadataPlugin[] Plugins { get; set; }
 
         /// <summary>
         /// Gets or sets the supported image types.
         /// </summary>
         /// <value>The supported image types.</value>
-        public List<ImageType> SupportedImageTypes { get; set; }
+        public ImageType[] SupportedImageTypes { get; set; }
 
         public MetadataPluginSummary()
         {
-            SupportedImageTypes = new List<ImageType>();
-            Plugins = new List<MetadataPlugin>();
+            SupportedImageTypes = new ImageType[] { };
+            Plugins = new MetadataPlugin[] { };
         }
     }
 }

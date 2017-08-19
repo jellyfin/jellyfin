@@ -54,7 +54,7 @@ namespace MediaBrowser.Model.Dto
 
         public List<MediaStream> MediaStreams { get; set; }
 
-        public List<string> Formats { get; set; }
+        public string[] Formats { get; set; }
 
         public int? Bitrate { get; set; }
 
@@ -69,7 +69,7 @@ namespace MediaBrowser.Model.Dto
 
         public MediaSourceInfo()
         {
-            Formats = new List<string>();
+            Formats = new string[] { };
             MediaStreams = new List<MediaStream>();
             RequiredHttpHeaders = new Dictionary<string, string>();
             SupportsTranscoding = true;

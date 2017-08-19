@@ -11,6 +11,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Devices
 {
@@ -199,7 +200,10 @@ namespace Emby.Server.Implementations.Devices
                 }
 
                 history.DeviceId = deviceId;
-                history.FilesUploaded.Add(file);
+
+                var list = history.FilesUploaded.ToList();
+                list.Add(file);
+                history.FilesUploaded = list.ToArray(list.Count);
 
                 _json.SerializeToFile(history, path);
             }

@@ -80,7 +80,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             try
             {
-                List<string> streamFileNames = null;
+                string[] streamFileNames = null;
 
                 if (item.VideoType == VideoType.Iso)
                 {
@@ -91,7 +91,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     streamFileNames = FetchFromDvdLib(item, isoMount);
 
-                    if (streamFileNames.Count == 0)
+                    if (streamFileNames.Length == 0)
                     {
                         _logger.Error("No playable vobs found in dvd structure, skipping ffprobe.");
                         return ItemUpdateType.MetadataImport;
@@ -106,7 +106,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     streamFileNames = blurayDiscInfo.Files;
 
-                    if (streamFileNames.Count == 0)
+                    if (streamFileNames.Length == 0)
                     {
                         _logger.Error("No playable vobs found in bluray structure, skipping ffprobe.");
                         return ItemUpdateType.MetadataImport;
@@ -115,7 +115,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (streamFileNames == null)
                 {
-                    streamFileNames = new List<string>();
+                    streamFileNames = new string[] { };
                 }
 
                 var result = await GetMediaInfo(item, isoMount, streamFileNames, cancellationToken).ConfigureAwait(false);
@@ -138,7 +138,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(Video item,
             IIsoMount isoMount,
-            List<string> streamFileNames,
+            string[] streamFileNames,
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -193,7 +193,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
             video.Container = mediaInfo.Container;
 
-            var chapters = mediaInfo.Chapters ?? new List<ChapterInfo>();
+            var chapters = mediaInfo.Chapters == null ? new List<ChapterInfo>() : mediaInfo.Chapters.ToList();
             if (blurayInfo != null)
             {
                 FetchBdInfo(video, chapters, mediaStreams, blurayInfo);
@@ -266,7 +266,7 @@ namespace MediaBrowser.Providers.MediaInfo
             //video.PlayableStreamFileNames = blurayInfo.Files.ToList();
 
             // Use BD Info if it has multiple m2ts. Otherwise, treat it like a video file and rely more on ffprobe output
-            if (blurayInfo.Files.Count > 1)
+            if (blurayInfo.Files.Length > 1)
             {
                 int? currentHeight = null;
                 int? currentWidth = null;
@@ -551,7 +551,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private List<string> FetchFromDvdLib(Video item, IIsoMount mount)
+        private string[] FetchFromDvdLib(Video item, IIsoMount mount)
         {
             var path = mount == null ? item.Path : mount.MountedPath;
             var dvd = new Dvd(path, _fileSystem);
@@ -568,7 +568,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             return GetPrimaryPlaylistVobFiles(item, mount, titleNumber)
                 .Select(Path.GetFileName)
-                .ToList();
+                .ToArray();
         }
 
         private long GetRuntime(Title title)

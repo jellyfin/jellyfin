@@ -18,13 +18,13 @@ namespace MediaBrowser.Controller.Sync
         /// </summary>
         /// <param name="userId">The user identifier.</param>
         /// <returns>IEnumerable&lt;SyncTarget&gt;.</returns>
-        IEnumerable<SyncTarget> GetSyncTargets(string userId);
+        List<SyncTarget> GetSyncTargets(string userId);
 
         /// <summary>
         /// Gets all synchronize targets.
         /// </summary>
         /// <returns>IEnumerable&lt;SyncTarget&gt;.</returns>
-        IEnumerable<SyncTarget> GetAllSyncTargets();
+        List<SyncTarget> GetAllSyncTargets();
     }
 
     public interface IHasUniqueTargetIds

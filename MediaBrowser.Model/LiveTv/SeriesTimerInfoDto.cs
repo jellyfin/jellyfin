@@ -15,7 +15,7 @@ namespace MediaBrowser.Model.LiveTv
         public SeriesTimerInfoDto()
         {
             ImageTags = new Dictionary<ImageType, string>();
-            Days = new List<DayOfWeek>();
+            Days = new DayOfWeek[] { };
             Type = "SeriesTimer";
         }
 
@@ -45,7 +45,7 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the days.
         /// </summary>
         /// <value>The days.</value>
-        public List<DayOfWeek> Days { get; set; }
+        public DayOfWeek[] Days { get; set; }
 
         /// <summary>
         /// Gets or sets the day pattern.
@@ -58,16 +58,6 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The image tags.</value>
         public Dictionary<ImageType, string> ImageTags { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has primary image.
-        /// </summary>
-        /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool HasPrimaryImage
-        {
-            get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Primary); }
-        }
 
         /// <summary>
         /// Gets or sets the parent thumb item id.

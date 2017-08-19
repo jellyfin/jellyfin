@@ -468,7 +468,7 @@ namespace Emby.Server.Implementations.Session
 
                 if (!userId.HasValue)
                 {
-                    sessionInfo.AdditionalUsers.Clear();
+                    sessionInfo.AdditionalUsers = new SessionUserInfo[] { };
                 }
 
                 if (sessionInfo.SessionController == null)
@@ -1074,7 +1074,7 @@ namespace Emby.Server.Implementations.Session
                     DtoOptions = new DtoOptions(false)
                     {
                         EnableImages = false,
-                        Fields = new List<ItemFields>
+                        Fields = new ItemFields[]
                         {
                             ItemFields.SortName
                         }
@@ -1097,7 +1097,7 @@ namespace Emby.Server.Implementations.Session
                     DtoOptions = new DtoOptions(false)
                     {
                         EnableImages = false,
-                        Fields = new List<ItemFields>
+                        Fields = new ItemFields[]
                         {
                             ItemFields.SortName
                         }
@@ -1340,11 +1340,15 @@ namespace Emby.Server.Implementations.Session
             {
                 var user = _userManager.GetUserById(userId);
 
-                session.AdditionalUsers.Add(new SessionUserInfo
+                var list = session.AdditionalUsers.ToList();
+
+                list.Add(new SessionUserInfo
                 {
                     UserId = userId,
                     UserName = user.Name
                 });
+
+                session.AdditionalUsers = list.ToArray(list.Count);
             }
         }
 
@@ -1368,7 +1372,10 @@ namespace Emby.Server.Implementations.Session
 
             if (user != null)
             {
-                session.AdditionalUsers.Remove(user);
+                var list = session.AdditionalUsers.ToList();
+                list.Remove(user);
+
+                session.AdditionalUsers = list.ToArray(list.Count);
             }
         }
 
@@ -1661,35 +1668,39 @@ namespace Emby.Server.Implementations.Session
                     AddProgramRecordingInfo = false
                 };
 
-                dtoOptions.Fields.Remove(ItemFields.BasicSyncInfo);
-                dtoOptions.Fields.Remove(ItemFields.SyncInfo);
-                dtoOptions.Fields.Remove(ItemFields.CanDelete);
-                dtoOptions.Fields.Remove(ItemFields.CanDownload);
-                dtoOptions.Fields.Remove(ItemFields.ChildCount);
-                dtoOptions.Fields.Remove(ItemFields.CustomRating);
-                dtoOptions.Fields.Remove(ItemFields.DateLastMediaAdded);
-                dtoOptions.Fields.Remove(ItemFields.DateLastRefreshed);
-                dtoOptions.Fields.Remove(ItemFields.DateLastSaved);
-                dtoOptions.Fields.Remove(ItemFields.DisplayPreferencesId);
-                dtoOptions.Fields.Remove(ItemFields.Etag);
-                dtoOptions.Fields.Remove(ItemFields.ExternalEtag);
-                dtoOptions.Fields.Remove(ItemFields.InheritedParentalRatingValue);
-                dtoOptions.Fields.Remove(ItemFields.ItemCounts);
-                dtoOptions.Fields.Remove(ItemFields.MediaSourceCount);
-                dtoOptions.Fields.Remove(ItemFields.MediaStreams);
-                dtoOptions.Fields.Remove(ItemFields.MediaSources);
-                dtoOptions.Fields.Remove(ItemFields.People);
-                dtoOptions.Fields.Remove(ItemFields.PlayAccess);
-                dtoOptions.Fields.Remove(ItemFields.People);
-                dtoOptions.Fields.Remove(ItemFields.ProductionLocations);
-                dtoOptions.Fields.Remove(ItemFields.RecursiveItemCount);
-                dtoOptions.Fields.Remove(ItemFields.RemoteTrailers);
-                dtoOptions.Fields.Remove(ItemFields.SeasonUserData);
-                dtoOptions.Fields.Remove(ItemFields.Settings);
-                dtoOptions.Fields.Remove(ItemFields.SortName);
-                dtoOptions.Fields.Remove(ItemFields.Tags);
-                dtoOptions.Fields.Remove(ItemFields.ThemeSongIds);
-                dtoOptions.Fields.Remove(ItemFields.ThemeVideoIds);
+                var fields = dtoOptions.Fields.ToList();
+
+                fields.Remove(ItemFields.BasicSyncInfo);
+                fields.Remove(ItemFields.SyncInfo);
+                fields.Remove(ItemFields.CanDelete);
+                fields.Remove(ItemFields.CanDownload);
+                fields.Remove(ItemFields.ChildCount);
+                fields.Remove(ItemFields.CustomRating);
+                fields.Remove(ItemFields.DateLastMediaAdded);
+                fields.Remove(ItemFields.DateLastRefreshed);
+                fields.Remove(ItemFields.DateLastSaved);
+                fields.Remove(ItemFields.DisplayPreferencesId);
+                fields.Remove(ItemFields.Etag);
+                fields.Remove(ItemFields.ExternalEtag);
+                fields.Remove(ItemFields.InheritedParentalRatingValue);
+                fields.Remove(ItemFields.ItemCounts);
+                fields.Remove(ItemFields.MediaSourceCount);
+                fields.Remove(ItemFields.MediaStreams);
+                fields.Remove(ItemFields.MediaSources);
+                fields.Remove(ItemFields.People);
+                fields.Remove(ItemFields.PlayAccess);
+                fields.Remove(ItemFields.People);
+                fields.Remove(ItemFields.ProductionLocations);
+                fields.Remove(ItemFields.RecursiveItemCount);
+                fields.Remove(ItemFields.RemoteTrailers);
+                fields.Remove(ItemFields.SeasonUserData);
+                fields.Remove(ItemFields.Settings);
+                fields.Remove(ItemFields.SortName);
+                fields.Remove(ItemFields.Tags);
+                fields.Remove(ItemFields.ThemeSongIds);
+                fields.Remove(ItemFields.ThemeVideoIds);
+
+                dtoOptions.Fields = fields.ToArray(fields.Count);
 
                 _itemInfoDtoOptions = dtoOptions;
             }
@@ -1698,7 +1709,7 @@ namespace Emby.Server.Implementations.Session
 
             if (mediaSource != null)
             {
-                info.MediaStreams = mediaSource.MediaStreams;
+                info.MediaStreams = mediaSource.MediaStreams.ToArray();
             }
 
             return info;

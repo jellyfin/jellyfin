@@ -22,13 +22,13 @@ namespace MediaBrowser.Controller.Session
             _sessionManager = sessionManager;
             _logger = logger;
 
-            AdditionalUsers = new List<SessionUserInfo>();
+            AdditionalUsers = new SessionUserInfo[] { };
             PlayState = new PlayerStateInfo();
         }
 
         public PlayerStateInfo PlayState { get; set; }
 
-        public List<SessionUserInfo> AdditionalUsers { get; set; }
+        public SessionUserInfo[] AdditionalUsers { get; set; }
 
         public ClientCapabilities Capabilities { get; set; }
 
@@ -42,13 +42,13 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the playable media types.
         /// </summary>
         /// <value>The playable media types.</value>
-        public List<string> PlayableMediaTypes
+        public string[] PlayableMediaTypes
         {
             get
             {
                 if (Capabilities == null)
                 {
-                    return new List<string>();
+                    return new string[] { };
                 }
                 return Capabilities.PlayableMediaTypes;
             }
@@ -138,13 +138,13 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the supported commands.
         /// </summary>
         /// <value>The supported commands.</value>
-        public List<string> SupportedCommands
+        public string[] SupportedCommands
         {
             get
             {
                 if (Capabilities == null)
                 {
-                    return new List<string>();
+                    return new string[] { };
                 }
                 return Capabilities.SupportedCommands;
             }

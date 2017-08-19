@@ -648,7 +648,7 @@ namespace MediaBrowser.Api.LiveTv
     {
         public List<TunerChannelMapping> TunerChannels { get; set; }
         public List<NameIdPair> ProviderChannels { get; set; }
-        public List<NameValuePair> Mappings { get; set; }
+        public NameValuePair[] Mappings { get; set; }
         public string ProviderName { get; set; }
     }
 
@@ -789,7 +789,7 @@ namespace MediaBrowser.Api.LiveTv
             var providerChannels = await _liveTvManager.GetChannelsFromListingsProviderData(request.ProviderId, CancellationToken.None)
                      .ConfigureAwait(false);
 
-            var mappings = listingsProviderInfo.ChannelMappings.ToList();
+            var mappings = listingsProviderInfo.ChannelMappings;
 
             var result = new ChannelMappingOptions
             {
@@ -862,7 +862,7 @@ namespace MediaBrowser.Api.LiveTv
         {
             var config = GetConfiguration();
 
-            config.TunerHosts = config.TunerHosts.Where(i => !string.Equals(request.Id, i.Id, StringComparison.OrdinalIgnoreCase)).ToList();
+            config.TunerHosts = config.TunerHosts.Where(i => !string.Equals(request.Id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
 
             _config.SaveConfiguration("livetv", config);
         }
@@ -922,9 +922,8 @@ namespace MediaBrowser.Api.LiveTv
 
             options.AddCurrentProgram = request.AddCurrentProgram;
 
-            var returnList = (await _dtoService.GetBaseItemDtos(channelResult.Items, options, user)
+            var returnArray = (await _dtoService.GetBaseItemDtos(channelResult.Items, options, user)
                 .ConfigureAwait(false));
-            var returnArray = returnList.ToArray(returnList.Count);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -937,10 +936,13 @@ namespace MediaBrowser.Api.LiveTv
 
         private void RemoveFields(DtoOptions options)
         {
-            options.Fields.Remove(ItemFields.CanDelete);
-            options.Fields.Remove(ItemFields.CanDownload);
-            options.Fields.Remove(ItemFields.DisplayPreferencesId);
-            options.Fields.Remove(ItemFields.Etag);
+            var fields = options.Fields.ToList();
+
+            fields.Remove(ItemFields.CanDelete);
+            fields.Remove(ItemFields.CanDownload);
+            fields.Remove(ItemFields.DisplayPreferencesId);
+            fields.Remove(ItemFields.Etag);
+            options.Fields = fields.ToArray(fields.Count);
         }
 
         public object Get(GetChannel request)

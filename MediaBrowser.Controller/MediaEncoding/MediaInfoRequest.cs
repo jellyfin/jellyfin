@@ -14,12 +14,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         public DlnaProfileType MediaType { get; set; }
         public IIsoMount MountedIso { get; set; }
         public VideoType VideoType { get; set; }
-        public List<string> PlayableStreamFileNames { get; set; }
+        public string[] PlayableStreamFileNames { get; set; }
         public int AnalyzeDurationMs { get; set; }
 
         public MediaInfoRequest()
         {
-            PlayableStreamFileNames = new List<string>();
+            PlayableStreamFileNames = new string[] { };
         }
     }
 }

@@ -62,7 +62,7 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the clients.
         /// </summary>
         /// <value>The clients.</value>
-        public List<string> Clients { get; set; }
+        public string[] Clients { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance can reset.
@@ -72,7 +72,7 @@ namespace MediaBrowser.Model.LiveTv
         
         public LiveTvTunerInfoDto()
         {
-            Clients = new List<string>();
+            Clients = new string[] { };
         }
     }
 }
