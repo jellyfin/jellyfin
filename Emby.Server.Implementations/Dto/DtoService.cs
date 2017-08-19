@@ -77,7 +77,7 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="owner">The owner.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public BaseItemDto GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null)
+        public BaseItemDto GetBaseItemDto(BaseItem item, ItemFields[] fields, User user = null, BaseItem owner = null)
         {
             var options = new DtoOptions
             {
@@ -87,7 +87,17 @@ namespace Emby.Server.Implementations.Dto
             return GetBaseItemDto(item, options, user, owner);
         }
 
-        public async Task<List<BaseItemDto>> GetBaseItemDtos(IEnumerable<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
+        public Task<BaseItemDto[]> GetBaseItemDtos(List<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
+        {
+            return GetBaseItemDtos(items, items.Count, options, user, owner);
+        }
+
+        public Task<BaseItemDto[]> GetBaseItemDtos(BaseItem[] items, DtoOptions options, User user = null, BaseItem owner = null)
+        {
+            return GetBaseItemDtos(items, items.Length, options, user, owner);
+        }
+
+        public async Task<BaseItemDto[]> GetBaseItemDtos(IEnumerable<BaseItem> items, int itemCount, DtoOptions options, User user = null, BaseItem owner = null)
         {
             if (items == null)
             {
@@ -101,7 +111,7 @@ namespace Emby.Server.Implementations.Dto
 
             var syncDictionary = GetSyncedItemProgress(options);
 
-            var list = new List<BaseItemDto>();
+            var returnItems = new BaseItemDto[itemCount];
             var programTuples = new List<Tuple<BaseItem, BaseItemDto>>();
             var channelTuples = new List<Tuple<BaseItemDto, LiveTvChannel>>();
 
@@ -109,6 +119,7 @@ namespace Emby.Server.Implementations.Dto
                 ? _providerManager.GetRefreshQueue()
                 : null;
 
+            var index = 0;
             foreach (var item in items)
             {
                 var dto = GetBaseItemDtoInternal(item, options, refreshQueue, user, owner);
@@ -144,7 +155,8 @@ namespace Emby.Server.Implementations.Dto
 
                 FillSyncInfo(dto, item, options, user, syncDictionary);
 
-                list.Add(dto);
+                returnItems[index] = dto;
+                index++;
             }
 
             if (programTuples.Count > 0)
@@ -157,7 +169,7 @@ namespace Emby.Server.Implementations.Dto
                 await _livetvManager().AddChannelInfo(channelTuples, options, user).ConfigureAwait(false);
             }
 
-            return list;
+            return returnItems;
         }
 
         public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
@@ -992,7 +1004,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.RemoteTrailers = hasTrailers != null ?
                     hasTrailers.RemoteTrailers :
-                    new MediaUrl[] {};
+                    new MediaUrl[] { };
             }
 
             dto.Name = item.Name;
@@ -1053,7 +1065,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (dto.Taglines == null)
                 {
-                    dto.Taglines = new string[]{};
+                    dto.Taglines = new string[] { };
                 }
             }
 
@@ -1243,17 +1255,17 @@ namespace Emby.Server.Implementations.Dto
 
                 if (iHasMediaSources != null)
                 {
-                    List<MediaStream> mediaStreams;
+                    MediaStream[] mediaStreams;
 
                     if (dto.MediaSources != null && dto.MediaSources.Count > 0)
                     {
                         mediaStreams = dto.MediaSources.Where(i => new Guid(i.Id) == item.Id)
                             .SelectMany(i => i.MediaStreams)
-                            .ToList();
+                            .ToArray();
                     }
                     else
                     {
-                        mediaStreams = _mediaSourceManager().GetStaticMediaSources(iHasMediaSources, true).First().MediaStreams;
+                        mediaStreams = _mediaSourceManager().GetStaticMediaSources(iHasMediaSources, true).First().MediaStreams.ToArray();
                     }
 
                     dto.MediaStreams = mediaStreams;

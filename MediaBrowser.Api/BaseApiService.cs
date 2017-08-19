@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api
 {
@@ -54,6 +55,17 @@ namespace MediaBrowser.Api
             return Request.Headers[name];
         }
 
+        private static readonly string[] EmptyStringArray = new string[] { };
+        public static string[] SplitValue(string value, char delim)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return EmptyStringArray;
+            }
+
+            return value.Split(new[] { delim }, StringSplitOptions.RemoveEmptyEntries);
+        }
+        
         /// <summary>
         /// To the optimized result.
         /// </summary>
@@ -128,7 +140,7 @@ namespace MediaBrowser.Api
             var hasFields = request as IHasItemFields;
             if (hasFields != null)
             {
-                options.Fields = hasFields.GetItemFields().ToList();
+                options.Fields = hasFields.GetItemFields();
             }
 
             var client = authInfo.Client ?? string.Empty;
@@ -137,7 +149,9 @@ namespace MediaBrowser.Api
                 client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
                 client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                options.Fields.Add(Model.Querying.ItemFields.RecursiveItemCount);
+                var list = options.Fields.ToList();
+                list.Add(Model.Querying.ItemFields.RecursiveItemCount);
+                options.Fields = list.ToArray(list.Count);
             }
 
             if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
@@ -148,7 +162,9 @@ namespace MediaBrowser.Api
                client.IndexOf("samsung", StringComparison.OrdinalIgnoreCase) != -1 ||
                client.IndexOf("androidtv", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                options.Fields.Add(Model.Querying.ItemFields.ChildCount);
+                var list = options.Fields.ToList();
+                list.Add(Model.Querying.ItemFields.ChildCount);
+                options.Fields = list.ToArray(list.Count);
             }
 
             var hasDtoOptions = request as IHasDtoOptions;
@@ -167,7 +183,7 @@ namespace MediaBrowser.Api
 
                 if (!string.IsNullOrWhiteSpace(hasDtoOptions.EnableImageTypes))
                 {
-                    options.ImageTypes = (hasDtoOptions.EnableImageTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToList();
+                    options.ImageTypes = (hasDtoOptions.EnableImageTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToArray();
                 }
             }
 

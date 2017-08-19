@@ -424,11 +424,6 @@ namespace Emby.Server.Implementations
 
             SetBaseExceptionMessage();
 
-            if (environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
-            {
-                fileSystem.AddShortcutHandler(new LnkShortcutHandler());
-            }
-
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
         }
 
@@ -1858,9 +1853,9 @@ namespace Emby.Server.Implementations
                 HasPendingRestart = HasPendingRestart,
                 Version = ApplicationVersion.ToString(),
                 WebSocketPortNumber = HttpPort,
-                FailedPluginAssemblies = FailedAssemblies.ToList(),
-                InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToList(),
-                CompletedInstallations = InstallationManager.CompletedInstallations.ToList(),
+                FailedPluginAssemblies = FailedAssemblies.ToArray(),
+                InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToArray(),
+                CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
                 Id = SystemId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
                 LogPath = ApplicationPaths.LogDirectoryPath,

@@ -14,14 +14,14 @@ namespace MediaBrowser.Controller.Collections
 
         public Dictionary<string, string> ProviderIds { get; set; }
 
-        public List<Guid> ItemIdList { get; set; }
-        public List<Guid> UserIds { get; set; }
+        public string[] ItemIdList { get; set; }
+        public string[] UserIds { get; set; }
 
         public CollectionCreationOptions()
         {
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            ItemIdList = new List<Guid>();
-            UserIds = new List<Guid>();
+            ItemIdList = new string[] { };
+            UserIds = new string[] { };
         }
     }
 }

@@ -97,7 +97,7 @@ namespace MediaBrowser.Controller.Providers
         /// Gets all metadata plugins.
         /// </summary>
         /// <returns>IEnumerable{MetadataPlugin}.</returns>
-        IEnumerable<MetadataPluginSummary> GetAllMetadataPlugins();
+        MetadataPluginSummary[] GetAllMetadataPlugins();
 
         /// <summary>
         /// Gets the external urls.

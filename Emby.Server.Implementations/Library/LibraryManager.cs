@@ -1208,7 +1208,7 @@ namespace Emby.Server.Implementations.Library
                 .Where(i => string.Equals(ShortcutFileExtension, Path.GetExtension(i), StringComparison.OrdinalIgnoreCase))
                     .Select(_fileSystem.ResolveShortcut)
                     .OrderBy(i => i)
-                    .ToList(),
+                    .ToArray(),
 
                 CollectionType = GetCollectionType(dir)
             };
@@ -1554,7 +1554,7 @@ namespace Emby.Server.Implementations.Library
                     IncludeHidden = true,
                     IncludeExternalContent = allowExternalContent
 
-                }, CancellationToken.None).Result.ToList();
+                }, CancellationToken.None).Result;
 
                 query.TopParentIds = userViews.SelectMany(i => GetTopParentIdsForQuery(i, user)).Select(i => i.ToString("N")).ToArray();
             }
@@ -3061,7 +3061,7 @@ namespace Emby.Server.Implementations.Library
             var topLibraryFolders = GetUserRootFolder().Children.ToList();
             var info = GetVirtualFolderInfo(virtualFolderPath, topLibraryFolders, null);
 
-            if (info.Locations.Count > 0 && info.Locations.Count != options.PathInfos.Length)
+            if (info.Locations.Length > 0 && info.Locations.Length != options.PathInfos.Length)
             {
                 var list = options.PathInfos.ToList();
 

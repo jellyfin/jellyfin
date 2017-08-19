@@ -30,7 +30,7 @@ namespace MediaBrowser.Controller.Channels
         /// Gets all channel features.
         /// </summary>
         /// <returns>IEnumerable{ChannelFeatures}.</returns>
-        IEnumerable<ChannelFeatures> GetAllChannelFeatures();
+        ChannelFeatures[] GetAllChannelFeatures();
 
         /// <summary>
         /// Gets the channel.

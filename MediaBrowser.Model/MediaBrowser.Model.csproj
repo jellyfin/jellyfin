@@ -111,7 +111,6 @@
     <Compile Include="Drawing\ImageOrientation.cs" />
     <Compile Include="Dto\IHasServerId.cs" />
     <Compile Include="Dto\IHasSyncInfo.cs" />
-    <Compile Include="Dto\ItemLayout.cs" />
     <Compile Include="Dto\MetadataEditorInfo.cs" />
     <Compile Include="Dto\NameIdPair.cs" />
     <Compile Include="Dto\NameValuePair.cs" />
@@ -127,7 +126,6 @@
     <Compile Include="System\IPowerManagement.cs" />
     <Compile Include="Text\ITextEncoding.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
-    <Compile Include="Health\IHealthMonitor.cs" />
     <Compile Include="IO\FileSystemMetadata.cs" />
     <Compile Include="IO\IFileSystem.cs" />
     <Compile Include="IO\IMemoryStreamFactory.cs" />
@@ -413,7 +411,6 @@
     <Compile Include="Querying\ItemSortBy.cs" />
     <Compile Include="Dto\BaseItemDto.cs" />
     <Compile Include="Dto\UserDto.cs" />
-    <Compile Include="Querying\ItemsResult.cs" />
     <Compile Include="Entities\DisplayPreferences.cs" />
     <Compile Include="Entities\ImageType.cs" />
     <Compile Include="Entities\IHasProviderIds.cs" />

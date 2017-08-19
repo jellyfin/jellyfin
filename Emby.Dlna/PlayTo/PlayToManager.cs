@@ -182,7 +182,7 @@ namespace Emby.Dlna.PlayTo
                     {
                         PlayableMediaTypes = profile.GetSupportedMediaTypes(),
 
-                        SupportedCommands = new List<string>
+                        SupportedCommands = new string[]
                         {
                             GeneralCommandType.VolumeDown.ToString(),
                             GeneralCommandType.VolumeUp.ToString(),

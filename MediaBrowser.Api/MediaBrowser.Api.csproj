@@ -97,7 +97,6 @@
     <Compile Include="Movies\MoviesService.cs" />
     <Compile Include="NewsService.cs" />
     <Compile Include="NotificationsService.cs" />
-    <Compile Include="PackageReviewService.cs" />
     <Compile Include="PackageService.cs" />
     <Compile Include="PluginService.cs" />
     <Compile Include="Images\RemoteImageService.cs" />

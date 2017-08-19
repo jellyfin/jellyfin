@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         UserItemDataDto GetUserDataDto(IHasUserData item, User user);
 
-        UserItemDataDto GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, List<ItemFields> fields);
+        UserItemDataDto GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, ItemFields[] fields);
 
         /// <summary>
         /// Get all user data for the given user

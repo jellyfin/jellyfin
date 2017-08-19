@@ -133,7 +133,6 @@
     <Compile Include="IO\FileRefresher.cs" />
     <Compile Include="IO\IsoManager.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
-    <Compile Include="IO\LnkShortcutHandler.cs" />
     <Compile Include="IO\ManagedFileSystem.cs" />
     <Compile Include="IO\MbLinkShortcutHandler.cs" />
     <Compile Include="IO\MemoryStreamProvider.cs" />

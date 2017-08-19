@@ -253,7 +253,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 int value;
                 if (!string.IsNullOrWhiteSpace(tmdbId) && int.TryParse(tmdbId, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
                 {
-                    item.SetProviderId(MetadataProviders.Tmdb, tmdbId);
+                    item.SetProviderId(MetadataProviders.Tmdb, value.ToString(_usCulture));
                 }
             }
 
@@ -269,7 +269,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     int value;
                     if (!string.IsNullOrWhiteSpace(tvdbId) && int.TryParse(tvdbId, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
                     {
-                        item.SetProviderId(MetadataProviders.Tvdb, tvdbId);
+                        item.SetProviderId(MetadataProviders.Tvdb, value.ToString(_usCulture));
                     }
                 }
             }

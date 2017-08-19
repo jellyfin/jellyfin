@@ -5,9 +5,9 @@ namespace MediaBrowser.Model.Session
 {
     public class ClientCapabilities
     {
-        public List<string> PlayableMediaTypes { get; set; }
+        public string[] PlayableMediaTypes { get; set; }
 
-        public List<string> SupportedCommands { get; set; }
+        public string[] SupportedCommands { get; set; }
 
         public bool SupportsMediaControl { get; set; }
         public bool SupportsContentUploading { get; set; }
@@ -17,17 +17,17 @@ namespace MediaBrowser.Model.Session
         public bool SupportsSync { get; set; }
 
         public DeviceProfile DeviceProfile { get; set; }
-        public List<string> SupportedLiveMediaTypes { get; set; }
+        public string[] SupportedLiveMediaTypes { get; set; }
 
         public string AppStoreUrl { get; set; }
         public string IconUrl { get; set; }
 
         public ClientCapabilities()
         {
-            PlayableMediaTypes = new List<string>();
-            SupportedCommands = new List<string>();
+            PlayableMediaTypes = new string[] { };
+            SupportedCommands = new string[] { };
             SupportsPersistentIdentifier = true;
-            SupportedLiveMediaTypes = new List<string>();
+            SupportedLiveMediaTypes = new string[] { };
         }
     }
 }

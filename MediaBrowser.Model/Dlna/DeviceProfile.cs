@@ -117,15 +117,9 @@ namespace MediaBrowser.Model.Dlna
             MusicStreamingTranscodingBitrate = 128000;
         }
 
-        public List<string> GetSupportedMediaTypes()
+        public string[] GetSupportedMediaTypes()
         {
-            List<string> list = new List<string>();
-            foreach (string i in (SupportedMediaTypes ?? string.Empty).Split(','))
-            {
-                if (!string.IsNullOrEmpty(i))
-                    list.Add(i);
-            }
-            return list;
+            return ContainerProfile.SplitValue(SupportedMediaTypes);
         }
 
         public TranscodingProfile GetAudioTranscodingProfile(string container, string audioCodec)
@@ -199,8 +193,8 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                List<string> audioCodecs = i.GetAudioCodecs();
-                if (audioCodecs.Count > 0 && !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec ?? string.Empty))
+                var audioCodecs = i.GetAudioCodecs();
+                if (audioCodecs.Length > 0 && !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec ?? string.Empty))
                 {
                     continue;
                 }
@@ -306,14 +300,14 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                List<string> audioCodecs = i.GetAudioCodecs();
-                if (audioCodecs.Count > 0 && !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec ?? string.Empty))
+                var audioCodecs = i.GetAudioCodecs();
+                if (audioCodecs.Length > 0 && !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec ?? string.Empty))
                 {
                     continue;
                 }
 
-                List<string> videoCodecs = i.GetVideoCodecs();
-                if (videoCodecs.Count > 0 && !ListHelper.ContainsIgnoreCase(videoCodecs, videoCodec ?? string.Empty))
+                var videoCodecs = i.GetVideoCodecs();
+                if (videoCodecs.Length > 0 && !ListHelper.ContainsIgnoreCase(videoCodecs, videoCodec ?? string.Empty))
                 {
                     continue;
                 }

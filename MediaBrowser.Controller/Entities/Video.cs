@@ -153,14 +153,14 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the playable stream files.
         /// </summary>
         /// <returns>List{System.String}.</returns>
-        public List<string> GetPlayableStreamFiles()
+        public string[] GetPlayableStreamFiles()
         {
             return GetPlayableStreamFiles(Path);
         }
 
-        public List<string> GetPlayableStreamFileNames()
+        public string[] GetPlayableStreamFileNames()
         {
-            return GetPlayableStreamFiles().Select(System.IO.Path.GetFileName).ToList(); ;
+            return GetPlayableStreamFiles().Select(System.IO.Path.GetFileName).ToArray(); 
         }
 
         /// <summary>
@@ -389,11 +389,11 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="rootPath">The root path.</param>
         /// <returns>List{System.String}.</returns>
-        public List<string> GetPlayableStreamFiles(string rootPath)
+        public string[] GetPlayableStreamFiles(string rootPath)
         {
             if (VideoType == VideoType.VideoFile)
             {
-                return new List<string>();
+                return new string[] { };
             }
 
             var allFiles = FileSystem.GetFilePaths(rootPath, true).ToList();
@@ -411,10 +411,10 @@ namespace MediaBrowser.Controller.Entities
 
             return QueryPlayableStreamFiles(rootPath, videoType).Select(name => allFiles.FirstOrDefault(f => string.Equals(System.IO.Path.GetFileName(f), name, StringComparison.OrdinalIgnoreCase)))
                 .Where(f => !string.IsNullOrEmpty(f))
-                .ToList();
+                .ToArray();
         }
 
-        public static List<string> QueryPlayableStreamFiles(string rootPath, VideoType videoType)
+        public static string[] QueryPlayableStreamFiles(string rootPath, VideoType videoType)
         {
             if (videoType == VideoType.Dvd)
             {
@@ -423,7 +423,7 @@ namespace MediaBrowser.Controller.Entities
                     .ThenBy(i => i.FullName)
                     .Take(1)
                     .Select(i => i.FullName)
-                    .ToList();
+                    .ToArray();
             }
             if (videoType == VideoType.BluRay)
             {
@@ -432,9 +432,9 @@ namespace MediaBrowser.Controller.Entities
                     .ThenBy(i => i.FullName)
                     .Take(1)
                     .Select(i => i.FullName)
-                    .ToList();
+                    .ToArray();
             }
-            return new List<string>();
+            return new string[] { };
         }
 
         /// <summary>

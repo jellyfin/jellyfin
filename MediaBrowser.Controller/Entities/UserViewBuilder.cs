@@ -533,7 +533,7 @@ namespace MediaBrowser.Controller.Entities
             return ConvertToResult(_libraryManager.GetItemList(query));
         }
 
-        private QueryResult<BaseItem> ConvertToResult(IEnumerable<BaseItem> items)
+        private QueryResult<BaseItem> ConvertToResult(List<BaseItem> items)
         {
             var arr = items.ToArray();
             return new QueryResult<BaseItem>
@@ -789,7 +789,7 @@ namespace MediaBrowser.Controller.Entities
             // This must be the last filter
             if (!string.IsNullOrEmpty(query.AdjacentTo))
             {
-                items = FilterForAdjacency(items, query.AdjacentTo);
+                items = FilterForAdjacency(items.ToList(), query.AdjacentTo);
             }
 
             return SortAndPage(items, totalRecordLimit, query, libraryManager, enableSorting);
@@ -1763,10 +1763,8 @@ namespace MediaBrowser.Controller.Entities
             return _userViewManager.GetUserSubView(parent.Id.ToString("N"), type, sortName, CancellationToken.None);
         }
 
-        public static IEnumerable<BaseItem> FilterForAdjacency(IEnumerable<BaseItem> items, string adjacentToId)
+        public static IEnumerable<BaseItem> FilterForAdjacency(List<BaseItem> list, string adjacentToId)
         {
-            var list = items.ToList();
-
             var adjacentToIdGuid = new Guid(adjacentToId);
             var adjacentToItem = list.FirstOrDefault(i => i.Id == adjacentToIdGuid);
 

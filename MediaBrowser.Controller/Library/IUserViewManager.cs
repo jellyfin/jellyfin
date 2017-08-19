@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Library
 {
     public interface IUserViewManager
     {
-        Task<IEnumerable<Folder>> GetUserViews(UserViewQuery query, CancellationToken cancellationToken);
+        Task<Folder[]> GetUserViews(UserViewQuery query, CancellationToken cancellationToken);
 
         Task<UserView> GetUserSubView(string name, string parentId, string type, string sortName, CancellationToken cancellationToken);
 

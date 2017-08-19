@@ -22,7 +22,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Users", "GET", Summary = "Gets a list of users")]
     [Authenticated]
-    public class GetUsers : IReturn<List<UserDto>>
+    public class GetUsers : IReturn<UserDto[]>
     {
         [ApiMember(Name = "IsHidden", Description = "Optional filter by IsHidden=true or false", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsHidden { get; set; }
@@ -35,7 +35,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Users/Public", "GET", Summary = "Gets a list of publicly visible users for display on a login screen.")]
-    public class GetPublicUsers : IReturn<List<UserDto>>
+    public class GetPublicUsers : IReturn<UserDto[]>
     {
     }
 
@@ -329,7 +329,7 @@ namespace MediaBrowser.Api
             var result = users
                 .OrderBy(u => u.Name)
                 .Select(i => _userManager.GetUserDto(i, Request.RemoteIp))
-                .ToList();
+                .ToArray();
 
             return ToOptimizedResult(result);
         }

@@ -13,7 +13,7 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the item ids.
         /// </summary>
         /// <value>The item ids.</value>
-        public List<string> ItemIds { get; set; }
+        public string[] ItemIds { get; set; }
         /// <summary>
         /// Gets or sets the category.
         /// </summary>
@@ -67,7 +67,7 @@ namespace MediaBrowser.Model.Sync
 
         public SyncJobRequest()
         {
-            ItemIds = new List<string>();
+            ItemIds = new string[] { };
             SyncNewContent = true;
         }
     }

@@ -1521,7 +1521,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var inputModifier = string.Empty;
 
-            var numInputFiles = state.PlayableStreamFileNames.Count > 0 ? state.PlayableStreamFileNames.Count : 1;
+            var numInputFiles = state.PlayableStreamFileNames.Length > 0 ? state.PlayableStreamFileNames.Length : 1;
             var probeSizeArgument = GetProbeSizeArgument(numInputFiles);
 
             string analyzeDurationArgument;
@@ -1676,12 +1676,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else
                 {
-                    state.PlayableStreamFileNames = new List<string>();
+                    state.PlayableStreamFileNames = new string[]{};
                 }
             }
             else
             {
-                state.PlayableStreamFileNames = new List<string>();
+                state.PlayableStreamFileNames = new string[] { };
             }
 
             if (mediaSource.Timestamp.HasValue)

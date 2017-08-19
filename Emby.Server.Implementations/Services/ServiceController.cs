@@ -29,13 +29,6 @@ namespace Emby.Server.Implementations.Services
             }
         }
 
-        private Type[] GetGenericArguments(Type type)
-        {
-            return type.GetTypeInfo().IsGenericTypeDefinition
-                ? type.GetTypeInfo().GenericTypeParameters
-                : type.GetTypeInfo().GenericTypeArguments;
-        }
-
         public void RegisterService(HttpListenerHost appHost, Type serviceType)
         {
             var processedReqs = new HashSet<Type>();
@@ -50,36 +43,17 @@ namespace Emby.Server.Implementations.Services
 
                 ServiceExecGeneral.CreateServiceRunnersFor(requestType, actions);
 
-                var returnMarker = GetTypeWithGenericTypeDefinitionOf(requestType, typeof(IReturn<>));
-                var responseType = returnMarker != null ?
-                      GetGenericArguments(returnMarker)[0]
-                    : mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void) ?
-                      mi.ReturnType
-                    : Type.GetType(requestType.FullName + "Response");
+                //var returnMarker = GetTypeWithGenericTypeDefinitionOf(requestType, typeof(IReturn<>));
+                //var responseType = returnMarker != null ?
+                //      GetGenericArguments(returnMarker)[0]
+                //    : mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void) ?
+                //      mi.ReturnType
+                //    : Type.GetType(requestType.FullName + "Response");
 
                 RegisterRestPaths(appHost, requestType);
 
-                appHost.AddServiceInfo(serviceType, requestType, responseType);
+                appHost.AddServiceInfo(serviceType, requestType);
             }
-        }
-
-        private static Type GetTypeWithGenericTypeDefinitionOf(Type type, Type genericTypeDefinition)
-        {
-            foreach (var t in type.GetTypeInfo().ImplementedInterfaces)
-            {
-                if (t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == genericTypeDefinition)
-                {
-                    return t;
-                }
-            }
-
-            var genericType = FirstGenericType(type);
-            if (genericType != null && genericType.GetGenericTypeDefinition() == genericTypeDefinition)
-            {
-                return genericType;
-            }
-
-            return null;
         }
 
         public static Type FirstGenericType(Type type)

@@ -19,7 +19,7 @@ namespace MediaBrowser.Api
 {
     [Route("/Videos/{Id}/AdditionalParts", "GET", Summary = "Gets additional parts for a video.")]
     [Authenticated]
-    public class GetAdditionalParts : IReturn<ItemsResult>
+    public class GetAdditionalParts : IReturn<QueryResult<BaseItemDto>>
     {
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }
@@ -99,7 +99,7 @@ namespace MediaBrowser.Api
                 items = new BaseItemDto[] { };
             }
 
-            var result = new ItemsResult
+            var result = new QueryResult<BaseItemDto>
             {
                 Items = items,
                 TotalRecordCount = items.Length

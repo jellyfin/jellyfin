@@ -6,7 +6,7 @@ namespace MediaBrowser.Model.Playlists
     {
          public string Name { get; set; }
 
-        public List<string> ItemIdList { get; set; }
+        public string[] ItemIdList { get; set; }
 
         public string MediaType { get; set; }
 
@@ -14,7 +14,7 @@ namespace MediaBrowser.Model.Playlists
 
         public PlaylistCreationRequest()
         {
-            ItemIdList = new List<string>();
+            ItemIdList = new string[] { };
         }
    }
 }

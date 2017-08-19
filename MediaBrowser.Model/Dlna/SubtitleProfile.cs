@@ -19,14 +19,9 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("language")]
         public string Language { get; set; }
 
-        public List<string> GetLanguages()
+        public string[] GetLanguages()
         {
-            List<string> list = new List<string>();
-            foreach (string i in (Language ?? string.Empty).Split(','))
-            {
-                if (!string.IsNullOrEmpty(i)) list.Add(i);
-            }
-            return list;
+            return ContainerProfile.SplitValue(Language);
         }
 
         public bool SupportsLanguage(string subLanguage)
@@ -41,8 +36,8 @@ namespace MediaBrowser.Model.Dlna
                 subLanguage = "und";
             }
 
-            List<string> languages = GetLanguages();
-            return languages.Count == 0 || ListHelper.ContainsIgnoreCase(languages, subLanguage);
+            var languages = GetLanguages();
+            return languages.Length == 0 || ListHelper.ContainsIgnoreCase(languages, subLanguage);
         }
     }
 }

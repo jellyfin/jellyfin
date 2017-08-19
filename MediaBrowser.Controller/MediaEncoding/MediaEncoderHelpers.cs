@@ -1,11 +1,8 @@
 ﻿using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
-using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -23,34 +20,34 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="isoMount">The iso mount.</param>
         /// <param name="playableStreamFileNames">The playable stream file names.</param>
         /// <returns>System.String[][].</returns>
-        public static string[] GetInputArgument(IFileSystem fileSystem, string videoPath, MediaProtocol protocol, IIsoMount isoMount, List<string> playableStreamFileNames)
+        public static string[] GetInputArgument(IFileSystem fileSystem, string videoPath, MediaProtocol protocol, IIsoMount isoMount, string[] playableStreamFileNames)
         {
-            if (playableStreamFileNames.Count > 0)
+            if (playableStreamFileNames.Length > 0)
             {
                 if (isoMount == null)
                 {
-                    return GetPlayableStreamFiles(fileSystem, videoPath, playableStreamFileNames).ToArray();
+                    return GetPlayableStreamFiles(fileSystem, videoPath, playableStreamFileNames);
                 }
-                return GetPlayableStreamFiles(fileSystem, isoMount.MountedPath, playableStreamFileNames).ToArray();
+                return GetPlayableStreamFiles(fileSystem, isoMount.MountedPath, playableStreamFileNames);
             }
 
             return new[] {videoPath};
         }
 
-        private static List<string> GetPlayableStreamFiles(IFileSystem fileSystem, string rootPath, List<string> filenames)
+        private static string[] GetPlayableStreamFiles(IFileSystem fileSystem, string rootPath, string[] filenames)
         {
-            if (filenames.Count == 0)
+            if (filenames.Length == 0)
             {
-                return new List<string>();
+                return new string[]{};
             }
 
             var allFiles = fileSystem
                 .GetFilePaths(rootPath, true)
-                .ToList();
+                .ToArray();
 
             return filenames.Select(name => allFiles.FirstOrDefault(f => string.Equals(Path.GetFileName(f), name, StringComparison.OrdinalIgnoreCase)))
                 .Where(f => !string.IsNullOrEmpty(f))
-                .ToList();
+                .ToArray();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace MediaBrowser.Model.Net
         /// <summary>
         /// Any extension in this list is considered a video file - can be added to at runtime for extensibility
         /// </summary>
-        private static readonly List<string> VideoFileExtensions = new List<string>
+        private static readonly string[] VideoFileExtensions = new string[]
             {
                 ".mkv",
                 ".m2t",

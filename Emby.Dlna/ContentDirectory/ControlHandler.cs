@@ -487,6 +487,11 @@ namespace Emby.Dlna.ContentDirectory
                 return GetMusicArtistItems(item, null, user, sort, startIndex, limit);
             }
 
+            if (item is Genre)
+            {
+                return GetGenreItems(item, null, user, sort, startIndex, limit);
+            }
+
             var collectionFolder = item as ICollectionFolder;
             if (collectionFolder != null && string.Equals(CollectionType.Music, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
             {
@@ -1161,6 +1166,26 @@ namespace Emby.Dlna.ContentDirectory
                 ParentId = parentId,
                 ArtistIds = new[] { item.Id.ToString("N") },
                 IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+                Limit = limit,
+                StartIndex = startIndex,
+                DtoOptions = GetDtoOptions()
+            };
+
+            SetSorting(query, sort, false);
+
+            var result = _libraryManager.GetItemsResult(query);
+
+            return ToResult(result);
+        }
+
+        private QueryResult<ServerItem> GetGenreItems(BaseItem item, Guid? parentId, User user, SortCriteria sort, int? startIndex, int? limit)
+        {
+            var query = new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                ParentId = parentId,
+                GenreIds = new[] { item.Id.ToString("N") },
+                IncludeItemTypes = new[] { typeof(Movie).Name, typeof(Series).Name },
                 Limit = limit,
                 StartIndex = startIndex,
                 DtoOptions = GetDtoOptions()

@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Notifications
         /// Gets the notification types.
         /// </summary>
         /// <returns>IEnumerable{NotificationTypeInfo}.</returns>
-        IEnumerable<NotificationTypeInfo> GetNotificationTypes();
+        List<NotificationTypeInfo> GetNotificationTypes();
 
         /// <summary>
         /// Gets the notification services.

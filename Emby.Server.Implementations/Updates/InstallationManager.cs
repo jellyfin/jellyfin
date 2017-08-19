@@ -157,7 +157,7 @@ namespace Emby.Server.Implementations.Updates
         /// Gets all available packages.
         /// </summary>
         /// <returns>Task{List{PackageInfo}}.</returns>
-        public async Task<IEnumerable<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken,
+        public async Task<PackageInfo[]> GetAvailablePackages(CancellationToken cancellationToken,
             bool withRegistration = true,
             string packageType = null,
             Version applicationVersion = null)
@@ -175,7 +175,7 @@ namespace Emby.Server.Implementations.Updates
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(json).ToList();
+                    var packages = _jsonSerializer.DeserializeFromStream<PackageInfo[]>(json);
 
                     return FilterPackages(packages, packageType, applicationVersion);
                 }
@@ -184,7 +184,7 @@ namespace Emby.Server.Implementations.Updates
             {
                 var packages = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
-                return FilterPackages(packages.ToList(), packageType, applicationVersion);
+                return FilterPackages(packages, packageType, applicationVersion);
             }
         }
 
@@ -195,14 +195,14 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{List{PackageInfo}}.</returns>
-        public async Task<IEnumerable<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken)
+        public async Task<PackageInfo[]> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken)
         {
             _logger.Info("Opening {0}", PackageCachePath);
             try
             {
                 using (var stream = _fileSystem.OpenRead(PackageCachePath))
                 {
-                    var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(stream).ToList();
+                    var packages = _jsonSerializer.DeserializeFromStream<PackageInfo[]>(stream);
 
                     if (DateTime.UtcNow - _lastPackageUpdateTime > GetCacheLength())
                     {
@@ -221,7 +221,7 @@ namespace Emby.Server.Implementations.Updates
             await UpdateCachedPackages(cancellationToken, true).ConfigureAwait(false);
             using (var stream = _fileSystem.OpenRead(PackageCachePath))
             {
-                return _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(stream).ToList();
+                return _jsonSerializer.DeserializeFromStream<PackageInfo[]>(stream);
             }
         }
 
@@ -288,31 +288,29 @@ namespace Emby.Server.Implementations.Updates
             }
         }
 
-        protected IEnumerable<PackageInfo> FilterPackages(List<PackageInfo> packages)
+        protected PackageInfo[] FilterPackages(List<PackageInfo> packages)
         {
             foreach (var package in packages)
             {
                 package.versions = package.versions.Where(v => !string.IsNullOrWhiteSpace(v.sourceUrl))
-                    .OrderByDescending(GetPackageVersion).ToList();
+                    .OrderByDescending(GetPackageVersion).ToArray();
             }
 
             // Remove packages with no versions
-            packages = packages.Where(p => p.versions.Any()).ToList();
-
-            return packages;
+            return packages.Where(p => p.versions.Any()).ToArray();
         }
 
-        protected IEnumerable<PackageInfo> FilterPackages(List<PackageInfo> packages, string packageType, Version applicationVersion)
+        protected PackageInfo[] FilterPackages(PackageInfo[] packages, string packageType, Version applicationVersion)
         {
             foreach (var package in packages)
             {
                 package.versions = package.versions.Where(v => !string.IsNullOrWhiteSpace(v.sourceUrl))
-                    .OrderByDescending(GetPackageVersion).ToList();
+                    .OrderByDescending(GetPackageVersion).ToArray();
             }
 
             if (!string.IsNullOrWhiteSpace(packageType))
             {
-                packages = packages.Where(p => string.Equals(p.type, packageType, StringComparison.OrdinalIgnoreCase)).ToList();
+                packages = packages.Where(p => string.Equals(p.type, packageType, StringComparison.OrdinalIgnoreCase)).ToArray();
             }
 
             // If an app version was supplied, filter the versions for each package to only include supported versions
@@ -320,14 +318,12 @@ namespace Emby.Server.Implementations.Updates
             {
                 foreach (var package in packages)
                 {
-                    package.versions = package.versions.Where(v => IsPackageVersionUpToDate(v, applicationVersion)).ToList();
+                    package.versions = package.versions.Where(v => IsPackageVersionUpToDate(v, applicationVersion)).ToArray();
                 }
             }
 
             // Remove packages with no versions
-            packages = packages.Where(p => p.versions.Any()).ToList();
-
-            return packages;
+            return packages.Where(p => p.versions.Any()).ToArray();
         }
 
         /// <summary>
@@ -418,30 +414,24 @@ namespace Emby.Server.Implementations.Updates
         /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
         public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(Version applicationVersion, bool withAutoUpdateEnabled, CancellationToken cancellationToken)
         {
-            var catalog = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
-
-            var plugins = _applicationHost.Plugins.ToList();
-
-            if (withAutoUpdateEnabled)
+            if (!_config.CommonConfiguration.EnableAutoUpdate)
             {
-                plugins = plugins
-                    .Where(p => _config.CommonConfiguration.EnableAutoUpdate)
-                    .ToList();
+                return new PackageVersionInfo[] { };
             }
+
+            var catalog = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
             var systemUpdateLevel = GetSystemUpdateLevel();
 
             // Figure out what needs to be installed
-            var packages = plugins.Select(p =>
+            return _applicationHost.Plugins.Select(p =>
             {
                 var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, p.Id.ToString(), applicationVersion, systemUpdateLevel);
 
                 return latestPluginInfo != null && GetPackageVersion(latestPluginInfo) > p.Version ? latestPluginInfo : null;
 
-            }).Where(i => i != null).ToList();
-
-            return packages
-                .Where(p => !string.IsNullOrWhiteSpace(p.sourceUrl) && !CompletedInstallations.Any(i => string.Equals(i.AssemblyGuid, p.guid, StringComparison.OrdinalIgnoreCase)));
+            }).Where(i => i != null)
+            .Where(p => !string.IsNullOrWhiteSpace(p.sourceUrl) && !CompletedInstallations.Any(i => string.Equals(i.AssemblyGuid, p.guid, StringComparison.OrdinalIgnoreCase)));
         }
 
         /// <summary>
