@@ -134,18 +134,11 @@ namespace Emby.Server.Implementations.Logging
             {
                 try
                 {
-                    var any = false;
-
                     foreach (var message in _queue.GetConsumingEnumerable())
                     {
                         var bytes = Encoding.UTF8.GetBytes(message + Environment.NewLine);
                         _fileStream.Write(bytes, 0, bytes.Length);
 
-                        any = true;
-                    }
-
-                    if (any)
-                    {
                         _fileStream.Flush(true);
                     }
                 }
