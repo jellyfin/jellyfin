@@ -112,7 +112,7 @@ namespace Emby.Server.Implementations.Logging
 
     public class FileLogger : IDisposable
     {
-        private readonly Stream _fileStream;
+        private readonly FileStream _fileStream;
 
         private bool _disposed;
         private readonly CancellationTokenSource _cancellationTokenSource;
@@ -146,7 +146,7 @@ namespace Emby.Server.Implementations.Logging
 
                     if (any)
                     {
-                        _fileStream.Flush();
+                        _fileStream.Flush(true);
                     }
                 }
                 catch
