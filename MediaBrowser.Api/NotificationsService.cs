@@ -99,7 +99,7 @@ namespace MediaBrowser.Api
 
         public object Get(GetNotificationTypes request)
         {
-            var result = _notificationManager.GetNotificationTypes().ToList();
+            var result = _notificationManager.GetNotificationTypes();
 
             return ToOptimizedResult(result);
         }

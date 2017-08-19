@@ -18,11 +18,11 @@ namespace MediaBrowser.Model.Session
         public int? Height { get; set; }
         public int? AudioChannels { get; set; }
 
-        public List<TranscodeReason> TranscodeReasons { get; set; }
+        public TranscodeReason[] TranscodeReasons { get; set; }
 
         public TranscodingInfo()
         {
-            TranscodeReasons = new List<TranscodeReason>();
+            TranscodeReasons = new TranscodeReason[] { };
         }
     }
 

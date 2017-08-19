@@ -26,13 +26,13 @@ namespace MediaBrowser.Model.Channels
         /// Gets or sets the media types.
         /// </summary>
         /// <value>The media types.</value>
-        public List<ChannelMediaType> MediaTypes { get; set; }
+        public ChannelMediaType[] MediaTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the content types.
         /// </summary>
         /// <value>The content types.</value>
-        public List<ChannelMediaContentType> ContentTypes { get; set; }
+        public ChannelMediaContentType[] ContentTypes { get; set; }
 
         /// <summary>
         /// Represents the maximum number of records the channel allows retrieving at a time
@@ -49,7 +49,7 @@ namespace MediaBrowser.Model.Channels
         /// Gets or sets the default sort orders.
         /// </summary>
         /// <value>The default sort orders.</value>
-        public List<ChannelItemSortField> DefaultSortFields { get; set; }
+        public ChannelItemSortField[] DefaultSortFields { get; set; }
 
         /// <summary>
         /// Indicates if a sort ascending/descending toggle is supported or not.
@@ -76,10 +76,10 @@ namespace MediaBrowser.Model.Channels
 
         public ChannelFeatures()
         {
-            MediaTypes = new List<ChannelMediaType>();
-            ContentTypes = new List<ChannelMediaContentType>();
+            MediaTypes = new ChannelMediaType[] { };
+            ContentTypes = new ChannelMediaContentType[] { };
 
-            DefaultSortFields = new List<ChannelItemSortField>();
+            DefaultSortFields = new ChannelItemSortField[] { };
         }
     }
 }

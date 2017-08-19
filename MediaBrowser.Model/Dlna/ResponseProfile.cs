@@ -31,29 +31,19 @@ namespace MediaBrowser.Model.Dlna
             Conditions = new ProfileCondition[] {};
         }
 
-        public List<string> GetContainers()
+        public string[] GetContainers()
         {
             return ContainerProfile.SplitValue(Container);
         }
 
-        public List<string> GetAudioCodecs()
+        public string[] GetAudioCodecs()
         {
-            List<string> list = new List<string>();
-            foreach (string i in (AudioCodec ?? string.Empty).Split(','))
-            {
-                if (!string.IsNullOrEmpty(i)) list.Add(i);
-            }
-            return list;
+            return ContainerProfile.SplitValue(AudioCodec);
         }
 
-        public List<string> GetVideoCodecs()
+        public string[] GetVideoCodecs()
         {
-            List<string> list = new List<string>();
-            foreach (string i in (VideoCodec ?? string.Empty).Split(','))
-            {
-                if (!string.IsNullOrEmpty(i)) list.Add(i);
-            }
-            return list;
+            return ContainerProfile.SplitValue(VideoCodec);
         }
     }
 }

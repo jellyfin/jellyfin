@@ -22,7 +22,7 @@ namespace MediaBrowser.Model.Dlna
         public bool ForceDirectStream { get; set; }
 
         public string ItemId { get; set; }
-        public List<MediaSourceInfo> MediaSources { get; set; }
+        public MediaSourceInfo[] MediaSources { get; set; }
         public DeviceProfile Profile { get; set; }
 
         /// <summary>

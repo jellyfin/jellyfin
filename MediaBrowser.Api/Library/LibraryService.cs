@@ -227,7 +227,7 @@ namespace MediaBrowser.Api.Library
 
     [Route("/Library/MediaFolders", "GET", Summary = "Gets all user media folders.")]
     [Authenticated]
-    public class GetMediaFolders : IReturn<ItemsResult>
+    public class GetMediaFolders : IReturn<QueryResult<BaseItemDto>>
     {
         [ApiMember(Name = "IsHidden", Description = "Optional. Filter by folders that are marked hidden, or not.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? IsHidden { get; set; }
@@ -400,7 +400,7 @@ namespace MediaBrowser.Api.Library
                 });
             }
 
-            return new ItemsResult();
+            return new QueryResult<BaseItemDto>();
         }
 
         public object Get(GetMediaFolders request)
@@ -416,7 +416,7 @@ namespace MediaBrowser.Api.Library
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var result = new ItemsResult
+            var result = new QueryResult<BaseItemDto>
             {
                 TotalRecordCount = items.Count,
 
@@ -615,7 +615,7 @@ namespace MediaBrowser.Api.Library
                 parent = parent.GetParent();
             }
 
-            return baseItemDtos.ToList();
+            return baseItemDtos;
         }
 
         private BaseItem TranslateParentItem(BaseItem item, User user)

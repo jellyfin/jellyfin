@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.Library
             _config = config;
         }
 
-        public async Task<IEnumerable<Folder>> GetUserViews(UserViewQuery query, CancellationToken cancellationToken)
+        public async Task<Folder[]> GetUserViews(UserViewQuery query, CancellationToken cancellationToken)
         {
             var user = _userManager.GetUserById(query.UserId);
 
@@ -154,7 +154,8 @@ namespace Emby.Server.Implementations.Library
                     return index == -1 ? int.MaxValue : index;
                 })
                 .ThenBy(sorted.IndexOf)
-                .ThenBy(i => i.SortName);
+                .ThenBy(i => i.SortName)
+                .ToArray();
         }
 
         public Task<UserView> GetUserSubView(string name, string parentId, string type, string sortName, CancellationToken cancellationToken)

@@ -435,7 +435,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets the filters.
         /// </summary>
         /// <returns>IEnumerable{ItemFilter}.</returns>
-        public IEnumerable<ItemFilter> GetFilters()
+        public ItemFilter[] GetFilters()
         {
             var val = Filters;
 
@@ -444,7 +444,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return new ItemFilter[] { };
             }
 
-            return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
+            return val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true)).ToArray();
         }
 
         /// <summary>

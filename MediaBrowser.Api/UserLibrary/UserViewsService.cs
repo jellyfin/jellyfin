@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -32,7 +33,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     [Route("/Users/{UserId}/GroupingOptions", "GET")]
-    public class GetGroupingOptions : IReturn<List<SpecialViewOption>>
+    public class GetGroupingOptions : IReturn<SpecialViewOption[]>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -84,10 +85,13 @@ namespace MediaBrowser.Api.UserLibrary
             var folders = await _userViewManager.GetUserViews(query, CancellationToken.None).ConfigureAwait(false);
 
             var dtoOptions = GetDtoOptions(_authContext, request);
-            dtoOptions.Fields.Add(ItemFields.PrimaryImageAspectRatio);
-            dtoOptions.Fields.Add(ItemFields.DisplayPreferencesId);
-            dtoOptions.Fields.Remove(ItemFields.SyncInfo);
-            dtoOptions.Fields.Remove(ItemFields.BasicSyncInfo);
+            var fields = dtoOptions.Fields.ToList();
+
+            fields.Add(ItemFields.PrimaryImageAspectRatio);
+            fields.Add(ItemFields.DisplayPreferencesId);
+            fields.Remove(ItemFields.SyncInfo);
+            fields.Remove(ItemFields.BasicSyncInfo);
+            dtoOptions.Fields = fields.ToArray(fields.Count);
 
             var user = _userManager.GetUserById(request.UserId);
 
@@ -107,13 +111,10 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var views = user.RootFolder
+            var list = user.RootFolder
                 .GetChildren(user, true)
                 .OfType<Folder>()
                 .Where(UserView.IsEligibleForGrouping)
-                .ToList();
-
-            var list = views
                 .Select(i => new SpecialViewOption
                 {
                     Name = i.Name,
@@ -121,7 +122,7 @@ namespace MediaBrowser.Api.UserLibrary
 
                 })
             .OrderBy(i => i.Name)
-            .ToList();
+            .ToArray();
 
             return ToOptimizedResult(list);
         }

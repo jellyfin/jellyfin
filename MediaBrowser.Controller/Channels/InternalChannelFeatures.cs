@@ -58,13 +58,4 @@ namespace MediaBrowser.Controller.Channels
             DefaultSortFields = new List<ChannelItemSortField>();
         }
     }
-
-    public class ChannelDownloadException : Exception
-    {
-        public ChannelDownloadException(string message)
-            : base(message)
-        {
-
-        }
-    }
 }

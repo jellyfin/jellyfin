@@ -8,7 +8,7 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the services.
         /// </summary>
         /// <value>The services.</value>
-        public List<LiveTvServiceInfo> Services { get; set; }
+        public LiveTvServiceInfo[] Services { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is enabled.
@@ -20,12 +20,12 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the enabled users.
         /// </summary>
         /// <value>The enabled users.</value>
-        public List<string> EnabledUsers { get; set; }
+        public string[] EnabledUsers { get; set; }
 
         public LiveTvInfo()
         {
-            Services = new List<LiveTvServiceInfo>();
-            EnabledUsers = new List<string>();
+            Services = new LiveTvServiceInfo[] { };
+            EnabledUsers = new string[] { };
         }
     }
 }

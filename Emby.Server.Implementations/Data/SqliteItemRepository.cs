@@ -149,7 +149,7 @@ namespace Emby.Server.Implementations.Data
 
                                 "create table if not exists AncestorIds (ItemId GUID, AncestorId GUID, AncestorIdText TEXT, PRIMARY KEY (ItemId, AncestorId))",
                                 "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
-                                "create index if not exists idx_AncestorIds2 on AncestorIds(AncestorIdText)",
+                                "create index if not exists idx_AncestorIds5 on AncestorIds(AncestorIdText,ItemId)",
 
                                 "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT, CleanValue TEXT)",
 
@@ -308,6 +308,7 @@ namespace Emby.Server.Implementations.Data
                 "drop index if exists idx_TypeSeriesPresentationUniqueKey2",
                 "drop index if exists idx_AncestorIds3",
                 "drop index if exists idx_AncestorIds4",
+                "drop index if exists idx_AncestorIds2",
 
                 "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",

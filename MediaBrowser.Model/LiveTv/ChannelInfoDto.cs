@@ -41,7 +41,7 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the media sources.
         /// </summary>
         /// <value>The media sources.</value>
-        public List<MediaSourceInfo> MediaSources { get; set; }
+        public MediaSourceInfo[] MediaSources { get; set; }
         
         /// <summary>
         /// Gets or sets the image tags.
@@ -116,7 +116,7 @@ namespace MediaBrowser.Model.LiveTv
         public ChannelInfoDto()
         {
             ImageTags = new Dictionary<ImageType, string>();
-            MediaSources = new List<MediaSourceInfo>();
+            MediaSources = new MediaSourceInfo[] { };
         }
     }
 }
