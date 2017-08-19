@@ -14,9 +14,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
     {
         private readonly Stream _outputStream;
         private readonly BlockingCollection<Tuple<byte[], int, int>> _queue = new BlockingCollection<Tuple<byte[], int, int>>();
-        public TaskCompletionSource<bool> TaskCompletion { get; private set; }
 
-        public Action<QueueStream> OnFinished { get; set; }
         private readonly ILogger _logger;
         public Guid Id = Guid.NewGuid();
 
@@ -24,7 +22,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             _outputStream = outputStream;
             _logger = logger;
-            TaskCompletion = new TaskCompletionSource<bool>();
         }
 
         public void Queue(byte[] bytes, int offset, int count)
@@ -34,67 +31,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public void Start(CancellationToken cancellationToken)
         {
-            Task.Run(() => StartInternal(cancellationToken));
-        }
-
-        private void OnClosed()
-        {
-            GC.Collect();
-            if (OnFinished != null)
+            while (true)
             {
-                OnFinished(this);
-            }
-        }
-
-        public void Write(byte[] bytes, int offset, int count)
-        {
-            //return _outputStream.WriteAsync(bytes, offset, count, cancellationToken);
-
-            try
-            {
-                _outputStream.Write(bytes, offset, count);
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.Debug("QueueStream cancelled");
-                TaskCompletion.TrySetCanceled();
-                OnClosed();
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error in QueueStream", ex);
-                TaskCompletion.TrySetException(ex);
-                OnClosed();
-            }
-        }
-
-        private void StartInternal(CancellationToken cancellationToken)
-        {
-            try
-            {
-                while (true)
+                foreach (var result in _queue.GetConsumingEnumerable())
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    foreach (var result in _queue.GetConsumingEnumerable())
-                    {
-                        _outputStream.Write(result.Item1, result.Item2, result.Item3);
-                    }
+                    _outputStream.Write(result.Item1, result.Item2, result.Item3);
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.Debug("QueueStream cancelled");
-                TaskCompletion.TrySetCanceled();
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error in QueueStream", ex);
-                TaskCompletion.TrySetException(ex);
-            }
-            finally
-            {
-                OnClosed();
             }
         }
     }
