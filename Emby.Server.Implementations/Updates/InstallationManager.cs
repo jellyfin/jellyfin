@@ -290,6 +290,7 @@ namespace Emby.Server.Implementations.Updates
 
         protected PackageInfo[] FilterPackages(List<PackageInfo> packages)
         {
+
             foreach (var package in packages)
             {
                 package.versions = package.versions.Where(v => !string.IsNullOrWhiteSpace(v.sourceUrl))
