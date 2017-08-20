@@ -48,6 +48,7 @@ namespace MediaBrowser.Model.LiveTv
         public bool AllowHWTranscoding { get; set; }
         public bool EnableStreamLooping { get; set; }
         public bool EnableNewHdhrChannelIds { get; set; }
+        public string Source { get; set; }
 
         public TunerHostInfo()
         {
