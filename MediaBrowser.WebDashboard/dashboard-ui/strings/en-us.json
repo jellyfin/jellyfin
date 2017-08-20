@@ -119,6 +119,7 @@
   "ButtonInviteUser": "Invite User",
   "ButtonSave": "Save",
   "ButtonResetPassword": "Reset Password",
+  "LabelUrl": "Url:",
   "LabelNewPassword": "New password:",
   "LabelNewPasswordConfirm": "New password confirm:",
   "HeaderCreatePassword": "Create Password",

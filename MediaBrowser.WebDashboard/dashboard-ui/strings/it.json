@@ -1,5 +1,6 @@
 {
-    "LabelEnableHardwareDecodingFor": "Enable hardware decoding for:",
+    "LabelEnableHardwareDecodingFor": "Abilita la decodifica hardware per:",
+    "LabelUrl": "Url:",
     "LabelPrevious": "Precedente",
     "LabelFinish": "Finito",
     "LabelNext": "Prossimo",
