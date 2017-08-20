@@ -1,5 +1,6 @@
 {
-    "LabelEnableHardwareDecodingFor": "Enable hardware decoding for:",
+    "LabelEnableHardwareDecodingFor": "Aktivera h\u00e5rdvaruomkodning f\u00f6r:",
+    "LabelUrl": "Url:",
     "LabelPrevious": "F\u00f6reg\u00e5ende",
     "LabelFinish": "Klart",
     "LabelNext": "N\u00e4sta",
@@ -1940,8 +1941,8 @@
     "EnableNextVideoInfoOverlay": "Enable next video info during playback",
     "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist.",
     "ServerRestartNeededAfterPluginInstall": "Emby Server will need to be restarted after installing a plugin.",
-    "PluginInstalledMessage": "The plugin has been successfully installed. Emby Server will need to be restarted for changes to take effect.",
-    "Themes": "Themes",
-    "LabelTheme": "Theme:",
-    "LabelDashboardTheme": "Server dashboard theme:"
+    "PluginInstalledMessage": "Till\u00e4gget har installerats. Emby Server beh\u00f6ver startas om f\u00f6r att verkst\u00e4lla \u00e4ndringarna.",
+    "Themes": "Teman",
+    "LabelTheme": "Tema:",
+    "LabelDashboardTheme": "Server dashboard-tema:"
 }
