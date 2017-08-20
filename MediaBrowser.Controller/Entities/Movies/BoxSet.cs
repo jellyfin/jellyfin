@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Controller.Entities.Audio;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
@@ -82,20 +81,11 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
-            if (IsLegacyBoxSet)
-            {
-                return base.GetNonCachedChildren(directoryService);
-            }
             return new List<BaseItem>();
         }
 
         protected override List<BaseItem> LoadChildren()
         {
-            if (IsLegacyBoxSet)
-            {
-                return base.LoadChildren();
-            }
-
             // Save a trip to the database
             return new List<BaseItem>();
         }
@@ -106,34 +96,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             get
             {
                 return true;
-            }
-        }
-
-        [IgnoreDataMember]
-        protected override bool SupportsShortcutChildren
-        {
-            get
-            {
-                if (IsLegacyBoxSet)
-                {
-                    return false;
-                }
-
-                return false;
-            }
-        }
-
-        [IgnoreDataMember]
-        private bool IsLegacyBoxSet
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(Path))
-                {
-                    return false;
-                }
-
-                return !FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, Path);
             }
         }
 

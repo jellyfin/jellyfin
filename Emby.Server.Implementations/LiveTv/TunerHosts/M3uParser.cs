@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             _appHost = appHost;
         }
 
-        public async Task<List<M3UChannel>> Parse(string url, string channelIdPrefix, string tunerHostId, CancellationToken cancellationToken)
+        public async Task<List<ChannelInfo>> Parse(string url, string channelIdPrefix, string tunerHostId, CancellationToken cancellationToken)
         {
             // Read the file and display it line by line.
             using (var reader = new StreamReader(await GetListingsStream(url, cancellationToken).ConfigureAwait(false)))
@@ -41,7 +41,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
         }
 
-        public List<M3UChannel> ParseString(string text, string channelIdPrefix, string tunerHostId)
+        public List<ChannelInfo> ParseString(string text, string channelIdPrefix, string tunerHostId)
         {
             // Read the file and display it line by line.
             using (var reader = new StringReader(text))
@@ -66,9 +66,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         }
 
         const string ExtInfPrefix = "#EXTINF:";
-        private List<M3UChannel> GetChannels(TextReader reader, string channelIdPrefix, string tunerHostId)
+        private List<ChannelInfo> GetChannels(TextReader reader, string channelIdPrefix, string tunerHostId)
         {
-            var channels = new List<M3UChannel>();
+            var channels = new List<ChannelInfo>();
             string line;
             string extInf = "";
 
@@ -111,9 +111,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return channels;
         }
 
-        private M3UChannel GetChannelnfo(string extInf, string tunerHostId, string mediaUrl)
+        private ChannelInfo GetChannelnfo(string extInf, string tunerHostId, string mediaUrl)
         {
-            var channel = new M3UChannel();
+            var channel = new ChannelInfo();
             channel.TunerHostId = tunerHostId;
 
             extInf = extInf.Trim();
@@ -334,11 +334,5 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             return dict;
         }
-    }
-
-
-    public class M3UChannel : ChannelInfo
-    {
-        public string Path { get; set; }
     }
 }

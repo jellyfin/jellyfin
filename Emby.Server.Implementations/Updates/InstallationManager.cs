@@ -290,6 +290,7 @@ namespace Emby.Server.Implementations.Updates
 
         protected PackageInfo[] FilterPackages(List<PackageInfo> packages)
         {
+
             foreach (var package in packages)
             {
                 package.versions = package.versions.Where(v => !string.IsNullOrWhiteSpace(v.sourceUrl))
@@ -308,9 +309,11 @@ namespace Emby.Server.Implementations.Updates
                     .OrderByDescending(GetPackageVersion).ToArray();
             }
 
+            IEnumerable<PackageInfo> packagesList = packages;
+
             if (!string.IsNullOrWhiteSpace(packageType))
             {
-                packages = packages.Where(p => string.Equals(p.type, packageType, StringComparison.OrdinalIgnoreCase)).ToArray();
+                packagesList = packagesList.Where(p => string.Equals(p.type, packageType, StringComparison.OrdinalIgnoreCase));
             }
 
             // If an app version was supplied, filter the versions for each package to only include supported versions
@@ -323,7 +326,9 @@ namespace Emby.Server.Implementations.Updates
             }
 
             // Remove packages with no versions
-            return packages.Where(p => p.versions.Any()).ToArray();
+            packagesList = packagesList.Where(p => p.versions.Any());
+
+            return packagesList.ToArray();
         }
 
         /// <summary>
