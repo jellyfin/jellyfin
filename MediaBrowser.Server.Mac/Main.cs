@@ -119,10 +119,7 @@ namespace MediaBrowser.Server.Mac
 									 environmentInfo,
 									 imageEncoder,
 									 new SystemEvents(logManager.GetLogger("SystemEvents")),
-									 new MemoryStreamProvider(),
-			                         new NetworkManager(logManager.GetLogger("NetworkManager")),
-									 GenerateCertificate,
-									 () => Environment.UserName);
+			                         new NetworkManager(logManager.GetLogger("NetworkManager")));
 
 			if (options.ContainsOption("-v")) {
 				Console.WriteLine (AppHost.ApplicationVersion.ToString());
@@ -145,11 +142,6 @@ namespace MediaBrowser.Server.Mac
 	            return new NullImageEncoder();
 	        }
 	    }
-
-        private static void GenerateCertificate(string certPath, string certHost, string certPassword)
-        {
-			CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, certPassword, _logger);
-        }
 
         private static EnvironmentInfo GetEnvironmentInfo()
         {
