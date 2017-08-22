@@ -1664,15 +1664,15 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (mediaSource.VideoType.Value == VideoType.BluRay || mediaSource.VideoType.Value == VideoType.Dvd)
                 {
-                    state.PlayableStreamFileNames = Video.QueryPlayableStreamFiles(state.MediaPath, mediaSource.VideoType.Value);
+                    state.PlayableStreamFileNames = Video.QueryPlayableStreamFiles(state.MediaPath, mediaSource.VideoType.Value).Select(Path.GetFileName).ToArray();
                 }
                 else if (mediaSource.VideoType.Value == VideoType.Iso && state.IsoType == IsoType.BluRay)
                 {
-                    state.PlayableStreamFileNames = Video.QueryPlayableStreamFiles(state.MediaPath, VideoType.BluRay);
+                    state.PlayableStreamFileNames = Video.QueryPlayableStreamFiles(state.MediaPath, VideoType.BluRay).Select(Path.GetFileName).ToArray();
                 }
                 else if (mediaSource.VideoType.Value == VideoType.Iso && state.IsoType == IsoType.Dvd)
                 {
-                    state.PlayableStreamFileNames = Video.QueryPlayableStreamFiles(state.MediaPath, VideoType.Dvd);
+                    state.PlayableStreamFileNames = Video.QueryPlayableStreamFiles(state.MediaPath, VideoType.Dvd).Select(Path.GetFileName).ToArray();
                 }
                 else
                 {
