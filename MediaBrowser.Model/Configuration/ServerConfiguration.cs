@@ -217,6 +217,7 @@ namespace MediaBrowser.Model.Configuration
             EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableAnonymousUsageReporting = true;
+            EnableCaseSensitiveItemIds = true;
 
             EnableAutomaticRestart = true;
 
