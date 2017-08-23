@@ -41,6 +41,7 @@ namespace MediaBrowser.Model.Dto
         public string OpenToken { get; set; }
         public bool RequiresClosing { get; set; }
         public bool SupportsProbing { get; set; }
+        public bool EnableMpDecimate { get; set; }
         public string LiveStreamId { get; set; }
         public int? BufferMs { get; set; }
 

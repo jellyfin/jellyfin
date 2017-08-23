@@ -698,7 +698,6 @@
     <EmbeddedResource Include="Localization\Core\ar.json" />
     <EmbeddedResource Include="Localization\Core\bg-BG.json" />
     <EmbeddedResource Include="Localization\Core\ca.json" />
-    <EmbeddedResource Include="Localization\Core\core.json" />
     <EmbeddedResource Include="Localization\Core\cs.json" />
     <EmbeddedResource Include="Localization\Core\da.json" />
     <EmbeddedResource Include="Localization\Core\de.json" />

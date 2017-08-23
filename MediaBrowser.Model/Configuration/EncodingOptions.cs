@@ -14,6 +14,7 @@ namespace MediaBrowser.Model.Configuration
         public int H264Crf { get; set; }
         public string H264Preset { get; set; }
         public bool EnableHardwareEncoding { get; set; }
+        public bool EnableSubtitleExtraction { get; set; }
 
         public string[] HardwareDecodingCodecs { get; set; }
 
@@ -26,7 +27,7 @@ namespace MediaBrowser.Model.Configuration
             VaapiDevice = "/dev/dri/card0";
             H264Crf = 23;
             EnableHardwareEncoding = true;
-
+            EnableSubtitleExtraction = true;
             HardwareDecodingCodecs = new string[] { "h264", "vc1" };
         }
     }

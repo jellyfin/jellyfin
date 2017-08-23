@@ -335,7 +335,7 @@ namespace Emby.Server.Implementations.Localization
             const string prefix = "Core";
             var key = prefix + culture;
 
-            return _dictionaries.GetOrAdd(key, k => GetDictionary(prefix, culture, "core.json"));
+            return _dictionaries.GetOrAdd(key, k => GetDictionary(prefix, culture, "en-US.json"));
         }
 
         private Dictionary<string, string> GetDictionary(string prefix, string culture, string baseFilename)

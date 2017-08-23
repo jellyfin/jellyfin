@@ -43,9 +43,11 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (baseItem.SourceType == SourceType.LiveTV)
             {
-                if (string.IsNullOrWhiteSpace(baseItem.Path))
+                var activeRecordingInfo = _liveTvManager.GetActiveRecordingInfo(item.Path);
+
+                if (string.IsNullOrWhiteSpace(baseItem.Path) || activeRecordingInfo != null)
                 {
-                    return GetMediaSourcesInternal(item, cancellationToken);
+                    return GetMediaSourcesInternal(item, activeRecordingInfo, cancellationToken);
                 }
             }
 
@@ -56,7 +58,7 @@ namespace Emby.Server.Implementations.LiveTv
         private const char StreamIdDelimeter = '_';
         private const string StreamIdDelimeterString = "_";
 
-        private async Task<IEnumerable<MediaSourceInfo>> GetMediaSourcesInternal(IHasMediaSources item, CancellationToken cancellationToken)
+        private async Task<IEnumerable<MediaSourceInfo>> GetMediaSourcesInternal(IHasMediaSources item, ActiveRecordingInfo activeRecordingInfo, CancellationToken cancellationToken)
         {
             IEnumerable<MediaSourceInfo> sources;
 
@@ -67,12 +69,20 @@ namespace Emby.Server.Implementations.LiveTv
                 if (item is ILiveTvRecording)
                 {
                     sources = await _liveTvManager.GetRecordingMediaSources(item, cancellationToken)
-                                .ConfigureAwait(false);
+                        .ConfigureAwait(false);
                 }
                 else
                 {
-                    sources = await _liveTvManager.GetChannelMediaSources(item, cancellationToken)
-                                .ConfigureAwait(false);
+                    if (activeRecordingInfo != null)
+                    {
+                        sources = await EmbyTV.EmbyTV.Current.GetRecordingStreamMediaSources(activeRecordingInfo, cancellationToken)
+                            .ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        sources = await _liveTvManager.GetChannelMediaSources(item, cancellationToken)
+                            .ConfigureAwait(false);
+                    }
                 }
             }
             catch (NotImplementedException)
