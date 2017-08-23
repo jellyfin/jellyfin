@@ -115,14 +115,10 @@ namespace Emby.Server.Implementations.Dto
             var programTuples = new List<Tuple<BaseItem, BaseItemDto>>();
             var channelTuples = new List<Tuple<BaseItemDto, LiveTvChannel>>();
 
-            var refreshQueue = options.Fields.Contains(ItemFields.RefreshState)
-                ? _providerManager.GetRefreshQueue()
-                : null;
-
             var index = 0;
             foreach (var item in items)
             {
-                var dto = GetBaseItemDtoInternal(item, options, refreshQueue, user, owner);
+                var dto = GetBaseItemDtoInternal(item, options, user, owner);
 
                 var tvChannel = item as LiveTvChannel;
                 if (tvChannel != null)
@@ -176,11 +172,7 @@ namespace Emby.Server.Implementations.Dto
         {
             var syncDictionary = GetSyncedItemProgress(options);
 
-            var refreshQueue = options.Fields.Contains(ItemFields.RefreshState)
-                ? _providerManager.GetRefreshQueue()
-                : null;
-
-            var dto = GetBaseItemDtoInternal(item, options, refreshQueue, user, owner);
+            var dto = GetBaseItemDtoInternal(item, options, user, owner);
             var tvChannel = item as LiveTvChannel;
             if (tvChannel != null)
             {
@@ -312,7 +304,7 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, Dictionary<Guid, Guid> currentRefreshQueue, User user = null, BaseItem owner = null)
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
         {
             var fields = options.Fields;
 
@@ -412,14 +404,10 @@ namespace Emby.Server.Implementations.Dto
                 dto.Etag = item.GetEtag(user);
             }
 
-            if (currentRefreshQueue != null)
-            {
-                //dto.RefreshState = item.GetRefreshState(currentRefreshQueue);
-            }
-
+            var liveTvManager = _livetvManager();
             if (item is ILiveTvRecording)
             {
-                _livetvManager().AddInfoToRecordingDto(item, dto, user);
+                liveTvManager.AddInfoToRecordingDto(item, dto, user);
             }
 
             return dto;
@@ -427,10 +415,7 @@ namespace Emby.Server.Implementations.Dto
 
         public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, Dictionary<string, SyncedItemProgress> syncProgress, User user = null)
         {
-            var refreshQueue = options.Fields.Contains(ItemFields.RefreshState)
-                ? _providerManager.GetRefreshQueue()
-                : null;
-            var dto = GetBaseItemDtoInternal(item, options, refreshQueue, user);
+            var dto = GetBaseItemDtoInternal(item, options, user);
 
             if (taggedItems != null && options.Fields.Contains(ItemFields.ItemCounts))
             {
