@@ -369,6 +369,8 @@ namespace Emby.Server.Implementations.Dto
                     {
                         dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(hasMediaSources, true, user);
                     }
+
+                    NormalizeMediaSourceContainers(dto);
                 }
             }
 
@@ -411,6 +413,45 @@ namespace Emby.Server.Implementations.Dto
             }
 
             return dto;
+        }
+
+        private void NormalizeMediaSourceContainers(BaseItemDto dto)
+        {
+            foreach (var mediaSource in dto.MediaSources)
+            {
+                var container = mediaSource.Container;
+                if (string.IsNullOrWhiteSpace(container))
+                {
+                    continue;
+                }
+                var containers = container.Split(new[] { ',' });
+                if (containers.Length < 2)
+                {
+                    continue;
+                }
+
+                var path = mediaSource.Path;
+                string fileExtensionContainer = null;
+
+                if (!string.IsNullOrWhiteSpace(path))
+                {
+                    path = Path.GetExtension(path);
+                    if (!string.IsNullOrWhiteSpace(path))
+                    {
+                        path = Path.GetExtension(path);
+                        if (!string.IsNullOrWhiteSpace(path))
+                        {
+                            path = path.TrimStart('.');
+                        }
+                        if (!string.IsNullOrWhiteSpace(path) && containers.Contains(path, StringComparer.OrdinalIgnoreCase))
+                        {
+                            fileExtensionContainer = path;
+                        }
+                    }
+                }
+
+                mediaSource.Container = fileExtensionContainer ?? containers[0];
+            }
         }
 
         public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, Dictionary<string, SyncedItemProgress> syncProgress, User user = null)
