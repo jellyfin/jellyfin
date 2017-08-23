@@ -277,15 +277,7 @@ namespace Emby.Server.Implementations.Updates
 
         private TimeSpan GetCacheLength()
         {
-            switch (GetSystemUpdateLevel())
-            {
-                case PackageVersionClass.Beta:
-                    return TimeSpan.FromMinutes(30);
-                case PackageVersionClass.Dev:
-                    return TimeSpan.FromMinutes(3);
-                default:
-                    return TimeSpan.FromHours(24);
-            }
+            return TimeSpan.FromMinutes(3);
         }
 
         protected PackageInfo[] FilterPackages(List<PackageInfo> packages)
