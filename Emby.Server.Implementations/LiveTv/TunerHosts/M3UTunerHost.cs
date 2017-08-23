@@ -165,6 +165,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 RequiresOpening = true,
                 RequiresClosing = true,
                 RequiresLooping = info.EnableStreamLooping,
+                EnableMpDecimate = info.EnableMpDecimate,
 
                 ReadAtNativeFramerate = false,
 
