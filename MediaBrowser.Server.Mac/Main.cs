@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Implementations;
 using System;
 using System.Diagnostics;
 using System.Globalization;
@@ -20,21 +19,18 @@ using MonoMac.ObjCRuntime;
 using Emby.Server.Core;
 using Emby.Server.Core.Cryptography;
 using Emby.Server.Implementations;
-using Emby.Common.Implementations.Logging;
 using Emby.Server.Implementations.Logging;
-using Emby.Common.Implementations.EnvironmentInfo;
 using Emby.Server.Mac.Native;
 using Emby.Server.Implementations.IO;
-using Emby.Common.Implementations.Networking;
-using Emby.Common.Implementations.Cryptography;
 using Mono.Unix.Native;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.IO;
-using Emby.Server.Implementations.Logging;
 using Emby.Drawing;
 using Emby.Drawing.Skia;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
+using Emby.Server.Implementations.EnvironmentInfo;
+using Emby.Server.Implementations.Networking;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -60,7 +56,7 @@ namespace MediaBrowser.Server.Mac
 
 			var appPaths = CreateApplicationPaths(appFolderPath, customProgramDataPath);
 
-			var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
+			var logManager = new SimpleLogManager(appPaths.LogDirectoryPath, "server");
 			logManager.ReloadLogger(LogSeverity.Info);
 			logManager.AddConsoleOutput();
 
@@ -90,9 +86,7 @@ namespace MediaBrowser.Server.Mac
 			// Within the mac bundle, go uo two levels then down into Resources folder
 			var resourcesPath = Path.Combine(Path.GetDirectoryName(appFolderPath), "Resources");
 
-			Action<string> createDirectoryFn = (string obj) => Directory.CreateDirectory(obj);
-
-			return new ServerApplicationPaths(programDataPath, appFolderPath, resourcesPath, createDirectoryFn);
+			return new ServerApplicationPaths(programDataPath, appFolderPath, resourcesPath);
 		}
 
 		/// <summary>
@@ -125,10 +119,7 @@ namespace MediaBrowser.Server.Mac
 									 environmentInfo,
 									 imageEncoder,
 									 new SystemEvents(logManager.GetLogger("SystemEvents")),
-									 new MemoryStreamProvider(),
-			                         new NetworkManager(logManager.GetLogger("NetworkManager")),
-									 GenerateCertificate,
-									 () => Environment.UserName);
+			                         new NetworkManager(logManager.GetLogger("NetworkManager")));
 
 			if (options.ContainsOption("-v")) {
 				Console.WriteLine (AppHost.ApplicationVersion.ToString());
@@ -152,16 +143,11 @@ namespace MediaBrowser.Server.Mac
 	        }
 	    }
 
-        private static void GenerateCertificate(string certPath, string certHost, string certPassword)
-        {
-			CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, certPassword, _logger);
-        }
-
         private static EnvironmentInfo GetEnvironmentInfo()
         {
             var info = new EnvironmentInfo()
             {
-                CustomOperatingSystem = MediaBrowser.Model.System.OperatingSystem.OSX
+                OperatingSystem = MediaBrowser.Model.System.OperatingSystem.OSX
             };
 
             var uname = GetUnixName();
@@ -186,23 +172,23 @@ namespace MediaBrowser.Server.Mac
 
             if (archX86.IsMatch(uname.machine))
             {
-                info.CustomArchitecture = Architecture.X86;
+                info.SystemArchitecture = Architecture.X86;
             }
             else if (string.Equals(uname.machine, "x86_64", StringComparison.OrdinalIgnoreCase))
             {
-                info.CustomArchitecture = Architecture.X64;
+                info.SystemArchitecture = Architecture.X64;
             }
             else if (uname.machine.StartsWith("arm", StringComparison.OrdinalIgnoreCase))
             {
-                info.CustomArchitecture = Architecture.Arm;
+                info.SystemArchitecture = Architecture.Arm;
             }
             else if (System.Environment.Is64BitOperatingSystem)
             {
-                info.CustomArchitecture = Architecture.X64;
+                info.SystemArchitecture = Architecture.X64;
             }
             else
             {
-                info.CustomArchitecture = Architecture.X86;
+                info.SystemArchitecture = Architecture.X86;
             }
 
             return info;

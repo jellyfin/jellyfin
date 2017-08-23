@@ -115,14 +115,10 @@ namespace Emby.Server.Implementations.Dto
             var programTuples = new List<Tuple<BaseItem, BaseItemDto>>();
             var channelTuples = new List<Tuple<BaseItemDto, LiveTvChannel>>();
 
-            var refreshQueue = options.Fields.Contains(ItemFields.RefreshState)
-                ? _providerManager.GetRefreshQueue()
-                : null;
-
             var index = 0;
             foreach (var item in items)
             {
-                var dto = GetBaseItemDtoInternal(item, options, refreshQueue, user, owner);
+                var dto = GetBaseItemDtoInternal(item, options, user, owner);
 
                 var tvChannel = item as LiveTvChannel;
                 if (tvChannel != null)
@@ -176,11 +172,7 @@ namespace Emby.Server.Implementations.Dto
         {
             var syncDictionary = GetSyncedItemProgress(options);
 
-            var refreshQueue = options.Fields.Contains(ItemFields.RefreshState)
-                ? _providerManager.GetRefreshQueue()
-                : null;
-
-            var dto = GetBaseItemDtoInternal(item, options, refreshQueue, user, owner);
+            var dto = GetBaseItemDtoInternal(item, options, user, owner);
             var tvChannel = item as LiveTvChannel;
             if (tvChannel != null)
             {
@@ -312,7 +304,7 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, Dictionary<Guid, Guid> currentRefreshQueue, User user = null, BaseItem owner = null)
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
         {
             var fields = options.Fields;
 
@@ -377,6 +369,8 @@ namespace Emby.Server.Implementations.Dto
                     {
                         dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(hasMediaSources, true, user);
                     }
+
+                    NormalizeMediaSourceContainers(dto);
                 }
             }
 
@@ -412,25 +406,72 @@ namespace Emby.Server.Implementations.Dto
                 dto.Etag = item.GetEtag(user);
             }
 
-            if (currentRefreshQueue != null)
-            {
-                //dto.RefreshState = item.GetRefreshState(currentRefreshQueue);
-            }
-
+            var liveTvManager = _livetvManager();
             if (item is ILiveTvRecording)
             {
-                _livetvManager().AddInfoToRecordingDto(item, dto, user);
+                liveTvManager.AddInfoToRecordingDto(item, dto, user);
+            }
+            else
+            {
+                var activeRecording = liveTvManager.GetActiveRecordingInfo(item.Path);
+                if (activeRecording != null)
+                {
+                    dto.Type = "Recording";
+                    dto.CanDownload = false;
+                    if (!string.IsNullOrWhiteSpace(dto.SeriesName))
+                    {
+                        dto.EpisodeTitle = dto.Name;
+                        dto.Name = dto.SeriesName;
+                    }
+                    liveTvManager.AddInfoToRecordingDto(item, dto, activeRecording, user);
+                }
             }
 
             return dto;
         }
 
+        private void NormalizeMediaSourceContainers(BaseItemDto dto)
+        {
+            foreach (var mediaSource in dto.MediaSources)
+            {
+                var container = mediaSource.Container;
+                if (string.IsNullOrWhiteSpace(container))
+                {
+                    continue;
+                }
+                var containers = container.Split(new[] { ',' });
+                if (containers.Length < 2)
+                {
+                    continue;
+                }
+
+                var path = mediaSource.Path;
+                string fileExtensionContainer = null;
+
+                if (!string.IsNullOrWhiteSpace(path))
+                {
+                    path = Path.GetExtension(path);
+                    if (!string.IsNullOrWhiteSpace(path))
+                    {
+                        path = Path.GetExtension(path);
+                        if (!string.IsNullOrWhiteSpace(path))
+                        {
+                            path = path.TrimStart('.');
+                        }
+                        if (!string.IsNullOrWhiteSpace(path) && containers.Contains(path, StringComparer.OrdinalIgnoreCase))
+                        {
+                            fileExtensionContainer = path;
+                        }
+                    }
+                }
+
+                mediaSource.Container = fileExtensionContainer ?? containers[0];
+            }
+        }
+
         public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, Dictionary<string, SyncedItemProgress> syncProgress, User user = null)
         {
-            var refreshQueue = options.Fields.Contains(ItemFields.RefreshState)
-                ? _providerManager.GetRefreshQueue()
-                : null;
-            var dto = GetBaseItemDtoInternal(item, options, refreshQueue, user);
+            var dto = GetBaseItemDtoInternal(item, options, user);
 
             if (taggedItems != null && options.Fields.Contains(ItemFields.ItemCounts))
             {

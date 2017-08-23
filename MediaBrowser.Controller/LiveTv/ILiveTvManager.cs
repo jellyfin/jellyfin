@@ -384,5 +384,9 @@ namespace MediaBrowser.Controller.LiveTv
 
         string GetEmbyTvActiveRecordingPath(string id);
         Task<LiveStream> GetEmbyTvLiveStream(string id);
+
+        ActiveRecordingInfo GetActiveRecordingInfo(string path);
+
+        void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, ActiveRecordingInfo activeRecordingInfo, User user = null);
     }
 }

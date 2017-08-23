@@ -686,7 +686,7 @@ namespace MediaBrowser.Model.Dlna
 
                     if (subtitleStream != null)
                     {
-                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, directPlay.Value, null, null);
+                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, directPlay.Value, _transcoderSupport, null, null);
 
                         playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                         playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -728,7 +728,7 @@ namespace MediaBrowser.Model.Dlna
 
                 if (subtitleStream != null)
                 {
-                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, PlayMethod.Transcode, transcodingProfile.Protocol, transcodingProfile.Container);
+                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, PlayMethod.Transcode, _transcoderSupport, transcodingProfile.Protocol, transcodingProfile.Container);
 
                     playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                     playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -1183,7 +1183,7 @@ namespace MediaBrowser.Model.Dlna
         {
             if (subtitleStream != null)
             {
-                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, playMethod, null, null);
+                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, playMethod, _transcoderSupport, null, null);
 
                 if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
@@ -1202,7 +1202,7 @@ namespace MediaBrowser.Model.Dlna
             return new Tuple<bool, TranscodeReason?>(result, TranscodeReason.ContainerBitrateExceedsLimit);
         }
 
-        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, string transcodingSubProtocol, string transcodingContainer)
+        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, ITranscoderSupport transcoderSupport, string transcodingSubProtocol, string transcodingContainer)
         {
             if (!subtitleStream.IsExternal && (playMethod != PlayMethod.Transcode || !string.Equals(transcodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase)))
             {
@@ -1256,7 +1256,9 @@ namespace MediaBrowser.Model.Dlna
             }
 
             // Look for an external or hls profile that matches the stream type (text/graphical) and doesn't require conversion
-            return GetExternalSubtitleProfile(subtitleStream, subtitleProfiles, playMethod, false) ?? GetExternalSubtitleProfile(subtitleStream, subtitleProfiles, playMethod, true) ?? new SubtitleProfile
+            return GetExternalSubtitleProfile(subtitleStream, subtitleProfiles, playMethod, transcoderSupport, false) ?? 
+                GetExternalSubtitleProfile(subtitleStream, subtitleProfiles, playMethod, transcoderSupport, true) ?? 
+                new SubtitleProfile
             {
                 Method = SubtitleDeliveryMethod.Encode,
                 Format = subtitleStream.Codec
@@ -1291,7 +1293,7 @@ namespace MediaBrowser.Model.Dlna
             return false;
         }
 
-        private static SubtitleProfile GetExternalSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, bool allowConversion)
+        private static SubtitleProfile GetExternalSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, ITranscoderSupport transcoderSupport, bool allowConversion)
         {
             foreach (SubtitleProfile profile in subtitleProfiles)
             {
@@ -1306,6 +1308,11 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 if (!profile.SupportsLanguage(subtitleStream.Language))
+                {
+                    continue;
+                }
+
+                if (!subtitleStream.IsExternal && !transcoderSupport.CanExtractSubtitles(subtitleStream.Codec))
                 {
                     continue;
                 }
