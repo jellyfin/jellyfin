@@ -508,23 +508,6 @@ namespace Emby.Dlna.ContentDirectory
 
             if (stubType.HasValue)
             {
-                if (stubType.Value == StubType.People)
-                {
-                    var items = _libraryManager.GetPeopleItems(new InternalPeopleQuery
-                    {
-                        ItemId = item.Id
-
-                    });
-
-                    var result = new QueryResult<ServerItem>
-                    {
-                        Items = items.Select(i => new ServerItem(i)).ToArray(items.Count),
-                        TotalRecordCount = items.Count
-                    };
-
-                    return ApplyPaging(result, startIndex, limit);
-                }
-
                 var person = item as Person;
                 if (person != null)
                 {
@@ -1356,7 +1339,6 @@ namespace Emby.Dlna.ContentDirectory
     public enum StubType
     {
         Folder = 0,
-        People = 1,
         Latest = 2,
         Playlists = 3,
         Albums = 4,
