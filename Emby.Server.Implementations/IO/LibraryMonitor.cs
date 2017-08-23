@@ -85,6 +85,8 @@ namespace Emby.Server.Implementations.IO
 
         public bool IsPathLocked(string path)
         {
+            // This method is not used by the core but it used by auto-organize
+
             var lockedPaths = _tempIgnoredPaths.Keys.ToList();
             return lockedPaths.Any(i => _fileSystem.AreEqual(i, path) || _fileSystem.ContainsSubPath(i, path));
         }
