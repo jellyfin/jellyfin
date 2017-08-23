@@ -160,7 +160,7 @@ namespace MediaBrowser.Controller.Entities
 
         public string[] GetPlayableStreamFileNames()
         {
-            return GetPlayableStreamFiles().Select(System.IO.Path.GetFileName).ToArray(); 
+            return GetPlayableStreamFiles().Select(System.IO.Path.GetFileName).ToArray();
         }
 
         /// <summary>
@@ -232,6 +232,35 @@ namespace MediaBrowser.Controller.Entities
         public IEnumerable<Guid> GetLocalAlternateVersionIds()
         {
             return LocalAlternateVersions.Select(i => LibraryManager.GetNewItemId(i, typeof(Video)));
+        }
+
+        [IgnoreDataMember]
+        public override SourceType SourceType
+        {
+            get
+            {
+                if (IsActiveRecording())
+                {
+                    return SourceType.LiveTV;
+                }
+
+                return base.SourceType;
+            }
+        }
+
+        protected bool IsActiveRecording()
+        {
+            return LiveTvManager.GetActiveRecordingInfo(Path) != null;
+        }
+
+        public override bool CanDelete()
+        {
+            if (IsActiveRecording())
+            {
+                return false;
+            }
+
+            return base.CanDelete();
         }
 
         [IgnoreDataMember]
@@ -615,6 +644,14 @@ namespace MediaBrowser.Controller.Entities
 
             var list = GetAllVideosForMediaSources();
             var result = list.Select(i => GetVersionInfo(enablePathSubstitution, i.Item1, i.Item2)).ToList();
+
+            if (IsActiveRecording())
+            {
+                foreach (var mediaSource in result)
+                {
+                    mediaSource.Type = MediaSourceType.Placeholder;
+                }
+            }
 
             return result.OrderBy(i =>
             {
