@@ -648,15 +648,15 @@ namespace MediaBrowser.Controller.Entities
 
         public static bool IsPathOffline(string path, List<string> allLibraryPaths)
         {
-            if (FileSystem.FileExists(path))
-            {
-                return false;
-            }
+            //if (FileSystem.FileExists(path))
+            //{
+            //    return false;
+            //}
 
             var originalPath = path;
 
             // Depending on whether the path is local or unc, it may return either null or '\' at the top
-            while (!string.IsNullOrEmpty(path) && path.Length > 1)
+            while (!string.IsNullOrWhiteSpace(path) && path.Length > 1)
             {
                 if (FileSystem.DirectoryExists(path))
                 {
