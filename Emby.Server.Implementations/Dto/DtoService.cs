@@ -411,6 +411,21 @@ namespace Emby.Server.Implementations.Dto
             {
                 liveTvManager.AddInfoToRecordingDto(item, dto, user);
             }
+            else
+            {
+                var activeRecording = liveTvManager.GetActiveRecordingInfo(item.Path);
+                if (activeRecording != null)
+                {
+                    dto.Type = "Recording";
+                    dto.CanDownload = false;
+                    if (!string.IsNullOrWhiteSpace(dto.SeriesName))
+                    {
+                        dto.EpisodeTitle = dto.Name;
+                        dto.Name = dto.SeriesName;
+                    }
+                    liveTvManager.AddInfoToRecordingDto(item, dto, activeRecording, user);
+                }
+            }
 
             return dto;
         }

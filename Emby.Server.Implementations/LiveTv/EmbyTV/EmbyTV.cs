@@ -830,6 +830,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             existingTimer.IsKids = updatedTimer.IsKids;
             existingTimer.IsNews = updatedTimer.IsNews;
             existingTimer.IsMovie = updatedTimer.IsMovie;
+            existingTimer.IsSeries = updatedTimer.IsSeries;
+            existingTimer.IsLive = updatedTimer.IsLive;
+            existingTimer.IsPremiere = updatedTimer.IsPremiere;
             existingTimer.IsProgramSeries = updatedTimer.IsProgramSeries;
             existingTimer.IsRepeat = updatedTimer.IsRepeat;
             existingTimer.IsSports = updatedTimer.IsSports;
@@ -861,7 +864,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public async Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken)
         {
-            return _activeRecordings.Values.ToList().Select(GetRecordingInfo).ToList();
+            return new List<RecordingInfo>();
+            //return _activeRecordings.Values.ToList().Select(GetRecordingInfo).ToList();
         }
 
         public string GetActiveRecordingPath(string id)
@@ -871,6 +875,28 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             if (_activeRecordings.TryGetValue(id, out info))
             {
                 return info.Path;
+            }
+            return null;
+        }
+
+        public IEnumerable<ActiveRecordingInfo> GetAllActiveRecordings()
+        {
+            return _activeRecordings.Values;
+        }
+
+        public ActiveRecordingInfo GetActiveRecordingInfo(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return null;
+            }
+
+            foreach (var recording in _activeRecordings.Values)
+            {
+                if (string.Equals(recording.Path, path, StringComparison.Ordinal))
+                {
+                    return recording;
+                }
             }
             return null;
         }
@@ -1245,6 +1271,33 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             throw new FileNotFoundException();
         }
 
+        public async Task<List<MediaSourceInfo>> GetRecordingStreamMediaSources(ActiveRecordingInfo info, CancellationToken cancellationToken)
+        {
+            var stream = new MediaSourceInfo
+            {
+                Path = _appHost.GetLocalApiUrl("127.0.0.1") + "/LiveTv/LiveRecordings/" + info.Id + "/stream",
+                Id = info.Id,
+                SupportsDirectPlay = false,
+                SupportsDirectStream = true,
+                SupportsTranscoding = true,
+                IsInfiniteStream = true,
+                RequiresOpening = false,
+                RequiresClosing = false,
+                Protocol = MediaBrowser.Model.MediaInfo.MediaProtocol.Http,
+                BufferMs = 0,
+                IgnoreDts = true,
+                IgnoreIndex = true
+            };
+
+            var isAudio = false;
+            await new LiveStreamHelper(_mediaEncoder, _logger).AddMediaInfoWithProbe(stream, isAudio, cancellationToken).ConfigureAwait(false);
+
+            return new List<MediaSourceInfo>
+            {
+                stream
+            };
+        }
+
         public async Task CloseLiveStream(string id, CancellationToken cancellationToken)
         {
             // Ignore the consumer id
@@ -1327,7 +1380,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 var activeRecordingInfo = new ActiveRecordingInfo
                 {
                     CancellationTokenSource = new CancellationTokenSource(),
-                    Timer = timer
+                    Timer = timer,
+                    Id = timer.Id
                 };
 
                 if (_activeRecordings.TryAdd(timer.Id, activeRecordingInfo))
@@ -1493,7 +1547,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 recordPath = recorder.GetOutputPath(mediaStreamInfo, recordPath);
                 recordPath = EnsureFileUnique(recordPath, timer.Id);
 
-                _libraryManager.RegisterIgnoredPath(recordPath);
                 _libraryMonitor.ReportFileSystemChangeBeginning(recordPath);
                 _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(recordPath));
                 activeRecordingInfo.Path = recordPath;
@@ -1512,6 +1565,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     _timerProvider.AddOrUpdate(timer, false);
 
                     SaveRecordingMetadata(timer, recordPath, seriesPath);
+                    TriggerRefresh(recordPath);
                     EnforceKeepUpTo(timer, seriesPath);
                 };
 
@@ -1543,7 +1597,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
-            _libraryManager.UnRegisterIgnoredPath(recordPath);
+            TriggerRefresh(recordPath);
             _libraryMonitor.ReportFileSystemChangeComplete(recordPath, true);
 
             ActiveRecordingInfo removed;
@@ -1572,6 +1626,44 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             OnRecordingStatusChanged();
+        }
+
+        private void TriggerRefresh(string path)
+        {
+            var item = GetAffectedBaseItem(_fileSystem.GetDirectoryName(path));
+
+            if (item != null)
+            {
+                item.ChangedExternally();
+            }
+        }
+
+        private BaseItem GetAffectedBaseItem(string path)
+        {
+            BaseItem item = null;
+
+            while (item == null && !string.IsNullOrEmpty(path))
+            {
+                item = _libraryManager.FindByPath(path, null);
+
+                path = _fileSystem.GetDirectoryName(path);
+            }
+
+            if (item != null)
+            {
+                // If the item has been deleted find the first valid parent that still exists
+                while (!_fileSystem.DirectoryExists(item.Path) && !_fileSystem.FileExists(item.Path))
+                {
+                    item = item.GetParent();
+
+                    if (item == null)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return item;
         }
 
         private void OnRecordingStatusChanged()
@@ -2619,14 +2711,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             return list;
-        }
-
-        class ActiveRecordingInfo
-        {
-            public string Path { get; set; }
-            public TimerInfo Timer { get; set; }
-            public ProgramInfo Program { get; set; }
-            public CancellationTokenSource CancellationTokenSource { get; set; }
         }
 
         private const int TunerDiscoveryDurationMs = 3000;

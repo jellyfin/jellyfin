@@ -4,7 +4,7 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public interface IHasMediaSources : IHasUserData
+    public interface IHasMediaSources : IHasMetadata
     {
         /// <summary>
         /// Gets the media sources.
