@@ -191,6 +191,8 @@ namespace MediaBrowser.Providers.TV
                    });
         }
 
+        private const double UnairedEpisodeThresholdDays = 2;
+
         /// <summary>
         /// Adds the missing episodes.
         /// </summary>
@@ -248,8 +250,7 @@ namespace MediaBrowser.Providers.TV
 
                 var targetSeries = DetermineAppropriateSeries(series, tuple.Item1);
 
-                var unairedThresholdDays = 2;
-                now = now.AddDays(0 - unairedThresholdDays);
+                now = now.AddDays(0 - UnairedEpisodeThresholdDays);
 
                 if (airDate.Value < now)
                 {
@@ -329,9 +330,13 @@ namespace MediaBrowser.Providers.TV
                             return true;
                         }
 
-                        if (!allowMissingEpisodes && i.Episode.IsMissingEpisode && !i.Episode.IsUnaired)
+                        if (!allowMissingEpisodes && i.Episode.IsMissingEpisode)
                         {
-                            return true;
+                            // If it's missing, but not unaired, remove it
+                            if (!i.Episode.PremiereDate.HasValue || i.Episode.PremiereDate.Value.ToLocalTime().Date.AddDays(UnairedEpisodeThresholdDays) < DateTime.Now.Date)
+                            {
+                                return true;
+                            }
                         }
 
                         return false;
