@@ -778,6 +778,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return false;
             }
 
+            if (state.EnableMpDecimate)
+            {
+                return false;
+            }
+
             if (videoStream.IsInterlaced)
             {
                 if (request.DeInterlace)
@@ -1447,6 +1452,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     output += " -copyts";
                 }
+            }
+
+            if (state.EnableMpDecimate)
+            {
+                filters.Add("mpdecimate,setpts=N/FRAME_RATE/TB");
             }
 
             if (filters.Count > 0)
