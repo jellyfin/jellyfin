@@ -422,7 +422,7 @@ namespace Emby.Server.Implementations.Notifications
             {
                 var artists = hasArtist.AllArtists;
 
-                if (artists.Count > 0)
+                if (artists.Length > 0)
                 {
                     name = hasArtist.AllArtists[0] + " - " + name;
                 }
@@ -440,7 +440,7 @@ namespace Emby.Server.Implementations.Notifications
                 name = item.SeriesName + " - " + name;
             }
 
-            if (item.Artists != null && item.Artists.Count > 0)
+            if (item.Artists != null && item.Artists.Length > 0)
             {
                 name = item.Artists[0] + " - " + name;
             }

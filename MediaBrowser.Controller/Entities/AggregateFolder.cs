@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Entities
     {
         public AggregateFolder()
         {
-            PhysicalLocationsList = new List<string>();
+            PhysicalLocationsList = EmptyStringArray;
         }
 
         [IgnoreDataMember]
@@ -58,7 +58,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override IEnumerable<string> PhysicalLocations
+        public override string[] PhysicalLocations
         {
             get
             {
@@ -66,23 +66,23 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public List<string> PhysicalLocationsList { get; set; }
+        public string[] PhysicalLocationsList { get; set; }
 
         protected override FileSystemMetadata[] GetFileSystemChildren(IDirectoryService directoryService)
         {
-            return CreateResolveArgs(directoryService, true).FileSystemChildren.ToArray();
+            return CreateResolveArgs(directoryService, true).FileSystemChildren;
         }
 
-        private List<Guid> _childrenIds = null;
+        private Guid[] _childrenIds = null;
         private readonly object _childIdsLock = new object();
         protected override List<BaseItem> LoadChildren()
         {
             lock (_childIdsLock)
             {
-                if (_childrenIds == null || _childrenIds.Count == 0)
+                if (_childrenIds == null || _childrenIds.Length == 0)
                 {
-                    var list = base.LoadChildren().ToList();
-                    _childrenIds = list.Select(i => i.Id).ToList();
+                    var list = base.LoadChildren();
+                    _childrenIds = list.Select(i => i.Id).ToArray();
                     return list;
                 }
 
@@ -105,9 +105,9 @@ namespace MediaBrowser.Controller.Entities
 
             if (!changed)
             {
-                var locations = PhysicalLocations.ToList();
+                var locations = PhysicalLocations;
 
-                var newLocations = CreateResolveArgs(new DirectoryService(Logger, FileSystem), false).PhysicalLocations.ToList();
+                var newLocations = CreateResolveArgs(new DirectoryService(Logger, FileSystem), false).PhysicalLocations;
 
                 if (!locations.SequenceEqual(newLocations))
                 {
@@ -163,7 +163,7 @@ namespace MediaBrowser.Controller.Entities
             _requiresRefresh = _requiresRefresh || !args.PhysicalLocations.SequenceEqual(PhysicalLocations);
             if (setPhysicalLocations)
             {
-                PhysicalLocationsList = args.PhysicalLocations.ToList();
+                PhysicalLocationsList = args.PhysicalLocations;
             }
 
             return args;
@@ -212,7 +212,14 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("id");
             }
 
-            return _virtualChildren.FirstOrDefault(i => i.Id == id);
+            foreach (var child in _virtualChildren)
+            {
+                if (child.Id == id)
+                {
+                    return child;
+                }
+            }
+            return null;
         }
     }
 }

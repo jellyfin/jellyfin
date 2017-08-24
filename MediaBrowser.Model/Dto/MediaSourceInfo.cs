@@ -2,7 +2,6 @@
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 
@@ -91,18 +90,14 @@ namespace MediaBrowser.Model.Dto
                 return;
             }
 
-            var internalStreams = MediaStreams
-                .Where(i => !i.IsExternal)
-                .ToList();
-
-            if (internalStreams.Count == 0)
+            var bitrate = 0;
+            foreach (var stream in MediaStreams)
             {
-                return;
+                if (!stream.IsExternal)
+                {
+                    bitrate += stream.BitRate ?? 0;
+                }
             }
-
-            var bitrate = internalStreams
-                .Select(m => m.BitRate ?? 0)
-                .Sum();
 
             if (bitrate > 0)
             {

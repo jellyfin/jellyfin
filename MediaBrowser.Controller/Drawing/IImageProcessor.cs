@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets the image enhancers.
         /// </summary>
         /// <value>The image enhancers.</value>
-        IEnumerable<IImageEnhancer> ImageEnhancers { get; }
+        IImageEnhancer[] ImageEnhancers { get; }
 
         /// <summary>
         /// Gets the size of the image.
@@ -54,7 +54,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <returns>IEnumerable{IImageEnhancer}.</returns>
-        IEnumerable<IImageEnhancer> GetSupportedEnhancers(IHasMetadata item, ImageType imageType);
+        List<IImageEnhancer> GetSupportedEnhancers(IHasMetadata item, ImageType imageType);
 
         /// <summary>
         /// Gets the image cache tag.

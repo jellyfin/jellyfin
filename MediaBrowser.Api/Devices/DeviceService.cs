@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Devices;
@@ -143,7 +142,7 @@ namespace MediaBrowser.Api.Devices
             }
             else
             {
-                var file = Request.Files.First();
+                var file = Request.Files.Length == 0 ? null : Request.Files[0];
 
                 var task = _deviceManager.AcceptCameraUpload(deviceId, file.InputStream, new LocalFileInfo
                 {

@@ -214,7 +214,15 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return Children.OfType<Video>().Any();
+                var children = Children;
+                foreach (var child in children)
+                {
+                    if (child is Video)
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
 

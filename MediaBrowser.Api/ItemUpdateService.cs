@@ -352,7 +352,7 @@ namespace MediaBrowser.Api
                     hasArtists.Artists = request
                         .ArtistItems
                         .Select(i => i.Name)
-                        .ToList();
+                        .ToArray();
                 }
             }
 

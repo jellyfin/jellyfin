@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Entities
         string Path { get; }
         string Name { get; }
         Guid Id { get; }
-        IEnumerable<string> PhysicalLocations { get; }
+        string[] PhysicalLocations { get; }
     }
 
     public interface ISupportsUserSpecificView

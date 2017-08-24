@@ -36,7 +36,6 @@ using System.Net;
 using Mono.Nat.Pmp;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Mono.Nat

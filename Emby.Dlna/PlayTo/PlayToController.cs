@@ -13,7 +13,6 @@ using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -49,7 +48,7 @@ namespace Emby.Dlna.PlayTo
         {
             get
             {
-                var lastDateKnownActivity = new[] { _creationTime, _device.DateLastActivity }.Max();
+                var lastDateKnownActivity = _creationTime > _device.DateLastActivity ? _creationTime : _device.DateLastActivity;
 
                 if (DateTime.UtcNow >= lastDateKnownActivity.AddSeconds(120))
                 {
@@ -565,7 +564,7 @@ namespace Emby.Dlna.PlayTo
                     streamInfo.TargetVideoCodecTag,
                     streamInfo.IsTargetAVC);
 
-                return list.FirstOrDefault();
+                return list.Count == 0 ? null : list[0];
             }
 
             return null;
