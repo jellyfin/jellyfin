@@ -1959,6 +1959,9 @@
     "MessageSubCancelReqSent": "Eine E-Mail wurde an den Schl\u00fcsselbesitzer gesendet. Bitte folge den Anweisungen in dieser E-Mail, um die K\u00fcndigung des Abonnements zu vervollst\u00e4ndigen. Wir hoffen dich bald wieder begr\u00fc\u00dfen zu d\u00fcrfen!",
     "MessageSubCancelError": "Etwas ging schief bei der K\u00fcndigung. Bitte sende eine E-Mail an {0} und wir werden dein Problem l\u00f6sen.",
     "LabelAlreadyCancelled": "Das Abonnement wurde gek\u00fcndigt. Du wirst keine Zahlungen mehr leisten aber die Features werden bis zum obigen Datum funktionieren.",
-    "AllowOnTheFlySubtitleExtraction": "Allow subtitle extraction on the fly",
-    "AllowOnTheFlySubtitleExtractionHelp": "Embedded subtitles can be extracted from videos and delivered to Emby apps in plain text in order to help prevent video transcoding. On some systems this can take a long time and cause video playback to stall during the extraction process. Disable this to have embedded subtitles burned in with video transcoding when they are not natively supported by the client device."
+    "AllowOnTheFlySubtitleExtraction": "Erlaube Untertitelextraktion on-the-fly",
+    "AllowOnTheFlySubtitleExtractionHelp": "Eingebettete Untertitel k\u00f6nnen aus Videos extrahiert und in Textformat an Emby gesendet werden um Transkodieren zu vermeiden. Auf manchen Systemen kann dieser Vorgang eine lange Zeit in Anspruch nehmen und die Videowiedergabe zum Halten bringen w\u00e4hrend der Extraktion. Deaktiviere diese Option um eingebettete Untertitel w\u00e4hrend des Videotranskodierens einbrennen zu lassen, wenn sie nicht nativ vom Client unterst\u00fctzt werden.",
+    "ButtonStopRecording": "Stop Recording",
+    "StopRecording": "Stop recording",
+    "CancelSeries": "Cancel series"
 }
