@@ -426,7 +426,7 @@ namespace MediaBrowser.Api.Movies
         {
             var people = _libraryManager.GetPeople(new InternalPeopleQuery
             {
-                PersonTypes = new List<string>
+                PersonTypes = new string[]
                 {
                     PersonType.Director
                 }

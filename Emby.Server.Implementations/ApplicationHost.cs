@@ -861,7 +861,7 @@ namespace Emby.Server.Implementations
             SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LogManager, FileSystemManager, CryptographyProvider);
             RegisterSingleInstance(SecurityManager);
 
-            InstallationManager = new InstallationManager(LogManager.GetLogger("InstallationManager"), this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager, CryptographyProvider);
+            InstallationManager = new InstallationManager(LogManager.GetLogger("InstallationManager"), this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager, CryptographyProvider, PackageRuntime);
             RegisterSingleInstance(InstallationManager);
 
             ZipClient = new ZipClient(FileSystemManager);
@@ -1046,6 +1046,14 @@ namespace Emby.Server.Implementations
             SetStaticProperties();
 
             await ((UserManager)UserManager).Initialize().ConfigureAwait(false);
+        }
+
+        protected virtual string PackageRuntime
+        {
+            get
+            {
+                return "netframework";
+            }
         }
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths, bool isStartup)

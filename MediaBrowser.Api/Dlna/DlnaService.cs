@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Controller.Dlna;
+﻿using System.Linq;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
-using System.Linq;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Dlna

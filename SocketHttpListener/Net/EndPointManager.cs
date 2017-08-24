@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -83,7 +82,9 @@ namespace SocketHttpListener.Net
             {
                 try
                 {
-                    addr = (await networkManager.GetHostAddressesAsync(host).ConfigureAwait(false)).FirstOrDefault() ?? 
+                    var all = (await networkManager.GetHostAddressesAsync(host).ConfigureAwait(false));
+
+                    addr = (all.Length == 0 ? null : all[0]) ?? 
                         GetIpAnyAddress(listener);
                 }
                 catch

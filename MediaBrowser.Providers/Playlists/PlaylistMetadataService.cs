@@ -42,12 +42,9 @@ namespace MediaBrowser.Providers.Playlists
             {
                 if (!item.IsLocked && !item.LockedFields.Contains(MetadataFields.Genres))
                 {
-                    var items = item.GetLinkedChildren()
-                        .ToList();
+                    var currentList = item.Genres;
 
-                    var currentList = item.Genres.ToList();
-
-                    item.Genres = items.SelectMany(i => i.Genres)
+                    item.Genres = item.GetLinkedChildren().SelectMany(i => i.Genres)
                         .Distinct(StringComparer.OrdinalIgnoreCase)
                         .ToList();
 

@@ -6,7 +6,6 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 using MediaBrowser.Controller.IO;

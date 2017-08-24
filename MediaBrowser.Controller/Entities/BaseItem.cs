@@ -570,7 +570,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public virtual IEnumerable<string> PhysicalLocations
+        public virtual string[] PhysicalLocations
         {
             get
             {

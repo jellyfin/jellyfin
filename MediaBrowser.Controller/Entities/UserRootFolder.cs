@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (_childrenIds == null)
                 {
-                    var list = base.LoadChildren().ToList();
+                    var list = base.LoadChildren();
                     _childrenIds = list.Select(i => i.Id).ToList();
                     return list;
                 }

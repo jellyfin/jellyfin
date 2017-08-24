@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities.Audio;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Extensions;

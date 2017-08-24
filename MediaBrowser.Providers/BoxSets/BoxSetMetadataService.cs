@@ -41,11 +41,7 @@ namespace MediaBrowser.Providers.BoxSets
 
             if (mergeMetadataSettings)
             {
-                // Retain shortcut children
-                var linkedChildren = sourceItem.LinkedChildren.ToList();
-                linkedChildren.AddRange(sourceItem.LinkedChildren.Where(i => i.Type == LinkedChildType.Shortcut));
-
-                targetItem.LinkedChildren = linkedChildren.ToArray(linkedChildren.Count);
+                targetItem.LinkedChildren = sourceItem.LinkedChildren;
                 targetItem.Shares = sourceItem.Shares;
             }
         }
