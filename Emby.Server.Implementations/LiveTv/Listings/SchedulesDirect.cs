@@ -358,14 +358,19 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                 if (details.metadata != null)
                 {
-                    var gracenote = details.metadata.Find(x => x.Gracenote != null).Gracenote;
-                    if (gracenote != null)
+                    foreach (var metadataProgram in details.metadata)
                     {
-                        info.SeasonNumber = gracenote.season;
-
-                        if (gracenote.episode > 0)
+                        var gracenote = metadataProgram.Gracenote;
+                        if (gracenote != null)
                         {
-                            info.EpisodeNumber = gracenote.episode;
+                            info.SeasonNumber = gracenote.season;
+
+                            if (gracenote.episode > 0)
+                            {
+                                info.EpisodeNumber = gracenote.episode;
+                            }
+
+                            break;
                         }
                     }
                 }
