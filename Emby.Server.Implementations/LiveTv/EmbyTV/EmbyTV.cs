@@ -607,20 +607,22 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var timer = _timerProvider.GetTimer(timerId);
             if (timer != null)
             {
+                timer.Status = RecordingStatus.Cancelled;
+
                 if (string.IsNullOrWhiteSpace(timer.SeriesTimerId) || isSeriesCancelled)
                 {
                     _timerProvider.Delete(timer);
                 }
                 else
                 {
-                    timer.Status = RecordingStatus.Cancelled;
                     _timerProvider.AddOrUpdate(timer, false);
                 }
             }
             ActiveRecordingInfo activeRecordingInfo;
 
             if (_activeRecordings.TryGetValue(timerId, out activeRecordingInfo))
-            {
+            { 
+                activeRecordingInfo.Timer = timer;
                 activeRecordingInfo.CancellationTokenSource.Cancel();
             }
         }
@@ -865,7 +867,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         public async Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken)
         {
             return new List<RecordingInfo>();
-            //return _activeRecordings.Values.ToList().Select(GetRecordingInfo).ToList();
         }
 
         public string GetActiveRecordingPath(string id)
@@ -881,7 +882,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public IEnumerable<ActiveRecordingInfo> GetAllActiveRecordings()
         {
-            return _activeRecordings.Values;
+            return _activeRecordings.Values.Where(i => i.Timer.Status == RecordingStatus.InProgress && !i.CancellationTokenSource.IsCancellationRequested);
         }
 
         public ActiveRecordingInfo GetActiveRecordingInfo(string path)
@@ -893,57 +894,17 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             foreach (var recording in _activeRecordings.Values)
             {
-                if (string.Equals(recording.Path, path, StringComparison.Ordinal))
+                if (string.Equals(recording.Path, path, StringComparison.Ordinal) && !recording.CancellationTokenSource.IsCancellationRequested)
                 {
+                    var timer = recording.Timer;
+                    if (timer.Status != RecordingStatus.InProgress)
+                    {
+                        return null;
+                    }
                     return recording;
                 }
             }
             return null;
-        }
-
-        private RecordingInfo GetRecordingInfo(ActiveRecordingInfo info)
-        {
-            var timer = info.Timer;
-            var program = info.Program;
-
-            var result = new RecordingInfo
-            {
-                ChannelId = timer.ChannelId,
-                CommunityRating = timer.CommunityRating,
-                DateLastUpdated = DateTime.UtcNow,
-                EndDate = timer.EndDate,
-                EpisodeTitle = timer.EpisodeTitle,
-                Genres = timer.Genres,
-                Id = "recording" + timer.Id,
-                IsKids = timer.IsKids,
-                IsMovie = timer.IsMovie,
-                IsNews = timer.IsNews,
-                IsRepeat = timer.IsRepeat,
-                IsSeries = timer.IsProgramSeries,
-                IsSports = timer.IsSports,
-                Name = timer.Name,
-                OfficialRating = timer.OfficialRating,
-                OriginalAirDate = timer.OriginalAirDate,
-                Overview = timer.Overview,
-                ProgramId = timer.ProgramId,
-                SeriesTimerId = timer.SeriesTimerId,
-                StartDate = timer.StartDate,
-                Status = RecordingStatus.InProgress,
-                TimerId = timer.Id
-            };
-
-            if (program != null)
-            {
-                result.Audio = program.Audio;
-                result.ImagePath = program.ImagePath;
-                result.ImageUrl = program.ImageUrl;
-                result.IsHD = program.IsHD;
-                result.IsLive = program.IsLive;
-                result.IsPremiere = program.IsPremiere;
-                result.ShowId = program.ShowId;
-            }
-
-            return result;
         }
 
         public Task<IEnumerable<TimerInfo>> GetTimersAsync(CancellationToken cancellationToken)

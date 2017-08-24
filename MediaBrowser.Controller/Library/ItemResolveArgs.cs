@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
@@ -134,7 +133,14 @@ namespace MediaBrowser.Controller.Library
                 // Not officially supported but in some cases we can handle it.
                 if (item == null)
                 {
-                    item = parent.GetParents().OfType<T>().FirstOrDefault();
+                    var parents = parent.GetParents();
+                    foreach (var currentParent in parents)
+                    {
+                        if (currentParent is T)
+                        {
+                            return true;
+                        }
+                    }
                 }
 
                 return item != null;
@@ -167,12 +173,12 @@ namespace MediaBrowser.Controller.Library
         /// Gets the physical locations.
         /// </summary>
         /// <value>The physical locations.</value>
-        public IEnumerable<string> PhysicalLocations
+        public string[] PhysicalLocations
         {
             get
             {
                 var paths = string.IsNullOrWhiteSpace(Path) ? new string[] { } : new[] { Path };
-                return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations);
+                return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations).ToArray();
             }
         }
 

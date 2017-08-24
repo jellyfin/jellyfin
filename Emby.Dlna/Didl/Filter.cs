@@ -1,13 +1,12 @@
 ﻿using MediaBrowser.Model.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Emby.Dlna.Didl
 {
     public class Filter
     {
-        private readonly List<string> _fields;
+        private readonly string[] _fields;
         private readonly bool _all;
 
         public Filter()
@@ -20,9 +19,7 @@ namespace Emby.Dlna.Didl
         {
             _all = StringHelper.EqualsIgnoreCase(filter, "*");
 
-            var list = (filter ?? string.Empty).Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-            _fields = list;
+            _fields = (filter ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public bool Contains(string field)

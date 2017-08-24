@@ -9,15 +9,15 @@ namespace MediaBrowser.Controller.Entities
     public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasLookupInfo<MusicVideoInfo>
     {
         [IgnoreDataMember]
-        public List<string> Artists { get; set; }
+        public string[] Artists { get; set; }
 
         public MusicVideo()
         {
-            Artists = new List<string>();
+            Artists = EmptyStringArray;
         }
 
         [IgnoreDataMember]
-        public List<string> AllArtists
+        public string[] AllArtists
         {
             get
             {

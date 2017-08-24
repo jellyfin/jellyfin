@@ -96,15 +96,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IList<BaseItem> items)
         {
             var inputPersonTypes = ((GetPersons)request).PersonTypes;
             var personTypes = string.IsNullOrEmpty(inputPersonTypes) ? new string[] { } : inputPersonTypes.Split(',');
 
-            var itemsList = items.ToList();
-
             // Either get all people, or all people filtered by a specific person type
-            var allPeople = GetAllPeople(itemsList, personTypes);
+            var allPeople = GetAllPeople(items, personTypes);
 
             return allPeople
                 .Select(i => i.Name)
@@ -132,13 +130,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="itemsList">The items list.</param>
         /// <param name="personTypes">The person types.</param>
         /// <returns>IEnumerable{PersonInfo}.</returns>
-        private IEnumerable<PersonInfo> GetAllPeople(IEnumerable<BaseItem> itemsList, IEnumerable<string> personTypes)
+        private IEnumerable<PersonInfo> GetAllPeople(IList<BaseItem> itemsList, string[] personTypes)
         {
-            var allIds = itemsList.Select(i => i.Id).ToList();
+            var allIds = itemsList.Select(i => i.Id).ToArray();
 
             var allPeople = LibraryManager.GetPeople(new InternalPeopleQuery
             {
-                PersonTypes = personTypes.ToList()
+                PersonTypes = personTypes
             });
 
             return allPeople.Where(i => allIds.Contains(i.ItemId)).OrderBy(p => p.SortOrder ?? int.MaxValue).ThenBy(p => p.Type);

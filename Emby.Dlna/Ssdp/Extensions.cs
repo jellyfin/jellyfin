@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -24,10 +23,12 @@ namespace Emby.Dlna.Ssdp
 
         public static string GetDescendantValue(this XElement container, XName name)
         {
-            var node = container.Descendants(name)
-                .FirstOrDefault();
+            foreach (var node in container.Descendants(name))
+            {
+                return node.Value;
+            }
 
-            return node == null ? null : node.Value;
+            return null;
         }
     }
 }

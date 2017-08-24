@@ -364,7 +364,7 @@ namespace Rssdp.Infrastructure
 
             if (_enableMultiSocketBinding)
             {
-                foreach (var address in _networkManager.GetLocalIpAddresses().ToList())
+                foreach (var address in _networkManager.GetLocalIpAddresses())
                 {
                     try
                     {

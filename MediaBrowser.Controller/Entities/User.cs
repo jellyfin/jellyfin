@@ -5,7 +5,6 @@ using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -279,7 +278,14 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            return schedules.Any(i => IsParentalScheduleAllowed(i, date));
+            foreach (var i in schedules)
+            {
+                if (IsParentalScheduleAllowed(i, date))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private bool IsParentalScheduleAllowed(AccessSchedule schedule, DateTime date)
@@ -304,7 +310,14 @@ namespace MediaBrowser.Controller.Entities
 
         public bool IsFolderGrouped(Guid id)
         {
-            return Configuration.GroupedFolders.Select(i => new Guid(i)).Contains(id);
+            foreach (var i in Configuration.GroupedFolders)
+            {
+                if (new Guid(i) == id)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         [IgnoreDataMember]

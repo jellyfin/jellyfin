@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     return new CollectionFolder
                     {
                         CollectionType = GetCollectionType(args),
-                        PhysicalLocationsList = args.PhysicalLocations.ToList()
+                        PhysicalLocationsList = args.PhysicalLocations
                     };
                 }
             }

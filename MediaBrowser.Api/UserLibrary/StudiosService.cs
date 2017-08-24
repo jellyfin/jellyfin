@@ -103,11 +103,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IList<BaseItem> items)
         {
-            var itemsList = items.Where(i => i.Studios != null).ToList();
-
-            return itemsList
+            return items
                 .SelectMany(i => i.Studios)
                 .DistinctNames()
                 .Select(name => LibraryManager.GetStudio(name));

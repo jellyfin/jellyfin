@@ -58,9 +58,7 @@ namespace MediaBrowser.Model.Services
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                var stringComparison = GetStringComparison();
-
-                var parameters = this.Where(p => string.Equals(key, p.Name, stringComparison)).ToArray();
+                var parameters = GetItems(key);
 
                 foreach (var p in parameters)
                 {
@@ -85,14 +83,6 @@ namespace MediaBrowser.Model.Services
         }
 
         /// <summary>
-        /// True if the collection contains a query parameter with the given name.
-        /// </summary>
-        public bool ContainsKey(string name)
-        {
-            return this.Any(p => p.Name == name);
-        }
-
-        /// <summary>
         /// Removes all parameters of the given name.
         /// </summary>
         /// <returns>The number of parameters that were removed</returns>
@@ -106,16 +96,49 @@ namespace MediaBrowser.Model.Services
         {
             var stringComparison = GetStringComparison();
 
-            return this.Where(p => string.Equals(p.Name, name, stringComparison))
-                .Select(p => p.Value)
-                .FirstOrDefault();
+            foreach (var pair in this)
+            {
+                if (string.Equals(pair.Name, name, stringComparison))
+                {
+                    return pair.Value;
+                }
+            }
+
+            return null;
         }
 
-        public virtual string[] GetValues(string name)
+        public virtual List<NameValuePair> GetItems(string name)
         {
             var stringComparison = GetStringComparison();
 
-            return this.Where(p => string.Equals(p.Name, name, stringComparison)).Select(p => p.Value).ToArray();
+            var list = new List<NameValuePair>();
+
+            foreach (var pair in this)
+            {
+                if (string.Equals(pair.Name, name, stringComparison))
+                {
+                    list.Add(pair);
+                }
+            }
+
+            return list;
+        }
+
+        public virtual List<string> GetValues(string name)
+        {
+            var stringComparison = GetStringComparison();
+
+            var list = new List<string>();
+
+            foreach (var pair in this)
+            {
+                if (string.Equals(pair.Name, name, stringComparison))
+                {
+                    list.Add(pair.Value);
+                }
+            }
+
+            return list;
         }
 
         public Dictionary<string, string> ToDictionary()
@@ -134,7 +157,17 @@ namespace MediaBrowser.Model.Services
 
         public IEnumerable<string> Keys
         {
-            get { return this.Select(i => i.Name); }
+            get
+            {
+                var keys = new string[this.Count];
+
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    keys[i] = this[i].Name;
+                }
+
+                return keys;
+            }
         }
 
         /// <summary>

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace MediaBrowser.Model.Extensions
 {
@@ -13,7 +11,14 @@ namespace MediaBrowser.Model.Extensions
                 throw new ArgumentNullException("value");
             }
 
-            return list.Contains(value, StringComparer.OrdinalIgnoreCase);
+            foreach (var item in list)
+            {
+                if (string.Equals(item, value, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public static bool ContainsAnyIgnoreCase(string[] list, string[] values)

@@ -140,7 +140,6 @@ namespace MediaBrowser.Api
         public async Task PostAsync(MergeVersions request)
         {
             var items = request.Ids.Split(',')
-                .Select(i => new Guid(i))
                 .Select(i => _libraryManager.GetItemById(i))
                 .OfType<Video>()
                 .ToList();

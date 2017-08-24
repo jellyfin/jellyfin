@@ -2,7 +2,6 @@
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Threading;
@@ -194,7 +193,19 @@ namespace MediaBrowser.Controller.Session
 
         public bool ContainsUser(Guid userId)
         {
-            return (UserId ?? Guid.Empty) == userId || AdditionalUsers.Any(i => userId == new Guid(i.UserId));
+            if ((UserId ?? Guid.Empty) == userId)
+            {
+                return true;
+            }
+
+            foreach (var additionalUser in AdditionalUsers)
+            {
+                if (userId == new Guid(additionalUser.UserId))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private readonly object _progressLock = new object();

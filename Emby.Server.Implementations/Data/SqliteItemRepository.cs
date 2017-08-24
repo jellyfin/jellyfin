@@ -1028,9 +1028,9 @@ namespace Emby.Server.Implementations.Data
             var hasArtists = item as IHasArtist;
             if (hasArtists != null)
             {
-                if (hasArtists.Artists.Count > 0)
+                if (hasArtists.Artists.Length > 0)
                 {
-                    artists = string.Join("|", hasArtists.Artists.ToArray());
+                    artists = string.Join("|", hasArtists.Artists);
                 }
             }
             saveItemStatement.TryBind("@Artists", artists);
@@ -1908,7 +1908,7 @@ namespace Emby.Server.Implementations.Data
                 var hasArtists = item as IHasArtist;
                 if (hasArtists != null && !reader.IsDBNull(index))
                 {
-                    hasArtists.Artists = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+                    hasArtists.Artists = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
                 }
                 index++;
 

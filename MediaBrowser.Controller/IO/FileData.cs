@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.IO
@@ -107,7 +106,15 @@ namespace MediaBrowser.Controller.IO
                 }
             }
 
-            return dict.Values.ToArray();
+            var returnResult = new FileSystemMetadata[dict.Count];
+            var index = 0;
+            var values = dict.Values;
+            foreach (var value in values)
+            {
+                returnResult[index] = value;
+                index++;
+            }
+            return returnResult;
         }
 
     }

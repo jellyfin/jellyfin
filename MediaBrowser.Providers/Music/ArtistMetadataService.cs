@@ -31,7 +31,7 @@ namespace MediaBrowser.Providers.Music
                         }) :
                         item.GetRecursiveChildren(i => i is IHasArtist && !i.IsFolder);
 
-                    var currentList = item.Genres.ToList();
+                    var currentList = item.Genres;
 
                     item.Genres = taggedItems.SelectMany(i => i.Genres)
                         .DistinctNames()

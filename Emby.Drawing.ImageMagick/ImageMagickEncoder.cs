@@ -7,7 +7,6 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
-using System.Linq;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 
@@ -306,15 +305,15 @@ namespace Emby.Drawing.ImageMagick
 
             if (ratio >= 1.4)
             {
-                new StripCollageBuilder(_appPaths, _fileSystem).BuildThumbCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height);
+                new StripCollageBuilder(_appPaths, _fileSystem).BuildThumbCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
             }
             else if (ratio >= .9)
             {
-                new StripCollageBuilder(_appPaths, _fileSystem).BuildSquareCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height);
+                new StripCollageBuilder(_appPaths, _fileSystem).BuildSquareCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
             }
             else
             {
-                new StripCollageBuilder(_appPaths, _fileSystem).BuildPosterCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height);
+                new StripCollageBuilder(_appPaths, _fileSystem).BuildPosterCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
             }
         }
 

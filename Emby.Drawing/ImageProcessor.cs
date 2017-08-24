@@ -44,7 +44,7 @@ namespace Emby.Drawing
         /// Image processors are specialized metadata providers that run after the normal ones
         /// </summary>
         /// <value>The image enhancers.</value>
-        public IEnumerable<IImageEnhancer> ImageEnhancers { get; private set; }
+        public IImageEnhancer[] ImageEnhancers { get; private set; }
 
         /// <summary>
         /// The _logger
@@ -71,7 +71,7 @@ namespace Emby.Drawing
             _libraryManager = libraryManager;
             _appPaths = appPaths;
 
-            ImageEnhancers = new List<IImageEnhancer>();
+            ImageEnhancers = new IImageEnhancer[] {};
             _saveImageSizeTimer = timerFactory.Create(SaveImageSizeCallback, null, Timeout.Infinite, Timeout.Infinite);
             ImageHelper.ImageProcessor = this;
 
@@ -618,7 +618,7 @@ namespace Emby.Drawing
 
             var supportedEnhancers = GetSupportedEnhancers(item, image.Type);
 
-            return GetImageCacheTag(item, image, supportedEnhancers.ToList());
+            return GetImageCacheTag(item, image, supportedEnhancers);
         }
 
         /// <summary>
@@ -672,7 +672,7 @@ namespace Emby.Drawing
         /// <returns>Task{System.String}.</returns>
         public async Task<string> GetEnhancedImage(IHasMetadata item, ImageType imageType, int imageIndex)
         {
-            var enhancers = GetSupportedEnhancers(item, imageType).ToList();
+            var enhancers = GetSupportedEnhancers(item, imageType);
 
             var imageInfo = item.GetImageInfo(imageType, imageIndex);
 
@@ -866,21 +866,25 @@ namespace Emby.Drawing
             _logger.Info("Completed creation of image collage and saved to {0}", options.OutputPath);
         }
 
-        public IEnumerable<IImageEnhancer> GetSupportedEnhancers(IHasMetadata item, ImageType imageType)
+        public List<IImageEnhancer> GetSupportedEnhancers(IHasMetadata item, ImageType imageType)
         {
-            return ImageEnhancers.Where(i =>
+            var list = new List<IImageEnhancer>();
+
+            foreach (var i in ImageEnhancers)
             {
                 try
                 {
-                    return i.Supports(item, imageType);
+                    if (i.Supports(item, imageType))
+                    {
+                        list.Add(i);
+                    }
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
-
-                    return false;
                 }
-            });
+            }
+            return list;
         }
 
         private bool _disposed;

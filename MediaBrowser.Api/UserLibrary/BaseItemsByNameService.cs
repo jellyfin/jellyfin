@@ -257,7 +257,7 @@ namespace MediaBrowser.Api.UserLibrary
                 parentItem = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.RootFolder : LibraryManager.GetItemById(request.ParentId);
             }
 
-            IEnumerable<BaseItem> items;
+            IList<BaseItem> items;
 
             var excludeItemTypes = request.GetExcludeItemTypes();
             var includeItemTypes = request.GetIncludeItemTypes();
@@ -280,19 +280,19 @@ namespace MediaBrowser.Api.UserLibrary
                 if (!string.IsNullOrWhiteSpace(request.UserId))
                 {
                     items = request.Recursive ?
-                        folder.GetRecursiveChildren(user, query) :
-                        folder.GetChildren(user, true).Where(filter);
+                        folder.GetRecursiveChildren(user, query).ToList() :
+                        folder.GetChildren(user, true).Where(filter).ToList();
                 }
                 else
                 {
                     items = request.Recursive ?
                         folder.GetRecursiveChildren(filter) :
-                        folder.Children.Where(filter);
+                        folder.Children.Where(filter).ToList();
                 }
             }
             else
             {
-                items = new[] { parentItem }.Where(filter);
+                items = new[] { parentItem }.Where(filter).ToList();
             }
 
             var extractedItems = GetAllItems(request, items);
@@ -500,7 +500,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Task{`0}}.</returns>
-        protected abstract IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items);
+        protected abstract IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IList<BaseItem> items);
     }
 
     /// <summary>

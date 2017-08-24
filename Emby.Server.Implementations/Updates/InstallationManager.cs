@@ -122,7 +122,10 @@ namespace Emby.Server.Implementations.Updates
 
         private readonly ICryptoProvider _cryptographyProvider;
 
-        public InstallationManager(ILogger logger, IApplicationHost appHost, IApplicationPaths appPaths, IHttpClient httpClient, IJsonSerializer jsonSerializer, ISecurityManager securityManager, IConfigurationManager config, IFileSystem fileSystem, ICryptoProvider cryptographyProvider)
+        // netframework or netcore
+        private readonly string _packageRuntime;
+
+        public InstallationManager(ILogger logger, IApplicationHost appHost, IApplicationPaths appPaths, IHttpClient httpClient, IJsonSerializer jsonSerializer, ISecurityManager securityManager, IConfigurationManager config, IFileSystem fileSystem, ICryptoProvider cryptographyProvider, string packageRuntime)
         {
             if (logger == null)
             {
@@ -140,6 +143,7 @@ namespace Emby.Server.Implementations.Updates
             _config = config;
             _fileSystem = fileSystem;
             _cryptographyProvider = cryptographyProvider;
+            _packageRuntime = packageRuntime;
             _logger = logger;
         }
 
@@ -157,7 +161,7 @@ namespace Emby.Server.Implementations.Updates
         /// Gets all available packages.
         /// </summary>
         /// <returns>Task{List{PackageInfo}}.</returns>
-        public async Task<PackageInfo[]> GetAvailablePackages(CancellationToken cancellationToken,
+        public async Task<List<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken,
             bool withRegistration = true,
             string packageType = null,
             Version applicationVersion = null)
@@ -171,7 +175,7 @@ namespace Emby.Server.Implementations.Updates
                     { "systemid", _applicationHost.SystemId }
                 };
 
-                using (var json = await _httpClient.Post("https://www.mb3admin.com/admin/service/package/retrieveall", data, cancellationToken).ConfigureAwait(false))
+                using (var json = await _httpClient.Post("https://www.mb3admin.com/admin/service/package/retrieveall?includeAllRuntimes=true", data, cancellationToken).ConfigureAwait(false))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -195,7 +199,7 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{List{PackageInfo}}.</returns>
-        public async Task<PackageInfo[]> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken)
+        public async Task<List<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken)
         {
             _logger.Info("Opening {0}", PackageCachePath);
             try
@@ -209,7 +213,7 @@ namespace Emby.Server.Implementations.Updates
                         UpdateCachedPackages(CancellationToken.None, false);
                     }
 
-                    return packages;
+                    return FilterPackages(packages);
                 }
             }
             catch (Exception)
@@ -221,7 +225,7 @@ namespace Emby.Server.Implementations.Updates
             await UpdateCachedPackages(cancellationToken, true).ConfigureAwait(false);
             using (var stream = _fileSystem.OpenRead(PackageCachePath))
             {
-                return _jsonSerializer.DeserializeFromStream<PackageInfo[]>(stream);
+                return FilterPackages(_jsonSerializer.DeserializeFromStream<PackageInfo[]>(stream));
             }
         }
 
@@ -244,7 +248,7 @@ namespace Emby.Server.Implementations.Updates
 
                 var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
                 {
-                    Url = "https://www.mb3admin.com/admin/service/MB3Packages.json",
+                    Url = "https://www.mb3admin.com/admin/service/EmbyPackages.json",
                     CancellationToken = cancellationToken,
                     Progress = new SimpleProgress<Double>()
 
@@ -280,47 +284,74 @@ namespace Emby.Server.Implementations.Updates
             return TimeSpan.FromMinutes(3);
         }
 
-        protected PackageInfo[] FilterPackages(List<PackageInfo> packages)
+        protected List<PackageInfo> FilterPackages(IEnumerable<PackageInfo> packages)
         {
+            var list = new List<PackageInfo>();
 
             foreach (var package in packages)
             {
-                package.versions = package.versions.Where(v => !string.IsNullOrWhiteSpace(v.sourceUrl))
-                    .OrderByDescending(GetPackageVersion).ToArray();
+                var versions = new List<PackageVersionInfo>();
+                foreach (var version in package.versions)
+                {
+                    if (string.IsNullOrWhiteSpace(version.sourceUrl))
+                    {
+                        continue;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(version.runtimes) || version.runtimes.IndexOf(_packageRuntime, StringComparison.OrdinalIgnoreCase) == -1)
+                    {
+                        continue;
+                    }
+
+                    versions.Add(version);
+                }
+
+                package.versions = versions
+                    .OrderByDescending(GetPackageVersion)
+                    .ToArray();
+
+                if (package.versions.Length == 0)
+                {
+                    continue;
+                }
+
+                list.Add(package);
             }
 
             // Remove packages with no versions
-            return packages.Where(p => p.versions.Any()).ToArray();
+            return list;
         }
 
-        protected PackageInfo[] FilterPackages(PackageInfo[] packages, string packageType, Version applicationVersion)
+        protected List<PackageInfo> FilterPackages(IEnumerable<PackageInfo> packages, string packageType, Version applicationVersion)
         {
-            foreach (var package in packages)
-            {
-                package.versions = package.versions.Where(v => !string.IsNullOrWhiteSpace(v.sourceUrl))
-                    .OrderByDescending(GetPackageVersion).ToArray();
-            }
+            var packagesList = FilterPackages(packages);
 
-            IEnumerable<PackageInfo> packagesList = packages;
+            var returnList = new List<PackageInfo>();
 
-            if (!string.IsNullOrWhiteSpace(packageType))
-            {
-                packagesList = packagesList.Where(p => string.Equals(p.type, packageType, StringComparison.OrdinalIgnoreCase));
-            }
+            var filterOnPackageType = !string.IsNullOrWhiteSpace(packageType);
 
-            // If an app version was supplied, filter the versions for each package to only include supported versions
-            if (applicationVersion != null)
+            foreach (var p in packagesList)
             {
-                foreach (var package in packages)
+                if (filterOnPackageType && !string.Equals(p.type, packageType, StringComparison.OrdinalIgnoreCase))
                 {
-                    package.versions = package.versions.Where(v => IsPackageVersionUpToDate(v, applicationVersion)).ToArray();
+                    continue;
                 }
+
+                // If an app version was supplied, filter the versions for each package to only include supported versions
+                if (applicationVersion != null)
+                {
+                    p.versions = p.versions.Where(v => IsPackageVersionUpToDate(v, applicationVersion)).ToArray();
+                }
+
+                if (p.versions.Length == 0)
+                {
+                    continue;
+                }
+
+                returnList.Add(p);
             }
 
-            // Remove packages with no versions
-            packagesList = packagesList.Where(p => p.versions.Any());
-
-            return packagesList.ToArray();
+            return returnList;
         }
 
         /// <summary>
