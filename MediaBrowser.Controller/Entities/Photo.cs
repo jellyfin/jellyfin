@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Drawing;
-using System.Linq;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
@@ -39,7 +38,16 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return GetParents().OfType<PhotoAlbum>().FirstOrDefault();
+                var parents = GetParents();
+                foreach (var parent in parents)
+                {
+                    var photoAlbum = parent as PhotoAlbum;
+                    if (photoAlbum != null)
+                    {
+                        return photoAlbum;
+                    }
+                }
+                return null;
             }
         }
 

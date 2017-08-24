@@ -215,13 +215,13 @@ namespace Emby.Server.Implementations.Services
                 if (name == null) continue; //thank you ASP.NET
 
                 var values = request.QueryString.GetValues(name);
-                if (values.Length == 1)
+                if (values.Count == 1)
                 {
                     map[name] = values[0];
                 }
                 else
                 {
-                    for (var i = 0; i < values.Length; i++)
+                    for (var i = 0; i < values.Count; i++)
                     {
                         map[name + (i == 0 ? "" : "#" + i)] = values[i];
                     }
@@ -235,13 +235,13 @@ namespace Emby.Server.Implementations.Services
                     if (name == null) continue; //thank you ASP.NET
 
                     var values = request.FormData.GetValues(name);
-                    if (values.Length == 1)
+                    if (values.Count == 1)
                     {
                         map[name] = values[0];
                     }
                     else
                     {
-                        for (var i = 0; i < values.Length; i++)
+                        for (var i = 0; i < values.Count; i++)
                         {
                             map[name + (i == 0 ? "" : "#" + i)] = values[i];
                         }

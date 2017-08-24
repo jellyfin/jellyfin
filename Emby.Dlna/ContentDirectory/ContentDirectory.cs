@@ -10,7 +10,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Globalization;
@@ -129,9 +128,20 @@ namespace Emby.Dlna.ContentDirectory
                 }
             }
 
-            // No configuration so it's going to be pretty arbitrary
-            return _userManager.Users.FirstOrDefault(i => i.Policy.IsAdministrator) ??
-                _userManager.Users.First();
+            foreach (var user in _userManager.Users)
+            {
+                if (user.Policy.IsAdministrator)
+                {
+                    return user;
+                }
+            }
+
+            foreach (var user in _userManager.Users)
+            {
+                return user;
+            }
+
+            return null;
         }
 
         public void Dispose()

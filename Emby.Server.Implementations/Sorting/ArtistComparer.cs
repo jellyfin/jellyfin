@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.Sorting
                 return string.Empty;
             }
 
-            return audio.Artists.Count == 0 ? null : audio.Artists[0];
+            return audio.Artists.Length == 0 ? null : audio.Artists[0];
         }
 
         /// <summary>

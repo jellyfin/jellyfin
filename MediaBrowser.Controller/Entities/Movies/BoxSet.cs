@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -169,7 +168,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             if (base.IsVisible(user))
             {
-                return base.GetChildren(user, true).Any();
+                return base.GetChildren(user, true).Count > 0;
             }
 
             return false;

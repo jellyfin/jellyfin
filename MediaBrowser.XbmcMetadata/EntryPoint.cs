@@ -8,7 +8,6 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.XbmcMetadata.Configuration;
 using MediaBrowser.XbmcMetadata.Savers;
 using System;
-using System.Linq;
 using MediaBrowser.Controller.Dto;
 
 namespace MediaBrowser.XbmcMetadata

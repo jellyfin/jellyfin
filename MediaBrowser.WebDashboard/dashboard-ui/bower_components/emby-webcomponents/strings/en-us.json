@@ -526,5 +526,7 @@
   "VideoFramerateNotSupported": "Video framerate not supported",
   "VideoBitDepthNotSupported": "Video bit depth not supported",
   "RefFramesNotSupported": "Number of video reference frames not supported",
-  "ErrorConnectServerUnreachable": "There was an error performing the requested operation. Your server is unable to contact our Emby Connect Server at {0}. Please ensure your server has an active internet connection and that the communications are being allowed by any firewall or security software you have installed."
+  "ErrorConnectServerUnreachable": "There was an error performing the requested operation. Your server is unable to contact our Emby Connect Server at {0}. Please ensure your server has an active internet connection and that the communications are being allowed by any firewall or security software you have installed.",
+  "StopRecording": "Stop recording",
+  "ManageRecording": "Manage recording"
 }

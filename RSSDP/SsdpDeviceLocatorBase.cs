@@ -127,7 +127,7 @@ namespace Rssdp.Infrastructure
             }
             catch (Exception ex)
             {
-                
+
             }
         }
 
@@ -543,17 +543,9 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private IEnumerable<DiscoveredSsdpDevice> GetUnexpiredDevices()
-        {
-            lock (_Devices)
-            {
-                return (from device in _Devices where !device.IsExpired() select device).ToArray();
-            }
-        }
-
         private bool DeviceDied(string deviceUsn, bool expired)
         {
-            IEnumerable<DiscoveredSsdpDevice> existingDevices = null;
+            List<DiscoveredSsdpDevice> existingDevices = null;
             lock (_Devices)
             {
                 existingDevices = FindExistingDeviceNotifications(_Devices, deviceUsn);
@@ -565,7 +557,7 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            if (existingDevices != null && existingDevices.Any())
+            if (existingDevices != null && existingDevices.Count > 0)
             {
                 foreach (var removedDevice in existingDevices)
                 {
@@ -591,12 +583,29 @@ namespace Rssdp.Infrastructure
 
         private static DiscoveredSsdpDevice FindExistingDeviceNotification(IEnumerable<DiscoveredSsdpDevice> devices, string notificationType, string usn)
         {
-            return (from d in devices where d.NotificationType == notificationType && d.Usn == usn select d).FirstOrDefault();
+            foreach (var d in devices)
+            {
+                if (d.NotificationType == notificationType && d.Usn == usn)
+                {
+                    return d;
+                }
+            }
+            return null;
         }
 
-        private static IEnumerable<DiscoveredSsdpDevice> FindExistingDeviceNotifications(IList<DiscoveredSsdpDevice> devices, string usn)
+        private static List<DiscoveredSsdpDevice> FindExistingDeviceNotifications(IList<DiscoveredSsdpDevice> devices, string usn)
         {
-            return (from d in devices where d.Usn == usn select d).ToArray();
+            var list = new List<DiscoveredSsdpDevice>();
+
+            foreach (var d in devices)
+            {
+                if (d.Usn == usn)
+                {
+                    list.Add(d);
+                }
+            }
+
+            return list;
         }
 
         #endregion

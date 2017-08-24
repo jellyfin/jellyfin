@@ -1960,5 +1960,8 @@
     "MessageSubCancelError": "Qualcosa \u00e8 andato storto cercando di annullare il tuo abbonamento. Si prega di inviare un'email a {0} e ti aiuteremo noi.",
     "LabelAlreadyCancelled": "Questo abbonamento \u00e8 stato annullato. Non ti verr\u00e0 addebitato altro, ma le funzionalit\u00e0 funzioneranno fino alla data indicata.",
     "AllowOnTheFlySubtitleExtraction": "Allow subtitle extraction on the fly",
-    "AllowOnTheFlySubtitleExtractionHelp": "Embedded subtitles can be extracted from videos and delivered to Emby apps in plain text in order to help prevent video transcoding. On some systems this can take a long time and cause video playback to stall during the extraction process. Disable this to have embedded subtitles burned in with video transcoding when they are not natively supported by the client device."
+    "AllowOnTheFlySubtitleExtractionHelp": "Embedded subtitles can be extracted from videos and delivered to Emby apps in plain text in order to help prevent video transcoding. On some systems this can take a long time and cause video playback to stall during the extraction process. Disable this to have embedded subtitles burned in with video transcoding when they are not natively supported by the client device.",
+    "ButtonStopRecording": "Stop Recording",
+    "StopRecording": "Stop recording",
+    "CancelSeries": "Cancel series"
 }

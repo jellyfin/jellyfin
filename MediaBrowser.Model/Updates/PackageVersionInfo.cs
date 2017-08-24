@@ -89,5 +89,7 @@ namespace MediaBrowser.Model.Updates
         public string targetFilename { get; set; }
 
         public string infoUrl { get; set; }
+
+        public string runtimes { get; set; }
     }
 }

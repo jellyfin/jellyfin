@@ -28,9 +28,9 @@ namespace MediaBrowser.Providers.Music
                 targetItem.Album = sourceItem.Album;
             }
 
-            if (replaceData || targetItem.Artists.Count == 0)
+            if (replaceData || targetItem.Artists.Length == 0)
             {
-                targetItem.Artists = sourceItem.Artists.ToList();
+                targetItem.Artists = sourceItem.Artists;
             }
         }
 

@@ -533,7 +533,7 @@ namespace MediaBrowser.Api.Reports
                     break;
 
                 case HeaderMetadata.Tracks:
-                    option.Column = (i, r) => this.GetObject<MusicAlbum, List<Audio>>(i, (x) => x.Tracks.ToList(), new List<Audio>()).Count();
+                    option.Column = (i, r) => this.GetObject<MusicAlbum, List<Audio>>(i, (x) => x.Tracks.Cast<Audio>().ToList(), new List<Audio>()).Count();
                     break;
 
                 case HeaderMetadata.Audio:

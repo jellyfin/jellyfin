@@ -105,7 +105,15 @@ namespace MediaBrowser.Controller.Entities
             {
                 throw new ArgumentNullException("name");
             }
-            return people.Any(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
+
+            foreach (var i in people)
+            {
+                if (string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
