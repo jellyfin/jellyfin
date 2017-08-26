@@ -149,18 +149,20 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The video3 D format.</value>
         public Video3DFormat? Video3DFormat { get; set; }
 
-        /// <summary>
-        /// Gets the playable stream files.
-        /// </summary>
-        /// <returns>List{System.String}.</returns>
-        public string[] GetPlayableStreamFiles()
-        {
-            return GetPlayableStreamFiles(Path);
-        }
-
         public string[] GetPlayableStreamFileNames()
         {
-            return GetPlayableStreamFiles().Select(System.IO.Path.GetFileName).ToArray();
+            var videoType = VideoType;
+
+            if (videoType == VideoType.Iso && IsoType == Model.Entities.IsoType.BluRay)
+            {
+                videoType = VideoType.BluRay;
+            }
+            else if (videoType == VideoType.Iso && IsoType == Model.Entities.IsoType.Dvd)
+            {
+                videoType = VideoType.Dvd;
+            }
+
+            return MediaEncoder.GetPlayableStreamFileNames(Path, videoType);
         }
 
         /// <summary>
@@ -411,36 +413,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return base.IsValidFromResolver(newItem);
-        }
-
-        /// <summary>
-        /// Gets the playable stream files.
-        /// </summary>
-        /// <param name="rootPath">The root path.</param>
-        /// <returns>List{System.String}.</returns>
-        public string[] GetPlayableStreamFiles(string rootPath)
-        {
-            if (VideoType == VideoType.VideoFile)
-            {
-                return new string[] { };
-            }
-
-            var allFiles = FileSystem.GetFilePaths(rootPath, true).ToList();
-
-            var videoType = VideoType;
-
-            if (videoType == VideoType.Iso && IsoType == Model.Entities.IsoType.BluRay)
-            {
-                videoType = VideoType.BluRay;
-            }
-            else if (videoType == VideoType.Iso && IsoType == Model.Entities.IsoType.Dvd)
-            {
-                videoType = VideoType.Dvd;
-            }
-
-            return QueryPlayableStreamFiles(rootPath, videoType).Select(name => allFiles.FirstOrDefault(f => string.Equals(System.IO.Path.GetFileName(f), name, StringComparison.OrdinalIgnoreCase)))
-                .Where(f => !string.IsNullOrEmpty(f))
-                .ToArray();
         }
 
         public static string[] QueryPlayableStreamFiles(string rootPath, VideoType videoType)
