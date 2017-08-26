@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
@@ -536,6 +537,7 @@ namespace MediaBrowser.Controller.Entities
         public static ICollectionManager CollectionManager { get; set; }
         public static IImageProcessor ImageProcessor { get; set; }
         public static IMediaSourceManager MediaSourceManager { get; set; }
+        public static IMediaEncoder MediaEncoder { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
