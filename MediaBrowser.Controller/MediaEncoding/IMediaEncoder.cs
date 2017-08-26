@@ -102,6 +102,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             IProgress<double> progress,
             CancellationToken cancellationToken);
 
+        Task ConvertImage(string inputPath, string outputPath);
+
         /// <summary>
         /// Escapes the subtitle filter path.
         /// </summary>
