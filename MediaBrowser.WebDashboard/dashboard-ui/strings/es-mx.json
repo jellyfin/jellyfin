@@ -1961,7 +1961,7 @@
     "LabelAlreadyCancelled": "Esta suscripci\u00f3n ha sido cancelada. No se volver\u00e1 a hacer el cobro pero las funciones funcionaran hasta la fecha de arriba.",
     "AllowOnTheFlySubtitleExtraction": "Permitir la extracci\u00f3n de subtitulos al vuelo",
     "AllowOnTheFlySubtitleExtractionHelp": "Los subtitulos embebidos puedes ser extra\u00eddos de los videos y enviados a las aplicaciones Emby en texto plano esto para prevenir la transcodificacion del video. En algunos sistemas esto puede tomar un tiempo mas largo y causar problemas de reproducci\u00f3n durante el proceso de extracci\u00f3n. Deshabilite esto para tener subtitulos embebidos \"quemados\" en la transcodificacion de video cuando no son soportados nativamente por el dispositivo cliente.",
-    "ButtonStopRecording": "Stop Recording",
-    "StopRecording": "Stop recording",
-    "CancelSeries": "Cancel series"
+    "ButtonStopRecording": "Detener Grabaci\u00f3n",
+    "StopRecording": "Detener grabaci\u00f3n",
+    "CancelSeries": "Cancelar Serie"
 }
