@@ -1960,7 +1960,7 @@
     "MessageSubCancelError": "Something went wrong trying to cancel.  Please send an e-mail to {0} and we'll get you squared away.",
     "LabelAlreadyCancelled": "This subscription has been cancelled. You will not be charged again but the features will work until the date above.",
     "AllowOnTheFlySubtitleExtraction": "Allow subtitle extraction on the fly",
-    "AllowOnTheFlySubtitleExtractionHelp": "Embedded subtitles can be extracted from videos and delivered to Emby apps in plain text in order to help prevent video transcoding. On some systems this can take a long time and cause video playback to stall during the extraction process. Disable this to have embedded subtitles burned in with video transcoding when they are not natively supported by the client device.",
+    "AllowOnTheFlySubtitleExtractionHelp": "Embedded subtitles can be extracted from videos and delivered to Emby apps in plain text in order to help prevent video transcoding. On some systems, this can take a long time and cause video playback to stall during the extraction process. Disable this to have embedded subtitles burned in with video transcoding when they are not natively supported by the client device.",
     "ButtonStopRecording": "Stop Recording",
     "StopRecording": "Stop recording",
     "CancelSeries": "Cancel series"

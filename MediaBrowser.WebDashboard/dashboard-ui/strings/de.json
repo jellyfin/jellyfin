@@ -1961,7 +1961,7 @@
     "LabelAlreadyCancelled": "Das Abonnement wurde gek\u00fcndigt. Du wirst keine Zahlungen mehr leisten aber die Features werden bis zum obigen Datum funktionieren.",
     "AllowOnTheFlySubtitleExtraction": "Erlaube Untertitelextraktion on-the-fly",
     "AllowOnTheFlySubtitleExtractionHelp": "Eingebettete Untertitel k\u00f6nnen aus Videos extrahiert und in Textformat an Emby gesendet werden um Transkodieren zu vermeiden. Auf manchen Systemen kann dieser Vorgang eine lange Zeit in Anspruch nehmen und die Videowiedergabe zum Halten bringen w\u00e4hrend der Extraktion. Deaktiviere diese Option um eingebettete Untertitel w\u00e4hrend des Videotranskodierens einbrennen zu lassen, wenn sie nicht nativ vom Client unterst\u00fctzt werden.",
-    "ButtonStopRecording": "Stop Recording",
-    "StopRecording": "Stop recording",
-    "CancelSeries": "Cancel series"
+    "ButtonStopRecording": "Aufnahme stoppen",
+    "StopRecording": "Aufnahme stoppen",
+    "CancelSeries": "Serienaufnahme beenden"
 }
