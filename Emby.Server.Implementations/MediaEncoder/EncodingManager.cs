@@ -75,6 +75,11 @@ namespace Emby.Server.Implementations.MediaEncoder
                 return false;
             }
 
+            if (!video.IsCompleteMedia)
+            {
+                return false;
+            }
+
             // Can't extract images if there are no video streams
             return video.DefaultVideoStreamIndex.HasValue;
         }

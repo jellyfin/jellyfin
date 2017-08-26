@@ -161,7 +161,10 @@ namespace MediaBrowser.Controller.Entities
             {
                 videoType = VideoType.Dvd;
             }
-
+            else
+            {
+                return new string[] { };
+            }
             return MediaEncoder.GetPlayableStreamFileNames(Path, videoType);
         }
 
@@ -263,6 +266,12 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return base.CanDelete();
+        }
+
+        [IgnoreDataMember]
+        public bool IsCompleteMedia
+        {
+            get { return !IsActiveRecording(); }
         }
 
         [IgnoreDataMember]
