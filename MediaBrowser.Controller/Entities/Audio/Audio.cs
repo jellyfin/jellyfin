@@ -110,7 +110,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                     list[index] = artist;
                     index++;
                 }
-                foreach (var artist in AlbumArtists)
+                foreach (var artist in Artists)
                 {
                     list[index] = artist;
                     index++;

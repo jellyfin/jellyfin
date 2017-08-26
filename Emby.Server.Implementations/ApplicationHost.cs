@@ -227,6 +227,8 @@ namespace Emby.Server.Implementations
 
         protected IEnvironmentInfo EnvironmentInfo { get; set; }
 
+        private IBlurayExaminer BlurayExaminer { get; set; }
+
         public PackageVersionClass SystemUpdateLevel
         {
             get
@@ -884,7 +886,8 @@ namespace Emby.Server.Implementations
             ITextEncoding textEncoding = new TextEncoding.TextEncoding(FileSystemManager, LogManager.GetLogger("TextEncoding"), JsonSerializer);
             RegisterSingleInstance(textEncoding);
             Utilities.EncodingHelper = textEncoding;
-            RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer(FileSystemManager, textEncoding));
+            BlurayExaminer = new BdInfoExaminer(FileSystemManager, textEncoding);
+            RegisterSingleInstance(BlurayExaminer);
 
             RegisterSingleInstance<IXmlReaderSettingsFactory>(new XmlReaderSettingsFactory());
 
@@ -1202,7 +1205,7 @@ namespace Emby.Server.Implementations
 
         private IImageProcessor GetImageProcessor()
         {
-            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, ImageEncoder, () => LibraryManager, TimerFactory);
+            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, ImageEncoder, () => LibraryManager, TimerFactory, () => MediaEncoder);
         }
 
         protected virtual FFMpegInstallInfo GetFfmpegInstallInfo()
@@ -1335,7 +1338,8 @@ namespace Emby.Server.Implementations
                 ProcessFactory,
                 (Environment.ProcessorCount > 2 ? 14000 : 40000),
                 EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows,
-                EnvironmentInfo);
+                EnvironmentInfo,
+                BlurayExaminer);
 
             MediaEncoder = mediaEncoder;
             RegisterSingleInstance(MediaEncoder);
