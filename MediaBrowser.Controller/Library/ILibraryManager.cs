@@ -195,16 +195,14 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task CreateItem(BaseItem item, CancellationToken cancellationToken);
+        void CreateItem(BaseItem item, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates the items.
         /// </summary>
         /// <param name="items">The items.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task CreateItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken);
+        void CreateItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the item.
@@ -303,7 +301,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="sortName">Name of the sort.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;UserView&gt;.</returns>
-        Task<UserView> GetNamedView(User user,
+        UserView GetNamedView(User user,
             string name,
             string parentId,
             string viewType,
@@ -319,7 +317,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="sortName">Name of the sort.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;UserView&gt;.</returns>
-        Task<UserView> GetNamedView(User user,
+        UserView GetNamedView(User user,
             string name,
             string viewType,
             string sortName,
@@ -363,7 +361,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="sortName">Name of the sort.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;UserView&gt;.</returns>
-        Task<UserView> GetShadowView(BaseItem parent,
+        UserView GetShadowView(BaseItem parent,
           string viewType,
           string sortName,
           CancellationToken cancellationToken);
@@ -471,8 +469,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="people">The people.</param>
-        /// <returns>Task.</returns>
-        Task UpdatePeople(BaseItem item, List<PersonInfo> people);
+        void UpdatePeople(BaseItem item, List<PersonInfo> people);
 
         /// <summary>
         /// Gets the item ids.

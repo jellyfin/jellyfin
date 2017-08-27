@@ -179,7 +179,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
             if (saveChapters && changesMade)
             {
-                await _chapterManager.SaveChapters(video.Id.ToString(), chapters).ConfigureAwait(false);
+                _chapterManager.SaveChapters(video.Id.ToString(), chapters);
             }
 
             DeleteDeadImages(currentImages, chapters);

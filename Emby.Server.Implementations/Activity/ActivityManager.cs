@@ -13,7 +13,7 @@ namespace Emby.Server.Implementations.Activity
     public class ActivityManager : IActivityManager
     {
         public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
-        
+
         private readonly IActivityRepository _repo;
         private readonly ILogger _logger;
         private readonly IUserManager _userManager;
@@ -25,12 +25,12 @@ namespace Emby.Server.Implementations.Activity
             _userManager = userManager;
         }
 
-        public async Task Create(ActivityLogEntry entry)
+        public void Create(ActivityLogEntry entry)
         {
             entry.Id = Guid.NewGuid().ToString("N");
             entry.Date = DateTime.UtcNow;
 
-            await _repo.Create(entry).ConfigureAwait(false);
+            _repo.Create(entry);
 
             EventHelper.FireEventIfNotNull(EntryCreated, this, new GenericEventArgs<ActivityLogEntry>(entry), _logger);
         }

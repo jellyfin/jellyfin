@@ -91,7 +91,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <exception cref="System.ArgumentNullException">user</exception>
         /// <exception cref="System.ArgumentException"></exception>
-        Task UpdateUser(User user);
+        void UpdateUser(User user);
 
         /// <summary>
         /// Creates the user.
@@ -116,7 +116,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        Task ResetPassword(User user);
+        void ResetPassword(User user);
 
         /// <summary>
         /// Gets the offline user dto.
@@ -130,7 +130,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        Task ResetEasyPassword(User user);
+        void ResetEasyPassword(User user);
         
         /// <summary>
         /// Changes the password.
@@ -138,7 +138,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <param name="newPasswordSha1">The new password sha1.</param>
         /// <returns>Task.</returns>
-        Task ChangePassword(User user, string newPasswordSha1);
+        void ChangePassword(User user, string newPasswordSha1);
 
         /// <summary>
         /// Changes the easy password.
@@ -146,7 +146,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <param name="newPasswordSha1">The new password sha1.</param>
         /// <returns>Task.</returns>
-        Task ChangeEasyPassword(User user, string newPasswordSha1);
+        void ChangeEasyPassword(User user, string newPasswordSha1);
         
         /// <summary>
         /// Gets the user dto.
@@ -179,7 +179,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="pin">The pin.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        Task<PinRedeemResult> RedeemPasswordResetPin(string pin);
+        PinRedeemResult RedeemPasswordResetPin(string pin);
 
         /// <summary>
         /// Gets the user policy.
@@ -201,14 +201,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="userId">The user identifier.</param>
         /// <param name="newConfiguration">The new configuration.</param>
         /// <returns>Task.</returns>
-        Task UpdateConfiguration(string userId, UserConfiguration newConfiguration);
+        void UpdateConfiguration(string userId, UserConfiguration newConfiguration);
 
         /// <summary>
         /// Updates the user policy.
         /// </summary>
         /// <param name="userId">The user identifier.</param>
         /// <param name="userPolicy">The user policy.</param>
-        Task UpdateUserPolicy(string userId, UserPolicy userPolicy);
+        void UpdateUserPolicy(string userId, UserPolicy userPolicy);
 
         /// <summary>
         /// Makes the valid username.

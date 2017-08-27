@@ -14,11 +14,11 @@ namespace MediaBrowser.Controller.Chapters
         /// </summary>
         /// <param name="itemId">The item identifier.</param>
         /// <returns>List{ChapterInfo}.</returns>
-        IEnumerable<ChapterInfo> GetChapters(string itemId);
+        List<ChapterInfo> GetChapters(string itemId);
 
         /// <summary>
         /// Saves the chapters.
         /// </summary>
-        Task SaveChapters(string itemId, List<ChapterInfo> chapters);
+        void SaveChapters(string itemId, List<ChapterInfo> chapters);
     }
 }

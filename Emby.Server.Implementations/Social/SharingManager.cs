@@ -58,8 +58,8 @@ namespace Emby.Server.Implementations.Social
             };
 
             AddShareInfo(info, externalUrl);
-            
-            await _repository.CreateShare(info).ConfigureAwait(false);
+
+            _repository.CreateShare(info);
 
             return info;
         }
@@ -92,9 +92,9 @@ namespace Emby.Server.Implementations.Social
             }
         }
 
-        public Task DeleteShare(string id)
+        public void DeleteShare(string id)
         {
-            return _repository.DeleteShare(id);
+            _repository.DeleteShare(id);
         }
     }
 }

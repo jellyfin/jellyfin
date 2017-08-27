@@ -429,7 +429,7 @@ namespace Emby.Server.Implementations.Channels
 
             if (isNew)
             {
-                await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
+                _libraryManager.CreateItem(item, cancellationToken);
             }
             else if (forceUpdate)
             {
@@ -1388,11 +1388,11 @@ namespace Emby.Server.Implementations.Channels
 
             if (isNew)
             {
-                await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
+                _libraryManager.CreateItem(item, cancellationToken);
 
                 if (info.People != null && info.People.Count > 0)
                 {
-                    await _libraryManager.UpdatePeople(item, info.People ?? new List<PersonInfo>()).ConfigureAwait(false);
+                    _libraryManager.UpdatePeople(item, info.People ?? new List<PersonInfo>());
                 }
             }
             else if (forceUpdate)

@@ -387,7 +387,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            await _sessionMananger.RevokeUserTokens(user.Id.ToString("N"), null).ConfigureAwait(false);
+            _sessionMananger.RevokeUserTokens(user.Id.ToString("N"), null);
 
             await _userManager.DeleteUser(user).ConfigureAwait(false);
         }
@@ -455,7 +455,7 @@ namespace MediaBrowser.Api
 
             if (request.ResetPassword)
             {
-                await _userManager.ResetPassword(user).ConfigureAwait(false);
+                _userManager.ResetPassword(user);
             }
             else
             {
@@ -466,24 +466,18 @@ namespace MediaBrowser.Api
                     throw new ArgumentException("Invalid user or password entered.");
                 }
 
-                await _userManager.ChangePassword(user, request.NewPassword).ConfigureAwait(false);
+                _userManager.ChangePassword(user, request.NewPassword);
 
                 var currentToken = _authContext.GetAuthorizationInfo(Request).Token;
 
-                await _sessionMananger.RevokeUserTokens(user.Id.ToString("N"), currentToken).ConfigureAwait(false);
+                _sessionMananger.RevokeUserTokens(user.Id.ToString("N"), currentToken);
             }
         }
 
         public void Post(UpdateUserEasyPassword request)
         {
-            var task = PostAsync(request);
-            Task.WaitAll(task);
-        }
-        
-        public async Task PostAsync(UpdateUserEasyPassword request)
-        {
             AssertCanUpdateUser(_authContext, _userManager, request.Id, true);
-            
+
             var user = _userManager.GetUserById(request.Id);
 
             if (user == null)
@@ -493,11 +487,11 @@ namespace MediaBrowser.Api
 
             if (request.ResetPassword)
             {
-                await _userManager.ResetEasyPassword(user).ConfigureAwait(false);
+                _userManager.ResetEasyPassword(user);
             }
             else
             {
-                await _userManager.ChangeEasyPassword(user, request.NewPassword).ConfigureAwait(false);
+                _userManager.ChangeEasyPassword(user, request.NewPassword);
             }
         }
 
@@ -506,13 +500,6 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         public void Post(UpdateUser request)
-        {
-            var task = PostAsync(request);
-
-            Task.WaitAll(task);
-        }
-
-        public async Task PostAsync(UpdateUser request)
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
@@ -524,13 +511,18 @@ namespace MediaBrowser.Api
 
             var user = _userManager.GetUserById(id);
 
-            var task = string.Equals(user.Name, dtoUser.Name, StringComparison.Ordinal) ?
-                _userManager.UpdateUser(user) :
-                _userManager.RenameUser(user, dtoUser.Name);
+            if (string.Equals(user.Name, dtoUser.Name, StringComparison.Ordinal))
+            {
+                _userManager.UpdateUser(user);
+            }
+            else
+            {
+                var task = _userManager.RenameUser(user, dtoUser.Name);
 
-            await task.ConfigureAwait(false);
+                Task.WaitAll(task);
+            }
 
-            await _userManager.UpdateConfiguration(dtoUser.Id, dtoUser.Configuration);
+            _userManager.UpdateConfiguration(dtoUser.Id, dtoUser.Configuration);
         }
 
         /// <summary>
@@ -570,21 +562,14 @@ namespace MediaBrowser.Api
         {
             AssertCanUpdateUser(_authContext, _userManager, request.Id, false);
 
-            var task = _userManager.UpdateConfiguration(request.Id, request);
+            _userManager.UpdateConfiguration(request.Id, request);
 
-            Task.WaitAll(task);
         }
 
         public void Post(UpdateUserPolicy request)
         {
-            var task = UpdateUserPolicy(request);
-            Task.WaitAll(task);
-        }
-
-        private async Task UpdateUserPolicy(UpdateUserPolicy request)
-        {
             var user = _userManager.GetUserById(request.Id);
-            
+
             // If removing admin access
             if (!request.IsAdministrator && user.Policy.IsAdministrator)
             {
@@ -609,10 +594,10 @@ namespace MediaBrowser.Api
                 }
 
                 var currentToken = _authContext.GetAuthorizationInfo(Request).Token;
-                await _sessionMananger.RevokeUserTokens(user.Id.ToString("N"), currentToken).ConfigureAwait(false);
+                _sessionMananger.RevokeUserTokens(user.Id.ToString("N"), currentToken);
             }
 
-            await _userManager.UpdateUserPolicy(request.Id, request).ConfigureAwait(false);
+            _userManager.UpdateUserPolicy(request.Id, request);
         }
     }
 }
