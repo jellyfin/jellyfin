@@ -2,7 +2,6 @@
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
@@ -11,7 +10,7 @@ namespace MediaBrowser.Api
     /// Class GetCultures
     /// </summary>
     [Route("/Localization/Cultures", "GET", Summary = "Gets known cultures")]
-    public class GetCultures : IReturn<List<CultureDto>>
+    public class GetCultures : IReturn<CultureDto[]>
     {
     }
 
@@ -19,7 +18,7 @@ namespace MediaBrowser.Api
     /// Class GetCountries
     /// </summary>
     [Route("/Localization/Countries", "GET", Summary = "Gets known countries")]
-    public class GetCountries : IReturn<List<CountryInfo>>
+    public class GetCountries : IReturn<CountryInfo[]>
     {
     }
 
@@ -27,7 +26,7 @@ namespace MediaBrowser.Api
     /// Class ParentalRatings
     /// </summary>
     [Route("/Localization/ParentalRatings", "GET", Summary = "Gets known parental ratings")]
-    public class GetParentalRatings : IReturn<List<ParentalRating>>
+    public class GetParentalRatings : IReturn<ParentalRating[]>
     {
     }
 
@@ -35,7 +34,7 @@ namespace MediaBrowser.Api
     /// Class ParentalRatings
     /// </summary>
     [Route("/Localization/Options", "GET", Summary = "Gets localization options")]
-    public class GetLocalizationOptions : IReturn<List<LocalizatonOption>>
+    public class GetLocalizationOptions : IReturn<LocalizatonOption[]>
     {
     }
 
@@ -66,14 +65,14 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetParentalRatings request)
         {
-            var result = _localization.GetParentalRatings().ToList();
+            var result = _localization.GetParentalRatings();
 
             return ToOptimizedResult(result);
         }
 
         public object Get(GetLocalizationOptions request)
         {
-            var result = _localization.GetLocalizationOptions().ToList();
+            var result = _localization.GetLocalizationOptions();
 
             return ToOptimizedResult(result);
         }

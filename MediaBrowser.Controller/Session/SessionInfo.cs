@@ -2,7 +2,6 @@
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Threading;
@@ -22,13 +21,13 @@ namespace MediaBrowser.Controller.Session
             _sessionManager = sessionManager;
             _logger = logger;
 
-            AdditionalUsers = new List<SessionUserInfo>();
+            AdditionalUsers = new SessionUserInfo[] { };
             PlayState = new PlayerStateInfo();
         }
 
         public PlayerStateInfo PlayState { get; set; }
 
-        public List<SessionUserInfo> AdditionalUsers { get; set; }
+        public SessionUserInfo[] AdditionalUsers { get; set; }
 
         public ClientCapabilities Capabilities { get; set; }
 
@@ -42,13 +41,13 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the playable media types.
         /// </summary>
         /// <value>The playable media types.</value>
-        public List<string> PlayableMediaTypes
+        public string[] PlayableMediaTypes
         {
             get
             {
                 if (Capabilities == null)
                 {
-                    return new List<string>();
+                    return new string[] { };
                 }
                 return Capabilities.PlayableMediaTypes;
             }
@@ -138,13 +137,13 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the supported commands.
         /// </summary>
         /// <value>The supported commands.</value>
-        public List<string> SupportedCommands
+        public string[] SupportedCommands
         {
             get
             {
                 if (Capabilities == null)
                 {
-                    return new List<string>();
+                    return new string[] { };
                 }
                 return Capabilities.SupportedCommands;
             }
@@ -194,7 +193,19 @@ namespace MediaBrowser.Controller.Session
 
         public bool ContainsUser(Guid userId)
         {
-            return (UserId ?? Guid.Empty) == userId || AdditionalUsers.Any(i => userId == new Guid(i.UserId));
+            if ((UserId ?? Guid.Empty) == userId)
+            {
+                return true;
+            }
+
+            foreach (var additionalUser in AdditionalUsers)
+            {
+                if (userId == new Guid(additionalUser.UserId))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private readonly object _progressLock = new object();

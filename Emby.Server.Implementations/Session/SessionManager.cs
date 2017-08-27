@@ -6,11 +6,8 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Devices;
@@ -253,7 +250,7 @@ namespace Emby.Server.Implementations.Session
                 {
                     try
                     {
-                        await _userManager.UpdateUser(user).ConfigureAwait(false);
+                        _userManager.UpdateUser(user);
                     }
                     catch (Exception ex)
                     {
@@ -468,7 +465,7 @@ namespace Emby.Server.Implementations.Session
 
                 if (!userId.HasValue)
                 {
-                    sessionInfo.AdditionalUsers.Clear();
+                    sessionInfo.AdditionalUsers = new SessionUserInfo[] { };
                 }
 
                 if (sessionInfo.SessionController == null)
@@ -622,7 +619,7 @@ namespace Emby.Server.Implementations.Session
             {
                 foreach (var user in users)
                 {
-                    await OnPlaybackStart(user.Id, libraryItem).ConfigureAwait(false);
+                    OnPlaybackStart(user.Id, libraryItem);
                 }
             }
 
@@ -650,8 +647,7 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="userId">The user identifier.</param>
         /// <param name="item">The item.</param>
-        /// <returns>Task.</returns>
-        private async Task OnPlaybackStart(Guid userId, IHasUserData item)
+        private void OnPlaybackStart(Guid userId, IHasUserData item)
         {
             var data = _userDataManager.GetUserData(userId, item);
 
@@ -670,7 +666,7 @@ namespace Emby.Server.Implementations.Session
                 data.Played = false;
             }
 
-            await _userDataManager.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None).ConfigureAwait(false);
+            _userDataManager.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None);
         }
 
         public Task OnPlaybackProgress(PlaybackProgressInfo info)
@@ -702,7 +698,7 @@ namespace Emby.Server.Implementations.Session
             {
                 foreach (var user in users)
                 {
-                    await OnPlaybackProgress(user, libraryItem, info).ConfigureAwait(false);
+                    OnPlaybackProgress(user, libraryItem, info);
                 }
             }
 
@@ -730,7 +726,7 @@ namespace Emby.Server.Implementations.Session
             StartIdleCheckTimer();
         }
 
-        private async Task OnPlaybackProgress(User user, BaseItem item, PlaybackProgressInfo info)
+        private void OnPlaybackProgress(User user, BaseItem item, PlaybackProgressInfo info)
         {
             var data = _userDataManager.GetUserData(user.Id, item);
 
@@ -742,7 +738,7 @@ namespace Emby.Server.Implementations.Session
 
                 UpdatePlaybackSettings(user, info, data);
 
-                await _userDataManager.SaveUserData(user.Id, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
+                _userDataManager.SaveUserData(user.Id, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None);
             }
         }
 
@@ -842,7 +838,7 @@ namespace Emby.Server.Implementations.Session
             {
                 foreach (var user in users)
                 {
-                    playedToCompletion = await OnPlaybackStopped(user.Id, libraryItem, info.PositionTicks, info.Failed).ConfigureAwait(false);
+                    playedToCompletion = OnPlaybackStopped(user.Id, libraryItem, info.PositionTicks, info.Failed);
                 }
             }
 
@@ -875,7 +871,7 @@ namespace Emby.Server.Implementations.Session
             await SendPlaybackStoppedNotification(session, CancellationToken.None).ConfigureAwait(false);
         }
 
-        private async Task<bool> OnPlaybackStopped(Guid userId, BaseItem item, long? positionTicks, bool playbackFailed)
+        private bool OnPlaybackStopped(Guid userId, BaseItem item, long? positionTicks, bool playbackFailed)
         {
             bool playedToCompletion = false;
 
@@ -896,7 +892,7 @@ namespace Emby.Server.Implementations.Session
                     playedToCompletion = true;
                 }
 
-                await _userDataManager.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None).ConfigureAwait(false);
+                _userDataManager.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None);
             }
 
             return playedToCompletion;
@@ -1074,7 +1070,7 @@ namespace Emby.Server.Implementations.Session
                     DtoOptions = new DtoOptions(false)
                     {
                         EnableImages = false,
-                        Fields = new List<ItemFields>
+                        Fields = new ItemFields[]
                         {
                             ItemFields.SortName
                         }
@@ -1097,7 +1093,7 @@ namespace Emby.Server.Implementations.Session
                     DtoOptions = new DtoOptions(false)
                     {
                         EnableImages = false,
-                        Fields = new List<ItemFields>
+                        Fields = new ItemFields[]
                         {
                             ItemFields.SortName
                         }
@@ -1340,11 +1336,15 @@ namespace Emby.Server.Implementations.Session
             {
                 var user = _userManager.GetUserById(userId);
 
-                session.AdditionalUsers.Add(new SessionUserInfo
+                var list = session.AdditionalUsers.ToList();
+
+                list.Add(new SessionUserInfo
                 {
                     UserId = userId,
                     UserName = user.Name
                 });
+
+                session.AdditionalUsers = list.ToArray(list.Count);
             }
         }
 
@@ -1368,7 +1368,10 @@ namespace Emby.Server.Implementations.Session
 
             if (user != null)
             {
-                session.AdditionalUsers.Remove(user);
+                var list = session.AdditionalUsers.ToList();
+                list.Remove(user);
+
+                session.AdditionalUsers = list.ToArray(list.Count);
             }
         }
 
@@ -1425,7 +1428,7 @@ namespace Emby.Server.Implementations.Session
                 user = result;
             }
 
-            var token = await GetAuthorizationToken(user.Id.ToString("N"), request.DeviceId, request.App, request.AppVersion, request.DeviceName).ConfigureAwait(false);
+            var token = GetAuthorizationToken(user.Id.ToString("N"), request.DeviceId, request.App, request.AppVersion, request.DeviceName);
 
             EventHelper.FireEventIfNotNull(AuthenticationSucceeded, this, new GenericEventArgs<AuthenticationRequest>(request), _logger);
 
@@ -1447,7 +1450,7 @@ namespace Emby.Server.Implementations.Session
         }
 
 
-        private async Task<string> GetAuthorizationToken(string userId, string deviceId, string app, string appVersion, string deviceName)
+        private string GetAuthorizationToken(string userId, string deviceId, string app, string appVersion, string deviceName)
         {
             var existing = _authRepo.Get(new AuthenticationInfoQuery
             {
@@ -1477,12 +1480,12 @@ namespace Emby.Server.Implementations.Session
             };
 
             _logger.Info("Creating new access token for user {0}", userId);
-            await _authRepo.Create(newToken, CancellationToken.None).ConfigureAwait(false);
+            _authRepo.Create(newToken, CancellationToken.None);
 
             return newToken.AccessToken;
         }
 
-        public async Task Logout(string accessToken)
+        public void Logout(string accessToken)
         {
             if (string.IsNullOrWhiteSpace(accessToken))
             {
@@ -1502,7 +1505,7 @@ namespace Emby.Server.Implementations.Session
             {
                 existing.IsActive = false;
 
-                await _authRepo.Update(existing, CancellationToken.None).ConfigureAwait(false);
+                _authRepo.Update(existing, CancellationToken.None);
 
                 var sessions = Sessions
                     .Where(i => string.Equals(i.DeviceId, existing.DeviceId, StringComparison.OrdinalIgnoreCase))
@@ -1522,7 +1525,7 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
-        public async Task RevokeUserTokens(string userId, string currentAccessToken)
+        public void RevokeUserTokens(string userId, string currentAccessToken)
         {
             var existing = _authRepo.Get(new AuthenticationInfoQuery
             {
@@ -1534,14 +1537,14 @@ namespace Emby.Server.Implementations.Session
             {
                 if (!string.Equals(currentAccessToken, info.AccessToken, StringComparison.OrdinalIgnoreCase))
                 {
-                    await Logout(info.AccessToken).ConfigureAwait(false);
+                    Logout(info.AccessToken);
                 }
             }
         }
 
-        public Task RevokeToken(string token)
+        public void RevokeToken(string token)
         {
-            return Logout(token);
+            Logout(token);
         }
 
         /// <summary>
@@ -1661,35 +1664,39 @@ namespace Emby.Server.Implementations.Session
                     AddProgramRecordingInfo = false
                 };
 
-                dtoOptions.Fields.Remove(ItemFields.BasicSyncInfo);
-                dtoOptions.Fields.Remove(ItemFields.SyncInfo);
-                dtoOptions.Fields.Remove(ItemFields.CanDelete);
-                dtoOptions.Fields.Remove(ItemFields.CanDownload);
-                dtoOptions.Fields.Remove(ItemFields.ChildCount);
-                dtoOptions.Fields.Remove(ItemFields.CustomRating);
-                dtoOptions.Fields.Remove(ItemFields.DateLastMediaAdded);
-                dtoOptions.Fields.Remove(ItemFields.DateLastRefreshed);
-                dtoOptions.Fields.Remove(ItemFields.DateLastSaved);
-                dtoOptions.Fields.Remove(ItemFields.DisplayPreferencesId);
-                dtoOptions.Fields.Remove(ItemFields.Etag);
-                dtoOptions.Fields.Remove(ItemFields.ExternalEtag);
-                dtoOptions.Fields.Remove(ItemFields.InheritedParentalRatingValue);
-                dtoOptions.Fields.Remove(ItemFields.ItemCounts);
-                dtoOptions.Fields.Remove(ItemFields.MediaSourceCount);
-                dtoOptions.Fields.Remove(ItemFields.MediaStreams);
-                dtoOptions.Fields.Remove(ItemFields.MediaSources);
-                dtoOptions.Fields.Remove(ItemFields.People);
-                dtoOptions.Fields.Remove(ItemFields.PlayAccess);
-                dtoOptions.Fields.Remove(ItemFields.People);
-                dtoOptions.Fields.Remove(ItemFields.ProductionLocations);
-                dtoOptions.Fields.Remove(ItemFields.RecursiveItemCount);
-                dtoOptions.Fields.Remove(ItemFields.RemoteTrailers);
-                dtoOptions.Fields.Remove(ItemFields.SeasonUserData);
-                dtoOptions.Fields.Remove(ItemFields.Settings);
-                dtoOptions.Fields.Remove(ItemFields.SortName);
-                dtoOptions.Fields.Remove(ItemFields.Tags);
-                dtoOptions.Fields.Remove(ItemFields.ThemeSongIds);
-                dtoOptions.Fields.Remove(ItemFields.ThemeVideoIds);
+                var fields = dtoOptions.Fields.ToList();
+
+                fields.Remove(ItemFields.BasicSyncInfo);
+                fields.Remove(ItemFields.SyncInfo);
+                fields.Remove(ItemFields.CanDelete);
+                fields.Remove(ItemFields.CanDownload);
+                fields.Remove(ItemFields.ChildCount);
+                fields.Remove(ItemFields.CustomRating);
+                fields.Remove(ItemFields.DateLastMediaAdded);
+                fields.Remove(ItemFields.DateLastRefreshed);
+                fields.Remove(ItemFields.DateLastSaved);
+                fields.Remove(ItemFields.DisplayPreferencesId);
+                fields.Remove(ItemFields.Etag);
+                fields.Remove(ItemFields.ExternalEtag);
+                fields.Remove(ItemFields.InheritedParentalRatingValue);
+                fields.Remove(ItemFields.ItemCounts);
+                fields.Remove(ItemFields.MediaSourceCount);
+                fields.Remove(ItemFields.MediaStreams);
+                fields.Remove(ItemFields.MediaSources);
+                fields.Remove(ItemFields.People);
+                fields.Remove(ItemFields.PlayAccess);
+                fields.Remove(ItemFields.People);
+                fields.Remove(ItemFields.ProductionLocations);
+                fields.Remove(ItemFields.RecursiveItemCount);
+                fields.Remove(ItemFields.RemoteTrailers);
+                fields.Remove(ItemFields.SeasonUserData);
+                fields.Remove(ItemFields.Settings);
+                fields.Remove(ItemFields.SortName);
+                fields.Remove(ItemFields.Tags);
+                fields.Remove(ItemFields.ThemeSongIds);
+                fields.Remove(ItemFields.ThemeVideoIds);
+
+                dtoOptions.Fields = fields.ToArray(fields.Count);
 
                 _itemInfoDtoOptions = dtoOptions;
             }
@@ -1698,7 +1705,7 @@ namespace Emby.Server.Implementations.Session
 
             if (mediaSource != null)
             {
-                info.MediaStreams = mediaSource.MediaStreams;
+                info.MediaStreams = mediaSource.MediaStreams.ToArray();
             }
 
             return info;

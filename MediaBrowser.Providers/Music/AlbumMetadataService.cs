@@ -106,7 +106,7 @@ namespace MediaBrowser.Providers.Music
                 .SelectMany(i => i.Artists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(i => i)
-                .ToList();
+                .ToArray();
 
             if (!item.Artists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
             {
@@ -158,7 +158,7 @@ namespace MediaBrowser.Providers.Music
             var sourceItem = source.Item;
             var targetItem = target.Item;
 
-            if (replaceData || targetItem.Artists.Count == 0)
+            if (replaceData || targetItem.Artists.Length == 0)
             {
                 targetItem.Artists = sourceItem.Artists;
             }

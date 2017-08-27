@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -6,11 +5,11 @@ namespace MediaBrowser.Controller.Providers
     {
         public string[] AlbumArtists { get; set; }
         public string Album { get; set; }
-        public List<string> Artists { get; set; }
+        public string[] Artists { get; set; }
 
         public SongInfo()
         {
-            Artists = new List<string>();
+            Artists = EmptyStringArray;
             AlbumArtists = EmptyStringArray;
         }
     }

@@ -729,6 +729,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\layoutmanager.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\layoutmanager.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\maintabsmanager.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\maintabsmanager.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\multidownload.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\multidownload.js</Link>
     </BundleResource>
@@ -932,6 +935,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-textarea\emby-textarea.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-textarea\emby-textarea.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\flvjs\flv.min.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\flvjs\flv.min.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\fonts\fonts.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\fonts\fonts.css</Link>
@@ -1154,6 +1160,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\brightnessosd.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\brightnessosd.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\experimentalwarnings.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\experimentalwarnings.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\iconosd.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\iconosd.css</Link>

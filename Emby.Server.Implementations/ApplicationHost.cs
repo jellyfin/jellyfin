@@ -227,6 +227,8 @@ namespace Emby.Server.Implementations
 
         protected IEnvironmentInfo EnvironmentInfo { get; set; }
 
+        private IBlurayExaminer BlurayExaminer { get; set; }
+
         public PackageVersionClass SystemUpdateLevel
         {
             get
@@ -423,11 +425,6 @@ namespace Emby.Server.Implementations
             ImageEncoder = imageEncoder;
 
             SetBaseExceptionMessage();
-
-            if (environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
-            {
-                fileSystem.AddShortcutHandler(new LnkShortcutHandler());
-            }
 
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
         }
@@ -866,7 +863,7 @@ namespace Emby.Server.Implementations
             SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LogManager, FileSystemManager, CryptographyProvider);
             RegisterSingleInstance(SecurityManager);
 
-            InstallationManager = new InstallationManager(LogManager.GetLogger("InstallationManager"), this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager, CryptographyProvider);
+            InstallationManager = new InstallationManager(LogManager.GetLogger("InstallationManager"), this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager, CryptographyProvider, PackageRuntime);
             RegisterSingleInstance(InstallationManager);
 
             ZipClient = new ZipClient(FileSystemManager);
@@ -889,7 +886,8 @@ namespace Emby.Server.Implementations
             ITextEncoding textEncoding = new TextEncoding.TextEncoding(FileSystemManager, LogManager.GetLogger("TextEncoding"), JsonSerializer);
             RegisterSingleInstance(textEncoding);
             Utilities.EncodingHelper = textEncoding;
-            RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer(FileSystemManager, textEncoding));
+            BlurayExaminer = new BdInfoExaminer(FileSystemManager, textEncoding);
+            RegisterSingleInstance(BlurayExaminer);
 
             RegisterSingleInstance<IXmlReaderSettingsFactory>(new XmlReaderSettingsFactory());
 
@@ -1050,7 +1048,15 @@ namespace Emby.Server.Implementations
 
             SetStaticProperties();
 
-            await ((UserManager)UserManager).Initialize().ConfigureAwait(false);
+            ((UserManager)UserManager).Initialize();
+        }
+
+        protected virtual string PackageRuntime
+        {
+            get
+            {
+                return "netframework";
+            }
         }
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths, bool isStartup)
@@ -1199,7 +1205,7 @@ namespace Emby.Server.Implementations
 
         private IImageProcessor GetImageProcessor()
         {
-            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, ImageEncoder, () => LibraryManager, TimerFactory);
+            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, ImageEncoder, () => LibraryManager, TimerFactory, () => MediaEncoder);
         }
 
         protected virtual FFMpegInstallInfo GetFfmpegInstallInfo()
@@ -1332,7 +1338,8 @@ namespace Emby.Server.Implementations
                 ProcessFactory,
                 (Environment.ProcessorCount > 2 ? 14000 : 40000),
                 EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows,
-                EnvironmentInfo);
+                EnvironmentInfo,
+                BlurayExaminer);
 
             MediaEncoder = mediaEncoder;
             RegisterSingleInstance(MediaEncoder);
@@ -1858,9 +1865,9 @@ namespace Emby.Server.Implementations
                 HasPendingRestart = HasPendingRestart,
                 Version = ApplicationVersion.ToString(),
                 WebSocketPortNumber = HttpPort,
-                FailedPluginAssemblies = FailedAssemblies.ToList(),
-                InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToList(),
-                CompletedInstallations = InstallationManager.CompletedInstallations.ToList(),
+                FailedPluginAssemblies = FailedAssemblies.ToArray(),
+                InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToArray(),
+                CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
                 Id = SystemId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
                 LogPath = ApplicationPaths.LogDirectoryPath,

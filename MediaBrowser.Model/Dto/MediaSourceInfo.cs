@@ -2,7 +2,6 @@
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 
@@ -41,6 +40,7 @@ namespace MediaBrowser.Model.Dto
         public string OpenToken { get; set; }
         public bool RequiresClosing { get; set; }
         public bool SupportsProbing { get; set; }
+        public bool EnableMpDecimate { get; set; }
         public string LiveStreamId { get; set; }
         public int? BufferMs { get; set; }
 
@@ -54,7 +54,7 @@ namespace MediaBrowser.Model.Dto
 
         public List<MediaStream> MediaStreams { get; set; }
 
-        public List<string> Formats { get; set; }
+        public string[] Formats { get; set; }
 
         public int? Bitrate { get; set; }
 
@@ -69,7 +69,7 @@ namespace MediaBrowser.Model.Dto
 
         public MediaSourceInfo()
         {
-            Formats = new List<string>();
+            Formats = new string[] { };
             MediaStreams = new List<MediaStream>();
             RequiredHttpHeaders = new Dictionary<string, string>();
             SupportsTranscoding = true;
@@ -90,18 +90,14 @@ namespace MediaBrowser.Model.Dto
                 return;
             }
 
-            var internalStreams = MediaStreams
-                .Where(i => !i.IsExternal)
-                .ToList();
-
-            if (internalStreams.Count == 0)
+            var bitrate = 0;
+            foreach (var stream in MediaStreams)
             {
-                return;
+                if (!stream.IsExternal)
+                {
+                    bitrate += stream.BitRate ?? 0;
+                }
             }
-
-            var bitrate = internalStreams
-                .Select(m => m.BitRate ?? 0)
-                .Sum();
 
             if (bitrate > 0)
             {

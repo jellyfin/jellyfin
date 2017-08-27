@@ -121,8 +121,7 @@ namespace MediaBrowser.Api.Social
 
         public void Delete(DeleteShare request)
         {
-            var task = _sharingManager.DeleteShare(request.Id);
-            Task.WaitAll(task);
+            _sharingManager.DeleteShare(request.Id);
         }
 
         public async Task<object> Get(GetShareImage request)
@@ -157,7 +156,7 @@ namespace MediaBrowser.Api.Social
                 }
                 catch
                 {
-                    
+
                 }
             }
 

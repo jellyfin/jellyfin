@@ -1,14 +1,13 @@
-﻿using MediaBrowser.Controller.Dlna;
+﻿using System.Linq;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
-using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Dlna
 {
     [Route("/Dlna/ProfileInfos", "GET", Summary = "Gets a list of profiles")]
-    public class GetProfileInfos : IReturn<List<DeviceProfileInfo>>
+    public class GetProfileInfos : IReturn<DeviceProfileInfo[]>
     {
     }
 
@@ -53,7 +52,7 @@ namespace MediaBrowser.Api.Dlna
 
         public object Get(GetProfileInfos request)
         {
-            var result = _dlnaManager.GetProfileInfos().ToList();
+            var result = _dlnaManager.GetProfileInfos().ToArray();
 
             return ToOptimizedResult(result);
         }

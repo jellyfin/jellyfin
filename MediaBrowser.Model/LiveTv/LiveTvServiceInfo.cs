@@ -48,11 +48,11 @@ namespace MediaBrowser.Model.LiveTv
         /// <value><c>true</c> if this instance is visible; otherwise, <c>false</c>.</value>
         public bool IsVisible { get; set; }
 
-        public List<LiveTvTunerInfoDto> Tuners { get; set; }
+        public LiveTvTunerInfoDto[] Tuners { get; set; }
 
         public LiveTvServiceInfo()
         {
-            Tuners = new List<LiveTvTunerInfoDto>();
+            Tuners = new LiveTvTunerInfoDto[] { };
         }
     }
 }

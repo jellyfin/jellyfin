@@ -487,6 +487,11 @@ namespace Emby.Dlna.ContentDirectory
                 return GetMusicArtistItems(item, null, user, sort, startIndex, limit);
             }
 
+            if (item is Genre)
+            {
+                return GetGenreItems(item, null, user, sort, startIndex, limit);
+            }
+
             var collectionFolder = item as ICollectionFolder;
             if (collectionFolder != null && string.Equals(CollectionType.Music, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
             {
@@ -503,23 +508,6 @@ namespace Emby.Dlna.ContentDirectory
 
             if (stubType.HasValue)
             {
-                if (stubType.Value == StubType.People)
-                {
-                    var items = _libraryManager.GetPeopleItems(new InternalPeopleQuery
-                    {
-                        ItemId = item.Id
-
-                    });
-
-                    var result = new QueryResult<ServerItem>
-                    {
-                        Items = items.Select(i => new ServerItem(i)).ToArray(items.Count),
-                        TotalRecordCount = items.Count
-                    };
-
-                    return ApplyPaging(result, startIndex, limit);
-                }
-
                 var person = item as Person;
                 if (person != null)
                 {
@@ -1173,6 +1161,26 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        private QueryResult<ServerItem> GetGenreItems(BaseItem item, Guid? parentId, User user, SortCriteria sort, int? startIndex, int? limit)
+        {
+            var query = new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                ParentId = parentId,
+                GenreIds = new[] { item.Id.ToString("N") },
+                IncludeItemTypes = new[] { typeof(Movie).Name, typeof(Series).Name },
+                Limit = limit,
+                StartIndex = startIndex,
+                DtoOptions = GetDtoOptions()
+            };
+
+            SetSorting(query, sort, false);
+
+            var result = _libraryManager.GetItemsResult(query);
+
+            return ToResult(result);
+        }
+
         private QueryResult<ServerItem> GetMusicGenreItems(BaseItem item, Guid? parentId, User user, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
@@ -1331,7 +1339,6 @@ namespace Emby.Dlna.ContentDirectory
     public enum StubType
     {
         Folder = 0,
-        People = 1,
         Latest = 2,
         Playlists = 3,
         Albums = 4,

@@ -149,18 +149,23 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The video3 D format.</value>
         public Video3DFormat? Video3DFormat { get; set; }
 
-        /// <summary>
-        /// Gets the playable stream files.
-        /// </summary>
-        /// <returns>List{System.String}.</returns>
-        public List<string> GetPlayableStreamFiles()
+        public string[] GetPlayableStreamFileNames()
         {
-            return GetPlayableStreamFiles(Path);
-        }
+            var videoType = VideoType;
 
-        public List<string> GetPlayableStreamFileNames()
-        {
-            return GetPlayableStreamFiles().Select(System.IO.Path.GetFileName).ToList(); ;
+            if (videoType == VideoType.Iso && IsoType == Model.Entities.IsoType.BluRay)
+            {
+                videoType = VideoType.BluRay;
+            }
+            else if (videoType == VideoType.Iso && IsoType == Model.Entities.IsoType.Dvd)
+            {
+                videoType = VideoType.Dvd;
+            }
+            else
+            {
+                return new string[] { };
+            }
+            return MediaEncoder.GetPlayableStreamFileNames(Path, videoType);
         }
 
         /// <summary>
@@ -232,6 +237,41 @@ namespace MediaBrowser.Controller.Entities
         public IEnumerable<Guid> GetLocalAlternateVersionIds()
         {
             return LocalAlternateVersions.Select(i => LibraryManager.GetNewItemId(i, typeof(Video)));
+        }
+
+        [IgnoreDataMember]
+        public override SourceType SourceType
+        {
+            get
+            {
+                if (IsActiveRecording())
+                {
+                    return SourceType.LiveTV;
+                }
+
+                return base.SourceType;
+            }
+        }
+
+        protected bool IsActiveRecording()
+        {
+            return LiveTvManager.GetActiveRecordingInfo(Path) != null;
+        }
+
+        public override bool CanDelete()
+        {
+            if (IsActiveRecording())
+            {
+                return false;
+            }
+
+            return base.CanDelete();
+        }
+
+        [IgnoreDataMember]
+        public bool IsCompleteMedia
+        {
+            get { return !IsActiveRecording(); }
         }
 
         [IgnoreDataMember]
@@ -384,37 +424,7 @@ namespace MediaBrowser.Controller.Entities
             return base.IsValidFromResolver(newItem);
         }
 
-        /// <summary>
-        /// Gets the playable stream files.
-        /// </summary>
-        /// <param name="rootPath">The root path.</param>
-        /// <returns>List{System.String}.</returns>
-        public List<string> GetPlayableStreamFiles(string rootPath)
-        {
-            if (VideoType == VideoType.VideoFile)
-            {
-                return new List<string>();
-            }
-
-            var allFiles = FileSystem.GetFilePaths(rootPath, true).ToList();
-
-            var videoType = VideoType;
-
-            if (videoType == VideoType.Iso && IsoType == Model.Entities.IsoType.BluRay)
-            {
-                videoType = VideoType.BluRay;
-            }
-            else if (videoType == VideoType.Iso && IsoType == Model.Entities.IsoType.Dvd)
-            {
-                videoType = VideoType.Dvd;
-            }
-
-            return QueryPlayableStreamFiles(rootPath, videoType).Select(name => allFiles.FirstOrDefault(f => string.Equals(System.IO.Path.GetFileName(f), name, StringComparison.OrdinalIgnoreCase)))
-                .Where(f => !string.IsNullOrEmpty(f))
-                .ToList();
-        }
-
-        public static List<string> QueryPlayableStreamFiles(string rootPath, VideoType videoType)
+        public static string[] QueryPlayableStreamFiles(string rootPath, VideoType videoType)
         {
             if (videoType == VideoType.Dvd)
             {
@@ -423,7 +433,7 @@ namespace MediaBrowser.Controller.Entities
                     .ThenBy(i => i.FullName)
                     .Take(1)
                     .Select(i => i.FullName)
-                    .ToList();
+                    .ToArray();
             }
             if (videoType == VideoType.BluRay)
             {
@@ -432,9 +442,9 @@ namespace MediaBrowser.Controller.Entities
                     .ThenBy(i => i.FullName)
                     .Take(1)
                     .Select(i => i.FullName)
-                    .ToList();
+                    .ToArray();
             }
-            return new List<string>();
+            return new string[] { };
         }
 
         /// <summary>
@@ -615,6 +625,14 @@ namespace MediaBrowser.Controller.Entities
 
             var list = GetAllVideosForMediaSources();
             var result = list.Select(i => GetVersionInfo(enablePathSubstitution, i.Item1, i.Item2)).ToList();
+
+            if (IsActiveRecording())
+            {
+                foreach (var mediaSource in result)
+                {
+                    mediaSource.Type = MediaSourceType.Placeholder;
+                }
+            }
 
             return result.OrderBy(i =>
             {

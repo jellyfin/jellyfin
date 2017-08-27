@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
@@ -72,7 +71,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public async Task SaveUser(User user, CancellationToken cancellationToken)
+        public void SaveUser(User user, CancellationToken cancellationToken)
         {
             if (user == null)
             {
@@ -139,7 +138,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public async Task DeleteUser(User user, CancellationToken cancellationToken)
+        public void DeleteUser(User user, CancellationToken cancellationToken)
         {
             if (user == null)
             {

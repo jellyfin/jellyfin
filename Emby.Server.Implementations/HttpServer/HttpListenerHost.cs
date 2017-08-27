@@ -162,7 +162,7 @@ namespace Emby.Server.Implementations.HttpServer
             return serviceType;
         }
 
-        public void AddServiceInfo(Type serviceType, Type requestType, Type responseType)
+        public void AddServiceInfo(Type serviceType, Type requestType)
         {
             ServiceOperationsMap[requestType] = serviceType;
         }

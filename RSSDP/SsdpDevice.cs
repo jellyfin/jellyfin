@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -283,7 +282,7 @@ namespace Rssdp
         /// </summary>
         /// <seealso cref="AddDevice"/>
         /// <seealso cref="RemoveDevice"/>
-        public IEnumerable<SsdpDevice> Devices
+        public IList<SsdpDevice> Devices
         {
             get;
             private set;
@@ -466,7 +465,7 @@ namespace Rssdp
 
         private static void WriteIcons(XmlWriter writer, SsdpDevice device)
         {
-            if (device.Icons.Any())
+            if (device.Icons.Count > 0)
             {
                 writer.WriteStartElement("iconList");
 
@@ -489,7 +488,7 @@ namespace Rssdp
 
         private void WriteChildDevices(XmlWriter writer, SsdpDevice parentDevice)
         {
-            if (parentDevice.Devices.Any())
+            if (parentDevice.Devices.Count > 0)
             {
                 writer.WriteStartElement("deviceList");
 

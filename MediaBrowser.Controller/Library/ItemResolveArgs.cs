@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
@@ -40,20 +39,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets the file system children.
         /// </summary>
         /// <value>The file system children.</value>
-        public IEnumerable<FileSystemMetadata> FileSystemChildren
-        {
-            get
-            {
-                var dict = FileSystemDictionary;
-
-                if (dict == null)
-                {
-                    return new List<FileSystemMetadata>();
-                }
-
-                return dict.Values;
-            }
-        }
+        public FileSystemMetadata[] FileSystemChildren { get; set; }
 
         public LibraryOptions LibraryOptions { get; set; }
 
@@ -61,12 +47,6 @@ namespace MediaBrowser.Controller.Library
         {
             return LibraryOptions ?? (LibraryOptions = (Parent == null ? new LibraryOptions() : BaseItem.LibraryManager.GetLibraryOptions(Parent)));
         }
-
-        /// <summary>
-        /// Gets or sets the file system dictionary.
-        /// </summary>
-        /// <value>The file system dictionary.</value>
-        public Dictionary<string, FileSystemMetadata> FileSystemDictionary { get; set; }
 
         /// <summary>
         /// Gets or sets the parent.
@@ -153,7 +133,14 @@ namespace MediaBrowser.Controller.Library
                 // Not officially supported but in some cases we can handle it.
                 if (item == null)
                 {
-                    item = parent.GetParents().OfType<T>().FirstOrDefault();
+                    var parents = parent.GetParents();
+                    foreach (var currentParent in parents)
+                    {
+                        if (currentParent is T)
+                        {
+                            return true;
+                        }
+                    }
                 }
 
                 return item != null;
@@ -186,12 +173,12 @@ namespace MediaBrowser.Controller.Library
         /// Gets the physical locations.
         /// </summary>
         /// <value>The physical locations.</value>
-        public IEnumerable<string> PhysicalLocations
+        public string[] PhysicalLocations
         {
             get
             {
                 var paths = string.IsNullOrWhiteSpace(Path) ? new string[] { } : new[] { Path };
-                return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations);
+                return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations).ToArray();
             }
         }
 
@@ -224,13 +211,11 @@ namespace MediaBrowser.Controller.Library
                 throw new ArgumentNullException();
             }
 
-            if (FileSystemDictionary != null)
+            foreach (var file in FileSystemChildren)
             {
-                FileSystemMetadata entry;
-
-                if (FileSystemDictionary.TryGetValue(path, out entry))
+                if (string.Equals(file.FullName, path, StringComparison.Ordinal))
                 {
-                    return entry;
+                    return file;
                 }
             }
 

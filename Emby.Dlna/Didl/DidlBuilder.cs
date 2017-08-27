@@ -198,7 +198,7 @@ namespace Emby.Dlna.Didl
                 streamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger(options)).BuildVideoItem(new VideoOptions
                 {
                     ItemId = GetClientId(video),
-                    MediaSources = sources,
+                    MediaSources = sources.ToArray(sources.Count),
                     Profile = _profile,
                     DeviceId = deviceId,
                     MaxBitrate = _profile.MaxStreamingBitrate
@@ -236,7 +236,7 @@ namespace Emby.Dlna.Didl
                 AddVideoResource(writer, video, deviceId, filter, contentFeature, streamInfo);
             }
 
-            var subtitleProfiles = streamInfo.GetSubtitleProfiles(false, _serverAddress, _accessToken)
+            var subtitleProfiles = streamInfo.GetSubtitleProfiles(_mediaEncoder, false, _serverAddress, _accessToken)
                 .Where(subtitle => subtitle.DeliveryMethod == SubtitleDeliveryMethod.External)
                 .ToList();
 
@@ -391,14 +391,6 @@ namespace Emby.Dlna.Didl
 
         private string GetDisplayName(BaseItem item, StubType? itemStubType, BaseItem context)
         {
-            if (itemStubType.HasValue && itemStubType.Value == StubType.People)
-            {
-                if (item is Video)
-                {
-                    return _localization.GetLocalizedString("HeaderCastCrew");
-                }
-                return _localization.GetLocalizedString("HeaderPeople");
-            }
             if (itemStubType.HasValue && itemStubType.Value == StubType.Latest)
             {
                 return _localization.GetLocalizedString("ViewTypeMusicLatest");
@@ -513,7 +505,7 @@ namespace Emby.Dlna.Didl
                 streamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger(options)).BuildAudioItem(new AudioOptions
                 {
                     ItemId = GetClientId(audio),
-                    MediaSources = sources,
+                    MediaSources = sources.ToArray(sources.Count),
                     Profile = _profile,
                     DeviceId = deviceId
                 });
@@ -961,12 +953,6 @@ namespace Emby.Dlna.Didl
 
         private void AddCover(BaseItem item, BaseItem context, StubType? stubType, XmlWriter writer)
         {
-            if (stubType.HasValue && stubType.Value == StubType.People)
-            {
-                AddEmbeddedImageAsCover("people", writer);
-                return;
-            }
-
             ImageDownloadInfo imageInfo = null;
 
             if (context is UserView)

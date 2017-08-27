@@ -3,7 +3,6 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 
@@ -19,16 +18,14 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SaveItem(BaseItem item, CancellationToken cancellationToken);
+        void SaveItem(BaseItem item, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes the item.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task DeleteItem(Guid id, CancellationToken cancellationToken);
+        void DeleteItem(Guid id, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the critic reviews.
@@ -42,16 +39,14 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <param name="criticReviews">The critic reviews.</param>
-        /// <returns>Task.</returns>
-        Task SaveCriticReviews(Guid itemId, IEnumerable<ItemReview> criticReviews);
+        void SaveCriticReviews(Guid itemId, IEnumerable<ItemReview> criticReviews);
 
         /// <summary>
         /// Saves the items.
         /// </summary>
         /// <param name="items">The items.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SaveItems(List<BaseItem> items, CancellationToken cancellationToken);
+        void SaveItems(List<BaseItem> items, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the item.
@@ -78,7 +73,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Saves the chapters.
         /// </summary>
-        Task SaveChapters(Guid id, List<ChapterInfo> chapters);
+        void SaveChapters(Guid id, List<ChapterInfo> chapters);
 
         /// <summary>
         /// Gets the media streams.
@@ -93,8 +88,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="id">The identifier.</param>
         /// <param name="streams">The streams.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SaveMediaStreams(Guid id, List<MediaStream> streams, CancellationToken cancellationToken);
+        void SaveMediaStreams(Guid id, List<MediaStream> streams, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the item ids.
@@ -128,8 +122,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="itemId">The item identifier.</param>
         /// <param name="people">The people.</param>
-        /// <returns>Task.</returns>
-        Task UpdatePeople(Guid itemId, List<PersonInfo> people);
+        void UpdatePeople(Guid itemId, List<PersonInfo> people);
 
         /// <summary>
         /// Gets the people names.
@@ -156,8 +149,7 @@ namespace MediaBrowser.Controller.Persistence
         /// Updates the inherited values.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task UpdateInheritedValues(CancellationToken cancellationToken);
+        void UpdateInheritedValues(CancellationToken cancellationToken);
 
         int GetCount(InternalItemsQuery query);
 

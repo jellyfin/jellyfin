@@ -26,11 +26,11 @@ namespace Rssdp.Infrastructure
 		/// <param name="device">The <see cref="SsdpRootDevice"/> to validate.</param>
 		/// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
 		/// <returns>A non-null enumerable set of strings, empty if there are no validation errors, otherwise each string represents a discrete problem.</returns>
-		public IEnumerable<string> GetValidationErrors(SsdpRootDevice device)
+		public List<string> GetValidationErrors(SsdpRootDevice device)
 		{
 			if (device == null) throw new ArgumentNullException("device");
 
-			var retVal = GetValidationErrors((SsdpDevice)device) as IList<string>;
+			var retVal = GetValidationErrors((SsdpDevice)device);
 
 			if (device.Location == null)
 				retVal.Add("Location cannot be null.");
@@ -49,7 +49,7 @@ namespace Rssdp.Infrastructure
 		/// <param name="device">The <see cref="SsdpDevice"/> to validate.</param>
 		/// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
 		/// <returns>A non-null enumerable set of strings, empty if there are no validation errors, otherwise each string represents a discrete problem.</returns>
-		public IEnumerable<string> GetValidationErrors(SsdpDevice device)
+		public List<string> GetValidationErrors(SsdpDevice device)
 		{
 			if (device == null) throw new ArgumentNullException("device");
 
@@ -110,7 +110,7 @@ namespace Rssdp.Infrastructure
 			if (String.IsNullOrEmpty(device.ModelName))
 				retVal.Add("ModelName is required.");
 
-			if (device.Icons.Any())
+			if (device.Icons.Count > 0)
 				ValidateIcons(device, retVal);
 
 			ValidateChildDevices(device, retVal);
@@ -127,7 +127,7 @@ namespace Rssdp.Infrastructure
 		public void ThrowIfDeviceInvalid(SsdpDevice device)
 		{
 			var errors = this.GetValidationErrors(device);
-			if (errors != null && errors.Any()) throw new InvalidOperationException("Invalid device settings : " + String.Join(Environment.NewLine, errors));
+			if (errors != null && errors.Count > 0) throw new InvalidOperationException("Invalid device settings : " + String.Join(Environment.NewLine, errors));
 		}
 
 		#endregion

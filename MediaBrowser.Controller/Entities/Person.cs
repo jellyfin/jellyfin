@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Providers;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Entities;

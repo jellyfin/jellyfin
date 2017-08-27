@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Querying;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Security
 {
@@ -12,7 +11,7 @@ namespace MediaBrowser.Controller.Security
         /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task Create(AuthenticationInfo info, CancellationToken cancellationToken);
+        void Create(AuthenticationInfo info, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the specified information.
@@ -20,7 +19,7 @@ namespace MediaBrowser.Controller.Security
         /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task Update(AuthenticationInfo info, CancellationToken cancellationToken);
+        void Update(AuthenticationInfo info, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the specified query.

@@ -438,25 +438,25 @@ namespace MediaBrowser.Providers.TV
 
                 var seriesXmlFilename = preferredMetadataLanguage + ".xml";
 
-                const int cacheDays = 1;
+                const int cacheHours = 12;
 
                 var seriesFile = files.FirstOrDefault(i => string.Equals(seriesXmlFilename, i.Name, StringComparison.OrdinalIgnoreCase));
                 // No need to check age if automatic updates are enabled
-                if (seriesFile == null || !seriesFile.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(seriesFile)).TotalDays > cacheDays)
+                if (seriesFile == null || !seriesFile.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(seriesFile)).TotalHours > cacheHours)
                 {
                     return false;
                 }
 
                 var actorsXml = files.FirstOrDefault(i => string.Equals("actors.xml", i.Name, StringComparison.OrdinalIgnoreCase));
                 // No need to check age if automatic updates are enabled
-                if (actorsXml == null || !actorsXml.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(actorsXml)).TotalDays > cacheDays)
+                if (actorsXml == null || !actorsXml.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(actorsXml)).TotalHours > cacheHours)
                 {
                     return false;
                 }
 
                 var bannersXml = files.FirstOrDefault(i => string.Equals("banners.xml", i.Name, StringComparison.OrdinalIgnoreCase));
                 // No need to check age if automatic updates are enabled
-                if (bannersXml == null || !bannersXml.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(bannersXml)).TotalDays > cacheDays)
+                if (bannersXml == null || !bannersXml.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(bannersXml)).TotalHours > cacheHours)
                 {
                     return false;
                 }

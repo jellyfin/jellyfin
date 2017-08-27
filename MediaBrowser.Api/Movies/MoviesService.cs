@@ -170,7 +170,7 @@ namespace MediaBrowser.Api.Movies
 
             var result = new QueryResult<BaseItemDto>
             {
-                Items = returnList.ToArray(returnList.Count),
+                Items = returnList,
 
                 TotalRecordCount = itemsResult.Count
             };
@@ -320,7 +320,7 @@ namespace MediaBrowser.Api.Movies
                         BaselineItemName = name,
                         CategoryId = name.GetMD5().ToString("N"),
                         RecommendationType = type,
-                        Items = returnItems.ToArray(returnItems.Count)
+                        Items = returnItems
                     };
                 }
             }
@@ -360,7 +360,7 @@ namespace MediaBrowser.Api.Movies
                         BaselineItemName = name,
                         CategoryId = name.GetMD5().ToString("N"),
                         RecommendationType = type,
-                        Items = returnItems.ToArray(returnItems.Count)
+                        Items = returnItems
                     };
                 }
             }
@@ -397,7 +397,7 @@ namespace MediaBrowser.Api.Movies
                         BaselineItemName = item.Name,
                         CategoryId = item.Id.ToString("N"),
                         RecommendationType = type,
-                        Items = returnItems.ToArray(returnItems.Count)
+                        Items = returnItems
                     };
                 }
             }
@@ -426,7 +426,7 @@ namespace MediaBrowser.Api.Movies
         {
             var people = _libraryManager.GetPeople(new InternalPeopleQuery
             {
-                PersonTypes = new List<string>
+                PersonTypes = new string[]
                 {
                     PersonType.Director
                 }

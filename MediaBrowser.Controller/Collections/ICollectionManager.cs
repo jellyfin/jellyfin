@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.Collections
         /// <param name="collectionId">The collection identifier.</param>
         /// <param name="itemIds">The item ids.</param>
         /// <returns>Task.</returns>
-        Task AddToCollection(Guid collectionId, IEnumerable<Guid> itemIds);
+        Task AddToCollection(Guid collectionId, IEnumerable<string> itemIds);
 
         /// <summary>
         /// Removes from collection.
@@ -44,6 +44,9 @@ namespace MediaBrowser.Controller.Collections
         /// <param name="collectionId">The collection identifier.</param>
         /// <param name="itemIds">The item ids.</param>
         /// <returns>Task.</returns>
+        Task RemoveFromCollection(Guid collectionId, IEnumerable<string> itemIds);
+
+        Task AddToCollection(Guid collectionId, IEnumerable<Guid> itemIds);
         Task RemoveFromCollection(Guid collectionId, IEnumerable<Guid> itemIds);
 
         /// <summary>

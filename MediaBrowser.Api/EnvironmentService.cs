@@ -226,7 +226,7 @@ namespace MediaBrowser.Api
                 return ToOptimizedSerializedResultUsingCache(GetNetworkShares(path).OrderBy(i => i.Path).ToList());
             }
 
-            return ToOptimizedSerializedResultUsingCache(GetFileSystemEntries(request).OrderBy(i => i.Path).ToList());
+            return ToOptimizedSerializedResultUsingCache(GetFileSystemEntries(request).ToList());
         }
 
         public object Get(GetNetworkShares request)
@@ -271,9 +271,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetNetworkDevices request)
         {
-            var result = _networkManager.GetNetworkDevices()
-                .OrderBy(i => i.Path)
-                .ToList();
+            var result = _networkManager.GetNetworkDevices().ToList();
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -300,7 +298,6 @@ namespace MediaBrowser.Api
         /// <returns>IEnumerable{FileSystemEntryInfo}.</returns>
         private IEnumerable<FileSystemEntryInfo> GetFileSystemEntries(GetDirectoryContents request)
         {
-            // using EnumerateFileSystemInfos doesn't handle reparse points (symlinks)
             var entries = _fileSystem.GetFileSystemEntries(request.Path).Where(i =>
             {
                 if (!request.IncludeHidden && i.IsHidden)
@@ -329,7 +326,7 @@ namespace MediaBrowser.Api
                 Path = f.FullName,
                 Type = f.IsDirectory ? FileSystemEntryType.Directory : FileSystemEntryType.File
 
-            }).ToList();
+            });
         }
 
         public object Get(GetParentPath request)

@@ -88,7 +88,7 @@ namespace MediaBrowser.Api.UserLibrary
             return null;
         }
 
-        protected ItemsResult GetResultSlim(GetItemsByName request)
+        protected QueryResult<BaseItemDto> GetResultSlim(GetItemsByName request)
         {
             var dtoOptions = GetDtoOptions(AuthorizationContext, request);
 
@@ -209,7 +209,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return dto;
             });
 
-            return new ItemsResult
+            return new QueryResult<BaseItemDto>
             {
                 Items = dtos.ToArray(result.Items.Length),
                 TotalRecordCount = result.TotalRecordCount
@@ -240,7 +240,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        protected ItemsResult GetResult(GetItemsByName request)
+        protected QueryResult<BaseItemDto> GetResult(GetItemsByName request)
         {
             var dtoOptions = GetDtoOptions(AuthorizationContext, request);
 
@@ -257,7 +257,7 @@ namespace MediaBrowser.Api.UserLibrary
                 parentItem = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.RootFolder : LibraryManager.GetItemById(request.ParentId);
             }
 
-            IEnumerable<BaseItem> items;
+            IList<BaseItem> items;
 
             var excludeItemTypes = request.GetExcludeItemTypes();
             var includeItemTypes = request.GetIncludeItemTypes();
@@ -280,19 +280,19 @@ namespace MediaBrowser.Api.UserLibrary
                 if (!string.IsNullOrWhiteSpace(request.UserId))
                 {
                     items = request.Recursive ?
-                        folder.GetRecursiveChildren(user, query) :
-                        folder.GetChildren(user, true).Where(filter);
+                        folder.GetRecursiveChildren(user, query).ToList() :
+                        folder.GetChildren(user, true).Where(filter).ToList();
                 }
                 else
                 {
                     items = request.Recursive ?
                         folder.GetRecursiveChildren(filter) :
-                        folder.Children.Where(filter);
+                        folder.Children.Where(filter).ToList();
                 }
             }
             else
             {
-                items = new[] { parentItem }.Where(filter);
+                items = new[] { parentItem }.Where(filter).ToList();
             }
 
             var extractedItems = GetAllItems(request, items);
@@ -305,7 +305,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             IEnumerable<BaseItem> ibnItems = ibnItemsArray;
 
-            var result = new ItemsResult
+            var result = new QueryResult<BaseItemDto>
             {
                 TotalRecordCount = ibnItemsArray.Count
             };
@@ -357,13 +357,13 @@ namespace MediaBrowser.Api.UserLibrary
                 items = items.Where(i => string.Compare(request.NameLessThan, i.SortName, StringComparison.CurrentCultureIgnoreCase) == 1);
             }
 
-            var imageTypes = request.GetImageTypes().ToList();
-            if (imageTypes.Count > 0)
+            var imageTypes = request.GetImageTypes();
+            if (imageTypes.Length > 0)
             {
                 items = items.Where(item => imageTypes.Any(item.HasImage));
             }
 
-            var filters = request.GetFilters().ToList();
+            var filters = request.GetFilters();
 
             if (filters.Contains(ItemFilter.Dislikes))
             {
@@ -500,13 +500,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Task{`0}}.</returns>
-        protected abstract IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items);
+        protected abstract IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IList<BaseItem> items);
     }
 
     /// <summary>
     /// Class GetItemsByName
     /// </summary>
-    public class GetItemsByName : BaseItemsRequest, IReturn<ItemsResult>
+    public class GetItemsByName : BaseItemsRequest, IReturn<QueryResult<BaseItemDto>>
     {
         public GetItemsByName()
         {

@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.Library
             _config = config;
         }
 
-        public async Task<IEnumerable<Folder>> GetUserViews(UserViewQuery query, CancellationToken cancellationToken)
+        public async Task<Folder[]> GetUserViews(UserViewQuery query, CancellationToken cancellationToken)
         {
             var user = _userManager.GetUserById(query.UserId);
 
@@ -68,7 +68,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (UserView.IsUserSpecific(folder))
                 {
-                    list.Add(await _libraryManager.GetNamedView(user, folder.Name, folder.Id.ToString("N"), folderViewType, null, cancellationToken).ConfigureAwait(false));
+                    list.Add(_libraryManager.GetNamedView(user, folder.Name, folder.Id.ToString("N"), folderViewType, null, cancellationToken));
                     continue;
                 }
 
@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (query.PresetViews.Contains(folderViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
-                    list.Add(await GetUserView(folder, folderViewType, string.Empty, cancellationToken).ConfigureAwait(false));
+                    list.Add(GetUserView(folder, folderViewType, string.Empty, cancellationToken));
                 }
                 else
                 {
@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (parents.Count > 0)
                 {
-                    list.Add(await GetUserView(parents, viewType, string.Empty, user, query.PresetViews, cancellationToken).ConfigureAwait(false));
+                    list.Add(GetUserView(parents, viewType, string.Empty, user, query.PresetViews, cancellationToken));
                 }
             }
 
@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.Library
                 }, cancellationToken).ConfigureAwait(false);
 
                 var channels = channelResult.Items;
-                
+
                 if (_config.Configuration.EnableChannelView && channels.Length > 0)
                 {
                     list.Add(await _channelManager.GetInternalChannelFolder(cancellationToken).ConfigureAwait(false));
@@ -154,7 +154,8 @@ namespace Emby.Server.Implementations.Library
                     return index == -1 ? int.MaxValue : index;
                 })
                 .ThenBy(sorted.IndexOf)
-                .ThenBy(i => i.SortName);
+                .ThenBy(i => i.SortName)
+                .ToArray();
         }
 
         public Task<UserView> GetUserSubView(string name, string parentId, string type, string sortName, CancellationToken cancellationToken)
@@ -171,7 +172,7 @@ namespace Emby.Server.Implementations.Library
             return GetUserSubView(name, parentId, type, sortName, cancellationToken);
         }
 
-        private async Task<Folder> GetUserView(List<ICollectionFolder> parents, string viewType, string sortName, User user, string[] presetViews, CancellationToken cancellationToken)
+        private Folder GetUserView(List<ICollectionFolder> parents, string viewType, string sortName, User user, string[] presetViews, CancellationToken cancellationToken)
         {
             if (parents.Count == 1 && parents.All(i => string.Equals(i.CollectionType, viewType, StringComparison.OrdinalIgnoreCase)))
             {
@@ -180,14 +181,14 @@ namespace Emby.Server.Implementations.Library
                     return (Folder)parents[0];
                 }
 
-                return await GetUserView((Folder)parents[0], viewType, string.Empty, cancellationToken).ConfigureAwait(false);
+                return GetUserView((Folder)parents[0], viewType, string.Empty, cancellationToken);
             }
 
             var name = _localizationManager.GetLocalizedString("ViewType" + viewType);
-            return await _libraryManager.GetNamedView(user, name, viewType, sortName, cancellationToken).ConfigureAwait(false);
+            return _libraryManager.GetNamedView(user, name, viewType, sortName, cancellationToken);
         }
 
-        public Task<UserView> GetUserView(Folder parent, string viewType, string sortName, CancellationToken cancellationToken)
+        public UserView GetUserView(Folder parent, string viewType, string sortName, CancellationToken cancellationToken)
         {
             return _libraryManager.GetShadowView(parent, viewType, sortName, cancellationToken);
         }

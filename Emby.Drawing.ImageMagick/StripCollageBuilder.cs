@@ -19,7 +19,7 @@ namespace Emby.Drawing.ImageMagick
             _fileSystem = fileSystem;
         }
 
-        public void BuildPosterCollage(List<string> paths, string outputPath, int width, int height)
+        public void BuildPosterCollage(string[] paths, string outputPath, int width, int height)
         {
             using (var wand = BuildPosterCollageWand(paths, width, height))
             {
@@ -27,7 +27,7 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        public void BuildSquareCollage(List<string> paths, string outputPath, int width, int height)
+        public void BuildSquareCollage(string[] paths, string outputPath, int width, int height)
         {
             using (var wand = BuildSquareCollageWand(paths, width, height))
             {
@@ -35,7 +35,7 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        public void BuildThumbCollage(List<string> paths, string outputPath, int width, int height)
+        public void BuildThumbCollage(string[] paths, string outputPath, int width, int height)
         {
             using (var wand = BuildThumbCollageWand(paths, width, height))
             {
@@ -43,7 +43,7 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        private MagickWand BuildPosterCollageWand(List<string> paths, int width, int height)
+        private MagickWand BuildPosterCollageWand(string[] paths, int width, int height)
         {
             var inputPaths = ImageHelpers.ProjectPaths(paths, 3);
             using (var wandImages = new MagickWand(inputPaths.ToArray()))
@@ -108,7 +108,7 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        private MagickWand BuildThumbCollageWand(List<string> paths, int width, int height)
+        private MagickWand BuildThumbCollageWand(string[] paths, int width, int height)
         {
             var inputPaths = ImageHelpers.ProjectPaths(paths, 4);
             using (var wandImages = new MagickWand(inputPaths.ToArray()))
@@ -173,7 +173,7 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        private MagickWand BuildSquareCollageWand(List<string> paths, int width, int height)
+        private MagickWand BuildSquareCollageWand(string[] paths, int width, int height)
         {
             var inputPaths = ImageHelpers.ProjectPaths(paths, 4);
             var outputWand = new MagickWand(width, height, new PixelWand("none", 1));

@@ -5,7 +5,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Extensions;
@@ -72,7 +71,7 @@ namespace MediaBrowser.Api
             return new QueryResult<BaseItemDto>
             {
                 TotalRecordCount = result.TotalRecordCount,
-                Items = dtoList.ToArray(dtoList.Count)
+                Items = dtoList
             };
         }
 

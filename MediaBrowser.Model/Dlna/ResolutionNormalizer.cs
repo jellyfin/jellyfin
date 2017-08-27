@@ -6,8 +6,8 @@ namespace MediaBrowser.Model.Dlna
 {
     public class ResolutionNormalizer
     {
-        private static readonly List<ResolutionConfiguration> Configurations = 
-            new List<ResolutionConfiguration>
+        private static readonly ResolutionConfiguration[] Configurations = 
+            new []
             {
                 new ResolutionConfiguration(426, 320000),
                 new ResolutionConfiguration(640, 400000),

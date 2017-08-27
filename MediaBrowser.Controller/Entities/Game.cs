@@ -3,7 +3,6 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 

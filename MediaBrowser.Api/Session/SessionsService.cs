@@ -18,7 +18,7 @@ namespace MediaBrowser.Api.Session
     /// </summary>
     [Route("/Sessions", "GET", Summary = "Gets a list of sessions")]
     [Authenticated]
-    public class GetSessions : IReturn<List<SessionInfoDto>>
+    public class GetSessions : IReturn<SessionInfoDto[]>
     {
         [ApiMember(Name = "ControllableByUserId", Description = "Optional. Filter by sessions that a given user is allowed to remote control.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ControllableByUserId { get; set; }
@@ -313,14 +313,13 @@ namespace MediaBrowser.Api.Session
 
         public void Delete(RevokeKey request)
         {
-            var task = _sessionManager.RevokeToken(request.Key);
+            _sessionManager.RevokeToken(request.Key);
 
-            Task.WaitAll(task);
         }
 
         public void Post(CreateKey request)
         {
-            var task = _authRepo.Create(new AuthenticationInfo
+            _authRepo.Create(new AuthenticationInfo
             {
                 AppName = request.App,
                 IsActive = true,
@@ -328,8 +327,6 @@ namespace MediaBrowser.Api.Session
                 DateCreated = DateTime.UtcNow
 
             }, CancellationToken.None);
-
-            Task.WaitAll(task);
         }
 
         public void Post(ReportSessionEnded request)
@@ -396,7 +393,7 @@ namespace MediaBrowser.Api.Session
                 });
             }
 
-            return ToOptimizedResult(result.Select(_sessionManager.GetSessionInfoDto).ToList());
+            return ToOptimizedResult(result.Select(_sessionManager.GetSessionInfoDto).ToArray());
         }
 
         public void Post(SendPlaystateCommand request)
@@ -532,9 +529,9 @@ namespace MediaBrowser.Api.Session
             }
             _sessionManager.ReportCapabilities(request.Id, new ClientCapabilities
             {
-                PlayableMediaTypes = (request.PlayableMediaTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
+                PlayableMediaTypes = SplitValue(request.PlayableMediaTypes, ','),
 
-                SupportedCommands = (request.SupportedCommands ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
+                SupportedCommands = SplitValue(request.SupportedCommands, ','),
 
                 SupportsMediaControl = request.SupportsMediaControl,
 

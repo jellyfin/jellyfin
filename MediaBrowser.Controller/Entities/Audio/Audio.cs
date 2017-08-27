@@ -29,7 +29,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// </summary>
         /// <value>The artist.</value>
         [IgnoreDataMember]
-        public List<string> Artists { get; set; }
+        public string[] Artists { get; set; }
 
         [IgnoreDataMember]
         public string[] AlbumArtists { get; set; }
@@ -42,7 +42,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public Audio()
         {
-            Artists = new List<string>();
+            Artists = EmptyStringArray;
             AlbumArtists = EmptyStringArray;
         }
 
@@ -98,13 +98,23 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
-        public List<string> AllArtists
+        public string[] AllArtists
         {
             get
             {
-                var list = AlbumArtists.ToList();
+                var list = new string[AlbumArtists.Length + Artists.Length];
 
-                list.AddRange(Artists);
+                var index = 0;
+                foreach (var artist in AlbumArtists)
+                {
+                    list[index] = artist;
+                    index++;
+                }
+                foreach (var artist in Artists)
+                {
+                    list[index] = artist;
+                    index++;
+                }
 
                 return list;
 
@@ -160,7 +170,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                     songKey = Album + "-" + songKey;
                 }
 
-                var albumArtist = AlbumArtists.FirstOrDefault();
+                var albumArtist = AlbumArtists.Length == 0 ? null : AlbumArtists[0];
                 if (!string.IsNullOrWhiteSpace(albumArtist))
                 {
                     songKey = albumArtist + "-" + songKey;

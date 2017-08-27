@@ -4,7 +4,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Library
@@ -28,7 +27,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="reason">The reason.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveUserData(Guid userId, IHasUserData item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
+        void SaveUserData(Guid userId, IHasUserData item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
 
         UserItemData GetUserData(IHasUserData user, IHasUserData item);
 
@@ -40,14 +39,14 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         UserItemDataDto GetUserDataDto(IHasUserData item, User user);
 
-        UserItemDataDto GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, List<ItemFields> fields);
+        UserItemDataDto GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, ItemFields[] fields);
 
         /// <summary>
         /// Get all user data for the given user
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        IEnumerable<UserItemData> GetAllUserData(Guid userId);
+        List<UserItemData> GetAllUserData(Guid userId);
 
         /// <summary>
         /// Save the all provided user data for the given user
@@ -56,7 +55,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="userData"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SaveAllUserData(Guid userId, IEnumerable<UserItemData> userData, CancellationToken cancellationToken);
+        void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates playstate for an item and returns true or false indicating if it was played to completion

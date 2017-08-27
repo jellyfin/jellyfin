@@ -5,11 +5,11 @@ namespace MediaBrowser.Model.Devices
     public class ContentUploadHistory
     {
         public string DeviceId { get; set; }
-        public List<LocalFileInfo> FilesUploaded { get; set; }
+        public LocalFileInfo[] FilesUploaded { get; set; }
 
         public ContentUploadHistory()
         {
-            FilesUploaded = new List<LocalFileInfo>();
+            FilesUploaded = new LocalFileInfo[] { };
         }
     }
 }

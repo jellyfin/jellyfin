@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System.Globalization;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Naming.Common;
 using MediaBrowser.Naming.TV;
 
@@ -17,15 +19,18 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         private readonly IServerConfigurationManager _config;
 
         private readonly ILibraryManager _libraryManager;
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SeasonResolver"/> class.
         /// </summary>
         /// <param name="config">The config.</param>
-        public SeasonResolver(IServerConfigurationManager config, ILibraryManager libraryManager)
+        public SeasonResolver(IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization)
         {
             _config = config;
             _libraryManager = libraryManager;
+            _localization = localization;
         }
 
         /// <summary>
@@ -47,9 +52,13 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                     SeriesName = series.Name
                 };
 
-                if (season.IndexNumber.HasValue && season.IndexNumber.Value == 0)
+                if (season.IndexNumber.HasValue)
                 {
-                    season.Name = _config.Configuration.SeasonZeroDisplayName;
+                    var seasonNumber = season.IndexNumber.Value;
+
+                    season.Name = seasonNumber == 0 ?
+                        _config.Configuration.SeasonZeroDisplayName :
+                        string.Format(_localization.GetLocalizedString("NameSeasonNumber"), seasonNumber.ToString(UsCulture));
                 }
 
                 return season;

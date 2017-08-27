@@ -30,7 +30,7 @@ namespace MediaBrowser.Api
         public string ExcludeArtistIds { get; set; }
     }
 
-    public class BaseGetSimilarItems : IReturn<ItemsResult>, IHasDtoOptions
+    public class BaseGetSimilarItems : IReturn<QueryResult<BaseItemDto>>, IHasDtoOptions
     {
         [ApiMember(Name = "EnableImages", Description = "Optional, include image information in output", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableImages { get; set; }
@@ -97,18 +97,18 @@ namespace MediaBrowser.Api
             var items = GetSimilaritems(item, libraryManager, inputItems, getSimilarityScore)
                 .ToList();
 
-            IEnumerable<BaseItem> returnItems = items;
+            List<BaseItem> returnItems = items;
 
             if (request.Limit.HasValue)
             {
-                returnItems = returnItems.Take(request.Limit.Value);
+                returnItems = returnItems.Take(request.Limit.Value).ToList();
             }
 
             var dtos = await dtoService.GetBaseItemDtos(returnItems, dtoOptions, user).ConfigureAwait(false);
 
             return new QueryResult<BaseItemDto>
             {
-                Items = dtos.ToArray(dtos.Count),
+                Items = dtos,
 
                 TotalRecordCount = items.Count
             };

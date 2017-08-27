@@ -41,7 +41,7 @@ namespace Emby.Server.Implementations.Library
         /// <value>The repository.</value>
         public IUserDataRepository Repository { get; set; }
 
-        public async Task SaveUserData(Guid userId, IHasUserData item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
+        public void SaveUserData(Guid userId, IHasUserData item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
         {
             if (userData == null)
             {
@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var key in keys)
             {
-                await Repository.SaveUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
+                Repository.SaveUserData(userId, key, userData, cancellationToken);
             }
 
             var cacheKey = GetCacheKey(userId, item.Id);
@@ -86,7 +86,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="userData"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task SaveAllUserData(Guid userId, IEnumerable<UserItemData> userData, CancellationToken cancellationToken)
+        public void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken)
         {
             if (userData == null)
             {
@@ -99,7 +99,7 @@ namespace Emby.Server.Implementations.Library
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await Repository.SaveAllUserData(userId, userData, cancellationToken).ConfigureAwait(false);
+            Repository.SaveAllUserData(userId, userData, cancellationToken);
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public IEnumerable<UserItemData> GetAllUserData(Guid userId)
+        public List<UserItemData> GetAllUserData(Guid userId)
         {
             if (userId == Guid.Empty)
             {
@@ -187,11 +187,11 @@ namespace Emby.Server.Implementations.Library
             var userData = GetUserData(user.Id, item);
             var dto = GetUserItemDataDto(userData);
 
-            item.FillUserDataDtoValues(dto, userData, null, user, new List<ItemFields>());
+            item.FillUserDataDtoValues(dto, userData, null, user, new ItemFields[] { });
             return dto;
         }
 
-        public UserItemDataDto GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, List<ItemFields> fields)
+        public UserItemDataDto GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, ItemFields[] fields)
         {
             var userData = GetUserData(user.Id, item);
             var dto = GetUserItemDataDto(userData);

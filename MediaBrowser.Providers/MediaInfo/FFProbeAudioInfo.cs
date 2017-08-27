@@ -43,7 +43,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await Fetch(item, cancellationToken, result).ConfigureAwait(false);
+            Fetch(item, cancellationToken, result);
 
             return ItemUpdateType.MetadataImport;
         }
@@ -92,7 +92,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="mediaInfo">The media information.</param>
         /// <returns>Task.</returns>
-        protected async Task Fetch(Audio audio, CancellationToken cancellationToken, Model.MediaInfo.MediaInfo mediaInfo)
+        protected void Fetch(Audio audio, CancellationToken cancellationToken, Model.MediaInfo.MediaInfo mediaInfo)
         {
             var mediaStreams = mediaInfo.MediaStreams;
 
@@ -102,12 +102,12 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
             audio.Size = mediaInfo.Size;
 
-            var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
+            //var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
             //audio.Container = extension;
 
-            await FetchDataFromTags(audio, mediaInfo).ConfigureAwait(false);
+            FetchDataFromTags(audio, mediaInfo);
 
-            await _itemRepo.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken).ConfigureAwait(false);
+            _itemRepo.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="audio">The audio.</param>
         /// <param name="data">The data.</param>
-        private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo data)
+        private void FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo data)
         {
             // Only set Name if title was found in the dictionary
             if (!string.IsNullOrEmpty(data.Name))
@@ -137,7 +137,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     });
                 }
 
-                await _libraryManager.UpdatePeople(audio, people).ConfigureAwait(false);
+                _libraryManager.UpdatePeople(audio, people);
             }
 
             audio.Album = data.Album;

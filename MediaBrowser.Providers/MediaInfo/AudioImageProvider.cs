@@ -93,7 +93,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private string GetAudioImagePath(Audio item)
         {
             var filename = item.Album ?? string.Empty;
-            filename += string.Join(",", item.Artists.ToArray(item.Artists.Count));
+            filename += string.Join(",", item.Artists);
 
             if (!string.IsNullOrWhiteSpace(item.Album))
             {

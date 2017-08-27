@@ -23,9 +23,9 @@ namespace MediaBrowser.Providers.Books
             var sourceItem = source.Item;
             var targetItem = target.Item;
 
-            if (replaceData || targetItem.Artists.Count == 0)
+            if (replaceData || targetItem.Artists.Length == 0)
             {
-                targetItem.Artists = sourceItem.Artists.ToList();
+                targetItem.Artists = sourceItem.Artists;
             }
 
             if (replaceData || string.IsNullOrEmpty(targetItem.Album))

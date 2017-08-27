@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
@@ -163,36 +162,71 @@ namespace MediaBrowser.LocalMetadata.Images
             PopulateScreenshots(images, files, imagePrefix, isInMixedFolder);
         }
 
+        private static readonly string[] CommonImageFileNames = new[]
+        {
+            "poster",
+            "folder",
+            "cover",
+            "default"
+        };
+
+        private static readonly string[] MusicImageFileNames = new[]
+        {
+            "folder",
+            "poster",
+            "cover",
+            "default"
+        };
+
+        private static readonly string[] PersonImageFileNames = new[]
+        {
+            "folder",
+            "poster"
+        };
+
+        private static readonly string[] SeriesImageFileNames = new[]
+        {
+            "poster",
+            "folder",
+            "cover",
+            "default",
+            "show"
+        };
+
+        private static readonly string[] VideoImageFileNames = new[]
+        {
+            "poster",
+            "folder",
+            "cover",
+            "default",
+            "movie"
+        };
+
         private void PopulatePrimaryImages(IHasMetadata item, List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder)
         {
-            var names = new List<string>
-            {
-                "cover",
-                "default"
-            };
+            string[] imageFileNames;
 
-            if (item is MusicAlbum || item is MusicArtist || item is PhotoAlbum || item is Person)
+            if (item is MusicAlbum || item is MusicArtist || item is PhotoAlbum)
             {
                 // these prefer folder
-                names.Insert(0, "poster");
-                names.Insert(0, "folder");
+                imageFileNames = MusicImageFileNames;
+            }
+            else if (item is Person)
+            {
+                // these prefer folder
+                imageFileNames = PersonImageFileNames;
+            }
+            else if (item is Series)
+            {
+                imageFileNames = SeriesImageFileNames;
+            }
+            else if (item is Video && !(item is Episode))
+            {
+                imageFileNames = VideoImageFileNames;
             }
             else
             {
-                names.Insert(0, "folder");
-                names.Insert(0, "poster");
-            }
-
-            // Support plex/kodi convention
-            if (item is Series)
-            {
-                names.Add("show");
-            }
-
-            // Support plex/kodi convention
-            if (item is Video && !(item is Episode))
-            {
-                names.Add("movie");
+                imageFileNames = CommonImageFileNames;
             }
 
             var fileNameWithoutExtension = item.FileNameWithoutExtension;
@@ -201,14 +235,14 @@ namespace MediaBrowser.LocalMetadata.Images
                 AddImage(files, images, fileNameWithoutExtension, ImageType.Primary);
             }
 
-            foreach (var name in names)
+            foreach (var name in imageFileNames)
             {
                 AddImage(files, images, imagePrefix + name, ImageType.Primary);
             }
 
             if (!isInMixedFolder)
             {
-                foreach (var name in names)
+                foreach (var name in imageFileNames)
                 {
                     AddImage(files, images, name, ImageType.Primary);
                 }

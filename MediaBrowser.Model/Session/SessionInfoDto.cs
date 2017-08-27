@@ -12,13 +12,13 @@ namespace MediaBrowser.Model.Session
         /// Gets or sets the supported commands.
         /// </summary>
         /// <value>The supported commands.</value>
-        public List<string> SupportedCommands { get; set; }
+        public string[] SupportedCommands { get; set; }
 
         /// <summary>
         /// Gets or sets the playable media types.
         /// </summary>
         /// <value>The playable media types.</value>
-        public List<string> PlayableMediaTypes { get; set; }
+        public string[] PlayableMediaTypes { get; set; }
         
         /// <summary>
         /// Gets or sets the id.
@@ -50,7 +50,7 @@ namespace MediaBrowser.Model.Session
         /// Gets or sets the additional users present.
         /// </summary>
         /// <value>The additional users present.</value>
-        public List<SessionUserInfo> AdditionalUsers { get; set; }
+        public SessionUserInfo[] AdditionalUsers { get; set; }
 
         /// <summary>
         /// Gets or sets the application version.
@@ -112,10 +112,10 @@ namespace MediaBrowser.Model.Session
         
         public SessionInfoDto()
         {
-            AdditionalUsers = new List<SessionUserInfo>();
+            AdditionalUsers = new SessionUserInfo[] { };
 
-            PlayableMediaTypes = new List<string>();
-            SupportedCommands = new List<string>();
+            PlayableMediaTypes = new string[] { };
+            SupportedCommands = new string[] { };
         }
     }
 }

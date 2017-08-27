@@ -23,7 +23,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Plugins", "GET", Summary = "Gets a list of currently installed plugins")]
     [Authenticated]
-    public class GetPlugins : IReturn<List<PluginInfo>>
+    public class GetPlugins : IReturn<PluginInfo[]>
     {
         public bool? IsAppStoreEnabled { get; set; }
     }
@@ -195,14 +195,13 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public async Task<object> Get(GetPlugins request)
         {
-            var result = _appHost.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()).ToList();
+            var result = _appHost.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()).ToArray();
             var requireAppStoreEnabled = request.IsAppStoreEnabled.HasValue && request.IsAppStoreEnabled.Value;
 
             // Don't fail just on account of image url's
             try
             {
-                var packages = (await _installationManager.GetAvailablePackagesWithoutRegistrationInfo(CancellationToken.None))
-                    .ToList();
+                var packages = (await _installationManager.GetAvailablePackagesWithoutRegistrationInfo(CancellationToken.None));
 
                 foreach (var plugin in result)
                 {
@@ -223,7 +222,7 @@ namespace MediaBrowser.Api
                             return pkg != null && pkg.enableInAppStore;
                   
                         })
-                        .ToList();
+                        .ToArray();
                 }
             }
             catch
@@ -232,7 +231,7 @@ namespace MediaBrowser.Api
                 // Play it safe here
                 if (requireAppStoreEnabled)
                 {
-                    result = new List<PluginInfo>();
+                    result = new PluginInfo[] { };
                 }
             }
 

@@ -25,12 +25,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
         private readonly IEnvironmentInfo _environment;
+        private readonly INetworkManager _networkManager;
 
-        public M3UTunerHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost, IEnvironmentInfo environment) : base(config, logger, jsonSerializer, mediaEncoder, fileSystem)
+        public M3UTunerHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost, IEnvironmentInfo environment, INetworkManager networkManager) : base(config, logger, jsonSerializer, mediaEncoder, fileSystem)
         {
             _httpClient = httpClient;
             _appHost = appHost;
             _environment = environment;
+            _networkManager = networkManager;
         }
 
         public override string Type
@@ -38,7 +40,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             get { return "m3u"; }
         }
 
-        public string Name
+        public virtual string Name
         {
             get { return "M3U Tuner"; }
         }
@@ -99,72 +101,84 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
 
             var channels = await GetChannels(info, true, cancellationToken).ConfigureAwait(false);
-            var m3uchannels = channels.Cast<M3UChannel>();
-            var channel = m3uchannels.FirstOrDefault(c => string.Equals(c.Id, channelId, StringComparison.OrdinalIgnoreCase));
+            var channel = channels.FirstOrDefault(c => string.Equals(c.Id, channelId, StringComparison.OrdinalIgnoreCase));
             if (channel != null)
             {
-                var path = channel.Path;
-                MediaProtocol protocol = MediaProtocol.File;
-                if (path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                {
-                    protocol = MediaProtocol.Http;
-                }
-                else if (path.StartsWith("rtmp", StringComparison.OrdinalIgnoreCase))
-                {
-                    protocol = MediaProtocol.Rtmp;
-                }
-                else if (path.StartsWith("rtsp", StringComparison.OrdinalIgnoreCase))
-                {
-                    protocol = MediaProtocol.Rtsp;
-                }
-                else if (path.StartsWith("udp", StringComparison.OrdinalIgnoreCase))
-                {
-                    protocol = MediaProtocol.Udp;
-                }
-                else if (path.StartsWith("rtp", StringComparison.OrdinalIgnoreCase))
-                {
-                    protocol = MediaProtocol.Rtmp;
-                }
-
-                var mediaSource = new MediaSourceInfo
-                {
-                    Path = channel.Path,
-                    Protocol = protocol,
-                    MediaStreams = new List<MediaStream>
-                    {
-                        new MediaStream
-                        {
-                            Type = MediaStreamType.Video,
-                            // Set the index to -1 because we don't know the exact index of the video stream within the container
-                            Index = -1,
-                            IsInterlaced = true
-                        },
-                        new MediaStream
-                        {
-                            Type = MediaStreamType.Audio,
-                            // Set the index to -1 because we don't know the exact index of the audio stream within the container
-                            Index = -1
-
-                        }
-                    },
-                    RequiresOpening = true,
-                    RequiresClosing = true,
-                    RequiresLooping = info.EnableStreamLooping,
-
-                    ReadAtNativeFramerate = false,
-
-                    Id = channel.Path.GetMD5().ToString("N"),
-                    IsInfiniteStream = true,
-                    IsRemote = true,
-
-                    IgnoreDts = true
-                };
-
-                mediaSource.InferTotalBitrate();
-
-                return new List<MediaSourceInfo> { mediaSource };
+                return new List<MediaSourceInfo> { CreateMediaSourceInfo(info, channel) };
             }
             return new List<MediaSourceInfo>();
+        }
+
+        protected virtual MediaSourceInfo CreateMediaSourceInfo(TunerHostInfo info, ChannelInfo channel)
+        {
+            var path = channel.Path;
+            MediaProtocol protocol = MediaProtocol.File;
+            if (path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                protocol = MediaProtocol.Http;
+            }
+            else if (path.StartsWith("rtmp", StringComparison.OrdinalIgnoreCase))
+            {
+                protocol = MediaProtocol.Rtmp;
+            }
+            else if (path.StartsWith("rtsp", StringComparison.OrdinalIgnoreCase))
+            {
+                protocol = MediaProtocol.Rtsp;
+            }
+            else if (path.StartsWith("udp", StringComparison.OrdinalIgnoreCase))
+            {
+                protocol = MediaProtocol.Udp;
+            }
+            else if (path.StartsWith("rtp", StringComparison.OrdinalIgnoreCase))
+            {
+                protocol = MediaProtocol.Rtmp;
+            }
+
+            Uri uri;
+            var isRemote = true;
+            if (Uri.TryCreate(path, UriKind.Absolute, out uri))
+            {
+                isRemote = !_networkManager.IsInLocalNetwork(uri.Host);
+            }
+
+            var mediaSource = new MediaSourceInfo
+            {
+                Path = path,
+                Protocol = protocol,
+                MediaStreams = new List<MediaStream>
+                {
+                    new MediaStream
+                    {
+                        Type = MediaStreamType.Video,
+                        // Set the index to -1 because we don't know the exact index of the video stream within the container
+                        Index = -1,
+                        IsInterlaced = true
+                    },
+                    new MediaStream
+                    {
+                        Type = MediaStreamType.Audio,
+                        // Set the index to -1 because we don't know the exact index of the audio stream within the container
+                        Index = -1
+
+                    }
+                },
+                RequiresOpening = true,
+                RequiresClosing = true,
+                RequiresLooping = info.EnableStreamLooping,
+                EnableMpDecimate = info.EnableMpDecimate,
+
+                ReadAtNativeFramerate = false,
+
+                Id = channel.Path.GetMD5().ToString("N"),
+                IsInfiniteStream = true,
+                IsRemote = isRemote,
+
+                IgnoreDts = true
+            };
+
+            mediaSource.InferTotalBitrate();
+
+            return mediaSource;
         }
 
         protected override Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)

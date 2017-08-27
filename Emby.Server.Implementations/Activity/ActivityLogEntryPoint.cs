@@ -128,7 +128,7 @@ namespace Emby.Server.Implementations.Activity
             {
                 // Don't report theme song or local trailer playback
                 return;
-            } 
+            }
 
             if (e.Users.Count == 0)
             {
@@ -160,8 +160,8 @@ namespace Emby.Server.Implementations.Activity
             {
                 // Don't report theme song or local trailer playback
                 return;
-            } 
-            
+            }
+
             if (e.Users.Count == 0)
             {
                 return;
@@ -416,7 +416,7 @@ namespace Emby.Server.Implementations.Activity
             {
                 return;
             }
-            
+
             var time = result.EndTimeUtc - result.StartTimeUtc;
             var runningTime = string.Format(_localization.GetLocalizedString("LabelRunningTimeValue"), ToUserFriendlyString(time));
 
@@ -444,11 +444,11 @@ namespace Emby.Server.Implementations.Activity
             }
         }
 
-        private async void CreateLogEntry(ActivityLogEntry entry)
+        private void CreateLogEntry(ActivityLogEntry entry)
         {
             try
             {
-                await _activityManager.Create(entry).ConfigureAwait(false);
+                _activityManager.Create(entry);
             }
             catch
             {

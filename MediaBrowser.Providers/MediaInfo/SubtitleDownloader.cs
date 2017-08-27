@@ -39,6 +39,11 @@ namespace MediaBrowser.Providers.MediaInfo
                 return new List<string>();
             }
 
+            if (!video.IsCompleteMedia)
+            {
+                return new List<string>();
+            }
+
             VideoContentType mediaType;
 
             if (video is Episode)

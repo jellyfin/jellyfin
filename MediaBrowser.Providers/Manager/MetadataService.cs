@@ -201,7 +201,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 var baseItem = result.Item as BaseItem;
 
-                await LibraryManager.UpdatePeople(baseItem, result.People);
+                LibraryManager.UpdatePeople(baseItem, result.People);
                 await SavePeopleMetadata(result.People, libraryOptions, cancellationToken).ConfigureAwait(false);
             }
             await result.Item.UpdateToRepository(reason, cancellationToken).ConfigureAwait(false);
@@ -519,7 +519,7 @@ namespace MediaBrowser.Providers.Manager
                             userDataList.AddRange(localItem.UserDataList);
                         }
 
-                        MergeData(localItem, temp, new MetadataFields[]{}, !options.ReplaceAllMetadata, true);
+                        MergeData(localItem, temp, new MetadataFields[] { }, !options.ReplaceAllMetadata, true);
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
@@ -567,7 +567,7 @@ namespace MediaBrowser.Providers.Manager
                     else
                     {
                         // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
-                        MergeData(metadata, temp, new MetadataFields[]{}, false, false);
+                        MergeData(metadata, temp, new MetadataFields[] { }, false, false);
                         MergeData(temp, metadata, item.LockedFields, true, false);
                     }
                 }
@@ -580,7 +580,7 @@ namespace MediaBrowser.Providers.Manager
                 await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
-            await ImportUserData(item, userDataList, cancellationToken).ConfigureAwait(false);
+            ImportUserData(item, userDataList, cancellationToken);
 
             return refreshResult;
         }
@@ -595,7 +595,7 @@ namespace MediaBrowser.Providers.Manager
             return true;
         }
 
-        private async Task ImportUserData(TItemType item, List<UserItemData> userDataList, CancellationToken cancellationToken)
+        private void ImportUserData(TItemType item, List<UserItemData> userDataList, CancellationToken cancellationToken)
         {
             var hasUserData = item as IHasUserData;
 
@@ -603,8 +603,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 foreach (var userData in userDataList)
                 {
-                    await UserDataManager.SaveUserData(userData.UserId, hasUserData, userData, UserDataSaveReason.Import, cancellationToken)
-                            .ConfigureAwait(false);
+                    UserDataManager.SaveUserData(userData.UserId, hasUserData, userData, UserDataSaveReason.Import, cancellationToken);
                 }
             }
         }
@@ -704,7 +703,7 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var result in results)
             {
-                MergeData(result, temp, new MetadataFields[]{}, false, false);
+                MergeData(result, temp, new MetadataFields[] { }, false, false);
             }
 
             return refreshResult;

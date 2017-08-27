@@ -132,7 +132,7 @@ namespace Emby.Server.Implementations.Localization
         /// Gets the cultures.
         /// </summary>
         /// <returns>IEnumerable{CultureDto}.</returns>
-        public List<CultureDto> GetCultures()
+        public CultureDto[] GetCultures()
         {
             var type = GetType();
             var path = type.Namespace + ".iso6392.txt";
@@ -169,21 +169,21 @@ namespace Emby.Server.Implementations.Localization
             return list.Where(i => !string.IsNullOrWhiteSpace(i.Name) &&
                 !string.IsNullOrWhiteSpace(i.DisplayName) &&
                 !string.IsNullOrWhiteSpace(i.ThreeLetterISOLanguageName) &&
-                !string.IsNullOrWhiteSpace(i.TwoLetterISOLanguageName)).ToList();
+                !string.IsNullOrWhiteSpace(i.TwoLetterISOLanguageName)).ToArray();
         }
 
         /// <summary>
         /// Gets the countries.
         /// </summary>
         /// <returns>IEnumerable{CountryInfo}.</returns>
-        public List<CountryInfo> GetCountries()
+        public CountryInfo[] GetCountries()
         {
             var type = GetType();
             var path = type.Namespace + ".countries.json";
 
             using (var stream = _assemblyInfo.GetManifestResourceStream(type, path))
             {
-                return _jsonSerializer.DeserializeFromStream<List<CountryInfo>>(stream);
+                return _jsonSerializer.DeserializeFromStream<CountryInfo[]>(stream);
             }
         }
 
@@ -191,9 +191,9 @@ namespace Emby.Server.Implementations.Localization
         /// Gets the parental ratings.
         /// </summary>
         /// <returns>IEnumerable{ParentalRating}.</returns>
-        public IEnumerable<ParentalRating> GetParentalRatings()
+        public ParentalRating[] GetParentalRatings()
         {
-            return GetParentalRatingsDictionary().Values.ToList();
+            return GetParentalRatingsDictionary().Values.ToArray();
         }
 
         /// <summary>
@@ -335,7 +335,7 @@ namespace Emby.Server.Implementations.Localization
             const string prefix = "Core";
             var key = prefix + culture;
 
-            return _dictionaries.GetOrAdd(key, k => GetDictionary(prefix, culture, "core.json"));
+            return _dictionaries.GetOrAdd(key, k => GetDictionary(prefix, culture, "en-US.json"));
         }
 
         private Dictionary<string, string> GetDictionary(string prefix, string culture, string baseFilename)
@@ -382,9 +382,9 @@ namespace Emby.Server.Implementations.Localization
             return culture + ".json";
         }
 
-        public IEnumerable<LocalizatonOption> GetLocalizationOptions()
+        public LocalizatonOption[] GetLocalizationOptions()
         {
-            return new List<LocalizatonOption>
+            return new LocalizatonOption[]
             {
                 new LocalizatonOption{ Name="Arabic", Value="ar"},
                 new LocalizatonOption{ Name="Bulgarian (Bulgaria)", Value="bg-BG"},
@@ -421,7 +421,7 @@ namespace Emby.Server.Implementations.Localization
                 new LocalizatonOption{ Name="Ukrainian", Value="uk"},
                 new LocalizatonOption{ Name="Vietnamese", Value="vi"}
 
-            }.OrderBy(i => i.Name);
+            };
         }
     }
 
