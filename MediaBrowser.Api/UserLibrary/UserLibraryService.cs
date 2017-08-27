@@ -12,11 +12,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -507,9 +505,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async Task<object> Post(MarkFavoriteItem request)
+        public object Post(MarkFavoriteItem request)
         {
-            var dto = await MarkFavorite(request.UserId, request.Id, true).ConfigureAwait(false);
+            var dto =  MarkFavorite(request.UserId, request.Id, true);
 
             return ToOptimizedResult(dto);
         }
@@ -520,7 +518,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Delete(UnmarkFavoriteItem request)
         {
-            var dto = MarkFavorite(request.UserId, request.Id, false).Result;
+            var dto = MarkFavorite(request.UserId, request.Id, false);
 
             return ToOptimizedResult(dto);
         }
@@ -531,8 +529,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
-        /// <returns>Task{UserItemDataDto}.</returns>
-        private async Task<UserItemDataDto> MarkFavorite(string userId, string itemId, bool isFavorite)
+        private UserItemDataDto MarkFavorite(string userId, string itemId, bool isFavorite)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -544,7 +541,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Set favorite status
             data.IsFavorite = isFavorite;
 
-            await _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None).ConfigureAwait(false);
+             _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 
             return _userDataRepository.GetUserDataDto(item, user);
         }
@@ -555,7 +552,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Delete(DeleteUserItemRating request)
         {
-            var dto = UpdateUserItemRating(request.UserId, request.Id, null).Result;
+            var dto = UpdateUserItemRating(request.UserId, request.Id, null);
 
             return ToOptimizedResult(dto);
         }
@@ -564,9 +561,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async Task<object> Post(UpdateUserItemRating request)
+        public object Post(UpdateUserItemRating request)
         {
-            var dto = await UpdateUserItemRating(request.UserId, request.Id, request.Likes).ConfigureAwait(false);
+            var dto =  UpdateUserItemRating(request.UserId, request.Id, request.Likes);
 
             return ToOptimizedResult(dto);
         }
@@ -577,8 +574,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="likes">if set to <c>true</c> [likes].</param>
-        /// <returns>Task{UserItemDataDto}.</returns>
-        private async Task<UserItemDataDto> UpdateUserItemRating(string userId, string itemId, bool? likes)
+        private UserItemDataDto UpdateUserItemRating(string userId, string itemId, bool? likes)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -589,7 +585,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             data.Likes = likes;
 
-            await _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None).ConfigureAwait(false);
+             _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 
             return _userDataRepository.GetUserDataDto(item, user);
         }

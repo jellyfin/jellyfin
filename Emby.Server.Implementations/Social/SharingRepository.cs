@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Emby.Server.Implementations.Data;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Logging;
@@ -42,7 +40,7 @@ namespace Emby.Server.Implementations.Social
             }
         }
 
-        public async Task CreateShare(SocialShareInfo info)
+        public void CreateShare(SocialShareInfo info)
         {
             if (info == null)
             {
@@ -109,7 +107,7 @@ namespace Emby.Server.Implementations.Social
             return info;
         }
 
-        public async Task DeleteShare(string id)
+        public void DeleteShare(string id)
         {
 
         }

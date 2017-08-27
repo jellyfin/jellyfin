@@ -206,7 +206,7 @@ namespace MediaBrowser.Providers.TV
         {
             var existingEpisodes = (from s in series
                                     from c in s.GetRecursiveChildren(i => i is Episode).Cast<Episode>()
-                                    select new Tuple<int, Episode>((c.ParentIndexNumber ?? 0) , c))
+                                    select new Tuple<int, Episode>((c.ParentIndexNumber ?? 0), c))
                                    .ToList();
 
             var lookup = episodeLookup as IList<Tuple<int, int>> ?? episodeLookup.ToList();
@@ -466,7 +466,7 @@ namespace MediaBrowser.Providers.TV
 
             episode.SetParent(season);
 
-            await season.AddChild(episode, cancellationToken).ConfigureAwait(false);
+            season.AddChild(episode, cancellationToken);
 
             await episode.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken).ConfigureAwait(false);
         }
@@ -534,7 +534,7 @@ namespace MediaBrowser.Providers.TV
                     settings.CheckCharacters = false;
                     settings.IgnoreProcessingInstructions = true;
                     settings.IgnoreComments = true;
-                    
+
                     // Use XmlReader for best performance
                     using (var reader = XmlReader.Create(streamReader, settings))
                     {

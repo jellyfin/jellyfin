@@ -313,14 +313,13 @@ namespace MediaBrowser.Api.Session
 
         public void Delete(RevokeKey request)
         {
-            var task = _sessionManager.RevokeToken(request.Key);
+            _sessionManager.RevokeToken(request.Key);
 
-            Task.WaitAll(task);
         }
 
         public void Post(CreateKey request)
         {
-            var task = _authRepo.Create(new AuthenticationInfo
+            _authRepo.Create(new AuthenticationInfo
             {
                 AppName = request.App,
                 IsActive = true,
@@ -328,8 +327,6 @@ namespace MediaBrowser.Api.Session
                 DateCreated = DateTime.UtcNow
 
             }, CancellationToken.None);
-
-            Task.WaitAll(task);
         }
 
         public void Post(ReportSessionEnded request)

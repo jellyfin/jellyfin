@@ -2,7 +2,6 @@
 using MediaBrowser.Model.Entities;
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Persistence
 {
@@ -19,9 +18,9 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="client">The client.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveDisplayPreferences(DisplayPreferences displayPreferences, string userId, string client,
+        void SaveDisplayPreferences(DisplayPreferences displayPreferences, string userId, string client,
                                     CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Saves all display preferences for a user
         /// </summary>
@@ -29,7 +28,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="userId">The user id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveAllDisplayPreferences(IEnumerable<DisplayPreferences> displayPreferences, Guid userId,
+        void SaveAllDisplayPreferences(IEnumerable<DisplayPreferences> displayPreferences, Guid userId,
                                     CancellationToken cancellationToken);
         /// <summary>
         /// Gets the display preferences.

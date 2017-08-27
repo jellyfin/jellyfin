@@ -88,9 +88,7 @@ namespace MediaBrowser.Api
             // Serialize to json and then back so that the core doesn't see the request dto type
             var displayPreferences = _jsonSerializer.DeserializeFromString<DisplayPreferences>(_jsonSerializer.SerializeToString(request));
 
-            var task = _displayPreferencesManager.SaveDisplayPreferences(displayPreferences, request.UserId, request.Client, CancellationToken.None);
-
-            Task.WaitAll(task);
+            _displayPreferencesManager.SaveDisplayPreferences(displayPreferences, request.UserId, request.Client, CancellationToken.None);
         }
     }
 }

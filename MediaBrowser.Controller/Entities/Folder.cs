@@ -186,7 +186,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.InvalidOperationException">Unable to add  + item.Name</exception>
-        public async Task AddChild(BaseItem item, CancellationToken cancellationToken)
+        public void AddChild(BaseItem item, CancellationToken cancellationToken)
         {
             item.SetParent(this);
 
@@ -209,7 +209,7 @@ namespace MediaBrowser.Controller.Entities
                 item.DateModified = DateTime.UtcNow;
             }
 
-            await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
+            LibraryManager.CreateItem(item, cancellationToken);
         }
 
         /// <summary>
@@ -469,7 +469,7 @@ namespace MediaBrowser.Controller.Entities
                         }
                     }
 
-                    await LibraryManager.CreateItems(newItems, cancellationToken).ConfigureAwait(false);
+                    LibraryManager.CreateItems(newItems, cancellationToken);
                 }
             }
             else
@@ -1370,7 +1370,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="datePlayed">The date played.</param>
         /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
         /// <returns>Task.</returns>
-        public override async Task MarkPlayed(User user,
+        public override void MarkPlayed(User user,
             DateTime? datePlayed,
             bool resetPosition)
         {
@@ -1390,9 +1390,10 @@ namespace MediaBrowser.Controller.Entities
             var itemsResult = GetItemList(query);
 
             // Sweep through recursively and update status
-            var tasks = itemsResult.Select(c => c.MarkPlayed(user, datePlayed, resetPosition));
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            foreach (var item in itemsResult)
+            {
+                item.MarkPlayed(user, datePlayed, resetPosition);
+            }
         }
 
         /// <summary>
@@ -1400,7 +1401,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        public override async Task MarkUnplayed(User user)
+        public override void MarkUnplayed(User user)
         {
             var itemsResult = GetItemList(new InternalItemsQuery
             {
@@ -1412,9 +1413,10 @@ namespace MediaBrowser.Controller.Entities
             });
 
             // Sweep through recursively and update status
-            var tasks = itemsResult.Select(c => c.MarkUnplayed(user));
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            foreach (var item in itemsResult)
+            {
+                item.MarkUnplayed(user);
+            }
         }
 
         public override bool IsPlayed(User user)

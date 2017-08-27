@@ -209,7 +209,7 @@ namespace MediaBrowser.Api
             // Do this first so that metadata savers can pull the updates from the database.
             if (request.People != null)
             {
-                await _libraryManager.UpdatePeople(item, request.People.Select(x => new PersonInfo { Name = x.Name, Role = x.Role, Type = x.Type }).ToList());
+                _libraryManager.UpdatePeople(item, request.People.Select(x => new PersonInfo { Name = x.Name, Role = x.Role, Type = x.Type }).ToList());
             }
 
             UpdateItem(request, item);

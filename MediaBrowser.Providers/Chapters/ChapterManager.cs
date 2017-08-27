@@ -33,14 +33,14 @@ namespace MediaBrowser.Providers.Chapters
             _itemRepo = itemRepo;
         }
 
-        public IEnumerable<ChapterInfo> GetChapters(string itemId)
+        public List<ChapterInfo> GetChapters(string itemId)
         {
             return _itemRepo.GetChapters(new Guid(itemId));
         }
 
-        public Task SaveChapters(string itemId, List<ChapterInfo> chapters)
+        public void SaveChapters(string itemId, List<ChapterInfo> chapters)
         {
-            return _itemRepo.SaveChapters(new Guid(itemId), chapters);
+            _itemRepo.SaveChapters(new Guid(itemId), chapters);
         }
     }
 }

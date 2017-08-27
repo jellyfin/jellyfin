@@ -90,7 +90,7 @@ namespace Emby.Server.Implementations.Collections
                     }).ToList()
                 };
 
-                await parentFolder.AddChild(collection, CancellationToken.None).ConfigureAwait(false);
+                parentFolder.AddChild(collection, CancellationToken.None);
 
                 if (options.ItemIdList.Length > 0)
                 {

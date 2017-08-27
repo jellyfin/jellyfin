@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities;
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Persistence
 {
@@ -19,7 +18,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="userData">The user data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveUserData(Guid userId, string key, UserItemData userData, CancellationToken cancellationToken);
+        void SaveUserData(Guid userId, string key, UserItemData userData, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the user data.
@@ -36,7 +35,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        IEnumerable<UserItemData> GetAllUserData(Guid userId);
+        List<UserItemData> GetAllUserData(Guid userId);
 
         /// <summary>
         /// Save all user data associated with the given user
@@ -45,7 +44,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="userData"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SaveAllUserData(Guid userId, IEnumerable<UserItemData> userData, CancellationToken cancellationToken);
+        void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken);
 
     }
 }
