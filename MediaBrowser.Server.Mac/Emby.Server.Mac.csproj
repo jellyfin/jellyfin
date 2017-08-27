@@ -1161,8 +1161,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\brightnessosd.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\brightnessosd.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\expirementalwarnings.js">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\expirementalwarnings.js</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\experimentalwarnings.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\experimentalwarnings.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\iconosd.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\iconosd.css</Link>
