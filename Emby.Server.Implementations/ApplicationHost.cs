@@ -1048,7 +1048,7 @@ namespace Emby.Server.Implementations
 
             SetStaticProperties();
 
-            await ((UserManager)UserManager).Initialize().ConfigureAwait(false);
+            ((UserManager)UserManager).Initialize();
         }
 
         protected virtual string PackageRuntime

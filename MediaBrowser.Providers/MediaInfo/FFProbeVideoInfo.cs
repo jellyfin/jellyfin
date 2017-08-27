@@ -198,7 +198,7 @@ namespace MediaBrowser.Providers.MediaInfo
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
             FetchEmbeddedInfo(video, mediaInfo, options, libraryOptions);
-            await FetchPeople(video, mediaInfo, options).ConfigureAwait(false);
+            FetchPeople(video, mediaInfo, options);
 
             video.IsHD = mediaStreams.Any(i => i.Type == MediaStreamType.Video && i.Width.HasValue && i.Width.Value >= 1260);
 
@@ -211,7 +211,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             video.Video3DFormat = video.Video3DFormat ?? mediaInfo.Video3DFormat;
 
-            await _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken).ConfigureAwait(false);
+            _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken);
 
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh ||
                 options.MetadataRefreshMode == MetadataRefreshMode.Default)
@@ -231,7 +231,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 await _encodingManager.RefreshChapterImages(video, chapters, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
 
-                await _chapterManager.SaveChapters(video.Id.ToString(), chapters).ConfigureAwait(false);
+                _chapterManager.SaveChapters(video.Id.ToString(), chapters);
             }
         }
 
@@ -426,7 +426,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private async Task FetchPeople(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions options)
+        private void FetchPeople(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions options)
         {
             var isFullRefresh = options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
 
@@ -446,7 +446,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         });
                     }
 
-                    await _libraryManager.UpdatePeople(video, people);
+                    _libraryManager.UpdatePeople(video, people);
                 }
             }
         }
@@ -560,7 +560,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 titleNumber = primaryTitle.VideoTitleSetNumber;
                 item.RunTimeTicks = GetRuntime(primaryTitle);
             }
-            
+
             return _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, mount, titleNumber)
                 .Select(Path.GetFileName)
                 .ToArray();

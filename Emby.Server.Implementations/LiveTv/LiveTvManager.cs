@@ -558,7 +558,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (isNew)
             {
-                await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
+                _libraryManager.CreateItem(item, cancellationToken);
             }
             else if (forceUpdate)
             {
@@ -875,7 +875,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (isNew)
             {
-                await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
+                _libraryManager.CreateItem(item, cancellationToken);
             }
             else if (dataChanged || info.DateLastUpdated > recording.DateLastSaved || statusChanged)
             {
@@ -1410,7 +1410,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                     if (newPrograms.Count > 0)
                     {
-                        await _libraryManager.CreateItems(newPrograms, cancellationToken).ConfigureAwait(false);
+                        _libraryManager.CreateItems(newPrograms, cancellationToken);
                     }
 
                     // TODO: Do this in bulk

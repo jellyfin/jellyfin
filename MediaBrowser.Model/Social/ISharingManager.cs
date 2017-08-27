@@ -22,6 +22,6 @@ namespace MediaBrowser.Model.Social
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>Task.</returns>
-        Task DeleteShare(string id);
+        void DeleteShare(string id);
     }
 }

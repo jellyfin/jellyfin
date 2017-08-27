@@ -165,7 +165,7 @@ namespace MediaBrowser.Controller.Entities
                         }
                     }
                 }
-                
+
                 return _policy;
             }
             set { _policy = value; }
@@ -194,24 +194,24 @@ namespace MediaBrowser.Controller.Entities
                 var oldConfigurationDirectory = ConfigurationDirectoryPath;
 
                 // Exceptions will be thrown if these paths already exist
-				if (FileSystem.DirectoryExists(newConfigDirectory))
+                if (FileSystem.DirectoryExists(newConfigDirectory))
                 {
                     FileSystem.DeleteDirectory(newConfigDirectory, true);
                 }
 
-				if (FileSystem.DirectoryExists(oldConfigurationDirectory))
+                if (FileSystem.DirectoryExists(oldConfigurationDirectory))
                 {
-					FileSystem.MoveDirectory(oldConfigurationDirectory, newConfigDirectory);
+                    FileSystem.MoveDirectory(oldConfigurationDirectory, newConfigDirectory);
                 }
                 else
                 {
-					FileSystem.CreateDirectory(newConfigDirectory);
+                    FileSystem.CreateDirectory(newConfigDirectory);
                 }
             }
 
             Name = newName;
 
-			return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(Logger, FileSystem))
+            return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(Logger, FileSystem))
             {
                 ReplaceAllMetadata = true,
                 ImageRefreshMode = ImageRefreshMode.FullRefresh,
@@ -223,7 +223,8 @@ namespace MediaBrowser.Controller.Entities
 
         public override Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            return UserManager.UpdateUser(this);
+            UserManager.UpdateUser(this);
+            return Task.FromResult(true);
         }
 
         /// <summary>
