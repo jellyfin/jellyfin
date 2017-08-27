@@ -36,4 +36,13 @@ namespace MediaBrowser.Controller.LiveTv
         DateTime? EndDate { get; set; }
         DateTime DateCreated { get; set; }
     }
+
+    public class ActiveRecordingInfo
+    {
+        public string Id { get; set; }
+        public string Path { get; set; }
+        public TimerInfo Timer { get; set; }
+        public ProgramInfo Program { get; set; }
+        public CancellationTokenSource CancellationTokenSource { get; set; }
+    }
 }

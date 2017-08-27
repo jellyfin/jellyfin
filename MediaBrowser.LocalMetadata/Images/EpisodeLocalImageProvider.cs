@@ -4,10 +4,8 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.LocalMetadata.Images
@@ -40,49 +38,50 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             var parentPath = _fileSystem.GetDirectoryName(item.Path);
 
-            var parentPathFiles = directoryService.GetFiles(parentPath)
-                .ToList();
+            var parentPathFiles = directoryService.GetFiles(parentPath);
 
             var nameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(item.Path);
 
             return GetFilesFromParentFolder(nameWithoutExtension, parentPathFiles);
         }
 
-        private List<LocalImageInfo> GetFilesFromParentFolder(string filenameWithoutExtension, IEnumerable<FileSystemMetadata> parentPathFiles)
+        private List<LocalImageInfo> GetFilesFromParentFolder(string filenameWithoutExtension, List<FileSystemMetadata> parentPathFiles)
         {
             var thumbName = filenameWithoutExtension + "-thumb";
 
-            return parentPathFiles
-              .Where(i =>
-              {
-                  if (i.IsDirectory)
-                  {
-                      return false;
-                  }
-                  
-                  if (BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
-                  {
-                      var currentNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(i);
+            var list = new List<LocalImageInfo>(1);
 
-                      if (string.Equals(filenameWithoutExtension, currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
-                      {
-                          return true;
-                      }
+            foreach (var i in parentPathFiles)
+            {
+                if (i.IsDirectory)
+                {
+                    continue;
+                }
 
-                      if (string.Equals(thumbName, currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
-                      {
-                          return true;
-                      }
-                  }
+                if (BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
+                {
+                    var currentNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(i);
 
-                  return false;
-              })
-              .Select(i => new LocalImageInfo
-              {
-                  FileInfo = i,
-                  Type = ImageType.Primary
-              })
-              .ToList();
+                    if (string.Equals(filenameWithoutExtension, currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                    {
+                        list.Add(new LocalImageInfo
+                        {
+                            FileInfo = i,
+                            Type = ImageType.Primary
+                        });
+                    }
+
+                    else if (string.Equals(thumbName, currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                    {
+                        list.Add(new LocalImageInfo
+                        {
+                            FileInfo = i,
+                            Type = ImageType.Primary
+                        });
+                    }
+                }
+            }
+            return list;
         }
     }
 }

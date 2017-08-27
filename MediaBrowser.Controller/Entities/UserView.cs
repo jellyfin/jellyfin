@@ -4,9 +4,9 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Model.Serialization;
 using System.Threading.Tasks;
-using System.Linq;
 using MediaBrowser.Controller.Dto;
 
 namespace MediaBrowser.Controller.Entities
@@ -60,7 +60,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override int GetChildCount(User user)
         {
-            return GetChildren(user, true).Count();
+            return GetChildren(user, true).Count;
         }
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
@@ -80,7 +80,7 @@ namespace MediaBrowser.Controller.Entities
                 .GetUserItems(parent, this, ViewType, query).Result;
         }
 
-        public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             var result = GetItemList(new InternalItemsQuery
             {
@@ -90,7 +90,7 @@ namespace MediaBrowser.Controller.Entities
 
             });
 
-            return result;
+            return result.ToList();
         }
 
         public override bool CanDelete()

@@ -125,7 +125,7 @@ namespace MediaBrowser.Api
             var user = _userManager.Users.First();
 
             user.Name = request.Name;
-            await _userManager.UpdateUser(user).ConfigureAwait(false);
+            _userManager.UpdateUser(user);
 
             var result = new UpdateStartupUserResult();
 

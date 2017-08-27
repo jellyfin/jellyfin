@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Emby.Server.Implementations.Data;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Activity;
@@ -41,12 +40,12 @@ namespace Emby.Server.Implementations.Activity
 
         private const string BaseActivitySelectText = "select Id, Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity from ActivityLogEntries";
 
-        public Task Create(ActivityLogEntry entry)
+        public void Create(ActivityLogEntry entry)
         {
-            return Update(entry);
+            Update(entry);
         }
 
-        public async Task Update(ActivityLogEntry entry)
+        public void Update(ActivityLogEntry entry)
         {
             if (entry == null)
             {

@@ -388,15 +388,15 @@
     "Connect": "Se connecter",
     "HeaderMyMedia": "Mes m\u00e9dias",
     "HeaderMyMediaSmall": "Mes m\u00e9dias (petit)",
-    "LatestFromLibrary": "Derniers dans {0}",
+    "LatestFromLibrary": "R\u00e9cents {0}",
     "HeaderLatestChannelMedia": "Derniers \u00e9l\u00e9ments de la cha\u00eene",
     "HeaderContinueWatching": "Continuer \u00e0 regarder",
     "HeaderContinueListening": "Continuer l'\u00e9coute",
     "HeaderActiveRecordings": "Enregistrements actifs",
     "HeaderLatestRecordings": "Derniers enregistrements",
     "LabelSyncTo": "Synchroniser avec :",
-    "HeaderNextUp": "\u00c0 suivre",
-    "HeaderLatestFrom": "Derniers dans {0}",
+    "HeaderNextUp": "En Cours",
+    "HeaderLatestFrom": "R\u00e9cemment ajout\u00e9s {0}",
     "LabelHomeScreenSectionValue": "Section {0} de l'accueil\u00a0:",
     "SettingsSaved": "Param\u00e8tres enregistr\u00e9s.",
     "None": "Aucun",
@@ -526,5 +526,7 @@
     "VideoFramerateNotSupported": "Nombre d'images par seconde de la vid\u00e9o non pris en charge",
     "VideoBitDepthNotSupported": "Profondeur des couleurs de la vid\u00e9o non prise en charge",
     "RefFramesNotSupported": "Nombre d'images de r\u00e9f\u00e9rence de la vid\u00e9o non pris en charge",
-    "ErrorConnectServerUnreachable": "Une erreur est survenue pendant l'ex\u00e9cution de l'op\u00e9ration demand\u00e9e. Votre serveur est dans l'incapacit\u00e9 de joindre le serveur d'Emby Connect \u00e0 {0}. Veuillez v\u00e9rifier que votre serveur est bien connect\u00e9 \u00e0 Internet et qu'aucun pare-feu ou autre logiciel de s\u00e9curit\u00e9 ne bloque les communications."
+    "ErrorConnectServerUnreachable": "Une erreur est survenue pendant l'ex\u00e9cution de l'op\u00e9ration demand\u00e9e. Votre serveur est dans l'incapacit\u00e9 de joindre le serveur d'Emby Connect \u00e0 {0}. Veuillez v\u00e9rifier que votre serveur est bien connect\u00e9 \u00e0 Internet et qu'aucun pare-feu ou autre logiciel de s\u00e9curit\u00e9 ne bloque les communications.",
+    "StopRecording": "Arr\u00eater l'enregistrement",
+    "ManageRecording": "G\u00e9rer l'enregistrement"
 }

@@ -14,7 +14,7 @@ namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
             var infoSubs =
                 new SubtitleTrackInfo
                 {
-                    TrackEvents = new List<SubtitleTrackEvent> {
+                    TrackEvents = new SubtitleTrackEvent[] {
                                                                                          new SubtitleTrackEvent {
                                                                                                                     Id = "1",
                                                                                                                     StartPositionTicks = 24000000,

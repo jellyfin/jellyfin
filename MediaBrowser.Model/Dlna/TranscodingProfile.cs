@@ -51,14 +51,9 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("breakOnNonKeyFrames")]
         public bool BreakOnNonKeyFrames { get; set; }
 
-        public List<string> GetAudioCodecs()
+        public string[] GetAudioCodecs()
         {
-            List<string> list = new List<string>();
-            foreach (string i in (AudioCodec ?? string.Empty).Split(','))
-            {
-                if (!string.IsNullOrEmpty(i)) list.Add(i);
-            }
-            return list;
+            return ContainerProfile.SplitValue(AudioCodec);
         }
     }
 }

@@ -109,6 +109,9 @@ namespace MediaBrowser.Controller.LiveTv
         public bool IsKids { get; set; }
         public bool IsSports { get; set; }
         public bool IsNews { get; set; }
+        public bool IsSeries { get; set; }
+        public bool IsLive { get; set; }
+        public bool IsPremiere { get; set; }
         public int? ProductionYear { get; set; }
         public string EpisodeTitle { get; set; }
         public DateTime? OriginalAirDate { get; set; }

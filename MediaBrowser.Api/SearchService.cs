@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Drawing;
+﻿using System.Linq;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -7,7 +8,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
-using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Services;
@@ -240,7 +240,7 @@ namespace MediaBrowser.Api
 
             if (album != null)
             {
-                result.Artists = album.Artists.ToArray();
+                result.Artists = album.Artists;
                 result.AlbumArtist = album.AlbumArtist;
             }
 
@@ -250,7 +250,7 @@ namespace MediaBrowser.Api
             {
                 result.Album = song.Album;
                 result.AlbumArtist = song.AlbumArtists.FirstOrDefault();
-                result.Artists = song.Artists.ToArray();
+                result.Artists = song.Artists;
             }
 
             if (!string.IsNullOrWhiteSpace(item.ChannelId))

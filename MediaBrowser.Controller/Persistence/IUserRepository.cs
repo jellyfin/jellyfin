@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Persistence
 {
@@ -16,7 +15,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="user">The user.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task DeleteUser(User user, CancellationToken cancellationToken);
+        void DeleteUser(User user, CancellationToken cancellationToken);
 
         /// <summary>
         /// Saves the user.
@@ -24,7 +23,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="user">The user.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveUser(User user, CancellationToken cancellationToken);
+        void SaveUser(User user, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves all users.

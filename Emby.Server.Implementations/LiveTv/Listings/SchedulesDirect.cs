@@ -247,7 +247,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             ProgramAudio audioType = ProgramAudio.Stereo;
 
             bool repeat = programInfo.@new == null;
-            string newID = programInfo.programID + "T" + startAt.Ticks + "C" + channelId;
+
+            var programId = programInfo.programID ?? string.Empty;
+
+            string newID = programId + "T" + startAt.Ticks + "C" + channelId;
 
             if (programInfo.audioProperties != null)
             {
@@ -300,7 +303,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 Etag = programInfo.md5
             };
 
-            var showId = programInfo.programID ?? string.Empty;
+            var showId = programId;
 
             if (!info.IsSeries)
             {
@@ -339,11 +342,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             if (details.descriptions != null)
             {
-                if (details.descriptions.description1000 != null)
+                if (details.descriptions.description1000 != null && details.descriptions.description1000.Count > 0)
                 {
                     info.Overview = details.descriptions.description1000[0].description;
                 }
-                else if (details.descriptions.description100 != null)
+                else if (details.descriptions.description100 != null && details.descriptions.description100.Count > 0)
                 {
                     info.Overview = details.descriptions.description100[0].description;
                 }
@@ -351,16 +354,24 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             if (info.IsSeries)
             {
-                info.SeriesId = programInfo.programID.Substring(0, 10);
+                info.SeriesId = programId.Substring(0, 10);
 
                 if (details.metadata != null)
                 {
-                    var gracenote = details.metadata.Find(x => x.Gracenote != null).Gracenote;
-                    info.SeasonNumber = gracenote.season;
-
-                    if (gracenote.episode > 0)
+                    foreach (var metadataProgram in details.metadata)
                     {
-                        info.EpisodeNumber = gracenote.episode;
+                        var gracenote = metadataProgram.Gracenote;
+                        if (gracenote != null)
+                        {
+                            info.SeasonNumber = gracenote.season;
+
+                            if (gracenote.episode > 0)
+                            {
+                                info.EpisodeNumber = gracenote.episode;
+                            }
+
+                            break;
+                        }
                     }
                 }
             }

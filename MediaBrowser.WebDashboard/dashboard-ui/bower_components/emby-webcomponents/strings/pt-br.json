@@ -526,5 +526,7 @@
     "VideoFramerateNotSupported": "Taxa do v\u00eddeo n\u00e3o suportada",
     "VideoBitDepthNotSupported": "Profundidade de bit de v\u00eddeo n\u00e3o suportada",
     "RefFramesNotSupported": "N\u00famero de quadros de refer\u00eancia de v\u00eddeo n\u00e3o suportado",
-    "ErrorConnectServerUnreachable": "Ocorreu um erro ao executar a opera\u00e7\u00e3o solicitada. Seu servidor n\u00e3o pode contactar nosso Emby Connect Server em {0}. Por favor, verifique se seu servidor possui uma conex\u00e3o de internet ativa e se as comunica\u00e7\u00f5es est\u00e3o liberadas pelo firewall ou software de seguran\u00e7a instalados."
+    "ErrorConnectServerUnreachable": "Ocorreu um erro ao executar a opera\u00e7\u00e3o solicitada. Seu servidor n\u00e3o pode contactar nosso Emby Connect Server em {0}. Por favor, verifique se seu servidor possui uma conex\u00e3o de internet ativa e se as comunica\u00e7\u00f5es est\u00e3o liberadas pelo firewall ou software de seguran\u00e7a instalados.",
+    "StopRecording": "Stop recording",
+    "ManageRecording": "Manage recording"
 }

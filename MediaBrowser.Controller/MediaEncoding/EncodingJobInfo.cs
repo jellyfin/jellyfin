@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string MediaPath { get; set; }
         public bool IsInputVideo { get; set; }
         public IIsoMount IsoMount { get; set; }
-        public List<string> PlayableStreamFileNames { get; set; }
+        public string[] PlayableStreamFileNames { get; set; }
         public string OutputAudioCodec { get; set; }
         public int? OutputVideoBitrate { get; set; }
         public MediaStream SubtitleStream { get; set; }
@@ -42,8 +42,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool ReadInputAtNativeFramerate { get; set; }
 
-        private List<TranscodeReason> _transcodeReasons = null;
-        public List<TranscodeReason> TranscodeReasons
+        private TranscodeReason[] _transcodeReasons = null;
+        public TranscodeReason[] TranscodeReasons
         {
             get
             {
@@ -53,7 +53,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         .Split(',')
                         .Where(i => !string.IsNullOrWhiteSpace(i))
                         .Select(v => (TranscodeReason)Enum.Parse(typeof(TranscodeReason), v, true))
-                        .ToList();
+                        .ToArray();
                 }
 
                 return _transcodeReasons;
@@ -127,6 +127,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
+        public bool EnableMpDecimate
+        {
+            get { return MediaSource.EnableMpDecimate; }
+        }
+
         public string AlbumCoverPath { get; set; }
 
         public string InputAudioSync { get; set; }
@@ -164,7 +169,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             _logger = logger;
             TranscodingType = jobType;
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            PlayableStreamFileNames = new List<string>();
+            PlayableStreamFileNames = new string[]{};
             SupportedAudioCodecs = new List<string>();
             SupportedVideoCodecs = new List<string>();
             SupportedSubtitleCodecs = new List<string>();

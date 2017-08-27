@@ -112,7 +112,7 @@ namespace Emby.Server.Implementations.Logging
 
     public class FileLogger : IDisposable
     {
-        private readonly Stream _fileStream;
+        private readonly FileStream _fileStream;
 
         private bool _disposed;
         private readonly CancellationTokenSource _cancellationTokenSource;
@@ -122,7 +122,7 @@ namespace Emby.Server.Implementations.Logging
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            _fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
+            _fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, 32768);
             _cancellationTokenSource = new CancellationTokenSource();
 
             Task.Factory.StartNew(LogInternal, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
@@ -134,19 +134,12 @@ namespace Emby.Server.Implementations.Logging
             {
                 try
                 {
-                    var any = false;
-
                     foreach (var message in _queue.GetConsumingEnumerable())
                     {
                         var bytes = Encoding.UTF8.GetBytes(message + Environment.NewLine);
                         _fileStream.Write(bytes, 0, bytes.Length);
 
-                        any = true;
-                    }
-
-                    if (any)
-                    {
-                        _fileStream.Flush();
+                        _fileStream.Flush(true);
                     }
                 }
                 catch

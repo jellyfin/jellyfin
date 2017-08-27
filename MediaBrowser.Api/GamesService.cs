@@ -28,21 +28,7 @@ namespace MediaBrowser.Api
     /// Class GetGameSystemSummaries
     /// </summary>
     [Route("/Games/SystemSummaries", "GET", Summary = "Finds games similar to a given game.")]
-    public class GetGameSystemSummaries : IReturn<List<GameSystemSummary>>
-    {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "Optional. Filter by user id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UserId { get; set; }
-    }
-
-    /// <summary>
-    /// Class GetGameSystemSummaries
-    /// </summary>
-    [Route("/Games/PlayerIndex", "GET", Summary = "Gets an index of players (1-x) and the number of games listed under each")]
-    public class GetPlayerIndex : IReturn<List<ItemIndex>>
+    public class GetGameSystemSummaries : IReturn<GameSystemSummary[]>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -117,46 +103,16 @@ namespace MediaBrowser.Api
                     EnableImages = false
                 }
             };
-            var gameSystems = _libraryManager.GetItemList(query)
-                .Cast<GameSystem>()
-                .ToList();
 
-            var result = gameSystems
+            var result = _libraryManager.GetItemList(query)
+                .Cast<GameSystem>()
                 .Select(i => GetSummary(i, user))
-                .ToList();
+                .ToArray();
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        public object Get(GetPlayerIndex request)
-        {
-            var user = request.UserId == null ? null : _userManager.GetUserById(request.UserId);
-            var query = new InternalItemsQuery(user)
-            {
-                IncludeItemTypes = new[] { typeof(Game).Name },
-                DtoOptions = new DtoOptions(false)
-                {
-                    EnableImages = false
-                }
-            };
-            var games = _libraryManager.GetItemList(query)
-                .Cast<Game>()
-                .ToList();
-
-            var lookup = games
-                .ToLookup(i => i.PlayersSupported ?? -1)
-                .OrderBy(i => i.Key)
-                .Select(i => new ItemIndex
-                {
-                    ItemCount = i.Count(),
-                    Name = i.Key == -1 ? string.Empty : i.Key.ToString(UsCulture)
-                })
-                .ToList();
-
-            return ToOptimizedSerializedResultUsingCache(lookup);
-        }
 
         /// <summary>
         /// Gets the summary.
@@ -183,15 +139,15 @@ namespace MediaBrowser.Api
                     }
                 });
 
-            var games = items.Cast<Game>().ToList();
+            var games = items.Cast<Game>().ToArray();
 
             summary.ClientInstalledGameCount = games.Count(i => i.IsPlaceHolder);
 
-            summary.GameCount = games.Count;
+            summary.GameCount = games.Length;
 
             summary.GameFileExtensions = games.Where(i => !i.IsPlaceHolder).Select(i => Path.GetExtension(i.Path))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
+                .ToArray();
 
             return summary;
         }
@@ -234,7 +190,7 @@ namespace MediaBrowser.Api
 
             var result = new QueryResult<BaseItemDto>
             {
-                Items = returnList.ToArray(returnList.Count),
+                Items = returnList,
 
                 TotalRecordCount = itemsResult.Count
             };

@@ -60,7 +60,7 @@ namespace MediaBrowser.Api.System
 
     [Route("/System/Logs", "GET", Summary = "Gets a list of available server log files")]
     [Authenticated(Roles = "Admin")]
-    public class GetServerLogs : IReturn<List<LogFile>>
+    public class GetServerLogs : IReturn<LogFile[]>
     {
     }
 
@@ -126,7 +126,7 @@ namespace MediaBrowser.Api.System
             }
             catch (IOException)
             {
-                files = new List<FileSystemMetadata>();
+                files = new FileSystemMetadata[]{};
             }
 
             var result = files.Select(i => new LogFile
@@ -139,7 +139,7 @@ namespace MediaBrowser.Api.System
             }).OrderByDescending(i => i.DateModified)
                 .ThenByDescending(i => i.DateCreated)
                 .ThenBy(i => i.Name)
-                .ToList();
+                .ToArray();
 
             return ToOptimizedResult(result);
         }

@@ -132,8 +132,7 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Opens the connection to the database
         /// </summary>
-        /// <returns>Task.</returns>
-        public async Task Initialize(SqliteUserDataRepository userDataRepo)
+        public void Initialize(SqliteUserDataRepository userDataRepo)
         {
             using (var connection = CreateConnection())
             {
@@ -149,7 +148,7 @@ namespace Emby.Server.Implementations.Data
 
                                 "create table if not exists AncestorIds (ItemId GUID, AncestorId GUID, AncestorIdText TEXT, PRIMARY KEY (ItemId, AncestorId))",
                                 "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
-                                "create index if not exists idx_AncestorIds2 on AncestorIds(AncestorIdText)",
+                                "create index if not exists idx_AncestorIds5 on AncestorIds(AncestorIdText,ItemId)",
 
                                 "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT, CleanValue TEXT)",
 
@@ -308,6 +307,7 @@ namespace Emby.Server.Implementations.Data
                 "drop index if exists idx_TypeSeriesPresentationUniqueKey2",
                 "drop index if exists idx_AncestorIds3",
                 "drop index if exists idx_AncestorIds4",
+                "drop index if exists idx_AncestorIds2",
 
                 "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
@@ -599,16 +599,15 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public Task SaveItem(BaseItem item, CancellationToken cancellationToken)
+        public void SaveItem(BaseItem item, CancellationToken cancellationToken)
         {
             if (item == null)
             {
                 throw new ArgumentNullException("item");
             }
 
-            return SaveItems(new List<BaseItem> { item }, cancellationToken);
+            SaveItems(new List<BaseItem> { item }, cancellationToken);
         }
 
         /// <summary>
@@ -616,13 +615,12 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="items">The items.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">
         /// items
         /// or
         /// cancellationToken
         /// </exception>
-        public async Task SaveItems(List<BaseItem> items, CancellationToken cancellationToken)
+        public void SaveItems(List<BaseItem> items, CancellationToken cancellationToken)
         {
             if (items == null)
             {
@@ -1027,9 +1025,9 @@ namespace Emby.Server.Implementations.Data
             var hasArtists = item as IHasArtist;
             if (hasArtists != null)
             {
-                if (hasArtists.Artists.Count > 0)
+                if (hasArtists.Artists.Length > 0)
                 {
-                    artists = string.Join("|", hasArtists.Artists.ToArray());
+                    artists = string.Join("|", hasArtists.Artists);
                 }
             }
             saveItemStatement.TryBind("@Artists", artists);
@@ -1907,7 +1905,7 @@ namespace Emby.Server.Implementations.Data
                 var hasArtists = item as IHasArtist;
                 if (hasArtists != null && !reader.IsDBNull(index))
                 {
-                    hasArtists.Artists = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+                    hasArtists.Artists = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
                 }
                 index++;
 
@@ -1958,22 +1956,18 @@ namespace Emby.Server.Implementations.Data
         /// Gets the critic reviews.
         /// </summary>
         /// <param name="itemId">The item id.</param>
-        /// <returns>Task{IEnumerable{ItemReview}}.</returns>
         public List<ItemReview> GetCriticReviews(Guid itemId)
         {
             return new List<ItemReview>();
         }
 
-        private readonly Task _cachedTask = Task.FromResult(true);
         /// <summary>
         /// Saves the critic reviews.
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <param name="criticReviews">The critic reviews.</param>
-        /// <returns>Task.</returns>
-        public Task SaveCriticReviews(Guid itemId, IEnumerable<ItemReview> criticReviews)
+        public void SaveCriticReviews(Guid itemId, IEnumerable<ItemReview> criticReviews)
         {
-            return _cachedTask;
         }
 
         /// <summary>
@@ -2078,7 +2072,7 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Saves the chapters.
         /// </summary>
-        public async Task SaveChapters(Guid id, List<ChapterInfo> chapters)
+        public void SaveChapters(Guid id, List<ChapterInfo> chapters)
         {
             CheckDisposed();
 
@@ -4653,12 +4647,12 @@ namespace Emby.Server.Implementations.Data
             typeof(AggregateFolder)
         };
 
-        public async Task UpdateInheritedValues(CancellationToken cancellationToken)
+        public void UpdateInheritedValues(CancellationToken cancellationToken)
         {
-            await UpdateInheritedTags(cancellationToken).ConfigureAwait(false);
+            UpdateInheritedTags(cancellationToken);
         }
 
-        private async Task UpdateInheritedTags(CancellationToken cancellationToken)
+        private void UpdateInheritedTags(CancellationToken cancellationToken)
         {
             var newValues = new List<Tuple<Guid, string[]>>();
 
@@ -4753,7 +4747,7 @@ limit 100";
             return new[] { value }.Where(IsValidType);
         }
 
-        public async Task DeleteItem(Guid id, CancellationToken cancellationToken)
+        public void DeleteItem(Guid id, CancellationToken cancellationToken)
         {
             if (id == Guid.Empty)
             {
@@ -5484,7 +5478,7 @@ limit 100";
             }
         }
 
-        public async Task UpdatePeople(Guid itemId, List<PersonInfo> people)
+        public void UpdatePeople(Guid itemId, List<PersonInfo> people)
         {
             if (itemId == Guid.Empty)
             {
@@ -5614,7 +5608,7 @@ limit 100";
             }
         }
 
-        public async Task SaveMediaStreams(Guid id, List<MediaStream> streams, CancellationToken cancellationToken)
+        public void SaveMediaStreams(Guid id, List<MediaStream> streams, CancellationToken cancellationToken)
         {
             CheckDisposed();
 

@@ -46,7 +46,7 @@ namespace MediaBrowser.Model.System
         /// Gets or sets the in progress installations.
         /// </summary>
         /// <value>The in progress installations.</value>
-        public List<InstallationInfo> InProgressInstallations { get; set; }
+        public InstallationInfo[] InProgressInstallations { get; set; }
 
         /// <summary>
         /// Gets or sets the web socket port number.
@@ -58,7 +58,7 @@ namespace MediaBrowser.Model.System
         /// Gets or sets the completed installations.
         /// </summary>
         /// <value>The completed installations.</value>
-        public List<InstallationInfo> CompletedInstallations { get; set; }
+        public InstallationInfo[] CompletedInstallations { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance can self restart.
@@ -76,7 +76,7 @@ namespace MediaBrowser.Model.System
         /// Gets or sets plugin assemblies that failed to load.
         /// </summary>
         /// <value>The failed assembly loads.</value>
-        public List<string> FailedPluginAssemblies { get; set; }
+        public string[] FailedPluginAssemblies { get; set; }
 
         /// <summary>
         /// Gets or sets the program data path.
@@ -153,11 +153,11 @@ namespace MediaBrowser.Model.System
         /// </summary>
         public SystemInfo()
         {
-            InProgressInstallations = new List<InstallationInfo>();
+            InProgressInstallations = new InstallationInfo[] { };
 
-            CompletedInstallations = new List<InstallationInfo>();
+            CompletedInstallations = new InstallationInfo[] { };
 
-            FailedPluginAssemblies = new List<string>();
+            FailedPluginAssemblies = new string[] { };
         }
     }
 }

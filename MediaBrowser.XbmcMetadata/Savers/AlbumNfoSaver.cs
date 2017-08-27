@@ -57,10 +57,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
         
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        private void AddTracks(IEnumerable<Audio> tracks, XmlWriter writer)
+        private void AddTracks(IEnumerable<BaseItem> tracks, XmlWriter writer)
         {
-            foreach (var track in tracks.OrderBy(i => i.ParentIndexNumber ?? 0)
-                .ThenBy(i => i.IndexNumber ?? 0))
+            foreach (var track in tracks.OrderBy(i => i.ParentIndexNumber ?? 0).ThenBy(i => i.IndexNumber ?? 0))
             {
                 writer.WriteStartElement("track");
 

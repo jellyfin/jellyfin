@@ -432,7 +432,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the artists.
         /// </summary>
         /// <value>The artists.</value>
-        public List<string> Artists { get; set; }
+        public string[] Artists { get; set; }
 
         /// <summary>
         /// Gets or sets the artist items.
@@ -497,7 +497,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the media streams.
         /// </summary>
         /// <value>The media streams.</value>
-        public List<MediaStream> MediaStreams { get; set; }
+        public MediaStream[] MediaStreams { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the video.

@@ -1,5 +1,14 @@
-﻿<div id="supporterKeyPage" data-role="page" class="page type-interior" data-require="emby-collapse,scripts/supporterkeypage,emby-input,emby-button">
+﻿<div id="supporterKeyPage" data-role="page" class="page type-interior">
 
+    <style>
+        .expiredBackground {
+            background: #cc3333 !important;
+        }
+
+        .nearExpiredBackground {
+            background: orange !important;
+        }
+    </style>
     <div>
         <div class="content-primary">
             <div class="readOnlyContent">
@@ -32,7 +41,7 @@
                             </div>
                         </div>
 
-                        <div style="display: none; padding: 1em; margin-top: 1em; font-weight: normal;" class="ui-bar-a notSupporter">
+                        <div class="hide notSupporter">
                             <p>
                                 <strong>${MessageInvalidKey}</strong>
                             </p>
@@ -48,6 +57,25 @@
                         </button>
                     </p>
                 </form>
+                <br />
+                <div class="hide isSupporter">
+                    <h1 style="margin-bottom:0;">${Status}</h1>
+
+                    <div class="paperList paperList-clear" id="status-indicator" style="margin-top:0;">
+                        <div class="listItem">
+                            <i class="listItemIcon md-icon">&#xE5CA;</i>
+                            <div class="listItemBody">
+                                <div class="listItemBodyText" id="premiere-status"></div>
+                                <div class="listItemBodyText secondary hide" id="extended-plans"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="premiere-subs" class="hide">
+                        <h2>${Subscriptions}</h2>
+                        <div id="premiere-subs-content" class="paperList"></div>
+                    </div>
+                </div>
                 <br />
                 <div is="emby-collapse" title="${HeaderForgotKey}">
                     <div class="collapseContent">

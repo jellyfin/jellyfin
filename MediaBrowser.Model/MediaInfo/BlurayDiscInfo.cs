@@ -12,7 +12,7 @@ namespace MediaBrowser.Model.MediaInfo
         /// Gets or sets the media streams.
         /// </summary>
         /// <value>The media streams.</value>
-        public List<MediaStream> MediaStreams { get; set; }
+        public MediaStream[] MediaStreams { get; set; }
 
         /// <summary>
         /// Gets or sets the run time ticks.
@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.MediaInfo
         /// Gets or sets the files.
         /// </summary>
         /// <value>The files.</value>
-        public List<string> Files { get; set; }
+        public string[] Files { get; set; }
 
         public string PlaylistName { get; set; }
 
@@ -32,6 +32,6 @@ namespace MediaBrowser.Model.MediaInfo
         /// Gets or sets the chapters.
         /// </summary>
         /// <value>The chapters.</value>
-        public List<double> Chapters { get; set; }
+        public double[] Chapters { get; set; }
     }
 }

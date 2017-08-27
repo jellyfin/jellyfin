@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Serialization;
 using Priority_Queue;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -235,7 +236,7 @@ namespace MediaBrowser.Providers.Manager
             return GetRemoteImageProviders(item, true).Select(i => new ImageProviderInfo
             {
                 Name = i.Name,
-                SupportedImages = i.GetSupportedImages(item).ToList()
+                SupportedImages = i.GetSupportedImages(item).ToArray()
             });
         }
 
@@ -435,9 +436,9 @@ namespace MediaBrowser.Providers.Manager
             return 0;
         }
 
-        public IEnumerable<MetadataPluginSummary> GetAllMetadataPlugins()
+        public MetadataPluginSummary[] GetAllMetadataPlugins()
         {
-            var list = new List<MetadataPluginSummary>
+            return new MetadataPluginSummary[]
             {
                 GetPluginSummary<Game>(),
                 GetPluginSummary<GameSystem>(),
@@ -462,8 +463,6 @@ namespace MediaBrowser.Providers.Manager
                 GetPluginSummary<LiveTvVideoRecording>(),
                 GetPluginSummary<LiveTvAudioRecording>()
             };
-
-            return list;
         }
 
         private MetadataPluginSummary GetPluginSummary<T>()
@@ -485,8 +484,12 @@ namespace MediaBrowser.Providers.Manager
 
             var imageProviders = GetImageProviders(dummy, options, new ImageRefreshOptions(new DirectoryService(_logger, _fileSystem)), true).ToList();
 
-            AddMetadataPlugins(summary.Plugins, dummy, options);
-            AddImagePlugins(summary.Plugins, dummy, imageProviders);
+            var pluginList = summary.Plugins.ToList();
+
+            AddMetadataPlugins(pluginList, dummy, options);
+            AddImagePlugins(pluginList, dummy, imageProviders);
+
+            summary.Plugins = pluginList.ToArray(pluginList.Count);
 
             var supportedImageTypes = imageProviders.OfType<IRemoteImageProvider>()
                 .SelectMany(i => i.GetSupportedImages(dummy))
@@ -495,7 +498,7 @@ namespace MediaBrowser.Providers.Manager
             supportedImageTypes.AddRange(imageProviders.OfType<IDynamicImageProvider>()
                 .SelectMany(i => i.GetSupportedImages(dummy)));
 
-            summary.SupportedImageTypes = supportedImageTypes.Distinct().ToList();
+            summary.SupportedImageTypes = supportedImageTypes.Distinct().ToArray();
 
             return summary;
         }

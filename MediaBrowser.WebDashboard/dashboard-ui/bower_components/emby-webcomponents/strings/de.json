@@ -526,5 +526,7 @@
     "VideoFramerateNotSupported": "Videoframerate nicht unterst\u00fctzt",
     "VideoBitDepthNotSupported": "Videobittiefe nicht unterst\u00fctzt",
     "RefFramesNotSupported": "Anzahl der Videoreferenzframes nicht unterst\u00fctzt",
-    "ErrorConnectServerUnreachable": "Es gab einen Fehler bei bei der Ausf\u00fchrung des Funktion. Dein Server ist nicht in der Lage unsere Emby-Connect-Server zu erreichen um {0}. Stelle bitte sicher, dass dein Server eine aktive Internetverbindung hat und die Kommunikations durch die Firewall oder andere installierte Sicherheitssoftware erlaubt wurde."
+    "ErrorConnectServerUnreachable": "Es gab einen Fehler bei bei der Ausf\u00fchrung des Funktion. Dein Server ist nicht in der Lage unsere Emby-Connect-Server zu erreichen um {0}. Stelle bitte sicher, dass dein Server eine aktive Internetverbindung hat und die Kommunikations durch die Firewall oder andere installierte Sicherheitssoftware erlaubt wurde.",
+    "StopRecording": "Aufnahme stoppen",
+    "ManageRecording": "Aufnahme verwalten"
 }

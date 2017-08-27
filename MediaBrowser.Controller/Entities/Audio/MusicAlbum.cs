@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -20,11 +19,11 @@ namespace MediaBrowser.Controller.Entities.Audio
     public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
         public string[] AlbumArtists { get; set; }
-        public List<string> Artists { get; set; }
+        public string[] Artists { get; set; }
 
         public MusicAlbum()
         {
-            Artists = new List<string>();
+            Artists = EmptyStringArray;
             AlbumArtists = EmptyStringArray;
         }
 
@@ -48,17 +47,22 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public MusicArtist GetMusicArtist(DtoOptions options)
         {
-            var artist = GetParents().OfType<MusicArtist>().FirstOrDefault();
-
-            if (artist == null)
+            var parents = GetParents();
+            foreach (var parent in parents)
             {
-                var name = AlbumArtist;
-                if (!string.IsNullOrWhiteSpace(name))
+                var artist = parent as MusicArtist;
+                if (artist != null)
                 {
-                    artist = LibraryManager.GetArtist(name, options);
+                    return artist;
                 }
             }
-            return artist;
+
+            var name = AlbumArtist;
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                return LibraryManager.GetArtist(name, options);
+            }
+            return null;
         }
 
         [IgnoreDataMember]
@@ -80,23 +84,32 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
-        public List<string> AllArtists
+        public string[] AllArtists
         {
             get
             {
-                var list = AlbumArtists.ToList();
+                var list = new string[AlbumArtists.Length + Artists.Length];
 
-                list.AddRange(Artists);
+                var index = 0;
+                foreach (var artist in AlbumArtists)
+                {
+                    list[index] = artist;
+                    index++;
+                }
+                foreach (var artist in Artists)
+                {
+                    list[index] = artist;
+                    index++;
+                }
 
                 return list;
-
             }
         }
 
         [IgnoreDataMember]
         public string AlbumArtist
         {
-            get { return AlbumArtists.FirstOrDefault(); }
+            get { return AlbumArtists.Length == 0 ? null : AlbumArtists[0]; }
         }
 
         [IgnoreDataMember]
@@ -110,11 +123,11 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// </summary>
         /// <value>The tracks.</value>
         [IgnoreDataMember]
-        public IEnumerable<Audio> Tracks
+        public IEnumerable<BaseItem> Tracks
         {
             get
             {
-                return GetRecursiveChildren(i => i is Audio).Cast<Audio>();
+                return GetRecursiveChildren(i => i is Audio);
             }
         }
 
@@ -200,7 +213,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var items = GetRecursiveChildren().ToList();
+            var items = GetRecursiveChildren();
 
             var totalItems = items.Count;
             var numComplete = 0;
@@ -239,27 +252,22 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         private async Task RefreshArtists(MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
-            var artists = AllArtists.Select(i =>
+            var all = AllArtists;
+            foreach (var i in all)
             {
                 // This should not be necessary but we're seeing some cases of it
                 if (string.IsNullOrWhiteSpace(i))
                 {
-                    return null;
+                    continue;
                 }
 
                 var artist = LibraryManager.GetArtist(i);
 
                 if (!artist.IsAccessedByName)
                 {
-                    return null;
+                    continue;
                 }
 
-                return artist;
-
-            }).Where(i => i != null).ToList();
-
-            foreach (var artist in artists)
-            {
                 await artist.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
             }
         }

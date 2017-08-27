@@ -186,7 +186,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.InvalidOperationException">Unable to add  + item.Name</exception>
-        public async Task AddChild(BaseItem item, CancellationToken cancellationToken)
+        public void AddChild(BaseItem item, CancellationToken cancellationToken)
         {
             item.SetParent(this);
 
@@ -209,7 +209,7 @@ namespace MediaBrowser.Controller.Entities
                 item.DateModified = DateTime.UtcNow;
             }
 
-            await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
+            LibraryManager.CreateItem(item, cancellationToken);
         }
 
         /// <summary>
@@ -469,7 +469,7 @@ namespace MediaBrowser.Controller.Entities
                         }
                     }
 
-                    await LibraryManager.CreateItems(newItems, cancellationToken).ConfigureAwait(false);
+                    LibraryManager.CreateItems(newItems, cancellationToken);
                 }
             }
             else
@@ -648,15 +648,15 @@ namespace MediaBrowser.Controller.Entities
 
         public static bool IsPathOffline(string path, List<string> allLibraryPaths)
         {
-            if (FileSystem.FileExists(path))
-            {
-                return false;
-            }
+            //if (FileSystem.FileExists(path))
+            //{
+            //    return false;
+            //}
 
             var originalPath = path;
 
             // Depending on whether the path is local or unc, it may return either null or '\' at the top
-            while (!string.IsNullOrEmpty(path) && path.Length > 1)
+            while (!string.IsNullOrWhiteSpace(path) && path.Length > 1)
             {
                 if (FileSystem.DirectoryExists(path))
                 {
@@ -711,7 +711,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (!(this is ICollectionFolder))
                 {
-                    return GetChildren(user, true).Count();
+                    return GetChildren(user, true).Count;
                 }
             }
 
@@ -792,16 +792,16 @@ namespace MediaBrowser.Controller.Entities
             query.StartIndex = null;
             query.Limit = null;
 
-            IEnumerable<BaseItem> itemsList = LibraryManager.GetItemList(query);
+            var itemsList = LibraryManager.GetItemList(query);
             var user = query.User;
 
             if (user != null)
             {
                 // needed for boxsets
-                itemsList = itemsList.Where(i => i.IsVisibleStandalone(query.User));
+                itemsList = itemsList.Where(i => i.IsVisibleStandalone(query.User)).ToList();
             }
 
-            IEnumerable<BaseItem> returnItems;
+            BaseItem[] returnItems;
             int totalCount = 0;
 
             if (query.EnableTotalRecordCount)
@@ -812,16 +812,16 @@ namespace MediaBrowser.Controller.Entities
             }
             else
             {
-                returnItems = itemsList;
+                returnItems = itemsList.ToArray();
             }
 
             if (limit.HasValue)
             {
-                returnItems = returnItems.Skip(startIndex ?? 0).Take(limit.Value);
+                returnItems = returnItems.Skip(startIndex ?? 0).Take(limit.Value).ToArray();
             }
             else if (startIndex.HasValue)
             {
-                returnItems = returnItems.Skip(startIndex.Value);
+                returnItems = returnItems.Skip(startIndex.Value).ToArray();
             }
 
             return new QueryResult<BaseItem>
@@ -1044,7 +1044,7 @@ namespace MediaBrowser.Controller.Entities
             return UserViewBuilder.PostFilterAndSort(items, this, null, query, LibraryManager, ConfigurationManager, collapseBoxSetItems, enableSorting);
         }
 
-        public virtual IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        public virtual List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             if (user == null)
             {
@@ -1058,7 +1058,7 @@ namespace MediaBrowser.Controller.Entities
 
             AddChildren(user, includeLinkedChildren, result, false, null);
 
-            return result.Values;
+            return result.Values.ToList();
         }
 
         protected virtual IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
@@ -1370,7 +1370,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="datePlayed">The date played.</param>
         /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
         /// <returns>Task.</returns>
-        public override async Task MarkPlayed(User user,
+        public override void MarkPlayed(User user,
             DateTime? datePlayed,
             bool resetPosition)
         {
@@ -1390,9 +1390,10 @@ namespace MediaBrowser.Controller.Entities
             var itemsResult = GetItemList(query);
 
             // Sweep through recursively and update status
-            var tasks = itemsResult.Select(c => c.MarkPlayed(user, datePlayed, resetPosition));
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            foreach (var item in itemsResult)
+            {
+                item.MarkPlayed(user, datePlayed, resetPosition);
+            }
         }
 
         /// <summary>
@@ -1400,7 +1401,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        public override async Task MarkUnplayed(User user)
+        public override void MarkUnplayed(User user)
         {
             var itemsResult = GetItemList(new InternalItemsQuery
             {
@@ -1412,9 +1413,10 @@ namespace MediaBrowser.Controller.Entities
             });
 
             // Sweep through recursively and update status
-            var tasks = itemsResult.Select(c => c.MarkUnplayed(user));
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            foreach (var item in itemsResult)
+            {
+                item.MarkUnplayed(user);
+            }
         }
 
         public override bool IsPlayed(User user)
@@ -1477,7 +1479,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, List<ItemFields> fields)
+        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, ItemFields[] fields)
         {
             if (!SupportsUserDataFromChildren)
             {

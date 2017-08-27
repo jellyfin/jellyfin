@@ -27,7 +27,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// Class GetScheduledTasks
     /// </summary>
     [Route("/ScheduledTasks", "GET", Summary = "Gets scheduled tasks")]
-    public class GetScheduledTasks : IReturn<List<TaskInfo>>
+    public class GetScheduledTasks : IReturn<TaskInfo[]>
     {
         [ApiMember(Name = "IsHidden", Description = "Optional filter tasks that are hidden, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsHidden { get; set; }
@@ -158,7 +158,7 @@ namespace MediaBrowser.Api.ScheduledTasks
             
             var infos = result
                 .Select(ScheduledTaskHelpers.GetTaskInfo)
-                .ToList();
+                .ToArray();
 
             return ToOptimizedResult(infos);
         }

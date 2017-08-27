@@ -11,13 +11,13 @@ namespace Rssdp.Infrastructure
 		/// Returns an enumerable set of strings, each one being a description of an invalid property on the specified root device.
 		/// </summary>
 		/// <param name="device">The <see cref="SsdpRootDevice"/> to validate.</param>
-		System.Collections.Generic.IEnumerable<string> GetValidationErrors(SsdpRootDevice device);
+		System.Collections.Generic.List<string> GetValidationErrors(SsdpRootDevice device);
 
 		/// <summary>
 		/// Returns an enumerable set of strings, each one being a description of an invalid property on the specified device.
 		/// </summary>
 		/// <param name="device">The <see cref="SsdpDevice"/> to validate.</param>
-		System.Collections.Generic.IEnumerable<string> GetValidationErrors(SsdpDevice device);
+		System.Collections.Generic.List<string> GetValidationErrors(SsdpDevice device);
 
 		/// <summary>
 		/// Validates the specified device and throws an <see cref="System.InvalidOperationException"/> if there are any validation errors.

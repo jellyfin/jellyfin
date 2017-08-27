@@ -181,7 +181,7 @@ namespace Emby.Server.Implementations.Library
 
                 DtoOptions = new DtoOptions
                 {
-                    Fields = new List<ItemFields>
+                    Fields = new ItemFields[]
                     {
                          ItemFields.AirTime,
                          ItemFields.DateCreated,

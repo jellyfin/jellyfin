@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -8,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Controller.Entities.Audio;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
@@ -82,20 +80,11 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
-            if (IsLegacyBoxSet)
-            {
-                return base.GetNonCachedChildren(directoryService);
-            }
             return new List<BaseItem>();
         }
 
         protected override List<BaseItem> LoadChildren()
         {
-            if (IsLegacyBoxSet)
-            {
-                return base.LoadChildren();
-            }
-
             // Save a trip to the database
             return new List<BaseItem>();
         }
@@ -106,34 +95,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             get
             {
                 return true;
-            }
-        }
-
-        [IgnoreDataMember]
-        protected override bool SupportsShortcutChildren
-        {
-            get
-            {
-                if (IsLegacyBoxSet)
-                {
-                    return false;
-                }
-
-                return false;
-            }
-        }
-
-        [IgnoreDataMember]
-        private bool IsLegacyBoxSet
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(Path))
-                {
-                    return false;
-                }
-
-                return !FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, Path);
             }
         }
 
@@ -170,24 +131,24 @@ namespace MediaBrowser.Controller.Entities.Movies
                 StringComparison.OrdinalIgnoreCase);
         }
 
-        public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             var children = base.GetChildren(user, includeLinkedChildren);
 
             if (string.Equals(DisplayOrder, ItemSortBy.SortName, StringComparison.OrdinalIgnoreCase))
             {
                 // Sort by name
-                return LibraryManager.Sort(children, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending);
+                return LibraryManager.Sort(children, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
             }
 
             if (string.Equals(DisplayOrder, ItemSortBy.PremiereDate, StringComparison.OrdinalIgnoreCase))
             {
                 // Sort by release date
-                return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending);
+                return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending).ToList();
             }
 
             // Default sorting
-            return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending);
+            return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending).ToList();
         }
 
         public BoxSetInfo GetLookupInfo()
@@ -207,7 +168,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             if (base.IsVisible(user))
             {
-                return base.GetChildren(user, true).Any();
+                return base.GetChildren(user, true).Count > 0;
             }
 
             return false;

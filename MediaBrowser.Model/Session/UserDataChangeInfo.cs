@@ -18,6 +18,6 @@ namespace MediaBrowser.Model.Session
         /// Gets or sets the user data list.
         /// </summary>
         /// <value>The user data list.</value>
-        public List<UserItemDataDto> UserDataList { get; set; }
+        public UserItemDataDto[] UserDataList { get; set; }
     }
 }

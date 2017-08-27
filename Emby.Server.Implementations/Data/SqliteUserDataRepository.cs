@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
@@ -153,7 +152,7 @@ namespace Emby.Server.Implementations.Data
         /// userId
         /// or
         /// userDataId</exception>
-        public Task SaveUserData(Guid userId, string key, UserItemData userData, CancellationToken cancellationToken)
+        public void SaveUserData(Guid userId, string key, UserItemData userData, CancellationToken cancellationToken)
         {
             if (userData == null)
             {
@@ -168,10 +167,10 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException("key");
             }
 
-            return PersistUserData(userId, key, userData, cancellationToken);
+            PersistUserData(userId, key, userData, cancellationToken);
         }
 
-        public Task SaveAllUserData(Guid userId, IEnumerable<UserItemData> userData, CancellationToken cancellationToken)
+        public void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken)
         {
             if (userData == null)
             {
@@ -182,7 +181,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException("userId");
             }
 
-            return PersistAllUserData(userId, userData.ToList(), cancellationToken);
+            PersistAllUserData(userId, userData, cancellationToken);
         }
 
         /// <summary>
@@ -193,7 +192,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="userData">The user data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task PersistUserData(Guid userId, string key, UserItemData userData, CancellationToken cancellationToken)
+        public void PersistUserData(Guid userId, string key, UserItemData userData, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -264,7 +263,7 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Persist all user data for the specified user
         /// </summary>
-        private async Task PersistAllUserData(Guid userId, List<UserItemData> userDataList, CancellationToken cancellationToken)
+        private void PersistAllUserData(Guid userId, UserItemData[] userDataList, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -349,7 +348,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public IEnumerable<UserItemData> GetAllUserData(Guid userId)
+        public List<UserItemData> GetAllUserData(Guid userId)
         {
             if (userId == Guid.Empty)
             {

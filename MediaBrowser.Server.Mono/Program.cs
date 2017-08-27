@@ -261,9 +261,10 @@ namespace MediaBrowser.Server.Mono
             {
                 var args = Environment.GetCommandLineArgs()
                                 .Skip(1)
-                                .Select(NormalizeCommandLineArgument);
+                                .Select(NormalizeCommandLineArgument)
+                                .ToArray();
 
-                commandLineArgsString = string.Join(" ", args.ToArray());
+                commandLineArgsString = string.Join(" ", args);
             }
 
             _logger.Info("Executable: {0}", module);

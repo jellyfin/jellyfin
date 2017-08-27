@@ -18,11 +18,11 @@ namespace MediaBrowser.Model.Notifications
 
         public string DefaultDescription { get; set; }
         
-        public List<string> Variables { get; set; }
+        public string[] Variables { get; set; }
 
         public NotificationTypeInfo()
         {
-            Variables = new List<string>();
+            Variables = new string[] { };
         }
     }
 }

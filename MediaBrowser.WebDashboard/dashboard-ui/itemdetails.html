@@ -91,7 +91,14 @@
                         <button is="emby-button" type="button" class="button-flat btnCancelSeriesTimer hide detailButton-mobile">
                             <div class="detailButton-mobile-content">
                                 <i class="md-icon detailButton-mobile-icon">&#xE872;</i>
-                                <div class="detailButton-mobile-text">${ButtonCancelSeries}</div>
+                                <div class="detailButton-mobile-text">${CancelSeries}</div>
+                            </div>
+                        </button>
+
+                        <button is="emby-button" type="button" class="button-flat btnCancelTimer hide detailButton-mobile">
+                            <div class="detailButton-mobile-content">
+                                <i class="md-icon detailButton-mobile-icon">&#xE047;</i>
+                                <div class="detailButton-mobile-text">${StopRecording}</div>
                             </div>
                         </button>
 
@@ -136,6 +143,9 @@
                         </button>
                         <button is="emby-button" type="button" class="raised subdued btnCancelSeriesTimer hide">
                             <span>${ButtonCancelSeries}</span>
+                        </button>
+                        <button is="emby-button" type="button" class="raised subdued btnCancelTimer hide">
+                            <span>${ButtonStopRecording}</span>
                         </button>
 
                         <div style="margin-left: .5em; display: flex; align-items: center;">

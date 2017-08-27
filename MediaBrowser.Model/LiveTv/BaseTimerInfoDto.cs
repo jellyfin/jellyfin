@@ -113,7 +113,7 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the parent backdrop image tags.
         /// </summary>
         /// <value>The parent backdrop image tags.</value>
-        public List<string> ParentBackdropImageTags { get; set; }
+        public string[] ParentBackdropImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is post padding required.

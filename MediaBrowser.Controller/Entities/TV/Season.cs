@@ -81,7 +81,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public override int GetChildCount(User user)
         {
-            var result = GetChildren(user, true).Count();
+            var result = GetChildren(user, true).Count;
 
             return result;
         }
@@ -160,27 +160,27 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <summary>
         /// Gets the episodes.
         /// </summary>
-        public IEnumerable<Episode> GetEpisodes(User user, DtoOptions options)
+        public List<BaseItem> GetEpisodes(User user, DtoOptions options)
         {
             return GetEpisodes(Series, user, options);
         }
 
-        public IEnumerable<Episode> GetEpisodes(Series series, User user, DtoOptions options)
+        public List<BaseItem> GetEpisodes(Series series, User user, DtoOptions options)
         {
             return GetEpisodes(series, user, null, options);
         }
 
-        public IEnumerable<Episode> GetEpisodes(Series series, User user, IEnumerable<Episode> allSeriesEpisodes, DtoOptions options)
+        public List<BaseItem> GetEpisodes(Series series, User user, IEnumerable<Episode> allSeriesEpisodes, DtoOptions options)
         {
             return series.GetSeasonEpisodes(this, user, allSeriesEpisodes, options);
         }
 
-        public IEnumerable<Episode> GetEpisodes()
+        public List<BaseItem> GetEpisodes()
         {
             return Series.GetSeasonEpisodes(this, null, null, new DtoOptions(true));
         }
 
-        public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             return GetEpisodes(user, new DtoOptions(true));
         }

@@ -133,7 +133,6 @@
     <Compile Include="IO\FileRefresher.cs" />
     <Compile Include="IO\IsoManager.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
-    <Compile Include="IO\LnkShortcutHandler.cs" />
     <Compile Include="IO\ManagedFileSystem.cs" />
     <Compile Include="IO\MbLinkShortcutHandler.cs" />
     <Compile Include="IO\MemoryStreamProvider.cs" />
@@ -662,8 +661,9 @@
     <Reference Include="Emby.XmlTv, Version=1.0.6387.29335, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Emby.XmlTv.1.0.10\lib\portable-net45+netstandard2.0+win8\Emby.XmlTv.dll</HintPath>
     </Reference>
-    <Reference Include="MediaBrowser.Naming, Version=1.0.6437.24226, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.6\lib\portable-net45+netstandard2.0+win8\MediaBrowser.Naming.dll</HintPath>
+    <Reference Include="MediaBrowser.Naming, Version=1.0.6447.2217, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.7\lib\portable-net45+netstandard2.0+win8\MediaBrowser.Naming.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Text, Version=4.5.8.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ServiceStack.Text.4.5.8\lib\net45\ServiceStack.Text.dll</HintPath>
@@ -699,7 +699,6 @@
     <EmbeddedResource Include="Localization\Core\ar.json" />
     <EmbeddedResource Include="Localization\Core\bg-BG.json" />
     <EmbeddedResource Include="Localization\Core\ca.json" />
-    <EmbeddedResource Include="Localization\Core\core.json" />
     <EmbeddedResource Include="Localization\Core\cs.json" />
     <EmbeddedResource Include="Localization\Core\da.json" />
     <EmbeddedResource Include="Localization\Core\de.json" />

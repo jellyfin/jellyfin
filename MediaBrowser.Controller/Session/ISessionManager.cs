@@ -318,19 +318,19 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="accessToken">The access token.</param>
         /// <returns>Task.</returns>
-        Task Logout(string accessToken);
+        void Logout(string accessToken);
 
         /// <summary>
         /// Revokes the user tokens.
         /// </summary>
         /// <returns>Task.</returns>
-        Task RevokeUserTokens(string userId, string currentAccessToken);
+        void RevokeUserTokens(string userId, string currentAccessToken);
 
         /// <summary>
         /// Revokes the token.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>Task.</returns>
-        Task RevokeToken(string id);
+        void RevokeToken(string id);
     }
 }

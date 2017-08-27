@@ -31,7 +31,7 @@ namespace MediaBrowser.Model.Dlna
         {
             ValidateAudioInput(options);
 
-            List<MediaSourceInfo> mediaSources = new List<MediaSourceInfo>();
+            var mediaSources = new List<MediaSourceInfo>();
             foreach (MediaSourceInfo i in options.MediaSources)
             {
                 if (string.IsNullOrEmpty(options.MediaSourceId) ||
@@ -41,7 +41,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            List<StreamInfo> streams = new List<StreamInfo>();
+            var streams = new List<StreamInfo>();
             foreach (MediaSourceInfo i in mediaSources)
             {
                 StreamInfo streamInfo = BuildAudioItem(i, options);
@@ -64,7 +64,7 @@ namespace MediaBrowser.Model.Dlna
         {
             ValidateInput(options);
 
-            List<MediaSourceInfo> mediaSources = new List<MediaSourceInfo>();
+            var mediaSources = new List<MediaSourceInfo>();
             foreach (MediaSourceInfo i in options.MediaSources)
             {
                 if (string.IsNullOrEmpty(options.MediaSourceId) ||
@@ -74,7 +74,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            List<StreamInfo> streams = new List<StreamInfo>();
+            var streams = new List<StreamInfo>();
             foreach (MediaSourceInfo i in mediaSources)
             {
                 StreamInfo streamInfo = BuildVideoItem(i, options);
@@ -95,9 +95,9 @@ namespace MediaBrowser.Model.Dlna
 
         private StreamInfo GetOptimalStream(List<StreamInfo> streams, long? maxBitrate)
         {
-            streams = StreamInfoSorter.SortMediaSources(streams, maxBitrate);
+            var sorted = StreamInfoSorter.SortMediaSources(streams, maxBitrate);
 
-            foreach (StreamInfo stream in streams)
+            foreach (StreamInfo stream in sorted)
             {
                 return stream;
             }
@@ -206,7 +206,7 @@ namespace MediaBrowser.Model.Dlna
 
             var formats = ContainerProfile.SplitValue(inputContainer);
 
-            if (formats.Count == 1)
+            if (formats.Length == 1)
             {
                 return formats[0];
             }
@@ -233,7 +233,7 @@ namespace MediaBrowser.Model.Dlna
 
         private StreamInfo BuildAudioItem(MediaSourceInfo item, AudioOptions options)
         {
-            List<TranscodeReason> transcodeReasons = new List<TranscodeReason>();
+            var transcodeReasons = new List<TranscodeReason>();
 
             StreamInfo playlistItem = new StreamInfo
             {
@@ -263,7 +263,7 @@ namespace MediaBrowser.Model.Dlna
 
             var directPlayInfo = GetAudioDirectPlayMethods(item, audioStream, options);
 
-            List<PlayMethod> directPlayMethods = directPlayInfo.Item1;
+            var directPlayMethods = directPlayInfo.Item1;
             transcodeReasons.AddRange(directPlayInfo.Item2);
 
             ConditionProcessor conditionProcessor = new ConditionProcessor();
@@ -280,7 +280,7 @@ namespace MediaBrowser.Model.Dlna
                 // Make sure audio codec profiles are satisfied
                 if (!string.IsNullOrEmpty(audioCodec))
                 {
-                    List<ProfileCondition> conditions = new List<ProfileCondition>();
+                    var conditions = new List<ProfileCondition>();
                     foreach (CodecProfile i in options.Profile.CodecProfiles)
                     {
                         if (i.Type == CodecType.Audio && i.ContainsCodec(audioCodec, item.Container))
@@ -372,7 +372,7 @@ namespace MediaBrowser.Model.Dlna
 
                 playlistItem.SubProtocol = transcodingProfile.Protocol;
 
-                List<CodecProfile> audioCodecProfiles = new List<CodecProfile>();
+                var audioCodecProfiles = new List<CodecProfile>();
                 foreach (CodecProfile i in options.Profile.CodecProfiles)
                 {
                     if (i.Type == CodecType.Audio && i.ContainsCodec(transcodingProfile.AudioCodec, transcodingProfile.Container))
@@ -383,7 +383,7 @@ namespace MediaBrowser.Model.Dlna
                     if (audioCodecProfiles.Count >= 1) break;
                 }
 
-                List<ProfileCondition> audioTranscodingConditions = new List<ProfileCondition>();
+                var audioTranscodingConditions = new List<ProfileCondition>();
                 foreach (CodecProfile i in audioCodecProfiles)
                 {
                     bool applyConditions = true;
@@ -447,7 +447,7 @@ namespace MediaBrowser.Model.Dlna
 
         private Tuple<List<PlayMethod>, List<TranscodeReason>> GetAudioDirectPlayMethods(MediaSourceInfo item, MediaStream audioStream, AudioOptions options)
         {
-            List<TranscodeReason> transcodeReasons = new List<TranscodeReason>();
+            var transcodeReasons = new List<TranscodeReason>();
 
             DirectPlayProfile directPlayProfile = null;
             foreach (DirectPlayProfile i in options.Profile.DirectPlayProfiles)
@@ -459,7 +459,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            List<PlayMethod> playMethods = new List<PlayMethod>();
+            var playMethods = new List<PlayMethod>();
 
             if (directPlayProfile != null)
             {
@@ -534,8 +534,8 @@ namespace MediaBrowser.Model.Dlna
                     if (videoStream != null)
                     {
                         // Check video codec
-                        List<string> videoCodecs = profile.GetVideoCodecs();
-                        if (videoCodecs.Count > 0)
+                        var videoCodecs = profile.GetVideoCodecs();
+                        if (videoCodecs.Length > 0)
                         {
                             string videoCodec = videoStream.Codec;
                             if (!string.IsNullOrEmpty(videoCodec) && ListHelper.ContainsIgnoreCase(videoCodecs, videoCodec))
@@ -552,8 +552,8 @@ namespace MediaBrowser.Model.Dlna
                     if (audioStream != null)
                     {
                         // Check audio codec
-                        List<string> audioCodecs = profile.GetAudioCodecs();
-                        if (audioCodecs.Count > 0)
+                        var audioCodecs = profile.GetAudioCodecs();
+                        if (audioCodecs.Length > 0)
                         {
                             string audioCodec = audioStream.Codec;
                             if (!string.IsNullOrEmpty(audioCodec) && ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec))
@@ -602,7 +602,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            List<MediaStream> topStreams = new List<MediaStream>();
+            var topStreams = new List<MediaStream>();
             foreach (MediaStream stream in item.MediaStreams)
             {
                 if (stream.Type == MediaStreamType.Subtitle && stream.Score.HasValue && stream.Score.Value == highestScore)
@@ -637,7 +637,7 @@ namespace MediaBrowser.Model.Dlna
                 throw new ArgumentNullException("item");
             }
 
-            List<TranscodeReason> transcodeReasons = new List<TranscodeReason>();
+            var transcodeReasons = new List<TranscodeReason>();
 
             StreamInfo playlistItem = new StreamInfo
             {
@@ -686,7 +686,7 @@ namespace MediaBrowser.Model.Dlna
 
                     if (subtitleStream != null)
                     {
-                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, directPlay.Value, null, null);
+                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, directPlay.Value, _transcoderSupport, null, null);
 
                         playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                         playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -728,7 +728,7 @@ namespace MediaBrowser.Model.Dlna
 
                 if (subtitleStream != null)
                 {
-                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, PlayMethod.Transcode, transcodingProfile.Protocol, transcodingProfile.Container);
+                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, PlayMethod.Transcode, _transcoderSupport, transcodingProfile.Protocol, transcodingProfile.Container);
 
                     playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                     playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -769,7 +769,7 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.AudioStreamIndex = audioStreamIndex;
                 ConditionProcessor conditionProcessor = new ConditionProcessor();
 
-                List<ProfileCondition> videoTranscodingConditions = new List<ProfileCondition>();
+                var videoTranscodingConditions = new List<ProfileCondition>();
                 foreach (CodecProfile i in options.Profile.CodecProfiles)
                 {
                     if (i.Type == CodecType.Video && i.ContainsCodec(transcodingProfile.VideoCodec, transcodingProfile.Container))
@@ -804,7 +804,7 @@ namespace MediaBrowser.Model.Dlna
                 }
                 ApplyTranscodingConditions(playlistItem, videoTranscodingConditions);
 
-                List<ProfileCondition> audioTranscodingConditions = new List<ProfileCondition>();
+                var audioTranscodingConditions = new List<ProfileCondition>();
                 foreach (CodecProfile i in options.Profile.CodecProfiles)
                 {
                     if (i.Type == CodecType.VideoAudio && i.ContainsCodec(playlistItem.TargetAudioCodec, transcodingProfile.Container))
@@ -990,7 +990,7 @@ namespace MediaBrowser.Model.Dlna
 
             string container = mediaSource.Container;
 
-            List<ProfileCondition> conditions = new List<ProfileCondition>();
+            var conditions = new List<ProfileCondition>();
             foreach (ContainerProfile i in profile.ContainerProfiles)
             {
                 if (i.Type == DlnaProfileType.Video &&
@@ -1183,7 +1183,7 @@ namespace MediaBrowser.Model.Dlna
         {
             if (subtitleStream != null)
             {
-                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, playMethod, null, null);
+                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, playMethod, _transcoderSupport, null, null);
 
                 if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
@@ -1202,7 +1202,7 @@ namespace MediaBrowser.Model.Dlna
             return new Tuple<bool, TranscodeReason?>(result, TranscodeReason.ContainerBitrateExceedsLimit);
         }
 
-        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, string transcodingSubProtocol, string transcodingContainer)
+        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, ITranscoderSupport transcoderSupport, string transcodingSubProtocol, string transcodingContainer)
         {
             if (!subtitleStream.IsExternal && (playMethod != PlayMethod.Transcode || !string.Equals(transcodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase)))
             {
@@ -1256,7 +1256,9 @@ namespace MediaBrowser.Model.Dlna
             }
 
             // Look for an external or hls profile that matches the stream type (text/graphical) and doesn't require conversion
-            return GetExternalSubtitleProfile(subtitleStream, subtitleProfiles, playMethod, false) ?? GetExternalSubtitleProfile(subtitleStream, subtitleProfiles, playMethod, true) ?? new SubtitleProfile
+            return GetExternalSubtitleProfile(subtitleStream, subtitleProfiles, playMethod, transcoderSupport, false) ?? 
+                GetExternalSubtitleProfile(subtitleStream, subtitleProfiles, playMethod, transcoderSupport, true) ?? 
+                new SubtitleProfile
             {
                 Method = SubtitleDeliveryMethod.Encode,
                 Format = subtitleStream.Codec
@@ -1291,7 +1293,7 @@ namespace MediaBrowser.Model.Dlna
             return false;
         }
 
-        private static SubtitleProfile GetExternalSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, bool allowConversion)
+        private static SubtitleProfile GetExternalSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, ITranscoderSupport transcoderSupport, bool allowConversion)
         {
             foreach (SubtitleProfile profile in subtitleProfiles)
             {
@@ -1306,6 +1308,11 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 if (!profile.SupportsLanguage(subtitleStream.Language))
+                {
+                    continue;
+                }
+
+                if (!subtitleStream.IsExternal && !transcoderSupport.CanExtractSubtitles(subtitleStream.Codec))
                 {
                     continue;
                 }
@@ -1578,8 +1585,8 @@ namespace MediaBrowser.Model.Dlna
             }
 
             // Check audio codec
-            List<string> audioCodecs = profile.GetAudioCodecs();
-            if (audioCodecs.Count > 0)
+            var audioCodecs = profile.GetAudioCodecs();
+            if (audioCodecs.Length > 0)
             {
                 // Check audio codecs
                 string audioCodec = audioStream == null ? null : audioStream.Codec;
@@ -1601,8 +1608,8 @@ namespace MediaBrowser.Model.Dlna
             }
 
             // Check video codec
-            List<string> videoCodecs = profile.GetVideoCodecs();
-            if (videoCodecs.Count > 0)
+            var videoCodecs = profile.GetVideoCodecs();
+            if (videoCodecs.Length > 0)
             {
                 string videoCodec = videoStream == null ? null : videoStream.Codec;
                 if (string.IsNullOrEmpty(videoCodec) || !ListHelper.ContainsIgnoreCase(videoCodecs, videoCodec))
@@ -1614,8 +1621,8 @@ namespace MediaBrowser.Model.Dlna
             // Check audio codec
             if (audioStream != null)
             {
-                List<string> audioCodecs = profile.GetAudioCodecs();
-                if (audioCodecs.Count > 0)
+                var audioCodecs = profile.GetAudioCodecs();
+                if (audioCodecs.Length > 0)
                 {
                     // Check audio codecs
                     string audioCodec = audioStream == null ? null : audioStream.Codec;

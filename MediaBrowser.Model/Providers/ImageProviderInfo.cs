@@ -14,11 +14,11 @@ namespace MediaBrowser.Model.Providers
         /// <value>The name.</value>
         public string Name { get; set; }
 
-        public List<ImageType> SupportedImages { get; set; }
+        public ImageType[] SupportedImages { get; set; }
 
         public ImageProviderInfo()
         {
-            SupportedImages = new List<ImageType>();
+            SupportedImages = new ImageType[] { };
         }
     }
 }

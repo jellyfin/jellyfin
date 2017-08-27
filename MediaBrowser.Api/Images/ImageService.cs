@@ -556,20 +556,7 @@ namespace MediaBrowser.Api.Images
                 throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", item.Name, request.Type));
             }
 
-            var supportedImageEnhancers = request.EnableImageEnhancers ? _imageProcessor.ImageEnhancers.Where(i =>
-            {
-                try
-                {
-                    return i.Supports(item, request.Type);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
-
-                    return false;
-                }
-
-            }).ToList() : new List<IImageEnhancer>();
+            var supportedImageEnhancers = request.EnableImageEnhancers ? _imageProcessor.GetSupportedEnhancers(item, request.Type) : new List<IImageEnhancer>();
 
             var cropwhitespace = request.Type == ImageType.Logo || 
                 request.Type == ImageType.Art

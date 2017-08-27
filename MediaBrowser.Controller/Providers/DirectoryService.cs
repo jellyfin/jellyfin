@@ -4,7 +4,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
@@ -73,14 +72,23 @@ namespace MediaBrowser.Controller.Providers
             return entries;
         }
 
-        public IEnumerable<FileSystemMetadata> GetFiles(string path)
+        public List<FileSystemMetadata> GetFiles(string path)
         {
             return GetFiles(path, false);
         }
 
-        public IEnumerable<FileSystemMetadata> GetFiles(string path, bool clearCache)
+        public List<FileSystemMetadata> GetFiles(string path, bool clearCache)
         {
-            return GetFileSystemEntries(path, clearCache).Where(i => !i.IsDirectory);
+            var list = new List<FileSystemMetadata>();
+            var items = GetFileSystemEntries(path, clearCache);
+            foreach (var item in items)
+            {
+                if (!item.IsDirectory)
+                {
+                    list.Add(item);
+                }
+            }
+            return list;
         }
 
         public FileSystemMetadata GetFile(string path)

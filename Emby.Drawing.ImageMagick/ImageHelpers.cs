@@ -6,13 +6,13 @@ namespace Emby.Drawing.ImageMagick
 {
     internal static class ImageHelpers
     {
-        internal static List<string> ProjectPaths(List<string> paths, int count)
+        internal static List<string> ProjectPaths(string[] paths, int count)
         {
             if (count <= 0)
             {
                 throw new ArgumentOutOfRangeException("count");
             }
-            if (paths.Count == 0)
+            if (paths.Length == 0)
             {
                 throw new ArgumentOutOfRangeException("paths");
             }
@@ -24,7 +24,7 @@ namespace Emby.Drawing.ImageMagick
             return list.Take(count).ToList();
         }
 
-        private static void AddToList(List<string> list, List<string> paths, int count)
+        private static void AddToList(List<string> list, string[] paths, int count)
         {
             while (list.Count < count)
             {

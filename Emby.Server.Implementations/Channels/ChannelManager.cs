@@ -182,10 +182,8 @@ namespace Emby.Server.Implementations.Channels
             {
             };
 
-            var returnList = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
                 .ConfigureAwait(false));
-            var returnItems = returnList
-                .ToArray(returnList.Count);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -431,7 +429,7 @@ namespace Emby.Server.Implementations.Channels
 
             if (isNew)
             {
-                await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
+                _libraryManager.CreateItem(item, cancellationToken);
             }
             else if (forceUpdate)
             {
@@ -464,14 +462,14 @@ namespace Emby.Server.Implementations.Channels
             return _libraryManager.GetItemById(id) as Channel;
         }
 
-        public IEnumerable<ChannelFeatures> GetAllChannelFeatures()
+        public ChannelFeatures[] GetAllChannelFeatures()
         {
             return _libraryManager.GetItemIds(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Channel).Name },
                 SortBy = new[] { ItemSortBy.SortName }
 
-            }).Select(i => GetChannelFeatures(i.ToString("N")));
+            }).Select(i => GetChannelFeatures(i.ToString("N"))).ToArray();
         }
 
         public ChannelFeatures GetChannelFeatures(string id)
@@ -511,10 +509,10 @@ namespace Emby.Server.Implementations.Channels
             {
                 CanFilter = !features.MaxPageSize.HasValue,
                 CanSearch = provider is ISearchableChannel,
-                ContentTypes = features.ContentTypes,
-                DefaultSortFields = features.DefaultSortFields,
+                ContentTypes = features.ContentTypes.ToArray(),
+                DefaultSortFields = features.DefaultSortFields.ToArray(),
                 MaxPageSize = features.MaxPageSize,
-                MediaTypes = features.MediaTypes,
+                MediaTypes = features.MediaTypes.ToArray(),
                 SupportsSortOrderToggle = features.SupportsSortOrderToggle,
                 SupportsLatestMedia = supportsLatest,
                 Name = channel.Name,
@@ -566,12 +564,10 @@ namespace Emby.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions()
             {
-                Fields = query.Fields.ToList()
+                Fields = query.Fields
             };
 
-            var returnList = (await _dtoService.GetBaseItemDtos(items, dtoOptions, user).ConfigureAwait(false));
-            var returnItems = returnList
-                .ToArray(returnList.Count);
+            var returnItems = (await _dtoService.GetBaseItemDtos(items, dtoOptions, user).ConfigureAwait(false));
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -833,13 +829,11 @@ namespace Emby.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions()
             {
-                Fields = query.Fields.ToList()
+                Fields = query.Fields
             };
 
-            var returnList = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
                 .ConfigureAwait(false));
-            var returnItems = returnList
-                .ToArray(returnList.Count);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -987,13 +981,11 @@ namespace Emby.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions()
             {
-                Fields = query.Fields.ToList()
+                Fields = query.Fields
             };
 
-            var returnList = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
                 .ConfigureAwait(false));
-            var returnItems = returnList
-                .ToArray(returnList.Count);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -1338,7 +1330,7 @@ namespace Emby.Server.Implementations.Channels
             var hasArtists = item as IHasArtist;
             if (hasArtists != null)
             {
-                hasArtists.Artists = info.Artists;
+                hasArtists.Artists = info.Artists.ToArray();
             }
 
             var hasAlbumArtists = item as IHasAlbumArtist;
@@ -1396,11 +1388,11 @@ namespace Emby.Server.Implementations.Channels
 
             if (isNew)
             {
-                await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
+                _libraryManager.CreateItem(item, cancellationToken);
 
                 if (info.People != null && info.People.Count > 0)
                 {
-                    await _libraryManager.UpdatePeople(item, info.People ?? new List<PersonInfo>()).ConfigureAwait(false);
+                    _libraryManager.UpdatePeople(item, info.People ?? new List<PersonInfo>());
                 }
             }
             else if (forceUpdate)

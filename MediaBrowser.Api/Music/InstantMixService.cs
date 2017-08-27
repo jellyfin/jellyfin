@@ -8,6 +8,7 @@ using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Extensions;
 
@@ -185,15 +186,20 @@ namespace MediaBrowser.Api.Music
         {
             var list = items;
 
-            var result = new ItemsResult
+            var result = new QueryResult<BaseItemDto>
             {
                 TotalRecordCount = list.Count
             };
 
-            var returnList = (await _dtoService.GetBaseItemDtos(list.Take(request.Limit ?? list.Count), dtoOptions, user)
+            if (request.Limit.HasValue)
+            {
+                list = list.Take(request.Limit.Value).ToList();
+            }
+
+            var returnList = (await _dtoService.GetBaseItemDtos(list, dtoOptions, user)
                 .ConfigureAwait(false));
 
-            result.Items = returnList.ToArray(returnList.Count);
+            result.Items = returnList;
 
             return ToOptimizedResult(result);
         }

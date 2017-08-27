@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using Emby.Drawing.Common;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Threading;
 using MediaBrowser.Model.Extensions;
@@ -44,7 +45,7 @@ namespace Emby.Drawing
         /// Image processors are specialized metadata providers that run after the normal ones
         /// </summary>
         /// <value>The image enhancers.</value>
-        public IEnumerable<IImageEnhancer> ImageEnhancers { get; private set; }
+        public IImageEnhancer[] ImageEnhancers { get; private set; }
 
         /// <summary>
         /// The _logger
@@ -56,22 +57,24 @@ namespace Emby.Drawing
         private readonly IServerApplicationPaths _appPaths;
         private IImageEncoder _imageEncoder;
         private readonly Func<ILibraryManager> _libraryManager;
+        private readonly Func<IMediaEncoder> _mediaEncoder;
 
         public ImageProcessor(ILogger logger,
             IServerApplicationPaths appPaths,
             IFileSystem fileSystem,
             IJsonSerializer jsonSerializer,
             IImageEncoder imageEncoder,
-            Func<ILibraryManager> libraryManager, ITimerFactory timerFactory)
+            Func<ILibraryManager> libraryManager, ITimerFactory timerFactory, Func<IMediaEncoder> mediaEncoder)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
             _imageEncoder = imageEncoder;
             _libraryManager = libraryManager;
+            _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
 
-            ImageEnhancers = new List<IImageEnhancer>();
+            ImageEnhancers = new IImageEnhancer[] { };
             _saveImageSizeTimer = timerFactory.Create(SaveImageSizeCallback, null, Timeout.Infinite, Timeout.Infinite);
             ImageHelper.ImageProcessor = this;
 
@@ -120,7 +123,36 @@ namespace Emby.Drawing
         {
             get
             {
-                return _imageEncoder.SupportedInputFormats;
+                return new string[]
+                {
+                    "tiff",
+                    "jpeg",
+                    "jpg",
+                    "png",
+                    "aiff",
+                    "cr2",
+                    "crw",
+                    "dng", 
+
+                    // Remove until supported
+                    //"nef", 
+                    "orf",
+                    "pef",
+                    "arw",
+                    "webp",
+                    "gif",
+                    "bmp",
+                    "erf",
+                    "raf",
+                    "rw2",
+                    "nrw",
+                    "dng",
+                    "ico",
+                    "astc",
+                    "ktx",
+                    "pkm",
+                    "wbmp"
+                };
             }
         }
 
@@ -202,6 +234,10 @@ namespace Emby.Drawing
             {
                 return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
+
+            var supportedImageInfo = await GetSupportedImage(originalImagePath, dateModified).ConfigureAwait(false);
+            originalImagePath = supportedImageInfo.Item1;
+            dateModified = supportedImageInfo.Item2;
 
             if (options.Enhancers.Count > 0)
             {
@@ -618,7 +654,7 @@ namespace Emby.Drawing
 
             var supportedEnhancers = GetSupportedEnhancers(item, image.Type);
 
-            return GetImageCacheTag(item, image, supportedEnhancers.ToList());
+            return GetImageCacheTag(item, image, supportedEnhancers);
         }
 
         /// <summary>
@@ -663,6 +699,42 @@ namespace Emby.Drawing
             return string.Join("|", cacheKeys.ToArray(cacheKeys.Count)).GetMD5().ToString("N");
         }
 
+        private async Task<Tuple<string, DateTime>> GetSupportedImage(string originalImagePath, DateTime dateModified)
+        {
+            var inputFormat = (Path.GetExtension(originalImagePath) ?? string.Empty)
+                .TrimStart('.')
+                .Replace("jpeg", "jpg", StringComparison.OrdinalIgnoreCase);
+
+            if (!_imageEncoder.SupportedInputFormats.Contains(inputFormat, StringComparer.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    var filename = (originalImagePath + dateModified.Ticks.ToString(UsCulture)).GetMD5().ToString("N");
+
+                    var outputPath = Path.Combine(_appPaths.ImageCachePath, "converted-images", filename + ".webp");
+
+                    var file = _fileSystem.GetFileInfo(outputPath);
+                    if (!file.Exists)
+                    {
+                        await _mediaEncoder().ConvertImage(originalImagePath, outputPath).ConfigureAwait(false);
+                        dateModified = _fileSystem.GetLastWriteTimeUtc(outputPath);
+                    }
+                    else
+                    {
+                        dateModified = file.LastWriteTimeUtc;
+                    }
+
+                    originalImagePath = outputPath;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Image conversion failed for {0}", ex, originalImagePath);
+                }
+            }
+
+            return new Tuple<string, DateTime>(originalImagePath, dateModified);
+        }
+
         /// <summary>
         /// Gets the enhanced image.
         /// </summary>
@@ -672,7 +744,7 @@ namespace Emby.Drawing
         /// <returns>Task{System.String}.</returns>
         public async Task<string> GetEnhancedImage(IHasMetadata item, ImageType imageType, int imageIndex)
         {
-            var enhancers = GetSupportedEnhancers(item, imageType).ToList();
+            var enhancers = GetSupportedEnhancers(item, imageType);
 
             var imageInfo = item.GetImageInfo(imageType, imageIndex);
 
@@ -866,21 +938,25 @@ namespace Emby.Drawing
             _logger.Info("Completed creation of image collage and saved to {0}", options.OutputPath);
         }
 
-        public IEnumerable<IImageEnhancer> GetSupportedEnhancers(IHasMetadata item, ImageType imageType)
+        public List<IImageEnhancer> GetSupportedEnhancers(IHasMetadata item, ImageType imageType)
         {
-            return ImageEnhancers.Where(i =>
+            var list = new List<IImageEnhancer>();
+
+            foreach (var i in ImageEnhancers)
             {
                 try
                 {
-                    return i.Supports(item, imageType);
+                    if (i.Supports(item, imageType))
+                    {
+                        list.Add(i);
+                    }
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
-
-                    return false;
                 }
-            });
+            }
+            return list;
         }
 
         private bool _disposed;
