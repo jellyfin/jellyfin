@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Emby.Server.Implementations.Data;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Security;
@@ -51,14 +50,14 @@ namespace Emby.Server.Implementations.Security
             }
         }
 
-        public Task Create(AuthenticationInfo info, CancellationToken cancellationToken)
+        public void Create(AuthenticationInfo info, CancellationToken cancellationToken)
         {
             info.Id = Guid.NewGuid().ToString("N");
 
-            return Update(info, cancellationToken);
+            Update(info, cancellationToken);
         }
 
-        public async Task Update(AuthenticationInfo info, CancellationToken cancellationToken)
+        public void Update(AuthenticationInfo info, CancellationToken cancellationToken)
         {
             if (info == null)
             {

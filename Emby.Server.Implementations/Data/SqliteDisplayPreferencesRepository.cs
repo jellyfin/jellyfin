@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Persistence;
@@ -75,7 +74,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task SaveDisplayPreferences(DisplayPreferences displayPreferences, Guid userId, string client, CancellationToken cancellationToken)
+        public void SaveDisplayPreferences(DisplayPreferences displayPreferences, Guid userId, string client, CancellationToken cancellationToken)
         {
             if (displayPreferences == null)
             {
@@ -123,7 +122,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task SaveAllDisplayPreferences(IEnumerable<DisplayPreferences> displayPreferences, Guid userId, CancellationToken cancellationToken)
+        public void SaveAllDisplayPreferences(IEnumerable<DisplayPreferences> displayPreferences, Guid userId, CancellationToken cancellationToken)
         {
             if (displayPreferences == null)
             {
@@ -226,9 +225,9 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        public Task SaveDisplayPreferences(DisplayPreferences displayPreferences, string userId, string client, CancellationToken cancellationToken)
+        public void SaveDisplayPreferences(DisplayPreferences displayPreferences, string userId, string client, CancellationToken cancellationToken)
         {
-            return SaveDisplayPreferences(displayPreferences, new Guid(userId), client, cancellationToken);
+            SaveDisplayPreferences(displayPreferences, new Guid(userId), client, cancellationToken);
         }
 
         public DisplayPreferences GetDisplayPreferences(string displayPreferencesId, string userId, string client)

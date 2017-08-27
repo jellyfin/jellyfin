@@ -525,18 +525,18 @@ namespace MediaBrowser.Api.Library
             });
         }
 
-        private async void LogDownload(BaseItem item, User user, AuthorizationInfo auth)
+        private void LogDownload(BaseItem item, User user, AuthorizationInfo auth)
         {
             try
             {
-                await _activityManager.Create(new ActivityLogEntry
+                _activityManager.Create(new ActivityLogEntry
                 {
                     Name = string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Name, item.Name),
                     Type = "UserDownloadingContent",
                     ShortOverview = string.Format(_localization.GetLocalizedString("AppDeviceValues"), auth.Client, auth.Device),
                     UserId = auth.UserId
 
-                }).ConfigureAwait(false);
+                });
             }
             catch
             {
@@ -915,7 +915,7 @@ namespace MediaBrowser.Api.Library
              : request.IncludeItemTypes.Split(',');
 
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
-            
+
             var query = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = includeTypes,
