@@ -17,9 +17,6 @@ namespace MediaBrowser.Model.Dlna
         [XmlIgnore]
         public string Id { get; set; }
 
-        [XmlIgnore]
-        public MediaBrowser.Model.Dlna.DeviceProfileType ProfileType { get; set; }
-
         /// <summary>
         /// Gets or sets the identification.
         /// </summary>
