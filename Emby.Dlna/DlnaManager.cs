@@ -316,7 +316,6 @@ namespace Emby.Dlna
                     profile = ReserializeProfile(tempProfile);
 
                     profile.Id = path.ToLower().GetMD5().ToString("N");
-                    profile.ProfileType = type;
 
                     _profiles[path] = new Tuple<InternalProfileInfo, DeviceProfile>(GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
 

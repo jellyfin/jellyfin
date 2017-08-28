@@ -1482,13 +1482,26 @@ namespace Emby.Server.Implementations
                     var assembly = plugin.GetType().Assembly;
                     var assemblyName = assembly.GetName();
 
-                    var attribute = (GuidAttribute)assembly.GetCustomAttributes(typeof(GuidAttribute), true)[0];
-                    var assemblyId = new Guid(attribute.Value);
-
                     var assemblyFileName = assemblyName.Name + ".dll";
                     var assemblyFilePath = Path.Combine(ApplicationPaths.PluginsPath, assemblyFileName);
 
-                    assemblyPlugin.SetAttributes(assemblyFilePath, assemblyFileName, assemblyName.Version, assemblyId);
+                    assemblyPlugin.SetAttributes(assemblyFilePath, assemblyFileName, assemblyName.Version);
+
+                    try
+                    {
+                        var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
+                        if (idAttributes.Length > 0)
+                        {
+                            var attribute = (GuidAttribute)idAttributes[0];
+                            var assemblyId = new Guid(attribute.Value);
+
+                            assemblyPlugin.SetId(assemblyId);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error getting plugin Id from {0}.", ex, plugin.GetType().FullName);
+                    }
                 }
 
                 var isFirstRun = !File.Exists(plugin.ConfigurationFilePath);
