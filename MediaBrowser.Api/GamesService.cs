@@ -128,7 +128,7 @@ namespace MediaBrowser.Api
                 DisplayName = system.Name
             };
 
-            var items = user == null ? 
+            var items = user == null ?
                 system.GetRecursiveChildren(i => i is Game) :
                 system.GetRecursiveChildren(user, new InternalItemsQuery(user)
                 {
@@ -157,14 +157,14 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public async Task<object> Get(GetSimilarGames request)
+        public object Get(GetSimilarGames request)
         {
-            var result = await GetSimilarItemsResult(request).ConfigureAwait(false);
+            var result = GetSimilarItemsResult(request);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        private async Task<QueryResult<BaseItemDto>> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request)
+        private QueryResult<BaseItemDto> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
@@ -186,7 +186,7 @@ namespace MediaBrowser.Api
 
             });
 
-            var returnList = (await _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user).ConfigureAwait(false));
+            var returnList = _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user);
 
             var result = new QueryResult<BaseItemDto>
             {

@@ -2,7 +2,6 @@
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Sync;
 
 namespace MediaBrowser.Controller.Dto
@@ -40,7 +39,6 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="fields">The fields.</param>
         /// <param name="user">The user.</param>
         /// <param name="owner">The owner.</param>
-        /// <returns>Task{BaseItemDto}.</returns>
         BaseItemDto GetBaseItemDto(BaseItem item, ItemFields[] fields, User user = null, BaseItem owner = null);
 
         /// <summary>
@@ -60,10 +58,9 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="options">The options.</param>
         /// <param name="user">The user.</param>
         /// <param name="owner">The owner.</param>
-        /// <returns>IEnumerable&lt;BaseItemDto&gt;.</returns>
-        Task<BaseItemDto[]> GetBaseItemDtos(BaseItem[] items, DtoOptions options, User user = null, BaseItem owner = null);
+        BaseItemDto[] GetBaseItemDtos(BaseItem[] items, DtoOptions options, User user = null, BaseItem owner = null);
 
-        Task<BaseItemDto[]> GetBaseItemDtos(List<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null);
+        BaseItemDto[] GetBaseItemDtos(List<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null);
 
         /// <summary>
         /// Gets the chapter information dto.

@@ -985,8 +985,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var queryResult = _libraryManager.QueryItems(internalQuery);
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(queryResult.Items, options, user)
-                .ConfigureAwait(false));
+            var returnArray = _dtoService.GetBaseItemDtos(queryResult.Items, options, user);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -1070,8 +1069,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var user = _userManager.GetUserById(query.UserId);
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(internalResult.Items, options, user)
-                .ConfigureAwait(false));
+            var returnArray = _dtoService.GetBaseItemDtos(internalResult.Items, options, user);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -1656,7 +1654,7 @@ namespace Emby.Server.Implementations.LiveTv
             });
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetRecordingSeries(RecordingQuery query, DtoOptions options, CancellationToken cancellationToken)
+        public QueryResult<BaseItemDto> GetRecordingSeries(RecordingQuery query, DtoOptions options, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
             if (user != null && !IsLiveTvEnabled(user))
@@ -1702,8 +1700,7 @@ namespace Emby.Server.Implementations.LiveTv
                 DtoOptions = options
             });
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(internalResult.Items, options, user)
-                .ConfigureAwait(false));
+            var returnArray = _dtoService.GetBaseItemDtos(internalResult.Items, options, user);
 
             return new QueryResult<BaseItemDto>
             {
@@ -2040,8 +2037,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var internalResult = await GetInternalRecordings(query, options, cancellationToken).ConfigureAwait(false);
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(internalResult.Items, options, user)
-                .ConfigureAwait(false));
+            var returnArray =  _dtoService.GetBaseItemDtos(internalResult.Items, options, user);
 
             return new QueryResult<BaseItemDto>
             {
@@ -2368,7 +2364,7 @@ namespace Emby.Server.Implementations.LiveTv
             };
         }
 
-        public async Task AddChannelInfo(List<Tuple<BaseItemDto, LiveTvChannel>> tuples, DtoOptions options, User user)
+        public void AddChannelInfo(List<Tuple<BaseItemDto, LiveTvChannel>> tuples, DtoOptions options, User user)
         {
             var now = DateTime.UtcNow;
 
@@ -2425,7 +2421,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (addCurrentProgram)
             {
-                var currentProgramDtos = await _dtoService.GetBaseItemDtos(currentProgramsList, options, user).ConfigureAwait(false);
+                var currentProgramDtos = _dtoService.GetBaseItemDtos(currentProgramsList, options, user);
 
                 foreach (var programDto in currentProgramDtos)
                 {
