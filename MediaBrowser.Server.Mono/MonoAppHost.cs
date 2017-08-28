@@ -12,8 +12,6 @@ using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
-using MediaBrowser.Model.Updates;
-using MediaBrowser.Server.Startup.Common;
 
 namespace MediaBrowser.Server.Mono
 {
@@ -44,7 +42,7 @@ namespace MediaBrowser.Server.Mono
 
         protected override void RestartInternal()
         {
-            MainClass.Restart(StartupOptions);
+            MainClass.Restart();
         }
 
         protected override List<Assembly> GetAssembliesWithPartsInternal()
