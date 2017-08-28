@@ -55,11 +55,15 @@ namespace MediaBrowser.Common.Plugins
             get { return typeof(TConfigurationType); }
         }
 
-        public void SetAttributes(string assemblyFilePath, string assemblyFileName, Version assemblyVersion, Guid assemblyId)
+        public void SetAttributes(string assemblyFilePath, string assemblyFileName, Version assemblyVersion)
         {
             AssemblyFilePath = assemblyFilePath;
             AssemblyFileName = assemblyFileName;
             Version = assemblyVersion;
+        }
+
+        public void SetId(Guid assemblyId)
+        {
             Id = assemblyId;
         }
 
@@ -78,7 +82,7 @@ namespace MediaBrowser.Common.Plugins
         /// Gets the unique id.
         /// </summary>
         /// <value>The unique id.</value>
-        public Guid Id { get; private set; }
+        public virtual Guid Id { get; private set; }
 
         /// <summary>
         /// Gets the plugin version
@@ -284,6 +288,7 @@ namespace MediaBrowser.Common.Plugins
 
     public interface IPluginAssembly
     {
-        void SetAttributes(string assemblyFilePath, string assemblyFileName, Version assemblyVersion, Guid assemblyId);
+        void SetAttributes(string assemblyFilePath, string assemblyFileName, Version assemblyVersion);
+        void SetId(Guid assemblyId);
     }
 }
