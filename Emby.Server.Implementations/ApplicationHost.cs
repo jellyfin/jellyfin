@@ -1846,7 +1846,8 @@ namespace Emby.Server.Implementations
             {
                 "mbplus.dll",
                 "mbintros.dll",
-                "embytv.dll"
+                "embytv.dll",
+                "Messenger.dll"
             };
 
             return !exclude.Contains(filename ?? string.Empty, StringComparer.OrdinalIgnoreCase);
