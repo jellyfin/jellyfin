@@ -7,7 +7,6 @@ using MediaBrowser.Controller.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Music
@@ -52,43 +51,43 @@ namespace MediaBrowser.Api.Music
             _authContext = authContext;
         }
 
-        public async Task<object> Get(GetSimilarArtists request)
+        public object Get(GetSimilarArtists request)
         {
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var result = await SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
+            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataRepository,
                 _dtoService,
                 Logger,
                 request, new[] { typeof(MusicArtist) },
-                SimilarItemsHelper.GetSimiliarityScore).ConfigureAwait(false);
+                SimilarItemsHelper.GetSimiliarityScore);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
-        
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public async Task<object> Get(GetSimilarAlbums request)
+        public object Get(GetSimilarAlbums request)
         {
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var result = await SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
+            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataRepository,
                 _dtoService,
                 Logger,
                 request, new[] { typeof(MusicAlbum) },
-                GetAlbumSimilarityScore).ConfigureAwait(false);
+                GetAlbumSimilarityScore);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
-        
+
         /// <summary>
         /// Gets the album similarity score.
         /// </summary>
