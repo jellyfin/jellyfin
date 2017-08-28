@@ -33,6 +33,9 @@ namespace MediaBrowser.Server.Mono
         private static ILogger _logger;
         private static IFileSystem FileSystem;
 
+        private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
+        private static bool _restartOnShutdown;
+
         public static void Main(string[] args)
         {
             var applicationPath = Assembly.GetEntryAssembly().Location;
@@ -63,9 +66,13 @@ namespace MediaBrowser.Server.Mono
             }
             finally
             {
-                logger.Info("Shutting down");
-
+                _logger.Info("Disposing app host");
                 _appHost.Dispose();
+
+                if (_restartOnShutdown)
+                {
+                    StartNewInstance(options);
+                }
             }
         }
 
@@ -85,8 +92,6 @@ namespace MediaBrowser.Server.Mono
 
             return new ServerApplicationPaths(programDataPath, appFolderPath, Path.GetDirectoryName(applicationPath));
         }
-
-        private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
 
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options)
         {
@@ -243,11 +248,15 @@ namespace MediaBrowser.Server.Mono
             ApplicationTaskCompletionSource.SetResult(true);
         }
 
-        public static void Restart(StartupOptions startupOptions)
+        public static void Restart()
         {
-            _logger.Info("Disposing app host");
-            _appHost.Dispose();
+            _restartOnShutdown = true;
 
+            Shutdown();
+        }
+
+        private static void StartNewInstance(StartupOptions startupOptions)
+        {
             _logger.Info("Starting new instance");
 
             string module = startupOptions.GetOption("-restartpath");
@@ -260,9 +269,9 @@ namespace MediaBrowser.Server.Mono
             if (!startupOptions.ContainsOption("-restartargs"))
             {
                 var args = Environment.GetCommandLineArgs()
-                                .Skip(1)
-                                .Select(NormalizeCommandLineArgument)
-                                .ToArray();
+                    .Skip(1)
+                    .Select(NormalizeCommandLineArgument)
+                    .ToArray();
 
                 commandLineArgsString = string.Join(" ", args);
             }
@@ -271,9 +280,6 @@ namespace MediaBrowser.Server.Mono
             _logger.Info("Arguments: {0}", commandLineArgsString);
 
             Process.Start(module, commandLineArgsString);
-
-            _logger.Info("Calling Environment.Exit");
-            Environment.Exit(0);
         }
 
         private static string NormalizeCommandLineArgument(string arg)
