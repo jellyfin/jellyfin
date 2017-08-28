@@ -386,6 +386,9 @@ namespace Emby.Dlna.PlayTo
                 case PlaystateCommand.Unpause:
                     return _device.SetPlay();
 
+                case PlaystateCommand.PlayPause:
+                    return _device.IsPaused ? _device.SetPlay() : _device.SetPause();
+
                 case PlaystateCommand.Seek:
                     {
                         return Seek(command.SeekPositionTicks ?? 0);

@@ -47,21 +47,21 @@ namespace MediaBrowser.Api
             _libraryManager = libraryManager;
         }
 
-        public async Task<object> Get(GetSuggestedItems request)
+        public object Get(GetSuggestedItems request)
         {
-            var result = await GetResultItems(request).ConfigureAwait(false);
+            var result = GetResultItems(request);
 
             return ToOptimizedResult(result);
         }
 
-        private async Task<QueryResult<BaseItemDto>> GetResultItems(GetSuggestedItems request)
+        private QueryResult<BaseItemDto> GetResultItems(GetSuggestedItems request)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
             var dtoOptions = GetDtoOptions(_authContext, request);
             var result = GetItems(request, user, dtoOptions);
 
-            var dtoList = await _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user).ConfigureAwait(false);
+            var dtoList = _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user);
 
             if (dtoList == null)
             {

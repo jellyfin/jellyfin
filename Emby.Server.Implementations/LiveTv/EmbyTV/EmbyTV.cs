@@ -1810,7 +1810,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             var config = GetConfiguration();
 
-            var regInfo = await _liveTvManager.GetRegistrationInfo("embytvrecordingconversion").ConfigureAwait(false);
+            var regInfo = await _liveTvManager.GetRegistrationInfo("dvr").ConfigureAwait(false);
 
             if (regInfo.IsValid)
             {

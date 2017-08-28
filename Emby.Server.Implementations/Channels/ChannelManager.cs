@@ -182,8 +182,7 @@ namespace Emby.Server.Implementations.Channels
             {
             };
 
-            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
-                .ConfigureAwait(false));
+            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -567,7 +566,7 @@ namespace Emby.Server.Implementations.Channels
                 Fields = query.Fields
             };
 
-            var returnItems = (await _dtoService.GetBaseItemDtos(items, dtoOptions, user).ConfigureAwait(false));
+            var returnItems = _dtoService.GetBaseItemDtos(items, dtoOptions, user);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -832,8 +831,7 @@ namespace Emby.Server.Implementations.Channels
                 Fields = query.Fields
             };
 
-            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
-                .ConfigureAwait(false));
+            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -984,8 +982,7 @@ namespace Emby.Server.Implementations.Channels
                 Fields = query.Fields
             };
 
-            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
-                .ConfigureAwait(false));
+            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user);
 
             var result = new QueryResult<BaseItemDto>
             {

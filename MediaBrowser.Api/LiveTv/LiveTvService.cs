@@ -922,8 +922,7 @@ namespace MediaBrowser.Api.LiveTv
 
             options.AddCurrentProgram = request.AddCurrentProgram;
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(channelResult.Items, options, user)
-                .ConfigureAwait(false));
+            var returnArray = _dtoService.GetBaseItemDtos(channelResult.Items, options, user);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -1075,12 +1074,12 @@ namespace MediaBrowser.Api.LiveTv
             return ToOptimizedResult(result);
         }
 
-        public async Task<object> Get(GetRecordingSeries request)
+        public object Get(GetRecordingSeries request)
         {
             var options = GetDtoOptions(_authContext, request);
             options.DeviceId = _authContext.GetAuthorizationInfo(Request).DeviceId;
 
-            var result = await _liveTvManager.GetRecordingSeries(new RecordingQuery
+            var result = _liveTvManager.GetRecordingSeries(new RecordingQuery
             {
                 ChannelId = request.ChannelId,
                 UserId = request.UserId,
@@ -1092,7 +1091,7 @@ namespace MediaBrowser.Api.LiveTv
                 IsInProgress = request.IsInProgress,
                 EnableTotalRecordCount = request.EnableTotalRecordCount
 
-            }, options, CancellationToken.None).ConfigureAwait(false);
+            }, options, CancellationToken.None);
 
             return ToOptimizedResult(result);
         }
