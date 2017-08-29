@@ -299,7 +299,7 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            var url = GetOmdbUrl(string.Format("i={0}&plot=full&tomatoes=true&r=json", imdbParam), cancellationToken);
+            var url = GetOmdbUrl(string.Format("i={0}&plot=short&tomatoes=true&r=json", imdbParam), cancellationToken);
 
             using (var stream = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
