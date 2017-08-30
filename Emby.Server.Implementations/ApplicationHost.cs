@@ -1614,7 +1614,7 @@ namespace Emby.Server.Implementations
         {
             try
             {
-                ServerManager.Start(GetUrlPrefixes());
+                ServerManager.Start(GetUrlPrefixes().ToArray());
                 return;
             }
             catch (Exception ex)
@@ -1631,7 +1631,7 @@ namespace Emby.Server.Implementations
 
             try
             {
-                ServerManager.Start(GetUrlPrefixes());
+                ServerManager.Start(GetUrlPrefixes().ToArray());
             }
             catch (Exception ex)
             {
