@@ -70,24 +70,27 @@ namespace MediaBrowser.Api.Dlna
         public Stream RequestStream { get; set; }
     }
 
-    [Route("/Dlna/{UuId}/mediareceiverregistrar/events", Summary = "Processes an event subscription request")]
+    [Route("/Dlna/{UuId}/mediareceiverregistrar/events", "SUBSCRIBE", Summary = "Processes an event subscription request")]
+    [Route("/Dlna/{UuId}/mediareceiverregistrar/events", "UNSUBSCRIBE", Summary = "Processes an event subscription request")]
     public class ProcessMediaReceiverRegistrarEventRequest
     {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,POST")]
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,UNSUBSCRIBE")]
         public string UuId { get; set; }
     }
 
-    [Route("/Dlna/{UuId}/contentdirectory/events", Summary = "Processes an event subscription request")]
+    [Route("/Dlna/{UuId}/contentdirectory/events", "SUBSCRIBE", Summary = "Processes an event subscription request")]
+    [Route("/Dlna/{UuId}/contentdirectory/events", "UNSUBSCRIBE", Summary = "Processes an event subscription request")]
     public class ProcessContentDirectoryEventRequest
     {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,POST")]
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,UNSUBSCRIBE")]
         public string UuId { get; set; }
     }
 
-    [Route("/Dlna/{UuId}/connectionmanager/events", Summary = "Processes an event subscription request")]
+    [Route("/Dlna/{UuId}/connectionmanager/events", "SUBSCRIBE", Summary = "Processes an event subscription request")]
+    [Route("/Dlna/{UuId}/connectionmanager/events", "UNSUBSCRIBE", Summary = "Processes an event subscription request")]
     public class ProcessConnectionManagerEventRequest
     {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,POST")]
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,UNSUBSCRIBE")]
         public string UuId { get; set; }
     }
 
@@ -200,17 +203,32 @@ namespace MediaBrowser.Api.Dlna
             }
         }
 
-        public object Any(ProcessContentDirectoryEventRequest request)
+        public object Subscribe(ProcessContentDirectoryEventRequest request)
         {
             return ProcessEventRequest(_contentDirectory);
         }
 
-        public object Any(ProcessConnectionManagerEventRequest request)
+        public object Subscribe(ProcessConnectionManagerEventRequest request)
         {
             return ProcessEventRequest(_connectionManager);
         }
 
-        public object Any(ProcessMediaReceiverRegistrarEventRequest request)
+        public object Subscribe(ProcessMediaReceiverRegistrarEventRequest request)
+        {
+            return ProcessEventRequest(_mediaReceiverRegistrar);
+        }
+
+        public object Unsubscribe(ProcessContentDirectoryEventRequest request)
+        {
+            return ProcessEventRequest(_contentDirectory);
+        }
+
+        public object Unsubscribe(ProcessConnectionManagerEventRequest request)
+        {
+            return ProcessEventRequest(_connectionManager);
+        }
+
+        public object Unsubscribe(ProcessMediaReceiverRegistrarEventRequest request)
         {
             return ProcessEventRequest(_mediaReceiverRegistrar);
         }

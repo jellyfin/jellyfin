@@ -7,7 +7,6 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Emby.Server.Implementations.HttpServer.Security
@@ -78,7 +77,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (!IsExemptFromRoles(auth, authAttribtues, info))
             {
-                var roles = authAttribtues.GetRoles().ToList();
+                var roles = authAttribtues.GetRoles();
 
                 ValidateRoles(roles, user);
             }
@@ -162,7 +161,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return false;
         }
 
-        private void ValidateRoles(List<string> roles, User user)
+        private void ValidateRoles(string[] roles, User user)
         {
             if (roles.Contains("admin", StringComparer.OrdinalIgnoreCase))
             {

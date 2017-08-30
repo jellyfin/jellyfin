@@ -3,8 +3,8 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Model.Services;
+using System.Linq;
 
 namespace Emby.Server.Implementations.HttpServer.Security
 {
@@ -90,7 +90,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                     AccessToken = token
                 });
 
-                var tokenInfo = result.Items.FirstOrDefault();
+                var tokenInfo = result.Items.Length > 0 ? result.Items[0] : null;
 
                 if (tokenInfo != null)
                 {
@@ -161,7 +161,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             // There should be at least to parts
             if (parts.Length != 2) return null;
 
-            var acceptedNames = new[] { "MediaBrowser", "Emby"};
+            var acceptedNames = new[] { "MediaBrowser", "Emby" };
 
             // It has to be a digest request
             if (!acceptedNames.Contains(parts[0] ?? string.Empty, StringComparer.OrdinalIgnoreCase))
