@@ -418,6 +418,8 @@ namespace Emby.Server.Implementations.Dto
                 {
                     dto.Type = "Recording";
                     dto.CanDownload = false;
+                    dto.RunTimeTicks = null;
+
                     if (!string.IsNullOrWhiteSpace(dto.SeriesName))
                     {
                         dto.EpisodeTitle = dto.Name;
