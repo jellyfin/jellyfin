@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
@@ -50,7 +49,7 @@ namespace MediaBrowser.Controller.Net
             get { return 0; }
         }
 
-        public IEnumerable<string> GetRoles()
+        public string[] GetRoles()
         {
             return (Roles ?? string.Empty).Split(new []{ ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
@@ -61,6 +60,6 @@ namespace MediaBrowser.Controller.Net
         bool EscapeParentalControl { get; }
         bool AllowBeforeStartupWizard { get; }
 
-        IEnumerable<string> GetRoles();
+        string[] GetRoles();
     }
 }
