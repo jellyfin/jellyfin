@@ -10,7 +10,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.SocketSharp;
 using Emby.Server.Implementations.Services;
 using MediaBrowser.Common.Net;
@@ -34,7 +33,7 @@ namespace Emby.Server.Implementations.HttpServer
         private string DefaultRedirectPath { get; set; }
 
         private readonly ILogger _logger;
-        public IEnumerable<string> UrlPrefixes { get; private set; }
+        public string[] UrlPrefixes { get; private set; }
 
         private readonly List<IService> _restServices = new List<IService>();
 
@@ -62,8 +61,8 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly Func<Type, Func<string, object>> _funcParseFn;
         private readonly bool _enableDualModeSockets;
 
-        public List<Action<IRequest, IResponse, object>> RequestFilters { get; set; }
-        public List<Action<IRequest, IResponse, object>> ResponseFilters { get; set; }
+        public Action<IRequest, IResponse, object>[] RequestFilters { get; set; }
+        public Action<IRequest, IResponse, object>[] ResponseFilters { get; set; }
 
         private readonly Dictionary<Type, Type> ServiceOperationsMap = new Dictionary<Type, Type>();
         public static HttpListenerHost Instance { get; protected set; }
@@ -95,8 +94,8 @@ namespace Emby.Server.Implementations.HttpServer
 
             _logger = logger;
 
-            RequestFilters = new List<Action<IRequest, IResponse, object>>();
-            ResponseFilters = new List<Action<IRequest, IResponse, object>>();
+            RequestFilters = new Action<IRequest, IResponse, object>[] { };
+            ResponseFilters = new Action<IRequest, IResponse, object>[] { };
         }
 
         public string GlobalResponse { get; set; }
@@ -135,7 +134,9 @@ namespace Emby.Server.Implementations.HttpServer
             //Exec all RequestFilter attributes with Priority < 0
             var attributes = GetRequestFilterAttributes(requestDto.GetType());
             var i = 0;
-            for (; i < attributes.Length && attributes[i].Priority < 0; i++)
+            var count = attributes.Count;
+
+            for (; i < count && attributes[i].Priority < 0; i++)
             {
                 var attribute = attributes[i];
                 attribute.RequestFilter(req, res, requestDto);
@@ -148,7 +149,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             //Exec remaining RequestFilter attributes with Priority >= 0
-            for (; i < attributes.Length && attributes[i].Priority >= 0; i++)
+            for (; i < count && attributes[i].Priority >= 0; i++)
             {
                 var attribute = attributes[i];
                 attribute.RequestFilter(req, res, requestDto);
@@ -167,7 +168,7 @@ namespace Emby.Server.Implementations.HttpServer
             ServiceOperationsMap[requestType] = serviceType;
         }
 
-        private IHasRequestFilter[] GetRequestFilterAttributes(Type requestDtoType)
+        private List<IHasRequestFilter> GetRequestFilterAttributes(Type requestDtoType)
         {
             var attributes = requestDtoType.GetTypeInfo().GetCustomAttributes(true).OfType<IHasRequestFilter>().ToList();
 
@@ -179,24 +180,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             attributes.Sort((x, y) => x.Priority - y.Priority);
 
-            return attributes.ToArray(attributes.Count);
-        }
-
-        /// <summary>
-        /// Starts the Web Service
-        /// </summary>
-        private void StartListener()
-        {
-            WebSocketSharpRequest.HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes.First());
-
-            _listener = GetListener();
-
-            _listener.WebSocketConnected = OnWebSocketConnected;
-            _listener.WebSocketConnecting = OnWebSocketConnecting;
-            _listener.ErrorHandler = ErrorHandler;
-            _listener.RequestHandler = RequestHandler;
-
-            _listener.Start(UrlPrefixes);
+            return attributes;
         }
 
         public static string GetHandlerPathIfAny(string listenerUrl)
@@ -698,13 +682,18 @@ namespace Emby.Server.Implementations.HttpServer
 
             ServiceController.Init(this, types);
 
-            var requestFilters = _appHost.GetExports<IRequestFilter>().ToList();
-            foreach (var filter in requestFilters)
+            var list = new List<Action<IRequest, IResponse, object>>();
+            foreach (var filter in _appHost.GetExports<IRequestFilter>())
             {
-                RequestFilters.Add(filter.Filter);
+                list.Add(filter.Filter);
             }
 
-            ResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
+            RequestFilters = list.ToArray();
+
+            ResponseFilters = new Action<IRequest, IResponse, object>[]
+            {
+                new ResponseFilter(_logger).FilterResponse
+            };
         }
 
         public RouteAttribute[] GetRouteAttributes(Type requestType)
@@ -819,10 +808,20 @@ namespace Emby.Server.Implementations.HttpServer
             GC.SuppressFinalize(this);
         }
 
-        public void StartServer(IEnumerable<string> urlPrefixes)
+        public void StartServer(string[] urlPrefixes)
         {
-            UrlPrefixes = urlPrefixes.ToList();
-            StartListener();
+            UrlPrefixes = urlPrefixes;
+
+            WebSocketSharpRequest.HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
+
+            _listener = GetListener();
+
+            _listener.WebSocketConnected = OnWebSocketConnected;
+            _listener.WebSocketConnecting = OnWebSocketConnecting;
+            _listener.ErrorHandler = ErrorHandler;
+            _listener.RequestHandler = RequestHandler;
+
+            _listener.Start(UrlPrefixes);
         }
     }
 }

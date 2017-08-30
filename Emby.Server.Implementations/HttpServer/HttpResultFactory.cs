@@ -487,69 +487,8 @@ namespace Emby.Server.Implementations.HttpServer
                 return result;
             }
 
-            var compress = ShouldCompressResponse(requestContext, contentType);
-            var hasHeaders = await GetStaticResult(requestContext, options, compress).ConfigureAwait(false);
-            AddResponseHeaders(hasHeaders, options.ResponseHeaders);
-
-            return hasHeaders;
-        }
-
-        /// <summary>
-        /// Shoulds the compress response.
-        /// </summary>
-        /// <param name="requestContext">The request context.</param>
-        /// <param name="contentType">Type of the content.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool ShouldCompressResponse(IRequest requestContext, string contentType)
-        {
-            // It will take some work to support compression with byte range requests
-            if (!string.IsNullOrWhiteSpace(requestContext.Headers.Get("Range")))
-            {
-                return false;
-            }
-
-            // Don't compress media
-            if (contentType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase) || contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            // Don't compress images
-            if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (contentType.StartsWith("font/", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-            if (contentType.StartsWith("application/", StringComparison.OrdinalIgnoreCase))
-            {
-                if (string.Equals(contentType, "application/x-javascript", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                if (string.Equals(contentType, "application/xml", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// The us culture
-        /// </summary>
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        private async Task<IHasHeaders> GetStaticResult(IRequest requestContext, StaticResultOptions options, bool compress)
-        {
             var isHeadRequest = options.IsHeadRequest;
             var factoryFn = options.ContentFactory;
-            var contentType = options.ContentType;
             var responseHeaders = options.ResponseHeaders;
 
             //var requestedCompressionType = GetCompressionType(requestContext);
@@ -558,22 +497,28 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (!isHeadRequest && !string.IsNullOrWhiteSpace(options.Path))
             {
-                return new FileWriter(options.Path, contentType, rangeHeader, _logger, _fileSystem)
+                var hasHeaders = new FileWriter(options.Path, contentType, rangeHeader, _logger, _fileSystem)
                 {
                     OnComplete = options.OnComplete,
                     OnError = options.OnError,
                     FileShare = options.FileShare
                 };
+
+                AddResponseHeaders(hasHeaders, options.ResponseHeaders);
+                return hasHeaders;
             }
 
             if (!string.IsNullOrWhiteSpace(rangeHeader))
             {
                 var stream = await factoryFn().ConfigureAwait(false);
 
-                return new RangeRequestWriter(rangeHeader, stream, contentType, isHeadRequest, _logger)
+                var hasHeaders = new RangeRequestWriter(rangeHeader, stream, contentType, isHeadRequest, _logger)
                 {
                     OnComplete = options.OnComplete
                 };
+
+                AddResponseHeaders(hasHeaders, options.ResponseHeaders);
+                return hasHeaders;
             }
             else
             {
@@ -588,13 +533,21 @@ namespace Emby.Server.Implementations.HttpServer
                     return GetHttpResult(new byte[] { }, contentType, true);
                 }
 
-                return new StreamWriter(stream, contentType, _logger)
+                var hasHeaders = new StreamWriter(stream, contentType, _logger)
                 {
                     OnComplete = options.OnComplete,
                     OnError = options.OnError
                 };
+
+                AddResponseHeaders(hasHeaders, options.ResponseHeaders);
+                return hasHeaders;
             }
         }
+
+        /// <summary>
+        /// The us culture
+        /// </summary>
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         /// <summary>
         /// Adds the caching responseHeaders.
