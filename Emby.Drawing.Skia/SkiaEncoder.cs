@@ -195,12 +195,26 @@ namespace Emby.Drawing.Skia
                 {
                     var codec = SKCodec.Create(stream);
 
+                    if (codec == null)
+                    {
+                        origin = SKCodecOrigin.TopLeft;
+                        return null;
+                    }
+
                     // create the bitmap
                     var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
-                    // decode
-                    codec.GetPixels(bitmap.Info, bitmap.GetPixels());
 
-                    origin = codec.Origin;
+                    if (bitmap != null)
+                    {
+                        // decode
+                        codec.GetPixels(bitmap.Info, bitmap.GetPixels());
+
+                        origin = codec.Origin;
+                    }
+                    else
+                    {
+                        origin = SKCodecOrigin.TopLeft;
+                    }
 
                     return bitmap;
                 }
@@ -239,7 +253,7 @@ namespace Emby.Drawing.Skia
             return Decode(path, forceAnalyzeBitmap, out origin);
         }
 
-        private SKBitmap GetBitmap(string path, bool cropWhitespace, bool autoOrient, ImageOrientation? orientation)
+        private SKBitmap GetBitmap(string path, bool cropWhitespace, bool autoOrient)
         {
             SKCodecOrigin origin;
 
@@ -247,11 +261,14 @@ namespace Emby.Drawing.Skia
             {
                 var bitmap = GetBitmap(path, cropWhitespace, true, out origin);
 
-                if (origin != SKCodecOrigin.TopLeft)
+                if (bitmap != null)
                 {
-                    using (bitmap)
+                    if (origin != SKCodecOrigin.TopLeft)
                     {
-                        return RotateAndFlip(bitmap, origin);
+                        using (bitmap)
+                        {
+                            return RotateAndFlip(bitmap, origin);
+                        }
                     }
                 }
 
@@ -357,11 +374,11 @@ namespace Emby.Drawing.Skia
             var blur = options.Blur ?? 0;
             var hasIndicator = options.AddPlayedIndicator || options.UnplayedCount.HasValue || !options.PercentPlayed.Equals(0);
 
-            using (var bitmap = GetBitmap(inputPath, options.CropWhiteSpace, autoOrient, orientation))
+            using (var bitmap = GetBitmap(inputPath, options.CropWhiteSpace, autoOrient))
             {
                 if (bitmap == null)
                 {
-                    throw new Exception(string.Format("Skia unable to read image {0}", inputPath));
+                    throw new ArgumentOutOfRangeException(string.Format("Skia unable to read image {0}", inputPath));
                 }
 
                 //_logger.Info("Color type {0}", bitmap.Info.ColorType);

@@ -75,11 +75,7 @@ namespace Emby.Server.Implementations.Services
             var attrs = appHost.GetRouteAttributes(requestType);
             foreach (RouteAttribute attr in attrs)
             {
-                var restPath = new RestPath(appHost.CreateInstance, appHost.GetParseFn, requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes);
-
-                if (!restPath.IsValid)
-                    throw new NotSupportedException(string.Format(
-                        "RestPath '{0}' on Type '{1}' is not Valid", attr.Path, requestType.GetMethodName()));
+                var restPath = new RestPath(appHost.CreateInstance, appHost.GetParseFn, requestType, attr.Path, attr.Verbs, attr.Summary);
 
                 RegisterRestPath(restPath);
             }
@@ -92,8 +88,7 @@ namespace Emby.Server.Implementations.Services
             if (!restPath.Path.StartsWith("/"))
                 throw new ArgumentException(string.Format("Route '{0}' on '{1}' must start with a '/'", restPath.Path, restPath.RequestType.GetMethodName()));
             if (restPath.Path.IndexOfAny(InvalidRouteChars) != -1)
-                throw new ArgumentException(string.Format("Route '{0}' on '{1}' contains invalid chars. " +
-                                            "See https://github.com/ServiceStack/ServiceStack/wiki/Routing for info on valid routes.", restPath.Path, restPath.RequestType.GetMethodName()));
+                throw new ArgumentException(string.Format("Route '{0}' on '{1}' contains invalid chars. ", restPath.Path, restPath.RequestType.GetMethodName()));
 
             List<RestPath> pathsAtFirstMatch;
             if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out pathsAtFirstMatch))

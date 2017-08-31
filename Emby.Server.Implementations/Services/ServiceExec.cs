@@ -11,7 +11,7 @@ namespace Emby.Server.Implementations.Services
 {
     public static class ServiceExecExtensions
     {
-        public static HashSet<string> AllVerbs = new HashSet<string>(new[] {
+        public static string[] AllVerbs = new[] {
             "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT", // RFC 2616
             "PROPFIND", "PROPPATCH", "MKCOL", "COPY", "MOVE", "LOCK", "UNLOCK",    // RFC 2518
             "VERSION-CONTROL", "REPORT", "CHECKOUT", "CHECKIN", "UNCHECKOUT",
@@ -22,7 +22,9 @@ namespace Emby.Server.Implementations.Services
             "SEARCH",     // https://datatracker.ietf.org/doc/draft-reschke-webdav-search/
             "BCOPY", "BDELETE", "BMOVE", "BPROPFIND", "BPROPPATCH", "NOTIFY",
             "POLL",  "SUBSCRIBE", "UNSUBSCRIBE"
-        });
+        };
+
+        public static HashSet<string> AllVerbsSet = new HashSet<string>(AllVerbs);
 
         public static List<MethodInfo> GetActions(this Type serviceType)
         {
