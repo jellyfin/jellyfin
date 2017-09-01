@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.Services
 
     internal static class ServiceExecGeneral
     {
-        public static Dictionary<string, ServiceMethod> execMap = new Dictionary<string, ServiceMethod>();
+        private static Dictionary<string, ServiceMethod> execMap = new Dictionary<string, ServiceMethod>();
 
         public static void CreateServiceRunnersFor(Type requestType, List<ServiceMethod> actions)
         {
