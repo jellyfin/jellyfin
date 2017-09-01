@@ -187,21 +187,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public string SlugName
-        {
-            get
-            {
-                var name = Name;
-                if (string.IsNullOrWhiteSpace(name))
-                {
-                    return string.Empty;
-                }
-
-                return SlugReplaceChars.Aggregate(name, (current, c) => current.Replace(c, SlugChar));
-            }
-        }
-
-        [IgnoreDataMember]
         public bool IsUnaired
         {
             get { return PremiereDate.HasValue && PremiereDate.Value.ToLocalTime().Date >= DateTime.Now.Date; }
@@ -664,27 +649,34 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var sortable = Name.Trim().ToLower();
-            sortable = ConfigurationManager.Configuration.SortRemoveCharacters.Aggregate(sortable, (current, search) => current.Replace(search.ToLower(), string.Empty));
 
-            sortable = ConfigurationManager.Configuration.SortReplaceCharacters.Aggregate(sortable, (current, search) => current.Replace(search.ToLower(), " "));
+            foreach (var removeChar in ConfigurationManager.Configuration.SortRemoveCharacters)
+            {
+                sortable = sortable.Replace(removeChar, string.Empty);
+            }
+
+            foreach (var replaceChar in ConfigurationManager.Configuration.SortReplaceCharacters)
+            {
+                sortable = sortable.Replace(replaceChar, " ");
+            }
 
             foreach (var search in ConfigurationManager.Configuration.SortRemoveWords)
             {
-                var searchLower = search.ToLower();
                 // Remove from beginning if a space follows
-                if (sortable.StartsWith(searchLower + " "))
+                if (sortable.StartsWith(search + " "))
                 {
-                    sortable = sortable.Remove(0, searchLower.Length + 1);
+                    sortable = sortable.Remove(0, search.Length + 1);
                 }
                 // Remove from middle if surrounded by spaces
-                sortable = sortable.Replace(" " + searchLower + " ", " ");
+                sortable = sortable.Replace(" " + search + " ", " ");
 
                 // Remove from end if followed by a space
-                if (sortable.EndsWith(" " + searchLower))
+                if (sortable.EndsWith(" " + search))
                 {
-                    sortable = sortable.Remove(sortable.Length - (searchLower.Length + 1));
+                    sortable = sortable.Remove(sortable.Length - (search.Length + 1));
                 }
             }
+
             return ModifySortChunks(sortable);
         }
 
@@ -771,7 +763,15 @@ namespace MediaBrowser.Controller.Entities
         public T FindParent<T>()
             where T : Folder
         {
-            return GetParents().OfType<T>().FirstOrDefault();
+            foreach (var parent in GetParents())
+            {
+                var item = parent as T;
+                if (item != null)
+                {
+                    return item;
+                }
+            }
+            return null;
         }
 
         [IgnoreDataMember]
@@ -2140,8 +2140,8 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var filename = System.IO.Path.GetFileNameWithoutExtension(Path);
-            var extensions = new[] { ".nfo", ".xml", ".srt" }.ToList();
-            extensions.AddRange(SupportedImageExtensionsList);
+            var extensions = new List<string> { ".nfo", ".xml", ".srt" };
+            extensions.AddRange(SupportedImageExtensions);
 
             return FileSystem.GetFiles(FileSystem.GetDirectoryName(Path), extensions.ToArray(extensions.Count), false, false)
                 .Where(i => System.IO.Path.GetFileNameWithoutExtension(i.FullName).StartsWith(filename, StringComparison.OrdinalIgnoreCase))
@@ -2392,7 +2392,14 @@ namespace MediaBrowser.Controller.Entities
                 return this;
             }
 
-            return GetParents().FirstOrDefault(i => i.IsTopParent);
+            foreach (var parent in GetParents())
+            {
+                if (parent.IsTopParent)
+                {
+                    return parent;
+                }
+            }
+            return null;
         }
 
         [IgnoreDataMember]
