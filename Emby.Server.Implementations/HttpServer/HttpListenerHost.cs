@@ -710,13 +710,6 @@ namespace Emby.Server.Implementations.HttpServer
                     Summary = route.Summary
                 });
 
-                routes.Add(new RouteAttribute(NormalizeRoutePath(route.Path), route.Verbs)
-                {
-                    Notes = route.Notes,
-                    Priority = route.Priority,
-                    Summary = route.Summary
-                });
-
                 routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
@@ -771,16 +764,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             return "emby/emby/" + path;
-        }
-
-        private string NormalizeRoutePath(string path)
-        {
-            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
-            {
-                return "/mediabrowser" + path;
-            }
-
-            return "mediabrowser/" + path;
         }
 
         private bool _disposed;

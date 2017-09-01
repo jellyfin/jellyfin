@@ -296,11 +296,6 @@ namespace Emby.Drawing
                     var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(cacheFilePath));
                     _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(tmpPath));
 
-                    if (item == null && string.Equals(options.ItemType, typeof(Photo).Name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        item = _libraryManager().GetItemById(options.ItemId);
-                    }
-
                     if (options.CropWhiteSpace && !SupportsTransparency(originalImagePath))
                     {
                         options.CropWhiteSpace = false;
@@ -320,6 +315,15 @@ namespace Emby.Drawing
                 }
 
                 return new Tuple<string, string, DateTime>(cacheFilePath, GetMimeType(outputFormat, cacheFilePath), _fileSystem.GetLastWriteTimeUtc(cacheFilePath));
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                // Decoder failed to decode it
+#if DEBUG
+                _logger.ErrorException("Error encoding image", ex);
+#endif
+                // Just spit out the original file if all the options are default
+                return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
             catch (Exception ex)
             {

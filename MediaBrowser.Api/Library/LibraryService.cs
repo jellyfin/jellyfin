@@ -518,9 +518,18 @@ namespace MediaBrowser.Api.Library
                 LogDownload(item, user, auth);
             }
 
+            var path = item.Path;
+
+            // Quotes are valid in linux. They'll possibly cause issues here
+            var filename = (Path.GetFileName(path) ?? string.Empty).Replace("\"", string.Empty);
+            if (!string.IsNullOrWhiteSpace(filename))
+            {
+                headers["Content-Disposition"] = "attachment; filename=\"" + filename + "\"";
+            }
+
             return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {
-                Path = item.Path,
+                Path = path,
                 ResponseHeaders = headers
             });
         }
