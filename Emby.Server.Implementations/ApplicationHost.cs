@@ -1073,6 +1073,7 @@ namespace Emby.Server.Implementations
             builder.AppendLine(string.Format("Operating system: {0}", Environment.OSVersion));
             builder.AppendLine(string.Format("64-Bit OS: {0}", Environment.Is64BitOperatingSystem));
             builder.AppendLine(string.Format("64-Bit Process: {0}", Environment.Is64BitProcess));
+            builder.AppendLine(string.Format("User Interactive: {0}", Environment.UserInteractive));
 
             Type type = Type.GetType("Mono.Runtime");
             if (type != null)
