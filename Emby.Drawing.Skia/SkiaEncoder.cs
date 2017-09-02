@@ -76,7 +76,7 @@ namespace Emby.Drawing.Skia
 
         private static bool IsTransparent(SKColor color)
         {
-            
+
             return (color.Red == 255 && color.Green == 255 && color.Blue == 255) || color.Alpha == 0;
         }
 
@@ -267,7 +267,7 @@ namespace Emby.Drawing.Skia
                     {
                         using (bitmap)
                         {
-                            return RotateAndFlip(bitmap, origin);
+                            return OrientImage(bitmap, origin);
                         }
                     }
                 }
@@ -276,6 +276,132 @@ namespace Emby.Drawing.Skia
             }
 
             return GetBitmap(path, cropWhitespace, false, out origin);
+        }
+
+        private SKBitmap OrientImage(SKBitmap bitmap, SKCodecOrigin origin)
+        {
+            //var transformations = {
+            //    2: { rotate: 0, flip: true},
+            //    3: { rotate: 180, flip: false},
+            //    4: { rotate: 180, flip: true},
+            //    5: { rotate: 90, flip: true},
+            //    6: { rotate: 90, flip: false},
+            //    7: { rotate: 270, flip: true},
+            //    8: { rotate: 270, flip: false},
+            //}
+
+            switch (origin)
+            {
+
+                case SKCodecOrigin.TopRight:
+                    {
+                        var rotated = new SKBitmap(bitmap.Width, bitmap.Height);
+                        using (var surface = new SKCanvas(rotated))
+                        {
+                            surface.Translate(rotated.Width, 0);
+                            surface.Scale(-1, 1);
+                            surface.DrawBitmap(bitmap, 0, 0);
+                        }
+
+                        return rotated;
+                    }
+
+                case SKCodecOrigin.BottomRight:
+                    {
+                        var rotated = new SKBitmap(bitmap.Width, bitmap.Height);
+                        using (var surface = new SKCanvas(rotated))
+                        {
+                            float px = bitmap.Width;
+                            px /= 2;
+
+                            float py = bitmap.Height;
+                            py /= 2;
+
+                            surface.RotateDegrees(180, px, py);
+                            surface.DrawBitmap(bitmap, 0, 0);
+                        }
+
+                        return rotated;
+                    }
+
+                case SKCodecOrigin.BottomLeft:
+                    {
+                        var rotated = new SKBitmap(bitmap.Width, bitmap.Height);
+                        using (var surface = new SKCanvas(rotated))
+                        {
+                            float px = bitmap.Width;
+                            px /= 2;
+
+                            float py = bitmap.Height;
+                            py /= 2;
+
+                            surface.Translate(rotated.Width, 0);
+                            surface.Scale(-1, 1);
+
+                            surface.RotateDegrees(180, px, py);
+                            surface.DrawBitmap(bitmap, 0, 0);
+                        }
+
+                        return rotated;
+                    }
+
+                case SKCodecOrigin.LeftTop:
+                    {
+                        // TODO: Flip
+                        var rotated = new SKBitmap(bitmap.Height, bitmap.Width);
+                        using (var surface = new SKCanvas(rotated))
+                        {
+                            surface.Translate(rotated.Width, 0);
+                            surface.RotateDegrees(90);
+                            surface.DrawBitmap(bitmap, 0, 0);
+                        }
+
+                        return rotated;
+                    }
+
+                case SKCodecOrigin.RightTop:
+                    {
+                        var rotated = new SKBitmap(bitmap.Height, bitmap.Width);
+                        using (var surface = new SKCanvas(rotated))
+                        {
+                            surface.Translate(rotated.Width, 0);
+                            surface.RotateDegrees(90);
+                            surface.DrawBitmap(bitmap, 0, 0);
+                        }
+
+                        return rotated;
+                    }
+
+                case SKCodecOrigin.RightBottom:
+                    {
+                        // TODO: Flip
+                        var rotated = new SKBitmap(bitmap.Height, bitmap.Width);
+                        using (var surface = new SKCanvas(rotated))
+                        {
+                            surface.Translate(0, rotated.Height);
+                            surface.RotateDegrees(270);
+                            surface.DrawBitmap(bitmap, 0, 0);
+                        }
+
+                        return rotated;
+                    }
+
+                case SKCodecOrigin.LeftBottom:
+                    {
+                        var rotated = new SKBitmap(bitmap.Height, bitmap.Width);
+                        using (var surface = new SKCanvas(rotated))
+                        {
+                            surface.Translate(0, rotated.Height);
+                            surface.RotateDegrees(270);
+                            surface.DrawBitmap(bitmap, 0, 0);
+                        }
+
+                        return rotated;
+                    }
+
+                default:
+                    return RotateAndFlip(bitmap, origin);
+            }
         }
 
         private SKBitmap RotateAndFlip(SKBitmap original, SKCodecOrigin origin)
