@@ -347,16 +347,29 @@ namespace Emby.Drawing.Skia
 
                 case SKCodecOrigin.LeftTop:
                     {
-                        // TODO: Flip
-                        var rotated = new SKBitmap(bitmap.Height, bitmap.Width);
-                        using (var surface = new SKCanvas(rotated))
+                        // TODO: Remove dual canvases, had trouble with flipping
+                        using (var rotated = new SKBitmap(bitmap.Height, bitmap.Width))
                         {
-                            surface.Translate(rotated.Width, 0);
-                            surface.RotateDegrees(90);
-                            surface.DrawBitmap(bitmap, 0, 0);
-                        }
+                            using (var surface = new SKCanvas(rotated))
+                            {
+                                surface.Translate(rotated.Width, 0);
 
-                        return rotated;
+                                surface.RotateDegrees(90);
+
+                                surface.DrawBitmap(bitmap, 0, 0);
+
+                            }
+
+                            var flippedBitmap = new SKBitmap(rotated.Width, rotated.Height);
+                            using (var flippedCanvas = new SKCanvas(flippedBitmap))
+                            {
+                                flippedCanvas.Translate(flippedBitmap.Width, 0);
+                                flippedCanvas.Scale(-1, 1);
+                                flippedCanvas.DrawBitmap(rotated, 0, 0);
+                            }
+
+                            return flippedBitmap;
+                        }
                     }
 
                 case SKCodecOrigin.RightTop:
@@ -374,16 +387,26 @@ namespace Emby.Drawing.Skia
 
                 case SKCodecOrigin.RightBottom:
                     {
-                        // TODO: Flip
-                        var rotated = new SKBitmap(bitmap.Height, bitmap.Width);
-                        using (var surface = new SKCanvas(rotated))
+                        // TODO: Remove dual canvases, had trouble with flipping
+                        using (var rotated = new SKBitmap(bitmap.Height, bitmap.Width))
                         {
-                            surface.Translate(0, rotated.Height);
-                            surface.RotateDegrees(270);
-                            surface.DrawBitmap(bitmap, 0, 0);
-                        }
+                            using (var surface = new SKCanvas(rotated))
+                            {
+                                surface.Translate(0, rotated.Height);
+                                surface.RotateDegrees(270);
+                                surface.DrawBitmap(bitmap, 0, 0);
+                            }
 
-                        return rotated;
+                            var flippedBitmap = new SKBitmap(rotated.Width, rotated.Height);
+                            using (var flippedCanvas = new SKCanvas(flippedBitmap))
+                            {
+                                flippedCanvas.Translate(flippedBitmap.Width, 0);
+                                flippedCanvas.Scale(-1, 1);
+                                flippedCanvas.DrawBitmap(rotated, 0, 0);
+                            }
+
+                            return flippedBitmap;
+                        }
                     }
 
                 case SKCodecOrigin.LeftBottom:
