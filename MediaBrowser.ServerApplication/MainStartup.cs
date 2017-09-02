@@ -196,29 +196,36 @@ namespace MediaBrowser.ServerApplication
 
         private static bool IsAlreadyRunningAsService(string applicationPath)
         {
-            var serviceName = BackgroundService.GetExistingServiceName();
-
-            WqlObjectQuery wqlObjectQuery = new WqlObjectQuery(string.Format("SELECT * FROM Win32_Service WHERE State = 'Running' AND Name = '{0}'", serviceName));
-            ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(wqlObjectQuery);
-            ManagementObjectCollection managementObjectCollection = managementObjectSearcher.Get();
-
-            foreach (ManagementObject managementObject in managementObjectCollection)
+            try
             {
-                var obj = managementObject.GetPropertyValue("PathName");
-                if (obj == null)
-                {
-                    continue;
-                }
-                var path = obj.ToString();
+                var serviceName = BackgroundService.GetExistingServiceName();
 
-                _logger.Info("Service path: {0}", path);
-                // Need to use indexOf instead of equality because the path will have the full service command line
-                if (path.IndexOf(applicationPath, StringComparison.OrdinalIgnoreCase) != -1)
+                WqlObjectQuery wqlObjectQuery = new WqlObjectQuery(string.Format("SELECT * FROM Win32_Service WHERE State = 'Running' AND Name = '{0}'", serviceName));
+                ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(wqlObjectQuery);
+                ManagementObjectCollection managementObjectCollection = managementObjectSearcher.Get();
+
+                foreach (ManagementObject managementObject in managementObjectCollection)
                 {
-                    _logger.Info("The windows service is already running");
-                    MessageBox.Show("Emby Server is already running as a Windows Service. Only one instance is allowed at a time. To run as a tray icon, shut down the Windows Service.");
-                    return true;
+                    var obj = managementObject.GetPropertyValue("PathName");
+                    if (obj == null)
+                    {
+                        continue;
+                    }
+                    var path = obj.ToString();
+
+                    _logger.Info("Service path: {0}", path);
+                    // Need to use indexOf instead of equality because the path will have the full service command line
+                    if (path.IndexOf(applicationPath, StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        _logger.Info("The windows service is already running");
+                        MessageBox.Show("Emby Server is already running as a Windows Service. Only one instance is allowed at a time. To run as a tray icon, shut down the Windows Service.");
+                        return true;
+                    }
                 }
+            }
+            catch (COMException)
+            {
+                // Catch errors thrown due to WMI not being initialized
             }
 
             return false;
