@@ -423,86 +423,8 @@ namespace Emby.Drawing.Skia
                     }
 
                 default:
-                    return RotateAndFlip(bitmap, origin);
+                    return bitmap;
             }
-        }
-
-        private SKBitmap RotateAndFlip(SKBitmap original, SKCodecOrigin origin)
-        {
-            // these are the origins that represent a 90 degree turn in some fashion
-            var differentOrientations = new SKCodecOrigin[]
-            {
-                SKCodecOrigin.LeftBottom,
-                SKCodecOrigin.LeftTop,
-                SKCodecOrigin.RightBottom,
-                SKCodecOrigin.RightTop
-            };
-
-            // check if we need to turn the image
-            bool isDifferentOrientation = differentOrientations.Any(o => o == origin);
-
-            // define new width/height
-            var width = isDifferentOrientation ? original.Height : original.Width;
-            var height = isDifferentOrientation ? original.Width : original.Height;
-
-            var bitmap = new SKBitmap(width, height, true);
-
-            // todo: the stuff in this switch statement should be rewritten to use pointers
-            switch (origin)
-            {
-                case SKCodecOrigin.LeftBottom:
-
-                    for (var x = 0; x < original.Width; x++)
-                        for (var y = 0; y < original.Height; y++)
-                            bitmap.SetPixel(y, original.Width - 1 - x, original.GetPixel(x, y));
-                    break;
-
-                case SKCodecOrigin.RightTop:
-
-                    for (var x = 0; x < original.Width; x++)
-                        for (var y = 0; y < original.Height; y++)
-                            bitmap.SetPixel(original.Height - 1 - y, x, original.GetPixel(x, y));
-                    break;
-
-                case SKCodecOrigin.RightBottom:
-
-                    for (var x = 0; x < original.Width; x++)
-                        for (var y = 0; y < original.Height; y++)
-                            bitmap.SetPixel(original.Height - 1 - y, original.Width - 1 - x, original.GetPixel(x, y));
-
-                    break;
-
-                case SKCodecOrigin.LeftTop:
-
-                    for (var x = 0; x < original.Width; x++)
-                        for (var y = 0; y < original.Height; y++)
-                            bitmap.SetPixel(y, x, original.GetPixel(x, y));
-                    break;
-
-                case SKCodecOrigin.BottomLeft:
-
-                    for (var x = 0; x < original.Width; x++)
-                        for (var y = 0; y < original.Height; y++)
-                            bitmap.SetPixel(x, original.Height - 1 - y, original.GetPixel(x, y));
-                    break;
-
-                case SKCodecOrigin.BottomRight:
-
-                    for (var x = 0; x < original.Width; x++)
-                        for (var y = 0; y < original.Height; y++)
-                            bitmap.SetPixel(original.Width - 1 - x, original.Height - 1 - y, original.GetPixel(x, y));
-                    break;
-
-                case SKCodecOrigin.TopRight:
-
-                    for (var x = 0; x < original.Width; x++)
-                        for (var y = 0; y < original.Height; y++)
-                            bitmap.SetPixel(original.Width - 1 - x, y, original.GetPixel(x, y));
-                    break;
-
-            }
-
-            return bitmap;
         }
 
         public string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
