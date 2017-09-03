@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,9 +56,8 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IXmlSerializer _xmlSerializer;
-        private readonly ICertificate _certificate;
+        private readonly X509Certificate _certificate;
         private readonly IEnvironmentInfo _environment;
-        private readonly IStreamFactory _streamFactory;
         private readonly Func<Type, Func<string, object>> _funcParseFn;
         private readonly bool _enableDualModeSockets;
 
@@ -71,7 +71,7 @@ namespace Emby.Server.Implementations.HttpServer
             ILogger logger,
             IServerConfigurationManager config,
             string serviceName,
-            string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer, IEnvironmentInfo environment, ICertificate certificate, IStreamFactory streamFactory, Func<Type, Func<string, object>> funcParseFn, bool enableDualModeSockets, IFileSystem fileSystem)
+            string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer, IEnvironmentInfo environment, X509Certificate certificate, Func<Type, Func<string, object>> funcParseFn, bool enableDualModeSockets, IFileSystem fileSystem)
         {
             Instance = this;
 
@@ -86,7 +86,6 @@ namespace Emby.Server.Implementations.HttpServer
             _xmlSerializer = xmlSerializer;
             _environment = environment;
             _certificate = certificate;
-            _streamFactory = streamFactory;
             _funcParseFn = funcParseFn;
             _enableDualModeSockets = enableDualModeSockets;
             _fileSystem = fileSystem;
@@ -204,7 +203,6 @@ namespace Emby.Server.Implementations.HttpServer
                 _networkManager,
                 _socketFactory,
                 _cryptoProvider,
-                _streamFactory,
                 _enableDualModeSockets,
                 GetRequest,
                 _fileSystem,

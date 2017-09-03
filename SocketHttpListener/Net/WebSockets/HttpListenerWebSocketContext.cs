@@ -254,7 +254,7 @@ namespace SocketHttpListener.Net.WebSockets
         /// </summary>
         /// <value>
         /// </value>
-        public override IpEndPointInfo ServerEndPoint
+        public override IPEndPoint ServerEndPoint
         {
             get
             {
@@ -281,7 +281,7 @@ namespace SocketHttpListener.Net.WebSockets
         /// </summary>
         /// <value>
         /// </value>
-        public override IpEndPointInfo UserEndPoint
+        public override IPEndPoint UserEndPoint
         {
             get
             {
