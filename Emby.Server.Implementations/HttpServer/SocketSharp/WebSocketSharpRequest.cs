@@ -27,6 +27,20 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             _memoryStreamProvider = memoryStreamProvider;
             this.request = httpContext.Request;
             this.response = new WebSocketSharpResponse(logger, httpContext.Response, this);
+
+            //HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
+        }
+
+        private static string GetHandlerPathIfAny(string listenerUrl)
+        {
+            if (listenerUrl == null) return null;
+            var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
+            if (pos == -1) return null;
+            var startHostUrl = listenerUrl.Substring(pos + "://".Length);
+            var endPos = startHostUrl.IndexOf('/');
+            if (endPos == -1) return null;
+            var endHostUrl = startHostUrl.Substring(endPos + 1);
+            return string.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
         }
 
         public HttpListenerRequest HttpRequest
@@ -582,18 +596,6 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             }
 
             return stream;
-        }
-
-        public static string GetHandlerPathIfAny(string listenerUrl)
-        {
-            if (listenerUrl == null) return null;
-            var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
-            if (pos == -1) return null;
-            var startHostUrl = listenerUrl.Substring(pos + "://".Length);
-            var endPos = startHostUrl.IndexOf('/');
-            if (endPos == -1) return null;
-            var endHostUrl = startHostUrl.Substring(endPos + 1);
-            return String.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
         }
 
         public static string NormalizePathInfo(string pathInfo, string handlerPath)
