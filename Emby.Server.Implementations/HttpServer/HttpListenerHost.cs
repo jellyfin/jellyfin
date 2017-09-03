@@ -180,18 +180,6 @@ namespace Emby.Server.Implementations.HttpServer
             return attributes;
         }
 
-        public static string GetHandlerPathIfAny(string listenerUrl)
-        {
-            if (listenerUrl == null) return null;
-            var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
-            if (pos == -1) return null;
-            var startHostUrl = listenerUrl.Substring(pos + "://".Length);
-            var endPos = startHostUrl.IndexOf('/');
-            if (endPos == -1) return null;
-            var endHostUrl = startHostUrl.Substring(endPos + 1);
-            return string.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
-        }
-
         private IHttpListener GetListener()
         {
             return new WebSocketSharpListener(_logger,
@@ -797,8 +785,6 @@ namespace Emby.Server.Implementations.HttpServer
         public void StartServer(string[] urlPrefixes)
         {
             UrlPrefixes = urlPrefixes;
-
-            WebSocketSharpRequest.HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
 
             _listener = GetListener();
 
