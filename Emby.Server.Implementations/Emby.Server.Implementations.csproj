@@ -440,7 +440,6 @@
     <Compile Include="Networking\NetworkManager.cs" />
     <Compile Include="Net\DisposableManagedObjectBase.cs" />
     <Compile Include="Net\NetAcceptSocket.cs" />
-    <Compile Include="Net\SocketAcceptor.cs" />
     <Compile Include="Net\SocketFactory.cs" />
     <Compile Include="Net\UdpSocket.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />

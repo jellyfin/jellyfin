@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,8 +24,6 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
-using SocketHttpListener.Net;
-using SocketHttpListener.Primitives;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -55,9 +54,8 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IXmlSerializer _xmlSerializer;
-        private readonly ICertificate _certificate;
+        private readonly X509Certificate _certificate;
         private readonly IEnvironmentInfo _environment;
-        private readonly IStreamFactory _streamFactory;
         private readonly Func<Type, Func<string, object>> _funcParseFn;
         private readonly bool _enableDualModeSockets;
 
@@ -71,7 +69,7 @@ namespace Emby.Server.Implementations.HttpServer
             ILogger logger,
             IServerConfigurationManager config,
             string serviceName,
-            string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer, IEnvironmentInfo environment, ICertificate certificate, IStreamFactory streamFactory, Func<Type, Func<string, object>> funcParseFn, bool enableDualModeSockets, IFileSystem fileSystem)
+            string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer, IEnvironmentInfo environment, X509Certificate certificate, Func<Type, Func<string, object>> funcParseFn, bool enableDualModeSockets, IFileSystem fileSystem)
         {
             Instance = this;
 
@@ -86,7 +84,6 @@ namespace Emby.Server.Implementations.HttpServer
             _xmlSerializer = xmlSerializer;
             _environment = environment;
             _certificate = certificate;
-            _streamFactory = streamFactory;
             _funcParseFn = funcParseFn;
             _enableDualModeSockets = enableDualModeSockets;
             _fileSystem = fileSystem;
@@ -183,20 +180,10 @@ namespace Emby.Server.Implementations.HttpServer
             return attributes;
         }
 
-        public static string GetHandlerPathIfAny(string listenerUrl)
-        {
-            if (listenerUrl == null) return null;
-            var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
-            if (pos == -1) return null;
-            var startHostUrl = listenerUrl.Substring(pos + "://".Length);
-            var endPos = startHostUrl.IndexOf('/');
-            if (endPos == -1) return null;
-            var endHostUrl = startHostUrl.Substring(endPos + 1);
-            return string.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
-        }
-
         private IHttpListener GetListener()
         {
+            //return new KestrelHost.KestrelListener(_logger, _environment, _fileSystem);
+
             return new WebSocketSharpListener(_logger,
                 _certificate,
                 _memoryStreamProvider,
@@ -204,20 +191,9 @@ namespace Emby.Server.Implementations.HttpServer
                 _networkManager,
                 _socketFactory,
                 _cryptoProvider,
-                _streamFactory,
                 _enableDualModeSockets,
-                GetRequest,
                 _fileSystem,
                 _environment);
-        }
-
-        private IHttpRequest GetRequest(HttpListenerContext httpContext)
-        {
-            var operationName = httpContext.Request.GetOperationName();
-
-            var req = new WebSocketSharpRequest(httpContext, operationName, _logger, _memoryStreamProvider);
-
-            return req;
         }
 
         private void OnWebSocketConnecting(WebSocketConnectingEventArgs args)
@@ -332,7 +308,8 @@ namespace Emby.Server.Implementations.HttpServer
             if (_listener != null)
             {
                 _logger.Info("Stopping HttpListener...");
-                _listener.Stop();
+                var task = _listener.Stop();
+                Task.WaitAll(task);
                 _logger.Info("HttpListener stopped");
             }
         }
@@ -418,7 +395,7 @@ namespace Emby.Server.Implementations.HttpServer
             return address.Trim('/');
         }
 
-        private bool ValidateHost(Uri url)
+        private bool ValidateHost(string host)
         {
             var hosts = _config
                 .Configuration
@@ -431,7 +408,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return true;
             }
 
-            var host = url.Host ?? string.Empty;
+            host = host ?? string.Empty;
 
             _logger.Debug("Validating host {0}", host);
 
@@ -449,7 +426,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
-        protected async Task RequestHandler(IHttpRequest httpReq, Uri url, CancellationToken cancellationToken)
+        protected async Task RequestHandler(IHttpRequest httpReq, string urlString, string host, string localPath, CancellationToken cancellationToken)
         {
             var date = DateTime.Now;
             var httpRes = httpReq.Response;
@@ -468,7 +445,7 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                if (!ValidateHost(url))
+                if (!ValidateHost(host))
                 {
                     httpRes.StatusCode = 400;
                     httpRes.ContentType = "text/plain";
@@ -488,9 +465,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
 
                 var operationName = httpReq.OperationName;
-                var localPath = url.LocalPath;
 
-                var urlString = url.OriginalString;
                 enableLog = EnableLogging(urlString, localPath);
                 urlToLog = urlString;
                  logHeaders = enableLog && urlToLog.IndexOf("/videos/", StringComparison.OrdinalIgnoreCase) != -1;
@@ -710,12 +685,19 @@ namespace Emby.Server.Implementations.HttpServer
                     Summary = route.Summary
                 });
 
-                routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
+                routes.Add(new RouteAttribute(NormalizeMediaBrowserRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,
                     Summary = route.Summary
                 });
+
+                //routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
+                //{
+                //    Notes = route.Notes,
+                //    Priority = route.Priority,
+                //    Summary = route.Summary
+                //});
             }
 
             return routes.ToArray(routes.Count);
@@ -756,6 +738,16 @@ namespace Emby.Server.Implementations.HttpServer
             return "emby/" + path;
         }
 
+        private string NormalizeMediaBrowserRoutePath(string path)
+        {
+            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
+            {
+                return "/mediabrowser" + path;
+            }
+
+            return "mediabrowser/" + path;
+        }
+
         private string DoubleNormalizeEmbyRoutePath(string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
@@ -794,8 +786,6 @@ namespace Emby.Server.Implementations.HttpServer
         public void StartServer(string[] urlPrefixes)
         {
             UrlPrefixes = urlPrefixes;
-
-            WebSocketSharpRequest.HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
 
             _listener = GetListener();
 

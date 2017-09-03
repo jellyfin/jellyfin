@@ -41,11 +41,11 @@ namespace Emby.Server.Implementations.Services
 
                 response.StatusCode = httpResult.Status;
                 response.StatusDescription = httpResult.StatusCode.ToString();
-                if (string.IsNullOrEmpty(httpResult.ContentType))
-                {
-                    httpResult.ContentType = defaultContentType;
-                }
-                response.ContentType = httpResult.ContentType;
+                //if (string.IsNullOrEmpty(httpResult.ContentType))
+                //{
+                //    httpResult.ContentType = defaultContentType;
+                //}
+                //response.ContentType = httpResult.ContentType;
 
                 if (httpResult.Cookies != null)
                 {
@@ -124,7 +124,10 @@ namespace Emby.Server.Implementations.Services
                 response.ContentType = "application/octet-stream";
                 response.SetContentLength(bytes.Length);
 
-                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
+                if (bytes.Length > 0)
+                {
+                    await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
+                }
                 return;
             }
 
@@ -133,7 +136,10 @@ namespace Emby.Server.Implementations.Services
             {
                 bytes = Encoding.UTF8.GetBytes(responseText);
                 response.SetContentLength(bytes.Length);
-                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
+                if (bytes.Length > 0)
+                {
+                    await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
+                }
                 return;
             }
 
@@ -150,8 +156,15 @@ namespace Emby.Server.Implementations.Services
                 serializer(result, ms);
 
                 ms.Position = 0;
-                response.SetContentLength(ms.Length);
-                await ms.CopyToAsync(response.OutputStream).ConfigureAwait(false);
+
+                var contentLength = ms.Length;
+
+                response.SetContentLength(contentLength);
+
+                if (contentLength > 0)
+                {
+                    await ms.CopyToAsync(response.OutputStream).ConfigureAwait(false);
+                }
             }
 
             //serializer(result, outputStream);
