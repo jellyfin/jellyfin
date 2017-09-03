@@ -45,10 +45,15 @@ namespace Emby.Server.Implementations.Services
             var bytesResponse = this.Response as byte[];
             if (bytesResponse != null)
             {
-                if (response != null)
-                    response.SetContentLength(bytesResponse.Length);
+                var contentLength = bytesResponse.Length;
 
-                await responseStream.WriteAsync(bytesResponse, 0, bytesResponse.Length).ConfigureAwait(false);
+                if (response != null)
+                    response.SetContentLength(contentLength);
+
+                if (contentLength > 0)
+                {
+                    await responseStream.WriteAsync(bytesResponse, 0, contentLength).ConfigureAwait(false);
+                }
                 return;
             }
 

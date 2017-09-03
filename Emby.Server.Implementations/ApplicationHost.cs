@@ -128,6 +128,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Threading;
 using StringExtensions = MediaBrowser.Controller.Extensions.StringExtensions;
+using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 
 namespace Emby.Server.Implementations
 {
@@ -1168,7 +1169,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        private ICertificate GetCertificate(CertificateInfo info)
+        private X509Certificate GetCertificate(CertificateInfo info)
         {
             var certificateLocation = info == null ? null : info.Path;
 
@@ -1195,7 +1196,7 @@ namespace Emby.Server.Implementations
                     return null;
                 }
 
-                return new Certificate(localCert);
+                return localCert;
             }
             catch (Exception ex)
             {
@@ -1584,7 +1585,7 @@ namespace Emby.Server.Implementations
         }
 
         private CertificateInfo CertificateInfo { get; set; }
-        private ICertificate Certificate { get; set; }
+        private X509Certificate Certificate { get; set; }
 
         private IEnumerable<string> GetUrlPrefixes()
         {

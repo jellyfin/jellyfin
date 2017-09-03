@@ -82,6 +82,7 @@
     <Compile Include="Net\HttpStreamAsyncResult.cs" />
     <Compile Include="Net\HttpVersion.cs" />
     <Compile Include="Net\ListenerPrefix.cs" />
+    <Compile Include="Net\SocketAcceptor.cs" />
     <Compile Include="Net\UriScheme.cs" />
     <Compile Include="Net\WebHeaderCollection.cs" />
     <Compile Include="Net\WebHeaderEncoding.cs" />
@@ -89,11 +90,10 @@
     <Compile Include="Net\WebSockets\WebSocketContext.cs" />
     <Compile Include="Opcode.cs" />
     <Compile Include="PayloadData.cs" />
-    <Compile Include="Primitives\ICertificate.cs" />
-    <Compile Include="Primitives\IStreamFactory.cs" />
     <Compile Include="Primitives\ITextEncoding.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rsv.cs" />
+    <Compile Include="SocketStream.cs" />
     <Compile Include="WebSocket.cs" />
     <Compile Include="WebSocketException.cs" />
     <Compile Include="WebSocketFrame.cs" />

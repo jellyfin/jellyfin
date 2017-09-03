@@ -27,6 +27,20 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             _memoryStreamProvider = memoryStreamProvider;
             this.request = httpContext.Request;
             this.response = new WebSocketSharpResponse(logger, httpContext.Response, this);
+
+            //HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
+        }
+
+        private static string GetHandlerPathIfAny(string listenerUrl)
+        {
+            if (listenerUrl == null) return null;
+            var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
+            if (pos == -1) return null;
+            var startHostUrl = listenerUrl.Substring(pos + "://".Length);
+            var endPos = startHostUrl.IndexOf('/');
+            if (endPos == -1) return null;
+            var endHostUrl = startHostUrl.Substring(endPos + 1);
+            return string.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
         }
 
         public HttpListenerRequest HttpRequest
@@ -108,7 +122,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
                 return remoteIp ??
                     (remoteIp = (CheckBadChars(XForwardedFor)) ??
                                 (NormalizeIp(CheckBadChars(XRealIp)) ??
-                                (request.RemoteEndPoint != null ? NormalizeIp(request.RemoteEndPoint.IpAddress.ToString()) : null)));
+                                (request.RemoteEndPoint != null ? NormalizeIp(request.RemoteEndPoint.Address.ToString()) : null)));
             }
         }
 
@@ -232,13 +246,12 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             set
             {
                 this.responseContentType = value;
-                HasExplicitResponseContentType = true;
             }
         }
 
         public const string FormUrlEncoded = "application/x-www-form-urlencoded";
         public const string MultiPartFormData = "multipart/form-data";
-        private static string GetResponseContentType(IRequest httpReq)
+        public static string GetResponseContentType(IRequest httpReq)
         {
             var specifiedContentType = GetQueryStringContentType(httpReq);
             if (!string.IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
@@ -345,8 +358,6 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
                 ? strVal
                 : strVal.Substring(0, pos);
         }
-
-        public bool HasExplicitResponseContentType { get; private set; }
 
         public static string HandlerFactoryPath;
 
@@ -490,13 +501,6 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             get { return HttpMethod; }
         }
 
-        public string Param(string name)
-        {
-            return Headers[name]
-                ?? QueryString[name]
-                ?? FormData[name];
-        }
-
         public string ContentType
         {
             get { return request.ContentType; }
@@ -582,18 +586,6 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             }
 
             return stream;
-        }
-
-        public static string GetHandlerPathIfAny(string listenerUrl)
-        {
-            if (listenerUrl == null) return null;
-            var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
-            if (pos == -1) return null;
-            var startHostUrl = listenerUrl.Substring(pos + "://".Length);
-            var endPos = startHostUrl.IndexOf('/');
-            if (endPos == -1) return null;
-            var endHostUrl = startHostUrl.Substring(endPos + 1);
-            return String.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
         }
 
         public static string NormalizePathInfo(string pathInfo, string handlerPath)
