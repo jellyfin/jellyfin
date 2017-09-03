@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using System;
 using System.Linq;
+using MediaBrowser.Model.Services;
 
 namespace Emby.Server.Implementations.HttpServer.Security
 {
@@ -37,19 +38,19 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         public string HtmlRedirect { get; set; }
 
-        public void Authenticate(IServiceRequest request,
+        public void Authenticate(IRequest request,
             IAuthenticationAttributes authAttribtues)
         {
             ValidateUser(request, authAttribtues);
         }
 
-        private void ValidateUser(IServiceRequest request,
+        private void ValidateUser(IRequest request,
             IAuthenticationAttributes authAttribtues)
         {
             // This code is executed before the service
             var auth = AuthorizationContext.GetAuthorizationInfo(request);
 
-            if (!IsExemptFromAuthenticationToken(auth, authAttribtues))
+            if (!IsExemptFromAuthenticationToken(auth, authAttribtues, request))
             {
                 var valid = IsValidConnectKey(auth.Token);
 
@@ -75,7 +76,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             var info = GetTokenInfo(request);
 
-            if (!IsExemptFromRoles(auth, authAttribtues, info))
+            if (!IsExemptFromRoles(auth, authAttribtues, request, info))
             {
                 var roles = authAttribtues.GetRoles();
 
@@ -95,7 +96,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             }
         }
 
-        private void ValidateUserAccess(User user, IServiceRequest request,
+        private void ValidateUserAccess(User user, IRequest request,
             IAuthenticationAttributes authAttribtues,
             AuthorizationInfo auth)
         {
@@ -111,7 +112,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 !authAttribtues.EscapeParentalControl &&
                 !user.IsParentalScheduleAllowed())
             {
-                request.AddResponseHeader("X-Application-Error-Code", "ParentalControl");
+                request.Response.AddHeader("X-Application-Error-Code", "ParentalControl");
 
                 throw new SecurityException("This user account is not allowed access at this time.")
                 {
@@ -131,9 +132,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
             }
         }
 
-        private bool IsExemptFromAuthenticationToken(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues)
+        private bool IsExemptFromAuthenticationToken(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues, IRequest request)
         {
             if (!_config.Configuration.IsStartupWizardCompleted && authAttribtues.AllowBeforeStartupWizard)
+            {
+                return true;
+            }
+
+            if (authAttribtues.AllowLocal && request.IsLocal)
             {
                 return true;
             }
@@ -141,9 +147,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return false;
         }
 
-        private bool IsExemptFromRoles(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues, AuthenticationInfo tokenInfo)
+        private bool IsExemptFromRoles(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues, IRequest request, AuthenticationInfo tokenInfo)
         {
             if (!_config.Configuration.IsStartupWizardCompleted && authAttribtues.AllowBeforeStartupWizard)
+            {
+                return true;
+            }
+
+            if (authAttribtues.AllowLocal && request.IsLocal)
             {
                 return true;
             }
@@ -195,7 +206,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             }
         }
 
-        private AuthenticationInfo GetTokenInfo(IServiceRequest request)
+        private AuthenticationInfo GetTokenInfo(IRequest request)
         {
             object info;
             request.Items.TryGetValue("OriginalAuthenticationInfo", out info);
@@ -212,7 +223,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return ConnectManager.IsAuthorizationTokenValid(token);
         }
 
-        private void ValidateSecurityToken(IServiceRequest request, string token)
+        private void ValidateSecurityToken(IRequest request, string token)
         {
             if (string.IsNullOrWhiteSpace(token))
             {
