@@ -30,14 +30,13 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         private readonly ISocketFactory _socketFactory;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly IFileSystem _fileSystem;
-        private readonly Func<HttpListenerContext, IHttpRequest> _httpRequestFactory;
         private readonly bool _enableDualMode;
         private readonly IEnvironmentInfo _environment;
 
         private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
         private CancellationToken _disposeCancellationToken;
 
-        public WebSocketSharpListener(ILogger logger, X509Certificate certificate, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, INetworkManager networkManager, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, bool enableDualMode, Func<HttpListenerContext, IHttpRequest> httpRequestFactory, IFileSystem fileSystem, IEnvironmentInfo environment)
+        public WebSocketSharpListener(ILogger logger, X509Certificate certificate, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, INetworkManager networkManager, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, bool enableDualMode, IFileSystem fileSystem, IEnvironmentInfo environment)
         {
             _logger = logger;
             _certificate = certificate;
@@ -47,7 +46,6 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             _socketFactory = socketFactory;
             _cryptoProvider = cryptoProvider;
             _enableDualMode = enableDualMode;
-            _httpRequestFactory = httpRequestFactory;
             _fileSystem = fileSystem;
             _environment = environment;
 
@@ -172,7 +170,11 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
 
         private IHttpRequest GetRequest(HttpListenerContext httpContext)
         {
-            return _httpRequestFactory(httpContext);
+            var operationName = httpContext.Request.GetOperationName();
+
+            var req = new WebSocketSharpRequest(httpContext, operationName, _logger, _memoryStreamProvider);
+
+            return req;
         }
 
         public void Stop()
