@@ -182,6 +182,8 @@ namespace Emby.Server.Implementations.HttpServer
 
         private IHttpListener GetListener()
         {
+            //return new KestrelHost.KestrelListener(_logger, _environment, _fileSystem);
+
             return new WebSocketSharpListener(_logger,
                 _certificate,
                 _memoryStreamProvider,
@@ -306,7 +308,8 @@ namespace Emby.Server.Implementations.HttpServer
             if (_listener != null)
             {
                 _logger.Info("Stopping HttpListener...");
-                _listener.Stop();
+                var task = _listener.Stop();
+                Task.WaitAll(task);
                 _logger.Info("HttpListener stopped");
             }
         }
@@ -392,7 +395,7 @@ namespace Emby.Server.Implementations.HttpServer
             return address.Trim('/');
         }
 
-        private bool ValidateHost(Uri url)
+        private bool ValidateHost(string host)
         {
             var hosts = _config
                 .Configuration
@@ -405,7 +408,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return true;
             }
 
-            var host = url.Host ?? string.Empty;
+            host = host ?? string.Empty;
 
             _logger.Debug("Validating host {0}", host);
 
@@ -423,7 +426,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
-        protected async Task RequestHandler(IHttpRequest httpReq, Uri url, CancellationToken cancellationToken)
+        protected async Task RequestHandler(IHttpRequest httpReq, string urlString, string host, string localPath, CancellationToken cancellationToken)
         {
             var date = DateTime.Now;
             var httpRes = httpReq.Response;
@@ -442,7 +445,7 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                if (!ValidateHost(url))
+                if (!ValidateHost(host))
                 {
                     httpRes.StatusCode = 400;
                     httpRes.ContentType = "text/plain";
@@ -462,9 +465,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
 
                 var operationName = httpReq.OperationName;
-                var localPath = url.LocalPath;
 
-                var urlString = url.OriginalString;
                 enableLog = EnableLogging(urlString, localPath);
                 urlToLog = urlString;
                  logHeaders = enableLog && urlToLog.IndexOf("/videos/", StringComparison.OrdinalIgnoreCase) != -1;

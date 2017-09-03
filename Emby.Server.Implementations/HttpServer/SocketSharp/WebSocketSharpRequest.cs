@@ -246,13 +246,12 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             set
             {
                 this.responseContentType = value;
-                HasExplicitResponseContentType = true;
             }
         }
 
         public const string FormUrlEncoded = "application/x-www-form-urlencoded";
         public const string MultiPartFormData = "multipart/form-data";
-        private static string GetResponseContentType(IRequest httpReq)
+        public static string GetResponseContentType(IRequest httpReq)
         {
             var specifiedContentType = GetQueryStringContentType(httpReq);
             if (!string.IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
@@ -359,8 +358,6 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
                 ? strVal
                 : strVal.Substring(0, pos);
         }
-
-        public bool HasExplicitResponseContentType { get; private set; }
 
         public static string HandlerFactoryPath;
 
@@ -502,13 +499,6 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         public string Verb
         {
             get { return HttpMethod; }
-        }
-
-        public string Param(string name)
-        {
-            return Headers[name]
-                ?? QueryString[name]
-                ?? FormData[name];
         }
 
         public string ContentType
