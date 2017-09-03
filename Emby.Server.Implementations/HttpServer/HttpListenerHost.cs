@@ -24,8 +24,6 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
-using SocketHttpListener.Net;
-using SocketHttpListener.Primitives;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -204,18 +202,8 @@ namespace Emby.Server.Implementations.HttpServer
                 _socketFactory,
                 _cryptoProvider,
                 _enableDualModeSockets,
-                GetRequest,
                 _fileSystem,
                 _environment);
-        }
-
-        private IHttpRequest GetRequest(HttpListenerContext httpContext)
-        {
-            var operationName = httpContext.Request.GetOperationName();
-
-            var req = new WebSocketSharpRequest(httpContext, operationName, _logger, _memoryStreamProvider);
-
-            return req;
         }
 
         private void OnWebSocketConnecting(WebSocketConnectingEventArgs args)
