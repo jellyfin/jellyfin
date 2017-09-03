@@ -108,7 +108,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
                 return remoteIp ??
                     (remoteIp = (CheckBadChars(XForwardedFor)) ??
                                 (NormalizeIp(CheckBadChars(XRealIp)) ??
-                                (request.RemoteEndPoint != null ? NormalizeIp(request.RemoteEndPoint.IpAddress.ToString()) : null)));
+                                (request.RemoteEndPoint != null ? NormalizeIp(request.RemoteEndPoint.Address.ToString()) : null)));
             }
         }
 

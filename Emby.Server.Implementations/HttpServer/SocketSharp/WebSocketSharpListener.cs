@@ -4,6 +4,7 @@ using SocketHttpListener.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -22,13 +23,12 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         private HttpListener _listener;
 
         private readonly ILogger _logger;
-        private readonly ICertificate _certificate;
+        private readonly X509Certificate _certificate;
         private readonly IMemoryStreamFactory _memoryStreamProvider;
         private readonly ITextEncoding _textEncoding;
         private readonly INetworkManager _networkManager;
         private readonly ISocketFactory _socketFactory;
         private readonly ICryptoProvider _cryptoProvider;
-        private readonly IStreamFactory _streamFactory;
         private readonly IFileSystem _fileSystem;
         private readonly Func<HttpListenerContext, IHttpRequest> _httpRequestFactory;
         private readonly bool _enableDualMode;
@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
         private CancellationToken _disposeCancellationToken;
 
-        public WebSocketSharpListener(ILogger logger, ICertificate certificate, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, INetworkManager networkManager, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, bool enableDualMode, Func<HttpListenerContext, IHttpRequest> httpRequestFactory, IFileSystem fileSystem, IEnvironmentInfo environment)
+        public WebSocketSharpListener(ILogger logger, X509Certificate certificate, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, INetworkManager networkManager, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, bool enableDualMode, Func<HttpListenerContext, IHttpRequest> httpRequestFactory, IFileSystem fileSystem, IEnvironmentInfo environment)
         {
             _logger = logger;
             _certificate = certificate;
@@ -46,7 +46,6 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             _networkManager = networkManager;
             _socketFactory = socketFactory;
             _cryptoProvider = cryptoProvider;
-            _streamFactory = streamFactory;
             _enableDualMode = enableDualMode;
             _httpRequestFactory = httpRequestFactory;
             _fileSystem = fileSystem;
@@ -65,7 +64,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         public void Start(IEnumerable<string> urlPrefixes)
         {
             if (_listener == null)
-                _listener = new HttpListener(_logger, _cryptoProvider, _streamFactory, _socketFactory, _networkManager, _textEncoding, _memoryStreamProvider, _fileSystem, _environment);
+                _listener = new HttpListener(_logger, _cryptoProvider, _socketFactory, _networkManager, _textEncoding, _memoryStreamProvider, _fileSystem, _environment);
 
             _listener.EnableDualMode = _enableDualMode;
 

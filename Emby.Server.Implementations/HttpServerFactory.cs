@@ -43,7 +43,7 @@ namespace Emby.Server.Implementations
             IJsonSerializer json,
             IXmlSerializer xml,
             IEnvironmentInfo environment,
-            ICertificate certificate,
+            X509Certificate certificate,
             IFileSystem fileSystem,
             bool enableDualModeSockets)
         {
@@ -63,7 +63,6 @@ namespace Emby.Server.Implementations
                 xml,
                 environment,
                 certificate,
-                new StreamFactory(),
                 GetParseFn,
                 enableDualModeSockets,
                 fileSystem);
@@ -73,38 +72,5 @@ namespace Emby.Server.Implementations
         {
             return s => JsvReader.GetParseFn(propertyType)(s);
         }
-    }
-
-    public class StreamFactory : IStreamFactory
-    {
-        public Stream CreateNetworkStream(IAcceptSocket acceptSocket, bool ownsSocket)
-        {
-            var netSocket = (NetAcceptSocket)acceptSocket;
-
-            return new SocketStream(netSocket.Socket, ownsSocket);
-        }
-
-        public Task AuthenticateSslStreamAsServer(Stream stream, ICertificate certificate)
-        {
-            var sslStream = (SslStream)stream;
-            var cert = (Certificate)certificate;
-
-            return sslStream.AuthenticateAsServerAsync(cert.X509Certificate);
-        }
-
-        public Stream CreateSslStream(Stream innerStream, bool leaveInnerStreamOpen)
-        {
-            return new SslStream(innerStream, leaveInnerStreamOpen);
-        }
-    }
-
-    public class Certificate : ICertificate
-    {
-        public Certificate(X509Certificate x509Certificate)
-        {
-            X509Certificate = x509Certificate;
-        }
-
-        public X509Certificate X509Certificate { get; private set; }
     }
 }

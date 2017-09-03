@@ -11,7 +11,7 @@ namespace SocketHttpListener.Net
         ushort port;
         string path;
         bool secure;
-        IpAddressInfo[] addresses;
+        IPAddress[] addresses;
         public HttpListener Listener;
 
         public ListenerPrefix(string prefix)
@@ -25,7 +25,7 @@ namespace SocketHttpListener.Net
             return original;
         }
 
-        public IpAddressInfo[] Addresses
+        public IPAddress[] Addresses
         {
             get { return addresses; }
             set { addresses = value; }

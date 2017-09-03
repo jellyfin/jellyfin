@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
@@ -513,7 +514,14 @@ namespace SocketHttpListener.Net
 
         public bool IsLocal
         {
-            get { return RemoteEndPoint.IpAddress.Equals(IpAddressInfo.Loopback) || RemoteEndPoint.IpAddress.Equals(IpAddressInfo.IPv6Loopback) || LocalEndPoint.IpAddress.Equals(RemoteEndPoint.IpAddress); }
+            get
+            {
+                var remoteEndPoint = RemoteEndPoint;
+
+                return remoteEndPoint.Address.Equals(IPAddress.Loopback) ||
+                       remoteEndPoint.Address.Equals(IPAddress.IPv6Loopback) || 
+                        LocalEndPoint.Address.Equals(remoteEndPoint.Address);
+            }
         }
 
         public bool IsSecureConnection
@@ -557,7 +565,7 @@ namespace SocketHttpListener.Net
             }
         }
 
-        public IpEndPointInfo LocalEndPoint
+        public IPEndPoint LocalEndPoint
         {
             get { return context.Connection.LocalEndPoint; }
         }
@@ -577,7 +585,7 @@ namespace SocketHttpListener.Net
             get { return raw_url; }
         }
 
-        public IpEndPointInfo RemoteEndPoint
+        public IPEndPoint RemoteEndPoint
         {
             get { return context.Connection.RemoteEndPoint; }
         }
@@ -650,11 +658,6 @@ namespace SocketHttpListener.Net
 
                 return _websocketRequest;
             }
-        }
-
-        public Task<ICertificate> GetClientCertificateAsync()
-        {
-            return Task.FromResult<ICertificate>(null);
         }
     }
 }
