@@ -710,12 +710,19 @@ namespace Emby.Server.Implementations.HttpServer
                     Summary = route.Summary
                 });
 
-                routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
+                routes.Add(new RouteAttribute(NormalizeMediaBrowserRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,
                     Summary = route.Summary
                 });
+
+                //routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
+                //{
+                //    Notes = route.Notes,
+                //    Priority = route.Priority,
+                //    Summary = route.Summary
+                //});
             }
 
             return routes.ToArray(routes.Count);
@@ -754,6 +761,16 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             return "emby/" + path;
+        }
+
+        private string NormalizeMediaBrowserRoutePath(string path)
+        {
+            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
+            {
+                return "/mediabrowser" + path;
+            }
+
+            return "mediabrowser/" + path;
         }
 
         private string DoubleNormalizeEmbyRoutePath(string path)
