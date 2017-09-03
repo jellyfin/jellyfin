@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         }
 
         public Action<Exception, IRequest, bool> ErrorHandler { get; set; }
-        public Func<IHttpRequest, Uri, CancellationToken, Task> RequestHandler { get; set; }
+        public Func<IHttpRequest, string, string, string, CancellationToken, Task> RequestHandler { get; set; }
 
         public Action<WebSocketConnectingEventArgs> WebSocketConnecting { get; set; }
 
@@ -114,7 +114,9 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
                 return Task.FromResult(true);
             }
 
-            return RequestHandler(httpReq, request.Url, cancellationToken);
+            var uri = request.Url;
+
+            return RequestHandler(httpReq, uri.OriginalString, uri.Host, uri.LocalPath, cancellationToken);
         }
 
         private void ProcessWebSocketRequest(HttpListenerContext ctx)
@@ -177,7 +179,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             return req;
         }
 
-        public void Stop()
+        public Task Stop()
         {
             _disposeCancellationTokenSource.Cancel();
 
@@ -190,6 +192,8 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
 
                 _listener.Close();
             }
+
+            return Task.FromResult(true);
         }
 
         public void Dispose()

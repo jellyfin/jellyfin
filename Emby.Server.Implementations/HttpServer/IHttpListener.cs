@@ -19,7 +19,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// Gets or sets the request handler.
         /// </summary>
         /// <value>The request handler.</value>
-        Func<IHttpRequest, Uri, CancellationToken, Task> RequestHandler { get; set; }
+        Func<IHttpRequest, string, string, string, CancellationToken, Task> RequestHandler { get; set; }
 
         /// <summary>
         /// Gets or sets the web socket handler.
@@ -42,6 +42,6 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Stops this instance.
         /// </summary>
-        void Stop();
+        Task Stop();
     }
 }
