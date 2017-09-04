@@ -252,7 +252,7 @@ namespace MediaBrowser.Controller.Entities.TV
             query.AncestorWithPresentationUniqueKey = null;
             query.SeriesPresentationUniqueKey = seriesKey;
             query.IncludeItemTypes = new[] { typeof(Season).Name };
-            query.SortBy = new[] {ItemSortBy.SortName};
+            query.OrderBy = new[] { ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray();
 
             if (!config.DisplayMissingEpisodes)
             {
@@ -275,9 +275,9 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 query.AncestorWithPresentationUniqueKey = null;
                 query.SeriesPresentationUniqueKey = seriesKey;
-                if (query.SortBy.Length == 0)
+                if (query.OrderBy.Length == 0)
                 {
-                    query.SortBy = new[] { ItemSortBy.SortName };
+                    query.OrderBy = new[] { ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray();
                 }
                 if (query.IncludeItemTypes.Length == 0)
                 {
@@ -301,7 +301,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
                 IncludeItemTypes = new[] { typeof(Episode).Name, typeof(Season).Name },
-                SortBy = new[] { ItemSortBy.SortName },
+                OrderBy = new[] { ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
                 DtoOptions = options
             };
             var config = user.Configuration;
@@ -410,7 +410,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 AncestorWithPresentationUniqueKey = queryFromSeries ? null : seriesKey,
                 SeriesPresentationUniqueKey = queryFromSeries ? seriesKey : null,
                 IncludeItemTypes = new[] { typeof(Episode).Name },
-                SortBy = new[] { ItemSortBy.SortName },
+                OrderBy = new[] { ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
                 DtoOptions = options
             };
             if (user != null)
@@ -453,7 +453,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             return episodes.Where(episode =>
             {
-                var episodeItem = (Episode) episode;
+                var episodeItem = (Episode)episode;
 
                 var currentSeasonNumber = supportSpecialsInSeason ? episodeItem.AiredSeasonNumber : episode.ParentIndexNumber;
                 if (currentSeasonNumber.HasValue && seasonNumber.HasValue && currentSeasonNumber.Value == seasonNumber.Value)

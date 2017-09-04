@@ -319,8 +319,7 @@ namespace Emby.Server.Implementations.Library
             var query = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = includeItemTypes,
-                SortOrder = SortOrder.Descending,
-                SortBy = new[] { ItemSortBy.DateCreated },
+                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
                 IsFolder = includeItemTypes.Length == 0 ? false : (bool?)null,
                 ExcludeItemTypes = excludeItemTypes,
                 IsVirtualItem = false,

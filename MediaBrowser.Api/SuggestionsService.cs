@@ -5,8 +5,10 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api
@@ -79,7 +81,7 @@ namespace MediaBrowser.Api
         {
             return _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
-                SortBy = new string[] { ItemSortBy.Random },
+                OrderBy = new[] { ItemSortBy.Random }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
                 MediaTypes = request.GetMediaTypes(),
                 IncludeItemTypes = request.GetIncludeItemTypes(),
                 IsVirtualItem = false,

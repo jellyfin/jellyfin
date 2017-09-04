@@ -347,8 +347,7 @@ namespace MediaBrowser.Api
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Episode).Name },
-                SortBy = new[] { "PremiereDate", "AirTime", "SortName" },
-                SortOrder = SortOrder.Ascending,
+                OrderBy = new[] { ItemSortBy.PremiereDate, ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
                 MinPremiereDate = minPremiereDate,
                 StartIndex = request.StartIndex,
                 Limit = request.Limit,

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Session;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -9,7 +10,7 @@ namespace MediaBrowser.Controller.Net
         Task<SessionInfo> GetSession(object requestContext);
         Task<User> GetUser(object requestContext);
 
-        Task<SessionInfo> GetSession(IServiceRequest requestContext);
-        Task<User> GetUser(IServiceRequest requestContext);
+        Task<SessionInfo> GetSession(IRequest requestContext);
+        Task<User> GetUser(IRequest requestContext);
     }
 }
