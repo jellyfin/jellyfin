@@ -148,6 +148,12 @@ namespace MediaBrowser.Api.System
             var file = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
                 .First(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));
 
+            // For older files, assume fully static
+            if (file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1))
+            {
+                return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShareMode.Read);
+            }
+
             return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShareMode.ReadWrite);
         }
 

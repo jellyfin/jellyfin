@@ -639,9 +639,7 @@ namespace MediaBrowser.Api.Images
                 IsHeadRequest = isHeadRequest,
                 Path = imageResult.Item1,
 
-                // Sometimes imagemagick keeps a hold on the file briefly even after it's done writing to it.
-                // I'd rather do this than add a delay after saving the file
-                FileShare = FileShareMode.ReadWrite
+                FileShare = FileShareMode.Read
 
             }).ConfigureAwait(false);
         }
