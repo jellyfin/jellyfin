@@ -21,11 +21,10 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         public AuthorizationInfo GetAuthorizationInfo(object requestContext)
         {
-            var req = new ServiceRequest((IRequest)requestContext);
-            return GetAuthorizationInfo(req);
+            return GetAuthorizationInfo((IRequest)requestContext);
         }
 
-        public AuthorizationInfo GetAuthorizationInfo(IServiceRequest requestContext)
+        public AuthorizationInfo GetAuthorizationInfo(IRequest requestContext)
         {
             object cached;
             if (requestContext.Items.TryGetValue("AuthorizationInfo", out cached))
@@ -41,7 +40,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private AuthorizationInfo GetAuthorization(IServiceRequest httpReq)
+        private AuthorizationInfo GetAuthorization(IRequest httpReq)
         {
             var auth = GetAuthorizationDictionary(httpReq);
 
@@ -135,7 +134,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private Dictionary<string, string> GetAuthorizationDictionary(IServiceRequest httpReq)
+        private Dictionary<string, string> GetAuthorizationDictionary(IRequest httpReq)
         {
             var auth = httpReq.Headers["X-Emby-Authorization"];
 

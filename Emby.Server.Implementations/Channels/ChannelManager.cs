@@ -466,7 +466,7 @@ namespace Emby.Server.Implementations.Channels
             return _libraryManager.GetItemIds(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Channel).Name },
-                SortBy = new[] { ItemSortBy.SortName }
+                OrderBy = new Tuple<string, SortOrder>[] { new Tuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) }
 
             }).Select(i => GetChannelFeatures(i.ToString("N"))).ToArray();
         }
@@ -932,13 +932,14 @@ namespace Emby.Server.Implementations.Channels
 
             ChannelItemSortField? sortField = null;
             ChannelItemSortField parsedField;
-            if (query.SortBy.Length == 1 &&
-                Enum.TryParse(query.SortBy[0], true, out parsedField))
+            var sortDescending = false;
+
+            if (query.OrderBy.Length == 1 &&
+                Enum.TryParse(query.OrderBy[0].Item1, true, out parsedField))
             {
                 sortField = parsedField;
+                sortDescending = query.OrderBy[0].Item2 == SortOrder.Descending;
             }
-
-            var sortDescending = query.SortOrder.HasValue && query.SortOrder.Value == SortOrder.Descending;
 
             var itemsResult = await GetChannelItems(channelProvider,
                 user,
@@ -1166,7 +1167,7 @@ namespace Emby.Server.Implementations.Channels
         {
             items = ApplyFilters(items, query.Filters, user);
 
-            items = _libraryManager.Sort(items, user, query.SortBy, query.SortOrder ?? SortOrder.Ascending);
+            items = _libraryManager.Sort(items, user, query.OrderBy);
 
             var all = items.ToList();
             var totalCount = totalCountFromProvider ?? all.Count;

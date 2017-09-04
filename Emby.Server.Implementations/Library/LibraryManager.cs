@@ -846,8 +846,7 @@ namespace Emby.Server.Implementations.Library
             {
                 Path = path,
                 IsFolder = isFolder,
-                SortBy = new[] { ItemSortBy.DateCreated },
-                SortOrder = SortOrder.Descending,
+                OrderBy = new[] { ItemSortBy.DateCreated }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
                 Limit = 1,
                 DtoOptions = new DtoOptions(true)
             };
@@ -1769,6 +1768,37 @@ namespace Emby.Server.Implementations.Library
                 else
                 {
                     orderedItems = sortOrder == SortOrder.Descending ? orderedItems.ThenByDescending(i => i, orderBy) : orderedItems.ThenBy(i => i, orderBy);
+                }
+
+                isFirst = false;
+            }
+
+            return orderedItems ?? items;
+        }
+
+        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<Tuple<string, SortOrder>> orderByList)
+        {
+            var isFirst = true;
+
+            IOrderedEnumerable<BaseItem> orderedItems = null;
+
+            foreach (var orderBy in orderByList)
+            {
+                var comparer = GetComparer(orderBy.Item1, user);
+                if (comparer == null)
+                {
+                    continue;
+                }
+
+                var sortOrder = orderBy.Item2;
+
+                if (isFirst)
+                {
+                    orderedItems = sortOrder == SortOrder.Descending ? items.OrderByDescending(i => i, comparer) : items.OrderBy(i => i, comparer);
+                }
+                else
+                {
+                    orderedItems = sortOrder == SortOrder.Descending ? orderedItems.ThenByDescending(i => i, comparer) : orderedItems.ThenBy(i => i, comparer);
                 }
 
                 isFirst = false;

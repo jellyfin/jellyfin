@@ -2135,8 +2135,7 @@ namespace Emby.Server.Implementations.Data
                 //return true;
             }
 
-            var sortingFields = query.SortBy.ToList();
-            sortingFields.AddRange(query.OrderBy.Select(i => i.Item1));
+            var sortingFields = query.OrderBy.Select(i => i.Item1).ToList();
 
             if (sortingFields.Contains(ItemSortBy.IsFavoriteOrLiked, StringComparer.OrdinalIgnoreCase))
             {
@@ -2975,16 +2974,7 @@ namespace Emby.Server.Implementations.Data
         private string GetOrderByText(InternalItemsQuery query)
         {
             var orderBy = query.OrderBy.ToList();
-            var enableOrderInversion = true;
-
-            if (orderBy.Count == 0)
-            {
-                orderBy.AddRange(query.SortBy.Select(i => new Tuple<string, SortOrder>(i, query.SortOrder)));
-            }
-            else
-            {
-                enableOrderInversion = false;
-            }
+            var enableOrderInversion = false;
 
             if (query.SimilarTo != null)
             {
@@ -2993,12 +2983,10 @@ namespace Emby.Server.Implementations.Data
                     orderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
                     orderBy.Add(new Tuple<string, SortOrder>("SimilarityScore", SortOrder.Descending));
                     //orderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
-                    query.SortOrder = SortOrder.Descending;
-                    enableOrderInversion = false;
                 }
             }
 
-            query.OrderBy = orderBy;
+            query.OrderBy = orderBy.ToArray();
 
             if (orderBy.Count == 0)
             {

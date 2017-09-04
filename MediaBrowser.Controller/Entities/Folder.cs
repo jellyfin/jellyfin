@@ -952,7 +952,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var result = LibraryManager.GetItemsResult(query);
 
-                if (query.SortBy.Length == 0)
+                if (query.OrderBy.Length == 0)
                 {
                     var ids = query.ItemIds.ToList();
 
@@ -973,7 +973,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var result = LibraryManager.GetItemList(query);
 
-                if (query.SortBy.Length == 0)
+                if (query.OrderBy.Length == 0)
                 {
                     var ids = query.ItemIds.ToList();
 
@@ -1000,8 +1000,7 @@ namespace MediaBrowser.Controller.Entities
                         Limit = query.Limit,
                         StartIndex = query.StartIndex,
                         UserId = query.User.Id.ToString("N"),
-                        SortBy = query.SortBy,
-                        SortOrder = query.SortOrder
+                        OrderBy = query.OrderBy
 
                     }, new SimpleProgress<double>(), CancellationToken.None).Result;
                 }
