@@ -16,10 +16,6 @@ namespace MediaBrowser.Controller.Entities
 
         public int? Limit { get; set; }
 
-        public string[] SortBy { get; set; }
-
-        public SortOrder SortOrder { get; set; }
-
         public User User { get; set; }
 
         public BaseItem SimilarTo { get; set; }
@@ -165,7 +161,7 @@ namespace MediaBrowser.Controller.Entities
         public Dictionary<string, string> ExcludeProviderIds { get; set; }
         public bool EnableGroupByMetadataKey { get; set; }
 
-        public List<Tuple<string, SortOrder>> OrderBy { get; set; }
+        public Tuple<string, SortOrder>[] OrderBy { get; set; }
 
         public DateTime? MinDateCreated { get; set; }
         public DateTime? MinDateLastSaved { get; set; }
@@ -190,7 +186,6 @@ namespace MediaBrowser.Controller.Entities
             BlockUnratedItems = new UnratedItem[] { };
             Tags = new string[] { };
             OfficialRatings = new string[] { };
-            SortBy = new string[] { };
             MediaTypes = new string[] { };
             IncludeItemTypes = new string[] { };
             ExcludeItemTypes = new string[] { };
@@ -213,7 +208,7 @@ namespace MediaBrowser.Controller.Entities
             TrailerTypes = new TrailerType[] { };
             SourceTypes = new SourceType[] { };
             SeriesStatuses = new SeriesStatus[] { };
-            OrderBy = new List<Tuple<string, SortOrder>>();
+            OrderBy = new Tuple<string, SortOrder>[] { };
         }
 
         public InternalItemsQuery(User user)

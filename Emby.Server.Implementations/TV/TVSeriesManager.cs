@@ -64,8 +64,7 @@ namespace Emby.Server.Implementations.TV
             var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Episode).Name },
-                SortBy = new[] { ItemSortBy.DatePlayed },
-                SortOrder = SortOrder.Descending,
+                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
                 SeriesPresentationUniqueKey = presentationUniqueKey,
                 Limit = limit,
                 ParentId = parentIdGuid,
@@ -122,8 +121,7 @@ namespace Emby.Server.Implementations.TV
             var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Episode).Name },
-                SortBy = new[] { ItemSortBy.DatePlayed },
-                SortOrder = SortOrder.Descending,
+                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
                 SeriesPresentationUniqueKey = presentationUniqueKey,
                 Limit = limit,
                 DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions
@@ -200,8 +198,7 @@ namespace Emby.Server.Implementations.TV
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
                 IncludeItemTypes = new[] { typeof(Episode).Name },
-                SortBy = new[] { ItemSortBy.SortName },
-                SortOrder = SortOrder.Descending,
+                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Descending) },
                 IsPlayed = true,
                 Limit = 1,
                 ParentIndexNumberNotEquals = 0,
@@ -223,8 +220,7 @@ namespace Emby.Server.Implementations.TV
                     AncestorWithPresentationUniqueKey = null,
                     SeriesPresentationUniqueKey = seriesKey,
                     IncludeItemTypes = new[] { typeof(Episode).Name },
-                    SortBy = new[] { ItemSortBy.SortName },
-                    SortOrder = SortOrder.Ascending,
+                    OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) },
                     Limit = 1,
                     IsPlayed = false,
                     IsVirtualItem = false,

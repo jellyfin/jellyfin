@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Api.UserLibrary;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
@@ -90,7 +91,7 @@ namespace MediaBrowser.Api
         public int? Limit { get; set; }
 
         [ApiMember(Name = "SortOrder", Description = "Sort Order - Ascending,Descending", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public SortOrder? SortOrder { get; set; }
+        public string SortOrder { get; set; }
 
         [ApiMember(Name = "Filters", Description = "Optional. Specify additional filters to apply. This allows multiple, comma delimeted. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Filters { get; set; }
@@ -115,6 +116,15 @@ namespace MediaBrowser.Api
             }
 
             return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
+        }
+
+        /// <summary>
+        /// Gets the order by.
+        /// </summary>
+        /// <returns>IEnumerable{ItemSortBy}.</returns>
+        public Tuple<string, SortOrder>[] GetOrderBy()
+        {
+            return BaseItemsRequest.GetOrderBy(SortBy, SortOrder);
         }
     }
 
@@ -228,8 +238,7 @@ namespace MediaBrowser.Api
                 UserId = request.UserId,
                 ChannelId = request.Id,
                 FolderId = request.FolderId,
-                SortOrder = request.SortOrder,
-                SortBy = (request.SortBy ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
+                OrderBy = request.GetOrderBy(),
                 Filters = request.GetFilters().ToArray(),
                 Fields = request.GetItemFields()
 

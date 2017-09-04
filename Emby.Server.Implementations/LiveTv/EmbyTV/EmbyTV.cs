@@ -1687,8 +1687,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 var episodesToDelete = (librarySeries.GetItemList(new InternalItemsQuery
                 {
-                    SortBy = new[] { ItemSortBy.DateCreated },
-                    SortOrder = SortOrder.Descending,
+                    OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
                     IsVirtualItem = false,
                     IsFolder = false,
                     Recursive = true,

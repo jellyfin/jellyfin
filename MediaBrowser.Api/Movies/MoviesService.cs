@@ -193,8 +193,7 @@ namespace MediaBrowser.Api.Movies
                     //typeof(LiveTvProgram).Name
                 },
                 // IsMovie = true
-                SortBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.Random },
-                SortOrder = SortOrder.Descending,
+                OrderBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.Random }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
                 Limit = 7,
                 ParentId = parentIdGuid,
                 Recursive = true,
@@ -215,8 +214,7 @@ namespace MediaBrowser.Api.Movies
             {
                 IncludeItemTypes = itemTypes.ToArray(itemTypes.Count),
                 IsMovie = true,
-                SortBy = new[] { ItemSortBy.Random },
-                SortOrder = SortOrder.Descending,
+                OrderBy = new[] { ItemSortBy.Random }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
                 Limit = 10,
                 IsFavoriteOrLiked = true,
                 ExcludeItemIds = recentlyPlayedMovies.Select(i => i.Id.ToString("N")).ToArray(recentlyPlayedMovies.Count),

@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Api.UserLibrary;
 using MediaBrowser.Model.IO;
 
 using MediaBrowser.Controller.Configuration;
@@ -373,7 +374,7 @@ namespace MediaBrowser.Api.LiveTv
         public string SortBy { get; set; }
 
         [ApiMember(Name = "SortOrder", Description = "Sort Order - Ascending,Descending", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public SortOrder? SortOrder { get; set; }
+        public string SortOrder { get; set; }
 
         [ApiMember(Name = "Genres", Description = "The genres to return guide information for.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
         public string Genres { get; set; }
@@ -994,8 +995,7 @@ namespace MediaBrowser.Api.LiveTv
 
             query.StartIndex = request.StartIndex;
             query.Limit = request.Limit;
-            query.SortBy = (request.SortBy ?? String.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            query.SortOrder = request.SortOrder;
+            query.OrderBy = BaseItemsRequest.GetOrderBy(request.SortBy, request.SortOrder);
             query.IsNews = request.IsNews;
             query.IsMovie = request.IsMovie;
             query.IsSeries = request.IsSeries;
