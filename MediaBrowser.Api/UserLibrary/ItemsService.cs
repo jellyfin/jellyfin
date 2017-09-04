@@ -198,8 +198,7 @@ namespace MediaBrowser.Api.UserLibrary
                 IncludeItemTypes = request.GetIncludeItemTypes(),
                 ExcludeItemTypes = request.GetExcludeItemTypes(),
                 Recursive = request.Recursive,
-                SortBy = request.GetOrderBy(),
-                SortOrder = request.SortOrder ?? SortOrder.Ascending,
+                OrderBy = request.GetOrderBy(),
 
                 IsFavorite = request.IsFavorite,
                 Limit = request.Limit,

@@ -12,7 +12,7 @@ namespace MediaBrowser.Model.LiveTv
         public ProgramQuery()
         {
             ChannelIds = new string[] { };
-            SortBy = new string[] { };
+            OrderBy = new Tuple<string, SortOrder>[] { };
             Genres = new string[] { };
             EnableTotalRecordCount = true;
             EnableUserData = true;
@@ -104,17 +104,7 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         public int? Limit { get; set; }
 
-        /// <summary>
-        /// What to sort the results by
-        /// </summary>
-        /// <value>The sort by.</value>
-        public string[] SortBy { get; set; }
-
-        /// <summary>
-        /// The sort order to return results with
-        /// </summary>
-        /// <value>The sort order.</value>
-        public SortOrder? SortOrder { get; set; }
+        public Tuple<string, SortOrder>[] OrderBy { get; set; }
 
         /// <summary>
         /// Limit results to items containing specific genres

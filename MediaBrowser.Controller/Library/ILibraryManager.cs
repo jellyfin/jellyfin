@@ -181,8 +181,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="sortBy">The sort by.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy,
-                                   SortOrder sortOrder);
+        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy, SortOrder sortOrder);
+        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<Tuple<string, SortOrder>> orderBy);
 
         /// <summary>
         /// Gets the user root folder.

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -86,7 +87,7 @@ namespace Emby.Server.Implementations.Playlists
             {
                 Genres = new[] { item.Name },
                 IncludeItemTypes = new[] { typeof(MusicAlbum).Name, typeof(MusicVideo).Name, typeof(Audio).Name },
-                SortBy = new[] { ItemSortBy.Random },
+                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending) },
                 Limit = 4,
                 Recursive = true,
                 ImageTypes = new[] { ImageType.Primary },
@@ -118,7 +119,7 @@ namespace Emby.Server.Implementations.Playlists
             {
                 Genres = new[] { item.Name },
                 IncludeItemTypes = new[] { typeof(Series).Name, typeof(Movie).Name },
-                SortBy = new[] { ItemSortBy.Random },
+                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending) },
                 Limit = 4,
                 Recursive = true,
                 ImageTypes = new[] { ImageType.Primary },

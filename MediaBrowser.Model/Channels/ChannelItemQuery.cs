@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using System;
+using System.Collections.Generic;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Model.Channels
@@ -35,16 +37,15 @@ namespace MediaBrowser.Model.Channels
         /// <value>The limit.</value>
         public int? Limit { get; set; }
 
-        public SortOrder? SortOrder { get; set; }
-        public string[] SortBy { get; set; }
         public ItemFilter[] Filters { get; set; }
         public ItemFields[] Fields { get; set; }
+        public Tuple<string, SortOrder>[] OrderBy { get; set; }
 
         public ChannelItemQuery()
         {
             Filters = new ItemFilter[] { };
-            SortBy = new string[] { };
             Fields = new ItemFields[] { };
+            OrderBy = new Tuple<string, SortOrder>[] { };
         }
     }
 
