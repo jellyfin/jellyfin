@@ -99,6 +99,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var task = StopStreaming();
 
             Task.WaitAll(task);
+            GC.SuppressFinalize(this);
         }
 
         public async Task<bool> CheckTunerAvailability(IpAddressInfo remoteIp, int tuner, CancellationToken cancellationToken)

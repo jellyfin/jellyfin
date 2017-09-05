@@ -112,6 +112,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _appHost.HasPendingRestartChanged -= _appHost_HasPendingRestartChanged;
 
             DisposeTimer();
+            GC.SuppressFinalize(this);
         }
 
         private void DisposeTimer()

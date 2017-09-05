@@ -823,27 +823,6 @@ namespace Emby.Server.Implementations.HttpClientManager
         }
 
         /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                _httpClients.Clear();
-            }
-        }
-
-        /// <summary>
         /// Throws the cancellation exception.
         /// </summary>
         /// <param name="options">The options.</param>

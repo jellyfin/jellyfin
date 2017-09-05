@@ -72,69 +72,71 @@ namespace MediaBrowser.ServerApplication
 
             var appPaths = CreateApplicationPaths(ApplicationPath, IsRunningAsService);
 
-            var logManager = new SimpleLogManager(appPaths.LogDirectoryPath, "server");
-            logManager.ReloadLogger(LogSeverity.Debug);
-            logManager.AddConsoleOutput();
-
-            var logger = _logger = logManager.GetLogger("Main");
-
-            ApplicationHost.LogEnvironmentInfo(logger, appPaths, true);
-
-            // Install directly
-            if (options.ContainsOption("-installservice"))
+            using (var logManager = new SimpleLogManager(appPaths.LogDirectoryPath, "server"))
             {
-                logger.Info("Performing service installation");
-                InstallService(ApplicationPath, logger);
-                return;
-            }
+                logManager.ReloadLogger(LogSeverity.Debug);
+                logManager.AddConsoleOutput();
 
-            // Restart with admin rights, then install
-            if (options.ContainsOption("-installserviceasadmin"))
-            {
-                logger.Info("Performing service installation");
-                RunServiceInstallation(ApplicationPath);
-                return;
-            }
+                var logger = _logger = logManager.GetLogger("Main");
 
-            // Uninstall directly
-            if (options.ContainsOption("-uninstallservice"))
-            {
-                logger.Info("Performing service uninstallation");
-                UninstallService(ApplicationPath, logger);
-                return;
-            }
+                ApplicationHost.LogEnvironmentInfo(logger, appPaths, true);
 
-            // Restart with admin rights, then uninstall
-            if (options.ContainsOption("-uninstallserviceasadmin"))
-            {
-                logger.Info("Performing service uninstallation");
-                RunServiceUninstallation(ApplicationPath);
-                return;
-            }
+                // Install directly
+                if (options.ContainsOption("-installservice"))
+                {
+                    logger.Info("Performing service installation");
+                    InstallService(ApplicationPath, logger);
+                    return;
+                }
 
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+                // Restart with admin rights, then install
+                if (options.ContainsOption("-installserviceasadmin"))
+                {
+                    logger.Info("Performing service installation");
+                    RunServiceInstallation(ApplicationPath);
+                    return;
+                }
 
-            RunServiceInstallationIfNeeded(ApplicationPath);
+                // Uninstall directly
+                if (options.ContainsOption("-uninstallservice"))
+                {
+                    logger.Info("Performing service uninstallation");
+                    UninstallService(ApplicationPath, logger);
+                    return;
+                }
 
-            if (IsAlreadyRunning(ApplicationPath, currentProcess))
-            {
-                logger.Info("Shutting down because another instance of Emby Server is already running.");
-                return;
-            }
+                // Restart with admin rights, then uninstall
+                if (options.ContainsOption("-uninstallserviceasadmin"))
+                {
+                    logger.Info("Performing service uninstallation");
+                    RunServiceUninstallation(ApplicationPath);
+                    return;
+                }
 
-            if (PerformUpdateIfNeeded(appPaths, logger))
-            {
-                logger.Info("Exiting to perform application update.");
-                return;
-            }
+                AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-            try
-            {
-                RunApplication(appPaths, logManager, IsRunningAsService, options);
-            }
-            finally
-            {
-                OnServiceShutdown();
+                RunServiceInstallationIfNeeded(ApplicationPath);
+
+                if (IsAlreadyRunning(ApplicationPath, currentProcess))
+                {
+                    logger.Info("Shutting down because another instance of Emby Server is already running.");
+                    return;
+                }
+
+                if (PerformUpdateIfNeeded(appPaths, logger))
+                {
+                    logger.Info("Exiting to perform application update.");
+                    return;
+                }
+
+                try
+                {
+                    RunApplication(appPaths, logManager, IsRunningAsService, options);
+                }
+                finally
+                {
+                    OnServiceShutdown();
+                }
             }
         }
 

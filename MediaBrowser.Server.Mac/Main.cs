@@ -56,20 +56,22 @@ namespace MediaBrowser.Server.Mac
 
 			var appPaths = CreateApplicationPaths(appFolderPath, customProgramDataPath);
 
-			var logManager = new SimpleLogManager(appPaths.LogDirectoryPath, "server");
-			logManager.ReloadLogger(LogSeverity.Info);
-			logManager.AddConsoleOutput();
+		    using (var logManager = new SimpleLogManager(appPaths.LogDirectoryPath, "server"))
+		    {
+		        logManager.ReloadLogger(LogSeverity.Info);
+		        logManager.AddConsoleOutput();
 
-			var logger = _logger = logManager.GetLogger("Main");
+		        var logger = _logger = logManager.GetLogger("Main");
 
-			ApplicationHost.LogEnvironmentInfo(logger, appPaths, true);
+		        ApplicationHost.LogEnvironmentInfo(logger, appPaths, true);
 
-			AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+		        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-			StartApplication(appPaths, logManager, options);
-			NSApplication.Init ();
-			NSApplication.Main (args);
-		}
+		        StartApplication(appPaths, logManager, options);
+		        NSApplication.Init();
+		        NSApplication.Main(args);
+		    }
+        }
 
 		private static ServerApplicationPaths CreateApplicationPaths(string appFolderPath, string programDataPath)
 		{

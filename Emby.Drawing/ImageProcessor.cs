@@ -126,6 +126,7 @@ namespace Emby.Drawing
                 return new string[]
                 {
                     "tiff",
+                    "tif",
                     "jpeg",
                     "jpg",
                     "png",
@@ -967,8 +968,15 @@ namespace Emby.Drawing
         public void Dispose()
         {
             _disposed = true;
-            _imageEncoder.Dispose();
+
+            var disposable = _imageEncoder as IDisposable;
+            if (disposable != null)
+            {
+                disposable.Dispose();
+            }
+
             _saveImageSizeTimer.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         private void CheckDisposed()

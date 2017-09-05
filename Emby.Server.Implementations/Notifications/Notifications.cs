@@ -551,6 +551,7 @@ namespace Emby.Server.Implementations.Notifications
 
             _deviceManager.CameraImageUploaded -= _deviceManager_CameraImageUploaded;
             _userManager.UserLockedOut -= _userManager_UserLockedOut;
+            GC.SuppressFinalize(this);
         }
 
         private void DisposeLibraryUpdateTimer()

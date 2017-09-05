@@ -685,6 +685,7 @@ namespace Emby.Dlna.PlayTo
                 _device.OnDeviceUnavailable = null;
 
                 _device.Dispose();
+                GC.SuppressFinalize(this);
             }
         }
 

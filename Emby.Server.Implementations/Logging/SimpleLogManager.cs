@@ -107,6 +107,7 @@ namespace Emby.Server.Implementations.Logging
             }
 
             _fileLogger = null;
+            GC.SuppressFinalize(this);
         }
     }
 
@@ -130,13 +131,18 @@ namespace Emby.Server.Implementations.Logging
 
         private void LogInternal()
         {
-            while (!_cancellationTokenSource.IsCancellationRequested)
+            while (!_cancellationTokenSource.IsCancellationRequested && !_disposed)
             {
                 try
                 {
                     foreach (var message in _queue.GetConsumingEnumerable())
                     {
                         var bytes = Encoding.UTF8.GetBytes(message + Environment.NewLine);
+                        if (_disposed)
+                        {
+                            return;
+                        }
+
                         _fileStream.Write(bytes, 0, bytes.Length);
 
                         _fileStream.Flush(true);
@@ -166,17 +172,18 @@ namespace Emby.Server.Implementations.Logging
                 return;
             }
 
-            _fileStream.Flush();
+            _fileStream.Flush(true);
         }
 
         public void Dispose()
         {
             _cancellationTokenSource.Cancel();
 
-            _disposed = true;
+            Flush();
 
-            _fileStream.Flush();
+            _disposed = true;
             _fileStream.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 

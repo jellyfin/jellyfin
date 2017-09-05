@@ -17,7 +17,7 @@ using MediaBrowser.Model.Xml;
 
 namespace Emby.Dlna.ContentDirectory
 {
-    public class ContentDirectory : BaseService, IContentDirectory, IDisposable
+    public class ContentDirectory : BaseService, IContentDirectory
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IImageProcessor _imageProcessor;
@@ -142,11 +142,6 @@ namespace Emby.Dlna.ContentDirectory
             }
 
             return null;
-        }
-
-        public void Dispose()
-        {
-
         }
     }
 }

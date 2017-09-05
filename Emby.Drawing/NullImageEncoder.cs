@@ -61,9 +61,5 @@ namespace Emby.Drawing
         {
             throw new NotImplementedException();
         }
-
-        public void Dispose()
-        {
-        }
     }
 }
