@@ -23,6 +23,7 @@ namespace MediaBrowser.Controller.Drawing
             {
                 Stream.Dispose();
             }
+            GC.SuppressFinalize(this);
         }
     }
 }

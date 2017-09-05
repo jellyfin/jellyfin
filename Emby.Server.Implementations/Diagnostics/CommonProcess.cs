@@ -104,6 +104,7 @@ namespace Emby.Server.Implementations.Diagnostics
         public void Dispose()
         {
             _process.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

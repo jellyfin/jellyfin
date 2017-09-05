@@ -1105,6 +1105,7 @@ namespace Emby.Dlna.PlayTo
                 _disposed = true;
 
                 DisposeTimer();
+                GC.SuppressFinalize(this);
             }
         }
 

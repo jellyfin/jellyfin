@@ -491,6 +491,7 @@ namespace Emby.Server.Implementations.Activity
             //_logManager.LoggerLoaded -= _logManager_LoggerLoaded;
 
             _appHost.ApplicationUpdated -= _appHost_ApplicationUpdated;
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

@@ -9,7 +9,7 @@ using MediaBrowser.Model.Xml;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
 {
-    public class MediaReceiverRegistrar : BaseService, IMediaReceiverRegistrar, IDisposable
+    public class MediaReceiverRegistrar : BaseService, IMediaReceiverRegistrar
     {
         private readonly IServerConfigurationManager _config;
         protected readonly IXmlReaderSettingsFactory XmlReaderSettingsFactory;
@@ -32,11 +32,6 @@ namespace Emby.Dlna.MediaReceiverRegistrar
                 _config,
                 Logger, XmlReaderSettingsFactory)
                 .ProcessControlRequest(request);
-        }
-
-        public void Dispose()
-        {
-
         }
     }
 }

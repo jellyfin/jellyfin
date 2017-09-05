@@ -238,6 +238,7 @@ namespace Emby.Server.Implementations.IO
         {
             _disposed = true;
             DisposeTimer();
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -2630,6 +2630,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 pair.Value.CancellationTokenSource.Cancel();
             }
+            GC.SuppressFinalize(this);
         }
 
         public List<VirtualFolderInfo> GetRecordingFolders()

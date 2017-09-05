@@ -1624,6 +1624,7 @@ namespace Emby.Server.Implementations.Channels
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Emby.Server.Implementations.Browser;
+﻿using System;
+using Emby.Server.Implementations.Browser;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
@@ -54,6 +55,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
         }
     }
 }

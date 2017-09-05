@@ -12,7 +12,7 @@ using MediaBrowser.Model.System;
 
 namespace Emby.Drawing.ImageMagick
 {
-    public class ImageMagickEncoder : IImageEncoder
+    public class ImageMagickEncoder : IImageEncoder, IDisposable
     {
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
@@ -38,7 +38,8 @@ namespace Emby.Drawing.ImageMagick
                 // Some common file name extensions for RAW picture files include: .cr2, .crw, .dng, .nef, .orf, .rw2, .pef, .arw, .sr2, .srf, and .tif.
                 return new[]
                 {
-                    "tiff", 
+                    "tiff",
+                    "tif",
                     "jpeg", 
                     "jpg", 
                     "png", 
@@ -327,6 +328,7 @@ namespace Emby.Drawing.ImageMagick
         {
             _disposed = true;
             Wand.CloseEnvironment();
+            GC.SuppressFinalize(this);
         }
 
         private void CheckDisposed()

@@ -828,7 +828,7 @@ namespace Emby.Server.Implementations
             RegisterSingleInstance(MemoryStreamFactory);
             RegisterSingleInstance(SystemEvents);
 
-            RegisterSingleInstance(LogManager);
+            RegisterSingleInstance(LogManager, false);
             RegisterSingleInstance(Logger);
 
             RegisterSingleInstance(EnvironmentInfo);
@@ -2341,6 +2341,7 @@ namespace Emby.Server.Implementations
                 _disposed = true;
 
                 Dispose(true);
+                GC.SuppressFinalize(this);
             }
         }
 
@@ -2354,6 +2355,7 @@ namespace Emby.Server.Implementations
             {
                 var type = GetType();
 
+                LogManager.AddConsoleOutput();
                 Logger.Info("Disposing " + type.Name);
 
                 var parts = DisposableParts.Distinct().Where(i => i.GetType() != type).ToList();
