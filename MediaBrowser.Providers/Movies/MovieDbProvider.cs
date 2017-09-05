@@ -29,7 +29,7 @@ namespace MediaBrowser.Providers.Movies
     /// <summary>
     /// Class MovieDbProvider
     /// </summary>
-    public class MovieDbProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IDisposable, IHasOrder
+    public class MovieDbProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IHasOrder
     {
         internal static MovieDbProvider Current { get; private set; }
 
@@ -128,14 +128,6 @@ namespace MediaBrowser.Providers.Movies
         public string Name
         {
             get { return "TheMovieDb"; }
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
         }
 
         /// <summary>
@@ -432,11 +424,6 @@ namespace MediaBrowser.Providers.Movies
             options.UserAgent = "Emby/" + _appHost.ApplicationVersion;
 
             return await _httpClient.Get(options).ConfigureAwait(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
         }
 
         /// <summary>

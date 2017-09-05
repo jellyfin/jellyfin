@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Plugins;
+﻿using System;
+using MediaBrowser.Controller.Plugins;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -11,6 +12,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
         }
     }
 }

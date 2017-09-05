@@ -68,6 +68,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 _timer.Dispose();
                 _timer = null;
             }
+            GC.SuppressFinalize(this);
         }
     }
 }

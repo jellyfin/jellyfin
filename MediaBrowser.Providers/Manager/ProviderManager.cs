@@ -1110,6 +1110,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 _disposeCancellationTokenSource.Cancel();
             }
+            GC.SuppressFinalize(this);
         }
     }
 }

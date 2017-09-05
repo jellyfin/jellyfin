@@ -50,28 +50,30 @@ namespace MediaBrowser.Server.Mono
 
             var appPaths = CreateApplicationPaths(applicationPath, customProgramDataPath);
 
-            var logManager = new SimpleLogManager(appPaths.LogDirectoryPath, "server");
-            logManager.ReloadLogger(LogSeverity.Info);
-            logManager.AddConsoleOutput();
-
-            var logger = _logger = logManager.GetLogger("Main");
-
-            ApplicationHost.LogEnvironmentInfo(logger, appPaths, true);
-            
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-
-            try
+            using (var logManager = new SimpleLogManager(appPaths.LogDirectoryPath, "server"))
             {
-                RunApplication(appPaths, logManager, options);
-            }
-            finally
-            {
-                _logger.Info("Disposing app host");
-                _appHost.Dispose();
+                logManager.ReloadLogger(LogSeverity.Info);
+                logManager.AddConsoleOutput();
 
-                if (_restartOnShutdown)
+                var logger = _logger = logManager.GetLogger("Main");
+
+                ApplicationHost.LogEnvironmentInfo(logger, appPaths, true);
+
+                AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
+                try
                 {
-                    StartNewInstance(options);
+                    RunApplication(appPaths, logManager, options);
+                }
+                finally
+                {
+                    _logger.Info("Disposing app host");
+                    _appHost.Dispose();
+
+                    if (_restartOnShutdown)
+                    {
+                        StartNewInstance(options);
+                    }
                 }
             }
         }

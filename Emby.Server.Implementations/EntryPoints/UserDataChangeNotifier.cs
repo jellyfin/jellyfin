@@ -160,6 +160,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 
             _userDataManager.UserDataSaved -= _userDataManager_UserDataSaved;
+            GC.SuppressFinalize(this);
         }
     }
 }

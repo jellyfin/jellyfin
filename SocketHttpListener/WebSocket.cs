@@ -880,6 +880,7 @@ namespace SocketHttpListener
         void IDisposable.Dispose()
         {
             Close(CloseStatusCode.Away, null);
+            GC.SuppressFinalize(this);
         }
 
         #endregion

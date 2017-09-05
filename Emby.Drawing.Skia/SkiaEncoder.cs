@@ -193,30 +193,31 @@ namespace Emby.Drawing.Skia
             {
                 using (var stream = new SKFileStream(path))
                 {
-                    var codec = SKCodec.Create(stream);
-
-                    if (codec == null)
+                    using (var codec = SKCodec.Create(stream))
                     {
-                        origin = SKCodecOrigin.TopLeft;
-                        return null;
+                        if (codec == null)
+                        {
+                            origin = SKCodecOrigin.TopLeft;
+                            return null;
+                        }
+
+                        // create the bitmap
+                        var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
+
+                        if (bitmap != null)
+                        {
+                            // decode
+                            codec.GetPixels(bitmap.Info, bitmap.GetPixels());
+
+                            origin = codec.Origin;
+                        }
+                        else
+                        {
+                            origin = SKCodecOrigin.TopLeft;
+                        }
+
+                        return bitmap;
                     }
-
-                    // create the bitmap
-                    var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
-
-                    if (bitmap != null)
-                    {
-                        // decode
-                        codec.GetPixels(bitmap.Info, bitmap.GetPixels());
-
-                        origin = codec.Origin;
-                    }
-                    else
-                    {
-                        origin = SKCodecOrigin.TopLeft;
-                    }
-
-                    return bitmap;
                 }
             }
 
@@ -591,10 +592,6 @@ namespace Emby.Drawing.Skia
         public string Name
         {
             get { return "Skia"; }
-        }
-
-        public void Dispose()
-        {
         }
 
         public bool SupportsImageCollageCreation

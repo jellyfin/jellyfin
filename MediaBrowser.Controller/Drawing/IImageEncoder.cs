@@ -3,7 +3,7 @@ using MediaBrowser.Model.Drawing;
 
 namespace MediaBrowser.Controller.Drawing
 {
-    public interface IImageEncoder : IDisposable
+    public interface IImageEncoder
     {
         /// <summary>
         /// Gets the supported input formats.

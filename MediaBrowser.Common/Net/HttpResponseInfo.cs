@@ -70,6 +70,7 @@ namespace MediaBrowser.Common.Net
             {
                 _disposable.Dispose();
             }
+            GC.SuppressFinalize(this);
         }
     }
 }

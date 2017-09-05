@@ -92,6 +92,7 @@ namespace Emby.Server.Implementations.Net
         public void Dispose()
         {
             Socket.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

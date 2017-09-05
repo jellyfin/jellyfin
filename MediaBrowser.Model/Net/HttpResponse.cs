@@ -59,6 +59,7 @@ namespace MediaBrowser.Model.Net
             {
                 _disposable.Dispose();
             }
+            GC.SuppressFinalize(this);
         }
     }
 }
