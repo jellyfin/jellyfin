@@ -225,6 +225,7 @@ namespace Emby.Dlna.PlayTo
         {
             _disposed = true;
             _deviceDiscovery.DeviceDiscovered -= _deviceDiscovery_DeviceDiscovered;
+            GC.SuppressFinalize(this);
         }
     }
 }

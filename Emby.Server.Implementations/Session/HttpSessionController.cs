@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Emby.Server.Implementations.Session
 {
-    public class HttpSessionController : ISessionController, IDisposable
+    public class HttpSessionController : ISessionController
     {
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _json;
@@ -194,10 +194,6 @@ namespace Emby.Server.Implementations.Session
             }
 
             return "?" + args;
-        }
-
-        public void Dispose()
-        {
         }
     }
 }
