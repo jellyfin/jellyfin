@@ -10,6 +10,11 @@ namespace MediaBrowser.Controller.Drawing
 {
     public class ImageProcessingOptions
     {
+        public ImageProcessingOptions()
+        {
+            RequiresAutoOrientation = true;
+        }
+
         public string ItemId { get; set; }
         public string ItemType { get; set; }
         public IHasMetadata Item { get; set; }
@@ -32,7 +37,7 @@ namespace MediaBrowser.Controller.Drawing
 
         public List<IImageEnhancer> Enhancers { get; set; }
 
-        public List<ImageFormat> SupportedOutputFormats { get; set; }
+        public ImageFormat[] SupportedOutputFormats { get; set; }
 
         public bool AddPlayedIndicator { get; set; }
 
@@ -43,6 +48,7 @@ namespace MediaBrowser.Controller.Drawing
 
         public string BackgroundColor { get; set; }
         public string ForegroundLayer { get; set; }
+        public bool RequiresAutoOrientation { get; set; }
 
         public bool HasDefaultOptions(string originalImagePath)
         {

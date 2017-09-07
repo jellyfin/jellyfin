@@ -275,8 +275,7 @@ namespace Emby.Server.Implementations.Dto
         {
             var hasFullSyncInfo = options.Fields.Contains(ItemFields.SyncInfo);
 
-            if (!options.Fields.Contains(ItemFields.BasicSyncInfo) &&
-                !hasFullSyncInfo)
+            if (!hasFullSyncInfo && !options.Fields.Contains(ItemFields.BasicSyncInfo))
             {
                 return;
             }
