@@ -496,6 +496,7 @@
     <Compile Include="Services\ServiceController.cs" />
     <Compile Include="Services\ServiceExec.cs" />
     <Compile Include="Services\StringMapTypeDeserializer.cs" />
+    <Compile Include="Services\SwaggerService.cs" />
     <Compile Include="Services\UrlExtensions.cs" />
     <Compile Include="Session\HttpSessionController.cs" />
     <Compile Include="Session\SessionManager.cs" />

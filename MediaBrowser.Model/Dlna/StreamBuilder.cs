@@ -849,8 +849,6 @@ namespace MediaBrowser.Model.Dlna
                         }
                     }
                 }
-                ApplyTranscodingConditions(playlistItem, audioTranscodingConditions);
-
                 // Honor requested max channels
                 if (options.MaxAudioChannels.HasValue)
                 {
@@ -878,6 +876,9 @@ namespace MediaBrowser.Model.Dlna
                     var longBitrate = Math.Max(Math.Min(videoBitrate, currentValue), 64000);
                     playlistItem.VideoBitrate = longBitrate > int.MaxValue ? int.MaxValue : Convert.ToInt32(longBitrate);
                 }
+
+                // Do this after initial values are set to account for greater than/less than conditions
+                ApplyTranscodingConditions(playlistItem, audioTranscodingConditions);
             }
 
             playlistItem.TranscodeReasons = transcodeReasons;
@@ -1430,7 +1431,18 @@ namespace MediaBrowser.Model.Dlna
                             int num;
                             if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
-                                item.AudioBitrate = num;
+                                if (condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.AudioBitrate = num;
+                                }
+                                else if (condition.Condition == ProfileConditionType.LessThanEqual)
+                                {
+                                    item.AudioBitrate = Math.Min(num, item.AudioBitrate ?? num);
+                                }
+                                else if (condition.Condition == ProfileConditionType.GreaterThanEqual)
+                                {
+                                    item.AudioBitrate = Math.Max(num, item.AudioBitrate ?? num);
+                                }
                             }
                             break;
                         }
@@ -1439,7 +1451,18 @@ namespace MediaBrowser.Model.Dlna
                             int num;
                             if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
-                                item.MaxAudioChannels = num;
+                                if (condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.MaxAudioChannels = num;
+                                }
+                                else if (condition.Condition == ProfileConditionType.LessThanEqual)
+                                {
+                                    item.MaxAudioChannels = Math.Min(num, item.MaxAudioChannels ?? num);
+                                }
+                                else if (condition.Condition == ProfileConditionType.GreaterThanEqual)
+                                {
+                                    item.MaxAudioChannels = Math.Max(num, item.MaxAudioChannels ?? num);
+                                }
                             }
                             break;
                         }
@@ -1507,7 +1530,18 @@ namespace MediaBrowser.Model.Dlna
                             int num;
                             if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
-                                item.MaxRefFrames = num;
+                                if (condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.MaxRefFrames = num;
+                                }
+                                else if (condition.Condition == ProfileConditionType.LessThanEqual)
+                                {
+                                    item.MaxRefFrames = Math.Min(num, item.MaxRefFrames ?? num);
+                                }
+                                else if (condition.Condition == ProfileConditionType.GreaterThanEqual)
+                                {
+                                    item.MaxRefFrames = Math.Max(num, item.MaxRefFrames ?? num);
+                                }
                             }
                             break;
                         }
@@ -1516,7 +1550,18 @@ namespace MediaBrowser.Model.Dlna
                             int num;
                             if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
-                                item.MaxVideoBitDepth = num;
+                                if (condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.MaxVideoBitDepth = num;
+                                }
+                                else if (condition.Condition == ProfileConditionType.LessThanEqual)
+                                {
+                                    item.MaxVideoBitDepth = Math.Min(num, item.MaxVideoBitDepth ?? num);
+                                }
+                                else if (condition.Condition == ProfileConditionType.GreaterThanEqual)
+                                {
+                                    item.MaxVideoBitDepth = Math.Max(num, item.MaxVideoBitDepth ?? num);
+                                }
                             }
                             break;
                         }
@@ -1530,7 +1575,18 @@ namespace MediaBrowser.Model.Dlna
                             int num;
                             if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
-                                item.MaxHeight = num;
+                                if (condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.MaxHeight = num;
+                                }
+                                else if (condition.Condition == ProfileConditionType.LessThanEqual)
+                                {
+                                    item.MaxHeight = Math.Min(num, item.MaxHeight ?? num);
+                                }
+                                else if (condition.Condition == ProfileConditionType.GreaterThanEqual)
+                                {
+                                    item.MaxHeight = Math.Max(num, item.MaxHeight ?? num);
+                                }
                             }
                             break;
                         }
@@ -1539,7 +1595,18 @@ namespace MediaBrowser.Model.Dlna
                             int num;
                             if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
-                                item.VideoBitrate = num;
+                                if (condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.VideoBitrate = num;
+                                }
+                                else if (condition.Condition == ProfileConditionType.LessThanEqual)
+                                {
+                                    item.VideoBitrate = Math.Min(num, item.VideoBitrate ?? num);
+                                }
+                                else if (condition.Condition == ProfileConditionType.GreaterThanEqual)
+                                {
+                                    item.VideoBitrate = Math.Max(num, item.VideoBitrate ?? num);
+                                }
                             }
                             break;
                         }
@@ -1548,7 +1615,18 @@ namespace MediaBrowser.Model.Dlna
                             float num;
                             if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
-                                item.MaxFramerate = num;
+                                if (condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.MaxFramerate = num;
+                                }
+                                else if (condition.Condition == ProfileConditionType.LessThanEqual)
+                                {
+                                    item.MaxFramerate = Math.Min(num, item.MaxFramerate ?? num);
+                                }
+                                else if (condition.Condition == ProfileConditionType.GreaterThanEqual)
+                                {
+                                    item.MaxFramerate = Math.Max(num, item.MaxFramerate ?? num);
+                                }
                             }
                             break;
                         }
@@ -1557,7 +1635,18 @@ namespace MediaBrowser.Model.Dlna
                             int num;
                             if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
-                                item.VideoLevel = num;
+                                if (condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.VideoLevel = num;
+                                }
+                                else if (condition.Condition == ProfileConditionType.LessThanEqual)
+                                {
+                                    item.VideoLevel = Math.Min(num, item.VideoLevel ?? num);
+                                }
+                                else if (condition.Condition == ProfileConditionType.GreaterThanEqual)
+                                {
+                                    item.VideoLevel = Math.Max(num, item.VideoLevel ?? num);
+                                }
                             }
                             break;
                         }
@@ -1566,7 +1655,18 @@ namespace MediaBrowser.Model.Dlna
                             int num;
                             if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
-                                item.MaxWidth = num;
+                                if (condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.MaxWidth = num;
+                                }
+                                else if (condition.Condition == ProfileConditionType.LessThanEqual)
+                                {
+                                    item.MaxWidth = Math.Min(num, item.MaxWidth ?? num);
+                                }
+                                else if (condition.Condition == ProfileConditionType.GreaterThanEqual)
+                                {
+                                    item.MaxWidth = Math.Max(num, item.MaxWidth ?? num);
+                                }
                             }
                             break;
                         }

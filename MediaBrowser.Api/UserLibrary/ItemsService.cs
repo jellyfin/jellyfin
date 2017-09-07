@@ -408,6 +408,20 @@ namespace MediaBrowser.Api.UserLibrary
                 }).Where(i => i != null).Select(i => i.Id.ToString("N")).ToArray();
             }
 
+            // Apply default sorting if none requested
+            if (query.OrderBy.Length == 0)
+            {
+                // Albums by artist
+                if (query.ArtistIds.Length > 0 && query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], "MusicAlbum", StringComparison.OrdinalIgnoreCase))
+                {
+                    query.OrderBy = new Tuple<string, SortOrder>[]
+                    {
+                        new Tuple<string, SortOrder>(ItemSortBy.ProductionYear, SortOrder.Descending),
+                        new Tuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending)
+                    };
+                }
+            }
+
             return query;
         }
     }
