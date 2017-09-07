@@ -39,6 +39,8 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>ImageSize.</returns>
         ImageSize GetEnhancedImageSize(IHasMetadata item, ImageType imageType, int imageIndex, ImageSize originalImageSize);
 
+        EnhancedImageInfo GetEnhancedImageInfo(IHasMetadata item, string inputFile, ImageType imageType, int imageIndex);
+
         /// <summary>
         /// Enhances the image async.
         /// </summary>
@@ -50,5 +52,10 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>Task{Image}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
         Task EnhanceImageAsync(IHasMetadata item, string inputFile, string outputFile, ImageType imageType, int imageIndex);
+    }
+
+    public class EnhancedImageInfo
+    {
+        public bool RequiresTransparency { get; set; }
     }
 }

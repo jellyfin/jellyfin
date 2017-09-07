@@ -1861,7 +1861,9 @@ namespace Emby.Server.Implementations
             {
                 "mbplus.dll",
                 "mbintros.dll",
-                "embytv.dll"
+                "embytv.dll",
+                "Messenger.dll",
+                "MediaBrowser.Plugins.TvMazeProvider.dll"
             };
 
             return !exclude.Contains(filename ?? string.Empty, StringComparer.OrdinalIgnoreCase);
