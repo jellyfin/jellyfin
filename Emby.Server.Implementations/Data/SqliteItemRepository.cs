@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.Data
         {
             get
             {
-                return false;
+                return true;
             }
         }
 
@@ -252,6 +252,7 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "AlbumArtists", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "ExternalId", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "SeriesPresentationUniqueKey", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ShowId", "Text", existingColumnNames);
 
                     existingColumnNames = GetColumnNames(db, "ItemValues");
                     AddColumn(db, "ItemValues", "CleanValue", "Text", existingColumnNames);
@@ -457,7 +458,8 @@ namespace Emby.Server.Implementations.Data
             "Artists",
             "AlbumArtists",
             "ExternalId",
-            "SeriesPresentationUniqueKey"
+            "SeriesPresentationUniqueKey",
+            "ShowId"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -577,7 +579,8 @@ namespace Emby.Server.Implementations.Data
                 "Artists",
                 "AlbumArtists",
                 "ExternalId",
-            "SeriesPresentationUniqueKey"
+                "SeriesPresentationUniqueKey",
+                "ShowId"
             };
 
             var saveItemCommandCommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -1043,6 +1046,16 @@ namespace Emby.Server.Implementations.Data
             }
             saveItemStatement.TryBind("@AlbumArtists", albumArtists);
             saveItemStatement.TryBind("@ExternalId", item.ExternalId);
+
+            var program = item as LiveTvProgram;
+            if (program != null)
+            {
+                saveItemStatement.TryBind("@ShowId", program.ShowId);
+            }
+            else
+            {
+                saveItemStatement.TryBindNull("@ShowId");
+            }
 
             saveItemStatement.MoveNext();
         }
@@ -1935,6 +1948,23 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
+            if (enableProgramAttributes)
+            {
+                var program = item as LiveTvProgram;
+                if (program != null)
+                {
+                    if (!reader.IsDBNull(index))
+                    {
+                        program.ShowId = reader.GetString(index);
+                    }
+                    index++;
+                }
+                else
+                {
+                    index ++;
+                }
+            }
+
             return item;
         }
 
@@ -2441,6 +2471,7 @@ namespace Emby.Server.Implementations.Data
                 list.Remove("IsPremiere");
                 list.Remove("EpisodeTitle");
                 list.Remove("IsRepeat");
+                list.Remove("ShowId");
             }
 
             if (!HasEpisodeAttributes(query))
