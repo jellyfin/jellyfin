@@ -318,7 +318,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         channels = (await GetChannelsAsync(true, CancellationToken.None).ConfigureAwait(false)).ToList();
                     }
                     var channelIds = channels.Select(i => i.Id).ToList();
-                    epgData = GetEpgDataForChannels(channelIds);
+                    epgData = channelIds.SelectMany(GetEpgDataForChannel).ToList();
                 }
                 else
                 {
@@ -703,7 +703,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 var channels = await GetChannelsAsync(true, CancellationToken.None).ConfigureAwait(false);
                 var channelIds = channels.Select(i => i.Id).ToList();
-                epgData = GetEpgDataForChannels(channelIds);
+                epgData = channelIds.SelectMany(GetEpgDataForChannel).ToList();
             }
             else
             {
@@ -784,7 +784,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     var channels = await GetChannelsAsync(true, CancellationToken.None).ConfigureAwait(false);
                     var channelIds = channels.Select(i => i.Id).ToList();
-                    epgData = GetEpgDataForChannels(channelIds);
+                    epgData = channelIds.SelectMany(GetEpgDataForChannel).ToList();
                 }
                 else
                 {
@@ -2616,10 +2616,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 return new List<ProgramInfo>();
             }
-        }
-        private List<ProgramInfo> GetEpgDataForChannels(List<string> channelIds)
-        {
-            return channelIds.SelectMany(GetEpgDataForChannel).ToList();
         }
 
         private bool _disposed;
