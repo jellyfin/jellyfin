@@ -1,8 +1,6 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.LiveTv;
+﻿using MediaBrowser.Controller.LiveTv;
 using System;
 using System.Globalization;
-using MediaBrowser.Model.LiveTv;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -11,63 +9,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         public static DateTime GetStartTime(TimerInfo timer)
         {
             return timer.StartDate.AddSeconds(-timer.PrePaddingSeconds);
-        }
-
-        public static TimerInfo CreateTimer(ProgramInfo parent, SeriesTimerInfo seriesTimer)
-        {
-            var timer = new TimerInfo
-            {
-                ChannelId = parent.ChannelId,
-                Id = (seriesTimer.Id + parent.Id).GetMD5().ToString("N"),
-                StartDate = parent.StartDate,
-                EndDate = parent.EndDate,
-                ProgramId = parent.Id,
-                PrePaddingSeconds = seriesTimer.PrePaddingSeconds,
-                PostPaddingSeconds = seriesTimer.PostPaddingSeconds,
-                IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired,
-                IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired,
-                KeepUntil = seriesTimer.KeepUntil,
-                Priority = seriesTimer.Priority,
-                Name = parent.Name,
-                Overview = parent.Overview,
-                SeriesId = parent.SeriesId,
-                SeriesTimerId = seriesTimer.Id,
-                ShowId = parent.ShowId
-            };
-
-            CopyProgramInfoToTimerInfo(parent, timer);
-
-            return timer;
-        }
-
-        public static void CopyProgramInfoToTimerInfo(ProgramInfo programInfo, TimerInfo timerInfo)
-        {
-            timerInfo.Name = programInfo.Name;
-            timerInfo.StartDate = programInfo.StartDate;
-            timerInfo.EndDate = programInfo.EndDate;
-            timerInfo.ChannelId = programInfo.ChannelId;
-
-            timerInfo.SeasonNumber = programInfo.SeasonNumber;
-            timerInfo.EpisodeNumber = programInfo.EpisodeNumber;
-            timerInfo.IsMovie = programInfo.IsMovie;
-            timerInfo.IsKids = programInfo.IsKids;
-            timerInfo.IsNews = programInfo.IsNews;
-            timerInfo.IsSports = programInfo.IsSports;
-            timerInfo.ProductionYear = programInfo.ProductionYear;
-            timerInfo.EpisodeTitle = programInfo.EpisodeTitle;
-            timerInfo.OriginalAirDate = programInfo.OriginalAirDate;
-            timerInfo.IsProgramSeries = programInfo.IsSeries;
-
-            timerInfo.IsSeries = programInfo.IsSeries;
-            timerInfo.IsLive = programInfo.IsLive;
-            timerInfo.IsPremiere = programInfo.IsPremiere;
-
-            timerInfo.HomePageUrl = programInfo.HomePageUrl;
-            timerInfo.CommunityRating = programInfo.CommunityRating;
-            timerInfo.Overview = programInfo.Overview;
-            timerInfo.OfficialRating = programInfo.OfficialRating;
-            timerInfo.IsRepeat = programInfo.IsRepeat;
-            timerInfo.SeriesId = programInfo.SeriesId;
         }
 
         public static string GetRecordingName(TimerInfo info)
