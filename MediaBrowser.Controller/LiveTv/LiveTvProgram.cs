@@ -88,6 +88,9 @@ namespace MediaBrowser.Controller.LiveTv
         [IgnoreDataMember]
         public string EpisodeTitle { get; set; }
 
+        [IgnoreDataMember]
+        public string ShowId { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is movie.
         /// </summary>
