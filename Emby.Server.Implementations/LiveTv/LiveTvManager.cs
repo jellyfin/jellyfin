@@ -99,7 +99,7 @@ namespace Emby.Server.Implementations.LiveTv
             _dtoService = dtoService;
             _userDataManager = userDataManager;
 
-            _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger, appHost, _libraryManager);
+            _tvDtoService = new LiveTvDtoService(dtoService, imageProcessor, logger, appHost, _libraryManager);
         }
 
         /// <summary>
@@ -598,6 +598,12 @@ namespace Emby.Server.Implementations.LiveTv
                     DateModified = DateTime.UtcNow,
                     ExternalEtag = info.Etag
                 };
+            }
+
+            if (!string.Equals(info.ShowId, item.ShowId, StringComparison.OrdinalIgnoreCase))
+            {
+                item.ShowId = info.ShowId;
+                forceUpdate = true;
             }
 
             var seriesId = info.SeriesId;
@@ -3142,6 +3148,16 @@ namespace Emby.Server.Implementations.LiveTv
             var info = GetConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
             var provider = _listingProviders.First(i => string.Equals(i.Type, info.Type, StringComparison.OrdinalIgnoreCase));
             return provider.GetChannels(info, cancellationToken);
+        }
+
+        public Guid GetInternalChannelId(string serviceName, string externalId)
+        {
+            return _tvDtoService.GetInternalChannelId(serviceName, externalId);
+        }
+
+        public Guid GetInternalProgramId(string serviceName, string externalId)
+        {
+            return _tvDtoService.GetInternalProgramId(serviceName, externalId);
         }
     }
 }
