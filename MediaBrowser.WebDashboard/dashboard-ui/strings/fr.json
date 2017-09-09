@@ -1188,7 +1188,7 @@
     "LabelCodecIntrosPath": "Chemin des introductions des codecs\u00a0:",
     "LabelCodecIntrosPathHelp": "Un dossier contenant des fichiers vid\u00e9o. Si le nom d'un fichier vid\u00e9o d'introduction correspond au codec vid\u00e9o, au codec audio, au profil audio ou \u00e0 une \u00e9tiquette, alors il sera lu avant le film principal.",
     "OptionConvertRecordingsToStreamingFormat": "Convertir automatiquement les enregistrements vers un format facilement diffusable.",
-    "OptionConvertRecordingsToStreamingFormatHelp": "Les enregistrements seront convertis \u00e0 la vol\u00e9e en MP4 ou en MKV afin de faciliter la lecture sur tous vos appareils.",
+    "OptionConvertRecordingsToStreamingFormatHelp": "Les enregistrements seront convertis \u00e0 la vol\u00e9e en MKV afin de faciliter la lecture sur tous vos appareils.",
     "FeatureRequiresEmbyPremiere": "Cette fonctionnalit\u00e9 n\u00e9cessite un abonnement Emby Premiere.",
     "FileExtension": "Extension de fichier",
     "OptionPlayNextEpisodeAutomatically": "Lancer l'\u00e9pisode suivant automatiquement",

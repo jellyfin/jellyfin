@@ -42,6 +42,8 @@ namespace MediaBrowser.Common
         /// <value><c>true</c> if this instance has pending kernel reload; otherwise, <c>false</c>.</value>
         bool HasPendingRestart { get; }
 
+        bool IsShuttingDown { get; }
+
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
         /// </summary>
@@ -57,11 +59,11 @@ namespace MediaBrowser.Common
         /// Notifies the pending restart.
         /// </summary>
         void NotifyPendingRestart();
-        
+
         /// <summary>
         /// Restarts this instance.
         /// </summary>
-        Task Restart();
+        void Restart();
 
         /// <summary>
         /// Gets the application version.
