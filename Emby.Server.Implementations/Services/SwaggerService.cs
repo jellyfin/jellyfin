@@ -30,6 +30,7 @@ namespace Emby.Server.Implementations.Services
         public string description { get; set; }
         public string version { get; set; }
         public string title { get; set; }
+        public string termsOfService { get; set; }
 
         public SwaggerConcactInfo contact { get; set; }
     }
@@ -90,9 +91,11 @@ namespace Emby.Server.Implementations.Services
         public string @default { get; set; }
     }
 
-    public class SwaggerService : IService
+    public class SwaggerService : IService, IRequiresRequest
     {
         private SwaggerSpec _spec;
+
+        public IRequest Request { get; set; }
 
         public object Get(GetSwaggerSpec request)
         {
@@ -101,6 +104,13 @@ namespace Emby.Server.Implementations.Services
 
         private SwaggerSpec GetSpec()
         {
+            string host = null;
+            Uri uri;
+            if (Uri.TryCreate(Request.RawUrl, UriKind.Absolute, out uri))
+            {
+                host = uri.Host;
+            }
+
             var spec = new SwaggerSpec
             {
                 schemes = new[] { "http" },
@@ -109,15 +119,18 @@ namespace Emby.Server.Implementations.Services
                 info = new SwaggerInfo
                 {
                     title = "Emby Server API",
-                    version = "1",
+                    version = "1.0.0",
                     description = "Explore the Emby Server API",
                     contact = new SwaggerConcactInfo
                     {
                         email = "api@emby.media"
-                    }
+                    },
+                    termsOfService = "https://emby.media/terms"
                 },
                 paths = GetPaths(),
-                definitions = GetDefinitions()
+                definitions = GetDefinitions(),
+                basePath = "/emby",
+                host = host
             };
 
             return spec;
@@ -144,6 +157,15 @@ namespace Emby.Server.Implementations.Services
             {
                 foreach (var info in current.Value)
                 {
+                    if (info.Path.StartsWith("/mediabrowser", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+                    if (info.Path.StartsWith("/emby", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
                     paths[info.Path] = GetPathInfo(info);
                 }
             }
@@ -154,10 +176,19 @@ namespace Emby.Server.Implementations.Services
         private Dictionary<string, SwaggerMethod> GetPathInfo(RestPath info)
         {
             var result = new Dictionary<string, SwaggerMethod>();
-            
+
             foreach (var verb in info.Verbs)
             {
-                result[verb] = new SwaggerMethod
+                var responses = new Dictionary<string, SwaggerResponse>
+                {
+                };
+
+                responses["200"] = new SwaggerResponse
+                {
+                    description = "OK"
+                };
+
+                result[verb.ToLower()] = new SwaggerMethod
                 {
                     summary = info.Summary,
                     produces = new[]
@@ -173,7 +204,9 @@ namespace Emby.Server.Implementations.Services
                     operationId = info.RequestType.Name,
                     tags = new string[] { },
 
-                    parameters = new SwaggerParam[] { }
+                    parameters = new SwaggerParam[] { },
+
+                    responses = responses
                 };
             }
 
