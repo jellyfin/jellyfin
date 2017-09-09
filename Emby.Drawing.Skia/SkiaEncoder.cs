@@ -48,7 +48,10 @@ namespace Emby.Drawing.Skia
                     "astc",
                     "ktx",
                     "pkm",
-                    "wbmp"
+                    "wbmp",
+
+                    // working on windows at least
+                    "cr2"
                 };
             }
         }
