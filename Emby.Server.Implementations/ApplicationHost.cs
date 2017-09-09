@@ -1,5 +1,4 @@
-﻿using Emby.Common.Implementations;
-using Emby.Common.Implementations.Serialization;
+﻿using Emby.Common.Implementations.Serialization;
 using Emby.Dlna;
 using Emby.Dlna.ConnectionManager;
 using Emby.Dlna.ContentDirectory;
@@ -8,12 +7,16 @@ using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Ssdp;
 using Emby.Drawing;
 using Emby.Photos;
+using Emby.Server.Core.Cryptography;
 using Emby.Server.Implementations.Activity;
+using Emby.Server.Implementations.Archiving;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
 using Emby.Server.Implementations.Configuration;
+using Emby.Server.Implementations.Cryptography;
 using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Devices;
+using Emby.Server.Implementations.Diagnostics;
 using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.FFMpeg;
 using Emby.Server.Implementations.HttpServer;
@@ -23,14 +26,20 @@ using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.MediaEncoder;
-using Emby.Server.Implementations.Migrations;
+using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Notifications;
 using Emby.Server.Implementations.Playlists;
+using Emby.Server.Implementations.Reflection;
+using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
+using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.Social;
+using Emby.Server.Implementations.Threading;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
+using Emby.Server.Implementations.Xml;
+using Emby.Server.MediaEncoding.Subtitles;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -52,9 +61,6 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
@@ -72,10 +78,13 @@ using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.LocalMetadata.Savers;
+using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -87,7 +96,9 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Social;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Text;
+using MediaBrowser.Model.Threading;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Model.Xml;
 using MediaBrowser.Providers.Chapters;
@@ -97,7 +108,6 @@ using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using OpenSubtitlesHandler;
 using ServiceStack;
-using SocketHttpListener.Primitives;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -111,22 +121,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Server.Core.Cryptography;
-using Emby.Server.Implementations.Archiving;
-using Emby.Server.Implementations.Cryptography;
-using Emby.Server.Implementations.Diagnostics;
-using Emby.Server.Implementations.Net;
-using Emby.Server.Implementations.Reflection;
-using Emby.Server.Implementations.ScheduledTasks;
-using Emby.Server.Implementations.Serialization;
-using Emby.Server.Implementations.Threading;
-using Emby.Server.Implementations.Xml;
-using Emby.Server.MediaEncoding.Subtitles;
-using MediaBrowser.MediaEncoding.BdInfo;
-using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Threading;
 using StringExtensions = MediaBrowser.Controller.Extensions.StringExtensions;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 
@@ -135,7 +129,7 @@ namespace Emby.Server.Implementations
     /// <summary>
     /// Class CompositionRoot
     /// </summary>
-    public abstract class ApplicationHost : IServerApplicationHost, IDependencyContainer
+    public abstract class ApplicationHost : IServerApplicationHost, IDependencyContainer, IDisposable
     {
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -170,6 +164,8 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value><c>true</c> if this instance has pending application restart; otherwise, <c>false</c>.</value>
         public bool HasPendingRestart { get; private set; }
+
+        public bool IsShuttingDown { get; private set; }
 
         /// <summary>
         /// Gets or sets the logger.
@@ -367,7 +363,7 @@ namespace Emby.Server.Implementations
         protected IAuthService AuthService { get; private set; }
 
         protected readonly StartupOptions StartupOptions;
-        private readonly string _releaseAssetFilename;
+        protected readonly string ReleaseAssetFilename;
 
         internal IPowerManagement PowerManagement { get; private set; }
         internal IImageEncoder ImageEncoder { get; private set; }
@@ -420,7 +416,7 @@ namespace Emby.Server.Implementations
             Logger = LogManager.GetLogger("App");
 
             StartupOptions = options;
-            _releaseAssetFilename = releaseAssetFilename;
+            ReleaseAssetFilename = releaseAssetFilename;
             PowerManagement = powerManagement;
 
             ImageEncoder = imageEncoder;
@@ -1755,25 +1751,35 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Restarts this instance.
         /// </summary>
-        public async Task Restart()
+        public void Restart()
         {
             if (!CanSelfRestart)
             {
                 throw new PlatformNotSupportedException("The server is unable to self-restart. Please restart manually.");
             }
 
-            try
+            if (IsShuttingDown)
             {
-                await SessionManager.SendServerRestartNotification(CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error sending server restart notification", ex);
+                return;
             }
 
-            Logger.Info("Calling RestartInternal");
+            IsShuttingDown = true;
 
-            RestartInternal();
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await SessionManager.SendServerRestartNotification(CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error sending server restart notification", ex);
+                }
+
+                Logger.Info("Calling RestartInternal");
+
+                RestartInternal();
+            });
         }
 
         protected abstract void RestartInternal();
@@ -1880,6 +1886,7 @@ namespace Emby.Server.Implementations
             return new SystemInfo
             {
                 HasPendingRestart = HasPendingRestart,
+                IsShuttingDown = IsShuttingDown,
                 Version = ApplicationVersion.ToString(),
                 WebSocketPortNumber = HttpPort,
                 FailedPluginAssemblies = FailedAssemblies.ToArray(),
@@ -2107,6 +2114,13 @@ namespace Emby.Server.Implementations
         /// </summary>
         public async Task Shutdown()
         {
+            if (IsShuttingDown)
+            {
+                return;
+            }
+
+            IsShuttingDown = true;
+
             try
             {
                 await SessionManager.SendServerShutdownNotification(CancellationToken.None).ConfigureAwait(false);
@@ -2185,20 +2199,27 @@ namespace Emby.Server.Implementations
         /// <returns>Task{CheckForUpdateResult}.</returns>
         public async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var cacheLength = TimeSpan.FromHours(1);
+            var cacheLength = TimeSpan.FromMinutes(5);
             var updateLevel = SystemUpdateLevel;
 
-            if (updateLevel != PackageVersionClass.Release)
-            {
-                cacheLength = TimeSpan.FromMinutes(5);
-            }
-
-            var result = await new GithubUpdater(HttpClient, JsonSerializer).CheckForUpdateResult("MediaBrowser", "Emby", ApplicationVersion, updateLevel, _releaseAssetFilename,
-                "MBServer", "Mbserver.zip", cacheLength, cancellationToken).ConfigureAwait(false);
+            var result = await new GithubUpdater(HttpClient, JsonSerializer).CheckForUpdateResult("MediaBrowser", 
+                "Emby", 
+                ApplicationVersion, 
+                updateLevel,
+                ReleaseAssetFilename,
+                "MBServer",
+                UpdateTargetFileName, 
+                cacheLength, 
+                cancellationToken).ConfigureAwait(false);
 
             HasUpdateAvailable = result.IsUpdateAvailable;
 
             return result;
+        }
+
+        protected virtual string UpdateTargetFileName
+        {
+            get { return "Mbserver.zip"; }
         }
 
         /// <summary>
