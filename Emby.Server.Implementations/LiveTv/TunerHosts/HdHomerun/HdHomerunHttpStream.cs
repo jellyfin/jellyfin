@@ -158,58 +158,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
         {
-            if (_enableFileBuffer)
-            {
-                return CopyFileTo(_tempFilePath, stream, cancellationToken);
-            }
             return _multicastStream.CopyToAsync(stream, cancellationToken);
-            //return CopyFileTo(_tempFilePath, stream, cancellationToken);
-        }
-
-        protected async Task CopyFileTo(string path, Stream outputStream, CancellationToken cancellationToken)
-        {
-            long startPosition = -20000;
-            if (startPosition < 0)
-            {
-                var length = FileSystem.GetFileInfo(path).Length;
-                startPosition = Math.Max(length - startPosition, 0);
-            }
-
-            _logger.Info("Live stream starting position is {0} bytes", startPosition.ToString(CultureInfo.InvariantCulture));
-
-            var allowAsync = Environment.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows;
-            // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
-
-            using (var inputStream = GetInputStream(path, startPosition, allowAsync))
-            {
-                if (startPosition > 0)
-                {
-                    inputStream.Position = startPosition;
-                }
-
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    long bytesRead;
-
-                    if (allowAsync)
-                    {
-                        bytesRead = await AsyncStreamCopier.CopyStream(inputStream, outputStream, 81920, 2, cancellationToken).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        StreamHelper.CopyTo(inputStream, outputStream, 81920, cancellationToken);
-                        bytesRead = 1;
-                    }
-
-                    //var position = fs.Position;
-                    //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
-
-                    if (bytesRead == 0)
-                    {
-                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-                    }
-                }
-            }
         }
     }
 }

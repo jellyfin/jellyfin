@@ -211,15 +211,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     long bytesRead;
 
-                    if (allowAsync)
-                    {
-                        bytesRead = await AsyncStreamCopier.CopyStream(inputStream, outputStream, 81920, 2, cancellationToken).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        StreamHelper.CopyTo(inputStream, outputStream, 81920, cancellationToken);
-                        bytesRead = 1;
-                    }
+                    StreamHelper.CopyTo(inputStream, outputStream, 81920, cancellationToken);
+                    bytesRead = 1;
 
                     //var position = fs.Position;
                     //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
@@ -283,22 +276,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             //cancellationToken.Register(() => taskCompletion.TrySetCanceled());
 
             //return taskCompletion.Task;
-        }
-
-        private void StreamCopyCallback(IAsyncResult result)
-        {
-            var copier = (AsyncStreamCopier)result.AsyncState;
-            var taskCompletion = copier.TaskCompletionSource;
-
-            try
-            {
-                copier.EndCopy(result);
-                taskCompletion.TrySetResult(0);
-            }
-            catch (Exception ex)
-            {
-                taskCompletion.TrySetException(ex);
-            }
         }
 
         public class UdpClientStream : Stream

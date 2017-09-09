@@ -25,6 +25,7 @@ using Emby.Server.Implementations.EnvironmentInfo;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Logging;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.IO;
 using SystemEvents = Emby.Server.Implementations.SystemEvents;
 
@@ -32,13 +33,13 @@ namespace MediaBrowser.ServerApplication
 {
     public class MainStartup
     {
-        private static ApplicationHost _appHost;
+        private static IServerApplicationPaths _appPaths;
+        private static ILogManager _logManager;
 
         private static ILogger _logger;
 
         public static bool IsRunningAsService = false;
         private static bool _canRestartService = false;
-        private static bool _appHostDisposed;
 
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool SetDllDirectory(string lpPathName);
@@ -46,6 +47,7 @@ namespace MediaBrowser.ServerApplication
         public static string ApplicationPath;
 
         private static IFileSystem FileSystem;
+        private static bool _restartOnShutdown;
 
         /// <summary>
         /// Defines the entry point of the application.
@@ -71,9 +73,12 @@ namespace MediaBrowser.ServerApplication
             SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
 
             var appPaths = CreateApplicationPaths(ApplicationPath, IsRunningAsService);
+            _appPaths = appPaths;
 
             using (var logManager = new SimpleLogManager(appPaths.LogDirectoryPath, "server"))
             {
+                _logManager = logManager;
+
                 logManager.ReloadLogger(LogSeverity.Debug);
                 logManager.AddConsoleOutput();
 
@@ -129,15 +134,26 @@ namespace MediaBrowser.ServerApplication
                     return;
                 }
 
-                try
+                RunApplication(appPaths, logManager, IsRunningAsService, options);
+
+                logger.Info("Shutdown complete");
+
+                if (_restartOnShutdown)
                 {
-                    RunApplication(appPaths, logManager, IsRunningAsService, options);
-                }
-                finally
-                {
-                    OnServiceShutdown();
+                    logger.Info("Starting new server process");
+                    var restartCommandLine = GetRestartCommandLine();
+
+                    Process.Start(restartCommandLine.Item1, restartCommandLine.Item2);
                 }
             }
+        }
+
+        public static Tuple<string, string> GetRestartCommandLine()
+        {
+            var currentProcess = Process.GetCurrentProcess();
+            var processModulePath = currentProcess.MainModule.FileName;
+
+            return new Tuple<string, string>(processModulePath, Environment.CommandLine);
         }
 
         /// <summary>
@@ -314,7 +330,7 @@ namespace MediaBrowser.ServerApplication
 
             FileSystem = fileSystem;
 
-            _appHost = new WindowsAppHost(appPaths,
+            using (var appHost = new WindowsAppHost(appPaths,
                 logManager,
                 options,
                 fileSystem,
@@ -323,60 +339,59 @@ namespace MediaBrowser.ServerApplication
                 environmentInfo,
                 new NullImageEncoder(),
                 new SystemEvents(logManager.GetLogger("SystemEvents")),
-                new Networking.NetworkManager(logManager.GetLogger("NetworkManager")));
-
-            var initProgress = new Progress<double>();
-
-            if (!runService)
+                new Networking.NetworkManager(logManager.GetLogger("NetworkManager"))))
             {
-                if (!options.ContainsOption("-nosplash")) ShowSplashScreen(_appHost.ApplicationVersion, initProgress, logManager.GetLogger("Splash"));
+                var initProgress = new Progress<double>();
 
-                // Not crazy about this but it's the only way to suppress ffmpeg crash dialog boxes
-                SetErrorMode(ErrorModes.SEM_FAILCRITICALERRORS | ErrorModes.SEM_NOALIGNMENTFAULTEXCEPT |
-                             ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
-            }
+                if (!runService)
+                {
+                    if (!options.ContainsOption("-nosplash")) ShowSplashScreen(appHost.ApplicationVersion, initProgress, logManager.GetLogger("Splash"));
 
-            var task = _appHost.Init(initProgress);
-            Task.WaitAll(task);
+                    // Not crazy about this but it's the only way to suppress ffmpeg crash dialog boxes
+                    SetErrorMode(ErrorModes.SEM_FAILCRITICALERRORS | ErrorModes.SEM_NOALIGNMENTFAULTEXCEPT |
+                                 ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
+                }
 
-            if (!runService)
-            {
-                task = InstallVcredist2013IfNeeded(_appHost, _logger);
+                var task = appHost.Init(initProgress);
                 Task.WaitAll(task);
 
-                // needed by skia
-                task = InstallVcredist2015IfNeeded(_appHost, _logger);
-                Task.WaitAll(task);
-            }
+                if (!runService)
+                {
+                    task = InstallVcredist2013IfNeeded(appHost.HttpClient, _logger);
+                    Task.WaitAll(task);
 
-            // set image encoder here
-            _appHost.ImageProcessor.ImageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => _appHost.HttpClient, appPaths);
+                    // needed by skia
+                    task = InstallVcredist2015IfNeeded(appHost.HttpClient, _logger);
+                    Task.WaitAll(task);
+                }
 
-            task = task.ContinueWith(new Action<Task>(a => _appHost.RunStartupTasks()), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
+                // set image encoder here
+                appHost.ImageProcessor.ImageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => appHost.HttpClient, appPaths);
 
-            if (runService)
-            {
-                StartService(logManager);
-            }
-            else
-            {
-                Task.WaitAll(task);
+                task = task.ContinueWith(new Action<Task>(a => appHost.RunStartupTasks()), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
 
-                Microsoft.Win32.SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+                if (runService)
+                {
+                    StartService(logManager);
+                }
+                else
+                {
+                    Task.WaitAll(task);
 
-                HideSplashScreen();
+                    HideSplashScreen();
 
-                ShowTrayIcon();
+                    ShowTrayIcon(appHost);
+                }
             }
         }
 
         private static ServerNotifyIcon _serverNotifyIcon;
         private static TaskScheduler _mainTaskScheduler;
-        private static void ShowTrayIcon()
+        private static void ShowTrayIcon(ApplicationHost appHost)
         {
             //Application.EnableVisualStyles();
             //Application.SetCompatibleTextRenderingDefault(false);
-            _serverNotifyIcon = new ServerNotifyIcon(_appHost.LogManager, _appHost, _appHost.ServerConfigurationManager, _appHost.LocalizationManager);
+            _serverNotifyIcon = new ServerNotifyIcon(appHost.LogManager, appHost, appHost.ServerConfigurationManager, appHost.LocalizationManager);
             _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             Application.Run();
         }
@@ -413,14 +428,6 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
-        static void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
-        {
-            if (e.Reason == SessionSwitchReason.SessionLogon)
-            {
-                BrowserLauncher.OpenDashboard(_appHost);
-            }
-        }
-
         public static void Invoke(Action action)
         {
             if (IsRunningAsService)
@@ -452,14 +459,6 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         static void service_Disposed(object sender, EventArgs e)
         {
-            OnServiceShutdown();
-        }
-
-        private static void OnServiceShutdown()
-        {
-            _logger.Info("Shutting down");
-
-            DisposeAppHost();
         }
 
         /// <summary>
@@ -562,7 +561,7 @@ namespace MediaBrowser.ServerApplication
         {
             var exception = (Exception)e.ExceptionObject;
 
-            new UnhandledExceptionWriter(_appHost.ServerConfigurationManager.ApplicationPaths, _logger, _appHost.LogManager, FileSystem, new ConsoleLogger()).Log(exception);
+            new UnhandledExceptionWriter(_appPaths, _logger, _logManager, FileSystem, new ConsoleLogger()).Log(exception);
 
             if (!IsRunningAsService)
             {
@@ -623,42 +622,19 @@ namespace MediaBrowser.ServerApplication
             }
             else
             {
-                DisposeAppHost();
-
                 ShutdownWindowsApplication();
             }
         }
 
         public static void Restart()
         {
-            DisposeAppHost();
-
             if (IsRunningAsService)
             {
-                RestartWindowsService();
             }
             else
             {
-                //_logger.Info("Hiding server notify icon");
-                //_serverNotifyIcon.Visible = false;
-
-                _logger.Info("Starting new instance");
-                //Application.Restart();
-                Process.Start(ApplicationPath);
-
+                _restartOnShutdown = true;
                 ShutdownWindowsApplication();
-            }
-        }
-
-        private static void DisposeAppHost()
-        {
-            if (!_appHostDisposed)
-            {
-                _logger.Info("Disposing app host");
-
-                _appHostDisposed = true;
-                _appHost.Dispose();
-                _logger.Info("App host dispose complete");
             }
         }
 
@@ -671,9 +647,7 @@ namespace MediaBrowser.ServerApplication
             }
 
             _logger.Info("Calling Application.Exit");
-            //Application.Exit();
-
-            Environment.Exit(0);
+            Application.Exit();
         }
 
         private static void ShutdownWindowsService()
@@ -689,23 +663,7 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
-        private static void RestartWindowsService()
-        {
-            _logger.Info("Restarting background service");
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = "cmd.exe",
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                Verb = "runas",
-                ErrorDialog = false,
-                Arguments = String.Format("/c sc stop {0} & sc start {0} & sc start {0}", BackgroundService.GetExistingServiceName())
-            };
-            Process.Start(startInfo);
-        }
-
-        private static async Task InstallVcredist2013IfNeeded(ApplicationHost appHost, ILogger logger)
+        private static async Task InstallVcredist2013IfNeeded(IHttpClient httpClient, ILogger logger)
         {
             // Reference 
             // http://stackoverflow.com/questions/12206314/detect-if-visual-c-redistributable-for-visual-studio-2012-is-installed
@@ -737,7 +695,7 @@ namespace MediaBrowser.ServerApplication
 
             try
             {
-                await InstallVcredist(GetVcredist2013Url()).ConfigureAwait(false);
+                await InstallVcredist(GetVcredist2013Url(), httpClient).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -757,7 +715,7 @@ namespace MediaBrowser.ServerApplication
             return "https://github.com/MediaBrowser/Emby.Resources/raw/master/vcredist2013/vcredist_x86.exe";
         }
 
-        private static async Task InstallVcredist2015IfNeeded(ApplicationHost appHost, ILogger logger)
+        private static async Task InstallVcredist2015IfNeeded(IHttpClient httpClient, ILogger logger)
         {
             // Reference 
             // http://stackoverflow.com/questions/12206314/detect-if-visual-c-redistributable-for-visual-studio-2012-is-installed
@@ -813,7 +771,7 @@ namespace MediaBrowser.ServerApplication
 
             try
             {
-                await InstallVcredist(GetVcredist2015Url()).ConfigureAwait(false);
+                await InstallVcredist(GetVcredist2015Url(), httpClient).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -833,10 +791,8 @@ namespace MediaBrowser.ServerApplication
             return "https://github.com/MediaBrowser/Emby.Resources/raw/master/vcredist2015/vc_redist.x86.exe";
         }
 
-        private async static Task InstallVcredist(string url)
+        private async static Task InstallVcredist(string url, IHttpClient httpClient)
         {
-            var httpClient = _appHost.HttpClient;
-
             var tmp = await httpClient.GetTempFile(new HttpRequestOptions
             {
                 Url = url,

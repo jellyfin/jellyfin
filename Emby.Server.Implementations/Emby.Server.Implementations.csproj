@@ -129,7 +129,6 @@
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpResponse.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="Images\BaseDynamicImageProvider.cs" />
-    <Compile Include="IO\AsyncStreamCopier.cs" />
     <Compile Include="IO\FileRefresher.cs" />
     <Compile Include="IO\IsoManager.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />

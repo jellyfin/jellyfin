@@ -192,11 +192,7 @@ namespace MediaBrowser.Api.System
         /// <param name="request">The request.</param>
         public void Post(RestartApplication request)
         {
-            Task.Run(async () =>
-            {
-                await Task.Delay(100).ConfigureAwait(false);
-                await _appHost.Restart().ConfigureAwait(false);
-            });
+            _appHost.Restart();
         }
 
         /// <summary>
