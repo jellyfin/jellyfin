@@ -439,14 +439,6 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public virtual bool SupportsRunningAsService
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         private DeviceId _deviceId;
         public string SystemId
         {
@@ -470,14 +462,6 @@ namespace Emby.Server.Implementations
             get
             {
                 return "Emby Server";
-            }
-        }
-
-        public virtual bool IsRunningAsService
-        {
-            get
-            {
-                return false;
             }
         }
 
@@ -1910,7 +1894,6 @@ namespace Emby.Server.Implementations
                 HasUpdateAvailable = HasUpdateAvailable,
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
-                SupportsRunningAsService = SupportsRunningAsService,
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,
                 SupportsLibraryMonitor = true,

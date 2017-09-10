@@ -31,11 +31,6 @@ namespace MediaBrowser.ServerApplication
             fileSystem.AddShortcutHandler(new LnkShortcutHandler());
         }
 
-        public override bool IsRunningAsService
-        {
-            get { return MainStartup.IsRunningAsService; }
-        }
-
         protected override IConnectManager CreateConnectManager()
         {
             return new ConnectManager();
@@ -108,14 +103,6 @@ namespace MediaBrowser.ServerApplication
             {
                 //Remove our shortcut from the startup folder for this user
                 FileSystemManager.DeleteFile(Path.Combine(startupPath, "Emby Server.lnk"));
-            }
-        }
-
-        public override bool SupportsRunningAsService
-        {
-            get
-            {
-                return true;
             }
         }
 
