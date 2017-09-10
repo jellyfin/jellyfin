@@ -39,7 +39,6 @@ namespace MediaBrowser.ServerApplication
         private static ILogger _logger;
 
         public static bool IsRunningAsService = false;
-        private static bool _canRestartService = false;
 
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool SetDllDirectory(string lpPathName);
@@ -57,11 +56,6 @@ namespace MediaBrowser.ServerApplication
         {
             var options = new StartupOptions(Environment.GetCommandLineArgs());
             IsRunningAsService = options.ContainsOption("-service");
-
-            if (IsRunningAsService)
-            {
-                //_canRestartService = CanRestartWindowsService();
-            }
 
             var currentProcess = Process.GetCurrentProcess();
 
@@ -86,22 +80,6 @@ namespace MediaBrowser.ServerApplication
 
                 ApplicationHost.LogEnvironmentInfo(logger, appPaths, true);
 
-                // Install directly
-                if (options.ContainsOption("-installservice"))
-                {
-                    logger.Info("Performing service installation");
-                    InstallService(ApplicationPath, logger);
-                    return;
-                }
-
-                // Restart with admin rights, then install
-                if (options.ContainsOption("-installserviceasadmin"))
-                {
-                    logger.Info("Performing service installation");
-                    RunServiceInstallation(ApplicationPath);
-                    return;
-                }
-
                 // Uninstall directly
                 if (options.ContainsOption("-uninstallservice"))
                 {
@@ -119,8 +97,6 @@ namespace MediaBrowser.ServerApplication
                 }
 
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-
-                RunServiceInstallationIfNeeded(ApplicationPath);
 
                 if (IsAlreadyRunning(ApplicationPath, currentProcess))
                 {
@@ -154,6 +130,14 @@ namespace MediaBrowser.ServerApplication
             var processModulePath = currentProcess.MainModule.FileName;
 
             return new Tuple<string, string>(processModulePath, Environment.CommandLine);
+        }
+
+        private static bool IsServiceInstalled()
+        {
+            var serviceName = BackgroundService.GetExistingServiceName();
+            var ctl = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == serviceName);
+
+            return ctl != null;
         }
 
         /// <summary>
@@ -261,7 +245,7 @@ namespace MediaBrowser.ServerApplication
 
             var resourcesPath = Path.GetDirectoryName(applicationPath);
 
-            if (runAsService)
+            if (runAsService && IsServiceInstalled())
             {
                 var systemPath = Path.GetDirectoryName(applicationPath);
 
@@ -283,7 +267,7 @@ namespace MediaBrowser.ServerApplication
             {
                 if (IsRunningAsService)
                 {
-                    return _canRestartService;
+                    return false;
                 }
                 else
                 {
@@ -306,7 +290,7 @@ namespace MediaBrowser.ServerApplication
 
                 if (IsRunningAsService)
                 {
-                    return _canRestartService;
+                    return false;
                 }
                 else
                 {
@@ -370,7 +354,7 @@ namespace MediaBrowser.ServerApplication
 
                 task = task.ContinueWith(new Action<Task>(a => appHost.RunStartupTasks()), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
 
-                if (runService)
+                if (runService && IsServiceInstalled())
                 {
                     StartService(logManager);
                 }
@@ -447,35 +431,7 @@ namespace MediaBrowser.ServerApplication
         {
             var service = new BackgroundService(logManager.GetLogger("Service"));
 
-            service.Disposed += service_Disposed;
-
             ServiceBase.Run(service);
-        }
-
-        /// <summary>
-        /// Handles the Disposed event of the service control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        static void service_Disposed(object sender, EventArgs e)
-        {
-        }
-
-        /// <summary>
-        /// Installs the service.
-        /// </summary>
-        private static void InstallService(string applicationPath, ILogger logger)
-        {
-            try
-            {
-                ManagedInstallerClass.InstallHelper(new[] { applicationPath });
-
-                logger.Info("Service installation succeeded");
-            }
-            catch (Exception ex)
-            {
-                logger.ErrorException("Uninstall failed", ex);
-            }
         }
 
         /// <summary>
@@ -492,40 +448,6 @@ namespace MediaBrowser.ServerApplication
             catch (Exception ex)
             {
                 logger.ErrorException("Uninstall failed", ex);
-            }
-        }
-
-        private static void RunServiceInstallationIfNeeded(string applicationPath)
-        {
-            var serviceName = BackgroundService.GetExistingServiceName();
-            var ctl = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == serviceName);
-
-            if (ctl == null)
-            {
-                RunServiceInstallation(applicationPath);
-            }
-        }
-
-        /// <summary>
-        /// Runs the service installation.
-        /// </summary>
-        private static void RunServiceInstallation(string applicationPath)
-        {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = applicationPath,
-
-                Arguments = "-installservice",
-
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                Verb = "runas",
-                ErrorDialog = false
-            };
-
-            using (var process = Process.Start(startInfo))
-            {
-                process.WaitForExit();
             }
         }
 
@@ -616,7 +538,7 @@ namespace MediaBrowser.ServerApplication
 
         public static void Shutdown()
         {
-            if (IsRunningAsService)
+            if (IsRunningAsService && IsServiceInstalled())
             {
                 ShutdownWindowsService();
             }
