@@ -36,10 +36,6 @@ namespace MediaBrowser.Providers.People
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
 
-        private int _requestCount;
-        private readonly object _requestCountLock = new object();
-        private DateTime _lastRequestCountReset;
-
         public MovieDbPersonProvider(IFileSystem fileSystem, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogger logger)
         {
             _fileSystem = fileSystem;
@@ -89,26 +85,8 @@ namespace MediaBrowser.Providers.People
 
             if (searchInfo.IsAutomated)
             {
-                lock (_requestCountLock)
-                {
-                    if ((DateTime.UtcNow - _lastRequestCountReset).TotalHours >= 1)
-                    {
-                        _requestCount = 0;
-                        _lastRequestCountReset = DateTime.UtcNow;
-                    }
-
-                    var requestCount = _requestCount;
-
-                    if (requestCount >= 40)
-                    {
-                        //_logger.Debug("Throttling Tmdb people");
-
-                        // This needs to be throttled
-                        return new List<RemoteSearchResult>();
-                    }
-
-                    _requestCount = requestCount + 1;
-                }
+                // Don't hammer moviedb searching by name
+                return new List<RemoteSearchResult>();
             }
 
             var url = string.Format(@"https://api.themoviedb.org/3/search/person?api_key={1}&query={0}", WebUtility.UrlEncode(searchInfo.Name), MovieDbProvider.ApiKey);
@@ -179,7 +157,10 @@ namespace MediaBrowser.Providers.People
                 var item = new Person();
                 result.HasMetadata = true;
 
-                item.Name = info.name;
+                // Take name from incoming info, don't rename the person
+                // TODO: This should go in PersonMetadataService, not each person provider
+                item.Name = id.Name;
+
                 item.HomePageUrl = info.homepage;
 
                 if (!string.IsNullOrWhiteSpace(info.place_of_birth))
