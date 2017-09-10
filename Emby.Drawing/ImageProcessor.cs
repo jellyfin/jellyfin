@@ -724,6 +724,12 @@ namespace Emby.Drawing
                 .TrimStart('.')
                 .Replace("jpeg", "jpg", StringComparison.OrdinalIgnoreCase);
 
+            // These are just jpg files renamed as tbn
+            if (string.Equals(inputFormat, "tbn", StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, DateTime>(originalImagePath, dateModified);
+            }
+
             if (!_imageEncoder.SupportedInputFormats.Contains(inputFormat, StringComparer.OrdinalIgnoreCase))
             {
                 try
