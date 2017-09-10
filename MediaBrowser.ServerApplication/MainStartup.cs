@@ -134,10 +134,17 @@ namespace MediaBrowser.ServerApplication
 
         private static bool IsServiceInstalled()
         {
-            var serviceName = BackgroundService.GetExistingServiceName();
-            var ctl = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == serviceName);
+            try
+            {
+                var serviceName = BackgroundService.GetExistingServiceName();
+                var ctl = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == serviceName);
 
-            return ctl != null;
+                return ctl != null;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
