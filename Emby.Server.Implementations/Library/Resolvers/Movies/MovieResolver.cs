@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Naming.Video;
+using Emby.Naming.Video;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -138,7 +138,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
 
-            var resolver = new VideoListResolver(namingOptions, new NullLogger());
+            var resolver = new VideoListResolver(namingOptions);
             var resolverResult = resolver.Resolve(files, suppportMultiEditions).ToList();
 
             var result = new MultiItemResolverResult
@@ -490,7 +490,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             }
 
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
-            var resolver = new StackResolver(namingOptions, new NullLogger());
+            var resolver = new StackResolver(namingOptions);
 
             var result = resolver.ResolveDirectories(folderPaths);
 
