@@ -33,15 +33,39 @@ namespace MediaBrowser.Providers.MediaInfo
             IEnumerable<string> languages,
             CancellationToken cancellationToken)
         {
+            var downloadedLanguages = new List<string>();
+
+            foreach (var lang in languages)
+            {
+                var downloaded = await DownloadSubtitles(video, mediaStreams, skipIfEmbeddedSubtitlesPresent,
+                    skipIfAudioTrackMatches, requirePerfectMatch, lang, cancellationToken).ConfigureAwait(false);
+
+                if (downloaded)
+                {
+                    downloadedLanguages.Add(lang);
+                }
+            }
+
+            return downloadedLanguages;
+        }
+
+        public Task<bool> DownloadSubtitles(Video video,
+            List<MediaStream> mediaStreams,
+            bool skipIfEmbeddedSubtitlesPresent,
+            bool skipIfAudioTrackMatches,
+            bool requirePerfectMatch,
+            string lang,
+            CancellationToken cancellationToken)
+        {
             if (video.LocationType != LocationType.FileSystem ||
                 video.VideoType != VideoType.VideoFile)
             {
-                return new List<string>();
+                return Task.FromResult(false);
             }
 
             if (!video.IsCompleteMedia)
             {
-                return new List<string>();
+                return Task.FromResult(false);
             }
 
             VideoContentType mediaType;
@@ -57,30 +81,11 @@ namespace MediaBrowser.Providers.MediaInfo
             else
             {
                 // These are the only supported types
-                return new List<string>();
+                return Task.FromResult(false);
             }
 
-            var downloadedLanguages = new List<string>();
-
-            foreach (var lang in languages)
-            {
-                try
-                {
-                    var downloaded = await DownloadSubtitles(video, mediaStreams, skipIfEmbeddedSubtitlesPresent, skipIfAudioTrackMatches, requirePerfectMatch, lang, mediaType, cancellationToken)
-                        .ConfigureAwait(false);
-
-                    if (downloaded)
-                    {
-                        downloadedLanguages.Add(lang);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error downloading subtitles", ex);
-                }
-            }
-
-            return downloadedLanguages;
+            return DownloadSubtitles(video, mediaStreams, skipIfEmbeddedSubtitlesPresent, skipIfAudioTrackMatches,
+                requirePerfectMatch, lang, mediaType, cancellationToken);
         }
 
         private async Task<bool> DownloadSubtitles(Video video,

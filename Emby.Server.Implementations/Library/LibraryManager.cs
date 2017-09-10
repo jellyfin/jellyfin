@@ -620,36 +620,11 @@ namespace Emby.Server.Implementations.Library
             return ResolveItem(args, resolvers);
         }
 
-        private readonly List<string> _ignoredPaths = new List<string>();
-
-        public void RegisterIgnoredPath(string path)
-        {
-            lock (_ignoredPaths)
-            {
-                _ignoredPaths.Add(path);
-            }
-        }
-        public void UnRegisterIgnoredPath(string path)
-        {
-            lock (_ignoredPaths)
-            {
-                _ignoredPaths.Remove(path);
-            }
-        }
-
         public bool IgnoreFile(FileSystemMetadata file, BaseItem parent)
         {
             if (EntityResolutionIgnoreRules.Any(r => r.ShouldIgnore(file, parent)))
             {
                 return true;
-            }
-
-            //lock (_ignoredPaths)
-            {
-                if (_ignoredPaths.Contains(file.FullName, StringComparer.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
             }
             return false;
         }
