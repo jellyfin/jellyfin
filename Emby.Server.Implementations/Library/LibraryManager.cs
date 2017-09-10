@@ -14,10 +14,10 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Naming.Audio;
-using MediaBrowser.Naming.Common;
-using MediaBrowser.Naming.TV;
-using MediaBrowser.Naming.Video;
+using Emby.Naming.Audio;
+using Emby.Naming.Common;
+using Emby.Naming.TV;
+using Emby.Naming.Video;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -38,7 +38,7 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Net;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
-using VideoResolver = MediaBrowser.Naming.Video.VideoResolver;
+using VideoResolver = Emby.Naming.Video.VideoResolver;
 using MediaBrowser.Common.Configuration;
 
 using MediaBrowser.Controller.Dto;
@@ -2346,7 +2346,7 @@ namespace Emby.Server.Implementations.Library
 
         public bool IsVideoFile(string path, LibraryOptions libraryOptions)
         {
-            var resolver = new VideoResolver(GetNamingOptions(), new NullLogger());
+            var resolver = new VideoResolver(GetNamingOptions());
             return resolver.IsVideoFile(path);
         }
 
@@ -2373,8 +2373,7 @@ namespace Emby.Server.Implementations.Library
 
         public bool FillMissingEpisodeNumbersFromPath(Episode episode)
         {
-            var resolver = new EpisodeResolver(GetNamingOptions(),
-                new NullLogger());
+            var resolver = new EpisodeResolver(GetNamingOptions());
 
             var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd;
 
@@ -2382,11 +2381,11 @@ namespace Emby.Server.Implementations.Library
 
             var episodeInfo = locationType == LocationType.FileSystem || locationType == LocationType.Offline ?
                 resolver.Resolve(episode.Path, isFolder) :
-                new MediaBrowser.Naming.TV.EpisodeInfo();
+                new Emby.Naming.TV.EpisodeInfo();
 
             if (episodeInfo == null)
             {
-                episodeInfo = new MediaBrowser.Naming.TV.EpisodeInfo();
+                episodeInfo = new Emby.Naming.TV.EpisodeInfo();
             }
 
             var changed = false;
@@ -2557,7 +2556,7 @@ namespace Emby.Server.Implementations.Library
 
         public ItemLookupInfo ParseName(string name)
         {
-            var resolver = new VideoResolver(GetNamingOptions(), new NullLogger());
+            var resolver = new VideoResolver(GetNamingOptions());
 
             var result = resolver.CleanDateTime(name);
             var cleanName = resolver.CleanString(result.Name);
@@ -2578,7 +2577,7 @@ namespace Emby.Server.Implementations.Library
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, _videoFileExtensions, false, false))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(namingOptions, new NullLogger());
+            var videoListResolver = new VideoListResolver(namingOptions);
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 
@@ -2626,7 +2625,7 @@ namespace Emby.Server.Implementations.Library
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, _videoFileExtensions, false, false))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(namingOptions, new NullLogger());
+            var videoListResolver = new VideoListResolver(namingOptions);
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 
@@ -2752,7 +2751,7 @@ namespace Emby.Server.Implementations.Library
 
         private void SetExtraTypeFromFilename(Video item)
         {
-            var resolver = new ExtraResolver(GetNamingOptions(), new NullLogger(), new RegexProvider());
+            var resolver = new ExtraResolver(GetNamingOptions(), new RegexProvider());
 
             var result = resolver.GetExtraInfo(item.Path);
 

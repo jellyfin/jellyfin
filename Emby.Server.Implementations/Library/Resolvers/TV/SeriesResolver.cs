@@ -4,8 +4,8 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Naming.Common;
-using MediaBrowser.Naming.TV;
+using Emby.Naming.Common;
+using Emby.Naming.TV;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         var allowOptimisticEpisodeDetection = isTvContentType;
                         var namingOptions = ((LibraryManager)libraryManager).GetNamingOptions(allowOptimisticEpisodeDetection);
 
-                        var episodeResolver = new MediaBrowser.Naming.TV.EpisodeResolver(namingOptions, new NullLogger());
+                        var episodeResolver = new Emby.Naming.TV.EpisodeResolver(namingOptions);
                         var episodeInfo = episodeResolver.Resolve(fullName, false, false);
                         if (episodeInfo != null && episodeInfo.EpisodeNumber.HasValue)
                         {

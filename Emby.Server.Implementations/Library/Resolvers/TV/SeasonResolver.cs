@@ -3,8 +3,8 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Naming.Common;
-using MediaBrowser.Naming.TV;
+using Emby.Naming.Common;
+using Emby.Naming.TV;
 
 namespace Emby.Server.Implementations.Library.Resolvers.TV
 {

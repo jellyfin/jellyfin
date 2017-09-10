@@ -60,6 +60,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     return GetAvailableEncoder("h264_omx", defaultEncoder);
                 }
+                if (string.Equals(hwType, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetAvailableEncoder("h264_v4l2m2m", defaultEncoder);
+                }
                 if (string.Equals(hwType, "vaapi", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(encodingOptions.VaapiDevice))
                 {
                     if (IsVaapiSupported(state))
@@ -692,7 +696,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrEmpty(request.Profile))
             {
                 if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+                    !string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase))
                 {
                     // not supported by h264_omx
                     param += " -profile:v " + request.Profile;
@@ -761,9 +766,15 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+                !string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase))
             {
                 param = "-pix_fmt yuv420p " + param;
+            }
+
+            if (string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase))
+            {
+                param = "-pix_fmt nv21 " + param;
             }
 
             return param;
@@ -1567,7 +1578,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             inputModifier += " " + GetFastSeekCommandLineParameter(state.BaseRequest);
             inputModifier = inputModifier.Trim();
-            
+
             if (state.InputProtocol == MediaProtocol.Rtsp)
             {
                 inputModifier += " -rtsp_transport tcp";
@@ -1691,7 +1702,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else
                 {
-                    state.PlayableStreamFileNames = new string[]{};
+                    state.PlayableStreamFileNames = new string[] { };
                 }
             }
             else
