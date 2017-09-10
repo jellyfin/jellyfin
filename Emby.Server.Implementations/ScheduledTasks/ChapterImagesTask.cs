@@ -58,8 +58,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[] { 
-            
+            return new[] {
+
                 new TaskTriggerInfo
                 {
                     Type = TaskTriggerInfo.TriggerDaily,
@@ -88,6 +88,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 IsFolder = false,
                 Recursive = true,
                 DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                },
+                SourceTypes = new SourceType[] { SourceType.Library },
+                HasChapterImages = false,
+                IsVirtualItem = false
 
             })
                 .OfType<Video>()

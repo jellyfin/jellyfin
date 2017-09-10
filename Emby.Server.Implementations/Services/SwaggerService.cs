@@ -193,13 +193,11 @@ namespace Emby.Server.Implementations.Services
                     summary = info.Summary,
                     produces = new[]
                     {
-                        "application/json",
-                        "application/xml"
+                        "application/json"
                     },
                     consumes = new[]
                     {
-                        "application/json",
-                        "application/xml"
+                        "application/json"
                     },
                     operationId = info.RequestType.Name,
                     tags = new string[] { },

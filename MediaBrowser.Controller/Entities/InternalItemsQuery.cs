@@ -160,6 +160,7 @@ namespace MediaBrowser.Controller.Entities
         public bool ForceDirect { get; set; }
         public Dictionary<string, string> ExcludeProviderIds { get; set; }
         public bool EnableGroupByMetadataKey { get; set; }
+        public bool? HasChapterImages { get; set; }
 
         public Tuple<string, SortOrder>[] OrderBy { get; set; }
 
@@ -169,6 +170,10 @@ namespace MediaBrowser.Controller.Entities
 
         public DtoOptions DtoOptions { get; set; }
         public int MinSimilarityScore { get; set; }
+        public string HasNoAudioTrackWithLanguage { get; set; }
+        public string HasNoInternalSubtitleTrackWithLanguage { get; set; }
+        public string HasNoExternalSubtitleTrackWithLanguage { get; set; }
+        public string HasNoSubtitleTrackWithLanguage { get; set; }
 
         public InternalItemsQuery()
         {
