@@ -41,7 +41,6 @@ namespace MediaBrowser.Server.Mono
         public static void Main(string[] args)
         {
             var applicationPath = Assembly.GetEntryAssembly().Location;
-            var appFolderPath = Path.GetDirectoryName(applicationPath);
 
             SetSqliteProvider();
 
@@ -66,18 +65,13 @@ namespace MediaBrowser.Server.Mono
 
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-                try
-                {
-                    RunApplication(appPaths, logManager, options);
-                }
-                finally
-                {
-                    _logger.Info("Disposing app host");
+                RunApplication(appPaths, logManager, options);
 
-                    if (_restartOnShutdown)
-                    {
-                        StartNewInstance(options);
-                    }
+                _logger.Info("Disposing app host");
+
+                if (_restartOnShutdown)
+                {
+                    StartNewInstance(options);
                 }
             }
         }
@@ -121,8 +115,6 @@ namespace MediaBrowser.Server.Mono
                 new SystemEvents(logManager.GetLogger("SystemEvents")),
                 new NetworkManager(logManager.GetLogger("NetworkManager"))))
             {
-                appHost.ImageProcessor.ImageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo);
-
                 if (options.ContainsOption("-v"))
                 {
                     Console.WriteLine(appHost.ApplicationVersion.ToString());
@@ -134,6 +126,9 @@ namespace MediaBrowser.Server.Mono
                 var initProgress = new Progress<double>();
 
                 var task = appHost.Init(initProgress);
+
+                appHost.ImageProcessor.ImageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo);
+
                 Task.WaitAll(task);
 
                 Console.WriteLine("Running startup tasks");
