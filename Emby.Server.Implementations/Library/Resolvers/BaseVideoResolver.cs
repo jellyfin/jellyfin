@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Naming.Video;
+using Emby.Naming.Video;
 using System;
 using System.IO;
 using System.Linq;
@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
             
             // If the path is a file check for a matching extensions
-            var parser = new MediaBrowser.Naming.Video.VideoResolver(namingOptions, new NullLogger());
+            var parser = new Emby.Naming.Video.VideoResolver(namingOptions);
 
             if (args.IsDirectory)
             {
@@ -258,7 +258,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
 
-            var resolver = new Format3DParser(namingOptions, new NullLogger());
+            var resolver = new Format3DParser(namingOptions);
             var result = resolver.Parse(video.Path);
 
             Set3DFormat(video, result.Is3D, result.Format3D);
