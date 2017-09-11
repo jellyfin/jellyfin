@@ -127,9 +127,9 @@ namespace MediaBrowser.Server.Mono
 
                 var task = appHost.Init(initProgress);
 
-                appHost.ImageProcessor.ImageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo);
-
                 Task.WaitAll(task);
+
+                appHost.ImageProcessor.ImageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo);
 
                 Console.WriteLine("Running startup tasks");
 
