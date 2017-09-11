@@ -67,13 +67,10 @@ namespace MediaBrowser.Api
             _config.SaveConfiguration();
         }
 
-        public async Task<object> Get(GetStartupInfo request)
+        public object Get(GetStartupInfo request)
         {
-            var info = await _appHost.GetSystemInfo().ConfigureAwait(false);
-
             return new StartupInfo
             {
-                SupportsRunningAsService = info.SupportsRunningAsService,
                 HasMediaEncoder = !string.IsNullOrWhiteSpace(_mediaEncoder.EncoderPath)
             };
         }
@@ -152,7 +149,6 @@ namespace MediaBrowser.Api
 
     public class StartupInfo
     {
-        public bool SupportsRunningAsService { get; set; }
         public bool HasMediaEncoder { get; set; }
     }
 
