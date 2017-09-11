@@ -47,13 +47,13 @@ namespace MediaBrowser.WebDashboard.Api
         public string Name { get; set; }
     }
 
-    [Route("/web/Package", "GET")]
+    [Route("/web/Package", "GET", IsHidden = true)]
     public class GetDashboardPackage
     {
         public string Mode { get; set; }
     }
 
-    [Route("/robots.txt", "GET")]
+    [Route("/robots.txt", "GET", IsHidden = true)]
     public class GetRobotsTxt
     {
     }
@@ -61,7 +61,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// <summary>
     /// Class GetDashboardResource
     /// </summary>
-    [Route("/web/{ResourceName*}", "GET")]
+    [Route("/web/{ResourceName*}", "GET", IsHidden = true)]
     public class GetDashboardResource
     {
         /// <summary>
@@ -76,7 +76,7 @@ namespace MediaBrowser.WebDashboard.Api
         public string V { get; set; }
     }
 
-    [Route("/favicon.ico", "GET")]
+    [Route("/favicon.ico", "GET", IsHidden = true)]
     public class GetFavIcon
     {
     }
