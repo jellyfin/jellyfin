@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.Services
         public string host { get; set; }
         public string basePath { get; set; }
         public SwaggerTag[] tags { get; set; }
-        public Dictionary<string, Dictionary<string, SwaggerMethod>> paths { get; set; }
+        public IDictionary<string, Dictionary<string, SwaggerMethod>> paths { get; set; }
         public Dictionary<string, SwaggerDefinition> definitions { get; set; }
     }
 
@@ -147,16 +147,21 @@ namespace Emby.Server.Implementations.Services
             return new Dictionary<string, SwaggerDefinition>();
         }
 
-        private Dictionary<string, Dictionary<string, SwaggerMethod>> GetPaths()
+        private IDictionary<string, Dictionary<string, SwaggerMethod>> GetPaths()
         {
-            var paths = new Dictionary<string, Dictionary<string, SwaggerMethod>>();
+            var paths = new SortedDictionary<string, Dictionary<string, SwaggerMethod>>();
 
-            var all = ServiceController.Instance.RestPathMap.ToList();
+            var all = ServiceController.Instance.RestPathMap.OrderBy(i => i.Key, StringComparer.OrdinalIgnoreCase).ToList();
 
             foreach (var current in all)
             {
                 foreach (var info in current.Value)
                 {
+                    if (info.IsHidden)
+                    {
+                        continue;
+                    }
+
                     if (info.Path.StartsWith("/mediabrowser", StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
@@ -191,6 +196,7 @@ namespace Emby.Server.Implementations.Services
                 result[verb.ToLower()] = new SwaggerMethod
                 {
                     summary = info.Summary,
+                    description = info.Description,
                     produces = new[]
                     {
                         "application/json"

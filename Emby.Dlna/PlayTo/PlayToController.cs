@@ -48,23 +48,7 @@ namespace Emby.Dlna.PlayTo
         {
             get
             {
-                var lastDateKnownActivity = _creationTime > _device.DateLastActivity ? _creationTime : _device.DateLastActivity;
-
-                if (DateTime.UtcNow >= lastDateKnownActivity.AddSeconds(120))
-                {
-                    try
-                    {
-                        // Session is inactive, mark it for Disposal and don't start the elapsed timer.
-                        _sessionManager.ReportSessionEnded(_session.Id);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error in ReportSessionEnded", ex);
-                    }
-                    return false;
-                }
-
-                return _device != null;
+                return !_disposed && _device != null;
             }
         }
 
