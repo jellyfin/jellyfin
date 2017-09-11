@@ -88,6 +88,10 @@ namespace MediaBrowser.Model.Services
         /// </summary>
         public string Summary { get; set; }
 
+        public string Description { get; set; }
+
+        public bool IsHidden { get; set; }
+
         /// <summary>
         ///    Gets or sets longer text to explain the behaviour of the route. 
         /// </summary>
