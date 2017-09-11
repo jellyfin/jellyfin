@@ -51,6 +51,8 @@ namespace Emby.Server.Implementations.Services
         public string Path { get { return this.restPath; } }
 
         public string Summary { get; private set; }
+        public string Description { get; private set; }
+        public bool IsHidden { get; private set; }
 
         public int Priority { get; set; } //passed back to RouteAttribute
 
@@ -91,10 +93,12 @@ namespace Emby.Server.Implementations.Services
             return list;
         }
 
-        public RestPath(Func<Type, object> createInstanceFn, Func<Type, Func<string, object>> getParseFn, Type requestType, string path, string verbs, string summary = null)
+        public RestPath(Func<Type, object> createInstanceFn, Func<Type, Func<string, object>> getParseFn, Type requestType, string path, string verbs, bool isHidden = false, string summary = null, string description = null)
         {
             this.RequestType = requestType;
             this.Summary = summary;
+            this.IsHidden = isHidden;
+            this.Description = description;
             this.restPath = path;
 
             this.Verbs = string.IsNullOrWhiteSpace(verbs) ? ServiceExecExtensions.AllVerbs : verbs.ToUpper().Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);

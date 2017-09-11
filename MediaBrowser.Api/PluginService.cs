@@ -82,7 +82,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetPluginSecurityInfo
     /// </summary>
-    [Route("/Plugins/SecurityInfo", "GET", Summary = "Gets plugin registration information")]
+    [Route("/Plugins/SecurityInfo", "GET", Summary = "Gets plugin registration information", IsHidden = true)]
     [Authenticated]
     public class GetPluginSecurityInfo : IReturn<PluginSecurityInfo>
     {
@@ -91,13 +91,13 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UpdatePluginSecurityInfo
     /// </summary>
-    [Route("/Plugins/SecurityInfo", "POST", Summary = "Updates plugin registration information")]
+    [Route("/Plugins/SecurityInfo", "POST", Summary = "Updates plugin registration information", IsHidden = true)]
     [Authenticated(Roles = "Admin")]
     public class UpdatePluginSecurityInfo : PluginSecurityInfo, IReturnVoid
     {
     }
 
-    [Route("/Plugins/RegistrationRecords/{Name}", "GET", Summary = "Gets registration status for a feature")]
+    [Route("/Plugins/RegistrationRecords/{Name}", "GET", Summary = "Gets registration status for a feature", IsHidden = true)]
     [Authenticated]
     public class GetRegistrationStatus
     {
@@ -108,7 +108,7 @@ namespace MediaBrowser.Api
         public string Mb2Equivalent { get; set; }
     }
 
-    [Route("/Registrations/{Name}", "GET", Summary = "Gets registration status for a feature")]
+    [Route("/Registrations/{Name}", "GET", Summary = "Gets registration status for a feature", IsHidden = true)]
     [Authenticated]
     public class GetRegistration : IReturn<RegistrationInfo>
     {
@@ -116,7 +116,7 @@ namespace MediaBrowser.Api
         public string Name { get; set; }
     }
 
-    [Route("/Appstore/Register", "POST", Summary = "Registers an appstore sale")]
+    [Route("/Appstore/Register", "POST", Summary = "Registers an appstore sale", IsHidden = true)]
     [Authenticated]
     public class RegisterAppstoreSale
     {
