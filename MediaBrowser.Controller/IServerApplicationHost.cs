@@ -84,5 +84,7 @@ namespace MediaBrowser.Controller
         void LaunchUrl(string url);
 
         void EnableLoopback(string appName);
+
+        string PackageRuntime { get; }
     }
 }
