@@ -1032,7 +1032,7 @@ namespace Emby.Server.Implementations
             ((UserManager)UserManager).Initialize();
         }
 
-        protected virtual string PackageRuntime
+        public virtual string PackageRuntime
         {
             get
             {

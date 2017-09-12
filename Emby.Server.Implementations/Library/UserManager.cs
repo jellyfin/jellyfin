@@ -666,8 +666,7 @@ namespace Emby.Server.Implementations.Library
 
                 DeleteUserPolicy(user);
 
-                // Force this to be lazy loaded again
-                Users = LoadUsers();
+                Users = allUsers.Where(i => i.Id != user.Id).ToList();
 
                 OnUserDeleted(user);
             }
