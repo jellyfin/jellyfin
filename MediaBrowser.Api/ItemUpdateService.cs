@@ -214,6 +214,8 @@ namespace MediaBrowser.Api
 
             UpdateItem(request, item);
 
+            item.OnMetadataChanged();
+
             await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
             if (isLockedChanged && item.IsFolder)

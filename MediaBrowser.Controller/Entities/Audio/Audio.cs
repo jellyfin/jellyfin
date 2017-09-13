@@ -154,45 +154,27 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             var list = base.GetUserDataKeys();
 
-            if (ConfigurationManager.Configuration.EnableStandaloneMusicKeys)
+            var songKey = IndexNumber.HasValue ? IndexNumber.Value.ToString("0000") : string.Empty;
+
+
+            if (ParentIndexNumber.HasValue)
             {
-                var songKey = IndexNumber.HasValue ? IndexNumber.Value.ToString("0000") : string.Empty;
-
-
-                if (ParentIndexNumber.HasValue)
-                {
-                    songKey = ParentIndexNumber.Value.ToString("0000") + "-" + songKey;
-                }
-                songKey += Name;
-
-                if (!string.IsNullOrWhiteSpace(Album))
-                {
-                    songKey = Album + "-" + songKey;
-                }
-
-                var albumArtist = AlbumArtists.Length == 0 ? null : AlbumArtists[0];
-                if (!string.IsNullOrWhiteSpace(albumArtist))
-                {
-                    songKey = albumArtist + "-" + songKey;
-                }
-
-                list.Insert(0, songKey);
+                songKey = ParentIndexNumber.Value.ToString("0000") + "-" + songKey;
             }
-            else
+            songKey += Name;
+
+            if (!string.IsNullOrWhiteSpace(Album))
             {
-                var parent = AlbumEntity;
-
-                if (parent != null && IndexNumber.HasValue)
-                {
-                    list.InsertRange(0, parent.GetUserDataKeys().Select(i =>
-                    {
-                        var songKey = (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
-                                      + IndexNumber.Value.ToString("0000 - ");
-
-                        return i + songKey;
-                    }));
-                }
+                songKey = Album + "-" + songKey;
             }
+
+            var albumArtist = AlbumArtists.Length == 0 ? null : AlbumArtists[0];
+            if (!string.IsNullOrWhiteSpace(albumArtist))
+            {
+                songKey = albumArtist + "-" + songKey;
+            }
+
+            list.Insert(0, songKey);
 
             return list;
         }
