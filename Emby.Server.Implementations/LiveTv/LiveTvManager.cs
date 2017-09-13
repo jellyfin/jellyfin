@@ -752,6 +752,11 @@ namespace Emby.Server.Implementations.LiveTv
                 }
             }
 
+            if (isNew || isUpdated)
+            {
+                item.OnMetadataChanged();
+            }
+
             return new Tuple<LiveTvProgram, bool, bool>(item, isNew, isUpdated);
         }
 

@@ -918,9 +918,10 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(OfficialRating))
+                var officialRating = OfficialRating;
+                if (!string.IsNullOrWhiteSpace(officialRating))
                 {
-                    return OfficialRating;
+                    return officialRating;
                 }
 
                 var parent = DisplayParent;
@@ -938,9 +939,10 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(CustomRating))
+                var customRating = CustomRating;
+                if (!string.IsNullOrWhiteSpace(customRating))
                 {
-                    return CustomRating;
+                    return customRating;
                 }
 
                 var parent = DisplayParent;
@@ -2479,6 +2481,22 @@ namespace MediaBrowser.Controller.Entities
         public virtual double? GetRefreshProgress()
         {
             return null;
+        }
+
+        public virtual ItemUpdateType OnMetadataChanged()
+        {
+            var updateType = ItemUpdateType.None;
+
+            var item = this;
+
+            var inheritedParentalRatingValue = item.GetInheritedParentalRatingValue() ?? 0;
+            if (inheritedParentalRatingValue != item.InheritedParentalRatingValue)
+            {
+                item.InheritedParentalRatingValue = inheritedParentalRatingValue;
+                updateType |= ItemUpdateType.MetadataImport;
+            }
+
+            return updateType;
         }
     }
 }
