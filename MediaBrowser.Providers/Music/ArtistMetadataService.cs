@@ -15,9 +15,9 @@ namespace MediaBrowser.Providers.Music
 {
     public class ArtistMetadataService : MetadataService<MusicArtist, ArtistInfo>
     {
-        protected override ItemUpdateType BeforeSave(MusicArtist item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected override ItemUpdateType BeforeSaveInternal(MusicArtist item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
-            var updateType = base.BeforeSave(item, isFullRefresh, currentUpdateType);
+            var updateType = base.BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
 
             if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
             {
