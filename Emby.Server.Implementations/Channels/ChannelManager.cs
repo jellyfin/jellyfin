@@ -426,6 +426,8 @@ namespace Emby.Server.Implementations.Channels
                 item.Name = channelInfo.Name;
             }
 
+            item.OnMetadataChanged();
+
             if (isNew)
             {
                 _libraryManager.CreateItem(item, cancellationToken);
@@ -1383,6 +1385,8 @@ namespace Emby.Server.Implementations.Channels
             {
                 item.SetImagePath(ImageType.Primary, info.ImageUrl);
             }
+
+            item.OnMetadataChanged();
 
             if (isNew)
             {

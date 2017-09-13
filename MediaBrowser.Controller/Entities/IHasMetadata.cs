@@ -266,6 +266,8 @@ namespace MediaBrowser.Controller.Entities
         int? ProductionYear { get; set; }
 
         string[] Tags { get; set; }
+
+        ItemUpdateType OnMetadataChanged();
     }
 
     public static class HasMetadataExtensions
