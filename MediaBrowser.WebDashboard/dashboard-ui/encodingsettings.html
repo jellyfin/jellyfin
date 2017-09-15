@@ -9,7 +9,7 @@
                     <select is="emby-select" id="selectVideoDecoder" label="${LabelHardwareAccelerationType}">
                         <option value="">${OptionNone}</option>
                         <option value="qsv">Intel Quick Sync (experimental)</option>
-                        <option value="h264_omx">OpenMAX OMX (experimental)</option>
+                        <option value="omx">OpenMAX OMX (experimental)</option>
                         <option value="nvenc">Nvidia NVENC (experimental)</option>
                         <option value="vaapi">Video Acceleration API (VA API) (experimental)</option>
                         <option value="h264_v4l2m2m">Exynos V4L2 MFC Encoder (experimental)</option>
@@ -26,7 +26,7 @@
                         <h3 class="checkboxListLabel">${LabelEnableHardwareDecodingFor}</h3>
                         <div class="checkboxList">
                             <label>
-                                <input type="checkbox" is="emby-checkbox" class="chkDecodeCodec" data-codec="h264" data-types="qsv,nvenc" />
+                                <input type="checkbox" is="emby-checkbox" class="chkDecodeCodec" data-codec="h264" data-types="qsv,nvenc,omx" />
                                 <span>H264</span>
                             </label>
                             <label>

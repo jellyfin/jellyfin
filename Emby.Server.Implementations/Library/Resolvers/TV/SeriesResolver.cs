@@ -173,7 +173,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 }
             }
 
-            logger.Debug("{0} is not a series folder.", path);
+            //logger.Debug("{0} is not a series folder.", path);
             return false;
         }
 
