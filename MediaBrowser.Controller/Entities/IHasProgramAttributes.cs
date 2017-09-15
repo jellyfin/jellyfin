@@ -15,5 +15,6 @@ namespace MediaBrowser.Controller.Entities
         bool IsPremiere { get; set; }
         ProgramAudio? Audio { get; set; }
         string EpisodeTitle { get; set; }
+        string ServiceName { get; set; }
     }
 }
