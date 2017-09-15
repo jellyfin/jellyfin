@@ -47,11 +47,10 @@ namespace MediaBrowser.Controller.LiveTv
             return list;
         }
 
-        private static string EmbyServiceName = "Emby";
-        public override double? GetDefaultPrimaryImageAspectRatio()
+        public static double? GetDefaultPrimaryImageAspectRatio(IHasProgramAttributes item)
         {
-            var serviceName = ServiceName;
-            if (!IsMovie && !string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(serviceName))
+            var serviceName = item.ServiceName;
+            if (!item.IsMovie && !string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase))
             {
                 double value = 16;
                 value /= 9;
@@ -65,6 +64,12 @@ namespace MediaBrowser.Controller.LiveTv
 
                 return value;
             }
+        }
+
+        private static string EmbyServiceName = "Emby";
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            return GetDefaultPrimaryImageAspectRatio(this);
         }
 
         [IgnoreDataMember]
