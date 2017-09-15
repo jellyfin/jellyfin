@@ -98,24 +98,9 @@ namespace MediaBrowser.Controller.LiveTv
             return false;
         }
 
-        private static string EmbyServiceName = "Emby";
         public override double? GetDefaultPrimaryImageAspectRatio()
         {
-            var serviceName = ServiceName;
-            if (!IsMovie && !string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(serviceName))
-            {
-                double value = 16;
-                value /= 9;
-
-                return value;
-            }
-            else
-            {
-                double value = 2;
-                value /= 3;
-
-                return value;
-            }
+            return LiveTvProgram.GetDefaultPrimaryImageAspectRatio(this);
         }
 
         [IgnoreDataMember]

@@ -11,6 +11,9 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+        public bool EnableInMainMenu { get; set; }
+
+        public string DisplayName { get; set; }
 
         /// <summary>
         /// Gets the type of the configuration page.
@@ -27,15 +30,22 @@ namespace MediaBrowser.WebDashboard.Api
         public ConfigurationPageInfo(IPluginConfigurationPage page)
         {
             Name = page.Name;
+
             ConfigurationPageType = page.ConfigurationPageType;
 
-            // Don't use "N" because it needs to match Plugin.Id
-            PluginId = page.Plugin.Id.ToString();
+            if (page.Plugin != null)
+            {
+                DisplayName = page.Plugin.Name;
+                // Don't use "N" because it needs to match Plugin.Id
+                PluginId = page.Plugin.Id.ToString();
+            }
         }
 
         public ConfigurationPageInfo(IPlugin plugin, PluginPageInfo page)
         {
             Name = page.Name;
+            EnableInMainMenu = page.EnableInMainMenu;
+            DisplayName = string.IsNullOrWhiteSpace(page.DisplayName) ? plugin.Name : page.DisplayName;
 
             // Don't use "N" because it needs to match Plugin.Id
             PluginId = plugin.Id.ToString();
