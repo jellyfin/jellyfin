@@ -56,7 +56,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     return GetAvailableEncoder("h264_nvenc", defaultEncoder);
                 }
-                if (string.Equals(hwType, "h264_omx", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(hwType, "omx", StringComparison.OrdinalIgnoreCase))
                 {
                     return GetAvailableEncoder("h264_omx", defaultEncoder);
                 }
@@ -1892,6 +1892,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                             if (_mediaEncoder.SupportsDecoder("mpeg4_cuvid") && encodingOptions.HardwareDecodingCodecs.Contains("mpeg4", StringComparer.OrdinalIgnoreCase))
                             {
                                 return "-c:v mpeg4_cuvid ";
+                            }
+                            break;
+                    }
+                }
+
+                else if (string.Equals(encodingOptions.HardwareAccelerationType, "omx", StringComparison.OrdinalIgnoreCase))
+                {
+                    switch (videoStream.Codec.ToLower())
+                    {
+                        case "avc":
+                        case "h264":
+                            if (_mediaEncoder.SupportsDecoder("h264_omx") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
+                            {
+                                return "-c:v h264_omx ";
                             }
                             break;
                     }
