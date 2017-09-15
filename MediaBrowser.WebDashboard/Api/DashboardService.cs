@@ -32,6 +32,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <value>The type of the page.</value>
         public ConfigurationPageType? PageType { get; set; }
+        public bool? EnableInMainMenu { get; set; }
     }
 
     /// <summary>
@@ -221,25 +222,20 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardConfigurationPages request)
         {
-            const string unavilableMessage = "The server is still loading. Please try again momentarily.";
+            const string unavailableMessage = "The server is still loading. Please try again momentarily.";
 
             var instance = ServerEntryPoint.Instance;
 
             if (instance == null)
             {
-                throw new InvalidOperationException(unavilableMessage);
+                throw new InvalidOperationException(unavailableMessage);
             }
 
             var pages = instance.PluginConfigurationPages;
 
             if (pages == null)
             {
-                throw new InvalidOperationException(unavilableMessage);
-            }
-
-            if (request.PageType.HasValue)
-            {
-                pages = pages.Where(p => p.ConfigurationPageType == request.PageType.Value).ToList();
+                throw new InvalidOperationException(unavailableMessage);
             }
 
             // Don't allow a failing plugin to fail them all
@@ -260,6 +256,16 @@ namespace MediaBrowser.WebDashboard.Api
                 .ToList();
 
             configPages.AddRange(_appHost.Plugins.SelectMany(GetConfigPages));
+
+            if (request.PageType.HasValue)
+            {
+                configPages = configPages.Where(p => p.ConfigurationPageType == request.PageType.Value).ToList();
+            }
+
+            if (request.EnableInMainMenu.HasValue)
+            {
+                configPages = configPages.Where(p => p.EnableInMainMenu == request.EnableInMainMenu.Value).ToList();
+            }
 
             return _resultFactory.GetOptimizedResult(Request, configPages);
         }
