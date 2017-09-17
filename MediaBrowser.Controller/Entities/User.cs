@@ -30,6 +30,7 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The password.</value>
         public string Password { get; set; }
         public string EasyPassword { get; set; }
+        public string Salt { get; set; }
 
         public string ConnectUserName { get; set; }
         public string ConnectUserId { get; set; }
