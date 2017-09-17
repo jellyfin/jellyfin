@@ -1400,13 +1400,22 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else
             {
+                var isExynosV4L2 = string.Equals(outputVideoCodec, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase);
+
                 // If fixed dimensions were supplied
                 if (request.Width.HasValue && request.Height.HasValue)
                 {
                     var widthParam = request.Width.Value.ToString(_usCulture);
                     var heightParam = request.Height.Value.ToString(_usCulture);
 
-                    filters.Add(string.Format("scale=trunc({0}/2)*2:trunc({1}/2)*2", widthParam, heightParam));
+                    if (isExynosV4L2)
+                    {
+                        filters.Add(string.Format("scale=trunc({0}/64)*64:trunc({1}/2)*2", widthParam, heightParam));
+                    }
+                    else
+                    {
+                        filters.Add(string.Format("scale=trunc({0}/2)*2:trunc({1}/2)*2", widthParam, heightParam));
+                    }
                 }
 
                 // If Max dimensions were supplied, for width selects lowest even number between input width and width req size and selects lowest even number from in width*display aspect and requested size
@@ -1415,7 +1424,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                     var maxWidthParam = request.MaxWidth.Value.ToString(_usCulture);
                     var maxHeightParam = request.MaxHeight.Value.ToString(_usCulture);
 
-                    filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,min({0}\\,{1}*dar))/2)*2:trunc(min(max(iw/dar\\,ih)\\,min({0}/dar\\,{1}))/2)*2", maxWidthParam, maxHeightParam));
+                    if (isExynosV4L2)
+                    {
+                        filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,min({0}\\,{1}*dar))/64)*64:trunc(min(max(iw/dar\\,ih)\\,min({0}/dar\\,{1}))/2)*2", maxWidthParam, maxHeightParam));
+                    }
+                    else
+                    {
+                        filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,min({0}\\,{1}*dar))/2)*2:trunc(min(max(iw/dar\\,ih)\\,min({0}/dar\\,{1}))/2)*2", maxWidthParam, maxHeightParam));
+                    }
                 }
 
                 // If a fixed width was requested
@@ -1431,7 +1447,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var heightParam = request.Height.Value.ToString(_usCulture);
 
-                    filters.Add(string.Format("scale=trunc(oh*a/2)*2:{0}", heightParam));
+                    if (isExynosV4L2)
+                    {
+                        filters.Add(string.Format("scale=trunc(oh*a/64)*64:{0}", heightParam));
+                    }
+                    else
+                    {
+                        filters.Add(string.Format("scale=trunc(oh*a/2)*2:{0}", heightParam));
+                    }
                 }
 
                 // If a max width was requested
@@ -1439,7 +1462,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var maxWidthParam = request.MaxWidth.Value.ToString(_usCulture);
 
-                    filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,{0})/2)*2:trunc(ow/dar/2)*2", maxWidthParam));
+                    if (isExynosV4L2)
+                    {
+                        filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,{0})/64)*64:trunc(ow/dar/2)*2", maxWidthParam));
+                    }
+                    else
+                    {
+                        filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,{0})/2)*2:trunc(ow/dar/2)*2", maxWidthParam));
+                    }
                 }
 
                 // If a max height was requested
@@ -1447,7 +1477,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var maxHeightParam = request.MaxHeight.Value.ToString(_usCulture);
 
-                    filters.Add(string.Format("scale=trunc(oh*a/2)*2:min(max(iw/dar\\,ih)\\,{0})", maxHeightParam));
+                    if (isExynosV4L2)
+                    {
+                        filters.Add(string.Format("scale=trunc(oh*a/64)*64:min(max(iw/dar\\,ih)\\,{0})", maxHeightParam));
+                    }
+                    else
+                    {
+                        filters.Add(string.Format("scale=trunc(oh*a/2)*2:min(max(iw/dar\\,ih)\\,{0})", maxHeightParam));
+                    }
                 }
             }
 
@@ -1903,9 +1940,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         case "avc":
                         case "h264":
-                            if (_mediaEncoder.SupportsDecoder("h264_omx") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
+                            if (_mediaEncoder.SupportsDecoder("h264_mmal") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
                             {
-                                return "-c:v h264_omx ";
+                                return "-c:v h264_mmal";
                             }
                             break;
                     }
