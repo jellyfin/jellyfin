@@ -1288,10 +1288,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the internal graphical subtitle param.
         /// </summary>
-        /// <param name="state">The state.</param>
-        /// <param name="outputVideoCodec">The output video codec.</param>
-        /// <returns>System.String.</returns>
-        public string GetGraphicalSubtitleParam(EncodingJobInfo state, string outputVideoCodec)
+        public string GetGraphicalSubtitleParam(EncodingJobInfo state, EncodingOptions options, string outputVideoCodec)
         {
             var outputSizeParam = string.Empty;
 
@@ -1300,7 +1297,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Add resolution params, if specified
             if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
             {
-                outputSizeParam = GetOutputSizeParam(state, outputVideoCodec).TrimEnd('"');
+                outputSizeParam = GetOutputSizeParam(state, options, outputVideoCodec).TrimEnd('"');
 
                 if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1343,11 +1340,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// If we're going to put a fixed size on the command line, this will calculate it
         /// </summary>
-        /// <param name="state">The state.</param>
-        /// <param name="outputVideoCodec">The output video codec.</param>
-        /// <param name="allowTimeStampCopy">if set to <c>true</c> [allow time stamp copy].</param>
-        /// <returns>System.String.</returns>
         public string GetOutputSizeParam(EncodingJobInfo state,
+            EncodingOptions options,
             string outputVideoCodec,
             bool allowTimeStampCopy = true)
         {
@@ -1365,7 +1359,14 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.DeInterlace && !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
-                filters.Add("yadif=0:-1:0");
+                if (string.Equals(options.DeinterlaceMethod, "bobandweave", StringComparison.OrdinalIgnoreCase))
+                {
+                    filters.Add("yadif=1:-1:0");
+                }
+                else
+                {
+                    filters.Add("yadif=0:-1:0");
+                }
             }
 
             if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
@@ -2092,7 +2093,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Add resolution params, if specified
                 if (!hasGraphicalSubs)
                 {
-                    var outputSizeParam = GetOutputSizeParam(state, videoCodec);
+                    var outputSizeParam = GetOutputSizeParam(state, encodingOptions, videoCodec);
                     args += outputSizeParam;
                     hasCopyTs = outputSizeParam.IndexOf("copyts", StringComparison.OrdinalIgnoreCase) != -1;
                 }
@@ -2116,7 +2117,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // This is for internal graphical subs
                 if (hasGraphicalSubs)
                 {
-                    args += GetGraphicalSubtitleParam(state, videoCodec);
+                    args += GetGraphicalSubtitleParam(state, encodingOptions, videoCodec);
                 }
 
                 if (!state.RunTimeTicks.HasValue)
