@@ -125,6 +125,14 @@
                     <input is="emby-input" type="number" id="txtH264Crf" pattern="[0-9]*" min="0" max="51" step="1" label="${LabelH264Crf}" />
                     <div class="fieldDescription">${H264CrfHelp}</div>
                 </div>
+
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectDeinterlaceMethod" label="${LabelDeinterlacingMethod}">
+                        <option value="">${Standard}</option>
+                        <option value="bobandweave">${BobAndWeaveWithHelp}</option>
+                    </select>
+                </div>
+
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label>
                         <input is="emby-checkbox" type="checkbox" id="chkEnableSubtitleExtraction" />
