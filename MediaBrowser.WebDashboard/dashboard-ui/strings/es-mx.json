@@ -1,4 +1,7 @@
 {
+    "LabelDeinterlacingMethod": "M\u00e9todo de desentrelazado:",
+    "Standard": "Est\u00e1ndar",
+    "BobAndWeaveWithHelp": "Bob y weave (mayor calidad, pero m\u00e1s lento)",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Terminar",
     "LabelNext": "Siguiente",

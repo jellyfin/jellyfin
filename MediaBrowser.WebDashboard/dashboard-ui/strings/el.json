@@ -1,4 +1,7 @@
 {
+    "LabelDeinterlacingMethod": "Deinterlacing method:",
+    "Standard": "Standard",
+    "BobAndWeaveWithHelp": "Bob and weave (higher quality, but slower)",
     "LabelPrevious": "\u03a0\u03c1\u03bf\u03b7\u03b3\u03bf\u03cd\u03bc\u03b5\u03bd\u03bf\u03c2",
     "LabelFinish": "\u03a4\u03ad\u03bb\u03bf\u03c2",
     "LabelNext": "\u0395\u03c0\u03cc\u03bc\u03b5\u03bd\u03bf",
@@ -714,7 +717,7 @@
     "LabelMessageTitle": "Message title:",
     "MessageNoAvailablePlugins": "No available plugins.",
     "LabelDisplayPluginsFor": "Display plugins for:",
-    "PluginTabAppClassic": "Emby Classic",
+    "PluginTabAppClassic": "Emby for Windows Media Center",
     "LabelEpisodeNamePlain": "Episode name",
     "LabelSeriesNamePlain": "Series name",
     "ValueSeriesNamePeriod": "Series.name",
