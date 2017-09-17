@@ -97,6 +97,9 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
 
+        [ApiMember(Name = "Pw", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public string Pw { get; set; }
+
         /// <summary>
         /// Gets or sets the password.
         /// </summary>
@@ -125,6 +128,9 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Password", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
         public string Password { get; set; }
 
+        [ApiMember(Name = "Pw", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public string Pw { get; set; }
+
         [ApiMember(Name = "PasswordMd5", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
         public string PasswordMd5 { get; set; }
     }
@@ -148,11 +154,15 @@ namespace MediaBrowser.Api
         /// <value>The password.</value>
         public string CurrentPassword { get; set; }
 
+        public string CurrentPw { get; set; }
+
         /// <summary>
         /// Gets or sets the new password.
         /// </summary>
         /// <value>The new password.</value>
         public string NewPassword { get; set; }
+
+        public string NewPw { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [reset password].
@@ -179,6 +189,8 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The new password.</value>
         public string NewPassword { get; set; }
+
+        public string NewPw { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [reset password].
@@ -408,7 +420,8 @@ namespace MediaBrowser.Api
             return Post(new AuthenticateUserByName
             {
                 Username = user.Name,
-                Password = request.Password
+                Password = request.Password,
+                Pw = request.Pw
             });
         }
 
@@ -422,6 +435,7 @@ namespace MediaBrowser.Api
                 AppVersion = auth.Version,
                 DeviceId = auth.DeviceId,
                 DeviceName = auth.Device,
+                Password = request.Pw,
                 PasswordSha1 = request.Password,
                 PasswordMd5 = request.PasswordMd5,
                 RemoteEndPoint = Request.RemoteIp,
@@ -459,14 +473,14 @@ namespace MediaBrowser.Api
             }
             else
             {
-                var success = await _userManager.AuthenticateUser(user.Name, request.CurrentPassword, Request.RemoteIp).ConfigureAwait(false);
+                var success = await _userManager.AuthenticateUser(user.Name, request.CurrentPw, request.CurrentPassword, null, Request.RemoteIp).ConfigureAwait(false);
 
                 if (success == null)
                 {
                     throw new ArgumentException("Invalid user or password entered.");
                 }
 
-                _userManager.ChangePassword(user, request.NewPassword);
+                _userManager.ChangePassword(user, request.NewPw, request.NewPassword);
 
                 var currentToken = _authContext.GetAuthorizationInfo(Request).Token;
 
@@ -491,7 +505,7 @@ namespace MediaBrowser.Api
             }
             else
             {
-                _userManager.ChangeEasyPassword(user, request.NewPassword);
+                _userManager.ChangeEasyPassword(user, request.NewPw, request.NewPassword);
             }
         }
 
@@ -501,8 +515,6 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(UpdateUser request)
         {
-            // We need to parse this manually because we told service stack not to with IRequiresRequestStream
-            // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
             var id = GetPathValue(1);
 
             AssertCanUpdateUser(_authContext, _userManager, id, false);

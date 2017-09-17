@@ -58,10 +58,7 @@ namespace MediaBrowser.Controller.Connect
         /// <summary>
         /// Authenticates the specified username.
         /// </summary>
-        /// <param name="username">The username.</param>
-        /// <param name="passwordMd5">The password MD5.</param>
-        /// <returns>Task.</returns>
-        Task<ConnectAuthenticationResult> Authenticate(string username, string passwordMd5);
+        Task<ConnectAuthenticationResult> Authenticate(string username, string password, string passwordMd5);
 
         /// <summary>
         /// Gets the local user.
