@@ -285,16 +285,11 @@ namespace SocketHttpListener.Net
             }
         }
 
-        private bool EnableSendFileWithSocket = false;
-
         public Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
-            //if (_supportsDirectSocketAccess && offset == 0 && count == 0 && !_response.SendChunked && _response.ContentLength64 > 8192)
+            //if (_supportsDirectSocketAccess && offset == 0 && count == 0 && !_response.SendChunked)
             //{
-            //    if (EnableSendFileWithSocket)
-            //    {
-            //        return TransmitFileOverSocket(path, offset, count, fileShareMode, cancellationToken);
-            //    }
+            //    return TransmitFileOverSocket(path, offset, count, fileShareMode, cancellationToken);
             //}
 
             return TransmitFileManaged(path, offset, count, fileShareMode, cancellationToken);
@@ -319,7 +314,9 @@ namespace SocketHttpListener.Net
                 return TransmitFileManaged(path, offset, count, fileShareMode, cancellationToken);
             }
 
-            //_logger.Info("Socket sending file {0} {1}", path, response.ContentLength64);
+            _stream.Flush();
+
+            _logger.Info("Socket sending file {0}", path);
 
             var taskCompletion = new TaskCompletionSource<bool>();
 

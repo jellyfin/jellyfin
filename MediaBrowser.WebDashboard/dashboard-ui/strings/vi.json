@@ -1,4 +1,7 @@
 {
+    "LabelDeinterlacingMethod": "Deinterlacing method:",
+    "Standard": "Standard",
+    "BobAndWeaveWithHelp": "Bob and weave (higher quality, but slower)",
     "LabelPrevious": "Tr\u01b0\u1edbc",
     "LabelFinish": "K\u1ebft th\u00fac",
     "LabelNext": "Ti\u1ebfp theo",
@@ -714,7 +717,7 @@
     "LabelMessageTitle": "Message title:",
     "MessageNoAvailablePlugins": "No available plugins.",
     "LabelDisplayPluginsFor": "Display plugins for:",
-    "PluginTabAppClassic": "Emby Classic",
+    "PluginTabAppClassic": "Emby for Windows Media Center",
     "LabelEpisodeNamePlain": "Episode name",
     "LabelSeriesNamePlain": "Series name",
     "ValueSeriesNamePeriod": "Series.name",

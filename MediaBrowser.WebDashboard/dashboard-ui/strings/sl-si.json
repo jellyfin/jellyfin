@@ -1,4 +1,7 @@
 {
+    "LabelDeinterlacingMethod": "Deinterlacing method:",
+    "Standard": "Standard",
+    "BobAndWeaveWithHelp": "Bob and weave (higher quality, but slower)",
     "LabelPrevious": "Nazaj",
     "LabelFinish": "Konec",
     "LabelNext": "Naprej",
@@ -714,7 +717,7 @@
     "LabelMessageTitle": "Message title:",
     "MessageNoAvailablePlugins": "No available plugins.",
     "LabelDisplayPluginsFor": "Display plugins for:",
-    "PluginTabAppClassic": "Emby Classic",
+    "PluginTabAppClassic": "Emby for Windows Media Center",
     "LabelEpisodeNamePlain": "Episode name",
     "LabelSeriesNamePlain": "Series name",
     "ValueSeriesNamePeriod": "Series.name",

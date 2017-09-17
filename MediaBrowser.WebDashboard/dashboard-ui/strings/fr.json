@@ -1,4 +1,7 @@
 {
+    "LabelDeinterlacingMethod": "M\u00e9thode de d\u00e9sentrelacement\u00a0:",
+    "Standard": "Standard",
+    "BobAndWeaveWithHelp": "Adaptatif (meilleure qualit\u00e9 mais plus lent)",
     "LabelPrevious": "Pr\u00e9c\u00e9dent",
     "LabelFinish": "Terminer",
     "LabelNext": "Suivant",
@@ -714,7 +717,7 @@
     "LabelMessageTitle": "Titre du message\u00a0:",
     "MessageNoAvailablePlugins": "Aucune extension disponible.",
     "LabelDisplayPluginsFor": "Afficher les extensions pour :",
-    "PluginTabAppClassic": "Emby classique",
+    "PluginTabAppClassic": "Emby pour Windows Media Center",
     "LabelEpisodeNamePlain": "Nom de l'\u00e9pisode",
     "LabelSeriesNamePlain": "Nom de la s\u00e9rie",
     "ValueSeriesNamePeriod": "Series.nom",
