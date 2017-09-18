@@ -37,6 +37,9 @@ namespace MediaBrowser.Controller.Entities
         public UserLinkType? ConnectLinkType { get; set; }
         public string ConnectAccessKey { get; set; }
 
+        // Strictly to remove IgnoreDataMember
+        public override ItemImageInfo[] ImageInfos { get => base.ImageInfos; set => base.ImageInfos = value; }
+
         /// <summary>
         /// Gets or sets the path.
         /// </summary>

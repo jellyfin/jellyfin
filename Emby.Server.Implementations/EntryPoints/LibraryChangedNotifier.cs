@@ -198,9 +198,10 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
                 }
 
-                if (e.Item.Parent != null)
+                var parent = e.Item.GetParent() as Folder;
+                if (parent != null)
                 {
-                    _foldersAddedTo.Add(e.Item.Parent);
+                    _foldersAddedTo.Add(parent);
                 }
 
                 _itemsAdded.Add(e.Item);
@@ -259,9 +260,10 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
                 }
 
-                if (e.Item.Parent != null)
+                var parent = e.Item.GetParent() as Folder;
+                if (parent != null)
                 {
-                    _foldersRemovedFrom.Add(e.Item.Parent);
+                    _foldersRemovedFrom.Add(parent);
                 }
 
                 _itemsRemoved.Add(e.Item);

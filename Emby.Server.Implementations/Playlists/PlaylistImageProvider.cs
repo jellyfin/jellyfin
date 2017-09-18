@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Playlists
                         return subItem;
                     }
 
-                    var parent = subItem.GetParent();
+                    var parent = subItem.IsOwnedItem ? subItem.GetOwner() : subItem.GetParent();
 
                     if (parent != null && parent.HasImage(ImageType.Primary))
                     {

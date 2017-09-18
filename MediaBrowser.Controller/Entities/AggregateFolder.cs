@@ -137,7 +137,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 FileInfo = FileSystem.GetDirectoryInfo(path),
                 Path = path,
-                Parent = Parent
+                Parent = GetParent() as Folder
             };
 
             // Gather child folder and files

@@ -81,7 +81,20 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             var itemsChanged = !SpecialFeatureIds.SequenceEqual(newItemIds);
 
-            var tasks = newItems.Select(i => RefreshMetadataForOwnedItem(i, false, options, cancellationToken));
+            var ownerId = Id;
+
+            var tasks = newItems.Select(i =>
+            {
+                var subOptions = new MetadataRefreshOptions(options);
+
+                if (i.OwnerId != ownerId)
+                {
+                    i.OwnerId = ownerId;
+                    subOptions.ForceSave = true;
+                }
+
+                return RefreshMetadataForOwnedItem(i, false, subOptions, cancellationToken);
+            });
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
