@@ -386,7 +386,7 @@ namespace Emby.Server.Implementations.Library
                     item.Id);
             }
 
-            var parent = item.Parent;
+            var parent = item.IsOwnedItem ? item.GetOwner() : item.GetParent();
 
             var locationType = item.LocationType;
 
@@ -453,12 +453,28 @@ namespace Emby.Server.Implementations.Library
 
                 if (parent != null)
                 {
-                    await parent.ValidateChildren(new SimpleProgress<double>(), CancellationToken.None, new MetadataRefreshOptions(_fileSystem), false).ConfigureAwait(false);
+                    var parentFolder = parent as Folder;
+                    if (parentFolder != null)
+                    {
+                        await parentFolder.ValidateChildren(new SimpleProgress<double>(), CancellationToken.None, new MetadataRefreshOptions(_fileSystem), false).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await parent.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), CancellationToken.None).ConfigureAwait(false);
+                    }
                 }
             }
             else if (parent != null)
             {
-                parent.RemoveChild(item);
+                var parentFolder = parent as Folder;
+                if (parentFolder != null)
+                {
+                    parentFolder.RemoveChild(item);
+                }
+                else
+                {
+                    await parent.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), CancellationToken.None).ConfigureAwait(false);
+                }
             }
 
             ItemRepository.DeleteItem(item.Id, CancellationToken.None);
@@ -2604,8 +2620,11 @@ namespace Emby.Server.Implementations.Library
                     {
                         video = dbItem;
                     }
-
-                    video.ExtraType = ExtraType.Trailer;
+                    else
+                    {
+                        // item is new
+                        video.ExtraType = ExtraType.Trailer;
+                    }
                     video.TrailerTypes = new List<TrailerType> { TrailerType.LocalTrailer };
 
                     return video;
@@ -2845,13 +2864,6 @@ namespace Emby.Server.Implementations.Library
                     _logger.Debug("ConvertImageToLocal item {0} - image url: {1}", item.Id, url);
 
                     await _providerManagerFactory().SaveImage(item, url, image.Type, imageIndex, CancellationToken.None).ConfigureAwait(false);
-
-                    var newImage = item.GetImageInfo(image.Type, imageIndex);
-
-                    if (newImage != null)
-                    {
-                        newImage.IsPlaceholder = image.IsPlaceholder;
-                    }
 
                     await item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 

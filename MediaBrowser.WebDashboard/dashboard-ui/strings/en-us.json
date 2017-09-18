@@ -853,7 +853,7 @@
   "HeaderImages": "Images",
   "HeaderBackdrops": "Backdrops",
   "HeaderAddUpdateImage": "Add/Update Image",
-  "LabelDropImageHere": "Drop image here",
+  "LabelDropImageHere": "Drop image here, or click to browse.",
   "LabelJpgPngOnly": "JPG/PNG only",
   "LabelImageType": "Image type:",
   "OptionPrimary": "Primary",

@@ -518,11 +518,12 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task RefreshUsersMetadata(CancellationToken cancellationToken)
+        public async Task RefreshUsersMetadata(CancellationToken cancellationToken)
         {
-            var tasks = Users.Select(user => user.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken)).ToList();
-
-            return Task.WhenAll(tasks);
+            foreach (var user in Users)
+            {
+                await user.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken).ConfigureAwait(false);
+            }
         }
 
         /// <summary>

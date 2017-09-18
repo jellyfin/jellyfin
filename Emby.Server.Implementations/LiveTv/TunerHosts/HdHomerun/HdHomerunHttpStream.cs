@@ -134,7 +134,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
 
                 _liveStreamTaskCompletionSource.TrySetResult(true);
-                //await DeleteTempFile(_tempFilePath).ConfigureAwait(false);
+                await DeleteTempFile(_tempFilePath).ConfigureAwait(false);
             });
         }
 
