@@ -1429,14 +1429,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             string liveStreamId = null;
 
-            OnRecordingStatusChanged();
-
             try
             {
                 var recorder = await GetRecorder().ConfigureAwait(false);
 
                 var allMediaSources = await GetChannelStreamMediaSources(timer.ChannelId, CancellationToken.None).ConfigureAwait(false);
 
+                _logger.Info("Opening recording stream from tuner provider");
                 var liveStreamInfo = await GetChannelStreamInternal(timer.ChannelId, allMediaSources[0].Id, CancellationToken.None)
                             .ConfigureAwait(false);
 
@@ -1450,23 +1449,20 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 recordPath = EnsureFileUnique(recordPath, timer.Id);
 
                 _libraryMonitor.ReportFileSystemChangeBeginning(recordPath);
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(recordPath));
                 activeRecordingInfo.Path = recordPath;
 
                 var duration = recordingEndDate - DateTime.UtcNow;
 
-                _logger.Info("Beginning recording. Will record for {0} minutes.",
-                    duration.TotalMinutes.ToString(CultureInfo.InvariantCulture));
+                _logger.Info("Beginning recording. Will record for {0} minutes.", duration.TotalMinutes.ToString(CultureInfo.InvariantCulture));
 
                 _logger.Info("Writing file to path: " + recordPath);
-                _logger.Info("Opening recording stream from tuner provider");
 
-                Action onStarted = () =>
+                Action onStarted = async () =>
                 {
                     timer.Status = RecordingStatus.InProgress;
                     _timerProvider.AddOrUpdate(timer, false);
 
-                    SaveRecordingMetadata(timer, recordPath, seriesPath);
+                    await SaveRecordingMetadata(timer, recordPath, seriesPath).ConfigureAwait(false);
                     TriggerRefresh(recordPath);
                     EnforceKeepUpTo(timer, seriesPath);
                 };
@@ -1500,7 +1496,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             TriggerRefresh(recordPath);
-            _libraryMonitor.ReportFileSystemChangeComplete(recordPath, true);
+            _libraryMonitor.ReportFileSystemChangeComplete(recordPath, false);
 
             ActiveRecordingInfo removed;
             _activeRecordings.TryRemove(timer.Id, out removed);
@@ -1526,23 +1522,37 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 _timerProvider.Delete(timer);
             }
-
-            OnRecordingStatusChanged();
         }
 
         private void TriggerRefresh(string path)
         {
+            _logger.Debug("Triggering refresh on {0}", path);
+
             var item = GetAffectedBaseItem(_fileSystem.GetDirectoryName(path));
 
             if (item != null)
             {
-                item.ChangedExternally();
+                _logger.Debug("Refreshing recording parent {0}", item.Path);
+
+                _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
+                {
+                    ValidateChildren = true,
+                    RefreshPaths = new List<string>
+                    {
+                        path,
+                        _fileSystem.GetDirectoryName(path),
+                        _fileSystem.GetDirectoryName(_fileSystem.GetDirectoryName(path))
+                    }
+
+                }, RefreshPriority.High);
             }
         }
 
         private BaseItem GetAffectedBaseItem(string path)
         {
             BaseItem item = null;
+
+            var parentPath = _fileSystem.GetDirectoryName(path);
 
             while (item == null && !string.IsNullOrEmpty(path))
             {
@@ -1553,27 +1563,17 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (item != null)
             {
-                // If the item has been deleted find the first valid parent that still exists
-                while (!_fileSystem.DirectoryExists(item.Path) && !_fileSystem.FileExists(item.Path))
+                if (item.GetType() == typeof(Folder) && string.Equals(item.Path, parentPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    item = item.GetParent();
-
-                    if (item == null)
+                    var parentItem = item.GetParent();
+                    if (parentItem != null && !(parentItem is AggregateFolder))
                     {
-                        break;
+                        item = parentItem;
                     }
                 }
             }
 
             return item;
-        }
-
-        private void OnRecordingStatusChanged()
-        {
-            EventHelper.FireEventIfNotNull(RecordingStatusChanged, this, new RecordingStatusChangedEventArgs
-            {
-
-            }, _logger);
         }
 
         private async void EnforceKeepUpTo(TimerInfo timer, string seriesPath)
@@ -1960,7 +1960,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private async void SaveRecordingMetadata(TimerInfo timer, string recordingPath, string seriesPath)
+        private async Task SaveRecordingMetadata(TimerInfo timer, string recordingPath, string seriesPath)
         {
             try
             {

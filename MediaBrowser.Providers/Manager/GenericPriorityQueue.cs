@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -66,9 +67,7 @@ namespace Priority_Queue
         /// Removes every node from the queue.
         /// O(n) (So, don't do this often!)
         /// </summary>
-#if NET_VERSION_4_5
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         public void Clear()
         {
             Array.Clear(_nodes, 1, _numNodes);
@@ -78,9 +77,7 @@ namespace Priority_Queue
         /// <summary>
         /// Returns (in O(1)!) whether the given node is in the queue.  O(1)
         /// </summary>
-#if NET_VERSION_4_5
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         public bool Contains(TItem node)
         {
 #if DEBUG
@@ -103,9 +100,7 @@ namespace Priority_Queue
         /// If the node is already enqueued, the result is undefined.
         /// O(log n)
         /// </summary>
-#if NET_VERSION_4_5
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         public void Enqueue(TItem node, TPriority priority)
         {
 #if DEBUG
@@ -131,9 +126,7 @@ namespace Priority_Queue
             CascadeUp(_nodes[_numNodes]);
         }
 
-#if NET_VERSION_4_5
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private void Swap(TItem node1, TItem node2)
         {
             //Swap the nodes
@@ -164,9 +157,7 @@ namespace Priority_Queue
             }
         }
 
-#if NET_VERSION_4_5
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private void CascadeDown(TItem node)
         {
             //aka Heapify-down
@@ -228,9 +219,7 @@ namespace Priority_Queue
         /// Returns true if 'higher' has higher priority than 'lower', false otherwise.
         /// Note that calling HasHigherPriority(node, node) (ie. both arguments the same node) will return false
         /// </summary>
-#if NET_VERSION_4_5
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private bool HasHigherPriority(TItem higher, TItem lower)
         {
             var cmp = higher.Priority.CompareTo(lower.Priority);
@@ -319,9 +308,7 @@ namespace Priority_Queue
         /// Calling this method on a node not in the queue results in undefined behavior
         /// O(log n)
         /// </summary>
-#if NET_VERSION_4_5
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         public void UpdatePriority(TItem node, TPriority priority)
         {
 #if DEBUG

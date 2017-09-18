@@ -262,8 +262,7 @@ namespace MediaBrowser.Providers.Manager
             personEntity.SetImage(new ItemImageInfo
             {
                 Path = imageUrl,
-                Type = ImageType.Primary,
-                IsPlaceholder = true
+                Type = ImageType.Primary
             }, 0);
         }
 

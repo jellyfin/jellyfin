@@ -146,6 +146,11 @@ namespace MediaBrowser.Providers.MediaInfo
                 return _cachedTask;
             }
 
+            if (!item.IsCompleteMedia)
+            {
+                return _cachedTask;
+            }
+
             if (item.IsShortcut)
             {
                 FetchShortcutInfo(item);

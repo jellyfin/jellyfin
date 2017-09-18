@@ -1487,7 +1487,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            var parent = currentItem.DisplayParent ?? currentItem.GetParent();
+            var parent = currentItem.DisplayParent ?? (currentItem.IsOwnedItem ? currentItem.GetOwner() : currentItem.GetParent());
 
             if (parent == null && !(originalItem is UserRootFolder) && !(originalItem is UserView) && !(originalItem is AggregateFolder) && !(originalItem is ICollectionFolder) && !(originalItem is Channel))
             {
