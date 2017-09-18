@@ -253,6 +253,7 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "ExternalId", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "SeriesPresentationUniqueKey", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "ShowId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "OwnerId", "Text", existingColumnNames);
 
                     existingColumnNames = GetColumnNames(db, "ItemValues");
                     AddColumn(db, "ItemValues", "CleanValue", "Text", existingColumnNames);
@@ -459,7 +460,8 @@ namespace Emby.Server.Implementations.Data
             "AlbumArtists",
             "ExternalId",
             "SeriesPresentationUniqueKey",
-            "ShowId"
+            "ShowId",
+            "OwnerId"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -580,7 +582,8 @@ namespace Emby.Server.Implementations.Data
                 "AlbumArtists",
                 "ExternalId",
                 "SeriesPresentationUniqueKey",
-                "ShowId"
+                "ShowId",
+                "OwnerId"
             };
 
             var saveItemCommandCommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -784,13 +787,14 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@PremiereDate", item.PremiereDate);
             saveItemStatement.TryBind("@ProductionYear", item.ProductionYear);
 
-            if (item.ParentId == Guid.Empty)
+            var parentId = item.ParentId;
+            if (parentId == Guid.Empty)
             {
                 saveItemStatement.TryBindNull("@ParentId");
             }
             else
             {
-                saveItemStatement.TryBind("@ParentId", item.ParentId);
+                saveItemStatement.TryBind("@ParentId", parentId);
             }
 
             if (item.Genres.Count > 0)
@@ -1057,6 +1061,16 @@ namespace Emby.Server.Implementations.Data
                 saveItemStatement.TryBindNull("@ShowId");
             }
 
+            var ownerId = item.OwnerId;
+            if (ownerId != Guid.Empty)
+            {
+                saveItemStatement.TryBind("@OwnerId", ownerId);
+            }
+            else
+            {
+                saveItemStatement.TryBindNull("@OwnerId");
+            }
+
             saveItemStatement.MoveNext();
         }
 
@@ -1156,16 +1170,14 @@ namespace Emby.Server.Implementations.Data
                    delimeter +
                    image.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) +
                    delimeter +
-                   image.Type +
-                   delimeter +
-                   image.IsPlaceholder;
+                   image.Type;
         }
 
         public ItemImageInfo ItemImageInfoFromValueString(string value)
         {
             var parts = value.Split(new[] { '*' }, StringSplitOptions.None);
 
-            if (parts.Length != 4)
+            if (parts.Length < 3)
             {
                 return null;
             }
@@ -1173,9 +1185,18 @@ namespace Emby.Server.Implementations.Data
             var image = new ItemImageInfo();
 
             image.Path = parts[0];
-            image.DateModified = new DateTime(long.Parse(parts[1], CultureInfo.InvariantCulture), DateTimeKind.Utc);
-            image.Type = (ImageType)Enum.Parse(typeof(ImageType), parts[2], true);
-            image.IsPlaceholder = string.Equals(parts[3], true.ToString(), StringComparison.OrdinalIgnoreCase);
+
+            long ticks;
+            if (long.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out ticks))
+            {
+                image.DateModified = new DateTime(ticks, DateTimeKind.Utc);
+            }
+
+            ImageType type;
+            if (Enum.TryParse(parts[2], true, out type))
+            {
+                image.Type = type;
+            }
 
             return image;
         }
@@ -1964,6 +1985,12 @@ namespace Emby.Server.Implementations.Data
                     index++;
                 }
             }
+
+            if (!reader.IsDBNull(index))
+            {
+                item.OwnerId = reader.GetGuid(index);
+            }
+            index++;
 
             return item;
         }
@@ -4466,7 +4493,6 @@ namespace Emby.Server.Implementations.Data
                     whereClauses.Add("ThemeVideoIds is null");
                 }
             }
-
 
             var includedItemByNameTypes = GetItemByNameTypesInQuery(query).SelectMany(MapIncludeItemTypes).ToList();
             var enableItemsByName = (query.IncludeItemsByName ?? false) && includedItemByNameTypes.Count > 0;

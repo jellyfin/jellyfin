@@ -347,7 +347,10 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                if (refreshOptions.RefreshItem(item))
+                {
+                    await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                }
 
                 numComplete++;
                 double percent = numComplete;
@@ -382,7 +385,10 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 if (!skipItem)
                 {
-                    await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                    if (refreshOptions.RefreshItem(item))
+                    {
+                        await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                    }
                 }
 
                 numComplete++;

@@ -1,5 +1,7 @@
-﻿using System.Linq;
-
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -19,6 +21,8 @@ namespace MediaBrowser.Controller.Providers
 
         public MetadataRefreshMode MetadataRefreshMode { get; set; }
         public RemoteSearchResult SearchResult { get; set; }
+
+        public List<string> RefreshPaths { get; set; }
 
         public bool ForceSave { get; set; }
 
@@ -44,6 +48,26 @@ namespace MediaBrowser.Controller.Providers
             ReplaceAllImages = copy.ReplaceAllImages;
             ReplaceImages = copy.ReplaceImages.ToList();
             SearchResult = copy.SearchResult;
+
+            if (copy.RefreshPaths != null && copy.RefreshPaths.Count > 0)
+            {
+                if (RefreshPaths == null)
+                {
+                    RefreshPaths = new List<string>();
+                }
+
+                RefreshPaths.AddRange(copy.RefreshPaths);
+            }
+        }
+
+        public bool RefreshItem(BaseItem item)
+        {
+            if (RefreshPaths != null && RefreshPaths.Count > 0)
+            {
+                return RefreshPaths.Contains(item.Path ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            }
+
+            return true;
         }
     }
 }

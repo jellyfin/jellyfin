@@ -843,8 +843,7 @@ namespace Emby.Server.Implementations.LiveTv
                     item.SetImage(new ItemImageInfo
                     {
                         Path = info.ImagePath,
-                        Type = ImageType.Primary,
-                        IsPlaceholder = true
+                        Type = ImageType.Primary
                     }, 0);
                 }
                 else if (!string.IsNullOrWhiteSpace(info.ImageUrl))
@@ -852,8 +851,7 @@ namespace Emby.Server.Implementations.LiveTv
                     item.SetImage(new ItemImageInfo
                     {
                         Path = info.ImageUrl,
-                        Type = ImageType.Primary,
-                        IsPlaceholder = true
+                        Type = ImageType.Primary
                     }, 0);
                 }
             }

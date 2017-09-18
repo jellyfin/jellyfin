@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.Collections
                         return subItem;
                     }
 
-                    var parent = subItem.GetParent();
+                    var parent = subItem.IsOwnedItem ? subItem.GetOwner() : subItem.GetParent();
 
                     if (parent != null && parent.HasImage(ImageType.Primary))
                     {

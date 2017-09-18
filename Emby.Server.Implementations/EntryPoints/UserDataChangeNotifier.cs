@@ -77,7 +77,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 // Go up one level for indicators
                 if (baseItem != null)
                 {
-                    var parent = baseItem.GetParent();
+                    var parent = baseItem.IsOwnedItem ? baseItem.GetOwner() : baseItem.GetParent();
 
                     if (parent != null)
                     {
