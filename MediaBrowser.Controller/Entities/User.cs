@@ -38,7 +38,17 @@ namespace MediaBrowser.Controller.Entities
         public string ConnectAccessKey { get; set; }
 
         // Strictly to remove IgnoreDataMember
-        public override ItemImageInfo[] ImageInfos { get => base.ImageInfos; set => base.ImageInfos = value; }
+        public override ItemImageInfo[] ImageInfos
+        {
+            get
+            {
+                return base.ImageInfos;
+            }
+            set
+            {
+                base.ImageInfos = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the path.
