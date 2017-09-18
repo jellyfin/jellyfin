@@ -736,7 +736,8 @@ namespace Emby.Drawing
                 {
                     var filename = (originalImagePath + dateModified.Ticks.ToString(UsCulture)).GetMD5().ToString("N");
 
-                    var outputPath = Path.Combine(_appPaths.ImageCachePath, "converted-images", filename + ".webp");
+                    var cacheExtension = _mediaEncoder().SupportsEncoder("libwebp") ? ".webp" : ".png";
+                    var outputPath = Path.Combine(_appPaths.ImageCachePath, "converted-images", filename + cacheExtension);
 
                     var file = _fileSystem.GetFileInfo(outputPath);
                     if (!file.Exists)
