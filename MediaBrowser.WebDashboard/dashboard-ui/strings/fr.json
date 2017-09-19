@@ -1,7 +1,4 @@
 {
-    "LabelDeinterlacingMethod": "M\u00e9thode de d\u00e9sentrelacement\u00a0:",
-    "Standard": "Standard",
-    "BobAndWeaveWithHelp": "Adaptatif (meilleure qualit\u00e9 mais plus lent)",
     "LabelPrevious": "Pr\u00e9c\u00e9dent",
     "LabelFinish": "Terminer",
     "LabelNext": "Suivant",
@@ -212,6 +209,9 @@
     "OptionDvd": "DVD",
     "OptionIso": "ISO",
     "Option3D": "3D",
+    "LabelDeinterlacingMethod": "M\u00e9thode de d\u00e9sentrelacement\u00a0:",
+    "Standard": "Standard",
+    "BobAndWeaveWithHelp": "Adaptatif (meilleure qualit\u00e9 mais plus lent)",
     "LabelStatus": "\u00c9tat\u00a0:",
     "LabelLastResult": "Dernier r\u00e9sultat :",
     "OptionHasSubtitles": "Sous-titres",

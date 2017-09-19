@@ -1,7 +1,4 @@
 {
-    "LabelDeinterlacingMethod": "Deinterlacing method:",
-    "Standard": "Standard",
-    "BobAndWeaveWithHelp": "Bob and weave (higher quality, but slower)",
     "LabelPrevious": "Forrige",
     "LabelFinish": "Ferdig",
     "LabelNext": "Neste",
@@ -212,6 +209,9 @@
     "OptionDvd": "DVD",
     "OptionIso": "ISO",
     "Option3D": "3D",
+    "LabelDeinterlacingMethod": "Deinterlacing method:",
+    "Standard": "Standard",
+    "BobAndWeaveWithHelp": "Bob and weave (higher quality, but slower)",
     "LabelStatus": "Status:",
     "LabelLastResult": "Siste resultat:",
     "OptionHasSubtitles": "Undertekster",

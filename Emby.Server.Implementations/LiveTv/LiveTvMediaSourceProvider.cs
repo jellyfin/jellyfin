@@ -143,7 +143,7 @@ namespace Emby.Server.Implementations.LiveTv
                 stream = info.Item1;
                 directStreamProvider = info.Item2;
 
-                allowLiveStreamProbe = false;
+                //allowLiveStreamProbe = false;
             }
             else
             {
