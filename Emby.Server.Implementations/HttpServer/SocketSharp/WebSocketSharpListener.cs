@@ -185,11 +185,6 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
 
             if (_listener != null)
             {
-                foreach (var prefix in _listener.Prefixes.ToList())
-                {
-                    _listener.Prefixes.Remove(prefix);
-                }
-
                 _listener.Close();
             }
 

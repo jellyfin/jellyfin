@@ -1032,11 +1032,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (sourceBitrate <= 2000000)
             {
-                sourceBitrate *= 2;
+                sourceBitrate = Convert.ToInt32(sourceBitrate * 2.5);
             }
             else if (sourceBitrate <= 3000000)
             {
-                sourceBitrate = Convert.ToInt32(sourceBitrate * 1.5);
+                sourceBitrate = Convert.ToInt32(sourceBitrate * 2);
             }
 
             var bitrate = Math.Min(sourceBitrate, requestedBitrate);
