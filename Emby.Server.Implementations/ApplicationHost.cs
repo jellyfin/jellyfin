@@ -1853,7 +1853,31 @@ namespace Emby.Server.Implementations
                 "mbintros.dll",
                 "embytv.dll",
                 "Messenger.dll",
-                "MediaBrowser.Plugins.TvMazeProvider.dll"
+                "MediaBrowser.Plugins.TvMazeProvider.dll",
+                "MBBookshelf.dll",
+                "MediaBrowser.Channels.Adult.YouJizz.dll",
+                "MediaBrowser.Channels.Vine-co.dll",
+                "MediaBrowser.Plugins.Vimeo.dll",
+                "MediaBrowser.Channels.Vevo.dll",
+                "MediaBrowser.Plugins.Twitch.dll",
+                "MediaBrowser.Channels.SvtPlay.dll",
+                "MediaBrowser.Plugins.SoundCloud.dll",
+                "MediaBrowser.Plugins.SnesBox.dll",
+                "MediaBrowser.Plugins.RottenTomatoes.dll",
+                "MediaBrowser.Plugins.Revision3.dll",
+                "MediaBrowser.Plugins.NesBox.dll",
+                "MBChapters.dll",
+                "MediaBrowser.Channels.LeagueOfLegends.dll",
+                "MediaBrowser.Plugins.ADEProvider.dll",
+                "MediaBrowser.Channels.BallStreams.dll",
+                "MediaBrowser.Channels.Adult.Beeg.dll",
+                "ChannelDownloader.dll",
+                "Hamstercat.Emby.EmbyBands.dll",
+                "EmbyTV.dll",
+                "MediaBrowser.Channels.HitboxTV.dll",
+                "MediaBrowser.Channels.HockeyStreams.dll",
+                "MediaBrowser.Plugins.ITV.dll",
+                "MediaBrowser.Plugins.Lastfm.dll"
             };
 
             return !exclude.Contains(filename ?? string.Empty, StringComparer.OrdinalIgnoreCase);

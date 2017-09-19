@@ -22,7 +22,13 @@
 
         <form class="newImageForm userProfileSettingsForm hide" style="margin: 1em auto 0;">
 
-            <h1>${HeaderUploadNewImage}</h1>
+            <div class="flex align-items-center" style="margin:1.5em 0;">
+                <h1 style="margin:0;">${HeaderUploadNewImage}</h1>
+
+                <button is="emby-button" type="button" class="raised raised-mini btnBrowse" style="margin-left:1.5em;border-radius:500px;">
+                    <span>${Browse}</span>
+                </button>
+            </div>
 
             <div id="fldNewImage">
 
