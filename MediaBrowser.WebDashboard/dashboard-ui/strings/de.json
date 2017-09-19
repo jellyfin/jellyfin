@@ -1,7 +1,4 @@
 {
-    "LabelDeinterlacingMethod": "Deinterlacing-Methode:",
-    "Standard": "Standard",
-    "BobAndWeaveWithHelp": "Bob und Weave (h\u00f6here Qualit\u00e4t, aber langsamer)",
     "LabelPrevious": "Vorheriges",
     "LabelFinish": "Fertig",
     "LabelNext": "N\u00e4chstes",
@@ -212,6 +209,9 @@
     "OptionDvd": "DVD",
     "OptionIso": "ISO",
     "Option3D": "3D",
+    "LabelDeinterlacingMethod": "Deinterlacing-Methode:",
+    "Standard": "Standard",
+    "BobAndWeaveWithHelp": "Bob und Weave (h\u00f6here Qualit\u00e4t, aber langsamer)",
     "LabelStatus": "Status:",
     "LabelLastResult": "Letztes Ergebnis:",
     "OptionHasSubtitles": "Untertitel",

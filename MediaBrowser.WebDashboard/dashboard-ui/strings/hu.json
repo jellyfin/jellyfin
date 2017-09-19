@@ -1,7 +1,4 @@
 {
-    "LabelDeinterlacingMethod": "Deinterlacing method:",
-    "Standard": "Standard",
-    "BobAndWeaveWithHelp": "Bob and weave (higher quality, but slower)",
     "LabelPrevious": "El\u0151z\u0151",
     "LabelFinish": "Befejez",
     "LabelNext": "K\u00f6vetkez\u0151",
@@ -212,6 +209,9 @@
     "OptionDvd": "Dvd",
     "OptionIso": "Iso",
     "Option3D": "3D",
+    "LabelDeinterlacingMethod": "Deinterlacing method:",
+    "Standard": "Standard",
+    "BobAndWeaveWithHelp": "Bob and weave (higher quality, but slower)",
     "LabelStatus": "St\u00e1tusz:",
     "LabelLastResult": "Utols\u00f3 eredm\u00e9ny:",
     "OptionHasSubtitles": "Feliratok",
