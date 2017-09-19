@@ -810,7 +810,7 @@ namespace Emby.Drawing
             }
             catch (Exception ex)
             {
-                _logger.Error("Error enhancing image", ex);
+                _logger.ErrorException("Error enhancing image", ex);
             }
 
             return new Tuple<string, DateTime, bool>(originalImagePath, dateModified, inputImageSupportsTransparency);
