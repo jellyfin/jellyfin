@@ -90,25 +90,9 @@ namespace MediaBrowser.Server.Mac
             throw new NotImplementedException();
         }
 
-        public override bool SupportsRunningAsService
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         public override bool SupportsAutoRunAtStartup
         {
             get { return false; }
-        }
-
-        public override bool IsRunningAsService
-        {
-            get
-            {
-                return false;
-            }
         }
     }
 }
