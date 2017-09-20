@@ -2206,17 +2206,19 @@ namespace Emby.Server.Implementations
         /// <returns>Task{CheckForUpdateResult}.</returns>
         public async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var cacheLength = TimeSpan.FromMinutes(5);
             var updateLevel = SystemUpdateLevel;
+            var cacheLength = updateLevel == PackageVersionClass.Release ?
+                TimeSpan.FromHours(4) :
+                TimeSpan.FromMinutes(5);
 
-            var result = await new GithubUpdater(HttpClient, JsonSerializer).CheckForUpdateResult("MediaBrowser", 
-                "Emby", 
-                ApplicationVersion, 
+            var result = await new GithubUpdater(HttpClient, JsonSerializer).CheckForUpdateResult("MediaBrowser",
+                "Emby",
+                ApplicationVersion,
                 updateLevel,
                 ReleaseAssetFilename,
                 "MBServer",
-                UpdateTargetFileName, 
-                cacheLength, 
+                UpdateTargetFileName,
+                cacheLength,
                 cancellationToken).ConfigureAwait(false);
 
             HasUpdateAvailable = result.IsUpdateAvailable;

@@ -4410,7 +4410,7 @@ namespace Emby.Server.Implementations.Data
                     index++;
                 }
 
-                whereClauses.Add(string.Join(" OR ", includeIds.ToArray()));
+                whereClauses.Add("(" + string.Join(" OR ", includeIds.ToArray()) + ")");
             }
             if (query.ExcludeItemIds.Length > 0)
             {
