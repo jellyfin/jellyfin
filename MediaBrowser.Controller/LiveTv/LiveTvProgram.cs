@@ -50,7 +50,9 @@ namespace MediaBrowser.Controller.LiveTv
         public static double? GetDefaultPrimaryImageAspectRatio(IHasProgramAttributes item)
         {
             var serviceName = item.ServiceName;
-            if (!item.IsMovie && !string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase))
+            if (!item.IsMovie 
+                && !string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase) 
+                && !string.Equals(serviceName, "Next Pvr", StringComparison.OrdinalIgnoreCase))
             {
                 double value = 16;
                 value /= 9;
