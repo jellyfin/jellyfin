@@ -1,5 +1,9 @@
 using System;
 using System.IO;
+using System.Net;
+using System.Net.Security;
+using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Cryptography;
@@ -16,7 +20,7 @@ namespace SocketHttpListener.Net
     {
         private static AsyncCallback s_onreadCallback = new AsyncCallback(OnRead);
         const int BufferSize = 8192;
-        IAcceptSocket _socket;
+        Socket _socket;
         Stream _stream;
         EndPointListener _epl;
         MemoryStream _memoryStream;
@@ -31,21 +35,20 @@ namespace SocketHttpListener.Net
         bool _contextBound;
         bool secure;
         int _timeout = 300000; // 90k ms for first request, 15k ms from then on
-        IpEndPointInfo local_ep;
+        IPEndPoint local_ep;
         HttpListener _lastListener;
         int[] client_cert_errors;
-        ICertificate cert;
-        Stream ssl_stream;
+        X509Certificate cert;
+        SslStream ssl_stream;
 
         private readonly ILogger _logger;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly IMemoryStreamFactory _memoryStreamFactory;
         private readonly ITextEncoding _textEncoding;
-        private readonly IStreamFactory _streamFactory;
         private readonly IFileSystem _fileSystem;
         private readonly IEnvironmentInfo _environment;
 
-        private HttpConnection(ILogger logger, IAcceptSocket socket, EndPointListener epl, bool secure, ICertificate cert, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IEnvironmentInfo environment)
+        private HttpConnection(ILogger logger, Socket socket, EndPointListener epl, bool secure, X509Certificate cert, ICryptoProvider cryptoProvider, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IEnvironmentInfo environment)
         {
             _logger = logger;
             this._socket = socket;
@@ -57,14 +60,13 @@ namespace SocketHttpListener.Net
             _textEncoding = textEncoding;
             _fileSystem = fileSystem;
             _environment = environment;
-            _streamFactory = streamFactory;
         }
 
         private async Task InitStream()
         {
             if (secure == false)
             {
-                _stream = _streamFactory.CreateNetworkStream(_socket, false);
+                _stream = new SocketStream(_socket, false);
             }
             else
             {
@@ -81,16 +83,16 @@ namespace SocketHttpListener.Net
                 //});
                 //_stream = ssl_stream.AuthenticatedStream;
 
-                ssl_stream = _streamFactory.CreateSslStream(_streamFactory.CreateNetworkStream(_socket, false), false);
-                await _streamFactory.AuthenticateSslStreamAsServer(ssl_stream, cert).ConfigureAwait(false);
+                ssl_stream = new SslStream(new SocketStream(_socket, false), false);
+                await ssl_stream.AuthenticateAsServerAsync(cert).ConfigureAwait(false);
                 _stream = ssl_stream;
             }
             Init();
         }
 
-        public static async Task<HttpConnection> Create(ILogger logger, IAcceptSocket sock, EndPointListener epl, bool secure, ICertificate cert, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IEnvironmentInfo environment)
+        public static async Task<HttpConnection> Create(ILogger logger, Socket sock, EndPointListener epl, bool secure, X509Certificate cert, ICryptoProvider cryptoProvider, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IEnvironmentInfo environment)
         {
-            var connection = new HttpConnection(logger, sock, epl, secure, cert, cryptoProvider, streamFactory, memoryStreamFactory, textEncoding, fileSystem, environment);
+            var connection = new HttpConnection(logger, sock, epl, secure, cert, cryptoProvider, memoryStreamFactory, textEncoding, fileSystem, environment);
 
             await connection.InitStream().ConfigureAwait(false);
 
@@ -134,21 +136,21 @@ namespace SocketHttpListener.Net
             get { return _reuses; }
         }
 
-        public IpEndPointInfo LocalEndPoint
+        public IPEndPoint LocalEndPoint
         {
             get
             {
                 if (local_ep != null)
                     return local_ep;
 
-                local_ep = (IpEndPointInfo)_socket.LocalEndPoint;
+                local_ep = (IPEndPoint)_socket.LocalEndPoint;
                 return local_ep;
             }
         }
 
-        public IpEndPointInfo RemoteEndPoint
+        public IPEndPoint RemoteEndPoint
         {
-            get { return (IpEndPointInfo)_socket.RemoteEndPoint; }
+            get { return _socket.RemoteEndPoint as IPEndPoint; }
         }
 
         public bool IsSecure
@@ -513,12 +515,12 @@ namespace SocketHttpListener.Net
                     return;
                 }
 
-                IAcceptSocket s = _socket;
+                Socket s = _socket;
                 _socket = null;
                 try
                 {
                     if (s != null)
-                        s.Shutdown(true);
+                        s.Shutdown(SocketShutdown.Both);
                 }
                 catch
                 {

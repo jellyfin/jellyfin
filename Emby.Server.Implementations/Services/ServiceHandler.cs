@@ -162,7 +162,11 @@ namespace Emby.Server.Implementations.Services
             if (RequireqRequestStream(requestType))
             {
                 // Used by IRequiresRequestStream
-                return CreateRequiresRequestStreamRequest(host, httpReq, requestType);
+                var request = ServiceHandler.CreateRequest(httpReq, restPath, GetRequestParams(httpReq), host.CreateInstance(requestType));
+
+                var rawReq = (IRequiresRequestStream)request;
+                rawReq.RequestStream = httpReq.InputStream;
+                return rawReq;
             }
 
             var requestParams = GetFlattenedRequestParams(httpReq);
@@ -174,16 +178,6 @@ namespace Emby.Server.Implementations.Services
             var requiresRequestStreamTypeInfo = typeof(IRequiresRequestStream).GetTypeInfo();
 
             return requiresRequestStreamTypeInfo.IsAssignableFrom(requestType.GetTypeInfo());
-        }
-
-        private static IRequiresRequestStream CreateRequiresRequestStreamRequest(HttpListenerHost host, IRequest req, Type requestType)
-        {
-            var restPath = GetRoute(req);
-            var request = ServiceHandler.CreateRequest(req, restPath, GetRequestParams(req), host.CreateInstance(requestType));
-
-            var rawReq = (IRequiresRequestStream)request;
-            rawReq.RequestStream = req.InputStream;
-            return rawReq;
         }
 
         public static object CreateRequest(HttpListenerHost host, IRequest httpReq, RestPath restPath, Dictionary<string, string> requestParams)
@@ -228,22 +222,26 @@ namespace Emby.Server.Implementations.Services
                 }
             }
 
-            if ((IsMethod(request.Verb, "POST") || IsMethod(request.Verb, "PUT")) && request.FormData != null)
+            if ((IsMethod(request.Verb, "POST") || IsMethod(request.Verb, "PUT")))
             {
-                foreach (var name in request.FormData.Keys)
+                var formData = request.FormData;
+                if (formData != null)
                 {
-                    if (name == null) continue; //thank you ASP.NET
+                    foreach (var name in formData.Keys)
+                    {
+                        if (name == null) continue; //thank you ASP.NET
 
-                    var values = request.FormData.GetValues(name);
-                    if (values.Count == 1)
-                    {
-                        map[name] = values[0];
-                    }
-                    else
-                    {
-                        for (var i = 0; i < values.Count; i++)
+                        var values = formData.GetValues(name);
+                        if (values.Count == 1)
                         {
-                            map[name + (i == 0 ? "" : "#" + i)] = values[i];
+                            map[name] = values[0];
+                        }
+                        else
+                        {
+                            for (var i = 0; i < values.Count; i++)
+                            {
+                                map[name + (i == 0 ? "" : "#" + i)] = values[i];
+                            }
                         }
                     }
                 }
@@ -270,12 +268,16 @@ namespace Emby.Server.Implementations.Services
                 map[name] = request.QueryString[name];
             }
 
-            if ((IsMethod(request.Verb, "POST") || IsMethod(request.Verb, "PUT")) && request.FormData != null)
+            if ((IsMethod(request.Verb, "POST") || IsMethod(request.Verb, "PUT")))
             {
-                foreach (var name in request.FormData.Keys)
+                var formData = request.FormData;
+                if (formData != null)
                 {
-                    if (name == null) continue; //thank you ASP.NET
-                    map[name] = request.FormData[name];
+                    foreach (var name in formData.Keys)
+                    {
+                        if (name == null) continue; //thank you ASP.NET
+                        map[name] = formData[name];
+                    }
                 }
             }
 

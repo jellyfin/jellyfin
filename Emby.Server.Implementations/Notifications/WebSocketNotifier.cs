@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Net;
+﻿using System;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
 using System.Linq;
@@ -49,6 +50,7 @@ namespace Emby.Server.Implementations.Notifications
         public void Dispose()
         {
             _notificationsRepo.NotificationAdded -= _notificationsRepo_NotificationAdded;
+            GC.SuppressFinalize(this);
         }
     }
 }

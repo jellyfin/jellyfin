@@ -16,9 +16,9 @@ namespace MediaBrowser.Providers.TV
 {
     public class EpisodeMetadataService : MetadataService<Episode, EpisodeInfo>
     {
-        protected override ItemUpdateType BeforeSave(Episode item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected override ItemUpdateType BeforeSaveInternal(Episode item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
-            var updateType = base.BeforeSave(item, isFullRefresh, currentUpdateType);
+            var updateType = base.BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
 
             var seriesName = item.FindSeriesName();
             if (!string.Equals(item.SeriesName, seriesName, StringComparison.Ordinal))

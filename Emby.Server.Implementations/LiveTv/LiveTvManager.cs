@@ -99,7 +99,7 @@ namespace Emby.Server.Implementations.LiveTv
             _dtoService = dtoService;
             _userDataManager = userDataManager;
 
-            _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger, appHost, _libraryManager);
+            _tvDtoService = new LiveTvDtoService(dtoService, imageProcessor, logger, appHost, _libraryManager);
         }
 
         /// <summary>
@@ -187,7 +187,6 @@ namespace Emby.Server.Implementations.LiveTv
                 IsSports = query.IsSports,
                 IsSeries = query.IsSeries,
                 IncludeItemTypes = new[] { typeof(LiveTvChannel).Name },
-                SortOrder = query.SortOrder ?? SortOrder.Ascending,
                 TopParentIds = new[] { topFolder.Id.ToString("N") },
                 IsFavorite = query.IsFavorite,
                 IsLiked = query.IsLiked,
@@ -196,17 +195,21 @@ namespace Emby.Server.Implementations.LiveTv
                 DtoOptions = dtoOptions
             };
 
-            internalQuery.OrderBy.AddRange(query.SortBy.Select(i => new Tuple<string, SortOrder>(i, query.SortOrder ?? SortOrder.Ascending)));
+            var orderBy = internalQuery.OrderBy.ToList();
+
+            orderBy.AddRange(query.SortBy.Select(i => new Tuple<string, SortOrder>(i, query.SortOrder ?? SortOrder.Ascending)));
 
             if (query.EnableFavoriteSorting)
             {
-                internalQuery.OrderBy.Insert(0, new Tuple<string, SortOrder>(ItemSortBy.IsFavoriteOrLiked, SortOrder.Descending));
+                orderBy.Insert(0, new Tuple<string, SortOrder>(ItemSortBy.IsFavoriteOrLiked, SortOrder.Descending));
             }
 
             if (!internalQuery.OrderBy.Any(i => string.Equals(i.Item1, ItemSortBy.SortName, StringComparison.OrdinalIgnoreCase)))
             {
-                internalQuery.OrderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending));
+                orderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending));
             }
+
+            internalQuery.OrderBy = orderBy.ToArray();
 
             return _libraryManager.GetItemsResult(internalQuery);
         }
@@ -597,6 +600,12 @@ namespace Emby.Server.Implementations.LiveTv
                 };
             }
 
+            if (!string.Equals(info.ShowId, item.ShowId, StringComparison.OrdinalIgnoreCase))
+            {
+                item.ShowId = info.ShowId;
+                forceUpdate = true;
+            }
+
             var seriesId = info.SeriesId;
 
             if (!item.ParentId.Equals(channel.Id))
@@ -743,6 +752,11 @@ namespace Emby.Server.Implementations.LiveTv
                 }
             }
 
+            if (isNew || isUpdated)
+            {
+                item.OnMetadataChanged();
+            }
+
             return new Tuple<LiveTvProgram, bool, bool>(item, isNew, isUpdated);
         }
 
@@ -829,8 +843,7 @@ namespace Emby.Server.Implementations.LiveTv
                     item.SetImage(new ItemImageInfo
                     {
                         Path = info.ImagePath,
-                        Type = ImageType.Primary,
-                        IsPlaceholder = true
+                        Type = ImageType.Primary
                     }, 0);
                 }
                 else if (!string.IsNullOrWhiteSpace(info.ImageUrl))
@@ -838,8 +851,7 @@ namespace Emby.Server.Implementations.LiveTv
                     item.SetImage(new ItemImageInfo
                     {
                         Path = info.ImageUrl,
-                        Type = ImageType.Primary,
-                        IsPlaceholder = true
+                        Type = ImageType.Primary
                     }, 0);
                 }
             }
@@ -918,10 +930,10 @@ namespace Emby.Server.Implementations.LiveTv
 
             var topFolder = await GetInternalLiveTvFolder(cancellationToken).ConfigureAwait(false);
 
-            if (query.SortBy.Length == 0)
+            if (query.OrderBy.Length == 0)
             {
                 // Unless something else was specified, order by start date to take advantage of a specialized index
-                query.SortBy = new[] { ItemSortBy.StartDate };
+                query.OrderBy = new Tuple<string, SortOrder>[] { new Tuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending) };
             }
 
             RemoveFields(options);
@@ -942,8 +954,7 @@ namespace Emby.Server.Implementations.LiveTv
                 Genres = query.Genres,
                 StartIndex = query.StartIndex,
                 Limit = query.Limit,
-                SortBy = query.SortBy,
-                SortOrder = query.SortOrder ?? SortOrder.Ascending,
+                OrderBy = query.OrderBy,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 TopParentIds = new[] { topFolder.Id.ToString("N") },
                 Name = query.Name,
@@ -985,8 +996,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var queryResult = _libraryManager.QueryItems(internalQuery);
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(queryResult.Items, options, user)
-                .ConfigureAwait(false));
+            var returnArray = _dtoService.GetBaseItemDtos(queryResult.Items, options, user);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -1013,7 +1023,7 @@ namespace Emby.Server.Implementations.LiveTv
                 IsSports = query.IsSports,
                 IsKids = query.IsKids,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
-                SortBy = new[] { ItemSortBy.StartDate },
+                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending) },
                 TopParentIds = new[] { topFolder.Id.ToString("N") },
                 DtoOptions = options
             };
@@ -1070,8 +1080,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var user = _userManager.GetUserById(query.UserId);
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(internalResult.Items, options, user)
-                .ConfigureAwait(false));
+            var returnArray = _dtoService.GetBaseItemDtos(internalResult.Items, options, user);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -1646,8 +1655,7 @@ namespace Emby.Server.Implementations.LiveTv
                 IsVirtualItem = false,
                 Limit = query.Limit,
                 StartIndex = query.StartIndex,
-                SortBy = new[] { ItemSortBy.DateCreated },
-                SortOrder = SortOrder.Descending,
+                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 IncludeItemTypes = includeItemTypes.ToArray(includeItemTypes.Count),
                 ExcludeItemTypes = excludeItemTypes.ToArray(excludeItemTypes.Count),
@@ -1656,7 +1664,7 @@ namespace Emby.Server.Implementations.LiveTv
             });
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetRecordingSeries(RecordingQuery query, DtoOptions options, CancellationToken cancellationToken)
+        public QueryResult<BaseItemDto> GetRecordingSeries(RecordingQuery query, DtoOptions options, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
             if (user != null && !IsLiveTvEnabled(user))
@@ -1694,16 +1702,14 @@ namespace Emby.Server.Implementations.LiveTv
                 Recursive = true,
                 AncestorIds = folders.Select(i => i.Id.ToString("N")).ToArray(folders.Count),
                 Limit = query.Limit,
-                SortBy = new[] { ItemSortBy.DateCreated },
-                SortOrder = SortOrder.Descending,
+                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 IncludeItemTypes = includeItemTypes.ToArray(includeItemTypes.Count),
                 ExcludeItemTypes = excludeItemTypes.ToArray(excludeItemTypes.Count),
                 DtoOptions = options
             });
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(internalResult.Items, options, user)
-                .ConfigureAwait(false));
+            var returnArray = _dtoService.GetBaseItemDtos(internalResult.Items, options, user);
 
             return new QueryResult<BaseItemDto>
             {
@@ -1930,11 +1936,11 @@ namespace Emby.Server.Implementations.LiveTv
 
             var info = recording;
 
-            dto.SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId)
+            dto.SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId) || service == null
                 ? null
                 : _tvDtoService.GetInternalSeriesTimerId(service.Name, info.SeriesTimerId).ToString("N");
 
-            dto.TimerId = string.IsNullOrEmpty(info.TimerId)
+            dto.TimerId = string.IsNullOrEmpty(info.TimerId) || service == null
                 ? null
                 : _tvDtoService.GetInternalTimerId(service.Name, info.TimerId).ToString("N");
 
@@ -2040,8 +2046,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var internalResult = await GetInternalRecordings(query, options, cancellationToken).ConfigureAwait(false);
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(internalResult.Items, options, user)
-                .ConfigureAwait(false));
+            var returnArray = _dtoService.GetBaseItemDtos(internalResult.Items, options, user);
 
             return new QueryResult<BaseItemDto>
             {
@@ -2368,7 +2373,7 @@ namespace Emby.Server.Implementations.LiveTv
             };
         }
 
-        public async Task AddChannelInfo(List<Tuple<BaseItemDto, LiveTvChannel>> tuples, DtoOptions options, User user)
+        public void AddChannelInfo(List<Tuple<BaseItemDto, LiveTvChannel>> tuples, DtoOptions options, User user)
         {
             var now = DateTime.UtcNow;
 
@@ -2381,7 +2386,7 @@ namespace Emby.Server.Implementations.LiveTv
                 MaxStartDate = now,
                 MinEndDate = now,
                 Limit = channelIds.Length,
-                SortBy = new[] { "StartDate" },
+                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending) },
                 TopParentIds = new[] { GetInternalLiveTvFolder(CancellationToken.None).Result.Id.ToString("N") },
                 DtoOptions = options
 
@@ -2425,7 +2430,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (addCurrentProgram)
             {
-                var currentProgramDtos = await _dtoService.GetBaseItemDtos(currentProgramsList, options, user).ConfigureAwait(false);
+                var currentProgramDtos = _dtoService.GetBaseItemDtos(currentProgramsList, options, user);
 
                 foreach (var programDto in currentProgramDtos)
                 {
@@ -2783,6 +2788,7 @@ namespace Emby.Server.Implementations.LiveTv
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private bool _isDisposed = false;
@@ -3145,6 +3151,16 @@ namespace Emby.Server.Implementations.LiveTv
             var info = GetConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
             var provider = _listingProviders.First(i => string.Equals(i.Type, info.Type, StringComparison.OrdinalIgnoreCase));
             return provider.GetChannels(info, cancellationToken);
+        }
+
+        public Guid GetInternalChannelId(string serviceName, string externalId)
+        {
+            return _tvDtoService.GetInternalChannelId(serviceName, externalId);
+        }
+
+        public Guid GetInternalProgramId(string serviceName, string externalId)
+        {
+            return _tvDtoService.GetInternalProgramId(serviceName, externalId);
         }
     }
 }

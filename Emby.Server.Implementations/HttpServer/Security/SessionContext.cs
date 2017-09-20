@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             _sessionManager = sessionManager;
         }
 
-        public Task<SessionInfo> GetSession(IServiceRequest requestContext)
+        public Task<SessionInfo> GetSession(IRequest requestContext)
         {
             var authorization = _authContext.GetAuthorizationInfo(requestContext);
 
@@ -38,7 +38,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return _sessionManager.LogSessionActivity(authorization.Client, authorization.Version, authorization.DeviceId, authorization.Device, requestContext.RemoteIp, user);
         }
 
-        private AuthenticationInfo GetTokenInfo(IServiceRequest request)
+        private AuthenticationInfo GetTokenInfo(IRequest request)
         {
             object info;
             request.Items.TryGetValue("OriginalAuthenticationInfo", out info);
@@ -47,11 +47,10 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         public Task<SessionInfo> GetSession(object requestContext)
         {
-            var req = new ServiceRequest((IRequest)requestContext);
-            return GetSession(req);
+            return GetSession((IRequest)requestContext);
         }
 
-        public async Task<User> GetUser(IServiceRequest requestContext)
+        public async Task<User> GetUser(IRequest requestContext)
         {
             var session = await GetSession(requestContext).ConfigureAwait(false);
 
@@ -60,8 +59,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         public Task<User> GetUser(object requestContext)
         {
-            var req = new ServiceRequest((IRequest)requestContext);
-            return GetUser(req);
+            return GetUser((IRequest)requestContext);
         }
     }
 }

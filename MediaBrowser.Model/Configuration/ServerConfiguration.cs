@@ -179,7 +179,6 @@ namespace MediaBrowser.Model.Configuration
         public int SchemaVersion { get; set; }
 
         public bool EnableAnonymousUsageReporting { get; set; }
-        public bool EnableStandaloneMusicKeys { get; set; }
         public bool EnableFolderView { get; set; }
         public bool EnableGroupingIntoCollections { get; set; }
         public bool DisplaySpecialsWithinSeasons { get; set; }

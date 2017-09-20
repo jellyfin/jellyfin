@@ -66,25 +66,25 @@ namespace SocketHttpListener.Net
             epl.AddPrefix(lp, listener);
         }
 
-        private static IpAddressInfo GetIpAnyAddress(HttpListener listener)
+        private static IPAddress GetIpAnyAddress(HttpListener listener)
         {
-            return listener.EnableDualMode ? IpAddressInfo.IPv6Any : IpAddressInfo.Any;
+            return listener.EnableDualMode ? IPAddress.IPv6Any : IPAddress.Any;
         }
 
         static async Task<EndPointListener> GetEPListener(ILogger logger, string host, int port, HttpListener listener, bool secure)
         {
             var networkManager = listener.NetworkManager;
 
-            IpAddressInfo addr;
+            IPAddress addr;
             if (host == "*" || host == "+")
                 addr = GetIpAnyAddress(listener);
-            else if (networkManager.TryParseIpAddress(host, out addr) == false)
+            else if (IPAddress.TryParse(host, out addr) == false)
             {
                 try
                 {
                     var all = (await networkManager.GetHostAddressesAsync(host).ConfigureAwait(false));
 
-                    addr = (all.Length == 0 ? null : all[0]) ?? 
+                    addr = (all.Length == 0 ? null : IPAddress.Parse(all[0].Address)) ?? 
                         GetIpAnyAddress(listener);
                 }
                 catch
@@ -94,10 +94,10 @@ namespace SocketHttpListener.Net
             }
 
             Dictionary<int, EndPointListener> p = null;  // Dictionary<int, EndPointListener>
-            if (!ip_to_endpoints.TryGetValue(addr.Address, out p))
+            if (!ip_to_endpoints.TryGetValue(addr.ToString(), out p))
             {
                 p = new Dictionary<int, EndPointListener>();
-                ip_to_endpoints[addr.Address] = p;
+                ip_to_endpoints[addr.ToString()] = p;
             }
 
             EndPointListener epl = null;
@@ -107,25 +107,25 @@ namespace SocketHttpListener.Net
             }
             else
             {
-                epl = new EndPointListener(listener, addr, port, secure, listener.Certificate, logger, listener.CryptoProvider, listener.StreamFactory, listener.SocketFactory, listener.MemoryStreamFactory, listener.TextEncoding, listener.FileSystem, listener.EnvironmentInfo);
+                epl = new EndPointListener(listener, addr, port, secure, listener.Certificate, logger, listener.CryptoProvider, listener.SocketFactory, listener.MemoryStreamFactory, listener.TextEncoding, listener.FileSystem, listener.EnvironmentInfo);
                 p[port] = epl;
             }
 
             return epl;
         }
 
-        public static void RemoveEndPoint(EndPointListener epl, IpEndPointInfo ep)
+        public static void RemoveEndPoint(EndPointListener epl, IPEndPoint ep)
         {
             lock (ip_to_endpoints)
             {
                 // Dictionary<int, EndPointListener> p
                 Dictionary<int, EndPointListener> p;
-                if (ip_to_endpoints.TryGetValue(ep.IpAddress.Address, out p))
+                if (ip_to_endpoints.TryGetValue(ep.Address.ToString(), out p))
                 {
                     p.Remove(ep.Port);
                     if (p.Count == 0)
                     {
-                        ip_to_endpoints.Remove(ep.IpAddress.Address);
+                        ip_to_endpoints.Remove(ep.Address.ToString());
                     }
                 }
                 epl.Close();

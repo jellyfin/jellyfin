@@ -22,22 +22,25 @@
 
         <form class="newImageForm userProfileSettingsForm hide" style="margin: 1em auto 0;">
 
-            <div is="emby-collapse" title="${HeaderUploadNewImage}">
-                <div class="collapseContent">
-                    <div id="fldNewImage">
-                        <p>${ImageUploadAspectRatioHelp}</p>
-                        <input type="file" accept="image/*" id="uploadUserImage" name="uploadUserImage" />
+            <div class="flex align-items-center" style="margin:1.5em 0;">
+                <h1 style="margin:0;">${HeaderUploadNewImage}</h1>
 
-                        <div id="userImageDropZone" class="imageDropZone">
-                            <h3>${LabelDropImageHere}</h3>
-                            <output id="userImageOutput"></output>
-                        </div>
-                    </div>
-                    <div id="fldNewImagePreview"></div>
-                    <div id="fldUpload" class="hide">
-                        <button type="submit" data-icon="check">${ButtonUpload}</button>
-                    </div>
+                <button is="emby-button" type="button" class="raised raised-mini btnBrowse" style="margin-left:1.5em;border-radius:500px;">
+                    <span>${Browse}</span>
+                </button>
+            </div>
+
+            <div id="fldNewImage">
+
+                <div id="userImageDropZone" class="imageDropZone squareImageDropZone fieldDescription">
+                    <div>${LabelDropImageHere}</div>
+                    <output id="userImageOutput" class="flex align-items-center justify-content-center" style="position: absolute;top:0;left:0;right:0;bottom:0;width:100%;"></output>
+                    <input type="file" accept="image/*" id="uploadUserImage" name="uploadUserImage" style="position: absolute;top:0;left:0;right:0;bottom:0;width:100%;opacity:0;" />
                 </div>
+            </div>
+
+            <div id="fldUpload" class="hide" style="margin-top:1em;">
+                <button is="emby-button" type="submit" class="raised button-submit block">${ButtonUpload}</button>
             </div>
 
         </form>

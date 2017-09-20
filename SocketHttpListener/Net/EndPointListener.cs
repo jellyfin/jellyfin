@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
@@ -11,37 +13,37 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
 using SocketHttpListener.Primitives;
+using ProtocolType = MediaBrowser.Model.Net.ProtocolType;
+using SocketType = MediaBrowser.Model.Net.SocketType;
 
 namespace SocketHttpListener.Net
 {
     sealed class EndPointListener
     {
         HttpListener listener;
-        IpEndPointInfo endpoint;
-        IAcceptSocket sock;
-        Dictionary<ListenerPrefix,HttpListener> prefixes;  // Dictionary <ListenerPrefix, HttpListener>
+        IPEndPoint endpoint;
+        Socket sock;
+        Dictionary<ListenerPrefix, HttpListener> prefixes;  // Dictionary <ListenerPrefix, HttpListener>
         List<ListenerPrefix> unhandled; // List<ListenerPrefix> unhandled; host = '*'
         List<ListenerPrefix> all;       // List<ListenerPrefix> all;  host = '+'
-        ICertificate cert;
+        X509Certificate cert;
         bool secure;
         Dictionary<HttpConnection, HttpConnection> unregistered;
         private readonly ILogger _logger;
         private bool _closed;
         private bool _enableDualMode;
         private readonly ICryptoProvider _cryptoProvider;
-        private readonly IStreamFactory _streamFactory;
         private readonly ISocketFactory _socketFactory;
         private readonly ITextEncoding _textEncoding;
         private readonly IMemoryStreamFactory _memoryStreamFactory;
         private readonly IFileSystem _fileSystem;
         private readonly IEnvironmentInfo _environment;
 
-        public EndPointListener(HttpListener listener, IpAddressInfo addr, int port, bool secure, ICertificate cert, ILogger logger, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IEnvironmentInfo environment)
+        public EndPointListener(HttpListener listener, IPAddress addr, int port, bool secure, X509Certificate cert, ILogger logger, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IEnvironmentInfo environment)
         {
             this.listener = listener;
             _logger = logger;
             _cryptoProvider = cryptoProvider;
-            _streamFactory = streamFactory;
             _socketFactory = socketFactory;
             _memoryStreamFactory = memoryStreamFactory;
             _textEncoding = textEncoding;
@@ -51,8 +53,8 @@ namespace SocketHttpListener.Net
             this.secure = secure;
             this.cert = cert;
 
-            _enableDualMode = addr.Equals(IpAddressInfo.IPv6Any);
-            endpoint = new IpEndPointInfo(addr, port);
+            _enableDualMode = addr.Equals(IPAddress.IPv6Any);
+            endpoint = new IPEndPoint(addr, port);
 
             prefixes = new Dictionary<ListenerPrefix, HttpListener>();
             unregistered = new Dictionary<HttpConnection, HttpConnection>();
@@ -72,18 +74,18 @@ namespace SocketHttpListener.Net
         {
             try
             {
-                sock = _socketFactory.CreateSocket(endpoint.IpAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp, _enableDualMode);
+                sock = CreateSocket(endpoint.Address.AddressFamily, _enableDualMode);
             }
             catch (SocketCreateException ex)
             {
-                if (_enableDualMode && endpoint.IpAddress.Equals(IpAddressInfo.IPv6Any) && 
-                    (string.Equals(ex.ErrorCode, "AddressFamilyNotSupported", StringComparison.OrdinalIgnoreCase) || 
+                if (_enableDualMode && endpoint.Address.Equals(IPAddress.IPv6Any) &&
+                    (string.Equals(ex.ErrorCode, "AddressFamilyNotSupported", StringComparison.OrdinalIgnoreCase) ||
                     // mono on bsd is throwing this
                     string.Equals(ex.ErrorCode, "ProtocolNotSupported", StringComparison.OrdinalIgnoreCase)))
                 {
-                    endpoint = new IpEndPointInfo(IpAddressInfo.Any, endpoint.Port);
+                    endpoint = new IPEndPoint(IPAddress.Any, endpoint.Port);
                     _enableDualMode = false;
-                    sock = _socketFactory.CreateSocket(endpoint.IpAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp, _enableDualMode);
+                    sock = CreateSocket(endpoint.Address.AddressFamily, _enableDualMode);
                 }
                 else
                 {
@@ -96,11 +98,42 @@ namespace SocketHttpListener.Net
             // This is the number TcpListener uses.
             sock.Listen(2147483647);
 
-            sock.StartAccept(ProcessAccept, () => _closed);
+            new SocketAcceptor(_logger, sock, ProcessAccept, () => _closed).StartAccept();
             _closed = false;
         }
 
-        private async void ProcessAccept(IAcceptSocket accepted)
+        private Socket CreateSocket(AddressFamily addressFamily, bool dualMode)
+        {
+            try
+            {
+                var socket = new Socket(addressFamily, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
+
+                if (dualMode)
+                {
+                    socket.DualMode = true;
+                }
+
+                return socket;
+            }
+            catch (SocketException ex)
+            {
+                throw new SocketCreateException(ex.SocketErrorCode.ToString(), ex);
+            }
+            catch (ArgumentException ex)
+            {
+                if (dualMode)
+                {
+                    // Mono for BSD incorrectly throws ArgumentException instead of SocketException
+                    throw new SocketCreateException("AddressFamilyNotSupported", ex);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        private async void ProcessAccept(Socket accepted)
         {
             try
             {
@@ -112,7 +145,7 @@ namespace SocketHttpListener.Net
                     return;
                 }
 
-                HttpConnection conn = await HttpConnection.Create(_logger, accepted, listener, listener.secure, listener.cert, _cryptoProvider, _streamFactory, _memoryStreamFactory, _textEncoding, _fileSystem, _environment).ConfigureAwait(false);
+                HttpConnection conn = await HttpConnection.Create(_logger, accepted, listener, listener.secure, listener.cert, _cryptoProvider, _memoryStreamFactory, _textEncoding, _fileSystem, _environment).ConfigureAwait(false);
 
                 //_logger.Debug("Adding unregistered connection to {0}. Id: {1}", accepted.RemoteEndPoint, connectionId);
                 lock (listener.unregistered)

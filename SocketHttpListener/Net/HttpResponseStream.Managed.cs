@@ -51,13 +51,13 @@ namespace SocketHttpListener.Net
         private bool _trailer_sent;
         private Stream _stream;
         private readonly IMemoryStreamFactory _memoryStreamFactory;
-        private readonly IAcceptSocket _socket;
+        private readonly Socket _socket;
         private readonly bool _supportsDirectSocketAccess;
         private readonly IEnvironmentInfo _environment;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
 
-        internal HttpResponseStream(Stream stream, HttpListenerResponse response, bool ignore_errors, IMemoryStreamFactory memoryStreamFactory, IAcceptSocket socket, bool supportsDirectSocketAccess, IEnvironmentInfo environment, IFileSystem fileSystem, ILogger logger)
+        internal HttpResponseStream(Stream stream, HttpListenerResponse response, bool ignore_errors, IMemoryStreamFactory memoryStreamFactory, Socket socket, bool supportsDirectSocketAccess, IEnvironmentInfo environment, IFileSystem fileSystem, ILogger logger)
         {
             _response = response;
             _ignore_errors = ignore_errors;
@@ -285,17 +285,13 @@ namespace SocketHttpListener.Net
             }
         }
 
-        private bool EnableSendFileWithSocket = false;
-
         public Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
-            if (_supportsDirectSocketAccess && offset == 0 && count == 0 && !_response.SendChunked && _response.ContentLength64 > 8192)
-            {
-                if (EnableSendFileWithSocket)
-                {
-                    return TransmitFileOverSocket(path, offset, count, fileShareMode, cancellationToken);
-                }
-            }
+            //if (_supportsDirectSocketAccess && offset == 0 && count == 0 && !_response.SendChunked)
+            //{
+            //    return TransmitFileOverSocket(path, offset, count, fileShareMode, cancellationToken);
+            //}
+
             return TransmitFileManaged(path, offset, count, fileShareMode, cancellationToken);
         }
 
@@ -318,7 +314,9 @@ namespace SocketHttpListener.Net
                 return TransmitFileManaged(path, offset, count, fileShareMode, cancellationToken);
             }
 
-            //_logger.Info("Socket sending file {0} {1}", path, response.ContentLength64);
+            _stream.Flush();
+
+            _logger.Info("Socket sending file {0}", path);
 
             var taskCompletion = new TaskCompletionSource<bool>();
 
@@ -335,7 +333,7 @@ namespace SocketHttpListener.Net
                 }
             };
 
-            var result = _socket.BeginSendFile(path, preBuffer, _emptyBuffer, new AsyncCallback(callback), null);
+            var result = _socket.BeginSendFile(path, preBuffer, _emptyBuffer, TransmitFileOptions.UseDefaultWorkerThread, new AsyncCallback(callback), null);
 
             if (result.CompletedSynchronously)
             {

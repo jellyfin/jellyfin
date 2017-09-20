@@ -58,8 +58,7 @@ namespace MediaBrowser.Controller.Channels
                     Limit = query.Limit,
                     StartIndex = query.StartIndex,
                     UserId = query.User.Id.ToString("N"),
-                    SortBy = query.SortBy,
-                    SortOrder = query.SortOrder
+                    OrderBy = query.OrderBy
 
                 }, new SimpleProgress<double>(), CancellationToken.None).Result;
             }

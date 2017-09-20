@@ -77,6 +77,7 @@ namespace Emby.Server.Implementations.Data
             {
                 Close();
             }
+            GC.SuppressFinalize(this);
         }
     }
 }

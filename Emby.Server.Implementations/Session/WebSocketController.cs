@@ -283,6 +283,7 @@ namespace Emby.Server.Implementations.Session
             {
                 socket.Closed -= connection_Closed;
             }
+            GC.SuppressFinalize(this);
         }
     }
 }

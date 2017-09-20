@@ -120,7 +120,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             get
             {
-                return new[] { ".srt", ".ssa", ".ass", ".sub", ".smi", ".sami" };
+                return new[] { ".srt", ".ssa", ".ass", ".sub", ".smi", ".sami", ".vtt" };
             }
         }
 

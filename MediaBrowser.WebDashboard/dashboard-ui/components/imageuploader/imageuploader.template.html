@@ -1,34 +1,54 @@
-﻿<form class="uploadItemImageForm" style="max-width: 100%;">
-    <h2>${HeaderAddUpdateImage}</h2>
-    <div>
-        <p>${LabelJpgPngOnly}</p>
-        <input type="file" accept="image/*" id="uploadImage" name="uploadImage" />
-        <br />
-        <br />
-        <div id="imageDropZone" class="imageDropZone">
-            <h3>${LabelDropImageHere}</h3>
-            <output id="imageOutput"></output>
-        </div>
-        <div id="fldUpload" style="display: none;">
-            <br />
-            <div class="selectContainer">
-                <select is="emby-select" id="selectImageType" name="selectImageType" label="${LabelImageType}">
-                    <option value="Primary">${OptionPrimary}</option>
-                    <option value="Art">${OptionArt}</option>
-                    <option value="Backdrop">${OptionBackdrop}</option>
-                    <option value="Banner">${OptionBanner}</option>
-                    <option value="Box">${OptionBox}</option>
-                    <option value="BoxRear">${OptionBoxRear}</option>
-                    <option value="Disc">${OptionDisc}</option>
-                    <option value="Logo">${OptionLogo}</option>
-                    <option value="Menu">${OptionMenu}</option>
-                    <option value="Screenshot">${OptionScreenshot}</option>
-                    <option value="Thumb">${OptionThumb}</option>
-                </select>
+﻿<div class="formDialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
+    <h3 class="formDialogHeaderTitle">
+        ${HeaderUploadImage}
+    </h3>
+</div>
+
+<div class="formDialogContent">
+    <div class="dialogContentInner">
+
+        <form class="uploadItemImageForm" style="max-width: 100%;">
+
+            <div class="flex align-items-center" style="margin:1.5em 0;">
+                <h2 style="margin:0;">${HeaderAddUpdateImage}</h2>
+
+                <button is="emby-button" type="button" class="raised raised-mini btnBrowse" style="margin-left:1.5em;border-radius:500px;">
+                    <span>${Browse}</span>
+                </button>
             </div>
-            <button is="emby-button" type="submit" class="raised submit block">
-                <span>${ButtonUpload}</span>
-            </button>
-        </div>
+            <div>
+                <div id="userImageDropZone" class="imageDropZone fieldDescription">
+                    <div>${LabelDropImageHere}</div>
+                    <output id="imageOutput" class="flex align-items-center justify-content-center" style="position: absolute;top:0;left:0;right:0;bottom:0;width:100%;"></output>
+                    <input type="file" accept="image/*" id="uploadImage" name="uploadImage" style="position: absolute;top:0;left:0;right:0;bottom:0;width:100%;opacity:0;" />
+                </div>
+                <div id="fldUpload" class="hide">
+                    <br />
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selectImageType" name="selectImageType" label="${LabelImageType}">
+                            <option value="Primary">${OptionPrimary}</option>
+                            <option value="Art">${OptionArt}</option>
+                            <option value="Backdrop">${OptionBackdrop}</option>
+                            <option value="Banner">${OptionBanner}</option>
+                            <option value="Box">${OptionBox}</option>
+                            <option value="BoxRear">${OptionBoxRear}</option>
+                            <option value="Disc">${OptionDisc}</option>
+                            <option value="Logo">${OptionLogo}</option>
+                            <option value="Menu">${OptionMenu}</option>
+                            <option value="Screenshot">${OptionScreenshot}</option>
+                            <option value="Thumb">${OptionThumb}</option>
+                        </select>
+                    </div>
+                    <button is="emby-button" type="submit" class="raised button-submit block">
+                        <span>${ButtonUpload}</span>
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
-</form>
+</div>
+
+
+
+

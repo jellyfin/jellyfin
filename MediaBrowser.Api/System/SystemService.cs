@@ -43,7 +43,7 @@ namespace MediaBrowser.Api.System
     /// Class RestartApplication
     /// </summary>
     [Route("/System/Restart", "POST", Summary = "Restarts the application, if needed")]
-    [Authenticated(Roles = "Admin")]
+    [Authenticated(Roles = "Admin", AllowLocal = true)]
     public class RestartApplication
     {
     }
@@ -52,10 +52,9 @@ namespace MediaBrowser.Api.System
     /// This is currently not authenticated because the uninstaller needs to be able to shutdown the server.
     /// </summary>
     [Route("/System/Shutdown", "POST", Summary = "Shuts down the application")]
+    [Authenticated(Roles = "Admin", AllowLocal = true)]
     public class ShutdownApplication
     {
-        // TODO: This is not currently authenticated due to uninstaller
-        // Improve later
     }
 
     [Route("/System/Logs", "GET", Summary = "Gets a list of available server log files")]
@@ -126,7 +125,7 @@ namespace MediaBrowser.Api.System
             }
             catch (IOException)
             {
-                files = new FileSystemMetadata[]{};
+                files = new FileSystemMetadata[] { };
             }
 
             var result = files.Select(i => new LogFile
@@ -148,6 +147,12 @@ namespace MediaBrowser.Api.System
         {
             var file = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
                 .First(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));
+
+            // For older files, assume fully static
+            if (file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1))
+            {
+                return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShareMode.Read);
+            }
 
             return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShareMode.ReadWrite);
         }
@@ -187,11 +192,7 @@ namespace MediaBrowser.Api.System
         /// <param name="request">The request.</param>
         public void Post(RestartApplication request)
         {
-            Task.Run(async () =>
-            {
-                await Task.Delay(100).ConfigureAwait(false);
-                await _appHost.Restart().ConfigureAwait(false);
-            });
+            _appHost.Restart();
         }
 
         /// <summary>

@@ -72,6 +72,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _liveTvManager.SeriesTimerCancelled -= _liveTvManager_SeriesTimerCancelled;
             _liveTvManager.TimerCreated -= _liveTvManager_TimerCreated;
             _liveTvManager.SeriesTimerCreated -= _liveTvManager_SeriesTimerCreated;
+            GC.SuppressFinalize(this);
         }
     }
 }

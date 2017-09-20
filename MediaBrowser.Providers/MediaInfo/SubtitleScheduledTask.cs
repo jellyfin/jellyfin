@@ -80,17 +80,44 @@ namespace MediaBrowser.Providers.MediaInfo
                 return;
             }
 
-            var videos = _libraryManager.GetItemList(new InternalItemsQuery
+            var dict = new Dictionary<Guid, BaseItem>();
+
+            foreach (var lang in options.DownloadLanguages)
             {
-                MediaTypes = new string[] { MediaType.Video },
-                IsVirtualItem = false,
-                IncludeItemTypes = types.ToArray(types.Count),
-                DtoOptions = new DtoOptions(true)
+                var query = new InternalItemsQuery
+                {
+                    MediaTypes = new string[] {MediaType.Video},
+                    IsVirtualItem = false,
+                    IncludeItemTypes = types.ToArray(types.Count),
+                    DtoOptions = new DtoOptions(true),
+                    SourceTypes = new[] {SourceType.Library}
+                };
 
-            }).OfType<Video>()
-                .Where(i => i.LocationType != LocationType.Remote)
-                .ToList();
+                if (options.SkipIfAudioTrackMatches)
+                {
+                    query.HasNoAudioTrackWithLanguage = lang;
+                }
 
+                if (options.SkipIfEmbeddedSubtitlesPresent)
+                {
+                    // Exclude if it already has any subtitles of the same language
+                    query.HasNoSubtitleTrackWithLanguage = lang;
+                }
+                else
+                {
+                    // Exclude if it already has external subtitles of the same language
+                    query.HasNoExternalSubtitleTrackWithLanguage = lang;
+                }
+
+                var videosByLanguage = _libraryManager.GetItemList(query);
+
+                foreach (var video in videosByLanguage)
+                {
+                    dict[video.Id] = video;
+                }
+            }
+
+            var videos = dict.Values.ToList();
             if (videos.Count == 0)
             {
                 return;
@@ -100,9 +127,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
             foreach (var video in videos)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 try
                 {
-                    await DownloadSubtitles(video, options, cancellationToken).ConfigureAwait(false);
+                    await DownloadSubtitles(video as Video, options, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

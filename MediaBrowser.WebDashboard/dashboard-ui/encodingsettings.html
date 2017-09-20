@@ -9,9 +9,10 @@
                     <select is="emby-select" id="selectVideoDecoder" label="${LabelHardwareAccelerationType}">
                         <option value="">${OptionNone}</option>
                         <option value="qsv">Intel Quick Sync (experimental)</option>
-                        <option value="h264_omx">OpenMAX OMX (experimental)</option>
+                        <option value="omx">OpenMAX OMX (experimental)</option>
                         <option value="nvenc">Nvidia NVENC (experimental)</option>
                         <option value="vaapi">Video Acceleration API (VA API) (experimental)</option>
+                        <option value="h264_v4l2m2m">Exynos V4L2 MFC Encoder (experimental)</option>
                     </select>
                     <div class="fieldDescription">${LabelHardwareAccelerationTypeHelp}</div>
                 </div>
@@ -25,7 +26,7 @@
                         <h3 class="checkboxListLabel">${LabelEnableHardwareDecodingFor}</h3>
                         <div class="checkboxList">
                             <label>
-                                <input type="checkbox" is="emby-checkbox" class="chkDecodeCodec" data-codec="h264" data-types="qsv,nvenc" />
+                                <input type="checkbox" is="emby-checkbox" class="chkDecodeCodec" data-codec="h264" data-types="qsv,nvenc,omx" />
                                 <span>H264</span>
                             </label>
                             <label>
@@ -80,12 +81,12 @@
                     <div class="fieldDescription checkboxFieldDescription">${OptionEnableTranscodingThrottleHelp}</div>
                 </div>
 
-                <div class="inputContainer fldEncoderPath">
+                <div class="inputContainer fldEncoderPath hide">
                     <div style="display: flex; align-items: center;">
                         <div style="flex-grow:1;">
                             <input is="emby-input" class="txtEncoderPath" label="${LabelffmpegPath}" autocomplete="off" required />
                         </div>
-                        <button type="button" is="paper-icon-button-light" id="btnSelectEncoderPath" class="autoSize"><i class="md-icon">search</i></button>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectEncoderPath" class="emby-input-iconbutton"><i class="md-icon">search</i></button>
                     </div>
                     <div class="fieldDescription">
                         <div>${LabelffmpegPathHelp}</div>
@@ -96,7 +97,7 @@
                         <div style="flex-grow:1;">
                             <input is="emby-input" id="txtTranscodingTempPath" label="${LabelTranscodingTempPath}" autocomplete="off" />
                         </div>
-                        <button type="button" is="paper-icon-button-light" id="btnSelectTranscodingTempPath" class="autoSize"><i class="md-icon">search</i></button>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectTranscodingTempPath" class="emby-input-iconbutton"><i class="md-icon">search</i></button>
                     </div>
                     <div class="fieldDescription">${LabelTranscodingTempPathHelp}</div>
                 </div>
@@ -124,6 +125,14 @@
                     <input is="emby-input" type="number" id="txtH264Crf" pattern="[0-9]*" min="0" max="51" step="1" label="${LabelH264Crf}" />
                     <div class="fieldDescription">${H264CrfHelp}</div>
                 </div>
+
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectDeinterlaceMethod" label="${LabelDeinterlacingMethod}">
+                        <option value="">${Standard}</option>
+                        <option value="bobandweave">${BobAndWeaveWithHelp}</option>
+                    </select>
+                </div>
+
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label>
                         <input is="emby-checkbox" type="checkbox" id="chkEnableSubtitleExtraction" />

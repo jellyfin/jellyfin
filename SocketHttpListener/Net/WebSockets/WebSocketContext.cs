@@ -151,7 +151,7 @@ namespace SocketHttpListener.Net.WebSockets
         /// <value>
         /// A <see cref="System.Net.IPEndPoint"/> that represents the server endpoint.
         /// </value>
-        public abstract IpEndPointInfo ServerEndPoint { get; }
+        public abstract IPEndPoint ServerEndPoint { get; }
 
         /// <summary>
         /// Gets the client information (identity, authentication, and security roles).
@@ -167,7 +167,7 @@ namespace SocketHttpListener.Net.WebSockets
         /// <value>
         /// A <see cref="System.Net.IPEndPoint"/> that represents the client endpoint.
         /// </value>
-        public abstract IpEndPointInfo UserEndPoint { get; }
+        public abstract IPEndPoint UserEndPoint { get; }
 
         /// <summary>
         /// Gets the <see cref="SocketHttpListener.WebSocket"/> instance used for two-way communication

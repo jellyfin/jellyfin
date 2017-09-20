@@ -81,6 +81,7 @@ namespace MediaBrowser.XbmcMetadata
         public void Dispose()
         {
             _userDataManager.UserDataSaved -= _userDataManager_UserDataSaved;
+            GC.SuppressFinalize(this);
         }
 
         private async void SaveMetadataForItem(BaseItem item, ItemUpdateType updateReason)

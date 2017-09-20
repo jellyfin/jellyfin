@@ -142,6 +142,8 @@ namespace Emby.Server.Implementations.LiveTv
                 var info = await _liveTvManager.GetChannelStream(keys[1], mediaSourceId, cancellationToken).ConfigureAwait(false);
                 stream = info.Item1;
                 directStreamProvider = info.Item2;
+
+                //allowLiveStreamProbe = false;
             }
             else
             {

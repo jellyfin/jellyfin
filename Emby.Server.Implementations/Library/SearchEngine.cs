@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Library
@@ -169,7 +170,7 @@ namespace Emby.Server.Implementations.Library
                 Limit = query.Limit,
                 IncludeItemsByName = string.IsNullOrWhiteSpace(query.ParentId),
                 ParentId = string.IsNullOrWhiteSpace(query.ParentId) ? (Guid?)null : new Guid(query.ParentId),
-                SortBy = new[] { ItemSortBy.SortName },
+                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) },
                 Recursive = true,
 
                 IsKids = query.IsKids,

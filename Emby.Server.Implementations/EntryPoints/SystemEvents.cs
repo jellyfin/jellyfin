@@ -23,16 +23,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         public void Run()
         {
-            _systemEvents.SessionLogoff += _systemEvents_SessionLogoff;
             _systemEvents.SystemShutdown += _systemEvents_SystemShutdown;
-        }
-
-        private void _systemEvents_SessionLogoff(object sender, EventArgs e)
-        {
-            if (!_appHost.IsRunningAsService)
-            {
-                _appHost.Shutdown();
-            }
         }
 
         private void _systemEvents_SystemShutdown(object sender, EventArgs e)
@@ -43,6 +34,7 @@ namespace Emby.Server.Implementations.EntryPoints
         public void Dispose()
         {
             _systemEvents.SystemShutdown -= _systemEvents_SystemShutdown;
+            GC.SuppressFinalize(this);
         }
     }
 }

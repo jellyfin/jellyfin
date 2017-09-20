@@ -262,8 +262,7 @@ namespace MediaBrowser.Providers.Manager
             personEntity.SetImage(new ItemImageInfo
             {
                 Path = imageUrl,
-                Type = ImageType.Primary,
-                IsPlaceholder = true
+                Type = ImageType.Primary
             }, 0);
         }
 
@@ -281,7 +280,16 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="isFullRefresh">if set to <c>true</c> [is full refresh].</param>
         /// <param name="currentUpdateType">Type of the current update.</param>
         /// <returns>ItemUpdateType.</returns>
-        protected virtual ItemUpdateType BeforeSave(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        private ItemUpdateType BeforeSave(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        {
+            var updateType = BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
+
+            updateType |= item.OnMetadataChanged();
+
+            return updateType;
+        }
+
+        protected virtual ItemUpdateType BeforeSaveInternal(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
             var updateType = ItemUpdateType.None;
 
@@ -292,13 +300,6 @@ namespace MediaBrowser.Providers.Manager
             if (!string.Equals(item.PresentationUniqueKey, presentationUniqueKey, StringComparison.Ordinal))
             {
                 item.PresentationUniqueKey = presentationUniqueKey;
-                updateType |= ItemUpdateType.MetadataImport;
-            }
-
-            var inheritedParentalRatingValue = item.GetInheritedParentalRatingValue() ?? 0;
-            if (inheritedParentalRatingValue != item.InheritedParentalRatingValue)
-            {
-                item.InheritedParentalRatingValue = inheritedParentalRatingValue;
                 updateType |= ItemUpdateType.MetadataImport;
             }
 

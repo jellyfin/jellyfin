@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Text;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -70,6 +73,17 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 movie.CollectionName = val;
                             }
+                            else
+                            {
+                                try
+                                {
+                                    ParseSetXml(val, movie);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger.ErrorException("Error parsing set node", ex);
+                                }
+                            }
                         }
 
                         break;
@@ -106,6 +120,63 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;
+            }
+        }
+
+        private void ParseSetXml(string xml, Movie movie)
+        {
+            using (var ms = new MemoryStream())
+            {
+                //xml = xml.Substring(xml.IndexOf('<'));
+                //xml = xml.Substring(0, xml.LastIndexOf('>'));
+                xml = "<set>" + xml + "</set>";
+
+                var bytes = Encoding.UTF8.GetBytes(xml);
+
+                ms.Write(bytes, 0, bytes.Length);
+                ms.Position = 0;
+
+                // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
+                try
+                {
+                    var settings = XmlReaderSettingsFactory.Create(false);
+
+                    settings.CheckCharacters = false;
+                    settings.IgnoreProcessingInstructions = true;
+                    settings.IgnoreComments = true;
+
+                    // Use XmlReader for best performance
+                    using (var reader = XmlReader.Create(ms, settings))
+                    {
+                        reader.MoveToContent();
+                        reader.Read();
+
+                        // Loop through each element
+                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                        {
+                            if (reader.NodeType == XmlNodeType.Element)
+                            {
+                                switch (reader.Name)
+                                {
+                                    case "name":
+                                        movie.CollectionName = reader.ReadElementContentAsString();
+                                        break;
+                                    default:
+                                        reader.Skip();
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                reader.Read();
+                            }
+                        }
+                    }
+                }
+                catch (XmlException)
+                {
+
+                }
             }
         }
 

@@ -303,6 +303,7 @@ namespace MediaBrowser.Controller.Session
 
             StopAutomaticProgress();
             _sessionManager = null;
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Emby.Server.Implementations.Services
 {
     public static class ServiceExecExtensions
     {
-        public static HashSet<string> AllVerbs = new HashSet<string>(new[] {
+        public static string[] AllVerbs = new[] {
             "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT", // RFC 2616
             "PROPFIND", "PROPPATCH", "MKCOL", "COPY", "MOVE", "LOCK", "UNLOCK",    // RFC 2518
             "VERSION-CONTROL", "REPORT", "CHECKOUT", "CHECKIN", "UNCHECKOUT",
@@ -22,27 +22,43 @@ namespace Emby.Server.Implementations.Services
             "SEARCH",     // https://datatracker.ietf.org/doc/draft-reschke-webdav-search/
             "BCOPY", "BDELETE", "BMOVE", "BPROPFIND", "BPROPPATCH", "NOTIFY",
             "POLL",  "SUBSCRIBE", "UNSUBSCRIBE"
-        });
+        };
 
-        public static IEnumerable<MethodInfo> GetActions(this Type serviceType)
+        public static HashSet<string> AllVerbsSet = new HashSet<string>(AllVerbs);
+
+        public static List<MethodInfo> GetActions(this Type serviceType)
         {
-            foreach (var mi in serviceType.GetRuntimeMethods().Where(i => i.IsPublic && !i.IsStatic))
+            var list = new List<MethodInfo>();
+
+            foreach (var mi in serviceType.GetRuntimeMethods())
             {
+                if (!mi.IsPublic)
+                {
+                    continue;
+                }
+
+                if (mi.IsStatic)
+                {
+                    continue;
+                }
+
                 if (mi.GetParameters().Length != 1)
                     continue;
 
                 var actionName = mi.Name;
-                if (!AllVerbs.Contains(actionName, StringComparer.OrdinalIgnoreCase) && !string.Equals(actionName, ServiceMethod.AnyAction, StringComparison.OrdinalIgnoreCase))
+                if (!AllVerbs.Contains(actionName, StringComparer.OrdinalIgnoreCase))
                     continue;
 
-                yield return mi;
+                list.Add(mi);
             }
+
+            return list;
         }
     }
 
     internal static class ServiceExecGeneral
     {
-        public static Dictionary<string, ServiceMethod> execMap = new Dictionary<string, ServiceMethod>();
+        private static Dictionary<string, ServiceMethod> execMap = new Dictionary<string, ServiceMethod>();
 
         public static void CreateServiceRunnersFor(Type requestType, List<ServiceMethod> actions)
         {
@@ -59,8 +75,7 @@ namespace Emby.Server.Implementations.Services
             var actionName = request.Verb ?? "POST";
 
             ServiceMethod actionContext;
-            if (ServiceExecGeneral.execMap.TryGetValue(ServiceMethod.Key(serviceType, actionName, requestName), out actionContext)
-                || ServiceExecGeneral.execMap.TryGetValue(ServiceMethod.AnyKey(serviceType, requestName), out actionContext))
+            if (ServiceExecGeneral.execMap.TryGetValue(ServiceMethod.Key(serviceType, actionName, requestName), out actionContext))
             {
                 if (actionContext.RequestFilters != null)
                 {

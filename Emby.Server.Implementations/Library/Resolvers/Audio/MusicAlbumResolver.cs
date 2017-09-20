@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Naming.Audio;
+using Emby.Naming.Audio;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -165,7 +165,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         {
             var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
 
-            var parser = new AlbumParser(namingOptions, new NullLogger());
+            var parser = new AlbumParser(namingOptions);
             var result = parser.ParseMultiPart(path);
 
             return result.IsMultiPart;

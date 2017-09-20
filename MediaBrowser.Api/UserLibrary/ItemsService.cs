@@ -84,14 +84,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public async Task<object> Get(GetItems request)
+        public object Get(GetItems request)
         {
             if (request == null)
             {
                 throw new ArgumentNullException("request");
             }
 
-            var result = await GetItems(request).ConfigureAwait(false);
+            var result = GetItems(request);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -100,8 +100,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets the items.
         /// </summary>
         /// <param name="request">The request.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        private async Task<QueryResult<BaseItemDto>> GetItems(GetItems request)
+        private QueryResult<BaseItemDto> GetItems(GetItems request)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
@@ -119,7 +118,7 @@ namespace MediaBrowser.Api.UserLibrary
                 throw new InvalidOperationException("GetItemsToSerialize result.Items returned null");
             }
 
-            var dtoList = await _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user).ConfigureAwait(false);
+            var dtoList = _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user);
 
             if (dtoList == null)
             {
@@ -199,8 +198,7 @@ namespace MediaBrowser.Api.UserLibrary
                 IncludeItemTypes = request.GetIncludeItemTypes(),
                 ExcludeItemTypes = request.GetExcludeItemTypes(),
                 Recursive = request.Recursive,
-                SortBy = request.GetOrderBy(),
-                SortOrder = request.SortOrder ?? SortOrder.Ascending,
+                OrderBy = request.GetOrderBy(),
 
                 IsFavorite = request.IsFavorite,
                 Limit = request.Limit,
@@ -408,6 +406,20 @@ namespace MediaBrowser.Api.UserLibrary
                         return null;
                     }
                 }).Where(i => i != null).Select(i => i.Id.ToString("N")).ToArray();
+            }
+
+            // Apply default sorting if none requested
+            if (query.OrderBy.Length == 0)
+            {
+                // Albums by artist
+                if (query.ArtistIds.Length > 0 && query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], "MusicAlbum", StringComparison.OrdinalIgnoreCase))
+                {
+                    query.OrderBy = new Tuple<string, SortOrder>[]
+                    {
+                        new Tuple<string, SortOrder>(ItemSortBy.ProductionYear, SortOrder.Descending),
+                        new Tuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending)
+                    };
+                }
             }
 
             return query;

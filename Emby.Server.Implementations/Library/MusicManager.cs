@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Library
@@ -88,7 +89,7 @@ namespace Emby.Server.Implementations.Library
 
                 Limit = 200,
 
-                SortBy = new[] { ItemSortBy.Random },
+                OrderBy = new [] { new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending) },
 
                 DtoOptions = dtoOptions
 

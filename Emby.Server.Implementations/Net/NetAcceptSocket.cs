@@ -89,66 +89,10 @@ namespace Emby.Server.Implementations.Net
             Socket.Bind(nativeEndpoint);
         }
 
-        private SocketAcceptor _acceptor;
-        public void StartAccept(Action<IAcceptSocket> onAccept, Func<bool> isClosed)
-        {
-            _acceptor = new SocketAcceptor(_logger, Socket, onAccept, isClosed, DualMode);
-
-            _acceptor.StartAccept();
-        }
-
-        public Task SendFile(string path, byte[] preBuffer, byte[] postBuffer, CancellationToken cancellationToken)
-        {
-            var options = TransmitFileOptions.UseDefaultWorkerThread;
-
-            var completionSource = new TaskCompletionSource<bool>();
-
-            var result = Socket.BeginSendFile(path, preBuffer, postBuffer, options, new AsyncCallback(FileSendCallback), new Tuple<Socket, string, TaskCompletionSource<bool>>(Socket, path, completionSource));
-
-            return completionSource.Task;
-        }
-
-        public IAsyncResult BeginSendFile(string path, byte[] preBuffer, byte[] postBuffer, AsyncCallback callback, object state)
-        {
-            var options = TransmitFileOptions.UseDefaultWorkerThread;
-
-            return Socket.BeginSendFile(path, preBuffer, postBuffer, options, new AsyncCallback(FileSendCallback), state);
-        }
-
-        public void EndSendFile(IAsyncResult result)
-        {
-            Socket.EndSendFile(result);
-        }
-
-        private void FileSendCallback(IAsyncResult ar)
-        {
-            // Retrieve the socket from the state object.
-            Tuple<Socket, string, TaskCompletionSource<bool>> data = (Tuple<Socket, string, TaskCompletionSource<bool>>)ar.AsyncState;
-
-            var client = data.Item1;
-            var path = data.Item2;
-            var taskCompletion = data.Item3;
-
-            // Complete sending the data to the remote device.
-            try
-            {
-                client.EndSendFile(ar);
-                taskCompletion.TrySetResult(true);
-            }
-            catch (SocketException ex)
-            {
-                _logger.Info("Socket.SendFile failed for {0}. error code {1}", path, ex.SocketErrorCode);
-                taskCompletion.TrySetException(ex);
-            }
-            catch (Exception ex)
-            {
-                taskCompletion.TrySetException(ex);
-            }
-        }
-
         public void Dispose()
         {
             Socket.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

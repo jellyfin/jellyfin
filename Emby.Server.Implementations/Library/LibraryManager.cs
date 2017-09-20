@@ -14,10 +14,10 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Naming.Audio;
-using MediaBrowser.Naming.Common;
-using MediaBrowser.Naming.TV;
-using MediaBrowser.Naming.Video;
+using Emby.Naming.Audio;
+using Emby.Naming.Common;
+using Emby.Naming.TV;
+using Emby.Naming.Video;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -38,7 +38,7 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Net;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
-using VideoResolver = MediaBrowser.Naming.Video.VideoResolver;
+using VideoResolver = Emby.Naming.Video.VideoResolver;
 using MediaBrowser.Common.Configuration;
 
 using MediaBrowser.Controller.Dto;
@@ -386,7 +386,7 @@ namespace Emby.Server.Implementations.Library
                     item.Id);
             }
 
-            var parent = item.Parent;
+            var parent = item.IsOwnedItem ? item.GetOwner() : item.GetParent();
 
             var locationType = item.LocationType;
 
@@ -453,12 +453,28 @@ namespace Emby.Server.Implementations.Library
 
                 if (parent != null)
                 {
-                    await parent.ValidateChildren(new SimpleProgress<double>(), CancellationToken.None, new MetadataRefreshOptions(_fileSystem), false).ConfigureAwait(false);
+                    var parentFolder = parent as Folder;
+                    if (parentFolder != null)
+                    {
+                        await parentFolder.ValidateChildren(new SimpleProgress<double>(), CancellationToken.None, new MetadataRefreshOptions(_fileSystem), false).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await parent.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), CancellationToken.None).ConfigureAwait(false);
+                    }
                 }
             }
             else if (parent != null)
             {
-                parent.RemoveChild(item);
+                var parentFolder = parent as Folder;
+                if (parentFolder != null)
+                {
+                    parentFolder.RemoveChild(item);
+                }
+                else
+                {
+                    await parent.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), CancellationToken.None).ConfigureAwait(false);
+                }
             }
 
             ItemRepository.DeleteItem(item.Id, CancellationToken.None);
@@ -620,36 +636,11 @@ namespace Emby.Server.Implementations.Library
             return ResolveItem(args, resolvers);
         }
 
-        private readonly List<string> _ignoredPaths = new List<string>();
-
-        public void RegisterIgnoredPath(string path)
-        {
-            lock (_ignoredPaths)
-            {
-                _ignoredPaths.Add(path);
-            }
-        }
-        public void UnRegisterIgnoredPath(string path)
-        {
-            lock (_ignoredPaths)
-            {
-                _ignoredPaths.Remove(path);
-            }
-        }
-
         public bool IgnoreFile(FileSystemMetadata file, BaseItem parent)
         {
             if (EntityResolutionIgnoreRules.Any(r => r.ShouldIgnore(file, parent)))
             {
                 return true;
-            }
-
-            //lock (_ignoredPaths)
-            {
-                if (_ignoredPaths.Contains(file.FullName, StringComparer.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
             }
             return false;
         }
@@ -846,8 +837,7 @@ namespace Emby.Server.Implementations.Library
             {
                 Path = path,
                 IsFolder = isFolder,
-                SortBy = new[] { ItemSortBy.DateCreated },
-                SortOrder = SortOrder.Descending,
+                OrderBy = new[] { ItemSortBy.DateCreated }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
                 Limit = 1,
                 DtoOptions = new DtoOptions(true)
             };
@@ -1777,6 +1767,37 @@ namespace Emby.Server.Implementations.Library
             return orderedItems ?? items;
         }
 
+        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<Tuple<string, SortOrder>> orderByList)
+        {
+            var isFirst = true;
+
+            IOrderedEnumerable<BaseItem> orderedItems = null;
+
+            foreach (var orderBy in orderByList)
+            {
+                var comparer = GetComparer(orderBy.Item1, user);
+                if (comparer == null)
+                {
+                    continue;
+                }
+
+                var sortOrder = orderBy.Item2;
+
+                if (isFirst)
+                {
+                    orderedItems = sortOrder == SortOrder.Descending ? items.OrderByDescending(i => i, comparer) : items.OrderBy(i => i, comparer);
+                }
+                else
+                {
+                    orderedItems = sortOrder == SortOrder.Descending ? orderedItems.ThenByDescending(i => i, comparer) : orderedItems.ThenBy(i => i, comparer);
+                }
+
+                isFirst = false;
+            }
+
+            return orderedItems ?? items;
+        }
+
         /// <summary>
         /// Gets the comparer.
         /// </summary>
@@ -2341,7 +2362,7 @@ namespace Emby.Server.Implementations.Library
 
         public bool IsVideoFile(string path, LibraryOptions libraryOptions)
         {
-            var resolver = new VideoResolver(GetNamingOptions(), new NullLogger());
+            var resolver = new VideoResolver(GetNamingOptions());
             return resolver.IsVideoFile(path);
         }
 
@@ -2368,8 +2389,7 @@ namespace Emby.Server.Implementations.Library
 
         public bool FillMissingEpisodeNumbersFromPath(Episode episode)
         {
-            var resolver = new EpisodeResolver(GetNamingOptions(),
-                new NullLogger());
+            var resolver = new EpisodeResolver(GetNamingOptions());
 
             var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd;
 
@@ -2377,11 +2397,11 @@ namespace Emby.Server.Implementations.Library
 
             var episodeInfo = locationType == LocationType.FileSystem || locationType == LocationType.Offline ?
                 resolver.Resolve(episode.Path, isFolder) :
-                new MediaBrowser.Naming.TV.EpisodeInfo();
+                new Emby.Naming.TV.EpisodeInfo();
 
             if (episodeInfo == null)
             {
-                episodeInfo = new MediaBrowser.Naming.TV.EpisodeInfo();
+                episodeInfo = new Emby.Naming.TV.EpisodeInfo();
             }
 
             var changed = false;
@@ -2552,7 +2572,7 @@ namespace Emby.Server.Implementations.Library
 
         public ItemLookupInfo ParseName(string name)
         {
-            var resolver = new VideoResolver(GetNamingOptions(), new NullLogger());
+            var resolver = new VideoResolver(GetNamingOptions());
 
             var result = resolver.CleanDateTime(name);
             var cleanName = resolver.CleanString(result.Name);
@@ -2573,7 +2593,7 @@ namespace Emby.Server.Implementations.Library
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, _videoFileExtensions, false, false))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(namingOptions, new NullLogger());
+            var videoListResolver = new VideoListResolver(namingOptions);
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 
@@ -2600,8 +2620,11 @@ namespace Emby.Server.Implementations.Library
                     {
                         video = dbItem;
                     }
-
-                    video.ExtraType = ExtraType.Trailer;
+                    else
+                    {
+                        // item is new
+                        video.ExtraType = ExtraType.Trailer;
+                    }
                     video.TrailerTypes = new List<TrailerType> { TrailerType.LocalTrailer };
 
                     return video;
@@ -2621,7 +2644,7 @@ namespace Emby.Server.Implementations.Library
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, _videoFileExtensions, false, false))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(namingOptions, new NullLogger());
+            var videoListResolver = new VideoListResolver(namingOptions);
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 
@@ -2747,7 +2770,7 @@ namespace Emby.Server.Implementations.Library
 
         private void SetExtraTypeFromFilename(Video item)
         {
-            var resolver = new ExtraResolver(GetNamingOptions(), new NullLogger(), new RegexProvider());
+            var resolver = new ExtraResolver(GetNamingOptions(), new RegexProvider());
 
             var result = resolver.GetExtraInfo(item.Path);
 
@@ -2841,13 +2864,6 @@ namespace Emby.Server.Implementations.Library
                     _logger.Debug("ConvertImageToLocal item {0} - image url: {1}", item.Id, url);
 
                     await _providerManagerFactory().SaveImage(item, url, image.Type, imageIndex, CancellationToken.None).ConfigureAwait(false);
-
-                    var newImage = item.GetImageInfo(image.Type, imageIndex);
-
-                    if (newImage != null)
-                    {
-                        newImage.IsPlaceholder = image.IsPlaceholder;
-                    }
 
                     await item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 

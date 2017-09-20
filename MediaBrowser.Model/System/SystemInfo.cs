@@ -17,12 +17,6 @@ namespace MediaBrowser.Model.System
         public string OperatingSystemDisplayName { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [supports running as service].
-        /// </summary>
-        /// <value><c>true</c> if [supports running as service]; otherwise, <c>false</c>.</value>
-        public bool SupportsRunningAsService { get; set; }
-
-        /// <summary>
         /// Gets or sets the mac address.
         /// </summary>
         /// <value>The mac address.</value>
@@ -35,6 +29,8 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value><c>true</c> if this instance has pending restart; otherwise, <c>false</c>.</value>
         public bool HasPendingRestart { get; set; }
+
+        public bool IsShuttingDown { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [supports library monitor].

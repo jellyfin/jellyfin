@@ -112,7 +112,7 @@ namespace Emby.Server.Implementations.ServerManager
         /// <summary>
         /// Starts this instance.
         /// </summary>
-        public void Start(IEnumerable<string> urlPrefixes)
+        public void Start(string[] urlPrefixes)
         {
             ReloadHttpServer(urlPrefixes);
         }
@@ -120,7 +120,7 @@ namespace Emby.Server.Implementations.ServerManager
         /// <summary>
         /// Restarts the Http Server, or starts it if not currently running
         /// </summary>
-        private void ReloadHttpServer(IEnumerable<string> urlPrefixes)
+        private void ReloadHttpServer(string[] urlPrefixes)
         {
             _logger.Info("Loading Http Server");
 

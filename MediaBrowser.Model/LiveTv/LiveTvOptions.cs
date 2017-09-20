@@ -33,7 +33,6 @@ namespace MediaBrowser.Model.LiveTv
             MediaLocationsCreated = new string[] { };
             RecordingEncodingFormat = "mkv";
             RecordingPostProcessorArguments = "\"{path}\"";
-            EnableRecordingEncoding = true;
         }
     }
 
