@@ -145,7 +145,7 @@ namespace Emby.Server.Implementations.UserViews
                 Recursive = recursive,
                 IncludeItemTypes = new[] { typeof(BoxSet).Name },
                 Limit = 20,
-                SortBy = new[] { ItemSortBy.Random },
+                OrderBy = new [] { new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending) },
                 DtoOptions = new DtoOptions(false)
             });
 

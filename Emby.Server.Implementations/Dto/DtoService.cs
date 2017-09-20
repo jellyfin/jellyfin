@@ -87,17 +87,17 @@ namespace Emby.Server.Implementations.Dto
             return GetBaseItemDto(item, options, user, owner);
         }
 
-        public Task<BaseItemDto[]> GetBaseItemDtos(List<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
+        public BaseItemDto[] GetBaseItemDtos(List<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
         {
             return GetBaseItemDtos(items, items.Count, options, user, owner);
         }
 
-        public Task<BaseItemDto[]> GetBaseItemDtos(BaseItem[] items, DtoOptions options, User user = null, BaseItem owner = null)
+        public BaseItemDto[] GetBaseItemDtos(BaseItem[] items, DtoOptions options, User user = null, BaseItem owner = null)
         {
             return GetBaseItemDtos(items, items.Length, options, user, owner);
         }
 
-        public async Task<BaseItemDto[]> GetBaseItemDtos(IEnumerable<BaseItem> items, int itemCount, DtoOptions options, User user = null, BaseItem owner = null)
+        public BaseItemDto[] GetBaseItemDtos(IEnumerable<BaseItem> items, int itemCount, DtoOptions options, User user = null, BaseItem owner = null)
         {
             if (items == null)
             {
@@ -157,12 +157,13 @@ namespace Emby.Server.Implementations.Dto
 
             if (programTuples.Count > 0)
             {
-                await _livetvManager().AddInfoToProgramDto(programTuples, options.Fields, user).ConfigureAwait(false);
+                var task = _livetvManager().AddInfoToProgramDto(programTuples, options.Fields, user);
+                Task.WaitAll(task);
             }
 
             if (channelTuples.Count > 0)
             {
-                await _livetvManager().AddChannelInfo(channelTuples, options, user).ConfigureAwait(false);
+                _livetvManager().AddChannelInfo(channelTuples, options, user);
             }
 
             return returnItems;
@@ -177,8 +178,7 @@ namespace Emby.Server.Implementations.Dto
             if (tvChannel != null)
             {
                 var list = new List<Tuple<BaseItemDto, LiveTvChannel>> { new Tuple<BaseItemDto, LiveTvChannel>(dto, tvChannel) };
-                var task = _livetvManager().AddChannelInfo(list, options, user);
-                Task.WaitAll(task);
+                _livetvManager().AddChannelInfo(list, options, user);
             }
             else if (item is LiveTvProgram)
             {
@@ -275,8 +275,7 @@ namespace Emby.Server.Implementations.Dto
         {
             var hasFullSyncInfo = options.Fields.Contains(ItemFields.SyncInfo);
 
-            if (!options.Fields.Contains(ItemFields.BasicSyncInfo) &&
-                !hasFullSyncInfo)
+            if (!hasFullSyncInfo && !options.Fields.Contains(ItemFields.BasicSyncInfo))
             {
                 return;
             }
@@ -418,6 +417,8 @@ namespace Emby.Server.Implementations.Dto
                 {
                     dto.Type = "Recording";
                     dto.CanDownload = false;
+                    dto.RunTimeTicks = null;
+
                     if (!string.IsNullOrWhiteSpace(dto.SeriesName))
                     {
                         dto.EpisodeTitle = dto.Name;
@@ -1486,7 +1487,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            var parent = currentItem.DisplayParent ?? currentItem.GetParent();
+            var parent = currentItem.DisplayParent ?? (currentItem.IsOwnedItem ? currentItem.GetOwner() : currentItem.GetParent());
 
             if (parent == null && !(originalItem is UserRootFolder) && !(originalItem is UserView) && !(originalItem is AggregateFolder) && !(originalItem is ICollectionFolder) && !(originalItem is Channel))
             {

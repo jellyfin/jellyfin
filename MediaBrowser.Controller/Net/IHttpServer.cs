@@ -13,13 +13,13 @@ namespace MediaBrowser.Controller.Net
         /// Gets the URL prefix.
         /// </summary>
         /// <value>The URL prefix.</value>
-        IEnumerable<string> UrlPrefixes { get; }
+        string[] UrlPrefixes { get; }
 
         /// <summary>
         /// Starts the specified server name.
         /// </summary>
         /// <param name="urlPrefixes">The URL prefixes.</param>
-        void StartServer(IEnumerable<string> urlPrefixes);
+        void StartServer(string[] urlPrefixes);
 
         /// <summary>
         /// Stops this instance.

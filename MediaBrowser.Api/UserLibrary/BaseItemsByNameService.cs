@@ -299,7 +299,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var filteredItems = FilterItems(request, extractedItems, user);
 
-            filteredItems = LibraryManager.Sort(filteredItems, user, request.GetOrderBy(), request.SortOrder ?? SortOrder.Ascending);
+            filteredItems = LibraryManager.Sort(filteredItems, user, request.GetOrderBy());
 
             var ibnItemsArray = filteredItems.ToList();
 

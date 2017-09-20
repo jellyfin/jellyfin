@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 namespace Emby.Server.Implementations.Services
@@ -64,10 +63,15 @@ namespace Emby.Server.Implementations.Services
             if (instance == null)
                 instance = _CreateInstanceFn(type);
 
-            foreach (var pair in keyValuePairs.Where(x => !string.IsNullOrEmpty(x.Value)))
+            foreach (var pair in keyValuePairs)
             {
                 propertyName = pair.Key;
                 propertyTextValue = pair.Value;
+
+                if (string.IsNullOrEmpty(propertyTextValue))
+                {
+                    continue;
+                }
 
                 if (!propertySetterMap.TryGetValue(propertyName, out propertySerializerEntry))
                 {
@@ -115,7 +119,7 @@ namespace Emby.Server.Implementations.Services
     {
         public static Action<object, object> GetSetPropertyMethod(Type type, PropertyInfo propertyInfo)
         {
-            if (!propertyInfo.CanWrite || propertyInfo.GetIndexParameters().Any()) return null;
+            if (!propertyInfo.CanWrite || propertyInfo.GetIndexParameters().Length > 0) return null;
 
             var setMethodInfo = propertyInfo.SetMethod;
             return (instance, value) => setMethodInfo.Invoke(instance, new[] { value });

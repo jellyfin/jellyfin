@@ -298,7 +298,7 @@ namespace MediaBrowser.Api
         /// <returns>IEnumerable{FileSystemEntryInfo}.</returns>
         private IEnumerable<FileSystemEntryInfo> GetFileSystemEntries(GetDirectoryContents request)
         {
-            var entries = _fileSystem.GetFileSystemEntries(request.Path).Where(i =>
+            var entries = _fileSystem.GetFileSystemEntries(request.Path).OrderBy(i => i.FullName).Where(i =>
             {
                 if (!request.IncludeHidden && i.IsHidden)
                 {

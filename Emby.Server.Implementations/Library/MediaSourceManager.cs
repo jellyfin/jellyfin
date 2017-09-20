@@ -524,6 +524,7 @@ namespace Emby.Server.Implementations.Library
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private readonly object _disposeLock = new object();

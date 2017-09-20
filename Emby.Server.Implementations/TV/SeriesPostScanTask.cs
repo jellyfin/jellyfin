@@ -217,6 +217,7 @@ namespace Emby.Server.Implementations.TV
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

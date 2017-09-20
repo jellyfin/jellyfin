@@ -180,11 +180,6 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public Task<User> AuthenticateUser(string username, string passwordSha1, string remoteEndPoint)
-        {
-            return AuthenticateUser(username, passwordSha1, null, remoteEndPoint);
-        }
-
         public bool IsValidUsername(string username)
         {
             // Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)
@@ -223,7 +218,7 @@ namespace Emby.Server.Implementations.Library
             return builder.ToString();
         }
 
-        public async Task<User> AuthenticateUser(string username, string passwordSha1, string passwordMd5, string remoteEndPoint)
+        public async Task<User> AuthenticateUser(string username, string password, string hashedPassword, string passwordMd5, string remoteEndPoint)
         {
             if (string.IsNullOrWhiteSpace(username))
             {
@@ -237,23 +232,23 @@ namespace Emby.Server.Implementations.Library
 
             if (user != null)
             {
+                if (password != null)
+                {
+                    hashedPassword = GetHashedString(user, password);
+                }
+
                 // Authenticate using local credentials if not a guest
                 if (!user.ConnectLinkType.HasValue || user.ConnectLinkType.Value != UserLinkType.Guest)
                 {
-                    success = string.Equals(GetPasswordHash(user), passwordSha1.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
-
-                    if (!success && _networkManager.IsInLocalNetwork(remoteEndPoint) && user.Configuration.EnableLocalPassword)
-                    {
-                        success = string.Equals(GetLocalPasswordHash(user), passwordSha1.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
-                    }
+                    success = AuthenticateLocalUser(user, password, hashedPassword, remoteEndPoint);
                 }
 
                 // Maybe user accidently entered connect credentials. let's be flexible
-                if (!success && user.ConnectLinkType.HasValue && !string.IsNullOrWhiteSpace(passwordMd5) && !string.IsNullOrWhiteSpace(user.ConnectUserName))
+                if (!success && user.ConnectLinkType.HasValue && !string.IsNullOrWhiteSpace(user.ConnectUserName))
                 {
                     try
                     {
-                        await _connectFactory().Authenticate(user.ConnectUserName, passwordMd5).ConfigureAwait(false);
+                        await _connectFactory().Authenticate(user.ConnectUserName, password, passwordMd5).ConfigureAwait(false);
                         success = true;
                     }
                     catch
@@ -268,7 +263,7 @@ namespace Emby.Server.Implementations.Library
             {
                 try
                 {
-                    var connectAuthResult = await _connectFactory().Authenticate(username, passwordMd5).ConfigureAwait(false);
+                    var connectAuthResult = await _connectFactory().Authenticate(username, password, passwordMd5).ConfigureAwait(false);
 
                     user = Users.FirstOrDefault(i => string.Equals(i.ConnectUserId, connectAuthResult.User.Id, StringComparison.OrdinalIgnoreCase));
 
@@ -307,6 +302,36 @@ namespace Emby.Server.Implementations.Library
             return success ? user : null;
         }
 
+        private bool AuthenticateLocalUser(User user, string password, string hashedPassword, string remoteEndPoint)
+        {
+            bool success;
+
+            if (password == null)
+            {
+                // legacy
+                success = string.Equals(GetPasswordHash(user), hashedPassword.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+            }
+            else
+            {
+                success = string.Equals(GetPasswordHash(user), GetHashedString(user, password), StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (!success && _networkManager.IsInLocalNetwork(remoteEndPoint) && user.Configuration.EnableLocalPassword)
+            {
+                if (password == null)
+                {
+                    // legacy
+                    success = string.Equals(GetLocalPasswordHash(user), hashedPassword.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+                }
+                else
+                {
+                    success = string.Equals(GetLocalPasswordHash(user), GetHashedString(user, password), StringComparison.OrdinalIgnoreCase);
+                }
+            }
+
+            return success;
+        }
+
         private void UpdateInvalidLoginAttemptCount(User user, int newValue)
         {
             if (user.Policy.InvalidLoginAttemptCount != newValue || newValue > 0)
@@ -342,29 +367,39 @@ namespace Emby.Server.Implementations.Library
         private string GetPasswordHash(User user)
         {
             return string.IsNullOrEmpty(user.Password)
-                ? GetSha1String(string.Empty)
+                ? GetEmptyHashedString(user)
                 : user.Password;
         }
 
         private string GetLocalPasswordHash(User user)
         {
             return string.IsNullOrEmpty(user.EasyPassword)
-                ? GetSha1String(string.Empty)
+                ? GetEmptyHashedString(user)
                 : user.EasyPassword;
         }
 
-        private bool IsPasswordEmpty(string passwordHash)
+        private bool IsPasswordEmpty(User user, string passwordHash)
         {
-            return string.Equals(passwordHash, GetSha1String(string.Empty), StringComparison.OrdinalIgnoreCase);
+            return string.Equals(passwordHash, GetEmptyHashedString(user), StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string GetEmptyHashedString(User user)
+        {
+            return GetHashedString(user, string.Empty);
         }
 
         /// <summary>
-        /// Gets the sha1 string.
+        /// Gets the hashed string.
         /// </summary>
-        /// <param name="str">The STR.</param>
-        /// <returns>System.String.</returns>
-        private string GetSha1String(string str)
+        private string GetHashedString(User user, string str)
         {
+            var salt = user.Salt;
+            if (salt != null)
+            {
+                // return BCrypt.HashPassword(str, salt);
+            }
+
+            // legacy
             return BitConverter.ToString(_cryptographyProvider.ComputeSHA1(Encoding.UTF8.GetBytes(str))).Replace("-", string.Empty);
         }
 
@@ -407,8 +442,8 @@ namespace Emby.Server.Implementations.Library
 
             var passwordHash = GetPasswordHash(user);
 
-            var hasConfiguredPassword = !IsPasswordEmpty(passwordHash);
-            var hasConfiguredEasyPassword = !IsPasswordEmpty(GetLocalPasswordHash(user));
+            var hasConfiguredPassword = !IsPasswordEmpty(user, passwordHash);
+            var hasConfiguredEasyPassword = !IsPasswordEmpty(user, GetLocalPasswordHash(user));
 
             var hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
                 hasConfiguredEasyPassword :
@@ -460,14 +495,6 @@ namespace Emby.Server.Implementations.Library
         {
             var dto = GetUserDto(user);
 
-            var offlinePasswordHash = GetLocalPasswordHash(user);
-            dto.HasPassword = !IsPasswordEmpty(offlinePasswordHash);
-
-            dto.OfflinePasswordSalt = Guid.NewGuid().ToString("N");
-
-            // Hash the pin with the device Id to create a unique result for this device
-            dto.OfflinePassword = GetSha1String((offlinePasswordHash + dto.OfflinePasswordSalt).ToLower());
-
             dto.ServerName = _appHost.FriendlyName;
 
             return dto;
@@ -491,11 +518,12 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task RefreshUsersMetadata(CancellationToken cancellationToken)
+        public async Task RefreshUsersMetadata(CancellationToken cancellationToken)
         {
-            var tasks = Users.Select(user => user.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken)).ToList();
-
-            return Task.WhenAll(tasks);
+            foreach (var user in Users)
+            {
+                await user.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -666,8 +694,7 @@ namespace Emby.Server.Implementations.Library
 
                 DeleteUserPolicy(user);
 
-                // Force this to be lazy loaded again
-                Users = LoadUsers();
+                Users = allUsers.Where(i => i.Id != user.Id).ToList();
 
                 OnUserDeleted(user);
             }
@@ -683,23 +710,29 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task.</returns>
         public void ResetPassword(User user)
         {
-            ChangePassword(user, GetSha1String(string.Empty));
+            ChangePassword(user, string.Empty, null);
         }
 
         public void ResetEasyPassword(User user)
         {
-            ChangeEasyPassword(user, GetSha1String(string.Empty));
+            ChangeEasyPassword(user, string.Empty, null);
         }
 
-        public void ChangePassword(User user, string newPasswordSha1)
+        public void ChangePassword(User user, string newPassword, string newPasswordHash)
         {
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
-            if (string.IsNullOrWhiteSpace(newPasswordSha1))
+
+            if (newPassword != null)
             {
-                throw new ArgumentNullException("newPasswordSha1");
+                newPasswordHash = GetHashedString(user, newPassword);
+            }
+
+            if (string.IsNullOrWhiteSpace(newPasswordHash))
+            {
+                throw new ArgumentNullException("newPasswordHash");
             }
 
             if (user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest)
@@ -707,25 +740,31 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("Passwords for guests cannot be changed.");
             }
 
-            user.Password = newPasswordSha1;
+            user.Password = newPasswordHash;
 
             UpdateUser(user);
 
             EventHelper.FireEventIfNotNull(UserPasswordChanged, this, new GenericEventArgs<User>(user), _logger);
         }
 
-        public void ChangeEasyPassword(User user, string newPasswordSha1)
+        public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
         {
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
-            if (string.IsNullOrWhiteSpace(newPasswordSha1))
+
+            if (newPassword != null)
             {
-                throw new ArgumentNullException("newPasswordSha1");
+                newPasswordHash = GetHashedString(user, newPassword);
             }
 
-            user.EasyPassword = newPasswordSha1;
+            if (string.IsNullOrWhiteSpace(newPasswordHash))
+            {
+                throw new ArgumentNullException("newPasswordHash");
+            }
+
+            user.EasyPassword = newPasswordHash;
 
             UpdateUser(user);
 
@@ -745,7 +784,8 @@ namespace Emby.Server.Implementations.Library
                 Id = Guid.NewGuid(),
                 DateCreated = DateTime.UtcNow,
                 DateModified = DateTime.UtcNow,
-                UsesIdForConfigurationPath = true
+                UsesIdForConfigurationPath = true,
+                //Salt = BCrypt.GenerateSalt()
             };
         }
 

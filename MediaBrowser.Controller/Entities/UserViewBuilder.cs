@@ -397,7 +397,7 @@ namespace MediaBrowser.Controller.Entities
 
             }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null);
 
-            query.SortBy = new string[] { };
+            query.OrderBy = new Tuple<string, SortOrder>[] { };
 
             return PostFilterAndSort(items, parent, null, query, false, true);
         }
@@ -507,8 +507,7 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMovieLatest(Folder parent, User user, InternalItemsQuery query)
         {
-            query.SortBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName };
-            query.SortOrder = SortOrder.Descending;
+            query.OrderBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Descending)).ToArray();
 
             query.Recursive = true;
             query.Parent = parent;
@@ -521,8 +520,7 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMovieResume(Folder parent, User user, InternalItemsQuery query)
         {
-            query.SortBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.SortName };
-            query.SortOrder = SortOrder.Descending;
+            query.OrderBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Descending)).ToArray();
             query.IsResumable = true;
             query.Recursive = true;
             query.Parent = parent;
@@ -633,8 +631,7 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetTvLatest(Folder parent, User user, InternalItemsQuery query)
         {
-            query.SortBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName };
-            query.SortOrder = SortOrder.Descending;
+            query.OrderBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Descending)).ToArray();
 
             query.Recursive = true;
             query.Parent = parent;
@@ -663,8 +660,7 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetTvResume(Folder parent, User user, InternalItemsQuery query)
         {
-            query.SortBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.SortName };
-            query.SortOrder = SortOrder.Descending;
+            query.OrderBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Descending)).ToArray();
             query.IsResumable = true;
             query.Recursive = true;
             query.Parent = parent;
@@ -1104,9 +1100,9 @@ namespace MediaBrowser.Controller.Entities
         {
             items = items.DistinctBy(i => i.GetPresentationUniqueKey(), StringComparer.OrdinalIgnoreCase);
 
-            if (query.SortBy.Length > 0)
+            if (query.OrderBy.Length > 0)
             {
-                items = libraryManager.Sort(items, query.User, query.SortBy, query.SortOrder);
+                items = libraryManager.Sort(items, query.User, query.OrderBy);
             }
 
             var itemsArray = totalRecordLimit.HasValue ? items.Take(totalRecordLimit.Value).ToArray() : items.ToArray();

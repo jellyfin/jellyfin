@@ -109,7 +109,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>QueryResult{RecordingInfoDto}.</returns>
         Task<QueryResult<BaseItemDto>> GetRecordings(RecordingQuery query, DtoOptions options, CancellationToken cancellationToken);
-        Task<QueryResult<BaseItemDto>> GetRecordingSeries(RecordingQuery query, DtoOptions options, CancellationToken cancellationToken);
+        QueryResult<BaseItemDto> GetRecordingSeries(RecordingQuery query, DtoOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the timers.
@@ -360,7 +360,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="items">The items.</param>
         /// <param name="options">The options.</param>
         /// <param name="user">The user.</param>
-        Task AddChannelInfo(List<Tuple<BaseItemDto, LiveTvChannel>> items, DtoOptions options, User user);
+        void AddChannelInfo(List<Tuple<BaseItemDto, LiveTvChannel>> items, DtoOptions options, User user);
 
         /// <summary>
         /// Called when [recording file deleted].

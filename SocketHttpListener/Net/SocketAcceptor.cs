@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Net.Sockets;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 
-namespace Emby.Server.Implementations.Net
+namespace SocketHttpListener.Net
 {
     public class SocketAcceptor
     {
         private readonly ILogger _logger;
         private readonly Socket _originalSocket;
         private readonly Func<bool> _isClosed;
-        private readonly Action<IAcceptSocket> _onAccept;
-        private readonly bool _isDualMode;
+        private readonly Action<Socket> _onAccept;
 
-        public SocketAcceptor(ILogger logger, Socket originalSocket, Action<IAcceptSocket> onAccept, Func<bool> isClosed, bool isDualMode)
+        public SocketAcceptor(ILogger logger, Socket originalSocket, Action<Socket> onAccept, Func<bool> isClosed)
         {
             if (logger == null)
             {
@@ -35,7 +33,6 @@ namespace Emby.Server.Implementations.Net
             _logger = logger;
             _originalSocket = originalSocket;
             _isClosed = isClosed;
-            _isDualMode = isDualMode;
             _onAccept = onAccept;
         }
 
@@ -117,7 +114,7 @@ namespace Emby.Server.Implementations.Net
             if (acceptSocket != null)
             {
                 //ProcessAccept(acceptSocket);
-                _onAccept(new NetAcceptSocket(acceptSocket, _logger, _isDualMode));
+                _onAccept(acceptSocket);
             }
 
             // Accept the next connection request

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
@@ -17,7 +18,6 @@ namespace SocketHttpListener.Net
     public sealed class HttpListener : IDisposable
     {
         internal ICryptoProvider CryptoProvider { get; private set; }
-        internal IStreamFactory StreamFactory { get; private set; }
         internal ISocketFactory SocketFactory { get; private set; }
         internal IFileSystem FileSystem { get; private set; }
         internal ITextEncoding TextEncoding { get; private set; }
@@ -38,15 +38,14 @@ namespace SocketHttpListener.Net
         Dictionary<HttpListenerContext, HttpListenerContext> registry;   // Dictionary<HttpListenerContext,HttpListenerContext> 
         Dictionary<HttpConnection, HttpConnection> connections;
         private ILogger _logger;
-        private ICertificate _certificate;
+        private X509Certificate _certificate;
 
         public Action<HttpListenerContext> OnContext { get; set; }
 
-        public HttpListener(ILogger logger, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
+        public HttpListener(ILogger logger, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
         {
             _logger = logger;
             CryptoProvider = cryptoProvider;
-            StreamFactory = streamFactory;
             SocketFactory = socketFactory;
             NetworkManager = networkManager;
             TextEncoding = textEncoding;
@@ -59,18 +58,18 @@ namespace SocketHttpListener.Net
             auth_schemes = AuthenticationSchemes.Anonymous;
         }
 
-        public HttpListener(ICertificate certificate, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
-            :this(new NullLogger(), certificate, cryptoProvider, streamFactory, socketFactory, networkManager, textEncoding, memoryStreamFactory, fileSystem, environmentInfo)
+        public HttpListener(X509Certificate certificate, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
+            :this(new NullLogger(), certificate, cryptoProvider, socketFactory, networkManager, textEncoding, memoryStreamFactory, fileSystem, environmentInfo)
         {
         }
 
-        public HttpListener(ILogger logger, ICertificate certificate, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
-            : this(logger, cryptoProvider, streamFactory, socketFactory, networkManager, textEncoding, memoryStreamFactory, fileSystem, environmentInfo)
+        public HttpListener(ILogger logger, X509Certificate certificate, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
+            : this(logger, cryptoProvider, socketFactory, networkManager, textEncoding, memoryStreamFactory, fileSystem, environmentInfo)
         {
             _certificate = certificate;
         }
 
-        public void LoadCert(ICertificate cert)
+        public void LoadCert(X509Certificate cert)
         {
             _certificate = cert;
         }
@@ -150,7 +149,7 @@ namespace SocketHttpListener.Net
         //    }
         //}
 
-        internal ICertificate Certificate
+        internal X509Certificate Certificate
         {
             get { return _certificate; }
         }
@@ -249,6 +248,7 @@ namespace SocketHttpListener.Net
 
             Close(true); //TODO: Should we force here or not?
             disposed = true;
+            GC.SuppressFinalize(this);
         }
 
         internal void CheckDisposed()

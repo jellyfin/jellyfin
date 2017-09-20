@@ -129,7 +129,6 @@
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpResponse.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="Images\BaseDynamicImageProvider.cs" />
-    <Compile Include="IO\AsyncStreamCopier.cs" />
     <Compile Include="IO\FileRefresher.cs" />
     <Compile Include="IO\IsoManager.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
@@ -440,7 +439,6 @@
     <Compile Include="Networking\NetworkManager.cs" />
     <Compile Include="Net\DisposableManagedObjectBase.cs" />
     <Compile Include="Net\NetAcceptSocket.cs" />
-    <Compile Include="Net\SocketAcceptor.cs" />
     <Compile Include="Net\SocketFactory.cs" />
     <Compile Include="Net\UdpSocket.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />
@@ -497,6 +495,7 @@
     <Compile Include="Services\ServiceController.cs" />
     <Compile Include="Services\ServiceExec.cs" />
     <Compile Include="Services\StringMapTypeDeserializer.cs" />
+    <Compile Include="Services\SwaggerService.cs" />
     <Compile Include="Services\UrlExtensions.cs" />
     <Compile Include="Session\HttpSessionController.cs" />
     <Compile Include="Session\SessionManager.cs" />
@@ -655,15 +654,14 @@
       <Project>{1d74413b-e7cf-455b-b021-f52bdf881542}</Project>
       <Name>SocketHttpListener</Name>
     </ProjectReference>
+    <Reference Include="Emby.Naming">
+      <HintPath>..\ThirdParty\emby\Emby.Naming.dll</HintPath>
+    </Reference>
     <Reference Include="Emby.Server.MediaEncoding">
       <HintPath>..\ThirdParty\emby\Emby.Server.MediaEncoding.dll</HintPath>
     </Reference>
     <Reference Include="Emby.XmlTv, Version=1.0.6387.29335, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Emby.XmlTv.1.0.10\lib\portable-net45+netstandard2.0+win8\Emby.XmlTv.dll</HintPath>
-    </Reference>
-    <Reference Include="MediaBrowser.Naming, Version=1.0.6447.2217, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.7\lib\portable-net45+netstandard2.0+win8\MediaBrowser.Naming.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Text, Version=4.5.8.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ServiceStack.Text.4.5.8\lib\net45\ServiceStack.Text.dll</HintPath>

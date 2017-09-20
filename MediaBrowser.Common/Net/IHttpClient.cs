@@ -9,7 +9,7 @@ namespace MediaBrowser.Common.Net
     /// <summary>
     /// Interface IHttpClient
     /// </summary>
-    public interface IHttpClient : IDisposable
+    public interface IHttpClient
     {
         /// <summary>
         /// Gets the response.

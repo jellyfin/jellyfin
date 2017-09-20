@@ -34,9 +34,9 @@ namespace MediaBrowser.Providers.Playlists
             }
         }
 
-        protected override ItemUpdateType BeforeSave(Playlist item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected override ItemUpdateType BeforeSaveInternal(Playlist item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
-            var updateType = base.BeforeSave(item, isFullRefresh, currentUpdateType);
+            var updateType = base.BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
 
             if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
             {

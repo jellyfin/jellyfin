@@ -649,6 +649,7 @@ namespace Emby.Server.Implementations.IO
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
         }
     }
 }

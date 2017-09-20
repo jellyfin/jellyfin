@@ -1,4 +1,5 @@
-﻿
+﻿using MediaBrowser.Model.Services;
+
 namespace MediaBrowser.Controller.Net
 {
     public interface IAuthorizationContext
@@ -15,6 +16,6 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <param name="requestContext">The request context.</param>
         /// <returns>AuthorizationInfo.</returns>
-        AuthorizationInfo GetAuthorizationInfo(IServiceRequest requestContext);
+        AuthorizationInfo GetAuthorizationInfo(IRequest requestContext);
     }
 }

@@ -113,7 +113,7 @@ namespace Emby.Dlna.PlayTo
 
         private int GetInactiveTimerIntervalMs()
         {
-            return Timeout.Infinite;
+            return 60000;
         }
 
         public void Start()
@@ -1105,6 +1105,7 @@ namespace Emby.Dlna.PlayTo
                 _disposed = true;
 
                 DisposeTimer();
+                GC.SuppressFinalize(this);
             }
         }
 

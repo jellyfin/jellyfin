@@ -378,6 +378,7 @@ namespace MediaBrowser.Controller.Entities
             cancellationToken.ThrowIfCancellationRequested();
 
             var validChildren = new List<BaseItem>();
+            var validChildrenNeedGeneration = false;
 
             var allLibraryPaths = LibraryManager
               .GetVirtualFolders()
@@ -474,11 +475,7 @@ namespace MediaBrowser.Controller.Entities
             }
             else
             {
-                if (recursive || refreshChildMetadata)
-                {
-                    // used below
-                    validChildren = Children.ToList();
-                }
+                validChildrenNeedGeneration = true;
             }
 
             progress.Report(10);
@@ -501,6 +498,12 @@ namespace MediaBrowser.Controller.Entities
                         progress.Report(newPct);
                         ProviderManager.OnRefreshProgress(folder, newPct);
                     });
+
+                    if (validChildrenNeedGeneration)
+                    {
+                        validChildren = Children.ToList();
+                        validChildrenNeedGeneration = false;
+                    }
 
                     await ValidateSubFolders(validChildren.OfType<Folder>().ToList(), directoryService, innerProgress, cancellationToken).ConfigureAwait(false);
                 }
@@ -536,6 +539,12 @@ namespace MediaBrowser.Controller.Entities
                     }
                     else
                     {
+                        if (validChildrenNeedGeneration)
+                        {
+                            validChildren = Children.ToList();
+                            validChildrenNeedGeneration = false;
+                        }
+
                         await RefreshMetadataRecursive(validChildren, refreshOptions, recursive, innerProgress, cancellationToken);
                     }
                 }
@@ -565,7 +574,7 @@ namespace MediaBrowser.Controller.Entities
                     });
 
                     await RefreshChildMetadata(child, refreshOptions, recursive && child.IsFolder, innerProgress, cancellationToken)
-                      .ConfigureAwait(false);
+                        .ConfigureAwait(false);
                 }
 
                 numComplete++;
@@ -588,7 +597,10 @@ namespace MediaBrowser.Controller.Entities
             }
             else
             {
-                await child.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                if (refreshOptions.RefreshItem(child))
+                {
+                    await child.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                }
 
                 if (recursive)
                 {
@@ -952,7 +964,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var result = LibraryManager.GetItemsResult(query);
 
-                if (query.SortBy.Length == 0)
+                if (query.OrderBy.Length == 0)
                 {
                     var ids = query.ItemIds.ToList();
 
@@ -973,7 +985,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var result = LibraryManager.GetItemList(query);
 
-                if (query.SortBy.Length == 0)
+                if (query.OrderBy.Length == 0)
                 {
                     var ids = query.ItemIds.ToList();
 
@@ -1000,8 +1012,7 @@ namespace MediaBrowser.Controller.Entities
                         Limit = query.Limit,
                         StartIndex = query.StartIndex,
                         UserId = query.User.Id.ToString("N"),
-                        SortBy = query.SortBy,
-                        SortOrder = query.SortOrder
+                        OrderBy = query.OrderBy
 
                     }, new SimpleProgress<double>(), CancellationToken.None).Result;
                 }
@@ -1197,11 +1208,21 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the linked children.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        public IEnumerable<BaseItem> GetLinkedChildren()
+        public List<BaseItem> GetLinkedChildren()
         {
-            return LinkedChildren
-                .Select(GetLinkedChild)
-                .Where(i => i != null);
+            var linkedChildren = LinkedChildren;
+            var list = new List<BaseItem>(linkedChildren.Length);
+
+            foreach (var i in linkedChildren)
+            {
+                var child = GetLinkedChild(i);
+
+                if (child != null)
+                {
+                    list.Add(child);
+                }
+            }
+            return list;
         }
 
         protected virtual bool FilterLinkedChildrenPerUser
@@ -1212,16 +1233,19 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public IEnumerable<BaseItem> GetLinkedChildren(User user)
+        public List<BaseItem> GetLinkedChildren(User user)
         {
             if (!FilterLinkedChildrenPerUser || user == null)
             {
                 return GetLinkedChildren();
             }
 
-            if (LinkedChildren.Length == 0)
+            var linkedChildren = LinkedChildren;
+            var list = new List<BaseItem>(linkedChildren.Length);
+
+            if (linkedChildren.Length == 0)
             {
-                return new List<BaseItem>();
+                return list;
             }
 
             var allUserRootChildren = user.RootFolder.Children.OfType<Folder>().ToList();
@@ -1232,37 +1256,43 @@ namespace MediaBrowser.Controller.Entities
                 .Select(i => i.Id)
                 .ToList();
 
-            return LinkedChildren
-                .Select(i =>
+            foreach (var i in linkedChildren)
+            {
+                var child = GetLinkedChild(i);
+
+                if (child == null)
                 {
-                    var child = GetLinkedChild(i);
+                    continue;
+                }
 
-                    if (child != null)
+                var childOwner = child.IsOwnedItem ? (child.GetOwner() ?? child) : child;
+
+                if (childOwner != null)
+                {
+                    var childLocationType = childOwner.LocationType;
+                    if (childLocationType == LocationType.Remote || childLocationType == LocationType.Virtual)
                     {
-                        var childLocationType = child.LocationType;
-                        if (childLocationType == LocationType.Remote || childLocationType == LocationType.Virtual)
+                        if (!childOwner.IsVisibleStandalone(user))
                         {
-                            if (!child.IsVisibleStandalone(user))
-                            {
-                                return null;
-                            }
-                        }
-                        else if (childLocationType == LocationType.FileSystem)
-                        {
-                            var itemCollectionFolderIds =
-                                LibraryManager.GetCollectionFolders(child, allUserRootChildren)
-                                .Select(f => f.Id).ToList();
-
-                            if (!itemCollectionFolderIds.Any(collectionFolderIds.Contains))
-                            {
-                                return null;
-                            }
+                            continue;
                         }
                     }
+                    else if (childLocationType == LocationType.FileSystem)
+                    {
+                        var itemCollectionFolderIds =
+                            LibraryManager.GetCollectionFolders(childOwner, allUserRootChildren).Select(f => f.Id);
 
-                    return child;
-                })
-                .Where(i => i != null);
+                        if (!itemCollectionFolderIds.Any(collectionFolderIds.Contains))
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+                list.Add(child);
+            }
+
+            return list;
         }
 
         /// <summary>

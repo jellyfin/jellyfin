@@ -55,18 +55,6 @@ namespace MediaBrowser.Model.Dto
         public string Id { get; set; }
         
         /// <summary>
-        /// Gets or sets the offline password.
-        /// </summary>
-        /// <value>The offline password.</value>
-        public string OfflinePassword { get; set; }
-
-        /// <summary>
-        /// Gets or sets the offline password salt.
-        /// </summary>
-        /// <value>The offline password salt.</value>
-        public string OfflinePasswordSalt { get; set; }
-        
-        /// <summary>
         /// Gets or sets the primary image tag.
         /// </summary>
         /// <value>The primary image tag.</value>

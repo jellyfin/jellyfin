@@ -567,7 +567,7 @@ namespace MediaBrowser.Api.Images
                 cropwhitespace = request.CropWhitespace.Value;
             }
 
-            var outputFormats = GetOutputFormats(request, imageInfo, cropwhitespace, supportedImageEnhancers);
+            var outputFormats = GetOutputFormats(request);
 
             TimeSpan? cacheDuration = null;
 
@@ -597,7 +597,7 @@ namespace MediaBrowser.Api.Images
             ImageRequest request,
             ItemImageInfo image,
             bool cropwhitespace,
-            List<ImageFormat> supportedFormats,
+            ImageFormat[] supportedFormats,
             List<IImageEnhancer> enhancers,
             TimeSpan? cacheDuration,
             IDictionary<string, string> headers,
@@ -639,62 +639,23 @@ namespace MediaBrowser.Api.Images
                 IsHeadRequest = isHeadRequest,
                 Path = imageResult.Item1,
 
-                // Sometimes imagemagick keeps a hold on the file briefly even after it's done writing to it.
-                // I'd rather do this than add a delay after saving the file
-                FileShare = FileShareMode.ReadWrite
+                FileShare = FileShareMode.Read
 
             }).ConfigureAwait(false);
         }
 
-        private List<ImageFormat> GetOutputFormats(ImageRequest request, ItemImageInfo image, bool cropwhitespace, List<IImageEnhancer> enhancers)
+        private ImageFormat[] GetOutputFormats(ImageRequest request)
         {
             if (!string.IsNullOrWhiteSpace(request.Format))
             {
                 ImageFormat format;
                 if (Enum.TryParse(request.Format, true, out format))
                 {
-                    return new List<ImageFormat> { format };
+                    return new ImageFormat[] { format };
                 }
             }
 
-            var extension = Path.GetExtension(image.Path);
-            ImageFormat? inputFormat = null;
-
-            if (string.Equals(extension, ".jpg", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(extension, ".jpeg", StringComparison.OrdinalIgnoreCase))
-            {
-                inputFormat = ImageFormat.Jpg;
-            }
-            else if (string.Equals(extension, ".png", StringComparison.OrdinalIgnoreCase))
-            {
-                inputFormat = ImageFormat.Png;
-            }
-
-            var clientSupportedFormats = GetClientSupportedFormats();
-
-            var serverFormats = _imageProcessor.GetSupportedImageOutputFormats();
-            var outputFormats = new List<ImageFormat>();
-
-            // Client doesn't care about format, so start with webp if supported
-            if (serverFormats.Contains(ImageFormat.Webp) && clientSupportedFormats.Contains(ImageFormat.Webp))
-            {
-                outputFormats.Add(ImageFormat.Webp);
-            }
-
-            if (enhancers.Count > 0)
-            {
-                outputFormats.Add(ImageFormat.Png);
-            }
-
-            if (inputFormat.HasValue && inputFormat.Value == ImageFormat.Jpg)
-            {
-                outputFormats.Add(ImageFormat.Jpg);
-            }
-
-            // We can't predict if there will be transparency or not, so play it safe
-            outputFormats.Add(ImageFormat.Png);
-
-            return outputFormats;
+            return GetClientSupportedFormats();
         }
 
         private ImageFormat[] GetClientSupportedFormats()

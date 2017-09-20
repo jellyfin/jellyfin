@@ -47,19 +47,31 @@ namespace MediaBrowser.Controller.LiveTv
             return list;
         }
 
+        public static double? GetDefaultPrimaryImageAspectRatio(IHasProgramAttributes item)
+        {
+            var serviceName = item.ServiceName;
+            if (!item.IsMovie 
+                && !string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase) 
+                && !string.Equals(serviceName, "Next Pvr", StringComparison.OrdinalIgnoreCase))
+            {
+                double value = 16;
+                value /= 9;
+
+                return value;
+            }
+            else
+            {
+                double value = 2;
+                value /= 3;
+
+                return value;
+            }
+        }
+
         private static string EmbyServiceName = "Emby";
         public override double? GetDefaultPrimaryImageAspectRatio()
         {
-            var serviceName = ServiceName;
-            if (!IsMovie && !string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(serviceName))
-            {
-                return null;
-            }
-
-            double value = 2;
-            value /= 3;
-
-            return value;
+            return GetDefaultPrimaryImageAspectRatio(this);
         }
 
         [IgnoreDataMember]
@@ -87,6 +99,9 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The episode title.</value>
         [IgnoreDataMember]
         public string EpisodeTitle { get; set; }
+
+        [IgnoreDataMember]
+        public string ShowId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is movie.

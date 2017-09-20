@@ -80,13 +80,41 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
+            if (IsLegacyBoxSet)
+            {
+                return base.GetNonCachedChildren(directoryService);
+            }
             return new List<BaseItem>();
         }
 
         protected override List<BaseItem> LoadChildren()
         {
+            if (IsLegacyBoxSet)
+            {
+                return base.LoadChildren();
+            }
+
             // Save a trip to the database
             return new List<BaseItem>();
+        }
+
+        [IgnoreDataMember]
+        private bool IsLegacyBoxSet
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Path))
+                {
+                    return false;
+                }
+
+                if (LinkedChildren.Length > 0)
+                {
+                    return false;
+                }
+
+                return !FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, Path);
+            }
         }
 
         [IgnoreDataMember]

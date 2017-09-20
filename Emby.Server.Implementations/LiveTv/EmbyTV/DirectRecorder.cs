@@ -42,6 +42,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private async Task RecordFromDirectStreamProvider(IDirectStreamProvider directStreamProvider, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(targetFile));
+
             using (var output = _fileSystem.GetFileStream(targetFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
             {
                 onStarted();
@@ -75,6 +77,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false))
             {
                 _logger.Info("Opened recording stream from tuner provider");
+
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(targetFile));
 
                 using (var output = _fileSystem.GetFileStream(targetFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
                 {

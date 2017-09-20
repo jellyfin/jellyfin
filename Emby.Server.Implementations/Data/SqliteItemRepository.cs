@@ -139,34 +139,34 @@ namespace Emby.Server.Implementations.Data
                 RunDefaultInitialization(connection);
 
                 var createMediaStreamsTableCommand
-                   = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+                    = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
 
                 string[] queries = {
-                                "PRAGMA locking_mode=EXCLUSIVE",
+                    "PRAGMA locking_mode=EXCLUSIVE",
 
-                                "create table if not exists TypedBaseItems (guid GUID primary key NOT NULL, type TEXT NOT NULL, data BLOB NULL, ParentId GUID NULL, Path TEXT NULL)",
+                    "create table if not exists TypedBaseItems (guid GUID primary key NOT NULL, type TEXT NOT NULL, data BLOB NULL, ParentId GUID NULL, Path TEXT NULL)",
 
-                                "create table if not exists AncestorIds (ItemId GUID, AncestorId GUID, AncestorIdText TEXT, PRIMARY KEY (ItemId, AncestorId))",
-                                "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
-                                "create index if not exists idx_AncestorIds5 on AncestorIds(AncestorIdText,ItemId)",
+                    "create table if not exists AncestorIds (ItemId GUID, AncestorId GUID, AncestorIdText TEXT, PRIMARY KEY (ItemId, AncestorId))",
+                    "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
+                    "create index if not exists idx_AncestorIds5 on AncestorIds(AncestorIdText,ItemId)",
 
-                                "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT, CleanValue TEXT)",
+                    "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT, CleanValue TEXT)",
 
-                                "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
+                    "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
 
-                                "drop index if exists idxPeopleItemId",
-                                "create index if not exists idxPeopleItemId1 on People(ItemId,ListOrder)",
-                                "create index if not exists idxPeopleName on People(Name)",
+                    "drop index if exists idxPeopleItemId",
+                    "create index if not exists idxPeopleItemId1 on People(ItemId,ListOrder)",
+                    "create index if not exists idxPeopleName on People(Name)",
 
-                                "create table if not exists "+ChaptersTableName+" (ItemId GUID, ChapterIndex INT, StartPositionTicks BIGINT, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
+                    "create table if not exists "+ChaptersTableName+" (ItemId GUID, ChapterIndex INT, StartPositionTicks BIGINT, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
 
-                                createMediaStreamsTableCommand,
+                    createMediaStreamsTableCommand,
 
-                                "create index if not exists idx_mediastreams1 on mediastreams(ItemId)",
+                    "create index if not exists idx_mediastreams1 on mediastreams(ItemId)",
 
-                                "pragma shrink_memory"
+                    "pragma shrink_memory"
 
-                               };
+                };
 
                 connection.RunQueries(queries);
 
@@ -252,6 +252,8 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "AlbumArtists", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "ExternalId", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "SeriesPresentationUniqueKey", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ShowId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "OwnerId", "Text", existingColumnNames);
 
                     existingColumnNames = GetColumnNames(db, "ItemValues");
                     AddColumn(db, "ItemValues", "CleanValue", "Text", existingColumnNames);
@@ -276,80 +278,80 @@ namespace Emby.Server.Implementations.Data
 
                 string[] postQueries =
 
-                                    {
-                // obsolete
-                "drop index if exists idx_TypedBaseItems",
-                "drop index if exists idx_mediastreams",
-                "drop index if exists idx_"+ChaptersTableName,
-                "drop index if exists idx_UserDataKeys1",
-                "drop index if exists idx_UserDataKeys2",
-                "drop index if exists idx_TypeTopParentId3",
-                "drop index if exists idx_TypeTopParentId2",
-                "drop index if exists idx_TypeTopParentId4",
-                "drop index if exists idx_Type",
-                "drop index if exists idx_TypeTopParentId",
-                "drop index if exists idx_GuidType",
-                "drop index if exists idx_TopParentId",
-                "drop index if exists idx_TypeTopParentId6",
-                "drop index if exists idx_ItemValues2",
-                "drop index if exists Idx_ProviderIds",
-                "drop index if exists idx_ItemValues3",
-                "drop index if exists idx_ItemValues4",
-                "drop index if exists idx_ItemValues5",
-                "drop index if exists idx_UserDataKeys3",
-                "drop table if exists UserDataKeys",
-                "drop table if exists ProviderIds",
-                "drop index if exists Idx_ProviderIds1",
-                "drop table if exists Images",
-                "drop index if exists idx_Images",
-                "drop index if exists idx_TypeSeriesPresentationUniqueKey",
-                "drop index if exists idx_SeriesPresentationUniqueKey",
-                "drop index if exists idx_TypeSeriesPresentationUniqueKey2",
-                "drop index if exists idx_AncestorIds3",
-                "drop index if exists idx_AncestorIds4",
-                "drop index if exists idx_AncestorIds2",
+                {
+                    // obsolete
+                    "drop index if exists idx_TypedBaseItems",
+                    "drop index if exists idx_mediastreams",
+                    "drop index if exists idx_"+ChaptersTableName,
+                    "drop index if exists idx_UserDataKeys1",
+                    "drop index if exists idx_UserDataKeys2",
+                    "drop index if exists idx_TypeTopParentId3",
+                    "drop index if exists idx_TypeTopParentId2",
+                    "drop index if exists idx_TypeTopParentId4",
+                    "drop index if exists idx_Type",
+                    "drop index if exists idx_TypeTopParentId",
+                    "drop index if exists idx_GuidType",
+                    "drop index if exists idx_TopParentId",
+                    "drop index if exists idx_TypeTopParentId6",
+                    "drop index if exists idx_ItemValues2",
+                    "drop index if exists Idx_ProviderIds",
+                    "drop index if exists idx_ItemValues3",
+                    "drop index if exists idx_ItemValues4",
+                    "drop index if exists idx_ItemValues5",
+                    "drop index if exists idx_UserDataKeys3",
+                    "drop table if exists UserDataKeys",
+                    "drop table if exists ProviderIds",
+                    "drop index if exists Idx_ProviderIds1",
+                    "drop table if exists Images",
+                    "drop index if exists idx_Images",
+                    "drop index if exists idx_TypeSeriesPresentationUniqueKey",
+                    "drop index if exists idx_SeriesPresentationUniqueKey",
+                    "drop index if exists idx_TypeSeriesPresentationUniqueKey2",
+                    "drop index if exists idx_AncestorIds3",
+                    "drop index if exists idx_AncestorIds4",
+                    "drop index if exists idx_AncestorIds2",
 
-                "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
-                "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
+                    "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
+                    "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
 
-                "create index if not exists idx_PresentationUniqueKey on TypedBaseItems(PresentationUniqueKey)",
-                "create index if not exists idx_GuidTypeIsFolderIsVirtualItem on TypedBaseItems(Guid,Type,IsFolder,IsVirtualItem)",
-                //"create index if not exists idx_GuidMediaTypeIsFolderIsVirtualItem on TypedBaseItems(Guid,MediaType,IsFolder,IsVirtualItem)",
-                "create index if not exists idx_CleanNameType on TypedBaseItems(CleanName,Type)",
+                    "create index if not exists idx_PresentationUniqueKey on TypedBaseItems(PresentationUniqueKey)",
+                    "create index if not exists idx_GuidTypeIsFolderIsVirtualItem on TypedBaseItems(Guid,Type,IsFolder,IsVirtualItem)",
+                    //"create index if not exists idx_GuidMediaTypeIsFolderIsVirtualItem on TypedBaseItems(Guid,MediaType,IsFolder,IsVirtualItem)",
+                    "create index if not exists idx_CleanNameType on TypedBaseItems(CleanName,Type)",
 
-                // covering index
-                "create index if not exists idx_TopParentIdGuid on TypedBaseItems(TopParentId,Guid)",
+                    // covering index
+                    "create index if not exists idx_TopParentIdGuid on TypedBaseItems(TopParentId,Guid)",
 
-                // series
-                "create index if not exists idx_TypeSeriesPresentationUniqueKey1 on TypedBaseItems(Type,SeriesPresentationUniqueKey,PresentationUniqueKey,SortName)",
+                    // series
+                    "create index if not exists idx_TypeSeriesPresentationUniqueKey1 on TypedBaseItems(Type,SeriesPresentationUniqueKey,PresentationUniqueKey,SortName)",
 
-                // series counts
-                // seriesdateplayed sort order
-                "create index if not exists idx_TypeSeriesPresentationUniqueKey3 on TypedBaseItems(SeriesPresentationUniqueKey,Type,IsFolder,IsVirtualItem)",
+                    // series counts
+                    // seriesdateplayed sort order
+                    "create index if not exists idx_TypeSeriesPresentationUniqueKey3 on TypedBaseItems(SeriesPresentationUniqueKey,Type,IsFolder,IsVirtualItem)",
 
-                // live tv programs
-                "create index if not exists idx_TypeTopParentIdStartDate on TypedBaseItems(Type,TopParentId,StartDate)",
+                    // live tv programs
+                    "create index if not exists idx_TypeTopParentIdStartDate on TypedBaseItems(Type,TopParentId,StartDate)",
 
-                // covering index for getitemvalues
-                "create index if not exists idx_TypeTopParentIdGuid on TypedBaseItems(Type,TopParentId,Guid)",
+                    // covering index for getitemvalues
+                    "create index if not exists idx_TypeTopParentIdGuid on TypedBaseItems(Type,TopParentId,Guid)",
 
-                // used by movie suggestions
-                "create index if not exists idx_TypeTopParentIdGroup on TypedBaseItems(Type,TopParentId,PresentationUniqueKey)",
-                "create index if not exists idx_TypeTopParentId5 on TypedBaseItems(TopParentId,IsVirtualItem)",
+                    // used by movie suggestions
+                    "create index if not exists idx_TypeTopParentIdGroup on TypedBaseItems(Type,TopParentId,PresentationUniqueKey)",
+                    "create index if not exists idx_TypeTopParentId5 on TypedBaseItems(TopParentId,IsVirtualItem)",
 
-                // latest items
-                "create index if not exists idx_TypeTopParentId9 on TypedBaseItems(TopParentId,Type,IsVirtualItem,PresentationUniqueKey,DateCreated)",
-                "create index if not exists idx_TypeTopParentId8 on TypedBaseItems(TopParentId,IsFolder,IsVirtualItem,PresentationUniqueKey,DateCreated)",
+                    // latest items
+                    "create index if not exists idx_TypeTopParentId9 on TypedBaseItems(TopParentId,Type,IsVirtualItem,PresentationUniqueKey,DateCreated)",
+                    "create index if not exists idx_TypeTopParentId8 on TypedBaseItems(TopParentId,IsFolder,IsVirtualItem,PresentationUniqueKey,DateCreated)",
 
-                // resume
-                "create index if not exists idx_TypeTopParentId7 on TypedBaseItems(TopParentId,MediaType,IsVirtualItem,PresentationUniqueKey)",
+                    // resume
+                    "create index if not exists idx_TypeTopParentId7 on TypedBaseItems(TopParentId,MediaType,IsVirtualItem,PresentationUniqueKey)",
 
-                // items by name
-                "create index if not exists idx_ItemValues6 on ItemValues(ItemId,Type,CleanValue)",
-                "create index if not exists idx_ItemValues7 on ItemValues(Type,CleanValue,ItemId)",
+                    // items by name
+                    "create index if not exists idx_ItemValues6 on ItemValues(ItemId,Type,CleanValue)",
+                    "create index if not exists idx_ItemValues7 on ItemValues(Type,CleanValue,ItemId)",
 
-                // Used to update inherited tags
-                "create index if not exists idx_ItemValues8 on ItemValues(Type, ItemId, Value)",
+                    // Used to update inherited tags
+                    "create index if not exists idx_ItemValues8 on ItemValues(Type, ItemId, Value)",
                 };
 
                 connection.RunQueries(postQueries);
@@ -457,7 +459,9 @@ namespace Emby.Server.Implementations.Data
             "Artists",
             "AlbumArtists",
             "ExternalId",
-            "SeriesPresentationUniqueKey"
+            "SeriesPresentationUniqueKey",
+            "ShowId",
+            "OwnerId"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -577,7 +581,9 @@ namespace Emby.Server.Implementations.Data
                 "Artists",
                 "AlbumArtists",
                 "ExternalId",
-            "SeriesPresentationUniqueKey"
+                "SeriesPresentationUniqueKey",
+                "ShowId",
+                "OwnerId"
             };
 
             var saveItemCommandCommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -781,13 +787,14 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@PremiereDate", item.PremiereDate);
             saveItemStatement.TryBind("@ProductionYear", item.ProductionYear);
 
-            if (item.ParentId == Guid.Empty)
+            var parentId = item.ParentId;
+            if (parentId == Guid.Empty)
             {
                 saveItemStatement.TryBindNull("@ParentId");
             }
             else
             {
-                saveItemStatement.TryBind("@ParentId", item.ParentId);
+                saveItemStatement.TryBind("@ParentId", parentId);
             }
 
             if (item.Genres.Count > 0)
@@ -1044,6 +1051,26 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@AlbumArtists", albumArtists);
             saveItemStatement.TryBind("@ExternalId", item.ExternalId);
 
+            var program = item as LiveTvProgram;
+            if (program != null)
+            {
+                saveItemStatement.TryBind("@ShowId", program.ShowId);
+            }
+            else
+            {
+                saveItemStatement.TryBindNull("@ShowId");
+            }
+
+            var ownerId = item.OwnerId;
+            if (ownerId != Guid.Empty)
+            {
+                saveItemStatement.TryBind("@OwnerId", ownerId);
+            }
+            else
+            {
+                saveItemStatement.TryBindNull("@OwnerId");
+            }
+
             saveItemStatement.MoveNext();
         }
 
@@ -1140,19 +1167,17 @@ namespace Emby.Server.Implementations.Data
             }
 
             return path +
-                delimeter +
-                image.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) +
-                delimeter +
-                image.Type +
-                delimeter +
-                image.IsPlaceholder;
+                   delimeter +
+                   image.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) +
+                   delimeter +
+                   image.Type;
         }
 
         public ItemImageInfo ItemImageInfoFromValueString(string value)
         {
             var parts = value.Split(new[] { '*' }, StringSplitOptions.None);
 
-            if (parts.Length != 4)
+            if (parts.Length < 3)
             {
                 return null;
             }
@@ -1160,9 +1185,18 @@ namespace Emby.Server.Implementations.Data
             var image = new ItemImageInfo();
 
             image.Path = parts[0];
-            image.DateModified = new DateTime(long.Parse(parts[1], CultureInfo.InvariantCulture), DateTimeKind.Utc);
-            image.Type = (ImageType)Enum.Parse(typeof(ImageType), parts[2], true);
-            image.IsPlaceholder = string.Equals(parts[3], true.ToString(), StringComparison.OrdinalIgnoreCase);
+
+            long ticks;
+            if (long.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out ticks))
+            {
+                image.DateModified = new DateTime(ticks, DateTimeKind.Utc);
+            }
+
+            ImageType type;
+            if (Enum.TryParse(parts[2], true, out type))
+            {
+                image.Type = type;
+            }
 
             return image;
         }
@@ -1696,17 +1730,17 @@ namespace Emby.Server.Implementations.Data
                     if (!reader.IsDBNull(index))
                     {
                         trailer.TrailerTypes = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(
-                        i =>
-                        {
-                            TrailerType parsedValue;
-
-                            if (Enum.TryParse(i, true, out parsedValue))
+                            i =>
                             {
-                                return parsedValue;
-                            }
-                            return (TrailerType?)null;
+                                TrailerType parsedValue;
 
-                        }).Where(i => i.HasValue).Select(i => i.Value).ToList();
+                                if (Enum.TryParse(i, true, out parsedValue))
+                                {
+                                    return parsedValue;
+                                }
+                                return (TrailerType?)null;
+
+                            }).Where(i => i.HasValue).Select(i => i.Value).ToList();
                     }
                 }
                 index++;
@@ -1935,6 +1969,29 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
+            if (enableProgramAttributes)
+            {
+                var program = item as LiveTvProgram;
+                if (program != null)
+                {
+                    if (!reader.IsDBNull(index))
+                    {
+                        program.ShowId = reader.GetString(index);
+                    }
+                    index++;
+                }
+                else
+                {
+                    index++;
+                }
+            }
+
+            if (!reader.IsDBNull(index))
+            {
+                item.OwnerId = reader.GetGuid(index);
+            }
+            index++;
+
             return item;
         }
 
@@ -2135,8 +2192,7 @@ namespace Emby.Server.Implementations.Data
                 //return true;
             }
 
-            var sortingFields = query.SortBy.ToList();
-            sortingFields.AddRange(query.OrderBy.Select(i => i.Item1));
+            var sortingFields = query.OrderBy.Select(i => i.Item1).ToList();
 
             if (sortingFields.Contains(ItemSortBy.IsFavoriteOrLiked, StringComparer.OrdinalIgnoreCase))
             {
@@ -2192,8 +2248,8 @@ namespace Emby.Server.Implementations.Data
         }
 
         private readonly List<ItemFields> allFields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
+            .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
+            .ToList();
 
         private IEnumerable<string> GetColumnNamesFromField(ItemFields field)
         {
@@ -2295,13 +2351,13 @@ namespace Emby.Server.Implementations.Data
         private bool HasStartDate(InternalItemsQuery query)
         {
             var excludeParentTypes = new string[]
-             {
+            {
                 "Series",
                 "Season",
                 "MusicAlbum",
                 "MusicArtist",
                 "PhotoAlbum"
-             };
+            };
 
             if (excludeParentTypes.Contains(query.ParentType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
@@ -2358,11 +2414,11 @@ namespace Emby.Server.Implementations.Data
         private bool HasArtistFields(InternalItemsQuery query)
         {
             var excludeParentTypes = new string[]
-             {
+            {
                 "Series",
                 "Season",
                 "PhotoAlbum"
-             };
+            };
 
             if (excludeParentTypes.Contains(query.ParentType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
@@ -2391,9 +2447,9 @@ namespace Emby.Server.Implementations.Data
         private bool HasSeriesFields(InternalItemsQuery query)
         {
             var excludeParentTypes = new string[]
-             {
+            {
                 "PhotoAlbum"
-             };
+            };
 
             if (excludeParentTypes.Contains(query.ParentType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
@@ -2442,6 +2498,7 @@ namespace Emby.Server.Implementations.Data
                 list.Remove("IsPremiere");
                 list.Remove("EpisodeTitle");
                 list.Remove("IsRepeat");
+                list.Remove("ShowId");
             }
 
             if (!HasEpisodeAttributes(query))
@@ -2975,16 +3032,7 @@ namespace Emby.Server.Implementations.Data
         private string GetOrderByText(InternalItemsQuery query)
         {
             var orderBy = query.OrderBy.ToList();
-            var enableOrderInversion = true;
-
-            if (orderBy.Count == 0)
-            {
-                orderBy.AddRange(query.SortBy.Select(i => new Tuple<string, SortOrder>(i, query.SortOrder)));
-            }
-            else
-            {
-                enableOrderInversion = false;
-            }
+            var enableOrderInversion = false;
 
             if (query.SimilarTo != null)
             {
@@ -2993,12 +3041,10 @@ namespace Emby.Server.Implementations.Data
                     orderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
                     orderBy.Add(new Tuple<string, SortOrder>("SimilarityScore", SortOrder.Descending));
                     //orderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
-                    query.SortOrder = SortOrder.Descending;
-                    enableOrderInversion = false;
                 }
             }
 
-            query.OrderBy = orderBy;
+            query.OrderBy = orderBy.ToArray();
 
             if (orderBy.Count == 0)
             {
@@ -4235,6 +4281,54 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(query.HasNoAudioTrackWithLanguage))
+            {
+                whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Audio' and MediaStreams.Language=@HasNoAudioTrackWithLanguage limit 1) is null)");
+                if (statement != null)
+                {
+                    statement.TryBind("@HasNoAudioTrackWithLanguage", query.HasNoAudioTrackWithLanguage);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.HasNoInternalSubtitleTrackWithLanguage))
+            {
+                whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' and MediaStreams.IsExternal=0 and MediaStreams.Language=@HasNoInternalSubtitleTrackWithLanguage limit 1) is null)");
+                if (statement != null)
+                {
+                    statement.TryBind("@HasNoInternalSubtitleTrackWithLanguage", query.HasNoInternalSubtitleTrackWithLanguage);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.HasNoExternalSubtitleTrackWithLanguage))
+            {
+                whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' and MediaStreams.IsExternal=1 and MediaStreams.Language=@HasNoExternalSubtitleTrackWithLanguage limit 1) is null)");
+                if (statement != null)
+                {
+                    statement.TryBind("@HasNoExternalSubtitleTrackWithLanguage", query.HasNoExternalSubtitleTrackWithLanguage);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.HasNoSubtitleTrackWithLanguage))
+            {
+                whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' and MediaStreams.Language=@HasNoSubtitleTrackWithLanguage limit 1) is null)");
+                if (statement != null)
+                {
+                    statement.TryBind("@HasNoSubtitleTrackWithLanguage", query.HasNoSubtitleTrackWithLanguage);
+                }
+            }
+
+            if (query.HasChapterImages.HasValue)
+            {
+                if (query.HasChapterImages.Value)
+                {
+                    whereClauses.Add("((select imagepath from Chapters2 where Chapters2.ItemId=A.Guid and imagepath not null limit 1) not null)");
+                }
+                else
+                {
+                    whereClauses.Add("((select imagepath from Chapters2 where Chapters2.ItemId=A.Guid and imagepath not null limit 1) is null)");
+                }
+            }
+
             if (query.HasDeadParentId.HasValue && query.HasDeadParentId.Value)
             {
                 whereClauses.Add("ParentId NOT NULL AND ParentId NOT IN (select guid from TypedBaseItems)");
@@ -4316,7 +4410,7 @@ namespace Emby.Server.Implementations.Data
                     index++;
                 }
 
-                whereClauses.Add(string.Join(" OR ", includeIds.ToArray()));
+                whereClauses.Add("(" + string.Join(" OR ", includeIds.ToArray()) + ")");
             }
             if (query.ExcludeItemIds.Length > 0)
             {
@@ -4399,7 +4493,6 @@ namespace Emby.Server.Implementations.Data
                     whereClauses.Add("ThemeVideoIds is null");
                 }
             }
-
 
             var includedItemByNameTypes = GetItemByNameTypesInQuery(query).SelectMany(MapIncludeItemTypes).ToList();
             var enableItemsByName = (query.IncludeItemsByName ?? false) && includedItemByNameTypes.Count > 0;
@@ -4654,63 +4747,24 @@ namespace Emby.Server.Implementations.Data
 
         private void UpdateInheritedTags(CancellationToken cancellationToken)
         {
-            var newValues = new List<Tuple<Guid, string[]>>();
-
-            var commandText = @"select guid, 
-(select group_concat(Value, '|') from ItemValues where (ItemValues.ItemId = Outer.Guid OR ItemValues.ItemId in ((Select AncestorId from AncestorIds where AncestorIds.ItemId=Outer.guid))) and ItemValues.Type = 4) NewInheritedTags,
-(select group_concat(Value, '|') from ItemValues where ItemValues.ItemId = Outer.Guid and ItemValues.Type = 6) CurrentInheritedTags
-from typedbaseitems as Outer
-where (NewInheritedTags <> CurrentInheritedTags or (NewInheritedTags is null) <> (CurrentInheritedTags is null))
-limit 100";
-
             using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
                     connection.RunInTransaction(db =>
                     {
-                        foreach (var row in connection.Query(commandText))
+                        connection.ExecuteAll(string.Join(";", new string[]
                         {
-                            var id = row.GetGuid(0);
-                            string value = row.IsDBNull(1) ? null : row.GetString(1);
+                            "delete from itemvalues where type = 6",
 
-                            var valuesArray = string.IsNullOrWhiteSpace(value) ? new string[] { } : value.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                            "insert into itemvalues (ItemId, Type, Value, CleanValue)  select ItemId, 6, Value, CleanValue from ItemValues where Type=4",
 
-                            newValues.Add(new Tuple<Guid, string[]>(id, valuesArray));
-                        }
+                            @"insert into itemvalues (ItemId, Type, Value, CleanValue) select AncestorIds.itemid, 6, ItemValues.Value, ItemValues.CleanValue
+FROM AncestorIds
+LEFT JOIN ItemValues ON (AncestorIds.AncestorId = ItemValues.ItemId)
+where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type = 4 "
 
-                        Logger.Debug("UpdateInheritedTags - {0} rows", newValues.Count);
-                        if (newValues.Count == 0)
-                        {
-                            return;
-                        }
-
-                        using (var insertStatement = PrepareStatement(connection, "insert into ItemValues (ItemId, Type, Value, CleanValue) values (@ItemId, 6, @Value, @CleanValue)"))
-                        {
-                            using (var deleteStatement = PrepareStatement(connection, "delete from ItemValues where ItemId=@ItemId and Type=6"))
-                            {
-                                foreach (var item in newValues)
-                                {
-                                    var guidBlob = item.Item1.ToGuidBlob();
-
-                                    deleteStatement.Reset();
-                                    deleteStatement.TryBind("@ItemId", guidBlob);
-                                    deleteStatement.MoveNext();
-
-                                    foreach (var itemValue in item.Item2)
-                                    {
-                                        insertStatement.Reset();
-
-                                        insertStatement.TryBind("@ItemId", guidBlob);
-                                        insertStatement.TryBind("@Value", itemValue);
-
-                                        insertStatement.TryBind("@CleanValue", GetCleanValue(itemValue));
-
-                                        insertStatement.MoveNext();
-                                    }
-                                }
-                            }
-                        }
+                        }));
 
                     }, TransactionMode);
                 }
@@ -5503,7 +5557,7 @@ limit 100";
                     var listIndex = 0;
 
                     using (var statement = PrepareStatement(connection,
-                                "insert into People (ItemId, Name, Role, PersonType, SortOrder, ListOrder) values (@ItemId, @Name, @Role, @PersonType, @SortOrder, @ListOrder)"))
+                        "insert into People (ItemId, Name, Role, PersonType, SortOrder, ListOrder) values (@ItemId, @Name, @Role, @PersonType, @SortOrder, @ListOrder)"))
                     {
                         foreach (var person in people)
                         {
@@ -5632,8 +5686,8 @@ limit 100";
                     connection.Execute("delete from mediastreams where ItemId=@ItemId", id.ToGuidBlob());
 
                     using (var statement = PrepareStatement(connection, string.Format("replace into mediastreams ({0}) values ({1})",
-                                string.Join(",", _mediaStreamSaveColumns),
-                                string.Join(",", _mediaStreamSaveColumns.Select(i => "@" + i).ToArray()))))
+                        string.Join(",", _mediaStreamSaveColumns),
+                        string.Join(",", _mediaStreamSaveColumns.Select(i => "@" + i).ToArray()))))
                     {
                         foreach (var stream in streams)
                         {

@@ -5,8 +5,10 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api
@@ -47,21 +49,21 @@ namespace MediaBrowser.Api
             _libraryManager = libraryManager;
         }
 
-        public async Task<object> Get(GetSuggestedItems request)
+        public object Get(GetSuggestedItems request)
         {
-            var result = await GetResultItems(request).ConfigureAwait(false);
+            var result = GetResultItems(request);
 
             return ToOptimizedResult(result);
         }
 
-        private async Task<QueryResult<BaseItemDto>> GetResultItems(GetSuggestedItems request)
+        private QueryResult<BaseItemDto> GetResultItems(GetSuggestedItems request)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
             var dtoOptions = GetDtoOptions(_authContext, request);
             var result = GetItems(request, user, dtoOptions);
 
-            var dtoList = await _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user).ConfigureAwait(false);
+            var dtoList = _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user);
 
             if (dtoList == null)
             {
@@ -79,7 +81,7 @@ namespace MediaBrowser.Api
         {
             return _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
-                SortBy = new string[] { ItemSortBy.Random },
+                OrderBy = new[] { ItemSortBy.Random }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
                 MediaTypes = request.GetMediaTypes(),
                 IncludeItemTypes = request.GetIncludeItemTypes(),
                 IsVirtualItem = false,

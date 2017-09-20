@@ -42,7 +42,6 @@ namespace MediaBrowser.Controller.LiveTv
         public string Id { get; set; }
         public string Path { get; set; }
         public TimerInfo Timer { get; set; }
-        public ProgramInfo Program { get; set; }
         public CancellationTokenSource CancellationTokenSource { get; set; }
     }
 }

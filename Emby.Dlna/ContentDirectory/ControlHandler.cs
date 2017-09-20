@@ -458,8 +458,7 @@ namespace Emby.Dlna.ContentDirectory
             {
                 Limit = limit,
                 StartIndex = startIndex,
-                SortBy = sortOrders.ToArray(sortOrders.Count),
-                SortOrder = sort.SortOrder,
+                OrderBy = sortOrders.Select(i => new Tuple<string, SortOrder>(i, sort.SortOrder)).ToArray(),
                 User = user,
                 Recursive = true,
                 IsMissing = false,
@@ -828,7 +827,7 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
 
-            query.OrderBy = new List<Tuple<string, SortOrder>>
+            query.OrderBy = new Tuple<string, SortOrder>[]
             {
                 new Tuple<string, SortOrder> (ItemSortBy.DatePlayed, SortOrder.Descending),
                 new Tuple<string, SortOrder> (ItemSortBy.SortName, SortOrder.Ascending)
@@ -1077,7 +1076,7 @@ namespace Emby.Dlna.ContentDirectory
 
         private QueryResult<ServerItem> GetMusicLatest(BaseItem parent, User user, InternalItemsQuery query)
         {
-            query.SortBy = new string[] { };
+            query.OrderBy = new Tuple<string, SortOrder>[] { };
 
             var items = _userViewManager.GetLatestItems(new LatestItemsQuery
             {
@@ -1094,7 +1093,7 @@ namespace Emby.Dlna.ContentDirectory
 
         private QueryResult<ServerItem> GetNextUp(BaseItem parent, User user, InternalItemsQuery query)
         {
-            query.SortBy = new string[] { };
+            query.OrderBy = new Tuple<string, SortOrder>[] { };
 
             var result = _tvSeriesManager.GetNextUp(new NextUpQuery
             {
@@ -1109,7 +1108,7 @@ namespace Emby.Dlna.ContentDirectory
 
         private QueryResult<ServerItem> GetTvLatest(BaseItem parent, User user, InternalItemsQuery query)
         {
-            query.SortBy = new string[] { };
+            query.OrderBy = new Tuple<string, SortOrder>[] { };
 
             var items = _userViewManager.GetLatestItems(new LatestItemsQuery
             {
@@ -1126,7 +1125,7 @@ namespace Emby.Dlna.ContentDirectory
 
         private QueryResult<ServerItem> GetMovieLatest(BaseItem parent, User user, InternalItemsQuery query)
         {
-            query.SortBy = new string[] { };
+            query.OrderBy = new Tuple<string, SortOrder>[] { };
 
             var items = _userViewManager.GetLatestItems(new LatestItemsQuery
             {
@@ -1236,8 +1235,7 @@ namespace Emby.Dlna.ContentDirectory
                 sortOrders.Add(ItemSortBy.SortName);
             }
 
-            query.SortBy = sortOrders.ToArray(sortOrders.Count);
-            query.SortOrder = sort.SortOrder;
+            query.OrderBy = sortOrders.Select(i => new Tuple<string, SortOrder>(i, sort.SortOrder)).ToArray();
         }
 
         private QueryResult<ServerItem> GetItemsFromPerson(Person person, User user, int? startIndex, int? limit)
@@ -1246,7 +1244,7 @@ namespace Emby.Dlna.ContentDirectory
             {
                 PersonIds = new[] { person.Id.ToString("N") },
                 IncludeItemTypes = new[] { typeof(Movie).Name, typeof(Series).Name, typeof(Trailer).Name },
-                SortBy = new[] { ItemSortBy.SortName },
+                OrderBy = new[] { ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
                 Limit = limit,
                 StartIndex = startIndex,
                 DtoOptions = GetDtoOptions()

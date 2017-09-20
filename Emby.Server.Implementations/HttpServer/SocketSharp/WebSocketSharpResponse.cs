@@ -29,7 +29,6 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         }
 
         public IRequest Request { get; private set; }
-        public bool UseBufferedStream { get; set; }
         public Dictionary<string, object> Items { get; private set; }
         public object OriginalResponse
         {

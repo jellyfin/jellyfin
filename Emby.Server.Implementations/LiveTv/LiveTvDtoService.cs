@@ -9,14 +9,12 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.LiveTv
 {
@@ -25,15 +23,13 @@ namespace Emby.Server.Implementations.LiveTv
         private readonly ILogger _logger;
         private readonly IImageProcessor _imageProcessor;
 
-        private readonly IUserDataManager _userDataManager;
         private readonly IDtoService _dtoService;
         private readonly IApplicationHost _appHost;
         private readonly ILibraryManager _libraryManager;
 
-        public LiveTvDtoService(IDtoService dtoService, IUserDataManager userDataManager, IImageProcessor imageProcessor, ILogger logger, IApplicationHost appHost, ILibraryManager libraryManager)
+        public LiveTvDtoService(IDtoService dtoService, IImageProcessor imageProcessor, ILogger logger, IApplicationHost appHost, ILibraryManager libraryManager)
         {
             _dtoService = dtoService;
-            _userDataManager = userDataManager;
             _imageProcessor = imageProcessor;
             _logger = logger;
             _appHost = appHost;

@@ -145,13 +145,10 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             var list = base.GetUserDataKeys();
 
-            if (ConfigurationManager.Configuration.EnableStandaloneMusicKeys)
+            var albumArtist = AlbumArtist;
+            if (!string.IsNullOrWhiteSpace(albumArtist))
             {
-                var albumArtist = AlbumArtist;
-                if (!string.IsNullOrWhiteSpace(albumArtist))
-                {
-                    list.Insert(0, albumArtist + "-" + Name);
-                }
+                list.Insert(0, albumArtist + "-" + Name);
             }
 
             var id = this.GetProviderId(MetadataProviders.MusicBrainzAlbum);

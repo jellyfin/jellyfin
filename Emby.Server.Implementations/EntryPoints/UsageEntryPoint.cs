@@ -130,6 +130,7 @@ namespace Emby.Server.Implementations.EntryPoints
         public void Dispose()
         {
             _sessionManager.SessionStarted -= _sessionManager_SessionStarted;
+            GC.SuppressFinalize(this);
         }
     }
 }

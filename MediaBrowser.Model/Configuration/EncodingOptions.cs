@@ -13,6 +13,7 @@ namespace MediaBrowser.Model.Configuration
         public string VaapiDevice { get; set; }
         public int H264Crf { get; set; }
         public string H264Preset { get; set; }
+        public string DeinterlaceMethod { get; set; }
         public bool EnableHardwareEncoding { get; set; }
         public bool EnableSubtitleExtraction { get; set; }
 

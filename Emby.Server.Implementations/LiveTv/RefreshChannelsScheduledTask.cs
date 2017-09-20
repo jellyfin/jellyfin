@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.LiveTv
             return new[] { 
             
                 // Every so often
-                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(12).Ticks}
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks}
             };
         }
 

@@ -136,7 +136,7 @@ namespace Emby.Server.Implementations.ServerManager
                 return;
             }
 
-            var charset = _textEncoding.GetDetectedEncodingName(bytes, null, false);
+            var charset = _textEncoding.GetDetectedEncodingName(bytes, bytes.Length, null, false);
 
             if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
             {
