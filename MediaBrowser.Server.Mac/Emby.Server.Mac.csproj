@@ -258,9 +258,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\appservices.html">
       <Link>Resources\dashboard-ui\appservices.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\autoorganizelog.html">
-      <Link>Resources\dashboard-ui\autoorganizelog.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\camerauploadsettings.html">
       <Link>Resources\dashboard-ui\camerauploadsettings.html</Link>
     </BundleResource>
@@ -2387,9 +2384,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\pluginspage.js">
       <Link>Resources\dashboard-ui\scripts\pluginspage.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\reports.js">
-      <Link>Resources\dashboard-ui\scripts\reports.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\scheduledtaskpage.js">
       <Link>Resources\dashboard-ui\scripts\scheduledtaskpage.js</Link>
