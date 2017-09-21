@@ -67,6 +67,10 @@ namespace Emby.Server.Implementations.EntryPoints
                 {
                     IntervalTicks = TimeSpan.FromDays(1).Ticks,
                     Type = TaskTriggerInfo.TriggerInterval
+                },
+                new TaskTriggerInfo
+                {
+                    Type = TaskTriggerInfo.TriggerStartup
                 }
             };
         }
