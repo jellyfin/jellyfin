@@ -796,11 +796,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (videoStream.IsInterlaced)
             {
-                if (request.DeInterlace)
+                if (state.DeInterlace(videoStream.Codec))
                 {
                     return false;
                 }
             }
+
 
             if (videoStream.IsAnamorphic ?? false)
             {
@@ -1357,7 +1358,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 filters.Add("hwupload");
             }
 
-            if (state.DeInterlace && !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+            if (state.DeInterlace("h264") && !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 if (string.Equals(options.DeinterlaceMethod, "bobandweave", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1797,11 +1798,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (state.SubtitleStream != null && !state.SubtitleStream.IsExternal)
                 {
                     state.InternalSubtitleStreamOffset = mediaStreams.Where(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal).ToList().IndexOf(state.SubtitleStream);
-                }
-
-                if (state.VideoStream != null && state.VideoStream.IsInterlaced)
-                {
-                    state.DeInterlace = true;
                 }
 
                 EnforceResolutionLimit(state);

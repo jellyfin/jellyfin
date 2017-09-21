@@ -22,6 +22,33 @@ namespace MediaBrowser.Model.Dlna
             VideoCodecs = new string[] { };
             SubtitleCodecs = new string[] { };
             TranscodeReasons = new List<TranscodeReason>();
+            StreamOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public void SetOption(string qualifier, string name, string value)
+        {
+            SetOption(qualifier + "-" + name, value);
+        }
+
+        public void SetOption(string name, string value)
+        {
+            StreamOptions[name] = value;
+        }
+
+        public string GetOption(string qualifier, string name)
+        {
+            return GetOption(qualifier + "-" + name);
+        }
+
+        public string GetOption(string name)
+        {
+            string value;
+            if (StreamOptions.TryGetValue(name, out value))
+            {
+                return value;
+            }
+
+            return null;
         }
 
         public string ItemId { get; set; }
@@ -44,7 +71,6 @@ namespace MediaBrowser.Model.Dlna
         public bool BreakOnNonKeyFrames { get; set; }
 
         public bool RequireAvc { get; set; }
-        public bool DeInterlace { get; set; }
         public bool RequireNonAnamorphic { get; set; }
         public bool CopyTimestamps { get; set; }
         public bool EnableSubtitlesInManifest { get; set; }
@@ -91,6 +117,8 @@ namespace MediaBrowser.Model.Dlna
         public string PlaySessionId { get; set; }
         public List<MediaSourceInfo> AllMediaSources { get; set; }
         public List<TranscodeReason> TranscodeReasons { get; set; }
+
+        public Dictionary<string, string> StreamOptions { get; private set; }
 
         public string MediaSourceId
         {
@@ -282,7 +310,16 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("SubtitleCodec", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed ? subtitleCodecs : string.Empty));
 
             list.Add(new NameValuePair("RequireNonAnamorphic", item.RequireNonAnamorphic.ToString().ToLower()));
-            list.Add(new NameValuePair("DeInterlace", item.DeInterlace.ToString().ToLower()));
+
+            if (isDlna)
+            {
+                // hack alert
+                // dlna needs to be update to support the qualified params
+                var deinterlace = string.Equals(item.GetOption("h264", "deinterlace"), "true", StringComparison.OrdinalIgnoreCase) ||
+                                  string.Equals(item.GetOption("mpeg2video", "deinterlace"), "true", StringComparison.OrdinalIgnoreCase);
+
+                list.Add(new NameValuePair("DeInterlace", deinterlace.ToString().ToLower()));
+            }
 
             if (!isDlna && isHls)
             {
@@ -304,6 +341,19 @@ namespace MediaBrowser.Model.Dlna
             if (isDlna || !item.IsDirectStream)
             {
                 list.Add(new NameValuePair("TranscodeReasons", string.Join(",", item.TranscodeReasons.Distinct().Select(i => i.ToString()).ToArray())));
+            }
+
+            if (!isDlna)
+            {
+                foreach (var pair in item.StreamOptions)
+                {
+                    if (string.IsNullOrWhiteSpace(pair.Value))
+                    {
+                        continue;
+                    }
+
+                    list.Add(new NameValuePair(pair.Key, pair.Value));
+                }
             }
 
             return list;
@@ -675,10 +725,10 @@ namespace MediaBrowser.Model.Dlna
                 return VideoCodecs.Length == 0 ? null : VideoCodecs[0];
             }
         }
-        
+
         /// <summary>
-             /// Predicts the audio channels that will be in the output stream
-             /// </summary>
+        /// Predicts the audio channels that will be in the output stream
+        /// </summary>
         public long? TargetSize
         {
             get
@@ -763,9 +813,13 @@ namespace MediaBrowser.Model.Dlna
                     return TargetVideoStream == null ? (bool?)null : TargetVideoStream.IsInterlaced;
                 }
 
-                if (DeInterlace)
+                var videoCodec = TargetVideoCodec;
+                if (!string.IsNullOrWhiteSpace(videoCodec))
                 {
-                    return false;
+                    if (string.Equals(GetOption(videoCodec, "deinterlace"), "true", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
                 }
 
                 return TargetVideoStream == null ? (bool?)null : TargetVideoStream.IsInterlaced;
