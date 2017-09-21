@@ -168,34 +168,34 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
            });
         }
 
-        public Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
+        public async Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
         {
-            return CopyFileTo(_tempFilePath, stream, cancellationToken);
-        }
-
-        protected async Task CopyFileTo(string path, Stream outputStream, CancellationToken cancellationToken)
-        {
-            long startPosition = -20000;
-
-            _logger.Info("Live stream starting position is {0} bytes", startPosition.ToString(CultureInfo.InvariantCulture));
-
             var allowAsync = false;//Environment.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows;
             // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
 
-            using (var inputStream = (FileStream)GetInputStream(path, allowAsync))
+            using (var inputStream = (FileStream)GetInputStream(_tempFilePath, allowAsync))
             {
-                if (startPosition > 0)
-                {
-                    inputStream.Seek(-20000, SeekOrigin.End);
-                }
+                TrySeek(inputStream, -20000);
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    StreamHelper.CopyTo(inputStream, outputStream, 81920, cancellationToken);
+                    StreamHelper.CopyTo(inputStream, stream, 81920, cancellationToken);
 
                     //var position = fs.Position;
                     //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
                 }
+            }
+        }
+
+        private void TrySeek(FileStream stream, long offset)
+        {
+            try
+            {
+                stream.Seek(offset, SeekOrigin.End);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error seeking stream", ex);
             }
         }
 
