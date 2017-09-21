@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Services;
 
@@ -224,12 +226,41 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public EncodingContext Context { get; set; }
 
+        public void SetOption(string qualifier, string name, string value)
+        {
+            SetOption(qualifier + "-" + name, value);
+        }
+
+        public Dictionary<string, string> StreamOptions { get; private set; }
+
+        public void SetOption(string name, string value)
+        {
+            StreamOptions[name] = value;
+        }
+
+        public string GetOption(string qualifier, string name)
+        {
+            return GetOption(qualifier + "-" + name);
+        }
+
+        public string GetOption(string name)
+        {
+            string value;
+            if (StreamOptions.TryGetValue(name, out value))
+            {
+                return value;
+            }
+
+            return null;
+        }
+
         public BaseEncodingJobOptions()
         {
             EnableAutoStreamCopy = true;
             AllowVideoStreamCopy = true;
             AllowAudioStreamCopy = true;
             Context = EncodingContext.Streaming;
+            StreamOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }
