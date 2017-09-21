@@ -433,6 +433,14 @@ namespace Emby.Server.Implementations.Library
                             _fileSystem.DeleteFile(fileSystemInfo.FullName);
                         }
                     }
+                    catch (FileNotFoundException)
+                    {
+                        // may have already been deleted manually by user
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        // may have already been deleted manually by user
+                    }
                     catch (IOException)
                     {
                         if (isRequiredForDelete)

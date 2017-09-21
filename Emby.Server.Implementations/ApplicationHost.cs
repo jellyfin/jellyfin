@@ -2208,7 +2208,7 @@ namespace Emby.Server.Implementations
         {
             var updateLevel = SystemUpdateLevel;
             var cacheLength = updateLevel == PackageVersionClass.Release ?
-                TimeSpan.FromHours(4) :
+                TimeSpan.FromHours(12) :
                 TimeSpan.FromMinutes(5);
 
             var result = await new GithubUpdater(HttpClient, JsonSerializer).CheckForUpdateResult("MediaBrowser",
