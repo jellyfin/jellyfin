@@ -38,7 +38,7 @@ namespace Emby.Server.Implementations.Notifications
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error loading notifications database file. Will reset and retry.", ex);
+                Logger.ErrorException("Error loading database file. Will reset and retry.", ex);
 
                 FileSystem.DeleteFile(DbFilePath);
 

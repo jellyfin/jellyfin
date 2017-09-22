@@ -44,6 +44,14 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            double value = 16;
+            value /= 9;
+
+            return value;
+        }
+
         /// <summary>
         /// Gets or sets the game system.
         /// </summary>

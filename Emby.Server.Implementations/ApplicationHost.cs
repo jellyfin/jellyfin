@@ -879,7 +879,7 @@ namespace Emby.Server.Implementations
             // This is only needed for disposal purposes. If removing this, make sure to have the manager handle disposing it
             RegisterSingleInstance(UserRepository);
 
-            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager.GetLogger("SqliteDisplayPreferencesRepository"), JsonSerializer, ApplicationPaths, MemoryStreamFactory);
+            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager.GetLogger("SqliteDisplayPreferencesRepository"), JsonSerializer, ApplicationPaths, MemoryStreamFactory, FileSystemManager);
             DisplayPreferencesRepository = displayPreferencesRepo;
             RegisterSingleInstance(DisplayPreferencesRepository);
 
@@ -997,7 +997,7 @@ namespace Emby.Server.Implementations
             EncodingManager = new EncodingManager(FileSystemManager, Logger, MediaEncoder, ChapterManager, LibraryManager);
             RegisterSingleInstance(EncodingManager);
 
-            var sharingRepo = new SharingRepository(LogManager.GetLogger("SharingRepository"), ApplicationPaths);
+            var sharingRepo = new SharingRepository(LogManager.GetLogger("SharingRepository"), ApplicationPaths, FileSystemManager);
             sharingRepo.Initialize();
             // This is only needed for disposal purposes. If removing this, make sure to have the manager handle disposing it
             RegisterSingleInstance<ISharingRepository>(sharingRepo);
@@ -1351,7 +1351,7 @@ namespace Emby.Server.Implementations
 
         private IActivityRepository GetActivityLogRepository()
         {
-            var repo = new ActivityRepository(LogManager.GetLogger("ActivityRepository"), ServerConfigurationManager.ApplicationPaths);
+            var repo = new ActivityRepository(LogManager.GetLogger("ActivityRepository"), ServerConfigurationManager.ApplicationPaths, FileSystemManager);
 
             repo.Initialize();
 

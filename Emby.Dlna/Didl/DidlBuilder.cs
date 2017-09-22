@@ -1141,17 +1141,17 @@ namespace Emby.Dlna.Didl
             int? width = null;
             int? height = null;
 
-            try
-            {
-                var size = _imageProcessor.GetImageSize(imageInfo);
+            //try
+            //{
+            //    var size = _imageProcessor.GetImageSize(imageInfo);
 
-                width = Convert.ToInt32(size.Width);
-                height = Convert.ToInt32(size.Height);
-            }
-            catch
-            {
+            //    width = Convert.ToInt32(size.Width);
+            //    height = Convert.ToInt32(size.Height);
+            //}
+            //catch
+            //{
 
-            }
+            //}
 
             var inputFormat = (Path.GetExtension(imageInfo.Path) ?? string.Empty)
                 .TrimStart('.')
