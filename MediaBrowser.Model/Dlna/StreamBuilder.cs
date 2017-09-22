@@ -796,8 +796,11 @@ namespace MediaBrowser.Model.Dlna
                         {
                             foreach (var transcodingVideoCodec in ContainerProfile.SplitValue(transcodingProfile.VideoCodec))
                             {
-                                ApplyTranscodingConditions(playlistItem, i.Conditions, transcodingVideoCodec, !isFirstAppliedCodecProfile);
-                                isFirstAppliedCodecProfile = false;
+                                if (i.ContainsCodec(transcodingVideoCodec, transcodingProfile.Container))
+                                {
+                                    ApplyTranscodingConditions(playlistItem, i.Conditions, transcodingVideoCodec, !isFirstAppliedCodecProfile);
+                                    isFirstAppliedCodecProfile = false;
+                                }
                             }
                         }
                     }
