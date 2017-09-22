@@ -254,6 +254,11 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            return 1;
+        }
+
         /// <summary>
         /// Gets the configuration directory path.
         /// </summary>

@@ -22,6 +22,11 @@ namespace MediaBrowser.Controller.Entities
             return GetUserDataKeys()[0];
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            return 1;
+        }
+
         /// <summary>
         /// Returns the folder containing the item.
         /// If the item is a folder, it returns the folder itself

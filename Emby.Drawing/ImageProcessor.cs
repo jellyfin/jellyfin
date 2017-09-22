@@ -36,11 +36,6 @@ namespace Emby.Drawing
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         /// <summary>
-        /// The _cached imaged sizes
-        /// </summary>
-        private readonly ConcurrentDictionary<Guid, ImageSize> _cachedImagedSizes;
-
-        /// <summary>
         /// Gets the list of currently registered image processors
         /// Image processors are specialized metadata providers that run after the normal ones
         /// </summary>
@@ -75,34 +70,7 @@ namespace Emby.Drawing
             _appPaths = appPaths;
 
             ImageEnhancers = new IImageEnhancer[] { };
-            _saveImageSizeTimer = timerFactory.Create(SaveImageSizeCallback, null, Timeout.Infinite, Timeout.Infinite);
             ImageHelper.ImageProcessor = this;
-
-            Dictionary<Guid, ImageSize> sizeDictionary;
-
-            try
-            {
-                sizeDictionary = jsonSerializer.DeserializeFromFile<Dictionary<Guid, ImageSize>>(ImageSizeFile) ??
-                    new Dictionary<Guid, ImageSize>();
-            }
-            catch (FileNotFoundException)
-            {
-                // No biggie
-                sizeDictionary = new Dictionary<Guid, ImageSize>();
-            }
-            catch (IOException)
-            {
-                // No biggie
-                sizeDictionary = new Dictionary<Guid, ImageSize>();
-            }
-            catch (Exception ex)
-            {
-                logger.ErrorException("Error parsing image size cache file", ex);
-
-                sizeDictionary = new Dictionary<Guid, ImageSize>();
-            }
-
-            _cachedImagedSizes = new ConcurrentDictionary<Guid, ImageSize>(sizeDictionary);
         }
 
         public IImageEncoder ImageEncoder
@@ -133,7 +101,6 @@ namespace Emby.Drawing
                     "aiff",
                     "cr2",
                     "crw",
-                    "dng", 
 
                     // Remove until supported
                     //"nef", 
@@ -275,15 +242,15 @@ namespace Emby.Drawing
                 return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
-            ImageSize? originalImageSize = GetSavedImageSize(originalImagePath, dateModified);
-            if (originalImageSize.HasValue && options.HasDefaultOptions(originalImagePath, originalImageSize.Value) && !autoOrient)
-            {
-                // Just spit out the original file if all the options are default
-                _logger.Info("Returning original image {0}", originalImagePath);
-                return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
-            }
+            //ImageSize? originalImageSize = GetSavedImageSize(originalImagePath, dateModified);
+            //if (originalImageSize.HasValue && options.HasDefaultOptions(originalImagePath, originalImageSize.Value) && !autoOrient)
+            //{
+            //    // Just spit out the original file if all the options are default
+            //    _logger.Info("Returning original image {0}", originalImagePath);
+            //    return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
+            //}
 
-            var newSize = ImageHelper.GetNewImageSize(options, originalImageSize);
+            var newSize = ImageHelper.GetNewImageSize(options, null);
             var quality = options.Quality;
 
             var outputFormat = GetOutputFormat(options.SupportedOutputFormats, requiresTransparency);
@@ -477,98 +444,30 @@ namespace Emby.Drawing
 
         public ImageSize GetImageSize(ItemImageInfo info, bool allowSlowMethods)
         {
-            return GetImageSize(info.Path, info.DateModified, allowSlowMethods);
+            return GetImageSize(info.Path, allowSlowMethods);
         }
 
         public ImageSize GetImageSize(ItemImageInfo info)
         {
-            return GetImageSize(info.Path, info.DateModified, false);
+            return GetImageSize(info.Path, false);
         }
 
         public ImageSize GetImageSize(string path)
         {
-            return GetImageSize(path, _fileSystem.GetLastWriteTimeUtc(path), false);
+            return GetImageSize(path, false);
         }
 
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="imageDateModified">The image date modified.</param>
-        /// <param name="allowSlowMethod">if set to <c>true</c> [allow slow method].</param>
-        /// <returns>ImageSize.</returns>
-        /// <exception cref="System.ArgumentNullException">path</exception>
-        private ImageSize GetImageSize(string path, DateTime imageDateModified, bool allowSlowMethod)
+        private ImageSize GetImageSize(string path, bool allowSlowMethod)
         {
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException("path");
             }
 
-            ImageSize size;
-
-            var cacheHash = GetImageSizeKey(path, imageDateModified);
-
-            if (!_cachedImagedSizes.TryGetValue(cacheHash, out size))
-            {
-                size = GetImageSizeInternal(path, allowSlowMethod);
-
-                SaveImageSize(size, cacheHash, false);
-            }
-
-            return size;
-        }
-
-        public void SaveImageSize(string path, DateTime imageDateModified, ImageSize size)
-        {
-            var cacheHash = GetImageSizeKey(path, imageDateModified);
-            SaveImageSize(size, cacheHash, true);
-        }
-
-        private void SaveImageSize(ImageSize size, Guid cacheHash, bool checkExists)
-        {
-            if (size.Width <= 0 || size.Height <= 0)
-            {
-                return;
-            }
-
-            if (checkExists && _cachedImagedSizes.ContainsKey(cacheHash))
-            {
-                return;
-            }
-
-            if (checkExists)
-            {
-                if (_cachedImagedSizes.TryAdd(cacheHash, size))
-                {
-                    StartSaveImageSizeTimer();
-                }
-            }
-            else
-            {
-                StartSaveImageSizeTimer();
-                _cachedImagedSizes.AddOrUpdate(cacheHash, size, (keyName, oldValue) => size);
-            }
-        }
-
-        private Guid GetImageSizeKey(string path, DateTime imageDateModified)
-        {
-            var name = path + "datemodified=" + imageDateModified.Ticks;
-            return name.GetMD5();
-        }
-
-        public ImageSize? GetSavedImageSize(string path, DateTime imageDateModified)
-        {
-            ImageSize size;
-
-            var cacheHash = GetImageSizeKey(path, imageDateModified);
-
-            if (_cachedImagedSizes.TryGetValue(cacheHash, out size))
-            {
-                return size;
-            }
-
-            return null;
+            return GetImageSizeInternal(path, allowSlowMethod);
         }
 
         /// <summary>
@@ -616,39 +515,6 @@ namespace Emby.Drawing
                 }
 
                 throw;
-            }
-        }
-
-        private readonly ITimer _saveImageSizeTimer;
-        private const int SaveImageSizeTimeout = 5000;
-        private readonly object _saveImageSizeLock = new object();
-        private void StartSaveImageSizeTimer()
-        {
-            _saveImageSizeTimer.Change(SaveImageSizeTimeout, Timeout.Infinite);
-        }
-
-        private void SaveImageSizeCallback(object state)
-        {
-            lock (_saveImageSizeLock)
-            {
-                try
-                {
-                    var path = ImageSizeFile;
-                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
-                    _jsonSerializer.SerializeToFile(_cachedImagedSizes, path);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error saving image size file", ex);
-                }
-            }
-        }
-
-        private string ImageSizeFile
-        {
-            get
-            {
-                return Path.Combine(_appPaths.DataPath, "imagesizes.json");
             }
         }
 
@@ -1016,7 +882,6 @@ namespace Emby.Drawing
                 disposable.Dispose();
             }
 
-            _saveImageSizeTimer.Dispose();
             GC.SuppressFinalize(this);
         }
 
