@@ -120,13 +120,13 @@ namespace Emby.Server.Implementations.Data
 
         protected override void CloseConnection()
         {
-            base.CloseConnection();
-
             if (_shrinkMemoryTimer != null)
             {
                 _shrinkMemoryTimer.Dispose();
                 _shrinkMemoryTimer = null;
             }
+
+            base.CloseConnection();
         }
 
         /// <summary>

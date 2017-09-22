@@ -10,20 +10,39 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using SQLitePCL.pretty;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Activity
 {
     public class ActivityRepository : BaseSqliteRepository, IActivityRepository
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        protected IFileSystem FileSystem { get; private set; }
 
-        public ActivityRepository(ILogger logger, IServerApplicationPaths appPaths)
+        public ActivityRepository(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem)
             : base(logger)
         {
             DbFilePath = Path.Combine(appPaths.DataPath, "activitylog.db");
+            FileSystem = fileSystem;
         }
 
         public void Initialize()
+        {
+            try
+            {
+                InitializeInternal();
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error loading database file. Will reset and retry.", ex);
+
+                FileSystem.DeleteFile(DbFilePath);
+
+                InitializeInternal();
+            }
+        }
+
+        private void InitializeInternal()
         {
             using (var connection = CreateConnection())
             {
