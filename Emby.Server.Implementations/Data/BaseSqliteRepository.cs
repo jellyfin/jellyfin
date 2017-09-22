@@ -108,37 +108,49 @@ namespace Emby.Server.Implementations.Data
 
                 var db = SQLite3.Open(DbFilePath, connectionFlags, null);
 
-                if (string.IsNullOrWhiteSpace(_defaultWal))
+                try
                 {
-                    _defaultWal = db.Query("PRAGMA journal_mode").SelectScalarString().First();
+                    if (string.IsNullOrWhiteSpace(_defaultWal))
+                    {
+                        _defaultWal = db.Query("PRAGMA journal_mode").SelectScalarString().First();
 
-                    Logger.Info("Default journal_mode for {0} is {1}", DbFilePath, _defaultWal);
+                        Logger.Info("Default journal_mode for {0} is {1}", DbFilePath, _defaultWal);
+                    }
+
+                    var queries = new List<string>
+                    {
+                        //"PRAGMA cache size=-10000"
+                        //"PRAGMA read_uncommitted = true",
+                        "PRAGMA synchronous=Normal"
+                    };
+
+                    if (CacheSize.HasValue)
+                    {
+                        queries.Add("PRAGMA cache_size=" + CacheSize.Value.ToString(CultureInfo.InvariantCulture));
+                    }
+
+                    if (EnableTempStoreMemory)
+                    {
+                        queries.Add("PRAGMA temp_store = memory");
+                    }
+                    else
+                    {
+                        queries.Add("PRAGMA temp_store = file");
+                    }
+
+                    foreach (var query in queries)
+                    {
+                        db.Execute(query);
+                    }
                 }
+                catch
+                {
+                    using (db)
+                    {
 
-                var queries = new List<string>
-                {
-                    //"PRAGMA cache size=-10000"
-                    //"PRAGMA read_uncommitted = true",
-                    "PRAGMA synchronous=Normal"
-                };
+                    }
 
-                if (CacheSize.HasValue)
-                {
-                    queries.Add("PRAGMA cache_size=" + CacheSize.Value.ToString(CultureInfo.InvariantCulture));
-                }
-
-                if (EnableTempStoreMemory)
-                {
-                    queries.Add("PRAGMA temp_store = memory");
-                }
-                else
-                {
-                    queries.Add("PRAGMA temp_store = file");
-                }
-
-                foreach (var query in queries)
-                {
-                    db.Execute(query);
+                    throw;
                 }
 
                 _connection = new ManagedConnection(db, false);
@@ -265,29 +277,34 @@ namespace Emby.Server.Implementations.Data
         {
             if (dispose)
             {
-                try
-                {
-                    lock (_disposeLock)
-                    {
-                        using (WriteLock.Write())
-                        {
-                            if (_connection != null)
-                            {
-                                using (_connection)
-                                {
-                                    
-                                }
-                                _connection = null;
-                            }
+                DisposeConnection();
+            }
+        }
 
-                            CloseConnection();
+        private void DisposeConnection()
+        {
+            try
+            {
+                lock (_disposeLock)
+                {
+                    using (WriteLock.Write())
+                    {
+                        if (_connection != null)
+                        {
+                            using (_connection)
+                            {
+                                _connection.Close();
+                            }
+                            _connection = null;
                         }
+
+                        CloseConnection();
                     }
                 }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error disposing database", ex);
-                }
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error disposing database", ex);
             }
         }
 
