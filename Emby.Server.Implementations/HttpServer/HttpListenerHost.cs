@@ -579,7 +579,13 @@ namespace Emby.Server.Implementations.HttpServer
 
             catch (Exception ex)
             {
-                ErrorHandler(ex, httpReq, !string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase));
+                var logException = !string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase);
+
+#if DEBUG
+                logException = true;
+#endif
+
+                ErrorHandler(ex, httpReq, logException);
             }
             finally
             {
