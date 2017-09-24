@@ -794,7 +794,8 @@ namespace MediaBrowser.Model.Dlna
 
                         if (applyConditions)
                         {
-                            foreach (var transcodingVideoCodec in ContainerProfile.SplitValue(transcodingProfile.VideoCodec))
+                            var transcodingVideoCodecs = ContainerProfile.SplitValue(transcodingProfile.VideoCodec);
+                            foreach (var transcodingVideoCodec in transcodingVideoCodecs)
                             {
                                 if (i.ContainsCodec(transcodingVideoCodec, transcodingProfile.Container))
                                 {
