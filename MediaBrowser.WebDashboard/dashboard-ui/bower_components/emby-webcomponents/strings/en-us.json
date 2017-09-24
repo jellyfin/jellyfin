@@ -546,5 +546,21 @@
   "Logo": "Logo",
   "Menu": "Menu",
   "Screenshot": "Screenshot",
-  "Thumb": "Thumb"
+  "Thumb": "Thumb",
+  "ValueSeconds": "{0} seconds",
+  "HeaderAudioSettings": "Audio Settings",
+  "LabelAudioLanguagePreference": "Preferred audio language:",
+  "LabelPlayDefaultAudioTrack": "Play default audio track regardless of language",
+  "HeaderVideoQuality": "Video Quality",
+  "CinemaModeConfigurationHelp": "Cinema mode brings the theater experience straight to your living room with the ability to play trailers and custom intros before the main feature.",
+  "EnableNextVideoInfoOverlay": "Enable next video info during playback",
+  "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist.",
+  "PlayNextEpisodeAutomatically": "Play next episode automatically",
+  "LabelMaxChromecastBitrate": "Chromecast streaming quality:",
+  "LabelSkipBackLength": "Skip back length:",
+  "LabelSkipForwardLength": "Skip forward length:",
+  "EnableCinemaMode": "Enable cinema mode",
+  "LabelInternetQuality": "Internet quality:",
+  "HeaderMusicQuality": "Music Quality",
+  "LabelHomeNetworkQuality": "Home network quality:"
 }
