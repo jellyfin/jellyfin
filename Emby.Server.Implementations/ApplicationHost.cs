@@ -2211,19 +2211,36 @@ namespace Emby.Server.Implementations
                 TimeSpan.FromHours(12) :
                 TimeSpan.FromMinutes(5);
 
-            var result = await new GithubUpdater(HttpClient, JsonSerializer).CheckForUpdateResult("MediaBrowser",
-                "Emby",
-                ApplicationVersion,
-                updateLevel,
-                ReleaseAssetFilename,
-                "MBServer",
-                UpdateTargetFileName,
-                cacheLength,
-                cancellationToken).ConfigureAwait(false);
+            try
+            {
+                var result = await new GithubUpdater(HttpClient, JsonSerializer).CheckForUpdateResult("MediaBrowser",
+                    "Emby",
+                    ApplicationVersion,
+                    updateLevel,
+                    ReleaseAssetFilename,
+                    "MBServer",
+                    UpdateTargetFileName,
+                    cacheLength,
+                    cancellationToken).ConfigureAwait(false);
 
-            HasUpdateAvailable = result.IsUpdateAvailable;
+                HasUpdateAvailable = result.IsUpdateAvailable;
 
-            return result;
+                return result;
+            }
+            catch (HttpException ex)
+            {
+                // users are overreacting to this occasionally failing
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.Forbidden)
+                {
+                    HasUpdateAvailable = false;
+                    return new CheckForUpdateResult
+                    {
+                        IsUpdateAvailable = false
+                    };
+                }
+
+                throw;
+            }
         }
 
         protected virtual string UpdateTargetFileName
