@@ -424,16 +424,6 @@ namespace Emby.Server.Implementations.HttpServer
 
             options.ResponseHeaders = options.ResponseHeaders ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            if (!options.ResponseHeaders.ContainsKey("Content-Disposition"))
-            {
-                // Quotes are valid in linux. They'll possibly cause issues here
-                var filename = (Path.GetFileName(path) ?? string.Empty).Replace("\"", string.Empty);
-                if (!string.IsNullOrWhiteSpace(filename))
-                {
-                    options.ResponseHeaders["Content-Disposition"] = "inline; filename=\"" + filename + "\"";
-                }
-            }
-
             return GetStaticResult(requestContext, options);
         }
 
@@ -490,7 +480,8 @@ namespace Emby.Server.Implementations.HttpServer
                 return result;
             }
 
-            var isHeadRequest = options.IsHeadRequest;
+            // TODO: We don't really need the option value
+            var isHeadRequest = options.IsHeadRequest || string.Equals(requestContext.Verb, "HEAD", StringComparison.OrdinalIgnoreCase);
             var factoryFn = options.ContentFactory;
             var responseHeaders = options.ResponseHeaders;
 
