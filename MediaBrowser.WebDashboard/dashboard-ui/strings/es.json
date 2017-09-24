@@ -1238,7 +1238,7 @@
     "HeaderSelectDate": "Seleccionar Fecha",
     "ServerUpdateNeeded": "El servidor necesita actualizarse. Para descargar la \u00faltima versi\u00f3n visita {0}",
     "LabelFromHelp": "Ejemplo: {0} (en el servidor)",
-    "HeaderMyMedia": "Mis medios",
+    "HeaderMyMedia": "Mis contenidos",
     "ErrorLaunchingChromecast": "Ha habido un error al lanzar chromecast. Asegurese que su dispositivo est\u00e1 conectado a su red inal\u00e1mbrica.",
     "MessageErrorLoadingSupporterInfo": "Ha habido un error cargando la informaci\u00f3n de Emby Premiere. Por favor int\u00e9ntalo m\u00e1s tarde.",
     "HeaderConfirmRemoveUser": "Quitar usuario",
