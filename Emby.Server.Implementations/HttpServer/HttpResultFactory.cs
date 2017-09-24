@@ -533,7 +533,7 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     stream.Dispose();
 
-                    return GetHttpResult(new byte[] { }, contentType, true);
+                    return GetHttpResult(new byte[] { }, contentType, true, responseHeaders);
                 }
 
                 var hasHeaders = new StreamWriter(stream, contentType, _logger)
