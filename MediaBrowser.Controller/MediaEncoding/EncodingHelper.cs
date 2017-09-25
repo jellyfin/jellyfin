@@ -691,22 +691,26 @@ namespace MediaBrowser.Controller.MediaEncoding
                 param += string.Format(" -r {0}", framerate.Value.ToString(_usCulture));
             }
 
-            var request = state.BaseRequest;
+            var targetVideoCodec = state.ActualOutputVideoCodec;
 
-            if (!string.IsNullOrEmpty(request.Profile))
+            var request = state.BaseRequest;
+            var profile = state.GetRequestedProfiles(targetVideoCodec).FirstOrDefault();
+            if (!string.IsNullOrEmpty(profile))
             {
                 if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase))
                 {
                     // not supported by h264_omx
-                    param += " -profile:v " + request.Profile;
+                    param += " -profile:v " + profile;
                 }
             }
 
-            if (!string.IsNullOrEmpty(request.Level))
+            var level = state.GetRequestedLevel(targetVideoCodec);
+
+            if (!string.IsNullOrEmpty(level))
             {
-                var level = NormalizeTranscodingLevel(state.OutputVideoCodec, request.Level);
+                level = NormalizeTranscodingLevel(state.OutputVideoCodec, level);
 
                 // h264_qsv and h264_nvenc expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
                 // also needed for libx264 due to https://trac.ffmpeg.org/ticket/3307                
@@ -756,7 +760,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     param += " -level " + level;
                 }
-
             }
 
             if (string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase))
@@ -834,18 +837,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return false;
             }
 
+            var requestedProfiles = state.GetRequestedProfiles(videoStream.Codec);
+
             // If client is requesting a specific video profile, it must match the source
-            if (!string.IsNullOrEmpty(request.Profile))
+            if (requestedProfiles.Length > 0)
             {
                 if (string.IsNullOrEmpty(videoStream.Profile))
                 {
                     //return false;
                 }
 
-                if (!string.IsNullOrEmpty(videoStream.Profile) && !string.Equals(request.Profile, videoStream.Profile, StringComparison.OrdinalIgnoreCase))
+                var requestedProfile = requestedProfiles[0];
+                if (!string.IsNullOrEmpty(videoStream.Profile) && !string.Equals(requestedProfile, videoStream.Profile, StringComparison.OrdinalIgnoreCase))
                 {
                     var currentScore = GetVideoProfileScore(videoStream.Profile);
-                    var requestedScore = GetVideoProfileScore(request.Profile);
+                    var requestedScore = GetVideoProfileScore(requestedProfile);
 
                     if (currentScore == -1 || currentScore > requestedScore)
                     {
@@ -910,11 +916,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // If a specific level was requested, the source must match or be less than
-            if (!string.IsNullOrEmpty(request.Level))
+            var level = state.GetRequestedLevel(videoStream.Codec);
+            if (!string.IsNullOrEmpty(level))
             {
                 double requestLevel;
 
-                if (double.TryParse(request.Level, NumberStyles.Any, _usCulture, out requestLevel))
+                if (double.TryParse(level, NumberStyles.Any, _usCulture, out requestLevel))
                 {
                     if (!videoStream.Level.HasValue)
                     {
