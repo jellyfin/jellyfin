@@ -777,16 +777,28 @@ namespace MediaBrowser.Model.Dlna
                         bool applyConditions = true;
                         foreach (ProfileCondition applyCondition in i.ApplyConditions)
                         {
-                            bool? isSecondaryAudio = audioStream == null ? null : item.IsSecondaryAudio(audioStream);
-                            int? inputAudioBitrate = audioStream == null ? null : audioStream.BitRate;
-                            int? audioChannels = audioStream == null ? null : audioStream.Channels;
-                            string audioProfile = audioStream == null ? null : audioStream.Profile;
-                            int? inputAudioSampleRate = audioStream == null ? null : audioStream.SampleRate;
-                            int? inputAudioBitDepth = audioStream == null ? null : audioStream.BitDepth;
+                            int? width = videoStream == null ? null : videoStream.Width;
+                            int? height = videoStream == null ? null : videoStream.Height;
+                            int? bitDepth = videoStream == null ? null : videoStream.BitDepth;
+                            int? videoBitrate = videoStream == null ? null : videoStream.BitRate;
+                            double? videoLevel = videoStream == null ? null : videoStream.Level;
+                            string videoProfile = videoStream == null ? null : videoStream.Profile;
+                            float? videoFramerate = videoStream == null ? null : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate;
+                            bool? isAnamorphic = videoStream == null ? null : videoStream.IsAnamorphic;
+                            bool? isInterlaced = videoStream == null ? (bool?)null : videoStream.IsInterlaced;
+                            string videoCodecTag = videoStream == null ? null : videoStream.CodecTag;
+                            bool? isAvc = videoStream == null ? null : videoStream.IsAVC;
 
-                            if (!conditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth, audioProfile, isSecondaryAudio))
+                            TransportStreamTimestamp? timestamp = videoStream == null ? TransportStreamTimestamp.None : item.Timestamp;
+                            int? packetLength = videoStream == null ? null : videoStream.PacketLength;
+                            int? refFrames = videoStream == null ? null : videoStream.RefFrames;
+
+                            int? numAudioStreams = item.GetStreamCount(MediaStreamType.Audio);
+                            int? numVideoStreams = item.GetStreamCount(MediaStreamType.Video);
+
+                            if (!conditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                             {
-                                LogConditionFailure(options.Profile, "VideoAudioCodecProfile", applyCondition, item);
+                                LogConditionFailure(options.Profile, "VideoCodecProfile", applyCondition, item);
                                 applyConditions = false;
                                 break;
                             }
@@ -815,26 +827,14 @@ namespace MediaBrowser.Model.Dlna
                         bool applyConditions = true;
                         foreach (ProfileCondition applyCondition in i.ApplyConditions)
                         {
-                            int? width = videoStream == null ? null : videoStream.Width;
-                            int? height = videoStream == null ? null : videoStream.Height;
-                            int? bitDepth = videoStream == null ? null : videoStream.BitDepth;
-                            int? videoBitrate = videoStream == null ? null : videoStream.BitRate;
-                            double? videoLevel = videoStream == null ? null : videoStream.Level;
-                            string videoProfile = videoStream == null ? null : videoStream.Profile;
-                            float? videoFramerate = videoStream == null ? null : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate;
-                            bool? isAnamorphic = videoStream == null ? null : videoStream.IsAnamorphic;
-                            bool? isInterlaced = videoStream == null ? (bool?)null : videoStream.IsInterlaced;
-                            string videoCodecTag = videoStream == null ? null : videoStream.CodecTag;
-                            bool? isAvc = videoStream == null ? null : videoStream.IsAVC;
+                            bool? isSecondaryAudio = audioStream == null ? null : item.IsSecondaryAudio(audioStream);
+                            int? inputAudioBitrate = audioStream == null ? null : audioStream.BitRate;
+                            int? audioChannels = audioStream == null ? null : audioStream.Channels;
+                            string audioProfile = audioStream == null ? null : audioStream.Profile;
+                            int? inputAudioSampleRate = audioStream == null ? null : audioStream.SampleRate;
+                            int? inputAudioBitDepth = audioStream == null ? null : audioStream.BitDepth;
 
-                            TransportStreamTimestamp? timestamp = videoStream == null ? TransportStreamTimestamp.None : item.Timestamp;
-                            int? packetLength = videoStream == null ? null : videoStream.PacketLength;
-                            int? refFrames = videoStream == null ? null : videoStream.RefFrames;
-
-                            int? numAudioStreams = item.GetStreamCount(MediaStreamType.Audio);
-                            int? numVideoStreams = item.GetStreamCount(MediaStreamType.Video);
-
-                            if (!conditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
+                            if (!conditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth, audioProfile, isSecondaryAudio))
                             {
                                 LogConditionFailure(options.Profile, "VideoCodecProfile", applyCondition, item);
                                 applyConditions = false;
