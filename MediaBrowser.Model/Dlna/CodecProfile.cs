@@ -36,7 +36,12 @@ namespace MediaBrowser.Model.Dlna
             return ContainerProfile.ContainsContainer(Container, container);
         }
 
-        public bool ContainsCodec(string codec, string container)
+        public bool ContainsAnyCodec(string codec, string container)
+        {
+            return ContainsAnyCodec(ContainerProfile.SplitValue(codec), container);
+        }
+
+        public bool ContainsAnyCodec(string[] codec, string container)
         {
             if (!ContainsContainer(container))
             {
@@ -44,8 +49,20 @@ namespace MediaBrowser.Model.Dlna
             }
 
             var codecs = GetCodecs();
+            if (codecs.Length == 0)
+            {
+                return true;
+            }
 
-            return codecs.Length == 0 || ListHelper.ContainsIgnoreCase(codecs, ContainerProfile.SplitValue(codec)[0]);
+            foreach (var val in codec)
+            {
+                if (ListHelper.ContainsIgnoreCase(codecs, val))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
