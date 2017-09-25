@@ -1367,7 +1367,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.DeInterlace("h264") && !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(options.DeinterlaceMethod, "bobandweave", StringComparison.OrdinalIgnoreCase))
+                // If it is already 60fps then it will create an output framerate that is much too high for roku and others to handle
+                if (string.Equals(options.DeinterlaceMethod, "bobandweave", StringComparison.OrdinalIgnoreCase) && (state.VideoStream.RealFrameRate ?? 60) <= 30)
                 {
                     filters.Add("yadif=1:-1:0");
                 }

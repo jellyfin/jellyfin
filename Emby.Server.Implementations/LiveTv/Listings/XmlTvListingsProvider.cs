@@ -72,8 +72,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             var cacheFile = Path.Combine(_config.ApplicationPaths.CachePath, "xmltv", cacheFilename);
             if (_fileSystem.FileExists(cacheFile))
             {
-                //return UnzipIfNeeded(path, cacheFile);
-                return cacheFile;
+                return UnzipIfNeeded(path, cacheFile);
             }
 
             _logger.Info("Downloading xmltv listings from {0}", path);
@@ -95,26 +94,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(cacheFile));
 
-            using (var stream = _fileSystem.OpenRead(tempFile))
-            {
-                using (var reader = new StreamReader(stream, Encoding.UTF8))
-                {
-                    using (var fileStream = _fileSystem.GetFileStream(cacheFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
-                    {
-                        using (var writer = new StreamWriter(fileStream))
-                        {
-                            while (!reader.EndOfStream)
-                            {
-                                writer.WriteLine(reader.ReadLine());
-                            }
-                        }
-                    }
-                }
-            }
+            _fileSystem.CopyFile(tempFile, cacheFile, true);
 
-            _logger.Debug("Returning xmltv path {0}", cacheFile);
-            return cacheFile;
-            //return UnzipIfNeeded(path, cacheFile);
+            return UnzipIfNeeded(path, cacheFile);
         }
 
         private string UnzipIfNeeded(string originalUrl, string file)
