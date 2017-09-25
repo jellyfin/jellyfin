@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Services;
 
@@ -39,18 +40,16 @@ namespace MediaBrowser.Controller.MediaEncoding
             MaxWidth = info.MaxWidth;
             MaxHeight = info.MaxHeight;
             MaxFramerate = info.MaxFramerate;
-            Profile = info.VideoProfile;
             ItemId = info.ItemId;
             MediaSourceId = info.MediaSourceId;
-            AudioCodec = info.TargetAudioCodec;
+            AudioCodec = info.TargetAudioCodec.FirstOrDefault();
             MaxAudioChannels = info.MaxAudioChannels;
             AudioBitRate = info.AudioBitrate;
             AudioSampleRate = info.TargetAudioSampleRate;
             DeviceProfile = deviceProfile;
-            VideoCodec = info.TargetVideoCodec;
+            VideoCodec = info.TargetVideoCodec.FirstOrDefault();
             VideoBitRate = info.VideoBitrate;
             AudioStreamIndex = info.AudioStreamIndex;
-            MaxRefFrames = info.MaxRefFrames;
             MaxVideoBitDepth = info.MaxVideoBitDepth;
             SubtitleMethod = info.SubtitleDeliveryMethod;
             Context = info.Context;
@@ -60,11 +59,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 SubtitleStreamIndex = info.SubtitleStreamIndex;
             }
-
-            if (info.VideoLevel.HasValue)
-            {
-                Level = info.VideoLevel.Value.ToString(_usCulture);
-            }
+            StreamOptions = info.StreamOptions;
         }
     }
 
@@ -231,7 +226,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             SetOption(qualifier + "-" + name, value);
         }
 
-        public Dictionary<string, string> StreamOptions { get; private set; }
+        public Dictionary<string, string> StreamOptions { get; set; }
 
         public void SetOption(string name, string value)
         {
