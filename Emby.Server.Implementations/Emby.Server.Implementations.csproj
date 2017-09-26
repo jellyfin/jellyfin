@@ -427,8 +427,6 @@
     <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunUdpStream.cs" />
     <Compile Include="LiveTv\TunerHosts\M3uParser.cs" />
     <Compile Include="LiveTv\TunerHosts\M3UTunerHost.cs" />
-    <Compile Include="LiveTv\TunerHosts\MulticastStream.cs" />
-    <Compile Include="LiveTv\TunerHosts\QueueStream.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="Localization\TextLocalizer.cs" />
     <Compile Include="Logging\ConsoleLogger.cs" />
