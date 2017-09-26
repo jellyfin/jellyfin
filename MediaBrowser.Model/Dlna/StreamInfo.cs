@@ -169,7 +169,9 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                list.Add(string.Format("{0}={1}", pair.Name, pair.Value));
+                var encodedValue = pair.Value.Replace(" ", "%20");
+
+                list.Add(string.Format("{0}={1}", pair.Name, encodedValue));
             }
 
             string queryString = string.Join("&", list.ToArray(list.Count));
