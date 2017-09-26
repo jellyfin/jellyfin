@@ -731,6 +731,12 @@ namespace Emby.Server.Implementations.HttpServer
 
         public object DeserializeJson(Type type, Stream stream)
         {
+            //using (var reader = new StreamReader(stream))
+            //{
+            //    var json = reader.ReadToEnd();
+            //    Logger.Info(json);
+            //    return _jsonSerializer.DeserializeFromString(json, type);
+            //}
             return _jsonSerializer.DeserializeFromStream(stream, type);
         }
 
