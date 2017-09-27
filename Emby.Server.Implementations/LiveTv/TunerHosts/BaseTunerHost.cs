@@ -247,7 +247,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 try
                 {
                     var liveStream = await GetChannelStream(host, channelId, streamId, cancellationToken).ConfigureAwait(false);
+                    var startTime = DateTime.UtcNow;
                     await liveStream.Open(cancellationToken).ConfigureAwait(false);
+                    var endTime = DateTime.UtcNow;
+                    Logger.Info("Live stream opened after {0}ms", (endTime - startTime).TotalMilliseconds);
                     return liveStream;
                 }
                 catch (Exception ex)

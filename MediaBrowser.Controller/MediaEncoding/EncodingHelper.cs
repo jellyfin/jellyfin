@@ -799,12 +799,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (videoStream.IsInterlaced)
             {
-                if (state.DeInterlace(videoStream.Codec))
+                if (state.DeInterlace(videoStream.Codec, false))
                 {
                     return false;
                 }
             }
-
 
             if (videoStream.IsAnamorphic ?? false)
             {
@@ -1365,7 +1364,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 filters.Add("hwupload");
             }
 
-            if (state.DeInterlace("h264") && !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+            if (state.DeInterlace("h264", true) && !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 // If it is already 60fps then it will create an output framerate that is much too high for roku and others to handle
                 if (string.Equals(options.DeinterlaceMethod, "bobandweave", StringComparison.OrdinalIgnoreCase) && (state.VideoStream.RealFrameRate ?? 60) <= 30)
