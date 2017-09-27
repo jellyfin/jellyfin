@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _tempFilePath = Path.Combine(appPaths.TranscodingTempPath, UniqueId + ".ts");
         }
 
-        protected override async Task OpenInternal(CancellationToken openCancellationToken)
+        protected override Task OpenInternal(CancellationToken openCancellationToken)
         {
             _liveStreamCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             //OpenedMediaSource.SupportsDirectStream = true;
             //OpenedMediaSource.SupportsTranscoding = true;
 
-            await taskCompletionSource.Task.ConfigureAwait(false);
+            return taskCompletionSource.Task;
 
             //await Task.Delay(5000).ConfigureAwait(false);
         }

@@ -161,7 +161,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public int? OutputAudioBitrate;
         public int? OutputAudioChannels;
 
-        public bool DeInterlace(string videoCodec)
+        public bool DeInterlace(string videoCodec, bool forceDeinterlaceIfSourceIsInterlaced)
         {
             // Support general param
             if (BaseRequest.DeInterlace)
@@ -172,6 +172,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrWhiteSpace(videoCodec))
             {
                 if (string.Equals(BaseRequest.GetOption(videoCodec, "deinterlace"), "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            if (forceDeinterlaceIfSourceIsInterlaced)
+            {
+                var videoStream = VideoStream;
+                if (videoStream != null && videoStream.IsInterlaced)
                 {
                     return true;
                 }
@@ -559,7 +568,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return VideoStream == null ? (bool?)null : VideoStream.IsInterlaced;
                 }
 
-                if (DeInterlace(ActualOutputVideoCodec))
+                if (DeInterlace(ActualOutputVideoCodec, true))
                 {
                     return false;
                 }
