@@ -662,7 +662,33 @@ namespace Emby.Dlna.PlayTo
 
             var e = track.Element(uPnpNamespaces.items) ?? track;
 
-            return UpnpContainer.Create(e);
+            var elementString = (string)e;
+
+            if (!string.IsNullOrWhiteSpace(elementString))
+            {
+                return UpnpContainer.Create(e);
+            }
+
+            track = result.Document.Descendants("CurrentURI").FirstOrDefault();
+
+            if (track == null)
+            {
+                return null;
+            }
+
+            e = track.Element(uPnpNamespaces.items) ?? track;
+
+            elementString = (string)e;
+
+            if (!string.IsNullOrWhiteSpace(elementString))
+            {
+                return new uBaseObject
+                {
+                    Url = elementString
+                };
+            }
+
+            return null;
         }
 
         private async Task<Tuple<bool, uBaseObject>> GetPositionInfo()
@@ -720,7 +746,7 @@ namespace Emby.Dlna.PlayTo
 
             if (string.IsNullOrWhiteSpace(trackString) || string.Equals(trackString, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
             {
-                return new Tuple<bool, uBaseObject>(false, null);
+                return new Tuple<bool, uBaseObject>(true, null);
             }
 
             XElement uPnpResponse;
