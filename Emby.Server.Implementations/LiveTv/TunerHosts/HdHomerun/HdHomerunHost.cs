@@ -347,6 +347,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 videoCodec = "h264";
                 videoBitrate = 1000000;
             }
+            else
+            {
+                // This is for android tv's 1200 condition. Remove once not needed anymore so that we can avoid possible side effects of dummying up this data
+                if ((channelInfo.IsHD ?? true))
+                {
+                    width = 1920;
+                    height = 1080;
+                }
+            }
 
             if (channelInfo != null)
             {
