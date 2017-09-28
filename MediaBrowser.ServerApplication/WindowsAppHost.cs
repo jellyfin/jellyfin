@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
 using Emby.Server.CinemaMode;
 using Emby.Server.Connect;
-using Emby.Server.Core;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.EntryPoints;
 using Emby.Server.Implementations.FFMpeg;
