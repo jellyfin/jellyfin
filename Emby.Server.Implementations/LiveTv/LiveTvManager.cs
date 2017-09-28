@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.LiveTv
             return EmbyTV.EmbyTV.Current.GetActiveRecordingPath(id);
         }
 
-        public Task<LiveStream> GetEmbyTvLiveStream(string id)
+        public Task<ILiveStream> GetEmbyTvLiveStream(string id)
         {
             return EmbyTV.EmbyTV.Current.GetLiveStream(id);
         }
