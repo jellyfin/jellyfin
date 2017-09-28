@@ -75,7 +75,7 @@
     "LabelCountry": "Land:",
     "LabelLanguage": "Sproch:",
     "LabelTimeLimitHours": "Ziitlimit (h):",
-    "HeaderPreferredMetadataLanguage": "Bevorzuegti Metadate Sproch:",
+    "HeaderPreferredMetadataLanguage": "Preferred Metadata Language",
     "LabelSaveLocalMetadata": "Speicher Bilder und Metadate i d'Medieordner",
     "LabelSaveLocalMetadataHelp": "Wennd Bilder und Metadate direkt i d'Medieordner speicherisch, chasch sie eifach weder finde und au bearbeite.",
     "LabelDownloadInternetMetadata": "Lade Bilder und Metadate vom Internet abe",
