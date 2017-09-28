@@ -12,8 +12,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Emby.Drawing;
-using Emby.Server.Core.Cryptography;
-using Emby.Server.Core;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.EnvironmentInfo;
 using Emby.Server.Implementations.IO;
