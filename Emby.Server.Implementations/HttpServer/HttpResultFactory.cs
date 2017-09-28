@@ -142,8 +142,6 @@ namespace Emby.Server.Implementations.HttpServer
                 throw new ArgumentNullException("result");
             }
 
-            var optimizedResult = ToOptimizedResult(requestContext, result);
-
             if (responseHeaders == null)
             {
                 responseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -154,15 +152,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders["Expires"] = "-1";
             }
 
-            // Apply headers
-            var hasHeaders = optimizedResult as IHasHeaders;
-
-            if (hasHeaders != null)
-            {
-                AddResponseHeaders(hasHeaders, responseHeaders);
-            }
-
-            return optimizedResult;
+            return ToOptimizedResultInternal(requestContext, result, responseHeaders);
         }
 
         public static string GetCompressionType(IRequest request)
@@ -190,6 +180,11 @@ namespace Emby.Server.Implementations.HttpServer
         /// <returns></returns>
         public object ToOptimizedResult<T>(IRequest request, T dto)
         {
+            return ToOptimizedResultInternal(request, dto, null);
+        }
+
+        private object ToOptimizedResultInternal<T>(IRequest request, T dto, IDictionary<string, string> responseHeaders = null)
+        {
             var contentType = request.ResponseContentType;
 
             switch (GetRealContentType(contentType))
@@ -197,27 +192,27 @@ namespace Emby.Server.Implementations.HttpServer
                 case "application/xml":
                 case "text/xml":
                 case "text/xml; charset=utf-8": //"text/xml; charset=utf-8" also matches xml
-                    return SerializeToXmlString(dto);
+                    return GetHttpResult(SerializeToXmlString(dto), contentType, false, responseHeaders);
 
                 case "application/json":
                 case "text/json":
-                    return _jsonSerializer.SerializeToString(dto);
+                    return GetHttpResult(_jsonSerializer.SerializeToString(dto), contentType, false, responseHeaders);
                 default:
+                {
+                    var ms = new MemoryStream();
+                    var writerFn = RequestHelper.GetResponseWriter(HttpListenerHost.Instance, contentType);
+
+                    writerFn(dto, ms);
+
+                    ms.Position = 0;
+
+                    if (string.Equals(request.Verb, "head", StringComparison.OrdinalIgnoreCase))
                     {
-                        var ms = new MemoryStream();
-                        var writerFn = RequestHelper.GetResponseWriter(HttpListenerHost.Instance, contentType);
-
-                        writerFn(dto, ms);
-                        
-                        ms.Position = 0;
-
-                        if (string.Equals(request.Verb, "head", StringComparison.OrdinalIgnoreCase))
-                        {
-                            return GetHttpResult(new byte[] { }, contentType, true);
-                        }
-
-                        return GetHttpResult(ms, contentType, true);
+                        return GetHttpResult(new byte[] { }, contentType, true, responseHeaders);
                     }
+
+                    return GetHttpResult(ms, contentType, true, responseHeaders);
+                }
             }
         }
 
