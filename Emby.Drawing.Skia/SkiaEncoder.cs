@@ -53,7 +53,8 @@ namespace Emby.Drawing.Skia
                     "wbmp",
 
                     // working on windows at least
-                    "cr2"
+                    "cr2",
+                    "nef"
                 };
             }
         }
