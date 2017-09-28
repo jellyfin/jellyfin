@@ -7,7 +7,6 @@ using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Ssdp;
 using Emby.Drawing;
 using Emby.Photos;
-using Emby.Server.Core.Cryptography;
 using Emby.Server.Implementations.Activity;
 using Emby.Server.Implementations.Archiving;
 using Emby.Server.Implementations.Channels;
@@ -1640,23 +1639,23 @@ namespace Emby.Server.Implementations
             var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + (certHost + "2").GetMD5().ToString("N") + ".pfx");
             var password = "embycert";
 
-            if (generateCertificate)
-            {
-                if (!FileSystemManager.FileExists(certPath))
-                {
-                    FileSystemManager.CreateDirectory(FileSystemManager.GetDirectoryName(certPath));
+            //if (generateCertificate)
+            //{
+            //    if (!FileSystemManager.FileExists(certPath))
+            //    {
+            //        FileSystemManager.CreateDirectory(FileSystemManager.GetDirectoryName(certPath));
 
-                    try
-                    {
-                        CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, password, Logger);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorException("Error creating ssl cert", ex);
-                        return null;
-                    }
-                }
-            }
+            //        try
+            //        {
+            //            CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, password, Logger);
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            Logger.ErrorException("Error creating ssl cert", ex);
+            //            return null;
+            //        }
+            //    }
+            //}
 
             return new CertificateInfo
             {
