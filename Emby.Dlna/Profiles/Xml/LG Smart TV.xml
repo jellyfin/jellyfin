@@ -35,8 +35,8 @@
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <XmlRootAttributes />
   <DirectPlayProfiles>
-    <DirectPlayProfile container="ts,mpegts,avi,mkv" audioCodec="aac,ac3,mp3,dca,dts" videoCodec="h264" type="Video" />
-    <DirectPlayProfile container="mp4,m4v" audioCodec="aac,ac3,mp3,dca,dts" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="ts,mpegts,avi,mkv" audioCodec="aac,ac3,eac3,mp3,dca,dts" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="mp4,m4v" audioCodec="aac,ac3,eac3,mp3,dca,dts" videoCodec="h264,mpeg4" type="Video" />
     <DirectPlayProfile container="mp3" type="Audio" />
     <DirectPlayProfile container="jpeg" type="Photo" />
   </DirectPlayProfiles>
@@ -71,7 +71,7 @@
       </Conditions>
       <ApplyConditions />
     </CodecProfile>
-    <CodecProfile type="VideoAudio" codec="ac3,aac,mp3">
+    <CodecProfile type="VideoAudio" codec="ac3,eac3,aac,mp3">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="true" />
       </Conditions>
