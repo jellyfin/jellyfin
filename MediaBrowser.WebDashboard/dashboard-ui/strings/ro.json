@@ -75,7 +75,7 @@
     "LabelCountry": "Tara:",
     "LabelLanguage": "Limba:",
     "LabelTimeLimitHours": "Limita de timp(ore):",
-    "HeaderPreferredMetadataLanguage": "Limba preferata a metadatelor.",
+    "HeaderPreferredMetadataLanguage": "Preferred Metadata Language",
     "LabelSaveLocalMetadata": "Salveaza posterele si metadatele in dosarele media",
     "LabelSaveLocalMetadataHelp": "Salvand posterele si metadatele direct in dosarele media vor fi puse intr-un loc in care pot fi usor editate.",
     "LabelDownloadInternetMetadata": "Descarca postere si metadatele dupa Internet",

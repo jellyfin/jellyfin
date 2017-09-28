@@ -26,7 +26,7 @@ namespace MediaBrowser.Server.Mono
             get
             {
                 // A restart script must be provided
-                return false;
+                return StartupOptions.ContainsOption("-restartpath") && StartupOptions.ContainsOption("-ffmpeg");
             }
         }
 
