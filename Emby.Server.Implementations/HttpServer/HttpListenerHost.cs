@@ -423,6 +423,19 @@ namespace Emby.Server.Implementations.HttpServer
             return true;
         }
 
+        private bool ValidateSsl(string remoteIp)
+        {
+            if (_config.Configuration.RequireHttps && _appHost.EnableHttps)
+            {
+                if (!_networkManager.IsInLocalNetwork(remoteIp))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
@@ -450,6 +463,12 @@ namespace Emby.Server.Implementations.HttpServer
                     httpRes.StatusCode = 400;
                     httpRes.ContentType = "text/plain";
                     Write(httpRes, "Invalid host");
+                    return;
+                }
+
+                if (!ValidateSsl(httpReq.RemoteIp))
+                {
+                    RedirectToUrl(httpRes, urlString.Replace("http://", "https://", StringComparison.OrdinalIgnoreCase));
                     return;
                 }
 

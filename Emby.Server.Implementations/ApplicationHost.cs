@@ -1931,13 +1931,13 @@ namespace Emby.Server.Implementations
         {
             get
             {
-                return SupportsHttps && ServerConfigurationManager.Configuration.EnableHttps;
+                return SupportsHttps && (ServerConfigurationManager.Configuration.EnableHttps || ServerConfigurationManager.Configuration.RequireHttps);
             }
         }
 
         public bool SupportsHttps
         {
-            get { return Certificate != null; }
+            get { return Certificate != null || ServerConfigurationManager.Configuration.IsBehindProxy; }
         }
 
         public async Task<string> GetLocalApiUrl()
