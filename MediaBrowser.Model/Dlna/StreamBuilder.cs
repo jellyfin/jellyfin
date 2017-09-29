@@ -1615,7 +1615,12 @@ namespace MediaBrowser.Model.Dlna
                             if (!string.IsNullOrWhiteSpace(value))
                             {
                                 // change from split by | to comma
-                                item.SetOption(qualifier, "profile", string.Join(",", value.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)));
+
+                                // strip spaces to avoid having to encode
+                                var values = value
+                                    .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+
+                                item.SetOption(qualifier, "profile", string.Join(",", values));
                             }
                             break;
                         }
