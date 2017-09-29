@@ -1718,7 +1718,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 var parent = _fileSystem.GetDirectoryName(originalPath);
                 var name = Path.GetFileNameWithoutExtension(originalPath);
-                name += "-" + index.ToString(CultureInfo.InvariantCulture);
+                name += " - " + index.ToString(CultureInfo.InvariantCulture);
 
                 path = Path.ChangeExtension(Path.Combine(parent, name), Path.GetExtension(originalPath));
                 index++;
