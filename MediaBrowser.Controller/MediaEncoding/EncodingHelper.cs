@@ -1531,11 +1531,18 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>System.Int32.</returns>
         public int GetNumberOfThreads(EncodingJobInfo state, EncodingOptions encodingOptions, bool isWebm)
         {
-            var threads = GetNumberOfThreadsInternal(state, encodingOptions, isWebm);
-
-            if (state.BaseRequest.CpuCoreLimit.HasValue && state.BaseRequest.CpuCoreLimit.Value > 0)
+            if (isWebm)
             {
-                threads = Math.Min(threads, state.BaseRequest.CpuCoreLimit.Value);
+                // Recommended per docs
+                return Math.Max(Environment.ProcessorCount - 1, 2);
+            }
+
+            var threads = state.BaseRequest.CpuCoreLimit ?? encodingOptions.EncodingThreadCount;
+
+            // Automatic
+            if (threads <= 0 || threads >= Environment.ProcessorCount)
+            {
+                return 0;
             }
 
             return threads;
@@ -1955,29 +1962,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // leave blank so ffmpeg will decide
             return null;
-        }
-
-        /// <summary>
-        /// Gets the number of threads.
-        /// </summary>
-        /// <returns>System.Int32.</returns>
-        private int GetNumberOfThreadsInternal(EncodingJobInfo state, EncodingOptions encodingOptions, bool isWebm)
-        {
-            var threads = encodingOptions.EncodingThreadCount;
-
-            if (isWebm)
-            {
-                // Recommended per docs
-                return Math.Max(Environment.ProcessorCount - 1, 2);
-            }
-
-            // Automatic
-            if (threads == -1)
-            {
-                return 0;
-            }
-
-            return threads;
         }
 
         public string GetSubtitleEmbedArguments(EncodingJobInfo state)
