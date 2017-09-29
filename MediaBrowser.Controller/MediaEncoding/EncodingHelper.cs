@@ -346,7 +346,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 "Constrained High"
             };
 
-            return Array.FindIndex(list.ToArray(), t => string.Equals(t, profile, StringComparison.OrdinalIgnoreCase));
+            // strip spaces because they may be stripped out on the query string
+            return Array.FindIndex(list.ToArray(), t => string.Equals(t.Replace(" ", ""), profile.Replace(" ", ""), StringComparison.OrdinalIgnoreCase));
         }
 
         public string GetInputPathArgument(EncodingJobInfo state)
@@ -831,7 +832,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // Source and target codecs must match
-            if (string.IsNullOrEmpty(videoStream.Codec) || !state.SupportedVideoCodecs.Contains(videoStream.Codec, StringComparer.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(videoStream.Codec) || !state.SupportedVideoCodecs.Contains(videoStream.Codec, StringComparer.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -841,13 +842,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             // If client is requesting a specific video profile, it must match the source
             if (requestedProfiles.Length > 0)
             {
-                if (string.IsNullOrEmpty(videoStream.Profile))
+                if (string.IsNullOrWhiteSpace(videoStream.Profile))
                 {
                     //return false;
                 }
 
                 var requestedProfile = requestedProfiles[0];
-                if (!string.IsNullOrEmpty(videoStream.Profile) && !string.Equals(requestedProfile, videoStream.Profile, StringComparison.OrdinalIgnoreCase))
+                // strip spaces because they may be stripped out on the query string as well
+                if (!string.IsNullOrWhiteSpace(videoStream.Profile) && !requestedProfiles.Contains(videoStream.Profile.Replace(" ", ""), StringComparer.OrdinalIgnoreCase))
                 {
                     var currentScore = GetVideoProfileScore(videoStream.Profile);
                     var requestedScore = GetVideoProfileScore(requestedProfile);
