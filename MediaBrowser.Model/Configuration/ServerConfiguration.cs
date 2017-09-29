@@ -181,6 +181,8 @@ namespace MediaBrowser.Model.Configuration
         public string[] CodecsUsed { get; set; }
         public bool EnableChannelView { get; set; }
         public bool EnableExternalContentInSuggestions { get; set; }
+        public bool RequireHttps { get; set; }
+        public bool IsBehindProxy { get; set; }
 
         public int ImageExtractionTimeoutMs { get; set; }
 
