@@ -341,13 +341,6 @@ namespace Emby.Drawing.ImageMagick
         {
             get
             {
-                // too heavy. seeing crashes on RPI.
-                if (_environment.SystemArchitecture == Architecture.Arm ||
-                    _environment.SystemArchitecture == Architecture.Arm64)
-                {
-                    return false;
-                }
-
                 return true;
             }
         }
