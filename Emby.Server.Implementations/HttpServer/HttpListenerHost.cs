@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -423,13 +424,16 @@ namespace Emby.Server.Implementations.HttpServer
             return true;
         }
 
-        private bool ValidateSsl(string remoteIp)
+        private bool ValidateSsl(string remoteIp, string urlString)
         {
             if (_config.Configuration.RequireHttps && _appHost.EnableHttps)
             {
-                if (!_networkManager.IsInLocalNetwork(remoteIp))
+                if (urlString.IndexOf("https://", StringComparison.OrdinalIgnoreCase) == -1)
                 {
-                    return false;
+                    if (!_networkManager.IsInLocalNetwork(remoteIp))
+                    {
+                        return false;
+                    }
                 }
             }
 
@@ -466,9 +470,13 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                if (!ValidateSsl(httpReq.RemoteIp))
+                if (!ValidateSsl(httpReq.RemoteIp, urlString))
                 {
-                    RedirectToUrl(httpRes, urlString.Replace("http://", "https://", StringComparison.OrdinalIgnoreCase));
+                    var httpsUrl = urlString
+                        .Replace("http://", "https://", StringComparison.OrdinalIgnoreCase)
+                        .Replace(":" + _config.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture), ":" + _config.Configuration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
+
+                    RedirectToUrl(httpRes, httpsUrl);
                     return;
                 }
 
@@ -487,7 +495,7 @@ namespace Emby.Server.Implementations.HttpServer
 
                 enableLog = EnableLogging(urlString, localPath);
                 urlToLog = urlString;
-                 logHeaders = enableLog && urlToLog.IndexOf("/videos/", StringComparison.OrdinalIgnoreCase) != -1;
+                logHeaders = enableLog && urlToLog.IndexOf("/videos/", StringComparison.OrdinalIgnoreCase) != -1;
 
                 if (enableLog)
                 {
