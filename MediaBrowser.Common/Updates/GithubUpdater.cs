@@ -114,7 +114,7 @@ namespace MediaBrowser.Common.Updates
             {
                 var obj = _jsonSerializer.DeserializeFromStream<RootObject[]>(stream);
 
-                obj = obj.Where(i => (i.assets ?? new List<Asset>()).Any(a => IsAsset(a, assetFilename))).ToArray();
+                obj = obj.Where(i => (i.assets ?? new List<Asset>()).Any(a => IsAsset(a, assetFilename, i.tag_name))).ToArray();
 
                 list.AddRange(obj.Where(i => MatchesUpdateLevel(i, PackageVersionClass.Release)).OrderByDescending(GetVersion).Take(1));
                 list.AddRange(obj.Where(i => MatchesUpdateLevel(i, PackageVersionClass.Beta)).OrderByDescending(GetVersion).Take(1));
@@ -138,7 +138,8 @@ namespace MediaBrowser.Common.Updates
         private CheckForUpdateResult CheckForUpdateResult(RootObject obj, Version minVersion, string assetFilename, string packageName, string targetFilename)
         {
             Version version;
-            if (!Version.TryParse(obj.tag_name, out version))
+            var versionString = obj.tag_name;
+            if (!Version.TryParse(versionString, out version))
             {
                 return null;
             }
@@ -148,7 +149,7 @@ namespace MediaBrowser.Common.Updates
                 return null;
             }
 
-            var asset = (obj.assets ?? new List<Asset>()).FirstOrDefault(i => IsAsset(i, assetFilename));
+            var asset = (obj.assets ?? new List<Asset>()).FirstOrDefault(i => IsAsset(i, assetFilename, versionString));
 
             if (asset == null)
             {
@@ -175,9 +176,22 @@ namespace MediaBrowser.Common.Updates
             };
         }
 
-        private bool IsAsset(Asset asset, string assetFilename)
+        private bool IsAsset(Asset asset, string assetFilename, string version)
         {
-            var downloadFilename = Path.GetFileName(asset.browser_download_url) ?? string.Empty;
+            var downloadFilename = Path.GetFileNameWithoutExtension(asset.browser_download_url) ?? string.Empty;
+            var assetExtension = Path.GetExtension(assetFilename);
+
+            assetFilename = assetFilename.Replace("{version}", version);
+            assetFilename = Path.GetFileNameWithoutExtension(assetFilename);
+
+            var zipExtensions = new[] { ".zip", ".7z" };
+            var extensionMatch = zipExtensions.Contains(Path.GetExtension(asset.browser_download_url) ?? string.Empty, StringComparer.OrdinalIgnoreCase) &&
+                                 zipExtensions.Contains(assetExtension ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+
+            if (!extensionMatch)
+            {
+                return false;
+            }
 
             if (downloadFilename.IndexOf(assetFilename, StringComparison.OrdinalIgnoreCase) != -1)
             {
