@@ -26,6 +26,11 @@ namespace MediaBrowser.Api.UserLibrary
     {
     }
 
+    [Route("/Users/{UserId}/Items/Resume", "GET", Summary = "Gets items based on a query.")]
+    public class GetResumeItems : BaseItemsRequest, IReturn<QueryResult<BaseItemDto>>
+    {
+    }
+
     /// <summary>
     /// Class ItemsService
     /// </summary>
@@ -77,6 +82,53 @@ namespace MediaBrowser.Api.UserLibrary
             _localization = localization;
             _dtoService = dtoService;
             _authContext = authContext;
+        }
+
+        public object Get(GetResumeItems request)
+        {
+            var user = _userManager.GetUserById(request.UserId);
+
+            var parentIdGuid = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId);
+
+            var options = GetDtoOptions(_authContext, request);
+
+            var ancestorIds = new List<string>();
+
+            var excludeFolderIds = user.Configuration.LatestItemsExcludes;
+            if (!parentIdGuid.HasValue && excludeFolderIds.Length > 0)
+            {
+                ancestorIds = user.RootFolder.GetChildren(user, true)
+                    .Where(i => i is Folder)
+                    .Where(i => !excludeFolderIds.Contains(i.Id.ToString("N")))
+                    .Select(i => i.Id.ToString("N"))
+                    .ToList();
+            }
+
+            var itemsResult = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
+            {
+                OrderBy = new[] { ItemSortBy.DatePlayed }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
+                IsResumable = true,
+                StartIndex = request.StartIndex,
+                Limit = request.Limit,
+                ParentId = parentIdGuid,
+                Recursive = true,
+                DtoOptions = options,
+                MediaTypes = request.GetMediaTypes(),
+                IsVirtualItem = false,
+                CollapseBoxSetItems = false,
+                EnableTotalRecordCount = request.EnableTotalRecordCount,
+                AncestorIds = ancestorIds.ToArray()
+            });
+
+            var returnItems = _dtoService.GetBaseItemDtos(itemsResult.Items, options, user);
+
+            var result = new QueryResult<BaseItemDto>
+            {
+                TotalRecordCount = itemsResult.TotalRecordCount,
+                Items = returnItems
+            };
+
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>

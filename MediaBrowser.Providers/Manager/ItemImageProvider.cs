@@ -204,9 +204,7 @@ namespace MediaBrowser.Providers.Manager
 
         private bool HasImage(IHasMetadata item, ImageType type)
         {
-            var image = item.GetImageInfo(type, 0);
-
-            return image != null;
+            return item.HasImage(type);
         }
 
         /// <summary>
