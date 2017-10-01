@@ -56,37 +56,15 @@ namespace Emby.Server.Implementations.TV
                 return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, dtoOptions), request);
             }
 
-            if (limit.HasValue)
-            {
-                limit = limit.Value + 10;
-            }
+            var parents = user.RootFolder.GetChildren(user, true)
+                .Where(i => i is Folder)
+                .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N")))
+                .ToList();
 
-            var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
-            {
-                IncludeItemTypes = new[] { typeof(Episode).Name },
-                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
-                SeriesPresentationUniqueKey = presentationUniqueKey,
-                Limit = limit,
-                ParentId = parentIdGuid,
-                Recursive = true,
-                DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions
-                {
-                    Fields = new ItemFields[]
-                    {
-                        ItemFields.SeriesPresentationUniqueKey
-                    }
-                },
-                GroupBySeriesPresentationUniqueKey = true
-
-            }).Cast<Episode>().Select(GetUniqueSeriesKey);
-
-            // Avoid implicitly captured closure
-            var episodes = GetNextUpEpisodes(request, user, items, dtoOptions);
-
-            return GetResult(episodes, request);
+            return GetNextUp(request, parents, dtoOptions);
         }
 
-        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, List<Folder> parentsFolders, DtoOptions dtoOptions)
+        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, List<BaseItem> parentsFolders, DtoOptions dtoOptions)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -134,7 +112,7 @@ namespace Emby.Server.Implementations.TV
                 },
                 GroupBySeriesPresentationUniqueKey = true
 
-            }, parentsFolders.Cast<BaseItem>().ToList()).Cast<Episode>().Select(GetUniqueSeriesKey);
+            }, parentsFolders).Cast<Episode>().Select(GetUniqueSeriesKey);
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items, dtoOptions);

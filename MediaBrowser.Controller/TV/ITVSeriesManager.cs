@@ -15,6 +15,6 @@ namespace MediaBrowser.Controller.TV
         /// <summary>
         /// Gets the next up.
         /// </summary>
-        QueryResult<BaseItem> GetNextUp(NextUpQuery request, List<Folder> parentsFolders, DtoOptions options);
+        QueryResult<BaseItem> GetNextUp(NextUpQuery request, List<BaseItem> parentsFolders, DtoOptions options);
     }
 }
