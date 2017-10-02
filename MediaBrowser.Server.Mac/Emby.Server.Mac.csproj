@@ -96,8 +96,8 @@
       <HintPath>..\packages\ServiceStack.Text.4.5.8\lib\net45\ServiceStack.Text.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SharpCompress, Version=0.14.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpCompress.0.14.0\lib\net45\SharpCompress.dll</HintPath>
+    <Reference Include="SharpCompress, Version=0.18.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpCompress.0.18.2\lib\net45\SharpCompress.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SimpleInjector, Version=4.0.8.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
@@ -109,7 +109,7 @@
       <HintPath>..\ThirdParty\taglib\TagLib.Portable.dll</HintPath>
     </Reference>
     <Reference Include="SkiaSharp">
-      <HintPath>..\packages\SkiaSharp.1.58.0\lib\net45\SkiaSharp.dll</HintPath>
+      <HintPath>..\packages\SkiaSharp.1.58.1\lib\net45\SkiaSharp.dll</HintPath>
     </Reference>
     <Reference Include="SQLitePCLRaw.core">
       <HintPath>..\packages\SQLitePCLRaw.core.1.1.8\lib\net45\SQLitePCLRaw.core.dll</HintPath>
@@ -435,9 +435,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\plugins.html">
       <Link>Resources\dashboard-ui\plugins.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\reports.html">
-      <Link>Resources\dashboard-ui\reports.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\robots.txt">
       <Link>Resources\dashboard-ui\robots.txt</Link>
     </BundleResource>
@@ -675,9 +672,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\browserdeviceprofile.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\browserdeviceprofile.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\chromecastplayer.js">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\chromecastplayer.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\clearbutton.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\clearbutton.css</Link>
     </BundleResource>
@@ -827,6 +821,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\cardbuilder\roundcard.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\cardbuilder\roundcard.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\chromecast\chromecasthelpers.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\chromecast\chromecasthelpers.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\chromecast\chromecastplayer.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\chromecast\chromecastplayer.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\collectioneditor\collectioneditor.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\collectioneditor\collectioneditor.js</Link>
@@ -1038,6 +1038,15 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\images\style.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\images\style.css</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\imageuploader\imageuploader.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\imageuploader\imageuploader.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\imageuploader\imageuploader.template.html">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\imageuploader\imageuploader.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\imageuploader\style.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\imageuploader\style.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\indicators\indicators.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\indicators\indicators.css</Link>
     </BundleResource>
@@ -1196,6 +1205,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playback\volumeosd.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playback\volumeosd.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playbacksettings\playbacksettings.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playbacksettings\playbacksettings.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playbacksettings\playbacksettings.template.html">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playbacksettings\playbacksettings.template.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playerstats\playerstats.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playerstats\playerstats.css</Link>
@@ -1524,6 +1539,15 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\themes\dark-red\theme.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\themes\dark-red\theme.css</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\themes\halloween\bg.jpg">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\themes\halloween\bg.jpg</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\themes\halloween\logo.png">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\themes\halloween\logo.png</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\themes\halloween\theme.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\themes\halloween\theme.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\themes\light\logo.png">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\themes\light\logo.png</Link>
     </BundleResource>
@@ -1740,9 +1764,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\categorysyncbuttons.js">
       <Link>Resources\dashboard-ui\components\categorysyncbuttons.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\chromecasthelpers.js">
-      <Link>Resources\dashboard-ui\components\chromecasthelpers.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\favoriteitems.js">
       <Link>Resources\dashboard-ui\components\favoriteitems.js</Link>
     </BundleResource>
@@ -1808,12 +1829,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\guestinviter\guestinviter.template.html">
       <Link>Resources\dashboard-ui\components\guestinviter\guestinviter.template.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\imageuploader\imageuploader.js">
-      <Link>Resources\dashboard-ui\components\imageuploader\imageuploader.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\imageuploader\imageuploader.template.html">
-      <Link>Resources\dashboard-ui\components\imageuploader\imageuploader.template.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\libraryoptionseditor\libraryoptionseditor.js">
       <Link>Resources\dashboard-ui\components\libraryoptionseditor\libraryoptionseditor.js</Link>
@@ -2625,12 +2640,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\zh-tw.json">
       <Link>Resources\dashboard-ui\strings\zh-tw.json</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\themes\halloween\bg.jpg">
-      <Link>Resources\dashboard-ui\themes\halloween\bg.jpg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\themes\halloween\style.css">
-      <Link>Resources\dashboard-ui\themes\halloween\style.css</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\themes\halloween\theme.js">
       <Link>Resources\dashboard-ui\themes\halloween\theme.js</Link>
     </BundleResource>
@@ -2672,7 +2681,7 @@
     </BundleResource>
   </ItemGroup>
   <ItemGroup>
-    <NativeReference Include="..\packages\SkiaSharp.1.58.0\runtimes\osx\native\libSkiaSharp.dylib">
+    <NativeReference Include="..\packages\SkiaSharp.1.58.1\runtimes\osx\native\libSkiaSharp.dylib">
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
