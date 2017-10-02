@@ -408,7 +408,7 @@
     "HeaderHomeScreen": "Begin Scherm",
     "HeaderHomeScreenContent": "Home Screen Content",
     "HeaderLatestChannelItems": "Nieuwste Kanaal Items",
-    "LabelSelectHomeScreenItemsFolders": "Allow content to appear on my home screen from:",
+    "LabelSelectHomeScreenItemsFolders": "Allow items to appear on my home screen from:",
     "HeaderLibraryOrder": "Bibliotheek Volgorde",
     "HideWatchedContentFromLatestMedia": "Verberg gekeken inhoud uit nieuwste media",
     "HeaderOnNow": "Aan het spelen",
@@ -564,5 +564,6 @@
     "EnableCinemaMode": "Cinema Mode inschakelen",
     "LabelInternetQuality": "Internet quality:",
     "HeaderMusicQuality": "Music Quality",
-    "LabelHomeNetworkQuality": "Home network quality:"
+    "LabelHomeNetworkQuality": "Home network quality:",
+    "HeaderLatestMedia": "Nieuwste Media"
 }

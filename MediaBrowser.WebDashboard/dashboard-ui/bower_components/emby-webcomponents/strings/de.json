@@ -408,7 +408,7 @@
     "HeaderHomeScreen": "Startseite",
     "HeaderHomeScreenContent": "Home Screen Content",
     "HeaderLatestChannelItems": "Neueste Channelinhalte",
-    "LabelSelectHomeScreenItemsFolders": "Allow content to appear on my home screen from:",
+    "LabelSelectHomeScreenItemsFolders": "Allow items to appear on my home screen from:",
     "HeaderLibraryOrder": "Bibliotheksreihenfolge",
     "HideWatchedContentFromLatestMedia": "Verberge gesehene Inhalte von neuesten Medien.",
     "HeaderOnNow": "Gerade l\u00e4uft",
@@ -564,5 +564,6 @@
     "EnableCinemaMode": "Aktiviere den Kino-Modus",
     "LabelInternetQuality": "Internetqualit\u00e4t:",
     "HeaderMusicQuality": "Musikqualit\u00e4t",
-    "LabelHomeNetworkQuality": "Heimnetzwerkqualit\u00e4t:"
+    "LabelHomeNetworkQuality": "Heimnetzwerkqualit\u00e4t:",
+    "HeaderLatestMedia": "Neueste Medien"
 }

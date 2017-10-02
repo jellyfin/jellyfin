@@ -406,9 +406,9 @@
     "Up": "W g\u00f3r\u0119",
     "Down": "W d\u00f3\u0142",
     "HeaderHomeScreen": "Ekran startowy",
-    "HeaderHomeScreenContent": "Home Screen Content",
+    "HeaderHomeScreenContent": "Zawarto\u015b\u0107 ekranu startowego",
     "HeaderLatestChannelItems": "Kana\u0142y ostatnio odtwarzane",
-    "LabelSelectHomeScreenItemsFolders": "Allow content to appear on my home screen from:",
+    "LabelSelectHomeScreenItemsFolders": "Zezwalaj na wy\u015bwietlanie na ekranie startowym pozycji z:",
     "HeaderLibraryOrder": "Kolejno\u015b\u0107 biblioteki",
     "HideWatchedContentFromLatestMedia": "Ukrywaj obejrzan\u0105 zawarto\u015b\u0107 na listach ostatnio dodanych",
     "HeaderOnNow": "Teraz",
@@ -564,5 +564,6 @@
     "EnableCinemaMode": "W\u0142\u0105cz tryb kinowy",
     "LabelInternetQuality": "Jako\u015b\u0107 dla sieci internetowej:",
     "HeaderMusicQuality": "Jako\u015b\u0107 muzyki",
-    "LabelHomeNetworkQuality": "Jako\u015b\u0107 dla sieci lokalnej:"
+    "LabelHomeNetworkQuality": "Jako\u015b\u0107 dla sieci lokalnej:",
+    "HeaderLatestMedia": "Media ostatnio dodane"
 }

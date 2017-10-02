@@ -408,7 +408,7 @@
     "HeaderHomeScreen": "Domovsk\u00e1 obrazovka",
     "HeaderHomeScreenContent": "Home Screen Content",
     "HeaderLatestChannelItems": "Nejnov\u011bj\u0161\u00ed polo\u017eky kan\u00e1lu",
-    "LabelSelectHomeScreenItemsFolders": "Allow content to appear on my home screen from:",
+    "LabelSelectHomeScreenItemsFolders": "Allow items to appear on my home screen from:",
     "HeaderLibraryOrder": "Po\u0159ad\u00ed knihovny",
     "HideWatchedContentFromLatestMedia": "Skr\u00fdt p\u0159ehran\u00e9 polo\u017eky ze seznamu nejnov\u011bj\u0161\u00edch m\u00e9di\u00ed",
     "HeaderOnNow": "Pr\u00e1v\u011b te\u010f",
@@ -564,5 +564,6 @@
     "EnableCinemaMode": "Povolit Cinema M\u00f3d",
     "LabelInternetQuality": "Internet quality:",
     "HeaderMusicQuality": "Kvalita hudby",
-    "LabelHomeNetworkQuality": "Home network quality:"
+    "LabelHomeNetworkQuality": "Home network quality:",
+    "HeaderLatestMedia": "Nejnov\u011bj\u0161\u00ed m\u00e9dia"
 }

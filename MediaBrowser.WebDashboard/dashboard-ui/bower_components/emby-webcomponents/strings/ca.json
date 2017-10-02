@@ -408,7 +408,7 @@
     "HeaderHomeScreen": "P\u00e0gina d'Inici",
     "HeaderHomeScreenContent": "Home Screen Content",
     "HeaderLatestChannelItems": "Darrers \u00edtems del canal",
-    "LabelSelectHomeScreenItemsFolders": "Allow content to appear on my home screen from:",
+    "LabelSelectHomeScreenItemsFolders": "Allow items to appear on my home screen from:",
     "HeaderLibraryOrder": "Ordre de la llibreria",
     "HideWatchedContentFromLatestMedia": "Hide watched content from latest media",
     "HeaderOnNow": "En Directe Ara",
@@ -564,5 +564,6 @@
     "EnableCinemaMode": "Habilitar mode cinema",
     "LabelInternetQuality": "Internet quality:",
     "HeaderMusicQuality": "Music Quality",
-    "LabelHomeNetworkQuality": "Home network quality:"
+    "LabelHomeNetworkQuality": "Home network quality:",
+    "HeaderLatestMedia": "Darrers MItjans"
 }

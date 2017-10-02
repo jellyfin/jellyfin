@@ -408,7 +408,7 @@
     "HeaderHomeScreen": "Tela In\u00edcio",
     "HeaderHomeScreenContent": "Home Screen Content",
     "HeaderLatestChannelItems": "Itens de Canais Recentes",
-    "LabelSelectHomeScreenItemsFolders": "Allow content to appear on my home screen from:",
+    "LabelSelectHomeScreenItemsFolders": "Allow items to appear on my home screen from:",
     "HeaderLibraryOrder": "Ordem da Biblioteca",
     "HideWatchedContentFromLatestMedia": "Ocultar conte\u00fado assistido das m\u00eddias recentes",
     "HeaderOnNow": "Em Exibi\u00e7\u00e3o",
@@ -564,5 +564,6 @@
     "EnableCinemaMode": "Ativar modo cinema",
     "LabelInternetQuality": "Internet quality:",
     "HeaderMusicQuality": "Music Quality",
-    "LabelHomeNetworkQuality": "Home network quality:"
+    "LabelHomeNetworkQuality": "Home network quality:",
+    "HeaderLatestMedia": "M\u00eddias Recentes"
 }

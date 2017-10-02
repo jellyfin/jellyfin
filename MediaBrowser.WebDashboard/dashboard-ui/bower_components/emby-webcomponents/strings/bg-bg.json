@@ -408,7 +408,7 @@
     "HeaderHomeScreen": "Home Screen",
     "HeaderHomeScreenContent": "Home Screen Content",
     "HeaderLatestChannelItems": "Latest Channel Items",
-    "LabelSelectHomeScreenItemsFolders": "Allow content to appear on my home screen from:",
+    "LabelSelectHomeScreenItemsFolders": "Allow items to appear on my home screen from:",
     "HeaderLibraryOrder": "\u041f\u043e\u0434\u0440\u0435\u0434\u0431\u0430 \u043d\u0430 \u0431\u0438\u0431\u043b\u0438\u043e\u0442\u0435\u043a\u0430\u0442\u0430",
     "HideWatchedContentFromLatestMedia": "Hide watched content from latest media",
     "HeaderOnNow": "On Now",
@@ -564,5 +564,6 @@
     "EnableCinemaMode": "\u0412\u043a\u043b\u044e\u0447\u0432\u0430\u043d\u0435 \u043d\u0430 \u0440\u0435\u0436\u0438\u043c \"\u041a\u0438\u043d\u043e\u0441\u0430\u043b\u043e\u043d\"",
     "LabelInternetQuality": "\u041a\u0430\u0447\u0435\u0441\u0442\u0432\u043e \u043d\u0430 \u0438\u043d\u0442\u0435\u0440\u043d\u0435\u0442\u043d\u0430\u0442\u0430 \u0432\u0440\u044a\u0437\u043a\u0430:",
     "HeaderMusicQuality": "\u041a\u0430\u0447\u0435\u0441\u0442\u0432\u043e \u043d\u0430 \u043c\u0443\u0437\u0438\u043a\u0430\u0442\u0430",
-    "LabelHomeNetworkQuality": "\u041a\u0430\u0447\u0435\u0441\u0442\u0432\u043e \u043d\u0430 \u0434\u043e\u043c\u0430\u0448\u043d\u0430\u0442\u0430 \u043c\u0440\u0435\u0436\u0430:"
+    "LabelHomeNetworkQuality": "\u041a\u0430\u0447\u0435\u0441\u0442\u0432\u043e \u043d\u0430 \u0434\u043e\u043c\u0430\u0448\u043d\u0430\u0442\u0430 \u043c\u0440\u0435\u0436\u0430:",
+    "HeaderLatestMedia": "\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438 \u043c\u0435\u0434\u0438\u0438"
 }

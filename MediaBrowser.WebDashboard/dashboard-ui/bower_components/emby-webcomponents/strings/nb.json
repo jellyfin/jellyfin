@@ -408,7 +408,7 @@
     "HeaderHomeScreen": "Hjemskjerm",
     "HeaderHomeScreenContent": "Home Screen Content",
     "HeaderLatestChannelItems": "Siste kanal elementer",
-    "LabelSelectHomeScreenItemsFolders": "Allow content to appear on my home screen from:",
+    "LabelSelectHomeScreenItemsFolders": "Allow items to appear on my home screen from:",
     "HeaderLibraryOrder": "Bibliotek rekkef\u00f8lge",
     "HideWatchedContentFromLatestMedia": "Skjul sett innhold fra nyeste media",
     "HeaderOnNow": "P\u00e5 N\u00e5",
@@ -564,5 +564,6 @@
     "EnableCinemaMode": "Aktiver kino mode",
     "LabelInternetQuality": "Internet quality:",
     "HeaderMusicQuality": "Music Quality",
-    "LabelHomeNetworkQuality": "Home network quality:"
+    "LabelHomeNetworkQuality": "Home network quality:",
+    "HeaderLatestMedia": "Nyeste media"
 }
