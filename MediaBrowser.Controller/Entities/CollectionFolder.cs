@@ -31,13 +31,13 @@ namespace MediaBrowser.Controller.Entities
             PhysicalFolderIds = EmptyGuidArray;
         }
 
-        public override double? GetDefaultPrimaryImageAspectRatio()
-        {
-            double value = 16;
-            value /= 9;
+        //public override double? GetDefaultPrimaryImageAspectRatio()
+        //{
+        //    double value = 16;
+        //    value /= 9;
 
-            return value;
-        }
+        //    return value;
+        //}
 
         [IgnoreDataMember]
         public override bool SupportsPlayedStatus
