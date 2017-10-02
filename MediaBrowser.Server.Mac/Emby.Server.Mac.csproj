@@ -96,8 +96,8 @@
       <HintPath>..\packages\ServiceStack.Text.4.5.8\lib\net45\ServiceStack.Text.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SharpCompress, Version=0.14.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpCompress.0.14.0\lib\net45\SharpCompress.dll</HintPath>
+    <Reference Include="SharpCompress, Version=0.18.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpCompress.0.18.2\lib\net45\SharpCompress.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SimpleInjector, Version=4.0.8.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
@@ -109,7 +109,7 @@
       <HintPath>..\ThirdParty\taglib\TagLib.Portable.dll</HintPath>
     </Reference>
     <Reference Include="SkiaSharp">
-      <HintPath>..\packages\SkiaSharp.1.58.0\lib\net45\SkiaSharp.dll</HintPath>
+      <HintPath>..\packages\SkiaSharp.1.58.1\lib\net45\SkiaSharp.dll</HintPath>
     </Reference>
     <Reference Include="SQLitePCLRaw.core">
       <HintPath>..\packages\SQLitePCLRaw.core.1.1.8\lib\net45\SQLitePCLRaw.core.dll</HintPath>
@@ -2681,7 +2681,7 @@
     </BundleResource>
   </ItemGroup>
   <ItemGroup>
-    <NativeReference Include="..\packages\SkiaSharp.1.58.0\runtimes\osx\native\libSkiaSharp.dylib">
+    <NativeReference Include="..\packages\SkiaSharp.1.58.1\runtimes\osx\native\libSkiaSharp.dylib">
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
