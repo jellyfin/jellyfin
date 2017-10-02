@@ -49,17 +49,19 @@ namespace Emby.Server.Implementations.FFMpeg
 
             var downloadInfo = _ffmpegInstallInfo;
 
-            var version = downloadInfo.Version;
-
-            if (string.Equals(version, "path", StringComparison.OrdinalIgnoreCase))
+            var prebuiltffmpeg = Path.Combine(_appPaths.ProgramSystemPath, downloadInfo.FFMpegFilename);
+            var prebuiltffprobe = Path.Combine(_appPaths.ProgramSystemPath, downloadInfo.FFProbeFilename);
+            if (_fileSystem.FileExists(prebuiltffmpeg) && _fileSystem.FileExists(prebuiltffprobe))
             {
                 return new FFMpegInfo
                 {
-                    ProbePath = downloadInfo.FFProbeFilename,
-                    EncoderPath = downloadInfo.FFMpegFilename,
-                    Version = version
+                    ProbePath = prebuiltffprobe,
+                    EncoderPath = prebuiltffmpeg,
+                    Version = "external"
                 };
             }
+
+            var version = downloadInfo.Version;
 
             if (string.Equals(version, "0", StringComparison.OrdinalIgnoreCase))
             {
