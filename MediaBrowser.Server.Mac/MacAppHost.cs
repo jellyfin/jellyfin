@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Emby.Server.Core;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.FFMpeg;
 using MediaBrowser.Model.IO;
