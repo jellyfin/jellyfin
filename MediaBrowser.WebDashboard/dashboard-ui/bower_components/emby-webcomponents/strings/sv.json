@@ -408,7 +408,7 @@
     "HeaderHomeScreen": "Hemsk\u00e4rm",
     "HeaderHomeScreenContent": "Home Screen Content",
     "HeaderLatestChannelItems": "Senaste nytt i Kanaler",
-    "LabelSelectHomeScreenItemsFolders": "Allow content to appear on my home screen from:",
+    "LabelSelectHomeScreenItemsFolders": "Allow items to appear on my home screen from:",
     "HeaderLibraryOrder": "Biblioteksordning",
     "HideWatchedContentFromLatestMedia": "D\u00f6lj visat inneh\u00e5ll ifr\u00e5n senaste media",
     "HeaderOnNow": "Visas nu",
@@ -564,5 +564,6 @@
     "EnableCinemaMode": "Aktivera biol\u00e4ge",
     "LabelInternetQuality": "Internet quality:",
     "HeaderMusicQuality": "Music Quality",
-    "LabelHomeNetworkQuality": "Home network quality:"
+    "LabelHomeNetworkQuality": "Home network quality:",
+    "HeaderLatestMedia": "Nytillkommet"
 }

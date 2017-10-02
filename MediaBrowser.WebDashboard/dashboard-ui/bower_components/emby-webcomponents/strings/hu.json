@@ -408,7 +408,7 @@
     "HeaderHomeScreen": "Kezd\u0151k\u00e9perny\u0151",
     "HeaderHomeScreenContent": "Home Screen Content",
     "HeaderLatestChannelItems": "Latest Channel Items",
-    "LabelSelectHomeScreenItemsFolders": "Allow content to appear on my home screen from:",
+    "LabelSelectHomeScreenItemsFolders": "Allow items to appear on my home screen from:",
     "HeaderLibraryOrder": "M\u00e9diat\u00e1r rendez\u00e9s",
     "HideWatchedContentFromLatestMedia": "A megtekintett tartalom elrejt\u00e9se a leg\u00fajabb m\u00e9di\u00e1b\u00f3l",
     "HeaderOnNow": "On Now",
@@ -564,5 +564,6 @@
     "EnableCinemaMode": "Enable cinema mode",
     "LabelInternetQuality": "Internet quality:",
     "HeaderMusicQuality": "Music Quality",
-    "LabelHomeNetworkQuality": "Home network quality:"
+    "LabelHomeNetworkQuality": "Home network quality:",
+    "HeaderLatestMedia": "Leg\u00fajabb m\u00e9dia"
 }

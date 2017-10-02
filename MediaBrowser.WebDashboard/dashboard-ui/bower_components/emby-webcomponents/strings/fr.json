@@ -406,9 +406,9 @@
     "Up": "Haut",
     "Down": "Bas",
     "HeaderHomeScreen": "\u00c9cran d'accueil",
-    "HeaderHomeScreenContent": "Home Screen Content",
+    "HeaderHomeScreenContent": "Contenu de l'\u00e9cran d'accueil",
     "HeaderLatestChannelItems": "Derniers \u00e9l\u00e9ments de la cha\u00eene",
-    "LabelSelectHomeScreenItemsFolders": "Allow content to appear on my home screen from:",
+    "LabelSelectHomeScreenItemsFolders": "Autoriser sur mon \u00e9cran d'accueil l'affichage des \u00e9l\u00e9ments de\u00a0:",
     "HeaderLibraryOrder": "Ordre de la m\u00e9diath\u00e8que",
     "HideWatchedContentFromLatestMedia": "Masquer le contenu d\u00e9j\u00e0 vu dans les derniers m\u00e9dias",
     "HeaderOnNow": "En ce moment",
@@ -564,5 +564,6 @@
     "EnableCinemaMode": "Activer le mode cin\u00e9ma",
     "LabelInternetQuality": "Qualit\u00e9 d'internet\u00a0:",
     "HeaderMusicQuality": "Qualit\u00e9 de la musique\u00a0:",
-    "LabelHomeNetworkQuality": "Qualit\u00e9 du r\u00e9seau local\u00a0:"
+    "LabelHomeNetworkQuality": "Qualit\u00e9 du r\u00e9seau local\u00a0:",
+    "HeaderLatestMedia": "Derniers m\u00e9dias"
 }
