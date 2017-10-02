@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.EntryPoints
             values.Add(config.PublicPort.ToString(CultureInfo.InvariantCulture));
             values.Add(_appHost.HttpPort.ToString(CultureInfo.InvariantCulture));
             values.Add(_appHost.HttpsPort.ToString(CultureInfo.InvariantCulture));
-            values.Add(config.EnableHttps.ToString());
+            values.Add((config.EnableHttps || config.RequireHttps).ToString());
             values.Add(_appHost.EnableHttps.ToString());
 
             return string.Join("|", values.ToArray(values.Count));

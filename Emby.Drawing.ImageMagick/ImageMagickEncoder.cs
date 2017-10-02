@@ -148,7 +148,6 @@ namespace Emby.Drawing.ImageMagick
                     }
 
                     var originalImageSize = new ImageSize(originalImage.CurrentImage.Width, originalImage.CurrentImage.Height);
-                    ImageHelper.SaveImageSize(inputPath, dateModified, originalImageSize);
 
                     if (!options.CropWhiteSpace && options.HasDefaultOptions(inputPath, originalImageSize))
                     {
@@ -182,7 +181,6 @@ namespace Emby.Drawing.ImageMagick
                 using (var originalImage = new MagickWand(inputPath))
                 {
                     var originalImageSize = new ImageSize(originalImage.CurrentImage.Width, originalImage.CurrentImage.Height);
-                    ImageHelper.SaveImageSize(inputPath, dateModified, originalImageSize);
 
                     var newImageSize = ImageHelper.GetNewImageSize(options, originalImageSize);
 
@@ -343,13 +341,6 @@ namespace Emby.Drawing.ImageMagick
         {
             get
             {
-                // too heavy. seeing crashes on RPI.
-                if (_environment.SystemArchitecture == Architecture.Arm ||
-                    _environment.SystemArchitecture == Architecture.Arm64)
-                {
-                    return false;
-                }
-
                 return true;
             }
         }

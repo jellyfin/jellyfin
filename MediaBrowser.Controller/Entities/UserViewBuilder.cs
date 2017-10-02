@@ -238,12 +238,9 @@ namespace MediaBrowser.Controller.Entities
                     {
                         if (queryParent is UserView)
                         {
-                            return GetResult(GetMediaFolders(user).SelectMany(i => i.GetChildren(user, true)), queryParent, query);
+                            return GetResult(GetMediaFolders(user).OfType<Folder>().SelectMany(i => i.GetChildren(user, true)), queryParent, query);
                         }
-                        else
-                        {
-                            return GetResult(queryParent.GetChildren(user, true), queryParent, query);
-                        }
+                        return GetResult(queryParent.GetChildren(user, true), queryParent, query);
                     }
             }
         }
@@ -1681,7 +1678,7 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        private IEnumerable<Folder> GetMediaFolders(User user)
+        private IEnumerable<BaseItem> GetMediaFolders(User user)
         {
             if (user == null)
             {
@@ -1696,7 +1693,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => user.IsFolderGrouped(i.Id) && UserView.IsEligibleForGrouping(i));
         }
 
-        private List<Folder> GetMediaFolders(User user, IEnumerable<string> viewTypes)
+        private List<BaseItem> GetMediaFolders(User user, IEnumerable<string> viewTypes)
         {
             if (user == null)
             {
@@ -1717,14 +1714,14 @@ namespace MediaBrowser.Controller.Entities
                 }).ToList();
         }
 
-        private List<Folder> GetMediaFolders(Folder parent, User user, IEnumerable<string> viewTypes)
+        private List<BaseItem> GetMediaFolders(Folder parent, User user, IEnumerable<string> viewTypes)
         {
             if (parent == null || parent is UserView)
             {
                 return GetMediaFolders(user, viewTypes);
             }
 
-            return new List<Folder> { parent };
+            return new List<BaseItem> { parent };
         }
 
         private async Task<QueryResult<BaseItem>> GetLiveTvView(Folder queryParent, User user, InternalItemsQuery query)

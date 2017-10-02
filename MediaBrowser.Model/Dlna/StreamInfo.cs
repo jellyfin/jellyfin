@@ -22,6 +22,33 @@ namespace MediaBrowser.Model.Dlna
             VideoCodecs = new string[] { };
             SubtitleCodecs = new string[] { };
             TranscodeReasons = new List<TranscodeReason>();
+            StreamOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public void SetOption(string qualifier, string name, string value)
+        {
+            SetOption(qualifier + "-" + name, value);
+        }
+
+        public void SetOption(string name, string value)
+        {
+            StreamOptions[name] = value;
+        }
+
+        public string GetOption(string qualifier, string name)
+        {
+            return GetOption(qualifier + "-" + name);
+        }
+
+        public string GetOption(string name)
+        {
+            string value;
+            if (StreamOptions.TryGetValue(name, out value))
+            {
+                return value;
+            }
+
+            return null;
         }
 
         public string ItemId { get; set; }
@@ -37,14 +64,11 @@ namespace MediaBrowser.Model.Dlna
 
         public long StartPositionTicks { get; set; }
 
-        public string VideoProfile { get; set; }
-
         public int? SegmentLength { get; set; }
         public int? MinSegments { get; set; }
         public bool BreakOnNonKeyFrames { get; set; }
 
         public bool RequireAvc { get; set; }
-        public bool DeInterlace { get; set; }
         public bool RequireNonAnamorphic { get; set; }
         public bool CopyTimestamps { get; set; }
         public bool EnableSubtitlesInManifest { get; set; }
@@ -62,13 +86,10 @@ namespace MediaBrowser.Model.Dlna
 
         public int? VideoBitrate { get; set; }
 
-        public int? VideoLevel { get; set; }
-
         public int? MaxWidth { get; set; }
         public int? MaxHeight { get; set; }
 
         public int? MaxVideoBitDepth { get; set; }
-        public int? MaxRefFrames { get; set; }
 
         public float? MaxFramerate { get; set; }
 
@@ -91,6 +112,8 @@ namespace MediaBrowser.Model.Dlna
         public string PlaySessionId { get; set; }
         public List<MediaSourceInfo> AllMediaSources { get; set; }
         public List<TranscodeReason> TranscodeReasons { get; set; }
+
+        public Dictionary<string, string> StreamOptions { get; private set; }
 
         public string MediaSourceId
         {
@@ -146,7 +169,9 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                list.Add(string.Format("{0}={1}", pair.Name, pair.Value));
+                var encodedValue = pair.Value.Replace(" ", "%20");
+
+                list.Add(string.Format("{0}={1}", pair.Name, encodedValue));
             }
 
             string queryString = string.Join("&", list.ToArray(list.Count));
@@ -246,11 +271,37 @@ namespace MediaBrowser.Model.Dlna
                 list.Add(new NameValuePair("StartTimeTicks", StringHelper.ToStringCultureInvariant(startPositionTicks)));
             }
 
-            list.Add(new NameValuePair("Level", item.VideoLevel.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoLevel.Value) : string.Empty));
+            if (isDlna)
+            {
+                // hack alert
+                // dlna needs to be update to support the qualified params
+                var level = item.GetTargetVideoLevel("h264");
 
-            list.Add(new NameValuePair("MaxRefFrames", item.MaxRefFrames.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxRefFrames.Value) : string.Empty));
+                list.Add(new NameValuePair("Level", level.HasValue ? StringHelper.ToStringCultureInvariant(level.Value) : string.Empty));
+            }
+
+            if (isDlna)
+            {
+                // hack alert
+                // dlna needs to be update to support the qualified params
+                var refframes = item.GetTargetRefFrames("h264");
+
+                list.Add(new NameValuePair("MaxRefFrames", refframes.HasValue ? StringHelper.ToStringCultureInvariant(refframes.Value) : string.Empty));
+            }
+
             list.Add(new NameValuePair("MaxVideoBitDepth", item.MaxVideoBitDepth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxVideoBitDepth.Value) : string.Empty));
-            list.Add(new NameValuePair("Profile", item.VideoProfile ?? string.Empty));
+
+            if (isDlna)
+            {
+                // hack alert
+                // dlna needs to be update to support the qualified params
+                var profile = item.GetOption("h264", "profile");
+
+                // Avoid having to encode
+                profile = (profile ?? string.Empty).Replace(" ", "");
+
+                list.Add(new NameValuePair("Profile", profile));
+            }
 
             // no longer used
             list.Add(new NameValuePair("Cabac", string.Empty));
@@ -282,7 +333,16 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("SubtitleCodec", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed ? subtitleCodecs : string.Empty));
 
             list.Add(new NameValuePair("RequireNonAnamorphic", item.RequireNonAnamorphic.ToString().ToLower()));
-            list.Add(new NameValuePair("DeInterlace", item.DeInterlace.ToString().ToLower()));
+
+            if (isDlna)
+            {
+                // hack alert
+                // dlna needs to be update to support the qualified params
+                var deinterlace = string.Equals(item.GetOption("h264", "deinterlace"), "true", StringComparison.OrdinalIgnoreCase) ||
+                                  string.Equals(item.GetOption("mpeg2video", "deinterlace"), "true", StringComparison.OrdinalIgnoreCase);
+
+                list.Add(new NameValuePair("DeInterlace", deinterlace.ToString().ToLower()));
+            }
 
             if (!isDlna && isHls)
             {
@@ -304,6 +364,20 @@ namespace MediaBrowser.Model.Dlna
             if (isDlna || !item.IsDirectStream)
             {
                 list.Add(new NameValuePair("TranscodeReasons", string.Join(",", item.TranscodeReasons.Distinct().Select(i => i.ToString()).ToArray())));
+            }
+
+            if (!isDlna)
+            {
+                foreach (var pair in item.StreamOptions)
+                {
+                    if (string.IsNullOrWhiteSpace(pair.Value))
+                    {
+                        continue;
+                    }
+
+                    // strip spaces to avoid having to encode h264 profile names
+                    list.Add(new NameValuePair(pair.Key, pair.Value.Replace(" ", "")));
+                }
             }
 
             return list;
@@ -509,8 +583,19 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                MediaStream stream = TargetVideoStream;
-                return stream == null || !IsDirectStream ? null : stream.RefFrames;
+                if (IsDirectStream)
+                {
+                    return TargetVideoStream == null ? (int?)null : TargetVideoStream.RefFrames;
+                }
+
+                var targetVideoCodecs = TargetVideoCodec;
+                var videoCodec = targetVideoCodecs.Length == 0 ? null : targetVideoCodecs[0];
+                if (!string.IsNullOrWhiteSpace(videoCodec))
+                {
+                    return GetTargetRefFrames(videoCodec);
+                }
+
+                return TargetVideoStream == null ? (int?)null : TargetVideoStream.RefFrames;
             }
         }
 
@@ -535,11 +620,54 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                MediaStream stream = TargetVideoStream;
-                return VideoLevel.HasValue && !IsDirectStream
-                    ? VideoLevel
-                    : stream == null ? null : stream.Level;
+                if (IsDirectStream)
+                {
+                    return TargetVideoStream == null ? (double?)null : TargetVideoStream.Level;
+                }
+
+                var targetVideoCodecs = TargetVideoCodec;
+                var videoCodec = targetVideoCodecs.Length == 0 ? null : targetVideoCodecs[0];
+                if (!string.IsNullOrWhiteSpace(videoCodec))
+                {
+                    return GetTargetVideoLevel(videoCodec);
+                }
+
+                return TargetVideoStream == null ? (double?)null : TargetVideoStream.Level;
             }
+        }
+
+        public double? GetTargetVideoLevel(string codec)
+        {
+            var value = GetOption(codec, "level");
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            double result;
+            if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out result))
+            {
+                return result;
+            }
+
+            return null;
+        }
+
+        public int? GetTargetRefFrames(string codec)
+        {
+            var value = GetOption(codec, "maxrefframes");
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            int result;
+            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out result))
+            {
+                return result;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -563,10 +691,19 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                MediaStream stream = TargetVideoStream;
-                return !string.IsNullOrEmpty(VideoProfile) && !IsDirectStream
-                    ? VideoProfile
-                    : stream == null ? null : stream.Profile;
+                if (IsDirectStream)
+                {
+                    return TargetVideoStream == null ? null : TargetVideoStream.Profile;
+                }
+
+                var targetVideoCodecs = TargetVideoCodec;
+                var videoCodec = targetVideoCodecs.Length == 0 ? null : targetVideoCodecs[0];
+                if (!string.IsNullOrWhiteSpace(videoCodec))
+                {
+                    return GetOption(videoCodec, "profile");
+                }
+
+                return TargetVideoStream == null ? null : TargetVideoStream.Profile;
             }
         }
 
@@ -626,7 +763,7 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Predicts the audio codec that will be in the output stream
         /// </summary>
-        public string TargetAudioCodec
+        public string[] TargetAudioCodec
         {
             get
             {
@@ -636,22 +773,22 @@ namespace MediaBrowser.Model.Dlna
 
                 if (IsDirectStream)
                 {
-                    return inputCodec;
+                    return string.IsNullOrWhiteSpace(inputCodec) ? new string[] { } : new[] { inputCodec };
                 }
 
                 foreach (string codec in AudioCodecs)
                 {
                     if (StringHelper.EqualsIgnoreCase(codec, inputCodec))
                     {
-                        return codec;
+                        return string.IsNullOrWhiteSpace(codec) ? new string[] { } : new[] { codec };
                     }
                 }
 
-                return AudioCodecs.Length == 0 ? null : AudioCodecs[0];
+                return AudioCodecs;
             }
         }
 
-        public string TargetVideoCodec
+        public string[] TargetVideoCodec
         {
             get
             {
@@ -661,24 +798,24 @@ namespace MediaBrowser.Model.Dlna
 
                 if (IsDirectStream)
                 {
-                    return inputCodec;
+                    return string.IsNullOrWhiteSpace(inputCodec) ? new string[] { } : new[] { inputCodec };
                 }
 
                 foreach (string codec in VideoCodecs)
                 {
                     if (StringHelper.EqualsIgnoreCase(codec, inputCodec))
                     {
-                        return codec;
+                        return string.IsNullOrWhiteSpace(codec) ? new string[] { } : new[] { codec };
                     }
                 }
 
-                return VideoCodecs.Length == 0 ? null : VideoCodecs[0];
+                return VideoCodecs;
             }
         }
-        
+
         /// <summary>
-             /// Predicts the audio channels that will be in the output stream
-             /// </summary>
+        /// Predicts the audio channels that will be in the output stream
+        /// </summary>
         public long? TargetSize
         {
             get
@@ -763,9 +900,14 @@ namespace MediaBrowser.Model.Dlna
                     return TargetVideoStream == null ? (bool?)null : TargetVideoStream.IsInterlaced;
                 }
 
-                if (DeInterlace)
+                var targetVideoCodecs = TargetVideoCodec;
+                var videoCodec = targetVideoCodecs.Length == 0 ? null : targetVideoCodecs[0];
+                if (!string.IsNullOrWhiteSpace(videoCodec))
                 {
-                    return false;
+                    if (string.Equals(GetOption(videoCodec, "deinterlace"), "true", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
                 }
 
                 return TargetVideoStream == null ? (bool?)null : TargetVideoStream.IsInterlaced;

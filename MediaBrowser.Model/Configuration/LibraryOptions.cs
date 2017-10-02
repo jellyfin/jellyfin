@@ -30,6 +30,8 @@
         /// <value>The metadata country code.</value>
         public string MetadataCountryCode { get; set; }
 
+        public string SeasonZeroDisplayName { get; set; }
+
         public LibraryOptions()
         {
             EnablePhotos = true;
@@ -37,6 +39,7 @@
             PathInfos = new MediaPathInfo[] { };
             EnableInternetProviders = true;
             EnableAutomaticSeriesGrouping = true;
+            SeasonZeroDisplayName = "Specials";
         }
     }
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using Emby.Server.CinemaMode;
 using Emby.Server.Connect;
-using Emby.Server.Core;
 using Emby.Server.Implementations;
 using Emby.Server.Sync;
 using MediaBrowser.Controller.Connect;
@@ -26,7 +25,7 @@ namespace MediaBrowser.Server.Mono
             get
             {
                 // A restart script must be provided
-                return StartupOptions.ContainsOption("-restartpath");
+                return StartupOptions.ContainsOption("-restartpath") && StartupOptions.ContainsOption("-ffmpeg");
             }
         }
 

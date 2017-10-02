@@ -17,15 +17,13 @@ namespace Emby.Server.Implementations.EntryPoints
     {
         private readonly IServerApplicationHost _applicationHost;
         private readonly IHttpClient _httpClient;
-        private readonly IUserManager _userManager;
         private readonly ILogger _logger;
         private const string MbAdminUrl = "https://www.mb3admin.com/admin/";
 
-        public UsageReporter(IServerApplicationHost applicationHost, IHttpClient httpClient, IUserManager userManager, ILogger logger)
+        public UsageReporter(IServerApplicationHost applicationHost, IHttpClient httpClient, ILogger logger)
         {
             _applicationHost = applicationHost;
             _httpClient = httpClient;
-            _userManager = userManager;
             _logger = logger;
         }
 
@@ -42,12 +40,6 @@ namespace Emby.Server.Implementations.EntryPoints
                 { "ver", _applicationHost.ApplicationVersion.ToString() }, 
                 { "platform", _applicationHost.OperatingSystemDisplayName }
             };
-
-            var users = _userManager.Users.ToList();
-
-            data["localusers"] = users.Count(i => !i.ConnectLinkType.HasValue).ToString(CultureInfo.InvariantCulture);
-            data["guests"] = users.Count(i => i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.Guest).ToString(CultureInfo.InvariantCulture);
-            data["linkedusers"] = users.Count(i => i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.LinkedUser).ToString(CultureInfo.InvariantCulture);
 
             data["plugins"] = string.Join(",", _applicationHost.Plugins.Select(i => i.Id).ToArray());
 

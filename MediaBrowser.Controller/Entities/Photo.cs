@@ -62,6 +62,35 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            if (Width.HasValue && Height.HasValue)
+            {
+                double width = Width.Value;
+                double height = Height.Value;
+
+                if (Orientation.HasValue)
+                {
+                    switch (Orientation.Value)
+                    {
+                        case ImageOrientation.LeftBottom:
+                        case ImageOrientation.LeftTop:
+                        case ImageOrientation.RightBottom:
+                        case ImageOrientation.RightTop:
+                            var temp = height;
+                            height = width;
+                            width = temp;
+                            break;
+                    }
+                }
+
+                width /= Height.Value;
+                return width;
+            }
+
+            return base.GetDefaultPrimaryImageAspectRatio();
+        }
+
         public int? Width { get; set; }
         public int? Height { get; set; }
         public string CameraMake { get; set; }

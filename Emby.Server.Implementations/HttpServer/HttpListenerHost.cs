@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -423,6 +424,22 @@ namespace Emby.Server.Implementations.HttpServer
             return true;
         }
 
+        private bool ValidateSsl(string remoteIp, string urlString)
+        {
+            if (_config.Configuration.RequireHttps && _appHost.EnableHttps)
+            {
+                if (urlString.IndexOf("https://", StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    if (!_networkManager.IsInLocalNetwork(remoteIp))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
@@ -453,6 +470,16 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
+                if (!ValidateSsl(httpReq.RemoteIp, urlString))
+                {
+                    var httpsUrl = urlString
+                        .Replace("http://", "https://", StringComparison.OrdinalIgnoreCase)
+                        .Replace(":" + _config.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture), ":" + _config.Configuration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
+
+                    RedirectToUrl(httpRes, httpsUrl);
+                    return;
+                }
+
                 if (string.Equals(httpReq.Verb, "OPTIONS", StringComparison.OrdinalIgnoreCase))
                 {
                     httpRes.StatusCode = 200;
@@ -468,7 +495,7 @@ namespace Emby.Server.Implementations.HttpServer
 
                 enableLog = EnableLogging(urlString, localPath);
                 urlToLog = urlString;
-                 logHeaders = enableLog && urlToLog.IndexOf("/videos/", StringComparison.OrdinalIgnoreCase) != -1;
+                logHeaders = enableLog && urlToLog.IndexOf("/videos/", StringComparison.OrdinalIgnoreCase) != -1;
 
                 if (enableLog)
                 {
@@ -579,7 +606,13 @@ namespace Emby.Server.Implementations.HttpServer
 
             catch (Exception ex)
             {
-                ErrorHandler(ex, httpReq, !string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase));
+                var logException = !string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase);
+
+#if DEBUG
+                logException = true;
+#endif
+
+                ErrorHandler(ex, httpReq, logException);
             }
             finally
             {
@@ -725,6 +758,12 @@ namespace Emby.Server.Implementations.HttpServer
 
         public object DeserializeJson(Type type, Stream stream)
         {
+            //using (var reader = new StreamReader(stream))
+            //{
+            //    var json = reader.ReadToEnd();
+            //    Logger.Info(json);
+            //    return _jsonSerializer.DeserializeFromString(json, type);
+            //}
             return _jsonSerializer.DeserializeFromStream(stream, type);
         }
 

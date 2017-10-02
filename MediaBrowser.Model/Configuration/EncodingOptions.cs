@@ -25,7 +25,8 @@ namespace MediaBrowser.Model.Configuration
             EnableThrottling = true;
             ThrottleDelaySeconds = 180;
             EncodingThreadCount = -1;
-            VaapiDevice = "/dev/dri/card0";
+            // This is a DRM device that is almost guaranteed to be there on every intel platform, plus it's the default one in ffmpeg if you don't specify anything
+            VaapiDevice = "/dev/dri/renderD128";
             H264Crf = 23;
             EnableHardwareEncoding = true;
             EnableSubtitleExtraction = true;

@@ -247,11 +247,6 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        /// <summary>
-        /// The _season zero display name
-        /// </summary>
-        private string _seasonZeroDisplayName;
-
         private bool _wizardCompleted;
         /// <summary>
         /// Records the configuration values.
@@ -259,7 +254,6 @@ namespace Emby.Server.Implementations.Library
         /// <param name="configuration">The configuration.</param>
         private void RecordConfigurationValues(ServerConfiguration configuration)
         {
-            _seasonZeroDisplayName = configuration.SeasonZeroDisplayName;
             _wizardCompleted = configuration.IsStartupWizardCompleted;
         }
 
@@ -272,58 +266,13 @@ namespace Emby.Server.Implementations.Library
         {
             var config = ConfigurationManager.Configuration;
 
-            var newSeasonZeroName = ConfigurationManager.Configuration.SeasonZeroDisplayName;
-            var seasonZeroNameChanged = !string.Equals(_seasonZeroDisplayName, newSeasonZeroName, StringComparison.Ordinal);
             var wizardChanged = config.IsStartupWizardCompleted != _wizardCompleted;
 
             RecordConfigurationValues(config);
 
-            if (seasonZeroNameChanged || wizardChanged)
+            if (wizardChanged)
             {
                 _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
-            }
-
-            if (seasonZeroNameChanged)
-            {
-                Task.Run(async () =>
-                {
-                    await UpdateSeasonZeroNames(newSeasonZeroName, CancellationToken.None).ConfigureAwait(false);
-
-                });
-            }
-        }
-
-        /// <summary>
-        /// Updates the season zero names.
-        /// </summary>
-        /// <param name="newName">The new name.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task UpdateSeasonZeroNames(string newName, CancellationToken cancellationToken)
-        {
-            var seasons = GetItemList(new InternalItemsQuery
-            {
-                IncludeItemTypes = new[] { typeof(Season).Name },
-                Recursive = true,
-                IndexNumber = 0,
-                DtoOptions = new DtoOptions(true)
-
-            }).Cast<Season>()
-                .Where(i => !string.Equals(i.Name, newName, StringComparison.Ordinal))
-                .ToList();
-
-            foreach (var season in seasons)
-            {
-                season.Name = newName;
-
-                try
-                {
-                    await UpdateItem(season, ItemUpdateType.MetadataDownload, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error saving {0}", ex, season.Path);
-                }
             }
         }
 
@@ -432,6 +381,14 @@ namespace Emby.Server.Implementations.Library
                             _logger.Debug("Deleting path {0}", fileSystemInfo.FullName);
                             _fileSystem.DeleteFile(fileSystemInfo.FullName);
                         }
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        // may have already been deleted manually by user
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        // may have already been deleted manually by user
                     }
                     catch (IOException)
                     {

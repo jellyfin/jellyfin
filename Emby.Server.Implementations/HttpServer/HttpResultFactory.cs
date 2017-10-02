@@ -142,8 +142,6 @@ namespace Emby.Server.Implementations.HttpServer
                 throw new ArgumentNullException("result");
             }
 
-            var optimizedResult = ToOptimizedResult(requestContext, result);
-
             if (responseHeaders == null)
             {
                 responseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -154,15 +152,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders["Expires"] = "-1";
             }
 
-            // Apply headers
-            var hasHeaders = optimizedResult as IHasHeaders;
-
-            if (hasHeaders != null)
-            {
-                AddResponseHeaders(hasHeaders, responseHeaders);
-            }
-
-            return optimizedResult;
+            return ToOptimizedResultInternal(requestContext, result, responseHeaders);
         }
 
         public static string GetCompressionType(IRequest request)
@@ -190,6 +180,11 @@ namespace Emby.Server.Implementations.HttpServer
         /// <returns></returns>
         public object ToOptimizedResult<T>(IRequest request, T dto)
         {
+            return ToOptimizedResultInternal(request, dto, null);
+        }
+
+        private object ToOptimizedResultInternal<T>(IRequest request, T dto, IDictionary<string, string> responseHeaders = null)
+        {
             var contentType = request.ResponseContentType;
 
             switch (GetRealContentType(contentType))
@@ -197,27 +192,27 @@ namespace Emby.Server.Implementations.HttpServer
                 case "application/xml":
                 case "text/xml":
                 case "text/xml; charset=utf-8": //"text/xml; charset=utf-8" also matches xml
-                    return SerializeToXmlString(dto);
+                    return GetHttpResult(SerializeToXmlString(dto), contentType, false, responseHeaders);
 
                 case "application/json":
                 case "text/json":
-                    return _jsonSerializer.SerializeToString(dto);
+                    return GetHttpResult(_jsonSerializer.SerializeToString(dto), contentType, false, responseHeaders);
                 default:
+                {
+                    var ms = new MemoryStream();
+                    var writerFn = RequestHelper.GetResponseWriter(HttpListenerHost.Instance, contentType);
+
+                    writerFn(dto, ms);
+
+                    ms.Position = 0;
+
+                    if (string.Equals(request.Verb, "head", StringComparison.OrdinalIgnoreCase))
                     {
-                        var ms = new MemoryStream();
-                        var writerFn = RequestHelper.GetResponseWriter(HttpListenerHost.Instance, contentType);
-
-                        writerFn(dto, ms);
-                        
-                        ms.Position = 0;
-
-                        if (string.Equals(request.Verb, "head", StringComparison.OrdinalIgnoreCase))
-                        {
-                            return GetHttpResult(new byte[] { }, contentType, true);
-                        }
-
-                        return GetHttpResult(ms, contentType, true);
+                        return GetHttpResult(new byte[] { }, contentType, true, responseHeaders);
                     }
+
+                    return GetHttpResult(ms, contentType, true, responseHeaders);
+                }
             }
         }
 
@@ -360,7 +355,7 @@ namespace Emby.Server.Implementations.HttpServer
                 if (IsNotModified(requestContext, cacheKey, lastDateModified, cacheDuration))
                 {
                     AddAgeHeader(responseHeaders, lastDateModified);
-                    AddExpiresHeader(responseHeaders, cacheKeyString, cacheDuration, noCache);
+                    AddExpiresHeader(responseHeaders, cacheKeyString, cacheDuration);
 
                     var result = new HttpResult(new byte[] { }, contentType ?? "text/html", HttpStatusCode.NotModified);
 
@@ -370,7 +365,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
             }
 
-            AddCachingHeaders(responseHeaders, cacheKeyString, lastDateModified, cacheDuration, noCache);
+            AddCachingHeaders(responseHeaders, cacheKeyString, lastDateModified, cacheDuration);
 
             return null;
         }
@@ -423,16 +418,6 @@ namespace Emby.Server.Implementations.HttpServer
             options.ContentFactory = () => Task.FromResult(GetFileStream(path, fileShare));
 
             options.ResponseHeaders = options.ResponseHeaders ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            if (!options.ResponseHeaders.ContainsKey("Content-Disposition"))
-            {
-                // Quotes are valid in linux. They'll possibly cause issues here
-                var filename = (Path.GetFileName(path) ?? string.Empty).Replace("\"", string.Empty);
-                if (!string.IsNullOrWhiteSpace(filename))
-                {
-                    options.ResponseHeaders["Content-Disposition"] = "inline; filename=\"" + filename + "\"";
-                }
-            }
 
             return GetStaticResult(requestContext, options);
         }
@@ -490,7 +475,8 @@ namespace Emby.Server.Implementations.HttpServer
                 return result;
             }
 
-            var isHeadRequest = options.IsHeadRequest;
+            // TODO: We don't really need the option value
+            var isHeadRequest = options.IsHeadRequest || string.Equals(requestContext.Verb, "HEAD", StringComparison.OrdinalIgnoreCase);
             var factoryFn = options.ContentFactory;
             var responseHeaders = options.ResponseHeaders;
 
@@ -555,7 +541,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Adds the caching responseHeaders.
         /// </summary>
-        private void AddCachingHeaders(IDictionary<string, string> responseHeaders, string cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, bool noCache)
+        private void AddCachingHeaders(IDictionary<string, string> responseHeaders, string cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration)
         {
             // Don't specify both last modified and Etag, unless caching unconditionally. They are redundant
             // https://developers.google.com/speed/docs/best-practices/caching#LeverageBrowserCaching
@@ -565,11 +551,11 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders["Last-Modified"] = lastDateModified.Value.ToString("r");
             }
 
-            if (!noCache && cacheDuration.HasValue)
+            if (cacheDuration.HasValue)
             {
                 responseHeaders["Cache-Control"] = "public, max-age=" + Convert.ToInt32(cacheDuration.Value.TotalSeconds);
             }
-            else if (!noCache && !string.IsNullOrEmpty(cacheKey))
+            else if (!string.IsNullOrEmpty(cacheKey))
             {
                 responseHeaders["Cache-Control"] = "public";
             }
@@ -579,15 +565,15 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders["pragma"] = "no-cache, no-store, must-revalidate";
             }
 
-            AddExpiresHeader(responseHeaders, cacheKey, cacheDuration, noCache);
+            AddExpiresHeader(responseHeaders, cacheKey, cacheDuration);
         }
 
         /// <summary>
         /// Adds the expires header.
         /// </summary>
-        private void AddExpiresHeader(IDictionary<string, string> responseHeaders, string cacheKey, TimeSpan? cacheDuration, bool noCache)
+        private void AddExpiresHeader(IDictionary<string, string> responseHeaders, string cacheKey, TimeSpan? cacheDuration)
         {
-            if (!noCache && cacheDuration.HasValue)
+            if (cacheDuration.HasValue)
             {
                 responseHeaders["Expires"] = DateTime.UtcNow.Add(cacheDuration.Value).ToString("r");
             }

@@ -571,7 +571,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            if (!(item is LiveTvProgram) || fields.Contains(ItemFields.PlayAccess))
+            if (/*!(item is LiveTvProgram) ||*/ fields.Contains(ItemFields.PlayAccess))
             {
                 dto.PlayAccess = item.GetPlayAccess(user);
             }
@@ -1642,6 +1642,9 @@ namespace Emby.Server.Implementations.Dto
                     return null;
                 }
 
+                return null;
+                _logger.Info("Getting image size for item type {0}", item.GetType().Name);
+
                 try
                 {
                     size = _imageProcessor.GetImageSize(imageInfo);
@@ -1671,22 +1674,6 @@ namespace Emby.Server.Implementations.Dto
             if (width.Equals(0) || height.Equals(0))
             {
                 return null;
-            }
-
-            var photo = item as Photo;
-            if (photo != null && photo.Orientation.HasValue)
-            {
-                switch (photo.Orientation.Value)
-                {
-                    case ImageOrientation.LeftBottom:
-                    case ImageOrientation.LeftTop:
-                    case ImageOrientation.RightBottom:
-                    case ImageOrientation.RightTop:
-                        var temp = height;
-                        height = width;
-                        width = temp;
-                        break;
-                }
             }
 
             return width / height;

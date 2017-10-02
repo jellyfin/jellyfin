@@ -13,6 +13,7 @@ using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -515,7 +516,7 @@ namespace Emby.Dlna.PlayTo
             {
                 return new ContentFeatureBuilder(profile)
                     .BuildAudioHeader(streamInfo.Container,
-                    streamInfo.TargetAudioCodec,
+                    streamInfo.TargetAudioCodec.FirstOrDefault(),
                     streamInfo.TargetAudioBitrate,
                     streamInfo.TargetAudioSampleRate,
                     streamInfo.TargetAudioChannels,
@@ -529,8 +530,8 @@ namespace Emby.Dlna.PlayTo
             {
                 var list = new ContentFeatureBuilder(profile)
                     .BuildVideoHeader(streamInfo.Container,
-                    streamInfo.TargetVideoCodec,
-                    streamInfo.TargetAudioCodec,
+                    streamInfo.TargetVideoCodec.FirstOrDefault(),
+                    streamInfo.TargetAudioCodec.FirstOrDefault(),
                     streamInfo.TargetWidth,
                     streamInfo.TargetHeight,
                     streamInfo.TargetVideoBitDepth,

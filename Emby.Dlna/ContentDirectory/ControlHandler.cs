@@ -1101,7 +1101,7 @@ namespace Emby.Dlna.ContentDirectory
                 StartIndex = query.StartIndex,
                 UserId = query.User.Id.ToString("N")
 
-            }, new List<Folder> { (Folder)parent }, query.DtoOptions);
+            }, new List<BaseItem> { parent }, query.DtoOptions);
 
             return ToResult(result);
         }
