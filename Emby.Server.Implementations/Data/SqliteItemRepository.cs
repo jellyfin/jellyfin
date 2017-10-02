@@ -120,13 +120,13 @@ namespace Emby.Server.Implementations.Data
 
         protected override void CloseConnection()
         {
-            base.CloseConnection();
-
             if (_shrinkMemoryTimer != null)
             {
                 _shrinkMemoryTimer.Dispose();
                 _shrinkMemoryTimer = null;
             }
+
+            base.CloseConnection();
         }
 
         /// <summary>
@@ -3750,7 +3750,7 @@ namespace Emby.Server.Implementations.Data
 
             if (query.MinDateLastSaved.HasValue)
             {
-                whereClauses.Add("DateLastSaved>=@MinDateLastSaved");
+                whereClauses.Add("(DateLastSaved not null and DateLastSaved>=@MinDateLastSavedForUser)");
                 if (statement != null)
                 {
                     statement.TryBind("@MinDateLastSaved", query.MinDateLastSaved.Value);
@@ -3759,7 +3759,7 @@ namespace Emby.Server.Implementations.Data
 
             if (query.MinDateLastSavedForUser.HasValue)
             {
-                whereClauses.Add("DateLastSaved>=@MinDateLastSavedForUser");
+                whereClauses.Add("(DateLastSaved not null and DateLastSaved>=@MinDateLastSavedForUser)");
                 if (statement != null)
                 {
                     statement.TryBind("@MinDateLastSavedForUser", query.MinDateLastSavedForUser.Value);

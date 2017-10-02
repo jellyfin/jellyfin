@@ -1,0 +1,54 @@
+﻿<div class="formDialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
+    <h3 class="formDialogHeaderTitle">
+        ${HeaderUploadImage}
+    </h3>
+</div>
+
+<div class="formDialogContent">
+    <div class="dialogContentInner">
+
+        <form class="uploadItemImageForm" style="max-width: 100%;">
+
+            <div class="flex align-items-center" style="margin:1.5em 0;">
+                <h2 style="margin:0;">${HeaderAddUpdateImage}</h2>
+
+                <button is="emby-button" type="button" class="raised raised-mini btnBrowse" style="margin-left:1.5em;border-radius:500px;">
+                    <span>${Browse}</span>
+                </button>
+            </div>
+            <div>
+                <div class="imageEditor-dropZone fieldDescription">
+                    <div>${LabelDropImageHere}</div>
+                    <output id="imageOutput" class="flex align-items-center justify-content-center" style="position: absolute;top:0;left:0;right:0;bottom:0;width:100%;"></output>
+                    <input type="file" accept="image/*" id="uploadImage" name="uploadImage" style="position: absolute;top:0;left:0;right:0;bottom:0;width:100%;opacity:0;" />
+                </div>
+                <div id="fldUpload" class="hide">
+                    <br />
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selectImageType" name="selectImageType" label="${LabelImageType}">
+                            <option value="Primary">${Primary}</option>
+                            <option value="Art">${Art}</option>
+                            <option value="Backdrop">${Backdrop}</option>
+                            <option value="Banner">${Banner}</option>
+                            <option value="Box">${Box}</option>
+                            <option value="BoxRear">${BoxRear}</option>
+                            <option value="Disc">${Disc}</option>
+                            <option value="Logo">${Logo}</option>
+                            <option value="Menu">${Menu}</option>
+                            <option value="Screenshot">${Screenshot}</option>
+                            <option value="Thumb">${Thumb}</option>
+                        </select>
+                    </div>
+                    <button is="emby-button" type="submit" class="raised button-submit block">
+                        <span>${Upload}</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+

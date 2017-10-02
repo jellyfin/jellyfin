@@ -209,8 +209,8 @@ namespace Emby.Dlna.Didl
             var targetHeight = streamInfo.TargetHeight;
 
             var contentFeatureList = new ContentFeatureBuilder(_profile).BuildVideoHeader(streamInfo.Container,
-                streamInfo.TargetVideoCodec,
-                streamInfo.TargetAudioCodec,
+                streamInfo.TargetVideoCodec.FirstOrDefault(),
+                streamInfo.TargetAudioCodec.FirstOrDefault(),
                 targetWidth,
                 targetHeight,
                 streamInfo.TargetVideoBitDepth,
@@ -353,8 +353,8 @@ namespace Emby.Dlna.Didl
             }
 
             var mediaProfile = _profile.GetVideoMediaProfile(streamInfo.Container,
-                streamInfo.TargetAudioCodec,
-                streamInfo.TargetVideoCodec,
+                streamInfo.TargetAudioCodec.FirstOrDefault(),
+                streamInfo.TargetVideoCodec.FirstOrDefault(),
                 streamInfo.TargetAudioBitrate,
                 targetWidth,
                 targetHeight,
@@ -554,7 +554,7 @@ namespace Emby.Dlna.Didl
             }
 
             var mediaProfile = _profile.GetAudioMediaProfile(streamInfo.Container,
-                streamInfo.TargetAudioCodec,
+                streamInfo.TargetAudioCodec.FirstOrDefault(),
                 targetChannels,
                 targetAudioBitrate,
                 targetSampleRate,
@@ -567,7 +567,7 @@ namespace Emby.Dlna.Didl
                 : mediaProfile.MimeType;
 
             var contentFeatures = new ContentFeatureBuilder(_profile).BuildAudioHeader(streamInfo.Container,
-                streamInfo.TargetAudioCodec,
+                streamInfo.TargetAudioCodec.FirstOrDefault(),
                 targetAudioBitrate,
                 targetSampleRate,
                 targetChannels,
@@ -1141,17 +1141,17 @@ namespace Emby.Dlna.Didl
             int? width = null;
             int? height = null;
 
-            try
-            {
-                var size = _imageProcessor.GetImageSize(imageInfo);
+            //try
+            //{
+            //    var size = _imageProcessor.GetImageSize(imageInfo);
 
-                width = Convert.ToInt32(size.Width);
-                height = Convert.ToInt32(size.Height);
-            }
-            catch
-            {
+            //    width = Convert.ToInt32(size.Width);
+            //    height = Convert.ToInt32(size.Height);
+            //}
+            //catch
+            //{
 
-            }
+            //}
 
             var inputFormat = (Path.GetExtension(imageInfo.Path) ?? string.Empty)
                 .TrimStart('.')

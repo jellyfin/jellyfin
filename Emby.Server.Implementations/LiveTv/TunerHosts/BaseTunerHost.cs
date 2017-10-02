@@ -193,9 +193,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return new List<MediaSourceInfo>();
         }
 
-        protected abstract Task<LiveStream> GetChannelStream(TunerHostInfo tuner, string channelId, string streamId, CancellationToken cancellationToken);
+        protected abstract Task<ILiveStream> GetChannelStream(TunerHostInfo tuner, string channelId, string streamId, CancellationToken cancellationToken);
 
-        public async Task<LiveStream> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken)
+        public async Task<ILiveStream> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(channelId))
             {
@@ -247,7 +247,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 try
                 {
                     var liveStream = await GetChannelStream(host, channelId, streamId, cancellationToken).ConfigureAwait(false);
+                    var startTime = DateTime.UtcNow;
                     await liveStream.Open(cancellationToken).ConfigureAwait(false);
+                    var endTime = DateTime.UtcNow;
+                    Logger.Info("Live stream opened after {0}ms", (endTime - startTime).TotalMilliseconds);
                     return liveStream;
                 }
                 catch (Exception ex)

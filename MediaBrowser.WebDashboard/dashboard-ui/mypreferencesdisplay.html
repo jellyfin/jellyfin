@@ -1,11 +1,10 @@
 ﻿<div id="displayPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderDisplaySettings}" data-backbutton="true">
     <div class="padded-left padded-right padded-bottom-page">
         <form class="displayPreferencesForm userProfileSettingsForm" style="margin: 0 auto;">
-            <div class="detailSection">
-                <h1>
+            <div class="verticalSection">
+                <h1 class="sectionTitle">
                     ${HeaderDisplay}
                 </h1>
-                <br />
                 <div class="selectContainer">
                     <select id="selectTheme" is="emby-select" label="${LabelTheme}">
                     </select>
@@ -17,7 +16,7 @@
                     <div class="fieldDescription">${FeatureRequiresEmbyPremiere}</div>
                 </div>
             </div>
-            <div class="detailSection languageSection hide">
+            <div class="verticalSection languageSection hide">
                 <div class="selectContainer">
                     <select id="selectLanguage" is="emby-select" label="${LabelPreferredDisplayLanguage}">
                         <option value="">${OptionAuto}</option>
@@ -63,7 +62,7 @@
                     </div>
                 </div>
             </div>
-            <div class="detailSection">
+            <div class="verticalSection">
                 <div class="fldEnableBackdrops selectContainer">
                     <select id="selectBackdrop" is="emby-select" label="${LabelEnableBackdrops}">
                         <option value="1">${OptionYes}</option>
@@ -79,7 +78,7 @@
                     <div class="fieldDescription checkboxFieldDescription">${LabelEnableThemeSongsHelp}</div>
                 </div>
             </div>
-            <div class="detailSection">
+            <div class="verticalSection">
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label>
                         <input type="checkbox" is="emby-checkbox" class="chkDisplayMissingEpisodes" />

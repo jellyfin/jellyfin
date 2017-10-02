@@ -19,12 +19,14 @@ namespace Emby.Server.Implementations.Data
     public class SqliteDisplayPreferencesRepository : BaseSqliteRepository, IDisplayPreferencesRepository
     {
         private readonly IMemoryStreamFactory _memoryStreamProvider;
+        protected IFileSystem FileSystem { get; private set; }
 
-        public SqliteDisplayPreferencesRepository(ILogger logger, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, IMemoryStreamFactory memoryStreamProvider)
+        public SqliteDisplayPreferencesRepository(ILogger logger, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, IMemoryStreamFactory memoryStreamProvider, IFileSystem fileSystem)
             : base(logger)
         {
             _jsonSerializer = jsonSerializer;
             _memoryStreamProvider = memoryStreamProvider;
+            FileSystem = fileSystem;
             DbFilePath = Path.Combine(appPaths.DataPath, "displaypreferences.db");
         }
 
@@ -45,11 +47,27 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         private readonly IJsonSerializer _jsonSerializer;
 
+        public void Initialize()
+        {
+            try
+            {
+                InitializeInternal();
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error loading database file. Will reset and retry.", ex);
+
+                FileSystem.DeleteFile(DbFilePath);
+
+                InitializeInternal();
+            }
+        }
+
         /// <summary>
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
-        public void Initialize()
+        private void InitializeInternal()
         {
             using (var connection = CreateConnection())
             {

@@ -1006,7 +1006,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         }
 
         private readonly SemaphoreSlim _liveStreamsSemaphore = new SemaphoreSlim(1, 1);
-        private readonly List<LiveStream> _liveStreams = new List<LiveStream>();
+        private readonly List<ILiveStream> _liveStreams = new List<ILiveStream>();
 
         public async Task<MediaSourceInfo> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken)
         {
@@ -1039,7 +1039,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return mediaSource;
         }
 
-        public async Task<LiveStream> GetLiveStream(string uniqueId)
+        public async Task<ILiveStream> GetLiveStream(string uniqueId)
         {
             await _liveStreamsSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -1055,7 +1055,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         }
 
-        private async Task<Tuple<LiveStream, MediaSourceInfo, ITunerHost>> GetChannelStreamInternal(string channelId, string streamId, CancellationToken cancellationToken)
+        private async Task<Tuple<ILiveStream, MediaSourceInfo, ITunerHost>> GetChannelStreamInternal(string channelId, string streamId, CancellationToken cancellationToken)
         {
             _logger.Info("Streaming Channel " + channelId);
 
@@ -1072,7 +1072,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     _logger.Info("Live stream {0} consumer count is now {1}", streamId, result.ConsumerCount);
 
-                    return new Tuple<LiveStream, MediaSourceInfo, ITunerHost>(result, openedMediaSource, result.TunerHost);
+                    return new Tuple<ILiveStream, MediaSourceInfo, ITunerHost>(result, openedMediaSource, result.TunerHost);
                 }
 
                 foreach (var hostInstance in _liveTvManager.TunerHosts)
@@ -1092,7 +1092,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         _logger.Info("Returning mediasource streamId {0}, mediaSource.Id {1}, mediaSource.LiveStreamId {2}",
                             streamId, openedMediaSource.Id, openedMediaSource.LiveStreamId);
 
-                        return new Tuple<LiveStream, MediaSourceInfo, ITunerHost>(result, openedMediaSource, hostInstance);
+                        return new Tuple<ILiveStream, MediaSourceInfo, ITunerHost>(result, openedMediaSource, hostInstance);
                     }
                     catch (FileNotFoundException)
                     {
@@ -1718,7 +1718,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 var parent = _fileSystem.GetDirectoryName(originalPath);
                 var name = Path.GetFileNameWithoutExtension(originalPath);
-                name += "-" + index.ToString(CultureInfo.InvariantCulture);
+                name += " - " + index.ToString(CultureInfo.InvariantCulture);
 
                 path = Path.ChangeExtension(Path.Combine(parent, name), Path.GetExtension(originalPath));
                 index++;

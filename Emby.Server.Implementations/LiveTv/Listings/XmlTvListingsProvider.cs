@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             if (!path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return path;
+                return UnzipIfNeeded(path, path);
             }
 
             var cacheFilename = DateTime.UtcNow.DayOfYear.ToString(CultureInfo.InvariantCulture) + "-" + DateTime.UtcNow.Hour.ToString(CultureInfo.InvariantCulture) + ".xml";
@@ -94,46 +94,30 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(cacheFile));
 
-            using (var stream = _fileSystem.OpenRead(tempFile))
-            {
-                using (var reader = new StreamReader(stream, Encoding.UTF8))
-                {
-                    using (var fileStream = _fileSystem.GetFileStream(cacheFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
-                    {
-                        using (var writer = new StreamWriter(fileStream))
-                        {
-                            while (!reader.EndOfStream)
-                            {
-                                writer.WriteLine(reader.ReadLine());
-                            }
-                        }
-                    }
-                }
-            }
+            _fileSystem.CopyFile(tempFile, cacheFile, true);
 
-            _logger.Debug("Returning xmltv path {0}", cacheFile);
             return UnzipIfNeeded(path, cacheFile);
         }
 
         private string UnzipIfNeeded(string originalUrl, string file)
         {
-            //var ext = Path.GetExtension(originalUrl);
+            var ext = Path.GetExtension(originalUrl.Split('?')[0]);
 
-            //if (string.Equals(ext, ".gz", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    using (var stream = _fileSystem.OpenRead(file))
-            //    {
-            //        var tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
-            //        _fileSystem.CreateDirectory(tempFolder);
+            if (string.Equals(ext, ".gz", StringComparison.OrdinalIgnoreCase))
+            {
+                using (var stream = _fileSystem.OpenRead(file))
+                {
+                    var tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
+                    _fileSystem.CreateDirectory(tempFolder);
 
-            //        _zipClient.ExtractAllFromZip(stream, tempFolder, true);
+                    _zipClient.ExtractAllFromGz(stream, tempFolder, true);
 
-            //        return _fileSystem.GetFiles(tempFolder, true)
-            //            .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
-            //            .Select(i => i.FullName)
-            //            .FirstOrDefault();
-            //    }
-            //}
+                    return _fileSystem.GetFiles(tempFolder, true)
+                        .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
+                        .Select(i => i.FullName)
+                        .FirstOrDefault();
+                }
+            }
 
             return file;
         }

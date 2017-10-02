@@ -40,7 +40,9 @@ namespace Emby.Drawing.Skia
                     "jpeg",
                     "jpg",
                     "png",
+
                     "dng",
+
                     "webp",
                     "gif",
                     "bmp",
@@ -51,7 +53,8 @@ namespace Emby.Drawing.Skia
                     "wbmp",
 
                     // working on windows at least
-                    "cr2"
+                    "cr2",
+                    "nef"
                 };
             }
         }
@@ -459,7 +462,6 @@ namespace Emby.Drawing.Skia
                 //_logger.Info("Color type {0}", bitmap.Info.ColorType);
 
                 var originalImageSize = new ImageSize(bitmap.Width, bitmap.Height);
-                ImageHelper.SaveImageSize(inputPath, dateModified, originalImageSize);
 
                 if (!options.CropWhiteSpace && options.HasDefaultOptions(inputPath, originalImageSize) && !autoOrient)
                 {

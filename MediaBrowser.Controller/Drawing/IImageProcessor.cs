@@ -117,8 +117,6 @@ namespace MediaBrowser.Controller.Drawing
 
         IImageEncoder ImageEncoder { get; set; }
 
-        void SaveImageSize(string path, DateTime imageDateModified, ImageSize size);
-
         bool SupportsTransparency(string path);
     }
 }

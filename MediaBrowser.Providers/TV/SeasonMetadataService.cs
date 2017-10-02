@@ -8,9 +8,7 @@ using MediaBrowser.Providers.Manager;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.TV
@@ -23,9 +21,11 @@ namespace MediaBrowser.Providers.TV
 
             if (item.IndexNumber.HasValue && item.IndexNumber.Value == 0)
             {
-                if (!string.Equals(item.Name, ServerConfigurationManager.Configuration.SeasonZeroDisplayName, StringComparison.OrdinalIgnoreCase))
+                var seasonZeroDisplayName = LibraryManager.GetLibraryOptions(item).SeasonZeroDisplayName;
+
+                if (!string.Equals(item.Name, seasonZeroDisplayName, StringComparison.OrdinalIgnoreCase))
                 {
-                    item.Name = ServerConfigurationManager.Configuration.SeasonZeroDisplayName;
+                    item.Name = seasonZeroDisplayName;
                     updateType = updateType | ItemUpdateType.MetadataEdit;
                 }
             }

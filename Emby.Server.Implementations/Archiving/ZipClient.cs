@@ -4,6 +4,7 @@ using SharpCompress.Archives.Rar;
 using SharpCompress.Archives.SevenZip;
 using SharpCompress.Archives.Tar;
 using SharpCompress.Readers;
+using SharpCompress.Readers.GZip;
 using SharpCompress.Readers.Zip;
 
 namespace Emby.Server.Implementations.Archiving
@@ -59,6 +60,22 @@ namespace Emby.Server.Implementations.Archiving
         public void ExtractAllFromZip(Stream source, string targetPath, bool overwriteExistingFiles)
         {
             using (var reader = ZipReader.Open(source))
+            {
+                var options = new ExtractionOptions();
+                options.ExtractFullPath = true;
+
+                if (overwriteExistingFiles)
+                {
+                    options.Overwrite = true;
+                }
+
+                reader.WriteAllToDirectory(targetPath, options);
+            }
+        }
+
+        public void ExtractAllFromGz(Stream source, string targetPath, bool overwriteExistingFiles)
+        {
+            using (var reader = GZipReader.Open(source))
             {
                 var options = new ExtractionOptions();
                 options.ExtractFullPath = true;

@@ -4,7 +4,7 @@
 
         <form class="manualLoginForm hide" style="margin: 0 auto;">
 
-            <h1 style="text-align: left;">${HeaderPleaseSignIn}</h1>
+            <h1 style="margin-top:1em;text-align: left;">${HeaderPleaseSignIn}</h1>
 
             <div style="height:0; overflow: hidden;"><input type="text" name="fakeusernameremembered" tabindex="-1" /><input type="password" name="fakepasswordremembered" tabindex="-1" /></div>
 
@@ -34,11 +34,8 @@
         </form>
 
         <div class="visualLoginForm" style="text-align: center;">
-            <h1>${HeaderPleaseSignIn}</h1>
-            <br />
+            <h1 style="margin-top:1em;">${HeaderPleaseSignIn}</h1>
             <div id="divUsers" class="itemsContainer vertical-wrap centered"></div>
-
-            <br />
 
             <div class="readOnlyContent" style="margin: 2em auto 0;">
                 <button is="emby-button" type="button" class="raised cancel block btnManual">
@@ -53,10 +50,8 @@
             </button>
 
             <div class="connectButtons hide">
-                <a href="selectserver.html" class="clearLink">
-                    <button is="emby-button" type="button" class="raised cancel block">
-                        <span>${ButtonChangeServer}</span>
-                    </button>
+                <a is="emby-linkbutton" href="selectserver.html" class="raised block">
+                    <span>${ButtonChangeServer}</span>
                 </a>
             </div>
 

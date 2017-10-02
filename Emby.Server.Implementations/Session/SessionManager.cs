@@ -1406,11 +1406,19 @@ namespace Emby.Server.Implementations.Session
                     .FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (user != null && !string.IsNullOrWhiteSpace(request.DeviceId))
+            if (user != null)
             {
-                if (!_deviceManager.CanAccessDevice(user.Id.ToString("N"), request.DeviceId))
+                if (!user.IsParentalScheduleAllowed())
                 {
-                    throw new SecurityException("User is not allowed access from this device.");
+                    throw new SecurityException("User is not allowed access at this time.");
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.DeviceId))
+                {
+                    if (!_deviceManager.CanAccessDevice(user.Id.ToString("N"), request.DeviceId))
+                    {
+                        throw new SecurityException("User is not allowed access from this device.");
+                    }
                 }
             }
 

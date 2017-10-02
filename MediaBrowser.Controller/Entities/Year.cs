@@ -32,6 +32,14 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public override double? GetDefaultPrimaryImageAspectRatio()
+        {
+            double value = 2;
+            value /= 3;
+
+            return value;
+        }
+
         [IgnoreDataMember]
         public override bool SupportsAncestors
         {

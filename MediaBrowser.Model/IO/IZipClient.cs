@@ -23,6 +23,8 @@ namespace MediaBrowser.Model.IO
         /// <param name="overwriteExistingFiles">if set to <c>true</c> [overwrite existing files].</param>
         void ExtractAll(Stream source, string targetPath, bool overwriteExistingFiles);
 
+        void ExtractAllFromGz(Stream source, string targetPath, bool overwriteExistingFiles);
+
         /// <summary>
         /// Extracts all from zip.
         /// </summary>

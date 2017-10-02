@@ -99,7 +99,7 @@
 
                             <div>
                                 <h2 style="vertical-align:middle;display:inline-block;">${HeaderHttpHeaders}</h2>
-                                <button is="emby-button" type="button" class="raised submit mini btnAddIdentificationHttpHeader" style="margin-left:1em;">
+                                <button is="emby-button" type="button" class="raised submit raised-mini btnAddIdentificationHttpHeader" style="margin-left:1em;">
                                     <i class="md-icon">add</i>
                                     <span>${ButtonNew}</span>
                                 </button>
@@ -131,46 +131,38 @@
 
                     <div is="emby-collapse" title="${HeaderImageSettings}">
                         <div class="collapseContent">
-                            <br />
-                            <div>
-                                <label for="chkEnableAlbumArtInDidl">${LabelEmbedAlbumArtDidl}</label>
-                                <input type="checkbox" id="chkEnableAlbumArtInDidl" data-mini="true" />
-                                <div class="fieldDescription">${LabelEmbedAlbumArtDidlHelp}</div>
+                            <div class="checkboxContainer checkboxContainer-withDescription">
+                                <label>
+                                    <input is="emby-checkbox" type="checkbox" id="chkEnableAlbumArtInDidl" data-mini="true" />
+                                    <span>${LabelEmbedAlbumArtDidl}</span>
+                                </label>
+                                <div class="fieldDescription checkboxFieldDescription">${LabelEmbedAlbumArtDidlHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="chkEnableSingleImageLimit">${LabelEnableSingleImageInDidlLimit}</label>
-                                <input type="checkbox" id="chkEnableSingleImageLimit" data-mini="true" />
-                                <div class="fieldDescription">${LabelEnableSingleImageInDidlLimitHelp}</div>
+                            <div class="checkboxContainer checkboxContainer-withDescription">
+                                <label>
+                                    <input is="emby-checkbox" type="checkbox" id="chkEnableSingleImageLimit" data-mini="true" />
+                                    <span>${LabelEnableSingleImageInDidlLimit}</span>
+                                </label>
+                                <div class="fieldDescription checkboxFieldDescription">${LabelEnableSingleImageInDidlLimitHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtAlbumArtPn">${LabelAlbumArtPN}</label>
-                                <input type="text" id="txtAlbumArtPn" />
+                            <div class="inputContainer">
+                                <input type="text" is="emby-input" id="txtAlbumArtPn" label="${LabelAlbumArtPN}" />
                                 <div class="fieldDescription">${LabelAlbumArtHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtAlbumArtMaxWidth">${LabelAlbumArtMaxWidth}</label>
-                                <input type="number" id="txtAlbumArtMaxWidth" pattern="[0-9]*" min="1" />
+                            <div class="inputContainer">
+                                <input type="number" is="emby-input" id="txtAlbumArtMaxWidth" pattern="[0-9]*" min="1" label="${LabelAlbumArtMaxWidth}" />
                                 <div class="fieldDescription">${LabelAlbumArtMaxWidthHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtAlbumArtMaxHeight">${LabelAlbumArtMaxHeight}</label>
-                                <input type="number" id="txtAlbumArtMaxHeight" pattern="[0-9]*" min="1" />
+                            <div class="inputContainer">
+                                <input type="number" is="emby-input" id="txtAlbumArtMaxHeight" pattern="[0-9]*" min="1" label="${LabelAlbumArtMaxHeight}" />
                                 <div class="fieldDescription">${LabelAlbumArtMaxHeightHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtIconMaxWidth">${LabelIconMaxWidth}</label>
-                                <input type="number" id="txtIconMaxWidth" pattern="[0-9]*" min="1" />
+                            <div class="inputContainer">
+                                <input type="number" is="emby-input" id="txtIconMaxWidth" pattern="[0-9]*" min="1" label="${LabelIconMaxWidth}" />
                                 <div class="fieldDescription">${LabelIconMaxWidthHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtIconMaxHeight">${LabelIconMaxHeight}</label>
-                                <input type="number" id="txtIconMaxHeight" pattern="[0-9]*" min="1" />
+                            <div class="inputContainer">
+                                <input type="number" is="emby-input" id="txtIconMaxHeight" pattern="[0-9]*" min="1" label="${LabelIconMaxHeight}" />
                                 <div class="fieldDescription">${LabelIconMaxHeightHelp}</div>
                             </div>
                         </div>
@@ -179,68 +171,44 @@
                     <div is="emby-collapse" title="${HeaderServerSettings}">
                         <div class="collapseContent">
                             <p>${HeaderProfileServerSettingsHelp}</p>
-                            <br />
-                            <div>
-                                <label for="txtInfoFriendlyName">${LabelFriendlyName}</label>
-                                <input type="text" id="txtInfoFriendlyName" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtInfoFriendlyName" label="${LabelFriendlyName}" />
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtInfoManufacturer">${LabelManufacturer}</label>
-                                <input type="text" id="txtInfoManufacturer" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtInfoManufacturer" label="${LabelManufacturer}" />
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtInfoManufacturerUrl">${LabelManufacturerUrl}</label>
-                                <input type="text" id="txtInfoManufacturerUrl" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtInfoManufacturerUrl" label="${LabelManufacturerUrl}" />
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtInfoModelName">${LabelModelName}</label>
-                                <input type="text" id="txtInfoModelName" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtInfoModelName" label="${LabelModelName}" />
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtInfoModelNumber">${LabelModelNumber}</label>
-                                <input type="text" id="txtInfoModelNumber" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtInfoModelNumber" label="${LabelModelNumber}" />
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtInfoModelDesription">${LabelModelDescription}</label>
-                                <input type="text" id="txtInfoModelDesription" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtInfoModelDesription" label="${LabelModelDescription}" />
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtInfoModelUrl">${LabelModelUrl}</label>
-                                <input type="text" id="txtInfoModelUrl" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtInfoModelUrl" label="${LabelModelUrl}" />
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtInfoSerialNumber">${LabelSerialNumber}</label>
-                                <input type="text" id="txtInfoSerialNumber" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtInfoSerialNumber" label="${LabelSerialNumber}" />
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtProtocolInfo">${LabelProtocolInfo}</label>
-                                <input type="text" id="txtProtocolInfo" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtProtocolInfo" label="${LabelProtocolInfo}" />
                                 <div class="fieldDescription">${LabelProtocolInfoHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtXDlnaCap">${LabelXDlnaCap}</label>
-                                <input type="text" id="txtXDlnaCap" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtXDlnaCap" label="${LabelXDlnaCap}" />
                                 <div class="fieldDescription">${LabelXDlnaCapHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtXDlnaDoc">${LabelXDlnaDoc}</label>
-                                <input type="text" id="txtXDlnaDoc" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtXDlnaDoc" label="${LabelXDlnaDoc}" />
                                 <div class="fieldDescription">${LabelXDlnaDocHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtSonyAggregationFlags">${LabelSonyAggregationFlags}</label>
-                                <input type="text" id="txtSonyAggregationFlags" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtSonyAggregationFlags" label="${LabelSonyAggregationFlags}" />
                                 <div class="fieldDescription">${LabelSonyAggregationFlagsHelp}</div>
                             </div>
                         </div>
@@ -249,7 +217,10 @@
                     <div is="emby-collapse" title="${HeaderSubtitleProfiles}">
                         <div class="collapseContent">
                             <p>${HeaderSubtitleProfilesHelp}</p>
-                            <p><button type="button" class="btnAddSubtitleProfile" data-icon="plus">${ButtonAdd}</button></p>
+                            <button is="emby-button" type="button" class="raised submit raised-mini btnAddSubtitleProfile">
+                                <i class="md-icon">add</i>
+                                <span>${ButtonAdd}</span>
+                            </button>
                             <div class="subtitleProfileList"></div>
                             <br />
                         </div>
@@ -259,9 +230,9 @@
                         <div class="collapseContent">
                             <div>
                                 <h2 style="vertical-align:middle;display:inline-block;">${HeaderXmlDocumentAttributes}</h2>
-                                <button is="emby-button" type="button" class="raised submit mini btnAddXmlDocumentAttribute" style="margin-left:1em;">
+                                <button is="emby-button" type="button" class="raised submit raised-mini btnAddXmlDocumentAttribute" style="margin-left:1em;">
                                     <i class="md-icon">add</i>
-                                    <span>${ButtonNew}</span>
+                                    <span>${ButtonAdd}</span>
                                 </button>
                             </div>
                             <div class="xmlDocumentAttributeList"></div>

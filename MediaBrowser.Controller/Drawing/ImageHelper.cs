@@ -21,11 +21,6 @@ namespace MediaBrowser.Controller.Drawing
 
         public static IImageProcessor ImageProcessor { get; set; }
 
-        public static void SaveImageSize(string path, DateTime dateModified, ImageSize size)
-        {
-            ImageProcessor.SaveImageSize(path, dateModified, size);
-        }
-
         private static ImageSize GetSizeEstimate(ImageProcessingOptions options)
         {
             if (options.Width.HasValue && options.Height.HasValue)

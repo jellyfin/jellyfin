@@ -38,6 +38,11 @@
     <select is="emby-select" id="selectAutoRefreshInterval" label="${LabelAutomaticallyRefreshInternetMetadataEvery}"></select>
     <div class="fieldDescription">${MessageEnablingOptionLongerScans}</div>
 </div>
+
+
+<div class="inputContainer fldSeasonZeroDisplayName hide">
+    <input is="emby-input" type="text" id="txtSeasonZeroName" label="${LabelSeasonZeroDisplayName}" required />
+</div>
 <div class="checkboxContainer checkboxContainer-withDescription chkEnableEmbeddedTitlesContainer hide">
     <label>
         <input is="emby-checkbox" type="checkbox" id="chkEnableEmbeddedTitles" />
@@ -54,20 +59,20 @@
     <div class="fieldDescription checkboxFieldDescription">${LabelEnableRealtimeMonitorHelp}</div>
 </div>
 
-<div class="checkboxContainer checkboxContainer-withDescription hide chkImportMissingEpisodesContainer">
-    <label>
-        <input is="emby-checkbox" type="checkbox" id="chkImportMissingEpisodes" />
-        <span>${LabelDisplayMissingEpisodesWithinSeasons}</span>
-    </label>
-    <div class="fieldDescription checkboxFieldDescription">${ImportMissingEpisodesHelp}</div>
-</div>
-
 <div class="checkboxContainer checkboxContainer-withDescription chkAutomaticallyGroupSeriesContainer hide">
     <label>
         <input type="checkbox" is="emby-checkbox" class="chkAutomaticallyGroupSeries" checked />
         <span>${OptionAutomaticallyGroupSeries}</span>
     </label>
     <div class="fieldDescription checkboxFieldDescription">${OptionAutomaticallyGroupSeriesHelp}</div>
+</div>
+
+<div class="checkboxContainer checkboxContainer-withDescription hide chkImportMissingEpisodesContainer">
+    <label>
+        <input is="emby-checkbox" type="checkbox" id="chkImportMissingEpisodes" />
+        <span>${LabelDisplayMissingEpisodesWithinSeasons}</span>
+    </label>
+    <div class="fieldDescription checkboxFieldDescription">${ImportMissingEpisodesHelp}</div>
 </div>
 
 <div class="chapterSettingsSection hide">
