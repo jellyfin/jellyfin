@@ -1899,7 +1899,7 @@
     "LabelOptionalNetworkPathHelp": "Om denna mappen delas p\u00e5 ditt n\u00e4tverk, kan den delade s\u00f6kv\u00e4gen till\u00e5ta Emby-appar p\u00e5 andra enheter att streama mediafiler direkt.",
     "ButtonPlayExternalPlayer": "Spela upp med extern uppspelare",
     "NotScheduledToRecord": "Ej schemalagd att spelas in",
-    "SynologyUpdateInstructions": "Logga in p\u00e5 DSM och g\u00e5 till 'Package Center' f\u00f6r att uppdatera.",
+    "SynologyUpdateInstructions": "Logga in p\u00e5 DSM och g\u00e5 till Paketcenter f\u00f6r att uppdatera.",
     "LatestFromLibrary": "Senaste {0}",
     "LabelMoviePrefix": "Film prefix:",
     "LabelMoviePrefixHelp": "Om ett prefix har lagts till filmertitlarna, skriv in det h\u00e4r s\u00e5 att Emby kan hantera dessa korrekt.",
