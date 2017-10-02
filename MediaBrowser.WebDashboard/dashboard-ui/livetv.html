@@ -7,140 +7,151 @@
         }
     </style>
 
-    <div class="pageTabContent" id="suggestionsTab" data-index="0">
-        <div id="activePrograms" class="verticalSection">
-            <div class="sectionTitleContainer padded-left">
-                <a href="livetvitems.html?type=Programs&IsAiring=true" is="emby-linkbutton" class="button-flat button-flat-mini sectionTitleTextButton">
-                    <h2 class="sectionTitle sectionTitle-cards" style="display: inline-block; vertical-align: middle;">${HeaderOnNow}</h2>
-                    <i class="md-icon">&#xE5CC;</i>
-                </a>
-            </div>
-            <div is="emby-itemscontainer" class="activeProgramItems itemsContainer padded-left padded-right"></div>
-        </div>
-        <div id="upcomingEpisodes" class="verticalSection">
-            <div class="sectionTitleContainer padded-left">
-                <a href="livetvitems.html?type=Programs&IsSeries=true&IsMovie=false&IsNews=false" is="emby-linkbutton" class="button-flat button-flat-mini sectionTitleTextButton">
-                    <h2 class="sectionTitle sectionTitle-cards" style="display: inline-block; vertical-align: middle;">${TabShows}</h2>
-                    <i class="md-icon">&#xE5CC;</i>
-                </a>
-            </div>
-            <div is="emby-itemscontainer" class="upcomingEpisodeItems itemsContainer padded-left padded-right"></div>
-        </div>
-        <div id="upcomingTvMovies" class="verticalSection">
-            <div class="sectionTitleContainer padded-left">
-                <a href="livetvitems.html?type=Programs&IsMovie=true" is="emby-linkbutton" class="button-flat button-flat-mini sectionTitleTextButton">
-                    <h2 class="sectionTitle sectionTitle-cards" style="display: inline-block; vertical-align: middle;">${HeaderMovies}</h2>
-                    <i class="md-icon">&#xE5CC;</i>
-                </a>
-            </div>
-            <div is="emby-itemscontainer" class="upcomingTvMovieItems itemsContainer padded-left padded-right"></div>
-        </div>
-        <div id="upcomingSports" class="verticalSection">
-            <div class="sectionTitleContainer padded-left">
-                <a href="livetvitems.html?type=Programs&IsSports=true" is="emby-linkbutton" class="button-flat button-flat-mini sectionTitleTextButton">
-                    <h2 class="sectionTitle sectionTitle-cards" style="display: inline-block; vertical-align: middle;">${Sports}</h2>
-                    <i class="md-icon">&#xE5CC;</i>
-                </a>
-            </div>
-            <div is="emby-itemscontainer" class="upcomingSportsItems itemsContainer padded-left padded-right"></div>
-        </div>
-        <div id="upcomingKids" class="verticalSection">
-            <div class="sectionTitleContainer padded-left">
-                <a href="livetvitems.html?type=Programs&IsKids=true" is="emby-linkbutton" class="button-flat button-flat-mini sectionTitleTextButton">
-                    <h2 class="sectionTitle sectionTitle-cards" style="display: inline-block; vertical-align: middle;">${HeaderForKids}</h2>
-                    <i class="md-icon">&#xE5CC;</i>
-                </a>
-            </div>
-            <div is="emby-itemscontainer" class="upcomingKidsItems itemsContainer padded-left padded-right"></div>
-        </div>
-        <div id="upcomingNews" class="verticalSection">
-            <div class="sectionTitleContainer padded-left">
-                <a href="livetvitems.html?type=Programs&IsNews=true" is="emby-linkbutton" class="button-flat button-flat-mini sectionTitleTextButton">
-                    <h2 class="sectionTitle sectionTitle-cards" style="display: inline-block; vertical-align: middle;">${News}</h2>
-                    <i class="md-icon">&#xE5CC;</i>
-                </a>
-            </div>
-            <div is="emby-itemscontainer" class="upcomingNewsItems itemsContainer padded-left padded-right"></div>
-        </div>
+    <div class="unlockContainer hide padded-left padded-right">
+        <p class="unlockText" style="text-align:center;"></p>
+        <button is="emby-button" type="button" class="raised button-submit block btnUnlock">
+            <span>${HeaderBecomeProjectSupporter}</span>
+        </button>
     </div>
-    <div class="pageTabContent flexPageTabContent absolutePageTabContent" id="guideTab" data-index="1" style="width:auto;padding-top:0; padding-bottom: 0!important;">
-    </div>
-    <div class="pageTabContent" id="channelsTab" data-index="2">
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em 1em;">
-            <div class="paging"></div>
-            <button is="paper-icon-button-light" class="btnFilter sectionTitleButton" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
-        </div>
-        <div is="emby-itemscontainer" id="items" class="itemsContainer vertical-wrap padded-left padded-right"></div>
-    </div>
-    <div class="pageTabContent" id="recordingsTab" data-index="3">
-        <div id="latestRecordings" class="verticalSection hide">
-            <div class="sectionTitleContainer padded-left">
-                <button type="button" is="emby-button" class="button-flat button-flat-mini sectionTitleTextButton more" data-type="latest">
-                    <h2 class="sectionTitle sectionTitle-cards">${HeaderLatestRecordings}</h2>
-                    <i class="md-icon">&#xE5CC;</i>
-                </button>
 
-                <button is="emby-button" type="button" class="raised submit raised-mini button-accent categorySyncButton" data-category="Latest" style="margin-left: 2em;">
-                    <span>${ButtonDownload}</span>
-                </button>
+    <div class="hide liveTvContainer">
+
+        <div class="pageTabContent" id="suggestionsTab" data-index="0">
+            <div id="activePrograms" class="verticalSection">
+                <div class="sectionTitleContainer padded-left">
+                    <a href="livetvitems.html?type=Programs&IsAiring=true" is="emby-linkbutton" class="button-flat button-flat-mini sectionTitleTextButton">
+                        <h2 class="sectionTitle sectionTitle-cards" style="display: inline-block; vertical-align: middle;">${HeaderOnNow}</h2>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </a>
+                </div>
+                <div is="emby-itemscontainer" class="activeProgramItems itemsContainer padded-left padded-right"></div>
             </div>
-            <div is="emby-itemscontainer" class="recordingItems itemsContainer padded-left padded-right"></div>
+            <div id="upcomingEpisodes" class="verticalSection">
+                <div class="sectionTitleContainer padded-left">
+                    <a href="livetvitems.html?type=Programs&IsSeries=true&IsMovie=false&IsNews=false" is="emby-linkbutton" class="button-flat button-flat-mini sectionTitleTextButton">
+                        <h2 class="sectionTitle sectionTitle-cards" style="display: inline-block; vertical-align: middle;">${TabShows}</h2>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </a>
+                </div>
+                <div is="emby-itemscontainer" class="upcomingEpisodeItems itemsContainer padded-left padded-right"></div>
+            </div>
+            <div id="upcomingTvMovies" class="verticalSection">
+                <div class="sectionTitleContainer padded-left">
+                    <a href="livetvitems.html?type=Programs&IsMovie=true" is="emby-linkbutton" class="button-flat button-flat-mini sectionTitleTextButton">
+                        <h2 class="sectionTitle sectionTitle-cards" style="display: inline-block; vertical-align: middle;">${HeaderMovies}</h2>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </a>
+                </div>
+                <div is="emby-itemscontainer" class="upcomingTvMovieItems itemsContainer padded-left padded-right"></div>
+            </div>
+            <div id="upcomingSports" class="verticalSection">
+                <div class="sectionTitleContainer padded-left">
+                    <a href="livetvitems.html?type=Programs&IsSports=true" is="emby-linkbutton" class="button-flat button-flat-mini sectionTitleTextButton">
+                        <h2 class="sectionTitle sectionTitle-cards" style="display: inline-block; vertical-align: middle;">${Sports}</h2>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </a>
+                </div>
+                <div is="emby-itemscontainer" class="upcomingSportsItems itemsContainer padded-left padded-right"></div>
+            </div>
+            <div id="upcomingKids" class="verticalSection">
+                <div class="sectionTitleContainer padded-left">
+                    <a href="livetvitems.html?type=Programs&IsKids=true" is="emby-linkbutton" class="button-flat button-flat-mini sectionTitleTextButton">
+                        <h2 class="sectionTitle sectionTitle-cards" style="display: inline-block; vertical-align: middle;">${HeaderForKids}</h2>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </a>
+                </div>
+                <div is="emby-itemscontainer" class="upcomingKidsItems itemsContainer padded-left padded-right"></div>
+            </div>
+            <div id="upcomingNews" class="verticalSection">
+                <div class="sectionTitleContainer padded-left">
+                    <a href="livetvitems.html?type=Programs&IsNews=true" is="emby-linkbutton" class="button-flat button-flat-mini sectionTitleTextButton">
+                        <h2 class="sectionTitle sectionTitle-cards" style="display: inline-block; vertical-align: middle;">${News}</h2>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </a>
+                </div>
+                <div is="emby-itemscontainer" class="upcomingNewsItems itemsContainer padded-left padded-right"></div>
+            </div>
         </div>
-        <div id="movieRecordings" class="verticalSection hide">
-            <div class="sectionTitleContainer padded-left">
-                <button type="button" is="emby-button" class="button-flat button-flat-mini sectionTitleTextButton more" data-type="movies">
-                    <h2 class="sectionTitle sectionTitle-cards">${TabMovies}</h2>
-                    <i class="md-icon">&#xE5CC;</i>
-                </button>
-            </div>
-            <div is="emby-itemscontainer" class="recordingItems itemsContainer padded-left padded-right"></div>
+        <div class="pageTabContent flexPageTabContent absolutePageTabContent" id="guideTab" data-index="1" style="width:auto;padding-top:0; padding-bottom: 0!important;">
         </div>
-        <div id="episodeRecordings" class="verticalSection hide">
-            <div class="sectionTitleContainer padded-left">
-                <button type="button" is="emby-button" class="button-flat button-flat-mini sectionTitleTextButton more" data-type="episodes">
-                    <h2 class="sectionTitle sectionTitle-cards">${TabShows}</h2>
-                    <i class="md-icon">&#xE5CC;</i>
-                </button>
+        <div class="pageTabContent" id="channelsTab" data-index="2">
+            <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em 1em;">
+                <div class="paging"></div>
+                <button is="paper-icon-button-light" class="btnFilter sectionTitleButton" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
             </div>
-            <div is="emby-itemscontainer" class="recordingItems itemsContainer padded-left padded-right"></div>
+            <div is="emby-itemscontainer" id="items" class="itemsContainer vertical-wrap padded-left padded-right"></div>
         </div>
-        <div id="sportsRecordings" class="verticalSection hide">
-            <div class="sectionTitleContainer padded-left">
-                <button type="button" is="emby-button" class="button-flat button-flat-mini sectionTitleTextButton more" data-type="sports">
-                    <h2 class="sectionTitle sectionTitle-cards">${Sports}</h2>
-                    <i class="md-icon">&#xE5CC;</i>
-                </button>
+        <div class="pageTabContent" id="recordingsTab" data-index="3">
+            <div id="latestRecordings" class="verticalSection hide">
+                <div class="sectionTitleContainer padded-left">
+                    <button type="button" is="emby-button" class="button-flat button-flat-mini sectionTitleTextButton more" data-type="latest">
+                        <h2 class="sectionTitle sectionTitle-cards">${HeaderLatestRecordings}</h2>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </button>
+
+                    <button is="emby-button" type="button" class="raised submit raised-mini button-accent categorySyncButton" data-category="Latest" style="margin-left: 2em;">
+                        <span>${ButtonDownload}</span>
+                    </button>
+                </div>
+                <div is="emby-itemscontainer" class="recordingItems itemsContainer padded-left padded-right"></div>
             </div>
-            <div is="emby-itemscontainer" class="recordingItems itemsContainer padded-left padded-right"></div>
+            <div id="movieRecordings" class="verticalSection hide">
+                <div class="sectionTitleContainer padded-left">
+                    <button type="button" is="emby-button" class="button-flat button-flat-mini sectionTitleTextButton more" data-type="movies">
+                        <h2 class="sectionTitle sectionTitle-cards">${TabMovies}</h2>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </button>
+                </div>
+                <div is="emby-itemscontainer" class="recordingItems itemsContainer padded-left padded-right"></div>
+            </div>
+            <div id="episodeRecordings" class="verticalSection hide">
+                <div class="sectionTitleContainer padded-left">
+                    <button type="button" is="emby-button" class="button-flat button-flat-mini sectionTitleTextButton more" data-type="episodes">
+                        <h2 class="sectionTitle sectionTitle-cards">${TabShows}</h2>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </button>
+                </div>
+                <div is="emby-itemscontainer" class="recordingItems itemsContainer padded-left padded-right"></div>
+            </div>
+            <div id="sportsRecordings" class="verticalSection hide">
+                <div class="sectionTitleContainer padded-left">
+                    <button type="button" is="emby-button" class="button-flat button-flat-mini sectionTitleTextButton more" data-type="sports">
+                        <h2 class="sectionTitle sectionTitle-cards">${Sports}</h2>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </button>
+                </div>
+                <div is="emby-itemscontainer" class="recordingItems itemsContainer padded-left padded-right"></div>
+            </div>
+            <div id="kidsRecordings" class="verticalSection hide">
+                <div class="sectionTitleContainer padded-left">
+                    <button type="button" is="emby-button" class="button-flat button-flat-mini sectionTitleTextButton more" data-type="kids">
+                        <h2 class="sectionTitle sectionTitle-cards">${HeaderForKids}</h2>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </button>
+                </div>
+                <div is="emby-itemscontainer" class="recordingItems itemsContainer padded-left padded-right"></div>
+            </div>
+            <div id="recordingGroups" class="hide verticalSection">
+                <div class="sectionTitleContainer">
+                    <h2 class="sectionTitle sectionTitle-cards padded-left">${HeaderRecordingGroups}</h2>
+                </div>
+                <div id="recordingGroupItems" class="padded-left padded-right"></div>
+            </div>
         </div>
-        <div id="kidsRecordings" class="verticalSection hide">
-            <div class="sectionTitleContainer padded-left">
-                <button type="button" is="emby-button" class="button-flat button-flat-mini sectionTitleTextButton more" data-type="kids">
-                    <h2 class="sectionTitle sectionTitle-cards">${HeaderForKids}</h2>
-                    <i class="md-icon">&#xE5CC;</i>
-                </button>
+        <div class="pageTabContent" id="scheduleTab" data-index="4">
+            <div id="activeRecordings" class="verticalSection hide">
+                <h2 class="sectionTitle sectionTitle-cards padded-left">${HeaderActiveRecordings}</h2>
+                <div is="emby-itemscontainer" class="recordingItems itemsContainer padded-left padded-right"></div>
             </div>
-            <div is="emby-itemscontainer" class="recordingItems itemsContainer padded-left padded-right"></div>
+            <div id="upcomingRecordings" class="hide">
+                <div class="recordingItems"></div>
+            </div>
         </div>
-        <div id="recordingGroups" class="hide verticalSection">
-            <div class="sectionTitleContainer">
-                <h2 class="sectionTitle sectionTitle-cards padded-left">${HeaderRecordingGroups}</h2>
-            </div>
-            <div id="recordingGroupItems" class="padded-left padded-right"></div>
+        <div class="pageTabContent" id="seriesTab" data-index="5">
+            <div is="emby-itemscontainer" class="vertical-wrap itemsContainer centered padded-left padded-right" id="items"></div>
+        </div>
+        <div class="pageTabContent" data-index="6" style="padding-top:1em;">
         </div>
     </div>
-    <div class="pageTabContent" id="scheduleTab" data-index="4">
-        <div id="activeRecordings" class="verticalSection hide">
-            <h2 class="sectionTitle sectionTitle-cards padded-left">${HeaderActiveRecordings}</h2>
-            <div is="emby-itemscontainer" class="recordingItems itemsContainer padded-left padded-right"></div>
-        </div>
-        <div id="upcomingRecordings" class="hide">
-            <div class="recordingItems"></div>
-        </div>
-    </div>
-    <div class="pageTabContent" id="seriesTab" data-index="5">
-        <div is="emby-itemscontainer" class="vertical-wrap itemsContainer centered padded-left padded-right" id="items"></div>
-    </div>
-    <div class="pageTabContent" data-index="6" style="padding-top:1em;">
-    </div>
+
 </div>

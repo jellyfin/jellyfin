@@ -36,8 +36,6 @@ namespace Emby.Server.Implementations.TV
                 throw new ArgumentException("User not found");
             }
 
-            var parentIdGuid = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId);
-
             string presentationUniqueKey = null;
             int? limit = null;
             if (!string.IsNullOrWhiteSpace(request.SeriesId))
@@ -56,10 +54,26 @@ namespace Emby.Server.Implementations.TV
                 return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, dtoOptions), request);
             }
 
-            var parents = user.RootFolder.GetChildren(user, true)
-                .Where(i => i is Folder)
-                .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N")))
-                .ToList();
+            var parentIdGuid = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId);
+
+            List<BaseItem> parents;
+
+            if (parentIdGuid.HasValue)
+            {
+                var parent = _libraryManager.GetItemById(parentIdGuid.Value);
+                parents = new List<BaseItem>();
+                if (parent != null)
+                {
+                    parents.Add(parent);
+                }
+            }
+            else
+            {
+                parents = user.RootFolder.GetChildren(user, true)
+                   .Where(i => i is Folder)
+                   .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N")))
+                   .ToList();
+            }
 
             return GetNextUp(request, parents, dtoOptions);
         }
@@ -88,7 +102,7 @@ namespace Emby.Server.Implementations.TV
 
             if (!string.IsNullOrWhiteSpace(presentationUniqueKey))
             {
-                return GetResult(GetNextUpEpisodes(request, user, new [] { presentationUniqueKey }, dtoOptions), request);
+                return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, dtoOptions), request);
             }
 
             if (limit.HasValue)
