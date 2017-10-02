@@ -163,6 +163,14 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool DeInterlace(string videoCodec, bool forceDeinterlaceIfSourceIsInterlaced)
         {
+            var videoStream = VideoStream;
+            var isInputInterlaced = videoStream != null && videoStream.IsInterlaced;
+
+            if (!isInputInterlaced)
+            {
+                return false;
+            }
+
             // Support general param
             if (BaseRequest.DeInterlace)
             {
@@ -179,8 +187,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (forceDeinterlaceIfSourceIsInterlaced)
             {
-                var videoStream = VideoStream;
-                if (videoStream != null && videoStream.IsInterlaced)
+                if (isInputInterlaced)
                 {
                     return true;
                 }
