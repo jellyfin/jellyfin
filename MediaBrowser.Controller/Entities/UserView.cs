@@ -58,13 +58,13 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override double? GetDefaultPrimaryImageAspectRatio()
-        {
-            double value = 16;
-            value /= 9;
+        //public override double? GetDefaultPrimaryImageAspectRatio()
+        //{
+        //    double value = 16;
+        //    value /= 9;
 
-            return value;
-        }
+        //    return value;
+        //}
 
         public override int GetChildCount(User user)
         {

@@ -1642,6 +1642,7 @@ namespace Emby.Server.Implementations.Dto
                     return null;
                 }
 
+                return null;
                 _logger.Info("Getting image size for item type {0}", item.GetType().Name);
 
                 try
