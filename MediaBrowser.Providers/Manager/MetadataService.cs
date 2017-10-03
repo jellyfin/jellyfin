@@ -204,7 +204,7 @@ namespace MediaBrowser.Providers.Manager
                 LibraryManager.UpdatePeople(baseItem, result.People);
                 await SavePeopleMetadata(result.People, libraryOptions, cancellationToken).ConfigureAwait(false);
             }
-            await result.Item.UpdateToRepository(reason, cancellationToken).ConfigureAwait(false);
+            result.Item.UpdateToRepository(reason, cancellationToken);
         }
 
         private async Task SavePeopleMetadata(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
@@ -238,7 +238,7 @@ namespace MediaBrowser.Providers.Manager
 
                     if (saveEntity)
                     {
-                        await personEntity.UpdateToRepository(updateType, cancellationToken).ConfigureAwait(false);
+                        personEntity.UpdateToRepository(updateType, cancellationToken);
                     }
                 }
             }

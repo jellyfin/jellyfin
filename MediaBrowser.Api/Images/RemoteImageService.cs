@@ -84,7 +84,7 @@ namespace MediaBrowser.Api.Images
     }
 
     [Route("/Items/{Id}/RemoteImages/Download", "POST", Summary = "Downloads a remote image for an item")]
-    [Authenticated(Roles="Admin")]
+    [Authenticated(Roles = "Admin")]
     public class DownloadRemoteImage : BaseDownloadRemoteImage
     {
         /// <summary>
@@ -207,7 +207,7 @@ namespace MediaBrowser.Api.Images
         {
             await _providerManager.SaveImage(item, request.ImageUrl, request.Type, null, CancellationToken.None).ConfigureAwait(false);
 
-            await item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+            item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
         /// <summary>
@@ -232,9 +232,9 @@ namespace MediaBrowser.Api.Images
                 contentPath = _fileSystem.ReadAllText(pointerCachePath);
 
                 if (_fileSystem.FileExists(contentPath))
-				{
-				    return await ResultFactory.GetStaticFileResult(Request, contentPath).ConfigureAwait(false);
-				}
+                {
+                    return await ResultFactory.GetStaticFileResult(Request, contentPath).ConfigureAwait(false);
+                }
             }
             catch (FileNotFoundException)
             {
@@ -273,7 +273,7 @@ namespace MediaBrowser.Api.Images
 
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
-			_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(fullCachePath));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(fullCachePath));
             using (var stream = result.Content)
             {
                 using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
@@ -282,7 +282,7 @@ namespace MediaBrowser.Api.Images
                 }
             }
 
-			_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(pointerCachePath));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(pointerCachePath));
             _fileSystem.WriteAllText(pointerCachePath, fullCachePath);
         }
 

@@ -1281,8 +1281,8 @@ namespace MediaBrowser.Controller.Entities
             {
                 var subOptions = new MetadataRefreshOptions(options);
 
-                if (!i.ExtraType.HasValue || 
-                    i.ExtraType.Value != Model.Entities.ExtraType.ThemeSong || 
+                if (!i.ExtraType.HasValue ||
+                    i.ExtraType.Value != Model.Entities.ExtraType.ThemeSong ||
                     i.OwnerId != ownerId ||
                     i.ParentId != Guid.Empty)
                 {
@@ -1356,14 +1356,20 @@ namespace MediaBrowser.Controller.Entities
 
         internal virtual bool IsValidFromResolver(BaseItem newItem)
         {
-            var current = this;
+            return true;
+        }
 
-            if (current.IsInMixedFolder != newItem.IsInMixedFolder)
+        internal virtual ItemUpdateType UpdateFromResolvedItem(BaseItem newItem)
+        {
+            var updateType = ItemUpdateType.None;
+
+            if (IsInMixedFolder != newItem.IsInMixedFolder)
             {
-                return false;
+                IsInMixedFolder = newItem.IsInMixedFolder;
+                updateType |= ItemUpdateType.MetadataImport;
             }
 
-            return true;
+            return updateType;
         }
 
         public void AfterMetadataRefresh()
@@ -1966,14 +1972,14 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="type">The type.</param>
         /// <param name="index">The index.</param>
         /// <returns>Task.</returns>
-        public Task DeleteImage(ImageType type, int index)
+        public void DeleteImage(ImageType type, int index)
         {
             var info = GetImageInfo(type, index);
 
             if (info == null)
             {
                 // Nothing to do
-                return Task.FromResult(true);
+                return;
             }
 
             // Remove it from the item
@@ -1984,7 +1990,7 @@ namespace MediaBrowser.Controller.Entities
                 FileSystem.DeleteFile(info.Path);
             }
 
-            return UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+            UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
         public void RemoveImage(ItemImageInfo image)
@@ -1997,9 +2003,9 @@ namespace MediaBrowser.Controller.Entities
             ImageInfos = ImageInfos.Except(deletedImages).ToArray();
         }
 
-        public virtual Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
+        public virtual void UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            return LibraryManager.UpdateItem(this, updateReason, cancellationToken);
+            LibraryManager.UpdateItem(this, updateReason, cancellationToken);
         }
 
         /// <summary>
@@ -2209,7 +2215,7 @@ namespace MediaBrowser.Controller.Entities
             return type == ImageType.Backdrop || type == ImageType.Screenshot || type == ImageType.Chapter;
         }
 
-        public Task SwapImages(ImageType type, int index1, int index2)
+        public void SwapImages(ImageType type, int index1, int index2)
         {
             if (!AllowsMultipleImages(type))
             {
@@ -2222,13 +2228,13 @@ namespace MediaBrowser.Controller.Entities
             if (info1 == null || info2 == null)
             {
                 // Nothing to do
-                return Task.FromResult(true);
+                return;
             }
 
             if (!info1.IsLocalFile || !info2.IsLocalFile)
             {
                 // TODO: Not supported  yet
-                return Task.FromResult(true);
+                return;
             }
 
             var path1 = info1.Path;
@@ -2240,7 +2246,7 @@ namespace MediaBrowser.Controller.Entities
             info1.DateModified = FileSystem.GetLastWriteTimeUtc(info1.Path);
             info2.DateModified = FileSystem.GetLastWriteTimeUtc(info2.Path);
 
-            return UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+            UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
         public virtual bool IsPlayed(User user)
@@ -2524,15 +2530,6 @@ namespace MediaBrowser.Controller.Entities
         public virtual Task Delete(DeleteOptions options)
         {
             return LibraryManager.DeleteItem(this, options);
-        }
-
-        public virtual Task OnFileDeleted()
-        {
-            // Remove from database
-            return Delete(new DeleteOptions
-            {
-                DeleteFileLocation = false
-            });
         }
 
         public virtual List<ExternalUrl> GetRelatedUrls()

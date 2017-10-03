@@ -560,30 +560,20 @@ namespace MediaBrowser.Providers.Manager
                 new MetadataOptions();
         }
 
-        private Task _completedTask = Task.FromResult(true);
         /// <summary>
         /// Saves the metadata.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="updateType">Type of the update.</param>
-        /// <returns>Task.</returns>
-        public Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType)
+        public void SaveMetadata(IHasMetadata item, ItemUpdateType updateType)
         {
             SaveMetadata(item, updateType, _savers);
-            return _completedTask;
         }
 
         /// <summary>
         /// Saves the metadata.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="updateType">Type of the update.</param>
-        /// <param name="savers">The savers.</param>
-        /// <returns>Task.</returns>
-        public Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType, IEnumerable<string> savers)
+        public void SaveMetadata(IHasMetadata item, ItemUpdateType updateType, IEnumerable<string> savers)
         {
             SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
-            return _completedTask;
         }
 
         /// <summary>

@@ -892,11 +892,11 @@ namespace MediaBrowser.Api.LiveTv
             return ToOptimizedSerializedResultUsingCache(info);
         }
 
-        public async Task<object> Get(GetChannels request)
+        public object Get(GetChannels request)
         {
             var options = GetDtoOptions(_authContext, request);
 
-            var channelResult = await _liveTvManager.GetInternalChannels(new LiveTvChannelQuery
+            var channelResult = _liveTvManager.GetInternalChannels(new LiveTvChannelQuery
             {
                 ChannelType = request.Type,
                 UserId = request.UserId,
@@ -915,7 +915,7 @@ namespace MediaBrowser.Api.LiveTv
                 SortOrder = request.SortOrder ?? SortOrder.Ascending,
                 AddCurrentProgram = request.AddCurrentProgram
 
-            }, options, CancellationToken.None).ConfigureAwait(false);
+            }, options, CancellationToken.None);
 
             var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(request.UserId);
 
@@ -958,9 +958,9 @@ namespace MediaBrowser.Api.LiveTv
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public async Task<object> Get(GetLiveTvFolder request)
+        public object Get(GetLiveTvFolder request)
         {
-            return ToOptimizedResult(await _liveTvManager.GetLiveTvFolder(request.UserId, CancellationToken.None).ConfigureAwait(false));
+            return ToOptimizedResult(_liveTvManager.GetLiveTvFolder(request.UserId, CancellationToken.None));
         }
 
         public async Task<object> Get(GetPrograms request)
@@ -1020,7 +1020,7 @@ namespace MediaBrowser.Api.LiveTv
             return ToOptimizedResult(result);
         }
 
-        public async Task<object> Get(GetRecommendedPrograms request)
+        public object Get(GetRecommendedPrograms request)
         {
             var query = new RecommendedProgramQuery
             {
@@ -1036,7 +1036,7 @@ namespace MediaBrowser.Api.LiveTv
                 EnableTotalRecordCount = request.EnableTotalRecordCount
             };
 
-            var result = await _liveTvManager.GetRecommendedPrograms(query, GetDtoOptions(_authContext, request), CancellationToken.None).ConfigureAwait(false);
+            var result = _liveTvManager.GetRecommendedPrograms(query, GetDtoOptions(_authContext, request), CancellationToken.None);
 
             return ToOptimizedResult(result);
         }
