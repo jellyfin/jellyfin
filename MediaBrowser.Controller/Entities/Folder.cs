@@ -328,11 +328,6 @@ namespace MediaBrowser.Controller.Entities
             return dictionary;
         }
 
-        private bool IsValidFromResolver(BaseItem current, BaseItem newItem)
-        {
-            return current.IsValidFromResolver(newItem);
-        }
-
         protected override void TriggerOnRefreshStart()
         {
         }
@@ -421,9 +416,14 @@ namespace MediaBrowser.Controller.Entities
                 {
                     BaseItem currentChild;
 
-                    if (currentChildren.TryGetValue(child.Id, out currentChild) && IsValidFromResolver(currentChild, child))
+                    if (currentChildren.TryGetValue(child.Id, out currentChild) && currentChild.IsValidFromResolver(child))
                     {
                         validChildren.Add(currentChild);
+
+                        if (currentChild.UpdateFromResolvedItem(child) > ItemUpdateType.None)
+                        {
+                            currentChild.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken);
+                        }
 
                         continue;
                     }
@@ -542,7 +542,6 @@ namespace MediaBrowser.Controller.Entities
                         if (validChildrenNeedGeneration)
                         {
                             validChildren = Children.ToList();
-                            validChildrenNeedGeneration = false;
                         }
 
                         await RefreshMetadataRecursive(validChildren, refreshOptions, recursive, innerProgress, cancellationToken);

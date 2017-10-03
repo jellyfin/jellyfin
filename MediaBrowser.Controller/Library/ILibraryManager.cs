@@ -207,11 +207,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Updates the item.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="updateReason">The update reason.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task UpdateItem(BaseItem item, ItemUpdateType updateReason, CancellationToken cancellationToken);
+        void UpdateItem(BaseItem item, ItemUpdateType updateReason, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the item.
@@ -330,8 +326,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task&lt;UserView&gt;.</returns>
-        Task<UserView> GetNamedView(string name,
+        UserView GetNamedView(string name,
             string viewType,
             string sortName,
             CancellationToken cancellationToken);
@@ -345,8 +340,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="sortName">Name of the sort.</param>
         /// <param name="uniqueId">The unique identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task&lt;UserView&gt;.</returns>
-        Task<UserView> GetNamedView(string name,
+        UserView GetNamedView(string name,
             string parentId,
             string viewType,
             string sortName,

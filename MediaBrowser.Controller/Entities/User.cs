@@ -235,10 +235,9 @@ namespace MediaBrowser.Controller.Entities
             }, CancellationToken.None);
         }
 
-        public override Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
+        public override void UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
             UserManager.UpdateUser(this);
-            return Task.FromResult(true);
         }
 
         /// <summary>

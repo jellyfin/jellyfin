@@ -209,7 +209,7 @@ namespace Emby.Server.Implementations.Playlists
             newList.AddRange(list);
             playlist.LinkedChildren = newList.ToArray(newList.Count);
 
-            await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
 
             _providerManager.QueueRefresh(playlist.Id, new MetadataRefreshOptions(_fileSystem)
             {
@@ -237,7 +237,7 @@ namespace Emby.Server.Implementations.Playlists
                 .Select(i => i.Item1)
                 .ToArray();
 
-            await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
 
             _providerManager.QueueRefresh(playlist.Id, new MetadataRefreshOptions(_fileSystem)
             {
@@ -281,7 +281,7 @@ namespace Emby.Server.Implementations.Playlists
 
             playlist.LinkedChildren = newList.ToArray(newList.Count);
 
-            await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
         }
 
         public Folder GetPlaylistsFolder(string userId)

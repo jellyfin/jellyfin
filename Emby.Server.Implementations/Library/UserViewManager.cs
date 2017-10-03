@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.Library
             if (_config.Configuration.EnableFolderView)
             {
                 var name = _localizationManager.GetLocalizedString("ViewType" + CollectionType.Folders);
-                list.Add(await _libraryManager.GetNamedView(name, CollectionType.Folders, string.Empty, cancellationToken).ConfigureAwait(false));
+                list.Add(_libraryManager.GetNamedView(name, CollectionType.Folders, string.Empty, cancellationToken));
             }
 
             if (query.IncludeExternalContent)
@@ -117,7 +117,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (_config.Configuration.EnableChannelView && channels.Length > 0)
                 {
-                    list.Add(await _channelManager.GetInternalChannelFolder(cancellationToken).ConfigureAwait(false));
+                    list.Add(_channelManager.GetInternalChannelFolder(cancellationToken));
                 }
                 else
                 {
@@ -126,7 +126,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (_liveTvManager.GetEnabledUsers().Select(i => i.Id.ToString("N")).Contains(query.UserId))
                 {
-                    list.Add(await _liveTvManager.GetInternalLiveTvFolder(CancellationToken.None).ConfigureAwait(false));
+                    list.Add(_liveTvManager.GetInternalLiveTvFolder(CancellationToken.None));
                 }
             }
 
@@ -158,14 +158,14 @@ namespace Emby.Server.Implementations.Library
                 .ToArray();
         }
 
-        public Task<UserView> GetUserSubView(string name, string parentId, string type, string sortName, CancellationToken cancellationToken)
+        public UserView GetUserSubView(string name, string parentId, string type, string sortName, CancellationToken cancellationToken)
         {
             var uniqueId = parentId + "subview" + type;
 
             return _libraryManager.GetNamedView(name, parentId, type, sortName, uniqueId, cancellationToken);
         }
 
-        public Task<UserView> GetUserSubView(string parentId, string type, string sortName, CancellationToken cancellationToken)
+        public UserView GetUserSubView(string parentId, string type, string sortName, CancellationToken cancellationToken)
         {
             var name = _localizationManager.GetLocalizedString("ViewType" + type);
 
