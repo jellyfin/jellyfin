@@ -373,7 +373,7 @@ namespace Emby.Server.Implementations.Channels
 
         private async Task<Channel> GetChannel(IChannel channelInfo, CancellationToken cancellationToken)
         {
-            var parentFolder = await GetInternalChannelFolder(cancellationToken).ConfigureAwait(false);
+            var parentFolder =  GetInternalChannelFolder(cancellationToken);
             var parentFolderId = parentFolder.Id;
 
             var id = GetInternalChannelId(channelInfo.Name);
@@ -434,7 +434,7 @@ namespace Emby.Server.Implementations.Channels
             }
             else if (forceUpdate)
             {
-                await item.UpdateToRepository(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
+                item.UpdateToRepository(ItemUpdateType.None, cancellationToken);
             }
 
             await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken);
@@ -655,14 +655,12 @@ namespace Emby.Server.Implementations.Channels
 
             // Avoid implicitly captured closure
             var token = cancellationToken;
-            var itemTasks = items.Select(i =>
+            var internalItems = items.Select(i =>
             {
                 var channelProvider = i.Item1;
                 var internalChannelId = GetInternalChannelId(channelProvider.Name);
                 return GetChannelItemEntity(i.Item2, channelProvider, internalChannelId, token);
-            });
-
-            var internalItems = await Task.WhenAll(itemTasks).ConfigureAwait(false);
+            }).ToArray();
 
             internalItems = ApplyFilters(internalItems, query.Filters, user).ToArray();
             RefreshIfNeeded(internalItems);
@@ -802,14 +800,12 @@ namespace Emby.Server.Implementations.Channels
 
             // Avoid implicitly captured closure
             var token = cancellationToken;
-            var itemTasks = items.Select(i =>
+            var internalItems = items.Select(i =>
             {
                 var channelProvider = i.Item1;
                 var internalChannelId = GetInternalChannelId(channelProvider.Name);
                 return GetChannelItemEntity(i.Item2, channelProvider, internalChannelId, token);
-            });
-
-            var internalItems = await Task.WhenAll(itemTasks).ConfigureAwait(false);
+            }).ToArray();
 
             return new QueryResult<BaseItem>
             {
@@ -955,9 +951,7 @@ namespace Emby.Server.Implementations.Channels
 
             var providerTotalRecordCount = providerLimit.HasValue ? itemsResult.TotalRecordCount : null;
 
-            var tasks = itemsResult.Items.Select(i => GetChannelItemEntity(i, channelProvider, channel.Id, cancellationToken));
-
-            var internalItems = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var internalItems = itemsResult.Items.Select(i => GetChannelItemEntity(i, channelProvider, channel.Id, cancellationToken)).ToArray();
 
             if (user != null)
             {
@@ -1234,7 +1228,7 @@ namespace Emby.Server.Implementations.Channels
             return item;
         }
 
-        private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, Guid internalChannelId, CancellationToken cancellationToken)
+        private BaseItem GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, Guid internalChannelId, CancellationToken cancellationToken)
         {
             BaseItem item;
             bool isNew;
@@ -1399,7 +1393,7 @@ namespace Emby.Server.Implementations.Channels
             }
             else if (forceUpdate)
             {
-                await item.UpdateToRepository(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
+                item.UpdateToRepository(ItemUpdateType.None, cancellationToken);
             }
 
             SaveMediaSources(item, info.MediaSources);
@@ -1542,20 +1536,20 @@ namespace Emby.Server.Implementations.Channels
             return items;
         }
 
-        public async Task<BaseItemDto> GetChannelFolder(string userId, CancellationToken cancellationToken)
+        public BaseItemDto GetChannelFolder(string userId, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(userId);
 
-            var folder = await GetInternalChannelFolder(cancellationToken).ConfigureAwait(false);
+            var folder =  GetInternalChannelFolder(cancellationToken);
 
             return _dtoService.GetBaseItemDto(folder, new DtoOptions(), user);
         }
 
-        public async Task<Folder> GetInternalChannelFolder(CancellationToken cancellationToken)
+        public Folder GetInternalChannelFolder(CancellationToken cancellationToken)
         {
             var name = _localization.GetLocalizedString("ViewTypeChannels");
 
-            return await _libraryManager.GetNamedView(name, "channels", "zz_" + name, cancellationToken).ConfigureAwait(false);
+            return _libraryManager.GetNamedView(name, "channels", "zz_" + name, cancellationToken);
         }
     }
 

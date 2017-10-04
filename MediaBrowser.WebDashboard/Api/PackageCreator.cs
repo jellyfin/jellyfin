@@ -265,7 +265,7 @@ namespace MediaBrowser.WebDashboard.Api
                 builder.AppendFormat("window.appMode='{0}';", mode);
             }
 
-            if (string.IsNullOrWhiteSpace(mode))
+            else
             {
                 builder.AppendFormat("window.dashboardVersion='{0}';", version);
             }

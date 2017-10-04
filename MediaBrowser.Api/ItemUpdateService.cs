@@ -194,13 +194,6 @@ namespace MediaBrowser.Api
 
         public void Post(UpdateItem request)
         {
-            var task = UpdateItem(request);
-
-            Task.WaitAll(task);
-        }
-
-        private async Task UpdateItem(UpdateItem request)
-        {
             var item = _libraryManager.GetItemById(request.ItemId);
 
             var newLockData = request.LockData ?? false;
@@ -216,7 +209,7 @@ namespace MediaBrowser.Api
 
             item.OnMetadataChanged();
 
-            await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
 
             if (isLockedChanged && item.IsFolder)
             {
@@ -225,7 +218,7 @@ namespace MediaBrowser.Api
                 foreach (var child in folder.GetRecursiveChildren())
                 {
                     child.IsLocked = newLockData;
-                    await child.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                    child.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
                 }
             }
         }

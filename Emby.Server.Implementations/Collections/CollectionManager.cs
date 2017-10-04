@@ -203,7 +203,7 @@ namespace Emby.Server.Implementations.Collections
 
                 collection.UpdateRatingToContent();
 
-                await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
 
                 _providerManager.QueueRefresh(collection.Id, refreshOptions, RefreshPriority.High);
 
@@ -262,7 +262,7 @@ namespace Emby.Server.Implementations.Collections
 
             collection.UpdateRatingToContent();
 
-            await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
             _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.High);
 
             EventHelper.FireEventIfNotNull(ItemsRemovedFromCollection, this, new CollectionModifiedEventArgs

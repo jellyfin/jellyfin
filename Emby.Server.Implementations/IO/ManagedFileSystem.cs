@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -24,12 +25,14 @@ namespace Emby.Server.Implementations.IO
         private string _tempPath;
 
         private SharpCifsFileSystem _sharpCifsFileSystem;
+        private IEnvironmentInfo _environmentInfo;
 
         public ManagedFileSystem(ILogger logger, IEnvironmentInfo environmentInfo, string tempPath)
         {
             Logger = logger;
             _supportsAsyncFileStreams = true;
             _tempPath = tempPath;
+            _environmentInfo = environmentInfo;
 
             // On Linux, this needs to be true or symbolic links are ignored
             EnableFileSystemRequestConcat = environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows &&
@@ -1051,7 +1054,25 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetExecutable(string path)
         {
+            if (_environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.OSX)
+            {
+                RunProcess("chmod", "+x \"" + path + "\"", GetDirectoryName(path));
+            }
+        }
 
+        private void RunProcess(string path, string args, string workingDirectory)
+        {
+            using (var process = Process.Start(new ProcessStartInfo
+            {
+                Arguments = args,
+                FileName = path,
+                CreateNoWindow = true,
+                WorkingDirectory = workingDirectory,
+                WindowStyle = ProcessWindowStyle.Normal
+            }))
+            {
+                process.WaitForExit();
+            }
         }
     }
 }

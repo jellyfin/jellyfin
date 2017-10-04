@@ -147,7 +147,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 Items = videos
             };
 
-            var isInMixedFolder = resolverResult.Count > 1;
+            var isInMixedFolder = resolverResult.Count > 1 || (parent != null && parent.IsTopParent);
 
             foreach (var video in resolverResult)
             {

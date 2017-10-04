@@ -117,14 +117,13 @@ namespace MediaBrowser.Controller.Channels
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>BaseItemDto.</returns>
-        Task<Folder> GetInternalChannelFolder(CancellationToken cancellationToken);
+        Folder GetInternalChannelFolder(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the channel folder.
         /// </summary>
         /// <param name="userId">The user identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>BaseItemDto.</returns>
-        Task<BaseItemDto> GetChannelFolder(string userId, CancellationToken cancellationToken);
+        BaseItemDto GetChannelFolder(string userId, CancellationToken cancellationToken);
     }
 }

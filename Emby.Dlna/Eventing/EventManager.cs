@@ -26,9 +26,11 @@ namespace Emby.Dlna.Eventing
             _logger = logger;
         }
 
-        public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string requestedTimeoutString)
+        public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string notificationType, string requestedTimeoutString, string callbackUrl)
         {
-            var subscription = GetSubscription(subscriptionId, true);
+            var subscription = GetSubscription(subscriptionId, false);
+
+            int timeoutSeconds;
 
             // Remove logging for now because some devices are sending this very frequently
             // TODO re-enable with dlna debug logging setting
@@ -37,10 +39,18 @@ namespace Emby.Dlna.Eventing
             //    timeout,
             //    subscription.CallbackUrl);
 
-            subscription.TimeoutSeconds = ParseTimeout(requestedTimeoutString) ?? 300;
-            subscription.SubscriptionTime = DateTime.UtcNow;
+            if (subscription != null)
+            {
+                subscription.TimeoutSeconds = ParseTimeout(requestedTimeoutString) ?? 300;
+                timeoutSeconds = subscription.TimeoutSeconds;
+                subscription.SubscriptionTime = DateTime.UtcNow;
+            }
+            else
+            {
+                timeoutSeconds = 300;
+            }
 
-            return GetEventSubscriptionResponse(subscriptionId, requestedTimeoutString, subscription.TimeoutSeconds);
+            return GetEventSubscriptionResponse(subscriptionId, requestedTimeoutString, timeoutSeconds);
         }
 
         public EventSubscriptionResponse CreateEventSubscription(string notificationType, string requestedTimeoutString, string callbackUrl)

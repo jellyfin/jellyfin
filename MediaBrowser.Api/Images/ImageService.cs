@@ -471,9 +471,7 @@ namespace MediaBrowser.Api.Images
 
             var item = _userManager.GetUserById(userId);
 
-            var task = item.DeleteImage(request.Type, request.Index ?? 0);
-
-            Task.WaitAll(task);
+            item.DeleteImage(request.Type, request.Index ?? 0);
         }
 
         /// <summary>
@@ -484,9 +482,7 @@ namespace MediaBrowser.Api.Images
         {
             var item = _libraryManager.GetItemById(request.Id);
 
-            var task = item.DeleteImage(request.Type, request.Index ?? 0);
-
-            Task.WaitAll(task);
+            item.DeleteImage(request.Type, request.Index ?? 0);
         }
 
         /// <summary>
@@ -497,9 +493,7 @@ namespace MediaBrowser.Api.Images
         {
             var item = _libraryManager.GetItemById(request.Id);
 
-            var task = UpdateItemIndex(item, request.Type, request.Index, request.NewIndex);
-
-            Task.WaitAll(task);
+            UpdateItemIndex(item, request.Type, request.Index, request.NewIndex);
         }
 
         /// <summary>
@@ -510,9 +504,9 @@ namespace MediaBrowser.Api.Images
         /// <param name="currentIndex">Index of the current.</param>
         /// <param name="newIndex">The new index.</param>
         /// <returns>Task.</returns>
-        private Task UpdateItemIndex(IHasMetadata item, ImageType type, int currentIndex, int newIndex)
+        private void UpdateItemIndex(IHasMetadata item, ImageType type, int currentIndex, int newIndex)
         {
-            return item.SwapImages(type, currentIndex, newIndex);
+            item.SwapImages(type, currentIndex, newIndex);
         }
 
         /// <summary>
@@ -558,7 +552,7 @@ namespace MediaBrowser.Api.Images
 
             var supportedImageEnhancers = request.EnableImageEnhancers ? _imageProcessor.GetSupportedEnhancers(item, request.Type) : new List<IImageEnhancer>();
 
-            var cropwhitespace = request.Type == ImageType.Logo || 
+            var cropwhitespace = request.Type == ImageType.Logo ||
                 request.Type == ImageType.Art
                 || (request.Type == ImageType.Primary && item is LiveTvChannel);
 
@@ -733,7 +727,7 @@ namespace MediaBrowser.Api.Images
 
                 await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
 
-                await entity.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+                entity.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
             }
         }
     }
