@@ -246,7 +246,7 @@ namespace MediaBrowser.Api.Dlna
 
                 if (string.IsNullOrEmpty(notificationType))
                 {
-                    return GetSubscriptionResponse(eventManager.RenewEventSubscription(subscriptionId, timeoutString));
+                    return GetSubscriptionResponse(eventManager.RenewEventSubscription(subscriptionId, notificationType, timeoutString, callback));
                 }
 
                 return GetSubscriptionResponse(eventManager.CreateEventSubscription(notificationType, timeoutString, callback));

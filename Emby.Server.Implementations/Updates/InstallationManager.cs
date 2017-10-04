@@ -442,11 +442,6 @@ namespace Emby.Server.Implementations.Updates
         /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
         public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(Version applicationVersion, bool withAutoUpdateEnabled, CancellationToken cancellationToken)
         {
-            if (!_config.CommonConfiguration.EnableAutoUpdate)
-            {
-                return new PackageVersionInfo[] { };
-            }
-
             var catalog = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
             var systemUpdateLevel = GetSystemUpdateLevel();
