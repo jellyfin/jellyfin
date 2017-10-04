@@ -119,16 +119,12 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
         /// <returns>Task.</returns>
-        Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType);
+        void SaveMetadata(IHasMetadata item, ItemUpdateType updateType);
 
         /// <summary>
         /// Saves the metadata.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="updateType">Type of the update.</param>
-        /// <param name="savers">The savers.</param>
-        /// <returns>Task.</returns>
-        Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType, IEnumerable<string> savers);
+        void SaveMetadata(IHasMetadata item, ItemUpdateType updateType, IEnumerable<string> savers);
 
         /// <summary>
         /// Gets the metadata options.

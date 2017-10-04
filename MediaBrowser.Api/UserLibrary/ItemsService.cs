@@ -117,7 +117,9 @@ namespace MediaBrowser.Api.UserLibrary
                 IsVirtualItem = false,
                 CollapseBoxSetItems = false,
                 EnableTotalRecordCount = request.EnableTotalRecordCount,
-                AncestorIds = ancestorIds.ToArray()
+                AncestorIds = ancestorIds.ToArray(),
+                IncludeItemTypes = request.GetIncludeItemTypes(),
+                ExcludeItemTypes = request.GetExcludeItemTypes()
             });
 
             var returnItems = _dtoService.GetBaseItemDtos(itemsResult.Items, options, user);

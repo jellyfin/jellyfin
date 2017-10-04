@@ -160,10 +160,5 @@ namespace MediaBrowser.Controller.LiveTv
         {
             return LiveTvManager.DeleteRecording(this);
         }
-
-        public override Task OnFileDeleted()
-        {
-            return LiveTvManager.OnRecordingFileDeleted(this);
-        }
     }
 }

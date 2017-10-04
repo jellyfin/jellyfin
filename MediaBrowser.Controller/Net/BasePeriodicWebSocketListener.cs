@@ -4,12 +4,11 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Threading;
 
-namespace MediaBrowser.Api
+namespace MediaBrowser.Controller.Net
 {
     /// <summary>
     /// Starts sending data over a web socket periodically when a message is received, and then stops when a corresponding stop message is received
@@ -93,7 +92,7 @@ namespace MediaBrowser.Api
         {
             get
             {
-                return true;
+                return false;
             }
         }
 
