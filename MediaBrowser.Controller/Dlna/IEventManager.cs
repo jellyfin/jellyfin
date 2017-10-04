@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Dlna
         /// <summary>
         /// Renews the event subscription.
         /// </summary>
-        EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string requestedTimeoutString);
+        EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string notificationType, string requestedTimeoutString, string callbackUrl);
 
         /// <summary>
         /// Creates the event subscription.
