@@ -29,7 +29,7 @@ namespace Emby.Server.Implementations.Networking
 
         public List<IpAddressInfo> GetLocalIpAddresses()
         {
-            const int cacheMinutes = 5;
+            const int cacheMinutes = 10;
 
             lock (_localIpAddressSyncLock)
             {
@@ -198,12 +198,6 @@ namespace Emby.Server.Implementations.Networking
             return Dns.GetHostAddressesAsync(hostName);
         }
 
-        private readonly List<NetworkInterfaceType> _validNetworkInterfaceTypes = new List<NetworkInterfaceType>
-        {
-            NetworkInterfaceType.Ethernet,
-            NetworkInterfaceType.Wireless80211
-        };
-
         private List<IPAddress> GetIPsDefault()
         {
             NetworkInterface[] interfaces;
@@ -227,7 +221,8 @@ namespace Emby.Server.Implementations.Networking
 
                 try
                 {
-                    Logger.Debug("Querying interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
+                    // suppress logging because it might be causing nas device wake up
+                    //Logger.Debug("Querying interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
 
                     var ipProperties = network.GetIPProperties();
 
