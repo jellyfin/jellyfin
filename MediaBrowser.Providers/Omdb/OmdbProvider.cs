@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers.Omdb
             var result = await GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
 
             // Only take the name and rating if the user's language is set to english, since Omdb has no localization
-            if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase) || _configurationManager.Configuration.EnableNewOmdbSupport)
             {
                 item.Name = result.Title;
 
@@ -153,7 +153,7 @@ namespace MediaBrowser.Providers.Omdb
             }
 
             // Only take the name and rating if the user's language is set to english, since Omdb has no localization
-            if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase) || _configurationManager.Configuration.EnableNewOmdbSupport)
             {
                 item.Name = result.Title;
 
@@ -389,7 +389,7 @@ namespace MediaBrowser.Providers.Omdb
         {
             T item = itemResult.Item;
 
-            var isConfiguredForEnglish = IsConfiguredForEnglish(item);
+            var isConfiguredForEnglish = IsConfiguredForEnglish(item) || _configurationManager.Configuration.EnableNewOmdbSupport;
 
             // Grab series genres because imdb data is better than tvdb. Leave movies alone
             // But only do it if english is the preferred language because this data will not be localized

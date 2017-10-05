@@ -36,8 +36,7 @@ namespace MediaBrowser.Providers.Movies
         {
             get
             {
-                // After Omdb
-                return 1;
+                return 0;
             }
         }
 

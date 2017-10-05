@@ -1631,8 +1631,7 @@ namespace MediaBrowser.Providers.TV
         {
             get
             {
-                // After Omdb
-                return 1;
+                return 0;
             }
         }
 
