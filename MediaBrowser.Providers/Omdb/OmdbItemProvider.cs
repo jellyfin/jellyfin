@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Providers.Omdb
 {
     public class OmdbItemProvider : IRemoteMetadataProvider<Series, SeriesInfo>,
-        IRemoteMetadataProvider<Movie, MovieInfo>, IRemoteMetadataProvider<Trailer, TrailerInfo>
+        IRemoteMetadataProvider<Movie, MovieInfo>, IRemoteMetadataProvider<Trailer, TrailerInfo>, IHasOrder
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
@@ -39,6 +39,15 @@ namespace MediaBrowser.Providers.Omdb
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
+        }
+
+        public int Order
+        {
+            get
+            {
+                // After primary option
+                return 1;
+            }
         }
 
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)

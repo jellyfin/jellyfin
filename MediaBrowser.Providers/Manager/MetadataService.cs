@@ -655,6 +655,8 @@ namespace MediaBrowser.Providers.Manager
 
                     if (result.HasMetadata)
                     {
+                        result.Provider = provider.Name;
+
                         results.Add(result);
 
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
