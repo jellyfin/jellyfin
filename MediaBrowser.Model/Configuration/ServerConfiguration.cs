@@ -183,6 +183,7 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableExternalContentInSuggestions { get; set; }
         public bool RequireHttps { get; set; }
         public bool IsBehindProxy { get; set; }
+        public bool EnableNewOmdbSupport { get; set; }
 
         public int ImageExtractionTimeoutMs { get; set; }
 
@@ -343,8 +344,8 @@ namespace MediaBrowser.Model.Configuration
                             Type = ImageType.Logo
                         }
                     },
-
-                    DisabledImageFetchers = new [] {"FanArt"}
+                    DisabledMetadataFetchers = new []{ "The Open Movie Database" },
+                    DisabledImageFetchers = new []{ "The Open Movie Database", "FanArt" }
                 },
 
                 new MetadataOptions(1, 1280)
@@ -389,7 +390,9 @@ namespace MediaBrowser.Model.Configuration
                             Limit = 1,
                             Type = ImageType.Logo
                         }
-                    }
+                    },
+                    DisabledMetadataFetchers = new []{ "TheMovieDb" },
+                    DisabledImageFetchers = new []{ "TheMovieDb" }
                 },
 
                 new MetadataOptions(1, 1280)

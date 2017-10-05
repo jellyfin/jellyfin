@@ -140,6 +140,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             {
                 stream.Seek(offset, SeekOrigin.End);
             }
+            catch (IOException)
+            {
+
+            }
             catch (ArgumentException)
             {
 
