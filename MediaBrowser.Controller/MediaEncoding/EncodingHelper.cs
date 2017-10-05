@@ -1960,6 +1960,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 return "-c:v h264_mmal";
                             }
                             break;
+                        case "mpeg2video":
+                            if (_mediaEncoder.SupportsDecoder("mpeg2_mmal") && encodingOptions.HardwareDecodingCodecs.Contains("mpeg2video", StringComparer.OrdinalIgnoreCase))
+                            {
+                                return "-c:v mpeg2_mmal";
+                            }
+                            break;
                     }
                 }
             }
