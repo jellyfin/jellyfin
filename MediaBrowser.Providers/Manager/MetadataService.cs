@@ -453,6 +453,11 @@ namespace MediaBrowser.Providers.Manager
             return item is TItemType;
         }
 
+        public bool CanRefreshPrimary(Type type)
+        {
+            return type == typeof(TItemType);
+        }
+
         protected virtual async Task<RefreshResult> RefreshWithProviders(MetadataResult<TItemType> metadata,
             TIdType id,
             MetadataRefreshOptions options,
