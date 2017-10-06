@@ -1,11 +1,12 @@
 ﻿using System;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class AudioBook : Audio.Audio, IHasSeries
+    public class AudioBook : Audio.Audio, IHasSeries, IHasLookupInfo<SongInfo>
     {
         [IgnoreDataMember]
         public override bool SupportsPositionTicksResume
