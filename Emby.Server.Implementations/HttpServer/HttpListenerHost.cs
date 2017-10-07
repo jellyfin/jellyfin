@@ -725,12 +725,13 @@ namespace Emby.Server.Implementations.HttpServer
                     Summary = route.Summary
                 });
 
-                //routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
-                //{
-                //    Notes = route.Notes,
-                //    Priority = route.Priority,
-                //    Summary = route.Summary
-                //});
+                // needed because apps add /emby, and some users also add /emby, thereby double prefixing
+                routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
+                {
+                    Notes = route.Notes,
+                    Priority = route.Priority,
+                    Summary = route.Summary
+                });
             }
 
             return routes.ToArray(routes.Count);

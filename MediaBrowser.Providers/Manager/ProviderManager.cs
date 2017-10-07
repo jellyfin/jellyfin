@@ -118,7 +118,29 @@ namespace MediaBrowser.Providers.Manager
 
         public Task<ItemUpdateType> RefreshSingleItem(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            var service = _metadataServices.FirstOrDefault(i => i.CanRefresh(item));
+            IMetadataService service = null;
+            var type = item.GetType();
+
+            foreach (var current in _metadataServices)
+            {
+                if (current.CanRefreshPrimary(type))
+                {
+                    service = current;
+                    break;
+                }
+            }
+
+            if (service == null)
+            {
+                foreach (var current in _metadataServices)
+                {
+                    if (current.CanRefresh(item))
+                    {
+                        service = current;
+                        break;
+                    }
+                }
+            }
 
             if (service != null)
             {
@@ -452,6 +474,8 @@ namespace MediaBrowser.Providers.Manager
                 GetPluginSummary<MusicAlbum>(),
                 GetPluginSummary<MusicArtist>(),
                 GetPluginSummary<Audio>(),
+                GetPluginSummary<AudioBook>(),
+                GetPluginSummary<AudioPodcast>(),
                 GetPluginSummary<Genre>(),
                 GetPluginSummary<Studio>(),
                 GetPluginSummary<GameGenre>(),

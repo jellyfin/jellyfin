@@ -299,6 +299,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             int? videoBitrate = null;
             int? audioBitrate = null;
 
+            var isHd = channelInfo.IsHD ?? true;
+
             if (string.Equals(profile, "mobile", StringComparison.OrdinalIgnoreCase))
             {
                 width = 1280;
@@ -350,7 +352,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             else
             {
                 // This is for android tv's 1200 condition. Remove once not needed anymore so that we can avoid possible side effects of dummying up this data
-                if ((channelInfo.IsHD ?? true))
+                if (isHd)
                 {
                     width = 1920;
                     height = 1080;
@@ -367,9 +369,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 if (!videoBitrate.HasValue)
                 {
-                    videoBitrate = (channelInfo.IsHD ?? true) ? 15000000 : 2000000;
+                    videoBitrate = isHd ? 15000000 : 2000000;
                 }
-                audioBitrate = (channelInfo.IsHD ?? true) ? 448000 : 192000;
+                audioBitrate = isHd ? 448000 : 192000;
             }
 
             // normalize
