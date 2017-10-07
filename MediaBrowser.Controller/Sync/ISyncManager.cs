@@ -91,8 +91,6 @@ namespace MediaBrowser.Controller.Sync
         /// </summary>
         List<SyncTarget> GetSyncTargets(string userId);
 
-        List<SyncTarget> GetSyncTargets(string userId, bool? supportsRemoteSync);
-
         /// <summary>
         /// Supportses the synchronize.
         /// </summary>
