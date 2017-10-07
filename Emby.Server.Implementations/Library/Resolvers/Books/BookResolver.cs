@@ -12,7 +12,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
     /// </summary>
     public class BookResolver : MediaBrowser.Controller.Resolvers.ItemResolver<Book>
     {
-        private readonly string[] _validExtensions = {".pdf", ".epub", ".mobi", ".cbr", ".cbz"};
+        private readonly string[] _validExtensions = { ".pdf", ".epub", ".mobi", ".cbr", ".cbz", ".azw3" };
 
         /// <summary>
         /// 
@@ -26,7 +26,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
             // Only process items that are in a collection folder containing books
             if (!string.Equals(collectionType, CollectionType.Books, StringComparison.OrdinalIgnoreCase))
                 return null;
-            
+
             if (args.IsDirectory)
             {
                 return GetBook(args);
@@ -69,9 +69,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
                 return null;
 
             return new Book
-                       {
-                           Path = bookFiles[0].FullName
-                       };
+            {
+                Path = bookFiles[0].FullName
+            };
         }
     }
 }
