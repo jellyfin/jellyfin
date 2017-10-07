@@ -110,7 +110,15 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     var tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
                     _fileSystem.CreateDirectory(tempFolder);
 
-                    _zipClient.ExtractAllFromGz(stream, tempFolder, true);
+                    try
+                    {
+                        _zipClient.ExtractAllFromGz(stream, tempFolder, true);
+                    }
+                    catch
+                    {
+                        // If the extraction fails just return the original file, it could be a gz
+                        return file;
+                    }
 
                     return _fileSystem.GetFiles(tempFolder, true)
                         .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
