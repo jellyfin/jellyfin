@@ -589,5 +589,7 @@
   "LabelInternetQuality": "Internet quality:",
   "HeaderMusicQuality": "Music Quality",
   "LabelHomeNetworkQuality": "Home network quality:",
-  "HeaderLatestMedia": "Latest Media"
+  "HeaderLatestMedia": "Latest Media",
+  "HeaderRestartingEmbyServer": "Restarting Emby Server",
+  "RestartPleaseWaitMessage": "Please wait while Emby Server shuts down and restarts. This may take a minute or two."
 }
