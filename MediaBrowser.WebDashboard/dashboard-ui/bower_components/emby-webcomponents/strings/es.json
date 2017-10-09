@@ -10,6 +10,8 @@
     "LabelScreensaver": "Screensaver:",
     "LabelSoundEffects": "Sound effects:",
     "LabelSkin": "Skin:",
+    "HeaderRestartingEmbyServer": "Restarting Emby Server",
+    "RestartPleaseWaitMessage": "Please wait while Emby Server shuts down and restarts. This may take a minute or two.",
     "MessageUnlockAppWithPurchaseOrSupporter": "Desbloquea esta caracter\u00edstica con una peque\u00f1a compra una vez o con una suscripci\u00f3n a Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Desbloquea esta caracter\u00edstica con una suscripci\u00f3n a Emby Premiere.",
     "MessageToValidateSupporter": "Si tienes una suscripci\u00f3n a Emby Premiere aseg\u00farate de que la has configurado en el Panel de Control de tu servidor Emby en Ayuda -> Emby Premiere.",

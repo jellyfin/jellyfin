@@ -51,6 +51,7 @@ namespace Mono.Nat.Upnp
             NatUtility.Log("Initiating request to: {0}", ss);
 
             var req = new HttpRequestOptions();
+            req.LogErrors = false;
             req.Url = ss;
             req.EnableKeepAlive = false;
             req.RequestContentType = "text/xml; charset=\"utf-8\"";
