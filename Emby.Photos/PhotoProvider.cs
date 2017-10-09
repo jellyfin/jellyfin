@@ -31,14 +31,14 @@ namespace Emby.Photos
         }
 
         // These are causing taglib to hang
-        private string[] _excludeExtensions = new string[] { ".dng" };
+        private string[] _includextensions = new string[] { ".jpg", ".jpeg", ".png", ".tiff" };
 
         public Task<ItemUpdateType> FetchAsync(Photo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             item.SetImagePath(ImageType.Primary, item.Path);
 
             // Examples: https://github.com/mono/taglib-sharp/blob/a5f6949a53d09ce63ee7495580d6802921a21f14/tests/fixtures/TagLib.Tests.Images/NullOrientationTest.cs
-            if (!_excludeExtensions.Contains(Path.GetExtension(item.Path) ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (_includextensions.Contains(Path.GetExtension(item.Path) ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
                 try
                 {
