@@ -33,7 +33,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             OriginalStreamId = originalStreamId;
         }
 
-        protected override  Task OpenInternal(CancellationToken openCancellationToken)
+        protected override Task OpenInternal(CancellationToken openCancellationToken)
         {
             _liveStreamCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
@@ -77,56 +77,38 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             return Task.Run(async () =>
             {
-                var isFirstAttempt = true;
-
-                while (!cancellationToken.IsCancellationRequested)
+                try
                 {
-                    try
+                    using (var response = await _httpClient.SendAsync(new HttpRequestOptions
                     {
-                        using (var response = await _httpClient.SendAsync(new HttpRequestOptions
+                        Url = url,
+                        CancellationToken = cancellationToken,
+                        BufferContent = false,
+
+                        // Increase a little bit
+                        TimeoutMs = 30000,
+
+                        EnableHttpCompression = false
+
+                    }, "GET").ConfigureAwait(false))
+                    {
+                        Logger.Info("Opened HDHR stream from {0}", url);
+
+                        Logger.Info("Beginning multicastStream.CopyUntilCancelled");
+
+                        FileSystem.CreateDirectory(FileSystem.GetDirectoryName(TempFilePath));
+                        using (var fileStream = FileSystem.GetFileStream(TempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
                         {
-                            Url = url,
-                            CancellationToken = cancellationToken,
-                            BufferContent = false,
-
-                            // Increase a little bit
-                            TimeoutMs = 30000,
-
-                            EnableHttpCompression = false
-
-                        }, "GET").ConfigureAwait(false))
-                        {
-                            Logger.Info("Opened HDHR stream from {0}", url);
-
-                            if (!cancellationToken.IsCancellationRequested)
-                            {
-                                Logger.Info("Beginning multicastStream.CopyUntilCancelled");
-
-                                FileSystem.CreateDirectory(FileSystem.GetDirectoryName(TempFilePath));
-                                using (var fileStream = FileSystem.GetFileStream(TempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
-                                {
-                                    StreamHelper.CopyTo(response.Content, fileStream, 81920, () => Resolve(openTaskCompletionSource), cancellationToken);
-                                }
-                            }
+                            StreamHelper.CopyTo(response.Content, fileStream, 81920, () => Resolve(openTaskCompletionSource), cancellationToken);
                         }
                     }
-                    catch (OperationCanceledException)
-                    {
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        if (isFirstAttempt)
-                        {
-                            Logger.ErrorException("Error opening live stream:", ex);
-                            openTaskCompletionSource.TrySetException(ex);
-                            break;
-                        }
-
-                        Logger.ErrorException("Error copying live stream, will reopen", ex);
-                    }
-
-                    isFirstAttempt = false;
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error copying live stream.", ex);
                 }
 
                 _liveStreamTaskCompletionSource.TrySetResult(true);
