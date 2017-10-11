@@ -297,7 +297,7 @@
     "LabelAllowServerAutoRestart": "Automatikus \u00fajraind\u00edt\u00e1s enged\u00e9lyez\u00e9se a szervernek a friss\u00edt\u00e9sek telep\u00edt\u00e9s\u00e9hez",
     "LabelAllowServerAutoRestartHelp": "A szerver csak akkor indul \u00fajra ha nincs felhaszn\u00e1l\u00f3i tev\u00e9kenys\u00e9g",
     "LabelRunServerAtStartup": "Szerver futtat\u00e1sa ind\u00edt\u00e1skor",
-    "LabelRunServerAtStartupHelp": "This will start the tray icon on windows startup. To start the windows service, uncheck this and run the service from the windows control panel. Please note that you cannot run both at the same time, so you will need to exit the tray icon before starting the service.",
+    "LabelRunServerAtStartupHelp": "This will start the Emby tray icon on Windows startup. If you've set up a Windows service then leave this unchecked and configure the service to run at startup.",
     "ButtonSelectDirectory": "K\u00f6nyvt\u00e1r v\u00e1laszt\u00e1sa",
     "LabelCachePath": "Gyors\u00edt\u00f3t\u00e1r \u00fatvonal:",
     "DefaultMetadataLangaugeDescription": "These are your defaults and can be customized on a per-library basis.",

@@ -297,7 +297,7 @@
   "LabelAllowServerAutoRestart": "Allow the server to restart automatically to apply updates",
   "LabelAllowServerAutoRestartHelp": "The server will only restart during idle periods, when no users are active.",
   "LabelRunServerAtStartup": "Run server at startup",
-  "LabelRunServerAtStartupHelp": "This will start the tray icon on windows startup. To start the windows service, uncheck this and run the service from the windows control panel. Please note that you cannot run both at the same time, so you will need to exit the tray icon before starting the service.",
+  "LabelRunServerAtStartupHelp": "This will start the Emby tray icon on Windows startup. If you've set up a Windows service then leave this unchecked and configure the service to run at startup.",
   "ButtonSelectDirectory": "Select Directory",
   "LabelCachePath": "Cache path:",
   "DefaultMetadataLangaugeDescription": "These are your defaults and can be customized on a per-library basis.",

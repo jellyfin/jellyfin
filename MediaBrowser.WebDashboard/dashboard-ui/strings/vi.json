@@ -297,7 +297,7 @@
     "LabelAllowServerAutoRestart": "Cho ph\u00e9p m\u00e1y ch\u1ee7 t\u1ef1 \u0111\u1ed9ng kh\u1edfi \u0111\u1ed9ng l\u1ea1i \u0111\u1ec3 \u00e1p d\u1ee5ng c\u00e1c b\u1ea3n c\u1eadp nh\u1eadt",
     "LabelAllowServerAutoRestartHelp": "The server will only restart during idle periods, when no users are active.",
     "LabelRunServerAtStartup": "Run server at startup",
-    "LabelRunServerAtStartupHelp": "This will start the tray icon on windows startup. To start the windows service, uncheck this and run the service from the windows control panel. Please note that you cannot run both at the same time, so you will need to exit the tray icon before starting the service.",
+    "LabelRunServerAtStartupHelp": "This will start the Emby tray icon on Windows startup. If you've set up a Windows service then leave this unchecked and configure the service to run at startup.",
     "ButtonSelectDirectory": "L\u1ef1a ch\u1ecdn tr\u1ef1c ti\u1ebfp",
     "LabelCachePath": "Cache path:",
     "DefaultMetadataLangaugeDescription": "These are your defaults and can be customized on a per-library basis.",

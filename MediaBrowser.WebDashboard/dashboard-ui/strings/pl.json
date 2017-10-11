@@ -297,7 +297,7 @@
     "LabelAllowServerAutoRestart": "Zezwalaj na ponowne uruchomienie serwera, w celu instalacji aktualizacji",
     "LabelAllowServerAutoRestartHelp": "Serwer b\u0119dzie ponownie uruchamiany tylko w trakcie bezczynno\u015bci, kiedy brak aktywnych u\u017cytkownik\u00f3w.",
     "LabelRunServerAtStartup": "Uruchamiaj serwer podczas uruchomienia systemu",
-    "LabelRunServerAtStartupHelp": "Umo\u017cliwia uruchomienie serwera w trybie aplikacji z aktywn\u0105 ikon\u0105 w zasobniku systemowym. W celu uruchomienia aplikacji jako us\u0142ug\u0119 Windows, odznacz t\u0119 opcj\u0119 i uruchom us\u0142ug\u0119 w panelu sterowania Windows. Uwaga, uruchomienie aplikacji w obu trybach jest niemo\u017cliwe nale\u017cy zamkn\u0105\u0107 aplikacj\u0119 w zasobniku przed uruchomieniem us\u0142ugi.",
+    "LabelRunServerAtStartupHelp": "Umo\u017cliwia uruchomienieEmby w trybie aplikacji z aktywn\u0105 ikon\u0105 w zasobniku systemowym. Je\u015bli skonfigurowa\u0142e\u015b Emby jako us\u0142ug\u0119 Windows, pozostaw t\u0119 opcj\u0119 odznaczon\u0105 i ustaw typ uruchomienia us\u0142ugi jako Automatyczny.",
     "ButtonSelectDirectory": "Wybierz folder",
     "LabelCachePath": "Folder bufora:",
     "DefaultMetadataLangaugeDescription": "To s\u0105 twoje ustawienia domy\u015blne. Mo\u017cesz je zmieni\u0107 dla ka\u017cdej biblioteki osobno.",
