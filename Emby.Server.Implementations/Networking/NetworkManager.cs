@@ -93,12 +93,36 @@ namespace Emby.Server.Implementations.Networking
             }
 
             return
-
                 endpoint.StartsWith("localhost", StringComparison.OrdinalIgnoreCase) ||
+                IsInPrivateAddressSpaceAndLocalSubnet(endpoint);
+        }
+
+        public bool IsInPrivateAddressSpaceAndLocalSubnet(string endpoint)
+        {
+            string subnet_Match = "";
+            if (
                 endpoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("192.168", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase);
+                endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase)
+                )
+            {
+                foreach (NetworkInterface adapter in NetworkInterface.GetAllNetworkInterfaces())
+                    foreach (UnicastIPAddressInformation unicastIPAddressInformation in adapter.GetIPProperties().UnicastAddresses)
+                        if (unicastIPAddressInformation.Address.AddressFamily == AddressFamily.InterNetwork && endpoint.Split('.')[0] == unicastIPAddressInformation.Address.ToString().Split('.')[0])
+                        {
+                            int subnet_Test = 0;
+                            foreach (string part in unicastIPAddressInformation.IPv4Mask.ToString().Split('.'))
+                            {
+                                if (part.Equals("0")) break;
+                                subnet_Test++;
+                            }
+
+                            subnet_Match = String.Join(".", unicastIPAddressInformation.Address.ToString().Split('.').Take(subnet_Test).ToArray());
+                        }
+            }
+
+            return endpoint.StartsWith(subnet_Match + ".", StringComparison.OrdinalIgnoreCase);
         }
 
         private bool Is172AddressPrivate(string endpoint)
