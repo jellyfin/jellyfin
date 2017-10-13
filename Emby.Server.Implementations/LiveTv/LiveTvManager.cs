@@ -527,18 +527,18 @@ namespace Emby.Server.Implementations.LiveTv
 
             item.ChannelType = channelInfo.ChannelType;
             item.ServiceName = serviceName;
+
+            if (!string.Equals(channelInfo.Number, item.Number, StringComparison.Ordinal))
+            {
+                forceUpdate = true;
+            }
             item.Number = channelInfo.Number;
 
-            //if (!string.Equals(item.ProviderImageUrl, channelInfo.ImageUrl, StringComparison.OrdinalIgnoreCase))
-            //{
-            //    isNew = true;
-            //    replaceImages.Add(ImageType.Primary);
-            //}
-            //if (!string.Equals(item.ProviderImagePath, channelInfo.ImagePath, StringComparison.OrdinalIgnoreCase))
-            //{
-            //    isNew = true;
-            //    replaceImages.Add(ImageType.Primary);
-            //}
+            if (!string.Equals(channelInfo.Name, item.Name, StringComparison.Ordinal))
+            {
+                forceUpdate = true;
+            }
+            item.Name = channelInfo.Name;
 
             if (!item.HasImage(ImageType.Primary))
             {
@@ -552,11 +552,6 @@ namespace Emby.Server.Implementations.LiveTv
                     item.SetImagePath(ImageType.Primary, channelInfo.ImageUrl);
                     forceUpdate = true;
                 }
-            }
-
-            if (string.IsNullOrEmpty(item.Name))
-            {
-                item.Name = channelInfo.Name;
             }
 
             if (isNew)
@@ -2923,7 +2918,7 @@ namespace Emby.Server.Implementations.LiveTv
 
         public Folder GetInternalLiveTvFolder(CancellationToken cancellationToken)
         {
-            var name = _localization.GetLocalizedString("ViewTypeLiveTV");
+            var name = _localization.GetLocalizedString("HeaderLiveTV");
             return _libraryManager.GetNamedView(name, CollectionType.LiveTv, name, cancellationToken);
         }
 
