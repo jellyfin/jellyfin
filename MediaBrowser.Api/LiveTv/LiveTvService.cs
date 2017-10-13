@@ -947,9 +947,9 @@ namespace MediaBrowser.Api.LiveTv
 
         public object Get(GetChannel request)
         {
-            var user = string.IsNullOrWhiteSpace(request.UserId) ? null : _userManager.GetUserById(request.UserId);
+            var user = _userManager.GetUserById(request.UserId);
 
-            var item = _libraryManager.GetItemById(request.Id);
+            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _libraryManager.GetItemById(request.Id);
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
@@ -1098,12 +1098,13 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetRecording request)
         {
-            var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(request.UserId);
+            var user = _userManager.GetUserById(request.UserId);
 
-            var options = new DtoOptions();
-            options.DeviceId = _authContext.GetAuthorizationInfo(Request).DeviceId;
+            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _libraryManager.GetItemById(request.Id);
 
-            var result = await _liveTvManager.GetRecording(request.Id, options, CancellationToken.None, user).ConfigureAwait(false);
+            var dtoOptions = GetDtoOptions(_authContext, request);
+
+            var result = _dtoService.GetBaseItemDto(item, dtoOptions, user);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }

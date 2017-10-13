@@ -262,14 +262,14 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            list.Add(GetUserView(SpecialFolder.MusicLatest, "0", parent));
-            list.Add(GetUserView(SpecialFolder.MusicPlaylists, "1", parent));
-            list.Add(GetUserView(SpecialFolder.MusicAlbums, "2", parent));
-            list.Add(GetUserView(SpecialFolder.MusicAlbumArtists, "3", parent));
-            list.Add(GetUserView(SpecialFolder.MusicArtists, "4", parent));
-            list.Add(GetUserView(SpecialFolder.MusicSongs, "5", parent));
-            list.Add(GetUserView(SpecialFolder.MusicGenres, "6", parent));
-            list.Add(GetUserView(SpecialFolder.MusicFavorites, "7", parent));
+            list.Add(GetUserView(SpecialFolder.MusicLatest, "Latest", "0", parent));
+            list.Add(GetUserView(SpecialFolder.MusicPlaylists, "Playlists", "1", parent));
+            list.Add(GetUserView(SpecialFolder.MusicAlbums, "Albums", "2", parent));
+            list.Add(GetUserView(SpecialFolder.MusicAlbumArtists, "HeaderAlbumArtists", "3", parent));
+            list.Add(GetUserView(SpecialFolder.MusicArtists, "Artists", "4", parent));
+            list.Add(GetUserView(SpecialFolder.MusicSongs, "Songs", "5", parent));
+            list.Add(GetUserView(SpecialFolder.MusicGenres, "Genres", "6", parent));
+            list.Add(GetUserView(SpecialFolder.MusicFavorites, "Favorites", "7", parent));
 
             return GetResult(list, parent, query);
         }
@@ -278,9 +278,9 @@ namespace MediaBrowser.Controller.Entities
         {
             var list = new List<BaseItem>();
 
-            list.Add(GetUserView(SpecialFolder.MusicFavoriteAlbums, "0", parent));
-            list.Add(GetUserView(SpecialFolder.MusicFavoriteArtists, "1", parent));
-            list.Add(GetUserView(SpecialFolder.MusicFavoriteSongs, "2", parent));
+            list.Add(GetUserView(SpecialFolder.MusicFavoriteAlbums, "HeaderFavoriteAlbums", "0", parent));
+            list.Add(GetUserView(SpecialFolder.MusicFavoriteArtists, "HeaderFavoriteArtists", "1", parent));
+            list.Add(GetUserView(SpecialFolder.MusicFavoriteSongs, "HeaderFavoriteSongs", "2", parent));
 
             return GetResult(list, parent, query);
         }
@@ -443,12 +443,12 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            list.Add(GetUserView(SpecialFolder.MovieResume, "0", parent));
-            list.Add(GetUserView(SpecialFolder.MovieLatest, "1", parent));
-            list.Add(GetUserView(SpecialFolder.MovieMovies, "2", parent));
-            list.Add(GetUserView(SpecialFolder.MovieCollections, "3", parent));
-            list.Add(GetUserView(SpecialFolder.MovieFavorites, "4", parent));
-            list.Add(GetUserView(SpecialFolder.MovieGenres, "5", parent));
+            list.Add(GetUserView(SpecialFolder.MovieResume, "HeaderContinueWatching", "0", parent));
+            list.Add(GetUserView(SpecialFolder.MovieLatest, "Latest", "1", parent));
+            list.Add(GetUserView(SpecialFolder.MovieMovies, "Movies", "2", parent));
+            list.Add(GetUserView(SpecialFolder.MovieCollections, "Collections", "3", parent));
+            list.Add(GetUserView(SpecialFolder.MovieFavorites, "Favorites", "4", parent));
+            list.Add(GetUserView(SpecialFolder.MovieGenres, "Genres", "5", parent));
 
             return GetResult(list, parent, query);
         }
@@ -564,7 +564,7 @@ namespace MediaBrowser.Controller.Entities
 
                 })
                 .Where(i => i != null)
-                .Select(i => GetUserView(i.Name, SpecialFolder.MovieGenre, i.SortName, parent));
+                .Select(i => GetUserViewWithName(i.Name, SpecialFolder.MovieGenre, i.SortName, parent));
 
             return GetResult(genres, parent, query);
         }
@@ -613,13 +613,13 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            list.Add(GetUserView(SpecialFolder.TvResume, "0", parent));
-            list.Add(GetUserView(SpecialFolder.TvNextUp, "1", parent));
-            list.Add(GetUserView(SpecialFolder.TvLatest, "2", parent));
-            list.Add(GetUserView(SpecialFolder.TvShowSeries, "3", parent));
-            list.Add(GetUserView(SpecialFolder.TvFavoriteSeries, "4", parent));
-            list.Add(GetUserView(SpecialFolder.TvFavoriteEpisodes, "5", parent));
-            list.Add(GetUserView(SpecialFolder.TvGenres, "6", parent));
+            list.Add(GetUserView(SpecialFolder.TvResume, "HeaderContinueWatching", "0", parent));
+            list.Add(GetUserView(SpecialFolder.TvNextUp, "HeaderNextUp", "1", parent));
+            list.Add(GetUserView(SpecialFolder.TvLatest, "Latest", "2", parent));
+            list.Add(GetUserView(SpecialFolder.TvShowSeries, "Shows", "3", parent));
+            list.Add(GetUserView(SpecialFolder.TvFavoriteSeries, "HeaderFavoriteShows", "4", parent));
+            list.Add(GetUserView(SpecialFolder.TvFavoriteEpisodes, "HeaderFavoriteEpisodes", "5", parent));
+            list.Add(GetUserView(SpecialFolder.TvGenres, "Genres", "6", parent));
 
             return GetResult(list, parent, query);
         }
@@ -703,7 +703,7 @@ namespace MediaBrowser.Controller.Entities
 
                 })
                 .Where(i => i != null)
-                .Select(i => GetUserView(i.Name, SpecialFolder.TvGenre, i.SortName, parent));
+                .Select(i => GetUserViewWithName(i.Name, SpecialFolder.TvGenre, i.SortName, parent));
 
             return GetResult(genres, parent, query);
         }
@@ -1736,20 +1736,20 @@ namespace MediaBrowser.Controller.Entities
             var list = new List<BaseItem>();
 
             //list.Add(await GetUserSubView(SpecialFolder.LiveTvNowPlaying, user, "0", parent).ConfigureAwait(false));
-            list.Add(GetUserView(SpecialFolder.LiveTvChannels, string.Empty, user.RootFolder));
-            list.Add(GetUserView(SpecialFolder.LiveTvRecordingGroups, string.Empty, user.RootFolder));
+            list.Add(GetUserView(SpecialFolder.LiveTvChannels, "Channels", string.Empty, user.RootFolder));
+            list.Add(GetUserView(SpecialFolder.LiveTvRecordingGroups, "HeaderRecordingGroups", string.Empty, user.RootFolder));
 
             return GetResult(list, queryParent, query);
         }
 
-        private UserView GetUserView(string name, string type, string sortName, BaseItem parent)
+        private UserView GetUserViewWithName(string name, string type, string sortName, BaseItem parent)
         {
             return _userViewManager.GetUserSubView(name, parent.Id.ToString("N"), type, sortName, CancellationToken.None);
         }
 
-        private UserView GetUserView(string type, string sortName, BaseItem parent)
+        private UserView GetUserView(string type, string localizationKey, string sortName, BaseItem parent)
         {
-            return _userViewManager.GetUserSubView(parent.Id.ToString("N"), type, sortName, CancellationToken.None);
+            return _userViewManager.GetUserSubView(parent.Id.ToString("N"), type, localizationKey, sortName, CancellationToken.None);
         }
 
         public static IEnumerable<BaseItem> FilterForAdjacency(List<BaseItem> list, string adjacentToId)

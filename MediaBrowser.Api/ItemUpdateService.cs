@@ -124,24 +124,24 @@ namespace MediaBrowser.Api
             {
                 list.Add(new NameValuePair
                 {
-                    Name = "FolderTypeInherit",
+                    Name = "Inherit",
                     Value = ""
                 });
             }
 
             list.Add(new NameValuePair
             {
-                Name = "FolderTypeMovies",
+                Name = "Movies",
                 Value = "movies"
             });
             list.Add(new NameValuePair
             {
-                Name = "FolderTypeMusic",
+                Name = "Music",
                 Value = "music"
             });
             list.Add(new NameValuePair
             {
-                Name = "FolderTypeTvShows",
+                Name = "Shows",
                 Value = "tvshows"
             });
 
@@ -149,29 +149,29 @@ namespace MediaBrowser.Api
             {
                 list.Add(new NameValuePair
                 {
-                    Name = "FolderTypeBooks",
+                    Name = "Books",
                     Value = "books"
                 });
                 list.Add(new NameValuePair
                 {
-                    Name = "FolderTypeGames",
+                    Name = "Games",
                     Value = "games"
                 });
             }
 
             list.Add(new NameValuePair
             {
-                Name = "FolderTypeHomeVideos",
+                Name = "HomeVideos",
                 Value = "homevideos"
             });
             list.Add(new NameValuePair
             {
-                Name = "FolderTypeMusicVideos",
+                Name = "MusicVideos",
                 Value = "musicvideos"
             });
             list.Add(new NameValuePair
             {
-                Name = "FolderTypePhotos",
+                Name = "Photos",
                 Value = "photos"
             });
 
@@ -179,7 +179,7 @@ namespace MediaBrowser.Api
             {
                 list.Add(new NameValuePair
                 {
-                    Name = "FolderTypeMixed",
+                    Name = "MixedContent",
                     Value = ""
                 });
             }

@@ -95,13 +95,15 @@ namespace Emby.Server.Implementations.Library
 
                 if (parents.Count > 0)
                 {
-                    list.Add(GetUserView(parents, viewType, string.Empty, user, query.PresetViews, cancellationToken));
+                    var localizationKey = viewType.Replace("Tv", string.Empty);
+
+                    list.Add(GetUserView(parents, viewType, localizationKey, string.Empty, user, query.PresetViews, cancellationToken));
                 }
             }
 
             if (_config.Configuration.EnableFolderView)
             {
-                var name = _localizationManager.GetLocalizedString("ViewType" + CollectionType.Folders);
+                var name = _localizationManager.GetLocalizedString("Folders");
                 list.Add(_libraryManager.GetNamedView(name, CollectionType.Folders, string.Empty, cancellationToken));
             }
 
@@ -158,21 +160,21 @@ namespace Emby.Server.Implementations.Library
                 .ToArray();
         }
 
-        public UserView GetUserSubView(string name, string parentId, string type, string sortName, CancellationToken cancellationToken)
+        public UserView GetUserSubViewWithName(string name, string parentId, string type, string sortName, CancellationToken cancellationToken)
         {
             var uniqueId = parentId + "subview" + type;
 
             return _libraryManager.GetNamedView(name, parentId, type, sortName, uniqueId, cancellationToken);
         }
 
-        public UserView GetUserSubView(string parentId, string type, string sortName, CancellationToken cancellationToken)
+        public UserView GetUserSubView(string parentId, string type, string localizationKey, string sortName, CancellationToken cancellationToken)
         {
-            var name = _localizationManager.GetLocalizedString("ViewType" + type);
+            var name = _localizationManager.GetLocalizedString(localizationKey);
 
-            return GetUserSubView(name, parentId, type, sortName, cancellationToken);
+            return GetUserSubViewWithName(name, parentId, type, sortName, cancellationToken);
         }
 
-        private Folder GetUserView(List<ICollectionFolder> parents, string viewType, string sortName, User user, string[] presetViews, CancellationToken cancellationToken)
+        private Folder GetUserView(List<ICollectionFolder> parents, string viewType, string localizationKey, string sortName, User user, string[] presetViews, CancellationToken cancellationToken)
         {
             if (parents.Count == 1 && parents.All(i => string.Equals(i.CollectionType, viewType, StringComparison.OrdinalIgnoreCase)))
             {
@@ -184,7 +186,7 @@ namespace Emby.Server.Implementations.Library
                 return GetUserView((Folder)parents[0], viewType, string.Empty, cancellationToken);
             }
 
-            var name = _localizationManager.GetLocalizedString("ViewType" + viewType);
+            var name = _localizationManager.GetLocalizedString(localizationKey);
             return _libraryManager.GetNamedView(user, name, viewType, sortName, cancellationToken);
         }
 

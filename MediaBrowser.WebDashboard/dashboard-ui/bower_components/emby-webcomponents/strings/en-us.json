@@ -591,5 +591,6 @@
   "LabelHomeNetworkQuality": "Home network quality:",
   "HeaderLatestMedia": "Latest Media",
   "HeaderRestartingEmbyServer": "Restarting Emby Server",
-  "RestartPleaseWaitMessage": "Please wait while Emby Server shuts down and restarts. This may take a minute or two."
+  "RestartPleaseWaitMessage": "Please wait while Emby Server shuts down and restarts. This may take a minute or two.",
+  "PlayNext": "Play next"
 }
