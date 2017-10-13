@@ -69,13 +69,13 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideos<MusicVideo>(parent, files, directoryService, true, collectionType);
+                return ResolveVideos<MusicVideo>(parent, files, directoryService, true, collectionType, false);
             }
 
             if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) ||
                             string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideos<Video>(parent, files, directoryService, false, collectionType);
+                return ResolveVideos<Video>(parent, files, directoryService, false, collectionType, false);
             }
 
             if (string.IsNullOrWhiteSpace(collectionType))
@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 // Owned items should just use the plain video type
                 if (parent == null)
                 {
-                    return ResolveVideos<Video>(parent, files, directoryService, false, collectionType);
+                    return ResolveVideos<Video>(parent, files, directoryService, false, collectionType, false);
                 }
 
                 if (parent is Series || parent.GetParents().OfType<Series>().Any())
@@ -91,18 +91,18 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     return null;
                 }
 
-                return ResolveVideos<Movie>(parent, files, directoryService, false, collectionType);
+                return ResolveVideos<Movie>(parent, files, directoryService, false, collectionType, true);
             }
 
             if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideos<Movie>(parent, files, directoryService, true, collectionType);
+                return ResolveVideos<Movie>(parent, files, directoryService, true, collectionType, true);
             }
 
             return null;
         }
 
-        private MultiItemResolverResult ResolveVideos<T>(Folder parent, IEnumerable<FileSystemMetadata> fileSystemEntries, IDirectoryService directoryService, bool suppportMultiEditions, string collectionType)
+        private MultiItemResolverResult ResolveVideos<T>(Folder parent, IEnumerable<FileSystemMetadata> fileSystemEntries, IDirectoryService directoryService, bool suppportMultiEditions, string collectionType, bool parseName)
             where T : Video, new()
         {
             var files = new List<FileSystemMetadata>();
@@ -158,7 +158,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     Path = video.Files[0].Path,
                     IsInMixedFolder = isInMixedFolder,
                     ProductionYear = video.Year,
-                    Name = video.Name,
+                    Name = parseName ?
+                        video.Name :
+                        Path.GetFileName(video.Files[0].Path),
                     AdditionalParts = video.Files.Skip(1).Select(i => i.Path).ToArray(),
                     LocalAlternateVersions = video.AlternateVersions.Select(i => i.Path).ToArray()
                 };
@@ -214,12 +216,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
                 if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<MusicVideo>(args.Path, args.Parent, files, args.DirectoryService, collectionType, true);
+                    return FindMovie<MusicVideo>(args.Path, args.Parent, files, args.DirectoryService, collectionType, true, false);
                 }
 
                 if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Video>(args.Path, args.Parent, files, args.DirectoryService, collectionType, false);
+                    return FindMovie<Video>(args.Path, args.Parent, files, args.DirectoryService, collectionType, false, false);
                 }
 
                 if (string.IsNullOrEmpty(collectionType))
@@ -237,13 +239,13 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     }
 
                     {
-                        return FindMovie<Movie>(args.Path, args.Parent, files, args.DirectoryService, collectionType, true);
+                        return FindMovie<Movie>(args.Path, args.Parent, files, args.DirectoryService, collectionType, true, true);
                     }
                 }
 
                 if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Movie>(args.Path, args.Parent, files, args.DirectoryService, collectionType, true);
+                    return FindMovie<Movie>(args.Path, args.Parent, files, args.DirectoryService, collectionType, true, true);
                 }
 
                 return null;
@@ -359,7 +361,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>Movie.</returns>
-        private T FindMovie<T>(string path, Folder parent, List<FileSystemMetadata> fileSystemEntries, IDirectoryService directoryService, string collectionType, bool allowFilesAsFolders)
+        private T FindMovie<T>(string path, Folder parent, List<FileSystemMetadata> fileSystemEntries, IDirectoryService directoryService, string collectionType, bool allowFilesAsFolders, bool parseName)
             where T : Video, new()
         {
             var multiDiscFolders = new List<FileSystemMetadata>();
@@ -413,7 +415,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                                         !string.Equals(collectionType, CollectionType.Photos) &&
                                         !string.Equals(collectionType, CollectionType.MusicVideos);
 
-                var result = ResolveVideos<T>(parent, fileSystemEntries, directoryService, supportsMultiVersion, collectionType) ??
+                var result = ResolveVideos<T>(parent, fileSystemEntries, directoryService, supportsMultiVersion, collectionType, parseName) ??
                     new MultiItemResolverResult();
 
                 if (result.Items.Count == 1)
