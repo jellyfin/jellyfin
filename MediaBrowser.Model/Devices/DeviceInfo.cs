@@ -21,17 +21,7 @@ namespace MediaBrowser.Model.Devices
         /// <value>The camera upload path.</value>
         public string CameraUploadPath { get; set; }
 
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name
-        {
-            get
-            {
-                return string.IsNullOrEmpty(CustomName) ? ReportedName : CustomName;
-            }
-        }
+        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the identifier.
