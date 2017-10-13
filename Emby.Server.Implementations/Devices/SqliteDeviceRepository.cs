@@ -83,6 +83,8 @@ namespace Emby.Server.Implementations.Devices
                 {
                     var device = _json.DeserializeFromFile<DeviceInfo>(file);
 
+                    device.Name = string.IsNullOrWhiteSpace(device.CustomName) ? device.ReportedName : device.CustomName;
+
                     SaveDevice(device);
                 }
                 catch (Exception ex)
