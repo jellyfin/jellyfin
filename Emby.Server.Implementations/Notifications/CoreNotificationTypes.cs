@@ -160,7 +160,7 @@ namespace Emby.Server.Implementations.Notifications
                 Update(type);
             }
 
-            var systemName = _localization.GetLocalizedString("CategorySystem");
+            var systemName = _localization.GetLocalizedString("System");
 
             return knownTypes.OrderByDescending(i => string.Equals(i.Category, systemName, StringComparison.OrdinalIgnoreCase))
                 .ThenBy(i => i.Category)
@@ -175,23 +175,23 @@ namespace Emby.Server.Implementations.Notifications
 
             if (note.Type.IndexOf("Playback", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                note.Category = _localization.GetLocalizedString("CategoryUser");
+                note.Category = _localization.GetLocalizedString("User");
             }
             else if (note.Type.IndexOf("Plugin", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                note.Category = _localization.GetLocalizedString("CategoryPlugin");
+                note.Category = _localization.GetLocalizedString("Plugin");
             }
             else if (note.Type.IndexOf("CameraImageUploaded", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                note.Category = _localization.GetLocalizedString("CategorySync");
+                note.Category = _localization.GetLocalizedString("Sync");
             }
             else if (note.Type.IndexOf("UserLockedOut", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                note.Category = _localization.GetLocalizedString("CategoryUser");
+                note.Category = _localization.GetLocalizedString("User");
             }
             else
             {
-                note.Category = _localization.GetLocalizedString("CategorySystem");
+                note.Category = _localization.GetLocalizedString("System");
             }
         }
     }

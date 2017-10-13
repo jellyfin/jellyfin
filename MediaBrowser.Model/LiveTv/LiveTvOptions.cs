@@ -45,7 +45,6 @@ namespace MediaBrowser.Model.LiveTv
         public bool ImportFavoritesOnly { get; set; }
         public bool AllowHWTranscoding { get; set; }
         public bool EnableStreamLooping { get; set; }
-        public bool EnableMpDecimate { get; set; }
         public bool EnableNewHdhrChannelIds { get; set; }
         public string Source { get; set; }
 

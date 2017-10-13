@@ -76,16 +76,6 @@ namespace MediaBrowser.Controller.LiveTv
         void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<ITunerHost> tunerHosts, IEnumerable<IListingsProvider> listingProviders);
 
         /// <summary>
-        /// Gets the recording.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="options">The options.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>Task{RecordingInfoDto}.</returns>
-        Task<BaseItemDto> GetRecording(string id, DtoOptions options, CancellationToken cancellationToken, User user = null);
-
-        /// <summary>
         /// Gets the timer.
         /// </summary>
         /// <param name="id">The identifier.</param>
