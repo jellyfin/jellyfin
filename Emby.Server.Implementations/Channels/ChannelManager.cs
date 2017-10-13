@@ -1547,7 +1547,7 @@ namespace Emby.Server.Implementations.Channels
 
         public Folder GetInternalChannelFolder(CancellationToken cancellationToken)
         {
-            var name = _localization.GetLocalizedString("ViewTypeChannels");
+            var name = _localization.GetLocalizedString("Channels");
 
             return _libraryManager.GetNamedView(name, "channels", "zz_" + name, cancellationToken);
         }
