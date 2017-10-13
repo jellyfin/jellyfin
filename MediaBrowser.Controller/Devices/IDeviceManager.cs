@@ -28,7 +28,7 @@ namespace MediaBrowser.Controller.Devices
         /// <param name="appVersion">The application version.</param>
         /// <param name="usedByUserId">The used by user identifier.</param>
         /// <returns>Task.</returns>
-        Task<DeviceInfo> RegisterDevice(string reportedId, string name, string appName, string appVersion, string usedByUserId);
+        DeviceInfo RegisterDevice(string reportedId, string name, string appName, string appVersion, string usedByUserId);
 
         /// <summary>
         /// Saves the capabilities.
@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.Devices
         /// <param name="reportedId">The reported identifier.</param>
         /// <param name="capabilities">The capabilities.</param>
         /// <returns>Task.</returns>
-        Task SaveCapabilities(string reportedId, ClientCapabilities capabilities);
+        void SaveCapabilities(string reportedId, ClientCapabilities capabilities);
 
         /// <summary>
         /// Gets the capabilities.
@@ -58,7 +58,7 @@ namespace MediaBrowser.Controller.Devices
         /// <param name="id">The identifier.</param>
         /// <param name="options">The options.</param>
         /// <returns>Task.</returns>
-        Task UpdateDeviceInfo(string id, DeviceOptions options);
+        void UpdateDeviceInfo(string id, DeviceOptions options);
 
         /// <summary>
         /// Gets the devices.
@@ -67,12 +67,7 @@ namespace MediaBrowser.Controller.Devices
         /// <returns>IEnumerable&lt;DeviceInfo&gt;.</returns>
         QueryResult<DeviceInfo> GetDevices(DeviceQuery query);
 
-        /// <summary>
-        /// Deletes the device.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns>Task.</returns>
-        Task DeleteDevice(string id);
+        void DeleteDevice(string id);
 
         /// <summary>
         /// Gets the upload history.

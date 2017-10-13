@@ -67,7 +67,7 @@
     <Compile Include="Devices\CameraUploadsFolder.cs" />
     <Compile Include="Devices\DeviceId.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
-    <Compile Include="Devices\DeviceRepository.cs" />
+    <Compile Include="Devices\SqliteDeviceRepository.cs" />
     <Compile Include="Diagnostics\CommonProcess.cs" />
     <Compile Include="Diagnostics\ProcessFactory.cs" />
     <Compile Include="Dto\DtoService.cs" />

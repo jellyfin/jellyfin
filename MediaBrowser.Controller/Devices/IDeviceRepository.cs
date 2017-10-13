@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Session;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Devices
 {
@@ -12,7 +11,7 @@ namespace MediaBrowser.Controller.Devices
         /// </summary>
         /// <param name="device">The device.</param>
         /// <returns>Task.</returns>
-        Task SaveDevice(DeviceInfo device);
+        void SaveDevice(DeviceInfo device);
 
         /// <summary>
         /// Saves the capabilities.
@@ -20,7 +19,7 @@ namespace MediaBrowser.Controller.Devices
         /// <param name="id">The identifier.</param>
         /// <param name="capabilities">The capabilities.</param>
         /// <returns>Task.</returns>
-        Task SaveCapabilities(string id, ClientCapabilities capabilities);
+        void SaveCapabilities(string id, ClientCapabilities capabilities);
 
         /// <summary>
         /// Gets the capabilities.
@@ -36,18 +35,14 @@ namespace MediaBrowser.Controller.Devices
         /// <returns>DeviceInfo.</returns>
         DeviceInfo GetDevice(string id);
 
-        /// <summary>
-        /// Gets the devices.
-        /// </summary>
-        /// <returns>IEnumerable&lt;DeviceInfo&gt;.</returns>
-        IEnumerable<DeviceInfo> GetDevices();
+        List<DeviceInfo> GetDevices();
 
         /// <summary>
         /// Deletes the device.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>Task.</returns>
-        Task DeleteDevice(string id);
+        void DeleteDevice(string id);
 
         /// <summary>
         /// Gets the upload history.
