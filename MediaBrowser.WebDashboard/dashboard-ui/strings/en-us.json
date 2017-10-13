@@ -398,7 +398,7 @@
   "TabGameSystems": "Game Systems",
   "TabFolders": "Folders",
   "TabPathSubstitution": "Path Substitution",
-  "LabelSeasonZeroDisplayName": "Season 0 display name:",
+  "LabelSpecialSeasonsDisplayName": "Special season display name:",
   "LabelEnableRealtimeMonitor": "Enable real time monitoring",
   "LabelEnableRealtimeMonitorHelp": "Changes will be processed immediately, on supported file systems.",
   "ButtonScanLibrary": "Scan Library",
