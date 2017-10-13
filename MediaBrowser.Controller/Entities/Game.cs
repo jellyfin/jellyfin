@@ -29,12 +29,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool EnableRefreshOnDateModifiedChange
-        {
-            get { return true; }
-        }
-
-        [IgnoreDataMember]
         public override bool SupportsThemeMedia
         {
             get { return true; }

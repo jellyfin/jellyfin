@@ -19,7 +19,7 @@ namespace MediaBrowser.Providers.MediaInfo
     /// <summary>
     /// Uses ffmpeg to create video images
     /// </summary>
-    public class AudioImageProvider : IDynamicImageProvider, IHasItemChangeMonitor
+    public class AudioImageProvider : IDynamicImageProvider
     {
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerConfigurationManager _config;
@@ -133,20 +133,6 @@ namespace MediaBrowser.Providers.MediaInfo
             var audio = item as Audio;
 
             return item.LocationType == LocationType.FileSystem && audio != null;
-        }
-
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
-        {
-            if (item.EnableRefreshOnDateModifiedChange && !string.IsNullOrWhiteSpace(item.Path) && item.LocationType == LocationType.FileSystem)
-            {
-                var file = directoryService.GetFile(item.Path);
-                if (file != null && file.LastWriteTimeUtc != item.DateModified)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }
