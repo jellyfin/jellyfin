@@ -216,6 +216,20 @@
             </h2>
             <div id="additionalPartsContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right"></div>
         </div>
+        <div class="verticalSection itemVerticalSection moreFromSeasonSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left padded-right"></h2>
+
+            <div is="emby-scroller" class="emby-scroller" data-mousewheel="false" data-centerfocus="true" data-horizontal="true">
+
+                <div class="scrollerframe padded-top-focusscale padded-bottom-focusscale">
+                    <div is="emby-itemscontainer" class="scrollSlider focuscontainer-x itemsContainer padded-left padded-right"></div>
+                </div>
+            </div>
+        </div>
+        <div class="verticalSection itemVerticalSection moreFromArtistSection padded-left padded-right hide">
+            <h2 class="sectionTitle sectionTitle-cards"></h2>
+            <div is="emby-itemscontainer" class="itemsContainer vertical-wrap focuscontainer-x"></div>
+        </div>
         <div id="castCollapsible" class="verticalSection detailVerticalSection hide">
             <h2 id="peopleHeader" class="sectionTitle sectionTitle-cards padded-left">
                 ${HeaderCastCrew}
@@ -250,10 +264,6 @@
                 ${HeaderMusicVideos}
             </h2>
             <div id="musicVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right"></div>
-        </div>
-        <div id="moreFromSection" class="verticalSection detailVerticalSection hide">
-            <h2 class="moreFromHeader sectionTitle sectionTitle-cards padded-left"></h2>
-            <div id="moreFromItems"></div>
         </div>
         <div id="similarCollapsible" class="verticalSection detailVerticalSection hide">
             <h2 class="sectionTitle sectionTitle-cards padded-left">
@@ -291,7 +301,7 @@
         </div>
 
         <div class="verticalSection detailVerticalSection audioVideoMediaInfo hide">
-            <h2 class="sectionTitle padded-left">${HeaderMediaInfo}</h2>
+            <h2 class="sectionTitle padded-left" style="margin-bottom:0;">${HeaderMediaInfo}</h2>
             <div class="padded-left padded-right">
                 <div class="splitVersionContainer" style="border-bottom: 1px solid #444; padding: 1em 0;">
                     <button is="emby-button" type="button" class="raised btnSplitVersions subdued">${ButtonSplitVersionsApart}</button>
