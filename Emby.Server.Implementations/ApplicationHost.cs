@@ -792,6 +792,11 @@ namespace Emby.Server.Implementations
 
         protected abstract IConnectManager CreateConnectManager();
         protected abstract ISyncManager CreateSyncManager();
+        
+        protected virtual IHttpClient CreateHttpClient()
+        {
+            return new HttpClientManager.HttpClientManager(ApplicationPaths, LogManager.GetLogger("HttpClient"), FileSystemManager, MemoryStreamFactory, GetDefaultUserAgent);
+        }
 
         /// <summary>
         /// Registers resources that classes will depend on
@@ -814,7 +819,7 @@ namespace Emby.Server.Implementations
 
             RegisterSingleInstance(FileSystemManager);
 
-            HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, LogManager.GetLogger("HttpClient"), FileSystemManager, MemoryStreamFactory, GetDefaultUserAgent);
+            HttpClient = CreateHttpClient();
             RegisterSingleInstance(HttpClient);
 
             RegisterSingleInstance(NetworkManager);
@@ -1118,7 +1123,7 @@ namespace Emby.Server.Implementations
             IsoManager.AddParts(list);
         }
 
-        private string GetDefaultUserAgent()
+        protected string GetDefaultUserAgent()
         {
             var name = FormatAttribute(Name);
 

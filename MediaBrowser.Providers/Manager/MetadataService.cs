@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.MediaInfo;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -37,6 +38,28 @@ namespace MediaBrowser.Providers.Manager
             LibraryManager = libraryManager;
         }
 
+        private bool RequiresRefresh(IHasMetadata item, IDirectoryService directoryService)
+        {
+            if (item.RequiresRefresh())
+            {
+                return true;
+            }
+
+            if (item.SupportsLocalMetadata)
+            {
+                var video = item as Video;
+
+                if (video != null && !video.IsPlaceHolder)
+                {
+                    return !video.SubtitleFiles
+                        .SequenceEqual(SubtitleResolver.GetSubtitleFiles(video, directoryService, FileSystem, false)
+                        .OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
+                }
+            }
+
+            return false;
+        }
+
         public async Task<ItemUpdateType> RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
             var itemOfType = (TItemType)item;
@@ -47,17 +70,33 @@ namespace MediaBrowser.Providers.Manager
 
             var libraryOptions = LibraryManager.GetLibraryOptions((BaseItem)item);
 
-            if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
+            DateTime? newDateModified = null;
+            if (item.LocationType == LocationType.FileSystem)
             {
-                // TODO: If this returns true, should we instead just change metadata refresh mode to Full?
-                requiresRefresh = item.RequiresRefresh();
+                var file = refreshOptions.DirectoryService.GetFile(item.Path);
+                if (file != null)
+                {
+                    newDateModified = file.LastWriteTimeUtc;
+                    if (item.EnableRefreshOnDateModifiedChange)
+                    {
+                        if (newDateModified != item.DateModified)
+                        {
+                            Logger.Debug("Date modified for {0}. Old date {1} new date {2} Id {3}", item.Path, item.DateModified, newDateModified, item.Id);
+                            requiresRefresh = true;
+                        }
+                    }
+                }
             }
 
-            if (!requiresRefresh &&
-                libraryOptions.AutomaticRefreshIntervalDays > 0 &&
-                (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= libraryOptions.AutomaticRefreshIntervalDays)
+            if (!requiresRefresh && libraryOptions.AutomaticRefreshIntervalDays > 0 && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= libraryOptions.AutomaticRefreshIntervalDays)
             {
                 requiresRefresh = true;
+            }
+
+            if (!requiresRefresh && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
+            {
+                // TODO: If this returns true, should we instead just change metadata refresh mode to Full?
+                requiresRefresh = RequiresRefresh(item, refreshOptions.DirectoryService);
             }
 
             var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager, FileSystem);
@@ -145,20 +184,9 @@ namespace MediaBrowser.Providers.Manager
             var beforeSaveResult = BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || requiresRefresh, updateType);
             updateType = updateType | beforeSaveResult;
 
-            if (item.LocationType == LocationType.FileSystem)
+            if (newDateModified.HasValue)
             {
-                var file = refreshOptions.DirectoryService.GetFile(item.Path);
-                if (file != null)
-                {
-                    var fileLastWriteTime = file.LastWriteTimeUtc;
-                    if (item.EnableRefreshOnDateModifiedChange && fileLastWriteTime != item.DateModified)
-                    {
-                        Logger.Debug("Date modified for {0}. Old date {1} new date {2} Id {3}", item.Path, item.DateModified, fileLastWriteTime, item.Id);
-                        requiresRefresh = true;
-                    }
-
-                    item.DateModified = fileLastWriteTime;
-                }
+                item.DateModified = newDateModified.Value;
             }
 
             // Save if changes were made, or it's never been saved before
