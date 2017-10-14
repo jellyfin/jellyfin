@@ -34,7 +34,6 @@ namespace MediaBrowser.Providers.MediaInfo
         ICustomMetadataProvider<Audio>,
         ICustomMetadataProvider<AudioPodcast>,
         ICustomMetadataProvider<AudioBook>,
-        IHasItemChangeMonitor,
         IHasOrder,
         IForcedProvider,
         IPreRefreshProvider
@@ -178,32 +177,6 @@ namespace MediaBrowser.Providers.MediaInfo
             var prober = new FFProbeAudioInfo(_mediaEncoder, _itemRepo, _appPaths, _json, _libraryManager);
 
             return prober.Probe(item, cancellationToken);
-        }
-
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
-        {
-            if (item.EnableRefreshOnDateModifiedChange && !string.IsNullOrWhiteSpace(item.Path) && item.LocationType == LocationType.FileSystem)
-            {
-                var file = directoryService.GetFile(item.Path);
-                if (file != null && file.LastWriteTimeUtc != item.DateModified)
-                {
-                    return true;
-                }
-            }
-
-            if (item.SupportsLocalMetadata)
-            {
-                var video = item as Video;
-
-                if (video != null && !video.IsPlaceHolder)
-                {
-                    return !video.SubtitleFiles
-                        .SequenceEqual(SubtitleResolver.GetSubtitleFiles(video, directoryService, _fileSystem, false)
-                        .OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
-                }
-            }
-
-            return false;
         }
 
         public int Order

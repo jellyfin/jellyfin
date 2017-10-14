@@ -26,7 +26,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IServerApplicationHost _appHost;
         private readonly ISocketFactory _socketFactory;
 
-        private readonly CancellationTokenSource _liveStreamCancellationTokenSource = new CancellationTokenSource();
         private readonly TaskCompletionSource<bool> _liveStreamTaskCompletionSource = new TaskCompletionSource<bool>();
         private readonly IHdHomerunChannelCommands _channelCommands;
         private readonly int _numTuners;
@@ -45,7 +44,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         protected override Task OpenInternal(CancellationToken openCancellationToken)
         {
-            _liveStreamCancellationTokenSource.Token.ThrowIfCancellationRequested();
+            LiveStreamCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
             var mediaSource = OriginalMediaSource;
 
@@ -56,7 +55,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
-            StartStreaming(uri.Host, localPort, taskCompletionSource, _liveStreamCancellationTokenSource.Token);
+            StartStreaming(uri.Host, localPort, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
 
             //OpenedMediaSource.Protocol = MediaProtocol.File;
             //OpenedMediaSource.Path = tempFile;
@@ -76,7 +75,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         public override Task Close()
         {
             Logger.Info("Closing HDHR UDP live stream");
-            _liveStreamCancellationTokenSource.Cancel();
+            LiveStreamCancellationTokenSource.Cancel();
 
             return _liveStreamTaskCompletionSource.Task;
         }

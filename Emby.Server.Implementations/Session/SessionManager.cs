@@ -437,7 +437,7 @@ namespace Emby.Server.Implementations.Session
                     if (!string.IsNullOrEmpty(deviceId))
                     {
                         var userIdString = userId.HasValue ? userId.Value.ToString("N") : null;
-                        device = await _deviceManager.RegisterDevice(deviceId, deviceName, appName, appVersion, userIdString).ConfigureAwait(false);
+                        device = _deviceManager.RegisterDevice(deviceId, deviceName, appName, appVersion, userIdString);
                     }
                 }
 
@@ -446,7 +446,7 @@ namespace Emby.Server.Implementations.Session
                 if (device == null)
                 {
                     var userIdString = userId.HasValue ? userId.Value.ToString("N") : null;
-                    device = await _deviceManager.RegisterDevice(deviceId, deviceName, appName, appVersion, userIdString).ConfigureAwait(false);
+                    device = _deviceManager.RegisterDevice(deviceId, deviceName, appName, appVersion, userIdString);
                 }
 
                 if (device != null)
@@ -1567,7 +1567,7 @@ namespace Emby.Server.Implementations.Session
             ReportCapabilities(session, capabilities, true);
         }
 
-        private async void ReportCapabilities(SessionInfo session,
+        private void ReportCapabilities(SessionInfo session,
             ClientCapabilities capabilities,
             bool saveCapabilities)
         {
@@ -1593,7 +1593,7 @@ namespace Emby.Server.Implementations.Session
             {
                 try
                 {
-                    await SaveCapabilities(session.DeviceId, capabilities).ConfigureAwait(false);
+                    SaveCapabilities(session.DeviceId, capabilities);
                 }
                 catch (Exception ex)
                 {
@@ -1607,9 +1607,9 @@ namespace Emby.Server.Implementations.Session
             return _deviceManager.GetCapabilities(deviceId);
         }
 
-        private Task SaveCapabilities(string deviceId, ClientCapabilities capabilities)
+        private void SaveCapabilities(string deviceId, ClientCapabilities capabilities)
         {
-            return _deviceManager.SaveCapabilities(deviceId, capabilities);
+            _deviceManager.SaveCapabilities(deviceId, capabilities);
         }
 
         public SessionInfoDto GetSessionInfoDto(SessionInfo session)

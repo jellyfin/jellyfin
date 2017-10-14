@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.Devices
             _network = network;
         }
 
-        public async Task<DeviceInfo> RegisterDevice(string reportedId, string name, string appName, string appVersion, string usedByUserId)
+        public DeviceInfo RegisterDevice(string reportedId, string name, string appName, string appVersion, string usedByUserId)
         {
             if (string.IsNullOrWhiteSpace(reportedId))
             {
@@ -76,14 +76,16 @@ namespace Emby.Server.Implementations.Devices
 
             device.DateLastModified = DateTime.UtcNow;
 
-            await _repo.SaveDevice(device).ConfigureAwait(false);
+            device.Name = string.IsNullOrWhiteSpace(device.CustomName) ? device.ReportedName : device.CustomName;
+
+            _repo.SaveDevice(device);
 
             return device;
         }
 
-        public Task SaveCapabilities(string reportedId, ClientCapabilities capabilities)
+        public void SaveCapabilities(string reportedId, ClientCapabilities capabilities)
         {
-            return _repo.SaveCapabilities(reportedId, capabilities);
+            _repo.SaveCapabilities(reportedId, capabilities);
         }
 
         public ClientCapabilities GetCapabilities(string reportedId)
@@ -98,13 +100,13 @@ namespace Emby.Server.Implementations.Devices
 
         public QueryResult<DeviceInfo> GetDevices(DeviceQuery query)
         {
-            IEnumerable<DeviceInfo> devices = _repo.GetDevices().OrderByDescending(i => i.DateLastModified);
+            IEnumerable<DeviceInfo> devices = _repo.GetDevices();
 
             if (query.SupportsSync.HasValue)
             {
                 var val = query.SupportsSync.Value;
 
-                devices = devices.Where(i => GetCapabilities(i.Id).SupportsSync == val);
+                devices = devices.Where(i => i.Capabilities.SupportsSync == val);
             }
 
             if (query.SupportsPersistentIdentifier.HasValue)
@@ -113,8 +115,7 @@ namespace Emby.Server.Implementations.Devices
 
                 devices = devices.Where(i =>
                 {
-                    var caps = GetCapabilities(i.Id);
-                    var deviceVal = caps.SupportsPersistentIdentifier;
+                    var deviceVal = i.Capabilities.SupportsPersistentIdentifier;
                     return deviceVal == val;
                 });
             }
@@ -132,9 +133,9 @@ namespace Emby.Server.Implementations.Devices
             };
         }
 
-        public Task DeleteDevice(string id)
+        public void DeleteDevice(string id)
         {
-            return _repo.DeleteDevice(id);
+            _repo.DeleteDevice(id);
         }
 
         public ContentUploadHistory GetCameraUploadHistory(string deviceId)
@@ -213,14 +214,16 @@ namespace Emby.Server.Implementations.Devices
             get { return Path.Combine(_config.CommonApplicationPaths.DataPath, "camerauploads"); }
         }
 
-        public async Task UpdateDeviceInfo(string id, DeviceOptions options)
+        public void UpdateDeviceInfo(string id, DeviceOptions options)
         {
             var device = GetDevice(id);
 
             device.CustomName = options.CustomName;
             device.CameraUploadPath = options.CameraUploadPath;
 
-            await _repo.SaveDevice(device).ConfigureAwait(false);
+            device.Name = string.IsNullOrWhiteSpace(device.CustomName) ? device.ReportedName : device.CustomName;
+
+            _repo.SaveDevice(device);
 
             EventHelper.FireEventIfNotNull(DeviceOptionsUpdated, this, new GenericEventArgs<DeviceInfo>(device), _logger);
         }

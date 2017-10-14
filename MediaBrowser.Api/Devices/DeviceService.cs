@@ -85,13 +85,11 @@ namespace MediaBrowser.Api.Devices
 
         public void Post(PostDeviceOptions request)
         {
-            var task = _deviceManager.UpdateDeviceInfo(request.Id, new DeviceOptions
+            _deviceManager.UpdateDeviceInfo(request.Id, new DeviceOptions
             {
                 CustomName = request.CustomName,
                 CameraUploadPath = request.CameraUploadPath
             });
-
-            Task.WaitAll(task);
         }
 
         public object Get(GetDeviceInfo request)
@@ -116,9 +114,7 @@ namespace MediaBrowser.Api.Devices
 
         public void Delete(DeleteDevice request)
         {
-            var task = _deviceManager.DeleteDevice(request.Id);
-
-            Task.WaitAll(task);
+            _deviceManager.DeleteDevice(request.Id);
         }
 
         public void Post(PostCameraUpload request)

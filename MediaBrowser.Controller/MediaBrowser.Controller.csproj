@@ -220,7 +220,6 @@
     <Compile Include="Providers\IExternalId.cs" />
     <Compile Include="Providers\IExtrasProvider.cs" />
     <Compile Include="Providers\IForcedProvider.cs" />
-    <Compile Include="Providers\IHasChangeMonitor.cs" />
     <Compile Include="Entities\IHasMetadata.cs" />
     <Compile Include="Providers\IHasItemChangeMonitor.cs" />
     <Compile Include="Providers\IHasLookupInfo.cs" />
