@@ -100,6 +100,12 @@ namespace MediaBrowser.Providers.Movies
                 name = name.Replace("!", " ");
                 name = name.Replace("?", " ");
 
+                var parenthIndex = name.IndexOf('(');
+                if (parenthIndex != -1)
+                {
+                    name = name.Substring(0, parenthIndex);
+                }
+
                 name = name.Trim();
 
                 // Search again if the new name is different
