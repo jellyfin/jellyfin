@@ -16,7 +16,6 @@ namespace MediaBrowser.Api.LiveTv
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
         private readonly string _path;
-        private readonly CancellationToken _cancellationToken;
         private readonly Dictionary<string, string> _outputHeaders;
 
         const int StreamCopyToBufferSize = 81920;
@@ -28,22 +27,20 @@ namespace MediaBrowser.Api.LiveTv
         private readonly IDirectStreamProvider _directStreamProvider;
         private readonly IEnvironmentInfo _environment;
 
-        public ProgressiveFileCopier(IFileSystem fileSystem, string path, Dictionary<string, string> outputHeaders, ILogger logger, IEnvironmentInfo environment, CancellationToken cancellationToken)
+        public ProgressiveFileCopier(IFileSystem fileSystem, string path, Dictionary<string, string> outputHeaders, ILogger logger, IEnvironmentInfo environment)
         {
             _fileSystem = fileSystem;
             _path = path;
             _outputHeaders = outputHeaders;
             _logger = logger;
-            _cancellationToken = cancellationToken;
             _environment = environment;
         }
 
-        public ProgressiveFileCopier(IDirectStreamProvider directStreamProvider, Dictionary<string, string> outputHeaders, ILogger logger, IEnvironmentInfo environment, CancellationToken cancellationToken)
+        public ProgressiveFileCopier(IDirectStreamProvider directStreamProvider, Dictionary<string, string> outputHeaders, ILogger logger, IEnvironmentInfo environment)
         {
             _directStreamProvider = directStreamProvider;
             _outputHeaders = outputHeaders;
             _logger = logger;
-            _cancellationToken = cancellationToken;
             _environment = environment;
         }
 
@@ -69,8 +66,6 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task WriteToAsync(Stream outputStream, CancellationToken cancellationToken)
         {
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationToken).Token;
-
             if (_directStreamProvider != null)
             {
                 await _directStreamProvider.CopyToAsync(outputStream, cancellationToken).ConfigureAwait(false);
@@ -89,7 +84,9 @@ namespace MediaBrowser.Api.LiveTv
                     inputStream.Position = StartPosition;
                 }
 
-                while (eofCount < 20 || !AllowEndOfFile)
+                var emptyReadLimit = AllowEndOfFile ? 20 : 100;
+
+                while (eofCount < emptyReadLimit)
                 {
                     int bytesRead;
                     if (allowAsyncFileRead)

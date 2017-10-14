@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http;
 
 namespace Emby.Server.Implementations.HttpClientManager
 {
@@ -12,5 +13,6 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// </summary>
         /// <value>The last timeout.</value>
         public DateTime LastTimeout { get; set; }
+        public HttpClient HttpClient { get; set; }
     }
 }

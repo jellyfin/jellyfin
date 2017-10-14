@@ -72,10 +72,18 @@ namespace Emby.Server.Implementations.Devices
 
         private void MigrateDevices()
         {
-            var files = FileSystem
-                    .GetFilePaths(GetDevicesPath(), true)
-                    .Where(i => string.Equals(Path.GetFileName(i), "device.json", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+            List<string> files;
+            try
+            {
+                files = FileSystem
+                       .GetFilePaths(GetDevicesPath(), true)
+                       .Where(i => string.Equals(Path.GetFileName(i), "device.json", StringComparison.OrdinalIgnoreCase))
+                       .ToList();
+            }
+            catch (IOException)
+            {
+                return;
+            }
 
             foreach (var file in files)
             {

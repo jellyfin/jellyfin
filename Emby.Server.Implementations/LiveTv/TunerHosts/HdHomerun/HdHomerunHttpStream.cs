@@ -22,7 +22,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
 
-        private readonly CancellationTokenSource _liveStreamCancellationTokenSource = new CancellationTokenSource();
         private readonly TaskCompletionSource<bool> _liveStreamTaskCompletionSource = new TaskCompletionSource<bool>();
 
         public HdHomerunHttpStream(MediaSourceInfo mediaSource, string originalStreamId, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, IEnvironmentInfo environment)
@@ -35,7 +34,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         protected override Task OpenInternal(CancellationToken openCancellationToken)
         {
-            _liveStreamCancellationTokenSource.Token.ThrowIfCancellationRequested();
+            LiveStreamCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
             var mediaSource = OriginalMediaSource;
 
@@ -45,7 +44,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
-            StartStreaming(url, taskCompletionSource, _liveStreamCancellationTokenSource.Token);
+            StartStreaming(url, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
 
             //OpenedMediaSource.Protocol = MediaProtocol.File;
             //OpenedMediaSource.Path = tempFile;
@@ -65,12 +64,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             //await Task.Delay(5000).ConfigureAwait(false);
         }
 
-        public override Task Close()
+        public override async Task Close()
         {
             Logger.Info("Closing HDHR live stream");
-            _liveStreamCancellationTokenSource.Cancel();
+            LiveStreamCancellationTokenSource.Cancel();
 
-            return _liveStreamTaskCompletionSource.Task;
+            await _liveStreamTaskCompletionSource.Task.ConfigureAwait(false);
+            await DeleteTempFile(TempFilePath).ConfigureAwait(false);
         }
 
         private Task StartStreaming(string url, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
@@ -112,7 +112,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
 
                 _liveStreamTaskCompletionSource.TrySetResult(true);
-                await DeleteTempFile(TempFilePath).ConfigureAwait(false);
             });
         }
 
