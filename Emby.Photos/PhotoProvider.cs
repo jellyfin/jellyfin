@@ -17,7 +17,7 @@ using TagLib.IFD.Tags;
 
 namespace Emby.Photos
 {
-    public class PhotoProvider : ICustomMetadataProvider<Photo>, IHasItemChangeMonitor, IForcedProvider
+    public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider
     {
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
@@ -176,20 +176,6 @@ namespace Emby.Photos
         public string Name
         {
             get { return "Embedded Information"; }
-        }
-
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
-        {
-            if (item.EnableRefreshOnDateModifiedChange && !string.IsNullOrWhiteSpace(item.Path) && item.LocationType == LocationType.FileSystem)
-            {
-                var file = directoryService.GetFile(item.Path);
-                if (file != null && file.LastWriteTimeUtc != item.DateModified)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }

@@ -792,6 +792,11 @@ namespace Emby.Server.Implementations
 
         protected abstract IConnectManager CreateConnectManager();
         protected abstract ISyncManager CreateSyncManager();
+        
+        protected virtual IHttpClient CreateHttpClient()
+        {
+            return new HttpClientManager.HttpClientManager(ApplicationPaths, LogManager.GetLogger("HttpClient"), FileSystemManager, MemoryStreamFactory, GetDefaultUserAgent);
+        }
 
         /// <summary>
         /// Registers resources that classes will depend on
@@ -814,7 +819,7 @@ namespace Emby.Server.Implementations
 
             RegisterSingleInstance(FileSystemManager);
 
-            HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, LogManager.GetLogger("HttpClient"), FileSystemManager, MemoryStreamFactory, GetDefaultUserAgent);
+            HttpClient = CreateHttpClient();
             RegisterSingleInstance(HttpClient);
 
             RegisterSingleInstance(NetworkManager);
@@ -938,7 +943,9 @@ namespace Emby.Server.Implementations
             ConnectManager = CreateConnectManager();
             RegisterSingleInstance(ConnectManager);
 
-            DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, LogManager.GetLogger("DeviceManager"), FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager, LogManager.GetLogger("DeviceManager"), NetworkManager);
+            var deviceRepo = new SqliteDeviceRepository(LogManager.GetLogger("DeviceManager"), ServerConfigurationManager, FileSystemManager, JsonSerializer);
+            deviceRepo.Initialize();
+            DeviceManager = new DeviceManager(deviceRepo, UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager, LogManager.GetLogger("DeviceManager"), NetworkManager);
             RegisterSingleInstance(DeviceManager);
 
             var newsService = new Emby.Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
@@ -1116,7 +1123,7 @@ namespace Emby.Server.Implementations
             IsoManager.AddParts(list);
         }
 
-        private string GetDefaultUserAgent()
+        protected string GetDefaultUserAgent()
         {
             var name = FormatAttribute(Name);
 

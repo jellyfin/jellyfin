@@ -3038,8 +3038,8 @@ namespace Emby.Server.Implementations.Data
             {
                 if (orderBy.Count == 0)
                 {
-                    orderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
                     orderBy.Add(new Tuple<string, SortOrder>("SimilarityScore", SortOrder.Descending));
+                    orderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
                     //orderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
                 }
             }
