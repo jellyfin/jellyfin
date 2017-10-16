@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Notifications
 {
@@ -14,6 +15,8 @@ namespace MediaBrowser.Controller.Notifications
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendNotification(NotificationRequest request, CancellationToken cancellationToken);
+
+        Task SendNotification(NotificationRequest request, BaseItem relatedItem, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the parts.

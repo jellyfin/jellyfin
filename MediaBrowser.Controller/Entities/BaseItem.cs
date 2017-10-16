@@ -477,14 +477,36 @@ namespace MediaBrowser.Controller.Entities
                    locationType != LocationType.Virtual;
         }
 
-        public virtual bool IsAuthorizedToDelete(User user)
+        public virtual bool IsAuthorizedToDelete(User user, List<Folder> allCollectionFolders)
         {
-            return user.Policy.EnableContentDeletion;
+            if (user.Policy.EnableContentDeletion)
+            {
+                return true;
+            }
+
+            var allowed = user.Policy.EnableContentDeletionFromFolders;
+            var collectionFolders = LibraryManager.GetCollectionFolders(this, allCollectionFolders);
+
+            foreach (var folder in collectionFolders)
+            {
+                if (allowed.Contains(folder.Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool CanDelete(User user, List<Folder> allCollectionFolders)
+        {
+            return CanDelete() && IsAuthorizedToDelete(user, allCollectionFolders);
         }
 
         public bool CanDelete(User user)
         {
-            return CanDelete() && IsAuthorizedToDelete(user);
+            var allCollectionFolders = LibraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
+            return CanDelete(user, allCollectionFolders);
         }
 
         public virtual bool CanDownload()
