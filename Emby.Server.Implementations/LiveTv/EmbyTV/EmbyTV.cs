@@ -1526,13 +1526,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private void TriggerRefresh(string path)
         {
-            _logger.Debug("Triggering refresh on {0}", path);
+            _logger.Info("Triggering refresh on {0}", path);
 
             var item = GetAffectedBaseItem(_fileSystem.GetDirectoryName(path));
 
             if (item != null)
             {
-                _logger.Debug("Refreshing recording parent {0}", item.Path);
+                _logger.Info("Refreshing recording parent {0}", item.Path);
 
                 _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
                 {

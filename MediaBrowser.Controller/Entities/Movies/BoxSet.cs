@@ -126,7 +126,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
         }
 
-        public override bool IsAuthorizedToDelete(User user)
+        public override bool IsAuthorizedToDelete(User user, List<Folder> allCollectionFolders)
         {
             return true;
         }
