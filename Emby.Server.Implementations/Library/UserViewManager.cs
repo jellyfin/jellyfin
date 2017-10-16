@@ -95,7 +95,9 @@ namespace Emby.Server.Implementations.Library
 
                 if (parents.Count > 0)
                 {
-                    var localizationKey = viewType.Replace("Tv", string.Empty);
+                    var localizationKey = string.Equals(viewType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) ?
+                        "Shows" :
+                        "Movies";
 
                     list.Add(GetUserView(parents, viewType, localizationKey, string.Empty, user, query.PresetViews, cancellationToken));
                 }

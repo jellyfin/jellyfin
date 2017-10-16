@@ -97,7 +97,7 @@ namespace Emby.Server.Implementations.Notifications
 
             notification.Variables["UserName"] = e.Argument.Name;
 
-            await SendNotification(notification).ConfigureAwait(false);
+            await SendNotification(notification, null).ConfigureAwait(false);
         }
 
         async void _deviceManager_CameraImageUploaded(object sender, GenericEventArgs<CameraImageUploadInfo> e)
@@ -111,7 +111,7 @@ namespace Emby.Server.Implementations.Notifications
 
             notification.Variables["DeviceName"] = e.Argument.Device.Name;
 
-            await SendNotification(notification).ConfigureAwait(false);
+            await SendNotification(notification, null).ConfigureAwait(false);
         }
 
         async void _appHost_ApplicationUpdated(object sender, GenericEventArgs<PackageVersionInfo> e)
@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.Notifications
             notification.Variables["Version"] = e.Argument.versionStr;
             notification.Variables["ReleaseNotes"] = e.Argument.description;
 
-            await SendNotification(notification).ConfigureAwait(false);
+            await SendNotification(notification, null).ConfigureAwait(false);
         }
 
         async void _installationManager_PluginUpdated(object sender, GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> e)
@@ -146,7 +146,7 @@ namespace Emby.Server.Implementations.Notifications
             notification.Variables["Version"] = installationInfo.Version.ToString();
             notification.Variables["ReleaseNotes"] = e.Argument.Item2.description;
 
-            await SendNotification(notification).ConfigureAwait(false);
+            await SendNotification(notification, null).ConfigureAwait(false);
         }
 
         async void _installationManager_PluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> e)
@@ -164,7 +164,7 @@ namespace Emby.Server.Implementations.Notifications
             notification.Variables["Name"] = installationInfo.name;
             notification.Variables["Version"] = installationInfo.versionStr;
 
-            await SendNotification(notification).ConfigureAwait(false);
+            await SendNotification(notification, null).ConfigureAwait(false);
         }
 
         async void _appHost_HasUpdateAvailableChanged(object sender, EventArgs e)
@@ -183,7 +183,7 @@ namespace Emby.Server.Implementations.Notifications
                 NotificationType = type
             };
 
-            await SendNotification(notification).ConfigureAwait(false);
+            await SendNotification(notification, null).ConfigureAwait(false);
         }
 
         async void _appHost_HasPendingRestartChanged(object sender, EventArgs e)
@@ -200,7 +200,7 @@ namespace Emby.Server.Implementations.Notifications
                 NotificationType = type
             };
 
-            await SendNotification(notification).ConfigureAwait(false);
+            await SendNotification(notification, null).ConfigureAwait(false);
         }
 
         private NotificationOptions GetOptions()
@@ -285,7 +285,7 @@ namespace Emby.Server.Implementations.Notifications
             notification.Variables["AppName"] = e.ClientName;
             notification.Variables["DeviceName"] = e.DeviceName;
 
-            await SendNotification(notification).ConfigureAwait(false);
+            await SendNotification(notification, null).ConfigureAwait(false);
         }
 
         private string GetPlaybackNotificationType(string mediaType)
@@ -390,7 +390,7 @@ namespace Emby.Server.Implementations.Notifications
 
                 notification.Variables["Name"] = GetItemName(item);
 
-                await SendNotification(notification).ConfigureAwait(false);
+                await SendNotification(notification, item).ConfigureAwait(false);
             }
         }
 
@@ -457,7 +457,7 @@ namespace Emby.Server.Implementations.Notifications
                 Description = "Check back here for more notifications."
             };
 
-            await SendNotification(notification).ConfigureAwait(false);
+            await SendNotification(notification, null).ConfigureAwait(false);
         }
 
         async void _taskManager_TaskCompleted(object sender, TaskCompletionEventArgs e)
@@ -478,7 +478,7 @@ namespace Emby.Server.Implementations.Notifications
                 notification.Variables["Name"] = result.Name;
                 notification.Variables["ErrorMessage"] = result.ErrorMessage;
 
-                await SendNotification(notification).ConfigureAwait(false);
+                await SendNotification(notification, null).ConfigureAwait(false);
             }
         }
 
@@ -496,7 +496,7 @@ namespace Emby.Server.Implementations.Notifications
             notification.Variables["Name"] = plugin.Name;
             notification.Variables["Version"] = plugin.Version.ToString();
 
-            await SendNotification(notification).ConfigureAwait(false);
+            await SendNotification(notification, null).ConfigureAwait(false);
         }
 
         async void _installationManager_PackageInstallationFailed(object sender, InstallationFailedEventArgs e)
@@ -515,14 +515,14 @@ namespace Emby.Server.Implementations.Notifications
             notification.Variables["Name"] = installationInfo.Name;
             notification.Variables["Version"] = installationInfo.Version;
 
-            await SendNotification(notification).ConfigureAwait(false);
+            await SendNotification(notification, null).ConfigureAwait(false);
         }
 
-        private async Task SendNotification(NotificationRequest notification)
+        private async Task SendNotification(NotificationRequest notification, BaseItem relatedItem)
         {
             try
             {
-                await _notificationManager.SendNotification(notification, CancellationToken.None).ConfigureAwait(false);
+                await _notificationManager.SendNotification(notification, relatedItem, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

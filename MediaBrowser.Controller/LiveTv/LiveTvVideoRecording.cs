@@ -131,7 +131,7 @@ namespace MediaBrowser.Controller.LiveTv
             return true;
         }
 
-        public override bool IsAuthorizedToDelete(User user)
+        public override bool IsAuthorizedToDelete(User user, List<Folder> allCollectionFolders)
         {
             return user.Policy.EnableLiveTvManagement;
         }
