@@ -1,4 +1,6 @@
 {
+    "HeaderMediaDeletion": "Media Deletion",
+    "AllowDeletionFromAll": "Allow media deletion from all libraries",
     "LabelPrevious": "Vorige",
     "LabelFinish": "Voltooien",
     "LabelNext": "Volgende",
@@ -398,7 +400,7 @@
     "TabGameSystems": "Game Systemen",
     "TabFolders": "Mappen",
     "TabPathSubstitution": "Pad Vervangen",
-    "LabelSeasonZeroDisplayName": "Weergave naam voor Seizoen 0:",
+    "LabelSpecialSeasonsDisplayName": "Special season display name:",
     "LabelEnableRealtimeMonitor": "Real time monitoring inschakelen",
     "LabelEnableRealtimeMonitorHelp": "Wijzigingen worden direct verwerkt, op ondersteunde bestandssystemen.",
     "ButtonScanLibrary": "Scan Bibliotheek",

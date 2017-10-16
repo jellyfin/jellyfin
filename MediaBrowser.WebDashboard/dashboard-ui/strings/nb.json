@@ -1,4 +1,6 @@
 {
+    "HeaderMediaDeletion": "Media Deletion",
+    "AllowDeletionFromAll": "Allow media deletion from all libraries",
     "LabelPrevious": "Forrige",
     "LabelFinish": "Ferdig",
     "LabelNext": "Neste",
@@ -398,7 +400,7 @@
     "TabGameSystems": "Spill Systemer",
     "TabFolders": "Mapper",
     "TabPathSubstitution": "Sti erstatter",
-    "LabelSeasonZeroDisplayName": "Sesong 0 visningsnavn:",
+    "LabelSpecialSeasonsDisplayName": "Special season display name:",
     "LabelEnableRealtimeMonitor": "Aktiver sanntids monitorering",
     "LabelEnableRealtimeMonitorHelp": "Endinger vil bli prossesert umiddelbart, til st\u00f8ttede filsystemer.",
     "ButtonScanLibrary": "S\u00f8k Gjennom Bibliotek",

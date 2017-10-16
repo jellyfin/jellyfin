@@ -1,4 +1,6 @@
 {
+    "HeaderMediaDeletion": "Media Deletion",
+    "AllowDeletionFromAll": "Allow media deletion from all libraries",
     "LabelPrevious": "P\u0159edchoz\u00ed",
     "LabelFinish": "Dokon\u010dit",
     "LabelNext": "Dal\u0161\u00ed",
@@ -398,7 +400,7 @@
     "TabGameSystems": "Hern\u00ed syst\u00e9my",
     "TabFolders": "Slo\u017eky",
     "TabPathSubstitution": "Nahrazen\u00ed cest",
-    "LabelSeasonZeroDisplayName": "Jm\u00e9no pro zobrazen\u00ed sez\u00f3ny 0:",
+    "LabelSpecialSeasonsDisplayName": "Special season display name:",
     "LabelEnableRealtimeMonitor": "Povolit sledov\u00e1n\u00ed v re\u00e1ln\u00e9m \u010dase",
     "LabelEnableRealtimeMonitorHelp": "Zm\u011bny budou zpracov\u00e1ny okam\u017eit\u011b, v podporovan\u00fdch souborov\u00fdch syst\u00e9mech.",
     "ButtonScanLibrary": "Prohledat knihovnu",

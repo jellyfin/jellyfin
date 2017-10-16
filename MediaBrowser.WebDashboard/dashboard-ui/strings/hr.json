@@ -1,4 +1,6 @@
 {
+    "HeaderMediaDeletion": "Media Deletion",
+    "AllowDeletionFromAll": "Allow media deletion from all libraries",
     "LabelPrevious": "Prethodni",
     "LabelFinish": "Kraj",
     "LabelNext": "Sljede\u0107i",
@@ -398,7 +400,7 @@
     "TabGameSystems": "Sistemi igrica",
     "TabFolders": "Mapa",
     "TabPathSubstitution": "Zamjenska putanja",
-    "LabelSeasonZeroDisplayName": "Prikaz naziva Sezona 0:",
+    "LabelSpecialSeasonsDisplayName": "Special season display name:",
     "LabelEnableRealtimeMonitor": "Omogu\u0107i nadgledanje u realnom vremenu",
     "LabelEnableRealtimeMonitorHelp": "Promjene \u0107e biti procesuirane odmah, nad podr\u017eanim datotekama sistema.",
     "ButtonScanLibrary": "Skeniraj biblioteku",

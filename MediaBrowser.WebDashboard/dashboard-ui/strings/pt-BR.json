@@ -1,4 +1,6 @@
 {
+    "HeaderMediaDeletion": "Media Deletion",
+    "AllowDeletionFromAll": "Allow media deletion from all libraries",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Finalizar",
     "LabelNext": "Pr\u00f3ximo",
@@ -398,7 +400,7 @@
     "TabGameSystems": "Sistemas de Jogo",
     "TabFolders": "Pastas",
     "TabPathSubstitution": "Substitui\u00e7\u00e3o de Local",
-    "LabelSeasonZeroDisplayName": "Nome de exibi\u00e7\u00e3o da temporada 0:",
+    "LabelSpecialSeasonsDisplayName": "Special season display name:",
     "LabelEnableRealtimeMonitor": "Ativar monitoramento em tempo real",
     "LabelEnableRealtimeMonitorHelp": "As altera\u00e7\u00f5es ser\u00e3o processadas imediatamente em sistemas de arquivos suportados.",
     "ButtonScanLibrary": "Rastrear Biblioteca",

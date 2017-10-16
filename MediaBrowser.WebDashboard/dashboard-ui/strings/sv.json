@@ -1,4 +1,6 @@
 {
+    "HeaderMediaDeletion": "Media Deletion",
+    "AllowDeletionFromAll": "Allow media deletion from all libraries",
     "LabelPrevious": "F\u00f6reg\u00e5ende",
     "LabelFinish": "Klart",
     "LabelNext": "N\u00e4sta",
@@ -398,7 +400,7 @@
     "TabGameSystems": "Spelkonsoler",
     "TabFolders": "Mappar",
     "TabPathSubstitution": "S\u00f6kv\u00e4gsutbyte",
-    "LabelSeasonZeroDisplayName": "Visning av S\u00e4song 0",
+    "LabelSpecialSeasonsDisplayName": "Special season display name:",
     "LabelEnableRealtimeMonitor": "Aktivera bevakning av mappar i realtid",
     "LabelEnableRealtimeMonitorHelp": "F\u00f6r\u00e4ndringar uppt\u00e4cks omedelbart (i filsystem som st\u00f6djer detta)",
     "ButtonScanLibrary": "Uppdatera biblioteket",
