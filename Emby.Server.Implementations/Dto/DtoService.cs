@@ -116,9 +116,11 @@ namespace Emby.Server.Implementations.Dto
             var channelTuples = new List<Tuple<BaseItemDto, LiveTvChannel>>();
 
             var index = 0;
+            var allCollectionFolders = _libraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
+
             foreach (var item in items)
             {
-                var dto = GetBaseItemDtoInternal(item, options, user, owner);
+                var dto = GetBaseItemDtoInternal(item, options, allCollectionFolders, user, owner);
 
                 var tvChannel = item as LiveTvChannel;
                 if (tvChannel != null)
@@ -173,7 +175,8 @@ namespace Emby.Server.Implementations.Dto
         {
             var syncDictionary = GetSyncedItemProgress(options);
 
-            var dto = GetBaseItemDtoInternal(item, options, user, owner);
+            var allCollectionFolders = _libraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
+            var dto = GetBaseItemDtoInternal(item, options, allCollectionFolders, user, owner);
             var tvChannel = item as LiveTvChannel;
             if (tvChannel != null)
             {
@@ -303,7 +306,7 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, List<Folder> allCollectionFolders, User user = null, BaseItem owner = null)
         {
             var fields = options.Fields;
 
@@ -472,7 +475,8 @@ namespace Emby.Server.Implementations.Dto
 
         public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, Dictionary<string, SyncedItemProgress> syncProgress, User user = null)
         {
-            var dto = GetBaseItemDtoInternal(item, options, user);
+            var allCollectionFolders = _libraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
+            var dto = GetBaseItemDtoInternal(item, options, allCollectionFolders, user);
 
             if (taggedItems != null && options.Fields.Contains(ItemFields.ItemCounts))
             {

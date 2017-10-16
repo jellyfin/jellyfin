@@ -297,7 +297,7 @@
     "LabelAllowServerAutoRestart": "Permitir ao servidor reiniciar automaticamente para aplicar as atualiza\u00e7\u00f5es",
     "LabelAllowServerAutoRestartHelp": "O servidor s\u00f3 reiniciar\u00e1 durante os per\u00edodos ociosos, quando nenhum usu\u00e1rio estiver ativo.",
     "LabelRunServerAtStartup": "Executar servidor na inicializa\u00e7\u00e3o",
-    "LabelRunServerAtStartupHelp": "Esta op\u00e7\u00e3o abrir\u00e1 o \u00edcone da bandeja de sistema na inicializa\u00e7\u00e3o do windows. Para iniciar o servi\u00e7o do windows, desmarque esta op\u00e7\u00e3o e inicie o servi\u00e7o no painel de controle do windows. Por favor, saiba que voc\u00ea n\u00e3o pode executar os dois ao mesmo tempo, ent\u00e3o ser\u00e1 necess\u00e1rio sair do \u00edcone na bandeja antes de iniciar o servi\u00e7o.",
+    "LabelRunServerAtStartupHelp": "Esta op\u00e7\u00e3o abrir\u00e1 o \u00edcone da bandeja de sistema na inicializa\u00e7\u00e3o do Windows. Se voc\u00ea configurou um servi\u00e7o do Windows, ent\u00e3o deixe a op\u00e7\u00e3o desmarcada e configure  o servi\u00e7o para executar na inicializa\u00e7\u00e3o.",
     "ButtonSelectDirectory": "Selecionar Diret\u00f3rio",
     "LabelCachePath": "Local do cache:",
     "DefaultMetadataLangaugeDescription": "Estas s\u00e3o suas configura\u00e7\u00f5es padr\u00e3o e podem ser personalizadas por biblioteca.",

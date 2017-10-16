@@ -73,7 +73,7 @@ namespace MediaBrowser.Controller.Playlists
             return 1;
         }
 
-        public override bool IsAuthorizedToDelete(User user)
+        public override bool IsAuthorizedToDelete(User user, List<Folder> allCollectionFolders)
         {
             return true;
         }

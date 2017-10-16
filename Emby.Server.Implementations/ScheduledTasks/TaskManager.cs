@@ -11,6 +11,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
+using System.IO;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -83,6 +84,57 @@ namespace Emby.Server.Implementations.ScheduledTasks
             foreach (var task in ScheduledTasks)
             {
                 task.ReloadTriggerEvents();
+            }
+        }
+
+        public void RunTaskOnNextStartup(string key)
+        {
+            var path = Path.Combine(ApplicationPaths.CachePath, "startuptasks.txt");
+
+            List<string> lines;
+
+            try
+            {
+                lines = _fileSystem.ReadAllLines(path).ToList() ;
+            }
+            catch
+            {
+                lines = new List<string>();
+            }
+
+            if (!lines.Contains(key, StringComparer.OrdinalIgnoreCase))
+            {
+                lines.Add(key);
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                _fileSystem.WriteAllLines(path, lines);
+            }
+        }
+
+        private void RunStartupTasks()
+        {
+            var path = Path.Combine(ApplicationPaths.CachePath, "startuptasks.txt");
+
+            List<string> lines;
+
+            try
+            {
+                lines = _fileSystem.ReadAllLines(path).Where(i => !string.IsNullOrWhiteSpace(i)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+                foreach (var key in lines)
+                {
+                    var task = ScheduledTasks.FirstOrDefault(i => string.Equals(i.ScheduledTask.Key, key, StringComparison.OrdinalIgnoreCase));
+
+                    if (task != null)
+                    {
+                        QueueScheduledTask(task, new TaskExecutionOptions());
+                    }
+                }
+
+                _fileSystem.DeleteFile(path);
+            }
+            catch
+            {
+                return;
             }
         }
 
@@ -235,6 +287,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
             ScheduledTasks = myTasks.ToArray();
 
             BindToSystemEvent();
+
+            RunStartupTasks();
         }
 
         /// <summary>

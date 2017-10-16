@@ -44,6 +44,7 @@ namespace MediaBrowser.Model.Users
         public bool EnablePlaybackRemuxing { get; set; }
 
         public bool EnableContentDeletion { get; set; }
+        public string[] EnableContentDeletionFromFolders { get; set; }
         public bool EnableContentDownloading { get; set; }
 
         /// <summary>
@@ -73,6 +74,7 @@ namespace MediaBrowser.Model.Users
         public UserPolicy()
         {
             EnableContentDeletion = true;
+            EnableContentDeletionFromFolders = new string[] { };
 
             EnableSyncTranscoding = true;
 
