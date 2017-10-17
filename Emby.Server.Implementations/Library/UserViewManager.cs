@@ -96,7 +96,7 @@ namespace Emby.Server.Implementations.Library
                 if (parents.Count > 0)
                 {
                     var localizationKey = string.Equals(viewType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) ?
-                        "Shows" :
+                        "TvShows" :
                         "Movies";
 
                     list.Add(GetUserView(parents, viewType, localizationKey, string.Empty, user, query.PresetViews, cancellationToken));
