@@ -9,7 +9,6 @@
                 <h2 class="username" style="margin: 0;"></h2>
                 <br />
                 <button is="emby-button" type="button" class="raised hide" id="btnDeleteImage">
-                    <i class="md-icon">delete</i>
                     <span>${ButtonDeleteImage}</span>
                 </button>
             </div>
@@ -25,7 +24,7 @@
             <div class="flex align-items-center" style="margin:1.5em 0;">
                 <h1 style="margin:0;">${HeaderUploadNewImage}</h1>
 
-                <button is="emby-button" type="button" class="raised raised-mini btnBrowse" style="margin-left:1.5em;border-radius:500px;">
+                <button is="emby-button" type="button" class="raised raised-mini btnBrowse" style="margin-left:1.5em;">
                     <span>${Browse}</span>
                 </button>
             </div>
@@ -45,15 +44,12 @@
 
         </form>
 
-        <br />
+        <form class="updatePasswordForm passwordSection userProfileSettingsForm hide" style="margin: 3em auto 0;">
 
-        <form class="updatePasswordForm passwordSection userProfileSettingsForm hide" style="margin: 0 auto 2em;">
-
-            <div class="detailSection">
-                <h1>
+            <div class="verticalSection">
+                <h2 class="sectionTitle">
                     ${HeaderPassword}
-                </h1>
-                <br />
+                </h2>
                 <div id="fldCurrentPassword" class="inputContainer hide">
                     <input is="emby-input" type="password" id="txtCurrentPassword" label="${LabelCurrentPassword}" autocomplete="off" />
                 </div>
@@ -66,18 +62,16 @@
                 <div>
                     <button is="emby-button" type="submit" class="raised button-submit block"><span>${ButtonSave}</span></button>
                     <button is="emby-button" type="button" id="btnResetPassword" class="raised cancel block hide">
-                        <i class="md-icon">lock</i>
                         <span>${ButtonResetPassword}</span>
                     </button>
                 </div>
             </div>
         </form>
-        <form class="localAccessForm localAccessSection userProfileSettingsForm hide" style="margin: 0 auto;">
-            <div class="detailSection">
-                <h1>
+        <form class="localAccessForm localAccessSection userProfileSettingsForm hide" style="margin: 3em auto 0;">
+            <div class="verticalSection">
+                <h2 class="sectionTitle">
                     ${HeaderEasyPinCode}
-                </h1>
-                <br />
+                </h2>
                 <div>${EasyPasswordHelp}</div>
                 <br />
                 <div class="inputContainer">
@@ -95,7 +89,6 @@
                         <span>${ButtonSave}</span>
                     </button>
                     <button is="emby-button" type="button" id="btnResetEasyPassword" class="raised cancel block hide">
-                        <i class="md-icon">lock</i>
                         <span>${ButtonResetEasyPassword}</span>
                     </button>
                 </div>
