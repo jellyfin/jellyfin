@@ -528,7 +528,13 @@ namespace SocketHttpListener.Net
                 finally
                 {
                     if (s != null)
-                        s.Close();
+                    {
+                        try
+                        {
+                            s.Close();
+                        }
+                        catch { }
+                    }
                 }
                 Unbind();
                 RemoveConnection();
