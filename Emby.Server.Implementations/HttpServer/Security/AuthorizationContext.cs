@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Services;
 using System.Linq;
+using System.Threading;
 
 namespace Emby.Server.Implementations.HttpServer.Security
 {
@@ -95,22 +96,43 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 {
                     info.UserId = tokenInfo.UserId;
 
+                    var updateToken = false;
+
                     // TODO: Remove these checks for IsNullOrWhiteSpace
                     if (string.IsNullOrWhiteSpace(info.Client))
                     {
                         info.Client = tokenInfo.AppName;
                     }
-                    if (string.IsNullOrWhiteSpace(info.Device))
-                    {
-                        info.Device = tokenInfo.DeviceName;
-                    }
+
                     if (string.IsNullOrWhiteSpace(info.DeviceId))
                     {
                         info.DeviceId = tokenInfo.DeviceId;
                     }
+
+
+                    if (string.IsNullOrWhiteSpace(info.Device))
+                    {
+                        info.Device = tokenInfo.DeviceName;
+                    }
+                    else if (!string.Equals(info.Device, tokenInfo.DeviceName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        updateToken = true;
+                        tokenInfo.DeviceName = info.Device;
+                    }
+
                     if (string.IsNullOrWhiteSpace(info.Version))
                     {
                         info.Version = tokenInfo.AppVersion;
+                    }
+                    else if (!string.Equals(info.Version, tokenInfo.AppVersion, StringComparison.OrdinalIgnoreCase))
+                    {
+                        updateToken = true;
+                        tokenInfo.AppVersion = info.Version;
+                    }
+
+                    if (updateToken)
+                    {
+                        _authRepo.Update(tokenInfo, CancellationToken.None);
                     }
                 }
                 else

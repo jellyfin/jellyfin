@@ -1071,8 +1071,10 @@ namespace Emby.Dlna.Didl
 
             writer.WriteStartElement(string.Empty, "res", NS_DIDL);
 
-            var width = albumartUrlInfo.Width;
-            var height = albumartUrlInfo.Height;
+            // Images must have a reported size or many clients (Bubble upnp), will only use the first thumbnail
+            // rather than using a larger one when available
+            var width = albumartUrlInfo.Width ?? maxWidth;
+            var height = albumartUrlInfo.Height ?? maxHeight;
 
             var contentFeatures = new ContentFeatureBuilder(_profile)
                 .BuildImageHeader(format, width, height, imageInfo.IsDirectStream, org_Pn);
@@ -1083,10 +1085,7 @@ namespace Emby.Dlna.Didl
                 contentFeatures
                 ));
 
-            if (width.HasValue && height.HasValue)
-            {
-                writer.WriteAttributeString("resolution", string.Format("{0}x{1}", width.Value, height.Value));
-            }
+            writer.WriteAttributeString("resolution", string.Format("{0}x{1}", width, height));
 
             writer.WriteString(albumartUrlInfo.Url);
 
