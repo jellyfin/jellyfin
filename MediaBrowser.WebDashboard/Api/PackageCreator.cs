@@ -152,7 +152,7 @@ namespace MediaBrowser.WebDashboard.Api
                     }
                 }
 
-                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, appVersion));
+                html = html.Replace("<head>", "<head>" + GetMetaTags(mode));
 
                 // Disable embedded scripts from plugins. We'll run them later once resources have loaded
                 if (html.IndexOf("<script", StringComparison.OrdinalIgnoreCase) != -1)
@@ -227,26 +227,6 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<meta name=\"theme-color\" content=\"#43A047\">");
 
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// Gets the common CSS.
-        /// </summary>
-        /// <param name="mode">The mode.</param>
-        /// <param name="version">The version.</param>
-        /// <returns>System.String.</returns>
-        private string GetCommonCss(string mode, string version)
-        {
-            var versionString = string.IsNullOrWhiteSpace(mode) ? "?v=" + version : string.Empty;
-
-            var files = new[]
-                            {
-                                      "css/site.css" + versionString
-                            };
-
-            var tags = files.Select(s => string.Format("<link rel=\"stylesheet\" href=\"{0}\" async />", s)).ToArray();
-
-            return string.Join(string.Empty, tags);
         }
 
         /// <summary>
