@@ -16,6 +16,8 @@
     "OriginalAirDateValue": "Fecha de emisi\u00f3n original: {0}",
     "EndsAtValue": "Termina a las {0}",
     "HeaderSelectDate": "Seleccionar Fecha",
+    "Watched": "Watched",
+    "Played": "Reproducido",
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancelar",
     "AccessRestrictedTryAgainLater": "El acceso est\u00e1 restringido actualmente. Por favor int\u00e9ntalo m\u00e1s tarde.",

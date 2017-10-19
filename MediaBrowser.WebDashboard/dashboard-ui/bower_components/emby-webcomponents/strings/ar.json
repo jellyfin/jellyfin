@@ -16,6 +16,8 @@
     "OriginalAirDateValue": "Original air date: {0}",
     "EndsAtValue": "Ends at {0}",
     "HeaderSelectDate": "Select Date",
+    "Watched": "Watched",
+    "Played": "Played",
     "ButtonOk": "Ok",
     "ButtonCancel": "\u0627\u0644\u063a\u0627\u0621",
     "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",

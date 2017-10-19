@@ -16,6 +16,8 @@
     "OriginalAirDateValue": "Pirmo eterio data: {0}",
     "EndsAtValue": "Baigiasi {0}",
     "HeaderSelectDate": "Pasirinkite dat\u0105",
+    "Watched": "Watched",
+    "Played": "Played",
     "ButtonOk": "OK",
     "ButtonCancel": "At\u0161aukti",
     "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",

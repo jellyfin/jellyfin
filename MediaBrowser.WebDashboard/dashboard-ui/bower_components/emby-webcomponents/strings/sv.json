@@ -16,6 +16,8 @@
     "OriginalAirDateValue": "Ursprungligt s\u00e4ndningsdatum: {0}",
     "EndsAtValue": "Slutar vid: {0}",
     "HeaderSelectDate": "V\u00e4lj datum",
+    "Watched": "Watched",
+    "Played": "Visad",
     "ButtonOk": "Ok",
     "ButtonCancel": "Avbryt",
     "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
