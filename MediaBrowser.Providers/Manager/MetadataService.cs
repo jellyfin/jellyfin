@@ -38,28 +38,6 @@ namespace MediaBrowser.Providers.Manager
             LibraryManager = libraryManager;
         }
 
-        private bool RequiresRefresh(IHasMetadata item, IDirectoryService directoryService)
-        {
-            if (item.RequiresRefresh())
-            {
-                return true;
-            }
-
-            if (item.SupportsLocalMetadata)
-            {
-                var video = item as Video;
-
-                if (video != null && !video.IsPlaceHolder)
-                {
-                    return !video.SubtitleFiles
-                        .SequenceEqual(SubtitleResolver.GetSubtitleFiles(video, directoryService, FileSystem, false)
-                        .OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
-                }
-            }
-
-            return false;
-        }
-
         public async Task<ItemUpdateType> RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
             var itemOfType = (TItemType)item;
@@ -69,6 +47,11 @@ namespace MediaBrowser.Providers.Manager
             var requiresRefresh = false;
 
             var libraryOptions = LibraryManager.GetLibraryOptions((BaseItem)item);
+
+            if (!requiresRefresh && libraryOptions.AutomaticRefreshIntervalDays > 0 && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= libraryOptions.AutomaticRefreshIntervalDays)
+            {
+                requiresRefresh = true;
+            }
 
             DateTime? newDateModified = null;
             if (item.LocationType == LocationType.FileSystem)
@@ -85,18 +68,25 @@ namespace MediaBrowser.Providers.Manager
                             requiresRefresh = true;
                         }
                     }
-                }
-            }
 
-            if (!requiresRefresh && libraryOptions.AutomaticRefreshIntervalDays > 0 && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= libraryOptions.AutomaticRefreshIntervalDays)
-            {
-                requiresRefresh = true;
+                    if (!requiresRefresh && item.SupportsLocalMetadata)
+                    {
+                        var video = item as Video;
+
+                        if (video != null && !video.IsPlaceHolder)
+                        {
+                            requiresRefresh = !video.SubtitleFiles
+                                .SequenceEqual(SubtitleResolver.GetSubtitleFiles(video, refreshOptions.DirectoryService, FileSystem, false)
+                                .OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
+                        }
+                    }
+                }
             }
 
             if (!requiresRefresh && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
                 // TODO: If this returns true, should we instead just change metadata refresh mode to Full?
-                requiresRefresh = RequiresRefresh(item, refreshOptions.DirectoryService);
+                requiresRefresh = item.RequiresRefresh();
             }
 
             var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager, FileSystem);

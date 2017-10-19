@@ -16,6 +16,8 @@
     "OriginalAirDateValue": "Original utgivelse dato: {0}",
     "EndsAtValue": "Ender p\u00e5 {0}",
     "HeaderSelectDate": "Velg dato",
+    "Watched": "Watched",
+    "Played": "Sett",
     "ButtonOk": "Ok",
     "ButtonCancel": "Avbryt",
     "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",

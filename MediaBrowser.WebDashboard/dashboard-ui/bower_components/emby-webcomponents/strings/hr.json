@@ -16,6 +16,8 @@
     "OriginalAirDateValue": "Originalni datum prikazivanja: {0}",
     "EndsAtValue": "Zavr\u0161ava u {0}",
     "HeaderSelectDate": "Odaberi datum",
+    "Watched": "Watched",
+    "Played": "Played",
     "ButtonOk": "U redu",
     "ButtonCancel": "Odustani",
     "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",

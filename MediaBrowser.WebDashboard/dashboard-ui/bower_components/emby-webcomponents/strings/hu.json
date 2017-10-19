@@ -16,6 +16,8 @@
     "OriginalAirDateValue": "Eredeti vet\u00edt\u00e9s d\u00e1tuma: {0}",
     "EndsAtValue": "V\u00e1rhat\u00f3 befejez\u00e9s {0}",
     "HeaderSelectDate": "V\u00e1lassz d\u00e1tumot",
+    "Watched": "Watched",
+    "Played": "Megn\u00e9zett",
     "ButtonOk": "Ok",
     "ButtonCancel": "M\u00e9gsem",
     "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",

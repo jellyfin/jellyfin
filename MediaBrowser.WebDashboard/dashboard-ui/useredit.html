@@ -29,14 +29,12 @@
                     <input is="emby-input" id="txtUserName" required type="text" label="${LabelName}" />
                 </div>
                 <div id="fldConnectInfo" style="display: none;">
-                    <div class="paperList" style="padding: 1em; border-radius: 5px;">
-                        <div class="inputContainer">
-                            <input is="emby-input" id="txtConnectUserName" type="text" label="${LabelConnectUserName}" />
-                            <div class="fieldDescription">
-                                <div>${LabelConnectUserNameHelp}</div>
-                                <div style="margin-top: .75em;">
-                                    <a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a>
-                                </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" id="txtConnectUserName" type="text" label="${LabelConnectUserName}" />
+                        <div class="fieldDescription">
+                            <div>${LabelConnectUserNameHelp}</div>
+                            <div style="margin-top: .75em;">
+                                <a is="emby-linkbutton" class="button-link" href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a>
                             </div>
                         </div>
                     </div>

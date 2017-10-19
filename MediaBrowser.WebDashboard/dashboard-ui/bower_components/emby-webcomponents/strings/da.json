@@ -16,6 +16,8 @@
     "OriginalAirDateValue": "Originalt sendt: {0}",
     "EndsAtValue": "Slutter {0}",
     "HeaderSelectDate": "V\u00e6lg dato",
+    "Watched": "Watched",
+    "Played": "Afspillet",
     "ButtonOk": "Ok",
     "ButtonCancel": "Annuller",
     "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
