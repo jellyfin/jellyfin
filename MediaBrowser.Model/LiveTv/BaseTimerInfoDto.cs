@@ -41,6 +41,8 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         public string ChannelName { get; set; }
 
+        public string ChannelPrimaryImageTag { get; set; }
+
         /// <summary>
         /// Gets or sets the program identifier.
         /// </summary>

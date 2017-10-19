@@ -89,6 +89,11 @@ namespace Emby.Server.Implementations.LiveTv
             if (channel != null)
             {
                 dto.ChannelName = channel.Name;
+
+                if (channel.HasImage(ImageType.Primary))
+                {
+                    dto.ChannelPrimaryImageTag = GetImageTag(channel);
+                }
             }
 
             return dto;
