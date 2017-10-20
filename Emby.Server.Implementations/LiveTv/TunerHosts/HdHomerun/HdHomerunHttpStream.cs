@@ -92,14 +92,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                     }, "GET").ConfigureAwait(false))
                     {
-                        Logger.Info("Opened HDHR stream from {0}", url);
-
-                        Logger.Info("Beginning multicastStream.CopyUntilCancelled");
-
-                        FileSystem.CreateDirectory(FileSystem.GetDirectoryName(TempFilePath));
-                        using (var fileStream = FileSystem.GetFileStream(TempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
+                        using (var stream = response.Content)
                         {
-                            StreamHelper.CopyTo(response.Content, fileStream, 81920, () => Resolve(openTaskCompletionSource), cancellationToken);
+                            Logger.Info("Opened HDHR stream from {0}", url);
+
+                            Logger.Info("Beginning multicastStream.CopyUntilCancelled");
+
+                            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(TempFilePath));
+                            using (var fileStream = FileSystem.GetFileStream(TempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
+                            {
+                                StreamHelper.CopyTo(stream, fileStream, 81920, () => Resolve(openTaskCompletionSource), cancellationToken);
+                            }
                         }
                     }
                 }

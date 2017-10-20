@@ -301,11 +301,14 @@ namespace MediaBrowser.Providers.Omdb
 
             var url = GetOmdbUrl(string.Format("i={0}&plot=short&tomatoes=true&r=json", imdbParam), cancellationToken);
 
-            using (var stream = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
+            using (var response = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
-                var rootObject = _jsonSerializer.DeserializeFromStream<RootObject>(stream);
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
-                _jsonSerializer.SerializeToFile(rootObject, path);
+                using (var stream = response.Content)
+                {
+                    var rootObject = _jsonSerializer.DeserializeFromStream<RootObject>(stream);
+                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                    _jsonSerializer.SerializeToFile(rootObject, path);
+                }
             }
 
             return path;
@@ -335,25 +338,28 @@ namespace MediaBrowser.Providers.Omdb
 
             var url = GetOmdbUrl(string.Format("i={0}&season={1}&detail=full", imdbParam, seasonId), cancellationToken);
 
-            using (var stream = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
+            using (var response = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
-                var rootObject = _jsonSerializer.DeserializeFromStream<SeasonRootObject>(stream);
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
-                _jsonSerializer.SerializeToFile(rootObject, path);
+                using (var stream = response.Content)
+                {
+                    var rootObject = _jsonSerializer.DeserializeFromStream<SeasonRootObject>(stream);
+                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                    _jsonSerializer.SerializeToFile(rootObject, path);
+                }
             }
 
             return path;
         }
 
-        public static Task<Stream> GetOmdbResponse(IHttpClient httpClient, string url, CancellationToken cancellationToken)
+        public static Task<HttpResponseInfo> GetOmdbResponse(IHttpClient httpClient, string url, CancellationToken cancellationToken)
         {
-            return httpClient.Get(new HttpRequestOptions
+            return httpClient.SendAsync(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
                 BufferContent = true,
                 EnableDefaultUserAgent = true
-            });
+            }, "GET");
         }
 
         internal string GetDataFilePath(string imdbId)

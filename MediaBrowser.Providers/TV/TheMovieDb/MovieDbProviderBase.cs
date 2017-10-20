@@ -125,7 +125,7 @@ namespace MediaBrowser.Providers.TV
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+            using (var response = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
@@ -133,7 +133,10 @@ namespace MediaBrowser.Providers.TV
 
             }).ConfigureAwait(false))
             {
-                return _jsonSerializer.DeserializeFromStream<RootObject>(json);
+                using (var json = response.Content)
+                {
+                    return _jsonSerializer.DeserializeFromStream<RootObject>(json);
+                }
             }
         }
 

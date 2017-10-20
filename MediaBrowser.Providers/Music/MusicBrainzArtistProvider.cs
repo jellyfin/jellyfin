@@ -35,10 +35,12 @@ namespace MediaBrowser.Providers.Music
             {
                 var url = string.Format("/ws/2/artist/?query=arid:{0}", musicBrainzId);
 
-                using (var stream = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, false, cancellationToken)
-                            .ConfigureAwait(false))
+                using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, false, cancellationToken).ConfigureAwait(false))
                 {
-                    return GetResultsFromResponse(stream);
+                    using (var stream = response.Content)
+                    {
+                        return GetResultsFromResponse(stream);
+                    }
                 }
             }
             else
@@ -48,13 +50,16 @@ namespace MediaBrowser.Providers.Music
 
                 var url = String.Format("/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
 
-                using (var stream = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+                using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
                 {
-                    var results = GetResultsFromResponse(stream);
-
-                    if (results.Count > 0)
+                    using (var stream = response.Content)
                     {
-                        return results;
+                        var results = GetResultsFromResponse(stream);
+
+                        if (results.Count > 0)
+                        {
+                            return results;
+                        }
                     }
                 }
 
@@ -63,9 +68,12 @@ namespace MediaBrowser.Providers.Music
                     // Try again using the search with accent characters url
                     url = String.Format("/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
 
-                    using (var stream = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+                    using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
                     {
-                        return GetResultsFromResponse(stream);
+                        using (var stream = response.Content)
+                        {
+                            return GetResultsFromResponse(stream);
+                        }
                     }
                 }
             }

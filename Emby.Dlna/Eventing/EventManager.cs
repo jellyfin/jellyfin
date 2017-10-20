@@ -182,7 +182,10 @@ namespace Emby.Dlna.Eventing
 
             try
             {
-                await _httpClient.SendAsync(options, "NOTIFY").ConfigureAwait(false);
+                using (await _httpClient.SendAsync(options, "NOTIFY").ConfigureAwait(false))
+                {
+
+                }
             }
             catch (OperationCanceledException)
             {
