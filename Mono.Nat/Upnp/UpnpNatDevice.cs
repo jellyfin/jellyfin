@@ -90,55 +90,6 @@ namespace Mono.Nat.Upnp
             }
         }
 
-        internal UpnpNatDevice(IPAddress localAddress, string deviceDetails, string serviceType, ILogger logger, IHttpClient httpClient)
-        {
-            _logger = logger;
-            _httpClient = httpClient;
-            this.LastSeen = DateTime.Now;
-            this.localAddress = localAddress;
-
-            // Split the string at the "location" section so i can extract the ipaddress and service description url
-            string locationDetails = deviceDetails.Substring(deviceDetails.IndexOf("Location", StringComparison.OrdinalIgnoreCase) + 9).Split('\r')[0];
-            this.serviceType = serviceType;
-
-            // Make sure we have no excess whitespace
-            locationDetails = locationDetails.Trim();
-
-            // FIXME: Is this reliable enough. What if we get a hostname as opposed to a proper http address
-            // Are we going to get addresses with the "http://" attached?
-            if (locationDetails.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
-            {
-                NatUtility.Log("Found device at: {0}", locationDetails);
-                // This bit strings out the "http://" from the string
-                locationDetails = locationDetails.Substring(7);
-
-                // We then split off the end of the string to get something like: 192.168.0.3:241 in our string
-                string hostAddressAndPort = locationDetails.Remove(locationDetails.IndexOf('/'));
-
-                // From this we parse out the IP address and Port
-                if (hostAddressAndPort.IndexOf(':') > 0)
-                {
-                    this.hostEndPoint = new IPEndPoint(IPAddress.Parse(hostAddressAndPort.Remove(hostAddressAndPort.IndexOf(':'))),
-                    Convert.ToUInt16(hostAddressAndPort.Substring(hostAddressAndPort.IndexOf(':') + 1), System.Globalization.CultureInfo.InvariantCulture));
-                }
-                else
-                {
-                    // there is no port specified, use default port (80)
-                    this.hostEndPoint = new IPEndPoint(IPAddress.Parse(hostAddressAndPort), 80);
-                }
-
-                NatUtility.Log("Parsed device as: {0}", this.hostEndPoint.ToString());
-
-                // The service description URL is the remainder of the "locationDetails" string. The bit that was originally after the ip
-                // and port information
-                this.serviceDescriptionUrl = locationDetails.Substring(locationDetails.IndexOf('/'));
-            }
-            else
-            {
-                logger.Warn("Couldn't decode address: " + deviceDetails);
-            }
-        }
-
         /// <summary>
         /// The EndPoint that the device is at
         /// </summary>

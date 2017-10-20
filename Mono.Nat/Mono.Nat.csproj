@@ -67,7 +67,6 @@
     <Compile Include="Upnp\Messages\Responses\CreatePortMappingResponseMessage.cs" />
     <Compile Include="Upnp\Messages\UpnpMessage.cs" />
     <Compile Include="Upnp\Searchers\UpnpSearcher.cs" />
-    <Compile Include="Upnp\Upnp.cs" />
     <Compile Include="Upnp\UpnpNatDevice.cs" />
   </ItemGroup>
   <ItemGroup>
