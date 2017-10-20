@@ -65,13 +65,13 @@
                 <div id="fldCriticRating" class="hide inputContainer">
                     <input is="emby-input" id="txtCriticRating" type="number" step=".1" label="${LabelCriticRating}" />
                 </div>
-                <div class="inputContainer">
+                <div class="inputContainer websiteFieldContainer hide">
                     <input is="emby-input" id="txtHomePageUrl" type="text" label="${LabelWebsite}" />
                 </div>
                 <div id="fldTagline" class="hide inputContainer">
                     <input is="emby-input" id="txtTagline" type="text" label="${LabelTagline}" />
                 </div>
-                <div class="inputContainer">
+                <div class="inputContainer overviewContainer hide">
                     <textarea is="emby-textarea" id="txtOverview" label="${LabelOverview}"></textarea>
                 </div>
                 <div id="fldPremiereDate" class="inputContainer">
@@ -148,7 +148,6 @@
                     </select>
                 </div>
             </div>
-            <br />
 
             <div class="detailSection hide" id="collapsibleDvdEpisodeInfo">
                 <h1>
@@ -180,7 +179,7 @@
                 </div>
             </div>
 
-            <div class="detailSection">
+            <div class="detailSection externalIdsSection hide">
                 <h1>
                     ${HeaderExternalIds}
                 </h1>
@@ -201,7 +200,7 @@
                 <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                     ${Genres}
                 </h1>
-                <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
+                <button is="emby-button" type="button" class="raised raised-mini btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
                     <i class="md-icon">add</i>
                     <span>${Add}</span>
                 </button>
@@ -211,7 +210,7 @@
                 <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                     ${People}
                 </h1>
-                <button is="emby-button" type="button" id="btnAddPerson" class="raised btnAddPerson submit mini" style="margin-left:1em;" title="${Add}">
+                <button is="emby-button" type="button" id="btnAddPerson" class="raised raised-mini btnAddPerson submit mini" style="margin-left:1em;" title="${Add}">
                     <i class="md-icon">add</i>
                     <span>${Add}</span>
                 </button>
@@ -222,7 +221,7 @@
                 <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                     ${Studios}
                 </h1>
-                <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
+                <button is="emby-button" type="button" class="raised raised-mini btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
                     <i class="md-icon">add</i>
                     <span>${Add}</span>
                 </button>
@@ -232,7 +231,7 @@
                 <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                     ${Tags}
                 </h1>
-                <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
+                <button is="emby-button" type="button" class="raised raised-mini btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
                     <i class="md-icon">add</i>
                     <span>${Add}</span>
                 </button>
@@ -268,8 +267,6 @@
             </div>
 
         </div>
-        <br />
-        <br />
     </form>
 </div>
 
