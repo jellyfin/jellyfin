@@ -315,6 +315,11 @@ namespace Emby.Server.Implementations.Localization
 
         public string GetLocalizedString(string phrase, string culture)
         {
+            if (string.IsNullOrWhiteSpace(culture))
+            {
+                culture = _configurationManager.Configuration.UICulture;
+            }
+
             var dictionary = GetLocalizationDictionary(culture);
 
             string value;

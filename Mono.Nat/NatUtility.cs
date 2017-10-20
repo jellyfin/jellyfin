@@ -208,14 +208,14 @@ namespace Mono.Nat
             }
         }
 
-        public static void Handle(IPAddress localAddress, UpnpDeviceInfo deviceInfo, IPEndPoint endpoint, NatProtocol protocol)
+        public static async Task Handle(IPAddress localAddress, UpnpDeviceInfo deviceInfo, IPEndPoint endpoint, NatProtocol protocol)
         {
             switch (protocol)
             {
                 case NatProtocol.Upnp:
                     var searcher = new UpnpSearcher(Logger, HttpClient);
                     searcher.DeviceFound += Searcher_DeviceFound;
-                    searcher.Handle(localAddress, deviceInfo, endpoint);
+                    await searcher.Handle(localAddress, deviceInfo, endpoint).ConfigureAwait(false);
                     break;
                 default:
                     throw new ArgumentException("Unexpected protocol: " + protocol);

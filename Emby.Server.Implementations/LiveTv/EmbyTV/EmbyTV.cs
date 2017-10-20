@@ -1463,6 +1463,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     _timerProvider.AddOrUpdate(timer, false);
 
                     await SaveRecordingMetadata(timer, recordPath, seriesPath).ConfigureAwait(false);
+
+                    CreateRecordingFolders();
+
                     TriggerRefresh(recordPath);
                     EnforceKeepUpTo(timer, seriesPath);
                 };

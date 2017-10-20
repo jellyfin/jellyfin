@@ -90,52 +90,101 @@ namespace Mono.Nat.Upnp
             }
         }
 
-        internal UpnpNatDevice(IPAddress localAddress, string deviceDetails, string serviceType, ILogger logger, IHttpClient httpClient)
+        public async Task GetServicesList()
         {
-            _logger = logger;
-            _httpClient = httpClient;
-            this.LastSeen = DateTime.Now;
-            this.localAddress = localAddress;
+            // Create a HTTPWebRequest to download the list of services the device offers
+            var message = new GetServicesMessage(this.serviceDescriptionUrl, this.hostEndPoint, _logger);
 
-            // Split the string at the "location" section so i can extract the ipaddress and service description url
-            string locationDetails = deviceDetails.Substring(deviceDetails.IndexOf("Location", StringComparison.OrdinalIgnoreCase) + 9).Split('\r')[0];
-            this.serviceType = serviceType;
-
-            // Make sure we have no excess whitespace
-            locationDetails = locationDetails.Trim();
-
-            // FIXME: Is this reliable enough. What if we get a hostname as opposed to a proper http address
-            // Are we going to get addresses with the "http://" attached?
-            if (locationDetails.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+            using (var response = await _httpClient.SendAsync(message.Encode(), message.Method).ConfigureAwait(false))
             {
-                NatUtility.Log("Found device at: {0}", locationDetails);
-                // This bit strings out the "http://" from the string
-                locationDetails = locationDetails.Substring(7);
-
-                // We then split off the end of the string to get something like: 192.168.0.3:241 in our string
-                string hostAddressAndPort = locationDetails.Remove(locationDetails.IndexOf('/'));
-
-                // From this we parse out the IP address and Port
-                if (hostAddressAndPort.IndexOf(':') > 0)
-                {
-                    this.hostEndPoint = new IPEndPoint(IPAddress.Parse(hostAddressAndPort.Remove(hostAddressAndPort.IndexOf(':'))),
-                    Convert.ToUInt16(hostAddressAndPort.Substring(hostAddressAndPort.IndexOf(':') + 1), System.Globalization.CultureInfo.InvariantCulture));
-                }
-                else
-                {
-                    // there is no port specified, use default port (80)
-                    this.hostEndPoint = new IPEndPoint(IPAddress.Parse(hostAddressAndPort), 80);
-                }
-
-                NatUtility.Log("Parsed device as: {0}", this.hostEndPoint.ToString());
-
-                // The service description URL is the remainder of the "locationDetails" string. The bit that was originally after the ip
-                // and port information
-                this.serviceDescriptionUrl = locationDetails.Substring(locationDetails.IndexOf('/'));
+                OnServicesReceived(response);
             }
-            else
+        }
+
+        private void OnServicesReceived(HttpResponseInfo response)
+        {
+            int abortCount = 0;
+            int bytesRead = 0;
+            byte[] buffer = new byte[10240];
+            StringBuilder servicesXml = new StringBuilder();
+            XmlDocument xmldoc = new XmlDocument();
+
+            using (var s = response.Content)
             {
-                logger.Warn("Couldn't decode address: " + deviceDetails);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    NatUtility.Log("{0}: Couldn't get services list: {1}", HostEndPoint, response.StatusCode);
+                    return; // FIXME: This the best thing to do??
+                }
+
+                while (true)
+                {
+                    bytesRead = s.Read(buffer, 0, buffer.Length);
+                    servicesXml.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+                    try
+                    {
+                        xmldoc.LoadXml(servicesXml.ToString());
+                        break;
+                    }
+                    catch (XmlException)
+                    {
+                        // If we can't receive the entire XML within 500ms, then drop the connection
+                        // Unfortunately not all routers supply a valid ContentLength (mine doesn't)
+                        // so this hack is needed to keep testing our recieved data until it gets successfully
+                        // parsed by the xmldoc. Without this, the code will never pick up my router.
+                        if (abortCount++ > 50)
+                        {
+                            return;
+                        }
+                        NatUtility.Log("{0}: Couldn't parse services list", HostEndPoint);
+                        System.Threading.Thread.Sleep(10);
+                    }
+                }
+
+                NatUtility.Log("{0}: Parsed services list", HostEndPoint);
+                XmlNamespaceManager ns = new XmlNamespaceManager(xmldoc.NameTable);
+                ns.AddNamespace("ns", "urn:schemas-upnp-org:device-1-0");
+                XmlNodeList nodes = xmldoc.SelectNodes("//*/ns:serviceList", ns);
+
+                foreach (XmlNode node in nodes)
+                {
+                    //Go through each service there
+                    foreach (XmlNode service in node.ChildNodes)
+                    {
+                        //If the service is a WANIPConnection, then we have what we want
+                        string type = service["serviceType"].InnerText;
+                        NatUtility.Log("{0}: Found service: {1}", HostEndPoint, type);
+                        StringComparison c = StringComparison.OrdinalIgnoreCase;
+                        // TODO: Add support for version 2 of UPnP.
+                        if (type.Equals("urn:schemas-upnp-org:service:WANPPPConnection:1", c) ||
+                            type.Equals("urn:schemas-upnp-org:service:WANIPConnection:1", c))
+                        {
+                            this.controlUrl = service["controlURL"].InnerText;
+                            NatUtility.Log("{0}: Found upnp service at: {1}", HostEndPoint, controlUrl);
+                            try
+                            {
+                                Uri u = new Uri(controlUrl);
+                                if (u.IsAbsoluteUri)
+                                {
+                                    EndPoint old = hostEndPoint;
+                                    this.hostEndPoint = new IPEndPoint(IPAddress.Parse(u.Host), u.Port);
+                                    NatUtility.Log("{0}: Absolute URI detected. Host address is now: {1}", old, HostEndPoint);
+                                    this.controlUrl = controlUrl.Substring(u.GetLeftPart(UriPartial.Authority).Length);
+                                    NatUtility.Log("{0}: New control url: {1}", HostEndPoint, controlUrl);
+                                }
+                            }
+                            catch
+                            {
+                                NatUtility.Log("{0}: Assuming control Uri is relative: {1}", HostEndPoint, controlUrl);
+                            }
+                            NatUtility.Log("{0}: Handshake Complete", HostEndPoint);
+                            return;
+                        }
+                    }
+                }
+
+                //If we get here, it means that we didn't get WANIPConnection service, which means no uPnP forwarding
+                //So we don't invoke the callback, so this device is never added to our lists
             }
         }
 
@@ -171,10 +220,13 @@ namespace Mono.Nat.Upnp
             get { return serviceType; }
         }
 
-        public override Task CreatePortMap(Mapping mapping)
+        public override async Task CreatePortMap(Mapping mapping)
         {
             CreatePortMappingMessage message = new CreatePortMappingMessage(mapping, localAddress, this);
-            return _httpClient.SendAsync(message.Encode(), message.Method);
+            using (await _httpClient.SendAsync(message.Encode(), message.Method).ConfigureAwait(false))
+            {
+
+            }
         }
 
         public override bool Equals(object obj)

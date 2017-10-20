@@ -142,16 +142,20 @@ namespace MediaBrowser.Providers.TV
             if (string.IsNullOrEmpty(lastUpdateTime))
             {
                 // First get tvdb server time
-                using (var stream = await _httpClient.Get(new HttpRequestOptions
+                using (var response = await _httpClient.SendAsync(new HttpRequestOptions
                 {
                     Url = ServerTimeUrl,
                     CancellationToken = cancellationToken,
                     EnableHttpCompression = true,
                     BufferContent = false
 
-                }).ConfigureAwait(false))
+                }, "GET").ConfigureAwait(false))
                 {
-                    newUpdateTime = GetUpdateTime(stream);
+                    // First get tvdb server time
+                    using (var stream = response.Content)
+                    {
+                        newUpdateTime = GetUpdateTime(stream);
+                    }
                 }
 
                 existingDirectories.AddRange(missingSeries);
@@ -238,23 +242,26 @@ namespace MediaBrowser.Providers.TV
         private async Task<Tuple<IEnumerable<string>, string>> GetSeriesIdsToUpdate(IEnumerable<string> existingSeriesIds, string lastUpdateTime, CancellationToken cancellationToken)
         {
             // First get last time
-            using (var stream = await _httpClient.Get(new HttpRequestOptions
+            using (var response = await _httpClient.SendAsync(new HttpRequestOptions
             {
                 Url = string.Format(UpdatesUrl, lastUpdateTime),
                 CancellationToken = cancellationToken,
                 EnableHttpCompression = true,
                 BufferContent = false
 
-            }).ConfigureAwait(false))
+            }, "GET").ConfigureAwait(false))
             {
-                var data = GetUpdatedSeriesIdList(stream);
+                using (var stream = response.Content)
+                {
+                    var data = GetUpdatedSeriesIdList(stream);
 
-                var existingDictionary = existingSeriesIds.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+                    var existingDictionary = existingSeriesIds.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-                var seriesList = data.Item1
-                    .Where(i => !string.IsNullOrWhiteSpace(i) && existingDictionary.ContainsKey(i));
+                    var seriesList = data.Item1
+                        .Where(i => !string.IsNullOrWhiteSpace(i) && existingDictionary.ContainsKey(i));
 
-                return new Tuple<IEnumerable<string>, string>(seriesList, data.Item2);
+                    return new Tuple<IEnumerable<string>, string>(seriesList, data.Item2);
+                }
             }
         }
 

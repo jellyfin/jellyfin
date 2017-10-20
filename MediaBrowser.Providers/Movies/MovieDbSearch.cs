@@ -154,7 +154,7 @@ namespace MediaBrowser.Providers.Movies
 
             var url3 = string.Format(Search3, WebUtility.UrlEncode(name), ApiKey, language, type);
 
-            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+            using (var response = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
                 Url = url3,
                 CancellationToken = cancellationToken,
@@ -162,38 +162,41 @@ namespace MediaBrowser.Providers.Movies
 
             }).ConfigureAwait(false))
             {
-                var searchResults = _json.DeserializeFromStream<TmdbMovieSearchResults>(json);
+                using (var json = response.Content)
+                {
+                    var searchResults = _json.DeserializeFromStream<TmdbMovieSearchResults>(json);
 
-                var results = searchResults.results ?? new List<TmdbMovieSearchResult>();
+                    var results = searchResults.results ?? new List<TmdbMovieSearchResult>();
 
-                return results
-                    .Select(i =>
-                    {
-                        var remoteResult = new RemoteSearchResult
+                    return results
+                        .Select(i =>
                         {
-                            SearchProviderName = MovieDbProvider.Current.Name,
-                            Name = i.title ?? i.name ?? i.original_title,
-                            ImageUrl = string.IsNullOrWhiteSpace(i.poster_path) ? null : baseImageUrl + i.poster_path
-                        };
+                            var remoteResult = new RemoteSearchResult
+                            {
+                                SearchProviderName = MovieDbProvider.Current.Name,
+                                Name = i.title ?? i.name ?? i.original_title,
+                                ImageUrl = string.IsNullOrWhiteSpace(i.poster_path) ? null : baseImageUrl + i.poster_path
+                            };
 
-                        if (!string.IsNullOrWhiteSpace(i.release_date))
-                        {
-                            DateTime r;
+                            if (!string.IsNullOrWhiteSpace(i.release_date))
+                            {
+                                DateTime r;
 
                             // These dates are always in this exact format
                             if (DateTime.TryParseExact(i.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
-                            {
-                                remoteResult.PremiereDate = r.ToUniversalTime();
-                                remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
+                                {
+                                    remoteResult.PremiereDate = r.ToUniversalTime();
+                                    remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
+                                }
                             }
-                        }
 
-                        remoteResult.SetProviderId(MetadataProviders.Tmdb, i.id.ToString(EnUs));
+                            remoteResult.SetProviderId(MetadataProviders.Tmdb, i.id.ToString(EnUs));
 
-                        return remoteResult;
+                            return remoteResult;
 
-                    })
-                    .ToList();
+                        })
+                        .ToList();
+                }
             }
         }
 
@@ -206,7 +209,7 @@ namespace MediaBrowser.Providers.Movies
 
             var url3 = string.Format(Search3, WebUtility.UrlEncode(name), ApiKey, language, "tv");
 
-            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+            using (var response = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
                 Url = url3,
                 CancellationToken = cancellationToken,
@@ -214,38 +217,41 @@ namespace MediaBrowser.Providers.Movies
 
             }).ConfigureAwait(false))
             {
-                var searchResults = _json.DeserializeFromStream<TmdbTvSearchResults>(json);
+                using (var json = response.Content)
+                {
+                    var searchResults = _json.DeserializeFromStream<TmdbTvSearchResults>(json);
 
-                var results = searchResults.results ?? new List<TvResult>();
+                    var results = searchResults.results ?? new List<TvResult>();
 
-                return results
-                    .Select(i =>
-                    {
-                        var remoteResult = new RemoteSearchResult
+                    return results
+                        .Select(i =>
                         {
-                            SearchProviderName = MovieDbProvider.Current.Name,
-                            Name = i.name ?? i.original_name,
-                            ImageUrl = string.IsNullOrWhiteSpace(i.poster_path) ? null : baseImageUrl + i.poster_path
-                        };
+                            var remoteResult = new RemoteSearchResult
+                            {
+                                SearchProviderName = MovieDbProvider.Current.Name,
+                                Name = i.name ?? i.original_name,
+                                ImageUrl = string.IsNullOrWhiteSpace(i.poster_path) ? null : baseImageUrl + i.poster_path
+                            };
 
-                        if (!string.IsNullOrWhiteSpace(i.first_air_date))
-                        {
-                            DateTime r;
+                            if (!string.IsNullOrWhiteSpace(i.first_air_date))
+                            {
+                                DateTime r;
 
                             // These dates are always in this exact format
                             if (DateTime.TryParseExact(i.first_air_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
-                            {
-                                remoteResult.PremiereDate = r.ToUniversalTime();
-                                remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
+                                {
+                                    remoteResult.PremiereDate = r.ToUniversalTime();
+                                    remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
+                                }
                             }
-                        }
 
-                        remoteResult.SetProviderId(MetadataProviders.Tmdb, i.id.ToString(EnUs));
+                            remoteResult.SetProviderId(MetadataProviders.Tmdb, i.id.ToString(EnUs));
 
-                        return remoteResult;
+                            return remoteResult;
 
-                    })
-                    .ToList();
+                        })
+                        .ToList();
+                }
             }
         }
 
