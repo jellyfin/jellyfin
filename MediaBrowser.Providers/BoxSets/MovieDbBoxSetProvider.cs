@@ -179,7 +179,7 @@ namespace MediaBrowser.Providers.BoxSets
 
             RootObject mainResult = null;
 
-            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+            using (var response = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
@@ -187,7 +187,10 @@ namespace MediaBrowser.Providers.BoxSets
 
             }).ConfigureAwait(false))
             {
-                mainResult = _json.DeserializeFromStream<RootObject>(json);
+                using (var json = response.Content)
+                {
+                    mainResult = _json.DeserializeFromStream<RootObject>(json);
+                }
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -204,7 +207,7 @@ namespace MediaBrowser.Providers.BoxSets
                         url += "&include_image_language=" + MovieDbProvider.GetImageLanguagesParam(language);
                     }
 
-                    using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+                    using (var response = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                     {
                         Url = url,
                         CancellationToken = cancellationToken,
@@ -212,7 +215,10 @@ namespace MediaBrowser.Providers.BoxSets
 
                     }).ConfigureAwait(false))
                     {
-                        mainResult = _json.DeserializeFromStream<RootObject>(json);
+                        using (var json = response.Content)
+                        {
+                            mainResult = _json.DeserializeFromStream<RootObject>(json);
+                        }
                     }
                 }
             }

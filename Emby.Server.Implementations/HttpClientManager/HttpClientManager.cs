@@ -279,37 +279,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         public async Task<Stream> Get(HttpRequestOptions options)
         {
             var response = await GetResponse(options).ConfigureAwait(false);
-
             return response.Content;
-        }
-
-        /// <summary>
-        /// Performs a GET request and returns the resulting stream
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="resourcePool">The resource pool.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Stream}.</returns>
-        public Task<Stream> Get(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
-        {
-            return Get(new HttpRequestOptions
-            {
-                Url = url,
-                ResourcePool = resourcePool,
-                CancellationToken = cancellationToken,
-                BufferContent = resourcePool != null
-            });
-        }
-
-        /// <summary>
-        /// Gets the specified URL.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Stream}.</returns>
-        public Task<Stream> Get(string url, CancellationToken cancellationToken)
-        {
-            return Get(url, null, cancellationToken);
         }
 
         /// <summary>
@@ -587,26 +557,6 @@ namespace Emby.Server.Implementations.HttpClientManager
             var response = await Post(options).ConfigureAwait(false);
 
             return response.Content;
-        }
-
-        /// <summary>
-        /// Performs a POST request
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="postData">Params to add to the POST data.</param>
-        /// <param name="resourcePool">The resource pool.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>stream on success, null on failure</returns>
-        public Task<Stream> Post(string url, Dictionary<string, string> postData, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
-        {
-            return Post(new HttpRequestOptions
-            {
-                Url = url,
-                ResourcePool = resourcePool,
-                CancellationToken = cancellationToken,
-                BufferContent = resourcePool != null
-
-            }, postData);
         }
 
         /// <summary>
@@ -889,18 +839,6 @@ namespace Emby.Server.Implementations.HttpClientManager
                     StatusCode = response.StatusCode
                 };
             }
-        }
-
-        /// <summary>
-        /// Posts the specified URL.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="postData">The post data.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Stream}.</returns>
-        public Task<Stream> Post(string url, Dictionary<string, string> postData, CancellationToken cancellationToken)
-        {
-            return Post(url, postData, null, cancellationToken);
         }
 
         private Task<WebResponse> GetResponseAsync(WebRequest request, TimeSpan timeout)
