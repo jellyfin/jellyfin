@@ -153,16 +153,16 @@ namespace MediaBrowser.Providers.Manager
 
         public async Task SaveImage(IHasMetadata item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
-            var response = await _httpClient.GetResponse(new HttpRequestOptions
+            using (var response = await _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
                 Url = url,
                 BufferContent = false
 
-            }).ConfigureAwait(false);
-
-            await SaveImage(item, response.Content, response.ContentType, type, imageIndex, cancellationToken)
-                    .ConfigureAwait(false);
+            }).ConfigureAwait(false))
+            {
+                await SaveImage(item, response.Content, response.ContentType, type, imageIndex, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         public Task SaveImage(IHasMetadata item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)

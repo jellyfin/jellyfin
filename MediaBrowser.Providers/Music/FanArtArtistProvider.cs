@@ -251,17 +251,20 @@ namespace MediaBrowser.Providers.Music
 
             try
             {
-                using (var response = await _httpClient.Get(new HttpRequestOptions
+                using (var httpResponse = await _httpClient.SendAsync(new HttpRequestOptions
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
                     BufferContent = true
 
-                }).ConfigureAwait(false))
+                }, "GET").ConfigureAwait(false))
                 {
-                    using (var saveFileStream = _fileSystem.GetFileStream(jsonPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
+                    using (var response = httpResponse.Content)
                     {
-                        await response.CopyToAsync(saveFileStream).ConfigureAwait(false);
+                        using (var saveFileStream = _fileSystem.GetFileStream(jsonPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
+                        {
+                            await response.CopyToAsync(saveFileStream).ConfigureAwait(false);
+                        }
                     }
                 }
             }

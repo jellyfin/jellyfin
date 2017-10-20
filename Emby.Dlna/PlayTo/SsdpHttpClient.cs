@@ -31,14 +31,15 @@ namespace Emby.Dlna.PlayTo
             bool logRequest = true,
             string header = null)
         {
-            var response = await PostSoapDataAsync(NormalizeServiceUrl(baseUrl, service.ControlUrl), "\"" + service.ServiceType + "#" + command + "\"", postData, header, logRequest)
-                .ConfigureAwait(false);
-
-            using (var stream = response.Content)
+            using (var response = await PostSoapDataAsync(NormalizeServiceUrl(baseUrl, service.ControlUrl), "\"" + service.ServiceType + "#" + command + "\"", postData, header, logRequest)
+                .ConfigureAwait(false))
             {
-                using (var reader = new StreamReader(stream, Encoding.UTF8))
+                using (var stream = response.Content)
                 {
-                    return XDocument.Parse(reader.ReadToEnd(), LoadOptions.PreserveWhitespace);
+                    using (var reader = new StreamReader(stream, Encoding.UTF8))
+                    {
+                        return XDocument.Parse(reader.ReadToEnd(), LoadOptions.PreserveWhitespace);
+                    }
                 }
             }
         }
@@ -79,7 +80,10 @@ namespace Emby.Dlna.PlayTo
             options.RequestHeaders["NT"] = "upnp:event";
             options.RequestHeaders["TIMEOUT"] = "Second-" + timeOut.ToString(_usCulture);
 
-            await _httpClient.SendAsync(options, "SUBSCRIBE").ConfigureAwait(false);
+            using (await _httpClient.SendAsync(options, "SUBSCRIBE").ConfigureAwait(false))
+            {
+
+            }
         }
 
         public async Task<XDocument> GetDataAsync(string url)
@@ -94,11 +98,14 @@ namespace Emby.Dlna.PlayTo
 
             options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
 
-            using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
+            using (var response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false))
             {
-                using (var reader = new StreamReader(stream, Encoding.UTF8))
+                using (var stream = response.Content)
                 {
-                    return XDocument.Parse(reader.ReadToEnd(), LoadOptions.PreserveWhitespace);
+                    using (var reader = new StreamReader(stream, Encoding.UTF8))
+                    {
+                        return XDocument.Parse(reader.ReadToEnd(), LoadOptions.PreserveWhitespace);
+                    }
                 }
             }
         }

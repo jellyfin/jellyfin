@@ -262,28 +262,29 @@ namespace MediaBrowser.Api.Images
         /// <returns>Task.</returns>
         private async Task DownloadImage(string url, Guid urlHash, string pointerCachePath)
         {
-            var result = await _httpClient.GetResponse(new HttpRequestOptions
+            using (var result = await _httpClient.GetResponse(new HttpRequestOptions
             {
                 Url = url,
                 BufferContent = false
 
-            }).ConfigureAwait(false);
-
-            var ext = result.ContentType.Split('/').Last();
-
-            var fullCachePath = GetFullCachePath(urlHash + "." + ext);
-
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(fullCachePath));
-            using (var stream = result.Content)
+            }).ConfigureAwait(false))
             {
-                using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
-                {
-                    await stream.CopyToAsync(filestream).ConfigureAwait(false);
-                }
-            }
+                var ext = result.ContentType.Split('/').Last();
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(pointerCachePath));
-            _fileSystem.WriteAllText(pointerCachePath, fullCachePath);
+                var fullCachePath = GetFullCachePath(urlHash + "." + ext);
+
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(fullCachePath));
+                using (var stream = result.Content)
+                {
+                    using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
+                    {
+                        await stream.CopyToAsync(filestream).ConfigureAwait(false);
+                    }
+                }
+
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(pointerCachePath));
+                _fileSystem.WriteAllText(pointerCachePath, fullCachePath);
+            }
         }
 
         /// <summary>
