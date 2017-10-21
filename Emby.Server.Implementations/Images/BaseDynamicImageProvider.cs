@@ -42,21 +42,12 @@ namespace Emby.Server.Implementations.Images
             return true;
         }
 
-        public virtual IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
+        public virtual ImageType[] GetSupportedImages(IHasMetadata item)
         {
-            return new List<ImageType>
+            return new ImageType[]
             {
-                ImageType.Primary,
-                ImageType.Thumb
+                ImageType.Primary
             };
-        }
-
-        private IEnumerable<ImageType> GetEnabledImages(IHasMetadata item)
-        {
-            //var options = ProviderManager.GetMetadataOptions(item);
-
-            return GetSupportedImages(item);
-            //return GetSupportedImages(item).Where(i => IsEnabled(options, i, item)).ToList();
         }
 
         public async Task<ItemUpdateType> FetchAsync(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
@@ -67,7 +58,7 @@ namespace Emby.Server.Implementations.Images
             }
 
             var updateType = ItemUpdateType.None;
-            var supportedImages = GetEnabledImages(item).ToList();
+            var supportedImages = GetSupportedImages(item);
 
             if (supportedImages.Contains(ImageType.Primary))
             {
@@ -253,7 +244,7 @@ namespace Emby.Server.Implementations.Images
                 return false;
             }
 
-            var supportedImages = GetEnabledImages(item).ToList();
+            var supportedImages = GetSupportedImages(item);
 
             if (supportedImages.Contains(ImageType.Primary) && HasChanged(item, ImageType.Primary))
             {
@@ -283,13 +274,22 @@ namespace Emby.Server.Implementations.Images
                     return false;
                 }
 
-                var age = DateTime.UtcNow - image.DateModified;
-                if (age.TotalDays <= MaxImageAgeDays)
+                if (!HasChangedByDate(item, image))
                 {
                     return false;
                 }
             }
 
+            return true;
+        }
+
+        protected virtual bool HasChangedByDate(IHasMetadata item, ItemImageInfo image)
+        {
+            var age = DateTime.UtcNow - image.DateModified;
+            if (age.TotalDays <= MaxImageAgeDays)
+            {
+                return false;
+            }
             return true;
         }
 

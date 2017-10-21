@@ -31,23 +31,6 @@ namespace Emby.Server.Implementations.UserViews
             _libraryManager = libraryManager;
         }
 
-        public override IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
-        {
-            var view = (UserView)item;
-            if (IsUsingCollectionStrip(view))
-            {
-                return new List<ImageType>
-                {
-                    ImageType.Primary
-                };
-            }
-
-            return new List<ImageType>
-            {
-                ImageType.Primary
-            };
-        }
-
         protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
         {
             var view = (UserView)item;
