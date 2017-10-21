@@ -35,7 +35,6 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 // Must be an image file within a photo collection
                 var collectionType = args.GetCollectionType();
 
-
                 if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase) ||
                     (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && args.GetLibraryOptions().EnablePhotos))
                 {
@@ -44,9 +43,15 @@ namespace Emby.Server.Implementations.Library.Resolvers
                         var filename = Path.GetFileNameWithoutExtension(args.Path);
 
                         // Make sure the image doesn't belong to a video file
-                        if (_fileSystem.GetFilePaths(_fileSystem.GetDirectoryName(args.Path)).Any(i => IsOwnedByMedia(args.GetLibraryOptions(), i, filename)))
+                        var files = args.DirectoryService.GetFiles(_fileSystem.GetDirectoryName(args.Path));
+                        var libraryOptions = args.GetLibraryOptions();
+
+                        foreach (var file in files)
                         {
-                            return null;
+                            if (IsOwnedByMedia(_libraryManager, libraryOptions, file.FullName, filename))
+                            {
+                                return null;
+                            }
                         }
 
                         return new Photo
@@ -60,14 +65,21 @@ namespace Emby.Server.Implementations.Library.Resolvers
             return null;
         }
 
-        private bool IsOwnedByMedia(LibraryOptions libraryOptions, string file, string imageFilename)
+        internal static bool IsOwnedByMedia(ILibraryManager libraryManager, LibraryOptions libraryOptions, string file, string imageFilename)
         {
-            if (_libraryManager.IsVideoFile(file, libraryOptions))
+            if (libraryManager.IsVideoFile(file, libraryOptions))
             {
-                if (imageFilename.StartsWith(Path.GetFileNameWithoutExtension(file), StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
+                return IsOwnedByResolvedMedia(libraryManager, libraryOptions, file, imageFilename);
+            }
+
+            return false;
+        }
+
+        internal static bool IsOwnedByResolvedMedia(ILibraryManager libraryManager, LibraryOptions libraryOptions, string file, string imageFilename)
+        {
+            if (imageFilename.StartsWith(Path.GetFileNameWithoutExtension(file), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
             }
 
             return false;
@@ -81,7 +93,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
             "fanart",
             "backdrop",
             "poster",
-            "cover"
+            "cover",
+            "logo"
         };
 
         internal static bool IsImageFile(string path, IImageProcessor imageProcessor)
