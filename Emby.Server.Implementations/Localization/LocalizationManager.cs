@@ -319,6 +319,10 @@ namespace Emby.Server.Implementations.Localization
             {
                 culture = _configurationManager.Configuration.UICulture;
             }
+            if (string.IsNullOrWhiteSpace(culture))
+            {
+                culture = DefaultCulture;
+            }
 
             var dictionary = GetLocalizationDictionary(culture);
 
@@ -332,19 +336,31 @@ namespace Emby.Server.Implementations.Localization
             return phrase;
         }
 
+        const string DefaultCulture = "en-US";
+
         private readonly ConcurrentDictionary<string, Dictionary<string, string>> _dictionaries =
             new ConcurrentDictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
 
         public Dictionary<string, string> GetLocalizationDictionary(string culture)
         {
+            if (string.IsNullOrWhiteSpace(culture))
+            {
+                throw new ArgumentNullException("culture");
+            }
+
             const string prefix = "Core";
             var key = prefix + culture;
 
-            return _dictionaries.GetOrAdd(key, k => GetDictionary(prefix, culture, "en-US.json"));
+            return _dictionaries.GetOrAdd(key, k => GetDictionary(prefix, culture, DefaultCulture + ".json"));
         }
 
         private Dictionary<string, string> GetDictionary(string prefix, string culture, string baseFilename)
         {
+            if (string.IsNullOrWhiteSpace(culture))
+            {
+                throw new ArgumentNullException("culture");
+            }
+
             var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var namespaceName = GetType().Namespace + "." + prefix;

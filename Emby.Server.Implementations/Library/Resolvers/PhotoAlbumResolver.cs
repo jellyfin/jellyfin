@@ -12,9 +12,12 @@ namespace Emby.Server.Implementations.Library.Resolvers
     public class PhotoAlbumResolver : FolderResolver<PhotoAlbum>
     {
         private readonly IImageProcessor _imageProcessor;
-        public PhotoAlbumResolver(IImageProcessor imageProcessor)
+        private ILibraryManager _libraryManager;
+
+        public PhotoAlbumResolver(IImageProcessor imageProcessor, ILibraryManager libraryManager)
         {
             _imageProcessor = imageProcessor;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -25,14 +28,18 @@ namespace Emby.Server.Implementations.Library.Resolvers
         protected override PhotoAlbum Resolve(ItemResolveArgs args)
         {
             // Must be an image file within a photo collection
-            if (args.IsDirectory && string.Equals(args.GetCollectionType(), CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
+            if (args.IsDirectory)
             {
-                if (HasPhotos(args))
+                if (string.Equals(args.GetCollectionType(), CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(args.GetCollectionType(), CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return new PhotoAlbum
+                    if (HasPhotos(args))
                     {
-                        Path = args.Path
-                    };
+                        return new PhotoAlbum
+                        {
+                            Path = args.Path
+                        };
+                    }
                 }
             }
 
@@ -41,7 +48,32 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
         private bool HasPhotos(ItemResolveArgs args)
         {
-            return args.FileSystemChildren.Any(i => (!i.IsDirectory) && PhotoResolver.IsImageFile(i.FullName, _imageProcessor));
+            var files = args.FileSystemChildren;
+
+            foreach (var file in files)
+            {
+                if (!file.IsDirectory && PhotoResolver.IsImageFile(file.FullName, _imageProcessor))
+                {
+                    var libraryOptions = args.GetLibraryOptions();
+                    var filename = file.Name;
+                    var ownedByMedia = false;
+
+                    foreach (var siblingFile in files)
+                    {
+                        if (PhotoResolver.IsOwnedByMedia(_libraryManager, libraryOptions, siblingFile.FullName, filename))
+                        {
+                            ownedByMedia = true;
+                            break;
+                        }
+                    }
+
+                    if (!ownedByMedia)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         public override ResolverPriority Priority
