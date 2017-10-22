@@ -45,6 +45,12 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get { return true; }
+        }
+
+        [IgnoreDataMember]
         public override bool SupportsInheritedParentImages
         {
             get
