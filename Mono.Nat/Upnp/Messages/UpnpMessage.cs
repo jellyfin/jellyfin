@@ -59,7 +59,7 @@ namespace Mono.Nat.Upnp
             req.Url = ss;
             req.EnableKeepAlive = false;
             req.RequestContentType = "text/xml";
-            req.RequestContentEncoding = Encoding.UTF8;
+            req.AppendCharsetToMimeType = true;
             req.RequestHeaders.Add("SOAPACTION", "\"" + device.ServiceType + "#" + upnpMethod + "\"");
 
             string bodyString = "<s:Envelope "

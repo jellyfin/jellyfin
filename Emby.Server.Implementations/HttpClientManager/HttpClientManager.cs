@@ -397,17 +397,16 @@ namespace Emby.Server.Implementations.HttpClientManager
             {
                 try
                 {
-                    var bytes = options.RequestContentBytes ??
-                                Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
+                    // TODO: We can always put this in the options object if needed
+                    var requestEncoding = Encoding.UTF8;
+
+                    var bytes = options.RequestContentBytes ?? requestEncoding.GetBytes(options.RequestContent ?? string.Empty);
 
                     var contentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
 
-                    if (options.RequestContentEncoding != null)
+                    if (options.AppendCharsetToMimeType)
                     {
-                        if (options.RequestContentEncoding.Equals(Encoding.UTF8))
-                        {
-                            contentType = contentType.TrimEnd(';') + "; charset=\"utf-8\"";
-                        }
+                        contentType = contentType.TrimEnd(';') + "; charset=\"utf-8\"";
                     }
 
                     httpWebRequest.ContentType = contentType;
