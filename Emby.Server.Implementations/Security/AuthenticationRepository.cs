@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Security
 
                 string[] queries = {
 
-                               "create table if not exists AccessTokens (Id GUID PRIMARY KEY, AccessToken TEXT NOT NULL, DeviceId TEXT, AppName TEXT, AppVersion TEXT, DeviceName TEXT, UserId TEXT, IsActive BIT, DateCreated DATETIME NOT NULL, DateRevoked DATETIME)",
+                               "create table if not exists AccessTokens (Id GUID PRIMARY KEY NOT NULL, AccessToken TEXT NOT NULL, DeviceId TEXT NOT NULL, AppName TEXT NOT NULL, AppVersion TEXT NOT NULL, DeviceName TEXT NOT NULL, UserId TEXT, IsActive BIT NOT NULL, DateCreated DATETIME NOT NULL, DateRevoked DATETIME)",
                                 "create index if not exists idx_AccessTokens on AccessTokens(Id)"
                                };
 

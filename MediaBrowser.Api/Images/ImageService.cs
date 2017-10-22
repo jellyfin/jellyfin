@@ -315,7 +315,7 @@ namespace MediaBrowser.Api.Images
             return list;
         }
 
-        private ImageInfo GetImageInfo(IHasMetadata item, ItemImageInfo info, int? imageIndex)
+        private ImageInfo GetImageInfo(BaseItem item, ItemImageInfo info, int? imageIndex)
         {
             try
             {
@@ -330,10 +330,16 @@ namespace MediaBrowser.Api.Images
                         var fileInfo = _fileSystem.GetFileInfo(info.Path);
                         length = fileInfo.Length;
 
-                        var size = _imageProcessor.GetImageSize(info, true);
+                        var size = _imageProcessor.GetImageSize(item, info, true, true);
 
                         width = Convert.ToInt32(size.Width);
                         height = Convert.ToInt32(size.Height);
+
+                        if (width <= 0 || height <= 0)
+                        {
+                            width = null;
+                            height = null;
+                        }
 
                     }
                 }

@@ -75,7 +75,7 @@ namespace Emby.Server.Implementations.Data
 
                 string[] queries = {
 
-                    "create table if not exists userdisplaypreferences (id GUID, userId GUID, client text, data BLOB)",
+                    "create table if not exists userdisplaypreferences (id GUID NOT NULL, userId GUID NOT NULL, client text NOT NULL, data BLOB NOT NULL)",
                     "create unique index if not exists userdisplaypreferencesindex on userdisplaypreferences (id, userId, client)"
                                };
 

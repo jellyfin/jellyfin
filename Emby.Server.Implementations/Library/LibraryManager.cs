@@ -1826,6 +1826,13 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
+        public void UpdateImages(BaseItem item)
+        {
+            ItemRepository.SaveImages(item);
+
+            RegisterItem(item);
+        }
+
         /// <summary>
         /// Updates the item.
         /// </summary>

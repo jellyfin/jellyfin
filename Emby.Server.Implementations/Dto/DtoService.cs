@@ -1608,12 +1608,12 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        public void AttachPrimaryImageAspectRatio(IItemDto dto, IHasMetadata item)
+        public void AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item)
         {
             dto.PrimaryImageAspectRatio = GetPrimaryImageAspectRatio(item);
         }
 
-        public double? GetPrimaryImageAspectRatio(IHasMetadata item)
+        public double? GetPrimaryImageAspectRatio(BaseItem item)
         {
             var imageInfo = item.GetImageInfo(ImageType.Primary, 0);
 
@@ -1646,12 +1646,14 @@ namespace Emby.Server.Implementations.Dto
                     return null;
                 }
 
-                return null;
-                _logger.Info("Getting image size for item type {0}", item.GetType().Name);
-
                 try
                 {
-                    size = _imageProcessor.GetImageSize(imageInfo);
+                    size = _imageProcessor.GetImageSize(item, imageInfo);
+
+                    if (size.Width <= 0 || size.Height <= 0)
+                    {
+                        return null;
+                    }
                 }
                 catch
                 {

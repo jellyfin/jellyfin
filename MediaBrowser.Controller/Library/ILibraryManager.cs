@@ -128,6 +128,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         void QueueLibraryScan();
 
+        void UpdateImages(BaseItem item);
+
         /// <summary>
         /// Gets the default view.
         /// </summary>

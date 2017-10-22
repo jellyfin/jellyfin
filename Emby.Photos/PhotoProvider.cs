@@ -163,10 +163,14 @@ namespace Emby.Photos
 
             if (!item.Width.HasValue || !item.Height.HasValue)
             {
-                var size = _imageProcessor.GetImageSize(item.Path);
+                var img = item.GetImageInfo(ImageType.Primary, 0);
+                var size = _imageProcessor.GetImageSize(item, img, false, false);
 
-                item.Width = Convert.ToInt32(size.Width);
-                item.Height = Convert.ToInt32(size.Height);
+                if (size.Width > 0 && size.Height > 0)
+                {
+                    item.Width = Convert.ToInt32(size.Width);
+                    item.Height = Convert.ToInt32(size.Height);
+                }
             }
 
             const ItemUpdateType result = ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataImport;
