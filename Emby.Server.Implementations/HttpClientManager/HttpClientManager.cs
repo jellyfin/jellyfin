@@ -320,8 +320,6 @@ namespace Emby.Server.Implementations.HttpClientManager
 
         private async Task<HttpResponseInfo> GetCachedResponse(string responseCachePath, TimeSpan cacheLength, string url)
         {
-            _logger.Info("Checking for cache file {0}", responseCachePath);
-
             try
             {
                 if (_fileSystem.GetLastWriteTimeUtc(responseCachePath).Add(cacheLength) > DateTime.UtcNow)
@@ -402,7 +400,17 @@ namespace Emby.Server.Implementations.HttpClientManager
                     var bytes = options.RequestContentBytes ??
                                 Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
 
-                    httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
+                    var contentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
+
+                    if (options.RequestContentEncoding != null)
+                    {
+                        if (options.RequestContentEncoding.Equals(Encoding.UTF8))
+                        {
+                            contentType = contentType.TrimEnd(';') + "; charset=\"utf-8\"";
+                        }
+                    }
+
+                    httpWebRequest.ContentType = contentType;
 
                     httpWebRequest.ContentLength = bytes.Length;
                     (await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false)).Write(bytes, 0, bytes.Length);
@@ -430,7 +438,14 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (options.LogRequest)
             {
-                _logger.Info("HttpClientManager {0}: {1}", httpMethod.ToUpper(), options.Url);
+                if (options.LogRequestAsDebug)
+                {
+                    _logger.Debug("HttpClientManager {0}: {1}", httpMethod.ToUpper(), options.Url);
+                }
+                else
+                {
+                    _logger.Info("HttpClientManager {0}: {1}", httpMethod.ToUpper(), options.Url);
+                }
             }
 
             try
@@ -597,7 +612,14 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (options.LogRequest)
             {
-                _logger.Info("HttpClientManager.GetTempFileResponse url: {0}", options.Url);
+                if (options.LogRequestAsDebug)
+                {
+                    _logger.Debug("HttpClientManager.GetTempFileResponse url: {0}", options.Url);
+                }
+                else
+                {
+                    _logger.Info("HttpClientManager.GetTempFileResponse url: {0}", options.Url);
+                }
             }
 
             var client = GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression);
