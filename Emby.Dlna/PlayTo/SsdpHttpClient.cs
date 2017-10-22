@@ -72,7 +72,10 @@ namespace Emby.Dlna.PlayTo
                 Url = url,
                 UserAgent = USERAGENT,
                 LogErrorResponseBody = true,
-                BufferContent = false
+                BufferContent = false,
+
+                // The periodic requests may keep some devices awake
+                LogRequestAsDebug = true
             };
 
             options.RequestHeaders["HOST"] = ip + ":" + port.ToString(_usCulture);
@@ -93,7 +96,10 @@ namespace Emby.Dlna.PlayTo
                 Url = url,
                 UserAgent = USERAGENT,
                 LogErrorResponseBody = true,
-                BufferContent = false
+                BufferContent = false,
+
+                // The periodic requests may keep some devices awake
+                LogRequestAsDebug = true
             };
 
             options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
@@ -125,7 +131,10 @@ namespace Emby.Dlna.PlayTo
                 UserAgent = USERAGENT,
                 LogRequest = logRequest || _config.GetDlnaConfiguration().EnableDebugLog,
                 LogErrorResponseBody = true,
-                BufferContent = false
+                BufferContent = false,
+
+                // The periodic requests may keep some devices awake
+                LogRequestAsDebug = true
             };
 
             options.RequestHeaders["SOAPAction"] = soapAction;
@@ -137,7 +146,8 @@ namespace Emby.Dlna.PlayTo
                 options.RequestHeaders["contentFeatures.dlna.org"] = header;
             }
 
-            options.RequestContentType = "text/xml; charset=\"utf-8\"";
+            options.RequestContentType = "text/xml";
+            options.RequestContentEncoding = Encoding.UTF8;
             options.RequestContent = postData;
 
             return _httpClient.Post(options);
