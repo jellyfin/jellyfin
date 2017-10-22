@@ -60,7 +60,7 @@ namespace Emby.Server.Implementations.Devices
                 RunDefaultInitialization(connection);
 
                 string[] queries = {
-                    "create table if not exists Devices (Id TEXT PRIMARY KEY, Name TEXT, ReportedName TEXT, CustomName TEXT, CameraUploadPath TEXT, LastUserName TEXT, AppName TEXT, AppVersion TEXT, LastUserId TEXT, DateLastModified DATETIME, Capabilities TEXT)",
+                    "create table if not exists Devices (Id TEXT PRIMARY KEY, Name TEXT NOT NULL, ReportedName TEXT NOT NULL, CustomName TEXT, CameraUploadPath TEXT, LastUserName TEXT NOT NULL, AppName TEXT NOT NULL, AppVersion TEXT NOT NULL, LastUserId TEXT NOT NULL, DateLastModified DATETIME NOT NULL, Capabilities TEXT NOT NULL)",
                     "create index if not exists idx_id on Devices(Id)"
                                };
 

@@ -1,9 +1,8 @@
 ﻿<div id="myPreferencesMenuPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderSettings}" data-backbutton="true">
 
-    <div class="padded-left padded-right padded-bottom-page">
+    <div class="padded-left padded-right padded-bottom-page padded-top">
         <div class="readOnlyContent" style="margin: 0 auto;">
-            <h1 class="settingsMenuHeader" style="padding-left:.25em;">${HeaderSettings}</h1>
-            <div>
+            <div class="verticalSection verticalSection-extrabottompadding">
                 <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="lnkDisplayPreferences listItem-shaded">
                     <div class="listItem">
                         <i class="md-icon listItemIcon listItemIcon-transparent">tv</i>
@@ -67,8 +66,8 @@
                     </div>
                 </a>
             </div>
-            <div>
-                <h1 class="headerUser" style="padding-left:.25em;"></h1>
+            <div class="verticalSection verticalSection-extrabottompadding">
+                <h2 class="sectionTitle headerUser" style="padding-left:.25em;"></h2>
                 <div>
                     <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="selectserver.html" class="selectServer hide listItem-shaded">
                         <div class="listItem">
@@ -87,8 +86,8 @@
                 </div>
             </div>
 
-            <div class="adminSection hide">
-                <h1 style="padding-left:.25em;">${HeaderAdmin}</h1>
+            <div class="adminSection hide verticalSection verticalSection-extrabottompadding">
+                <h2 class="sectionTitle" style="padding-left:.25em;">${HeaderAdmin}</h2>
                 <div>
                     <a is="emby-linkbutton" href="dashboard.html" style="display: block; padding: 0; margin:0;" class="listItem-shaded">
                         <div class="listItem">

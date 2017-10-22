@@ -30,10 +30,5 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
         }
-
-        public override double? GetDefaultPrimaryImageAspectRatio()
-        {
-            return 1;
-        }
     }
 }

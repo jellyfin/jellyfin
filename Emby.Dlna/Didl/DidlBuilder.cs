@@ -1137,8 +1137,21 @@ namespace Emby.Dlna.Didl
 
             }
 
-            int? width = null;
-            int? height = null;
+            int? width = imageInfo.Width;
+            int? height = imageInfo.Height;
+
+            if (width == 0 || height == 0)
+            {
+                //_imageProcessor.GetImageSize(item, imageInfo);
+                width = null;
+                height = null;
+            }
+
+            else if (width == -1 || height == -1)
+            {
+                width = null;
+                height = null;
+            }
 
             //try
             //{
