@@ -477,6 +477,11 @@ namespace Emby.Drawing
             return size;
         }
 
+        public ImageSize GetImageSize(string path)
+        {
+            return GetImageSize(path, true);
+        }
+
         /// <summary>
         /// Gets the size of the image.
         /// </summary>

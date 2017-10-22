@@ -79,6 +79,12 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get { return true; }
+        }
+
+        [IgnoreDataMember]
         public int? AiredSeasonNumber
         {
             get
