@@ -64,6 +64,12 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get { return true; }
+        }
+
         public Guid[] LocalTrailerIds { get; set; }
         public Guid[] RemoteTrailerIds { get; set; }
 

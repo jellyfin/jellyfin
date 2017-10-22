@@ -26,6 +26,8 @@ namespace MediaBrowser.Controller.Drawing
         /// <value>The image enhancers.</value>
         IImageEnhancer[] ImageEnhancers { get; }
 
+        ImageSize GetImageSize(string path);
+
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
