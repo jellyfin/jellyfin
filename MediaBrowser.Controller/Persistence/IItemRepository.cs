@@ -48,6 +48,8 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="cancellationToken">The cancellation token.</param>
         void SaveItems(List<BaseItem> items, CancellationToken cancellationToken);
 
+        void SaveImages(BaseItem item);
+
         /// <summary>
         /// Retrieves the item.
         /// </summary>

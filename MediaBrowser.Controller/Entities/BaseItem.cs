@@ -1952,6 +1952,8 @@ namespace MediaBrowser.Controller.Entities
             {
                 existingImage.Path = image.Path;
                 existingImage.DateModified = image.DateModified;
+                existingImage.Width = image.Width;
+                existingImage.Height = image.Height;
             }
 
             else
@@ -2267,6 +2269,11 @@ namespace MediaBrowser.Controller.Entities
             // Refresh these values
             info1.DateModified = FileSystem.GetLastWriteTimeUtc(info1.Path);
             info2.DateModified = FileSystem.GetLastWriteTimeUtc(info2.Path);
+
+            info1.Width = 0;
+            info1.Height = 0;
+            info2.Width = 0;
+            info2.Height = 0;
 
             UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }

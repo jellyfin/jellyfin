@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Controller;
 
 namespace MediaBrowser.Api.Session
 {
@@ -293,15 +294,9 @@ namespace MediaBrowser.Api.Session
         private readonly IAuthenticationRepository _authRepo;
         private readonly IDeviceManager _deviceManager;
         private readonly ISessionContext _sessionContext;
+        private IServerApplicationHost _appHost;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SessionsService" /> class.
-        /// </summary>
-        /// <param name="sessionManager">The session manager.</param>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="authContext">The authentication context.</param>
-        /// <param name="authRepo">The authentication repo.</param>
-        public SessionsService(ISessionManager sessionManager, IUserManager userManager, IAuthorizationContext authContext, IAuthenticationRepository authRepo, IDeviceManager deviceManager, ISessionContext sessionContext)
+        public SessionsService(ISessionManager sessionManager, IServerApplicationHost appHost, IUserManager userManager, IAuthorizationContext authContext, IAuthenticationRepository authRepo, IDeviceManager deviceManager, ISessionContext sessionContext)
         {
             _sessionManager = sessionManager;
             _userManager = userManager;
@@ -309,6 +304,7 @@ namespace MediaBrowser.Api.Session
             _authRepo = authRepo;
             _deviceManager = deviceManager;
             _sessionContext = sessionContext;
+            _appHost = appHost;
         }
 
         public void Delete(RevokeKey request)
@@ -324,7 +320,10 @@ namespace MediaBrowser.Api.Session
                 AppName = request.App,
                 IsActive = true,
                 AccessToken = Guid.NewGuid().ToString("N"),
-                DateCreated = DateTime.UtcNow
+                DateCreated = DateTime.UtcNow,
+                DeviceId = _appHost.SystemId,
+                DeviceName = _appHost.FriendlyName,
+                AppVersion = _appHost.ApplicationVersion.ToString()
 
             }, CancellationToken.None);
         }
