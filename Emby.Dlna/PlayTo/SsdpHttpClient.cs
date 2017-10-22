@@ -147,7 +147,7 @@ namespace Emby.Dlna.PlayTo
             }
 
             options.RequestContentType = "text/xml";
-            options.RequestContentEncoding = Encoding.UTF8;
+            options.AppendCharsetToMimeType = true;
             options.RequestContent = postData;
 
             return _httpClient.Post(options);
