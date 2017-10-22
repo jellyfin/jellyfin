@@ -32,14 +32,6 @@ namespace MediaBrowser.Controller.Channels
             return base.IsVisible(user);
         }
 
-        public override double? GetDefaultPrimaryImageAspectRatio()
-        {
-            double value = 16;
-            value /= 9;
-
-            return value;
-        }
-
         [IgnoreDataMember]
         public override bool SupportsInheritedParentImages
         {

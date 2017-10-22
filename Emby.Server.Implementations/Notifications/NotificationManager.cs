@@ -76,7 +76,6 @@ namespace Emby.Server.Implementations.Notifications
             var tasks = users.Select(i => SendNotification(request, service, title, description, i, cancellationToken));
 
             return Task.WhenAll(tasks);
-
         }
 
         private IEnumerable<string> GetUserIds(NotificationRequest request, NotificationOption options)

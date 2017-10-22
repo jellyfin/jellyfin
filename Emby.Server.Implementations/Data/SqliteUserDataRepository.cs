@@ -52,7 +52,7 @@ namespace Emby.Server.Implementations.Data
             {
                 string[] queries = {
 
-                                "create table if not exists userdata (key nvarchar, userId GUID, rating float null, played bit, playCount int, isFavorite bit, playbackPositionTicks bigint, lastPlayedDate datetime null)",
+                                "create table if not exists userdata (key nvarchar not null, userId GUID not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null)",
 
                                 "create table if not exists DataSettings (IsUserDataImported bit)",
 
