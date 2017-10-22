@@ -61,6 +61,12 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get { return false; }
+        }
+
+        [IgnoreDataMember]
         public override bool SupportsAddingToPlaylist
         {
             get { return true; }

@@ -650,6 +650,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             bool enableRetry,
             ListingsProviderInfo providerInfo)
         {
+            // Schedules direct requires that the client support compression and will return a 400 response without it
+            options.EnableHttpCompression = true;
+
             try
             {
                 return await _httpClient.Post(options).ConfigureAwait(false);
@@ -678,6 +681,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             bool enableRetry,
             ListingsProviderInfo providerInfo)
         {
+            // Schedules direct requires that the client support compression and will return a 400 response without it
+            options.EnableHttpCompression = true;
+
             try
             {
                 return await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);

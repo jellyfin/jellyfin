@@ -34,6 +34,12 @@ namespace MediaBrowser.Controller.Entities
             get { return true; }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get { return false; }
+        }
+
         /// <summary>
         /// Gets or sets the remote trailers.
         /// </summary>

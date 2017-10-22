@@ -1164,7 +1164,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public virtual bool SupportsPeople
         {
-            get { return true; }
+            get { return false; }
         }
 
         [IgnoreDataMember]
