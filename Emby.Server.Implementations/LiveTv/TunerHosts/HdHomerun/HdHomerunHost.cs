@@ -203,7 +203,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var uri = new Uri(GetApiUrl(info, false));
 
-            using (var manager = new HdHomerunManager(_socketFactory))
+            using (var manager = new HdHomerunManager(_socketFactory, Logger))
             {
                 // Legacy HdHomeruns are IPv4 only
                 var ipInfo = _networkManager.ParseIpAddress(uri.Host);
