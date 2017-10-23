@@ -599,5 +599,7 @@
     "HeaderLatestMedia": "Ultimi Media",
     "HeaderRestartingEmbyServer": "Ravviando Emby Server",
     "RestartPleaseWaitMessage": "Per piacere aspetta mentre Emby Server si arresta e riavvia. Questo pu\u00f2 richiedere un minuto o due.",
-    "PlayNext": "Riproduci prossimo"
+    "PlayNext": "Riproduci prossimo",
+    "AllowSeasonalThemes": "Allow automatic seasonal themes",
+    "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting."
 }

@@ -599,5 +599,7 @@
     "HeaderLatestMedia": "Agregadas Recientemente",
     "HeaderRestartingEmbyServer": "Reiniciando el Servidor Emby",
     "RestartPleaseWaitMessage": "Por favor espere mientras el Servidor Emby cierra y reinicia. Este puede tomar un minuto o dos.",
-    "PlayNext": "Reproducir siguiente"
+    "PlayNext": "Reproducir siguiente",
+    "AllowSeasonalThemes": "Allow automatic seasonal themes",
+    "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting."
 }
