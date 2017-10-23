@@ -22,8 +22,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
 
-        private readonly TaskCompletionSource<bool> _liveStreamTaskCompletionSource = new TaskCompletionSource<bool>();
-
         public HdHomerunHttpStream(MediaSourceInfo mediaSource, string originalStreamId, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, IEnvironmentInfo environment)
             : base(mediaSource, environment, fileSystem, logger, appPaths)
         {
@@ -32,7 +30,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             OriginalStreamId = originalStreamId;
         }
 
-        protected override Task OpenInternal(CancellationToken openCancellationToken)
+        public override async Task Open(CancellationToken openCancellationToken)
         {
             LiveStreamCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
@@ -40,11 +38,26 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var url = mediaSource.Path;
 
+            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(TempFilePath));
+
             Logger.Info("Opening HDHR Live stream from {0}", url);
 
-            var taskCompletionSource = new TaskCompletionSource<bool>();
+            var response = await _httpClient.SendAsync(new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = CancellationToken.None,
+                BufferContent = false,
 
-            StartStreaming(url, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
+                // Increase a little bit
+                TimeoutMs = 30000,
+
+                EnableHttpCompression = false
+
+            }, "GET").ConfigureAwait(false);
+
+            Logger.Info("Opened HDHR stream from {0}", url);
+
+            StartStreaming(response, LiveStreamCancellationTokenSource.Token);
 
             //OpenedMediaSource.Protocol = MediaProtocol.File;
             //OpenedMediaSource.Path = tempFile;
@@ -58,50 +71,30 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             //OpenedMediaSource.SupportsDirectPlay = false;
             //OpenedMediaSource.SupportsDirectStream = true;
             //OpenedMediaSource.SupportsTranscoding = true;
-
-            return taskCompletionSource.Task;
-
-            //await Task.Delay(5000).ConfigureAwait(false);
         }
 
-        public override async Task Close()
+        public override void Close()
         {
             Logger.Info("Closing HDHR live stream");
             LiveStreamCancellationTokenSource.Cancel();
-
-            await _liveStreamTaskCompletionSource.Task.ConfigureAwait(false);
-            await DeleteTempFile(TempFilePath).ConfigureAwait(false);
         }
 
-        private Task StartStreaming(string url, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        private Task StartStreaming(HttpResponseInfo response, CancellationToken cancellationToken)
         {
             return Task.Run(async () =>
             {
                 try
                 {
-                    using (var response = await _httpClient.SendAsync(new HttpRequestOptions
-                    {
-                        Url = url,
-                        CancellationToken = cancellationToken,
-                        BufferContent = false,
-
-                        // Increase a little bit
-                        TimeoutMs = 30000,
-
-                        EnableHttpCompression = false
-
-                    }, "GET").ConfigureAwait(false))
+                    using (response)
                     {
                         using (var stream = response.Content)
                         {
-                            Logger.Info("Opened HDHR stream from {0}", url);
-
-                            Logger.Info("Beginning multicastStream.CopyUntilCancelled");
+                            Logger.Info("Beginning HdHomerunHttpStream stream to file");
 
                             FileSystem.CreateDirectory(FileSystem.GetDirectoryName(TempFilePath));
                             using (var fileStream = FileSystem.GetFileStream(TempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
                             {
-                                StreamHelper.CopyTo(stream, fileStream, 81920, () => Resolve(openTaskCompletionSource), cancellationToken);
+                                StreamHelper.CopyTo(stream, fileStream, 81920, null, cancellationToken);
                             }
                         }
                     }
@@ -114,7 +107,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     Logger.ErrorException("Error copying live stream.", ex);
                 }
 
-                _liveStreamTaskCompletionSource.TrySetResult(true);
+                await DeleteTempFile(TempFilePath).ConfigureAwait(false);
             });
         }
 

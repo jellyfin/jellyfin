@@ -599,5 +599,7 @@
     "HeaderLatestMedia": "Neueste Medien",
     "HeaderRestartingEmbyServer": "Emby Server neu starten",
     "RestartPleaseWaitMessage": "Warte bitte bis der Emby Server heruntergefahren und neu gestartet wurde. Dieser Vorgang dauert 1 bis 2 Minuten.",
-    "PlayNext": "Spiele als N\u00e4chstes ab"
+    "PlayNext": "Spiele als N\u00e4chstes ab",
+    "AllowSeasonalThemes": "Allow automatic seasonal themes",
+    "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting."
 }
