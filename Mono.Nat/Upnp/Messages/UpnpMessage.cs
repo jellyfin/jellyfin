@@ -52,9 +52,14 @@ namespace Mono.Nat.Upnp
 
             var req = new HttpRequestOptions();
             req.LogErrors = false;
+
+            // The periodic request logging may keep some devices awake
+            req.LogRequestAsDebug = true;
+
             req.Url = ss;
             req.EnableKeepAlive = false;
-            req.RequestContentType = "text/xml; charset=\"utf-8\"";
+            req.RequestContentType = "text/xml";
+            req.AppendCharsetToMimeType = true;
             req.RequestHeaders.Add("SOAPACTION", "\"" + device.ServiceType + "#" + upnpMethod + "\"");
 
             string bodyString = "<s:Envelope "

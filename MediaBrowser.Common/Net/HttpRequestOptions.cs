@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Text;
 
 namespace MediaBrowser.Common.Net
 {
@@ -90,6 +91,7 @@ namespace MediaBrowser.Common.Net
         public bool BufferContent { get; set; }
 
         public bool LogRequest { get; set; }
+        public bool LogRequestAsDebug { get; set; }
         public bool LogErrors { get; set; }
 
         public bool LogErrorResponseBody { get; set; }
@@ -101,6 +103,8 @@ namespace MediaBrowser.Common.Net
         public int TimeoutMs { get; set; }
         public bool PreferIpv4 { get; set; }
         public bool EnableDefaultUserAgent { get; set; }
+
+        public bool AppendCharsetToMimeType { get; set; }
 
         private string GetHeaderValue(string name)
         {

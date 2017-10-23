@@ -64,6 +64,10 @@ namespace Mono.Nat.Upnp
         {
             var req = new HttpRequestOptions();
 
+            // The periodic request logging may keep some devices awake
+            req.LogRequestAsDebug = true;
+            req.LogErrors = false;
+
             req.Url = "http://" + this.hostAddress.ToString() + this.servicesDescriptionUrl;
             req.RequestHeaders.Add("ACCEPT-LANGUAGE", "en");
 
