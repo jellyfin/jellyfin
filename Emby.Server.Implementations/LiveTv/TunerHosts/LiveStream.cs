@@ -47,19 +47,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             TempFilePath = Path.Combine(appPaths.TranscodingTempPath, UniqueId + ".ts");
         }
 
-        public Task Open(CancellationToken cancellationToken)
-        {
-            return OpenInternal(cancellationToken);
-        }
-
-        protected virtual Task OpenInternal(CancellationToken cancellationToken)
+        public virtual Task Open(CancellationToken openCancellationToken)
         {
             return Task.FromResult(true);
         }
 
-        public virtual Task Close()
+        public virtual void Close()
         {
-            return Task.FromResult(true);
         }
 
         protected Stream GetInputStream(string path, bool allowAsyncFileRead)
@@ -76,6 +70,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         protected async Task DeleteTempFile(string path, int retryCount = 0)
         {
+            if (retryCount == 0)
+            {
+                Logger.Info("Deleting temp file {0}", path);
+            }
+
             try
             {
                 FileSystem.DeleteFile(path);

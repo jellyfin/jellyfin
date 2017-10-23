@@ -59,8 +59,8 @@ namespace MediaBrowser.Controller.LiveTv
 
     public interface ILiveStream
     {
-        Task Open(CancellationToken cancellationToken);
-        Task Close();
+        Task Open(CancellationToken openCancellationToken);
+        void Close();
         int ConsumerCount { get; }
         string OriginalStreamId { get; set; }
         bool EnableStreamSharing { get; set; }

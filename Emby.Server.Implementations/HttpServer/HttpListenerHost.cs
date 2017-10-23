@@ -411,8 +411,6 @@ namespace Emby.Server.Implementations.HttpServer
 
             host = host ?? string.Empty;
 
-            _logger.Debug("Validating host {0}", host);
-
             if (_networkManager.IsInPrivateAddressSpace(host))
             {
                 hosts.Add("localhost");
