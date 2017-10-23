@@ -78,6 +78,15 @@
         <select id="selectTheme" is="emby-select" label="${LabelTheme}"></select>
         <div class="fieldDescription">${FeatureRequiresEmbyPremiere}</div>
     </div>
+
+    <div class="checkboxContainer checkboxContainer-withDescription">
+        <label>
+            <input type="checkbox" is="emby-checkbox" id="chkSeasonalThemes" />
+            <span>${AllowSeasonalThemes}</span>
+        </label>
+        <div class="fieldDescription checkboxFieldDescription">${AllowSeasonalThemesHelp}</div>
+    </div>
+
     <div class="selectContainer selectDashboardThemeContainer hide">
         <select id="selectDashboardTheme" is="emby-select" label="${LabelDashboardTheme}"></select>
         <div class="fieldDescription">${FeatureRequiresEmbyPremiere}</div>
