@@ -461,7 +461,7 @@ namespace Emby.Drawing
                 };
             }
 
-            var path = item.Path;
+            var path = info.Path;
             _logger.Info("Getting image size for item {0} {1}", item.GetType().Name, path);
 
             var size = GetImageSize(path, allowSlowMethods);

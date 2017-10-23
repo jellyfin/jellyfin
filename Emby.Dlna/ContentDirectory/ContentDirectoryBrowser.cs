@@ -33,7 +33,7 @@ namespace Emby.Dlna.ContentDirectory
             {
                 CancellationToken = cancellationToken,
                 UserAgent = "Emby",
-                RequestContentType = "text/xml; charset=\"utf-8\"",
+                RequestContentType = "text/xml",
                 LogErrorResponseBody = true,
                 Url = request.ContentDirectoryUrl,
                 BufferContent = false

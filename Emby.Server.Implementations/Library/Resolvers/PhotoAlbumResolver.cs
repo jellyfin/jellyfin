@@ -30,8 +30,11 @@ namespace Emby.Server.Implementations.Library.Resolvers
             // Must be an image file within a photo collection
             if (args.IsDirectory)
             {
-                if (string.Equals(args.GetCollectionType(), CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(args.GetCollectionType(), CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
+                // Must be an image file within a photo collection
+                var collectionType = args.GetCollectionType();
+
+                if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase) ||
+                    (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && args.GetLibraryOptions().EnablePhotos))
                 {
                     if (HasPhotos(args))
                     {
