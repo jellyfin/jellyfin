@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Providers.Omdb
 {
     public class OmdbItemProvider : IRemoteMetadataProvider<Series, SeriesInfo>,
-        IRemoteMetadataProvider<Movie, MovieInfo>, IRemoteMetadataProvider<Trailer, TrailerInfo>
+        IRemoteMetadataProvider<Movie, MovieInfo>, IRemoteMetadataProvider<Trailer, TrailerInfo>, IHasOrder
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
@@ -39,6 +39,15 @@ namespace MediaBrowser.Providers.Omdb
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
+        }
+
+        public int Order
+        {
+            get
+            {
+                // After primary option
+                return 1;
+            }
         }
 
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
@@ -117,65 +126,68 @@ namespace MediaBrowser.Providers.Omdb
 
             var url =  OmdbProvider.GetOmdbUrl(urlQuery, cancellationToken);
 
-            using (var stream = await OmdbProvider.GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
+            using (var response = await OmdbProvider.GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
-                var resultList = new List<SearchResult>();
-
-                if (isSearch)
+                using (var stream = response.Content)
                 {
-                    var searchResultList = _jsonSerializer.DeserializeFromStream<SearchResultList>(stream);
-                    if (searchResultList != null && searchResultList.Search != null)
+                    var resultList = new List<SearchResult>();
+
+                    if (isSearch)
                     {
-                        resultList.AddRange(searchResultList.Search);
+                        var searchResultList = _jsonSerializer.DeserializeFromStream<SearchResultList>(stream);
+                        if (searchResultList != null && searchResultList.Search != null)
+                        {
+                            resultList.AddRange(searchResultList.Search);
+                        }
                     }
+                    else
+                    {
+                        var result = _jsonSerializer.DeserializeFromStream<SearchResult>(stream);
+                        if (string.Equals(result.Response, "true", StringComparison.OrdinalIgnoreCase))
+                        {
+                            resultList.Add(result);
+                        }
+                    }
+
+                    return resultList.Select(result =>
+                    {
+                        var item = new RemoteSearchResult
+                        {
+                            IndexNumber = searchInfo.IndexNumber,
+                            Name = result.Title,
+                            ParentIndexNumber = searchInfo.ParentIndexNumber,
+                            SearchProviderName = Name
+                        };
+
+                        if (episodeSearchInfo != null && episodeSearchInfo.IndexNumberEnd.HasValue)
+                        {
+                            item.IndexNumberEnd = episodeSearchInfo.IndexNumberEnd.Value;
+                        }
+
+                        item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
+
+                        int parsedYear;
+                        if (result.Year.Length > 0
+                            && int.TryParse(result.Year.Substring(0, Math.Min(result.Year.Length, 4)), NumberStyles.Any, CultureInfo.InvariantCulture, out parsedYear))
+                        {
+                            item.ProductionYear = parsedYear;
+                        }
+
+                        DateTime released;
+                        if (!string.IsNullOrEmpty(result.Released)
+                            && DateTime.TryParse(result.Released, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out released))
+                        {
+                            item.PremiereDate = released;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(result.Poster) && !string.Equals(result.Poster, "N/A", StringComparison.OrdinalIgnoreCase))
+                        {
+                            item.ImageUrl = result.Poster;
+                        }
+
+                        return item;
+                    });
                 }
-                else
-                {
-                    var result = _jsonSerializer.DeserializeFromStream<SearchResult>(stream);
-                    if (string.Equals(result.Response, "true", StringComparison.OrdinalIgnoreCase))
-                    {
-                        resultList.Add(result);
-                    }
-                }
-
-                return resultList.Select(result =>
-                {
-                    var item = new RemoteSearchResult
-                    {
-                        IndexNumber = searchInfo.IndexNumber,
-                        Name = result.Title,
-                        ParentIndexNumber = searchInfo.ParentIndexNumber,
-                        SearchProviderName = Name
-                    };
-
-                    if (episodeSearchInfo != null && episodeSearchInfo.IndexNumberEnd.HasValue)
-                    {
-                        item.IndexNumberEnd = episodeSearchInfo.IndexNumberEnd.Value;
-                    }
-
-                    item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
-
-                    int parsedYear;
-                    if (result.Year.Length > 0
-                        && int.TryParse(result.Year.Substring(0, Math.Min(result.Year.Length, 4)), NumberStyles.Any, CultureInfo.InvariantCulture, out parsedYear))
-                    {
-                        item.ProductionYear = parsedYear;
-                    }
-
-                    DateTime released;
-                    if (!string.IsNullOrEmpty(result.Released)
-                        && DateTime.TryParse(result.Released, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out released))
-                    {
-                        item.PremiereDate = released;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(result.Poster) && !string.Equals(result.Poster, "N/A", StringComparison.OrdinalIgnoreCase))
-                    {
-                        item.ImageUrl = result.Poster;
-                    }
-
-                    return item;
-                });
             }
         }
 

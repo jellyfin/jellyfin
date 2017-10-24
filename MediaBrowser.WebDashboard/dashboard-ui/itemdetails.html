@@ -1,7 +1,7 @@
 ﻿<div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage noSecondaryNavPage selfBackdropPage" data-backbutton="true">
 
     <style>
-        @media all and (min-width: 1000px) {
+        @media all and (min-width: 62.5em) {
 
             .itemBackdrop {
                 display: none;
@@ -37,7 +37,7 @@
 
                     </div>
 
-                    <div class="mainDetailButtons mainDetailButtons-mobile">
+                    <div class="mainDetailButtons">
 
                         <button is="emby-button" type="button" class="button-flat btnResume btnPlaySimple hide detailButton-mobile" data-mode="resume">
                             <div class="detailButton-mobile-content">
@@ -81,13 +81,6 @@
                             </div>
                         </button>
 
-                        <button is="emby-button" type="button" class="button-flat btnMoreCommands hide detailButton-mobile">
-                            <div class="detailButton-mobile-content">
-                                <i class="md-icon detailButton-mobile-icon">&#xE5D4;</i>
-                                <div class="detailButton-mobile-text">${ButtonMore}</div>
-                            </div>
-                        </button>
-
                         <button is="emby-button" type="button" class="button-flat btnCancelSeriesTimer hide detailButton-mobile">
                             <div class="detailButton-mobile-content">
                                 <i class="md-icon detailButton-mobile-icon">&#xE872;</i>
@@ -111,55 +104,25 @@
 
                         <button is="emby-playstatebutton" type="button" class="button-flat btnPlaystate hide detailButton-mobile">
                             <div class="detailButton-mobile-content">
-                                <i class="md-icon detailButton-mobile-icon">&#xE5CA;</i>
-                                <div class="detailButton-mobile-text"></div>
+                                <i class="md-icon detailButton-mobile-icon always notext">&#xE5CA;</i>
+                                <div class="detailButton-mobile-text texthide button-text"></div>
                             </div>
                         </button>
 
                         <button is="emby-ratingbutton" type="button" class="button-flat btnUserRating hide detailButton-mobile">
                             <div class="detailButton-mobile-content">
-                                <i class="md-icon detailButton-mobile-icon">&#xE87D;</i>
-                                <div class="detailButton-mobile-text">${Rate}</div>
+                                <i class="md-icon detailButton-mobile-icon always notext">&#xE87D;</i>
+                                <div class="detailButton-mobile-text texthide button-text">${Rate}</div>
+                            </div>
+                        </button>
+
+                        <button is="emby-button" type="button" class="button-flat btnMoreCommands hide detailButton-mobile">
+                            <div class="detailButton-mobile-content">
+                                <i class="md-icon detailButton-mobile-icon always notext"></i>
+                                <div class="detailButton-mobile-text texthide">${ButtonMore}</div>
                             </div>
                         </button>
                     </div>
-
-                    <div class="mainDetailButtons mainDetailButtons-nonmobile">
-
-                        <button is="emby-button" type="button" class="raised subdued btnPlaySimple btnResume hide" data-mode="resume">
-                            <span>${ButtonResume}</span>
-                        </button>
-                        <button is="emby-button" type="button" class="raised subdued btnPlay btnPlaySimple hide" data-mode="play">
-                            <span>${ButtonPlay}</span>
-                        </button>
-                        <button is="emby-button" type="button" class="raised subdued btnInstantMix hide">
-                            <span>${HeaderInstantMix}</span>
-                        </button>
-                        <button is="emby-button" type="button" class="raised subdued btnShuffle hide">
-                            <span>${ButtonShuffle}</span>
-                        </button>
-                        <button is="emby-button" type="button" class="raised subdued btnPlayTrailer hide">
-                            <span>${ButtonTrailer}</span>
-                        </button>
-                        <button is="emby-button" type="button" class="raised subdued btnCancelSeriesTimer hide">
-                            <span>${ButtonCancelSeries}</span>
-                        </button>
-                        <button is="emby-button" type="button" class="raised subdued btnCancelTimer hide">
-                            <span>${ButtonStopRecording}</span>
-                        </button>
-
-                        <div style="margin-left: .5em; display: flex; align-items: center;">
-                            <button is="emby-button" type="button" class="btnMoreCommands fab mini hide" title="${ButtonMore}"><i class="md-icon">&#xE5D4;</i></button>
-                            <button is="emby-button" type="button" class="btnDeleteItem fab mini hide" title="${DeleteMedia}"><i class="md-icon">&#xE872;</i></button>
-                            <button is="emby-playstatebutton" type="button" class="btnPlaystate fab mini hide"><i class="md-icon">&#xE5CA;</i></button>
-                            <button is="emby-ratingbutton" type="button" class="btnUserRating fab mini hide"><i class="md-icon">&#xE87D;</i></button>
-                        </div>
-                    </div>
-
-                    <button is="emby-downloadbutton" type="button" class="button-flat btnSyncDownload hide mainDetailButtons-nonmobile" style="margin: 1em 0 0;">
-                        <i class="md-icon">&#xE2C4;</i>
-                        <span class="emby-downloadbutton-downloadtext">${ButtonDownload}</span>
-                    </button>
 
                     <div class="recordingFields hide" style="margin: .5em 0 1.5em;">
 
@@ -168,7 +131,7 @@
                     <div class="detailSectionContent">
 
                         <p class="itemGenres"></p>
-                        <h1 class="tagline" style="margin-bottom: .7em;"></h1>
+                        <h2 class="tagline"></h2>
                         <p class="artist"></p>
                         <p class="overview"></p>
                         <div class="mediaInfoIcons hide">
@@ -216,6 +179,20 @@
             </h2>
             <div id="additionalPartsContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right"></div>
         </div>
+        <div class="verticalSection itemVerticalSection moreFromSeasonSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left padded-right"></h2>
+
+            <div is="emby-scroller" class="emby-scroller" data-mousewheel="false" data-centerfocus="true" data-horizontal="true">
+
+                <div class="scrollerframe padded-top-focusscale padded-bottom-focusscale">
+                    <div is="emby-itemscontainer" class="scrollSlider focuscontainer-x itemsContainer padded-left padded-right"></div>
+                </div>
+            </div>
+        </div>
+        <div class="verticalSection itemVerticalSection moreFromArtistSection padded-left padded-right hide">
+            <h2 class="sectionTitle sectionTitle-cards"></h2>
+            <div is="emby-itemscontainer" class="itemsContainer vertical-wrap focuscontainer-x"></div>
+        </div>
         <div id="castCollapsible" class="verticalSection detailVerticalSection hide">
             <h2 id="peopleHeader" class="sectionTitle sectionTitle-cards padded-left">
                 ${HeaderCastCrew}
@@ -250,10 +227,6 @@
                 ${HeaderMusicVideos}
             </h2>
             <div id="musicVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right"></div>
-        </div>
-        <div id="moreFromSection" class="verticalSection detailVerticalSection hide">
-            <h2 class="moreFromHeader sectionTitle sectionTitle-cards padded-left"></h2>
-            <div id="moreFromItems"></div>
         </div>
         <div id="similarCollapsible" class="verticalSection detailVerticalSection hide">
             <h2 class="sectionTitle sectionTitle-cards padded-left">
@@ -291,7 +264,7 @@
         </div>
 
         <div class="verticalSection detailVerticalSection audioVideoMediaInfo hide">
-            <h2 class="sectionTitle padded-left">${HeaderMediaInfo}</h2>
+            <h2 class="sectionTitle padded-left" style="margin-bottom:0;">${HeaderMediaInfo}</h2>
             <div class="padded-left padded-right">
                 <div class="splitVersionContainer" style="border-bottom: 1px solid #444; padding: 1em 0;">
                     <button is="emby-button" type="button" class="raised btnSplitVersions subdued">${ButtonSplitVersionsApart}</button>

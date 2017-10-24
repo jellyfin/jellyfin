@@ -38,6 +38,11 @@ namespace Emby.Server.Implementations.Notifications
 
         public Task SendNotification(NotificationRequest request, CancellationToken cancellationToken)
         {
+            return SendNotification(request, null, cancellationToken);
+        }
+
+        public Task SendNotification(NotificationRequest request, BaseItem relatedItem, CancellationToken cancellationToken)
+        {
             var notificationType = request.NotificationType;
 
             var options = string.IsNullOrWhiteSpace(notificationType) ?
@@ -45,7 +50,9 @@ namespace Emby.Server.Implementations.Notifications
                 GetConfiguration().GetOptions(notificationType);
 
             var users = GetUserIds(request, options)
-                .Select(i => _userManager.GetUserById(i));
+                .Select(i => _userManager.GetUserById(i))
+                .Where(i => relatedItem == null || relatedItem.IsVisibleStandalone(i))
+                .ToArray();
 
             var title = GetTitle(request, options);
             var description = GetDescription(request, options);
@@ -69,7 +76,6 @@ namespace Emby.Server.Implementations.Notifications
             var tasks = users.Select(i => SendNotification(request, service, title, description, i, cancellationToken));
 
             return Task.WhenAll(tasks);
-
         }
 
         private IEnumerable<string> GetUserIds(NotificationRequest request, NotificationOption options)

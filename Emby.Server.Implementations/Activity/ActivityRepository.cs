@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.Activity
                 RunDefaultInitialization(connection);
 
                 string[] queries = {
-                    "create table if not exists ActivityLogEntries (Id GUID PRIMARY KEY, Name TEXT, Overview TEXT, ShortOverview TEXT, Type TEXT, ItemId TEXT, UserId TEXT, DateCreated DATETIME, LogSeverity TEXT)",
+                    "create table if not exists ActivityLogEntries (Id GUID PRIMARY KEY NOT NULL, Name TEXT NOT NULL, Overview TEXT, ShortOverview TEXT, Type TEXT NOT NULL, ItemId TEXT, UserId TEXT, DateCreated DATETIME NOT NULL, LogSeverity TEXT NOT NULL)",
                     "create index if not exists idx_ActivityLogEntries on ActivityLogEntries(Id)"
                                };
 

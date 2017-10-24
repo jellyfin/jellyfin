@@ -28,14 +28,6 @@ namespace Emby.Server.Implementations.UserViews
         {
         }
 
-        public override IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
-        {
-            return new List<ImageType>
-                {
-                    ImageType.Primary
-                };
-        }
-
         protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
         {
             var view = (CollectionFolder)item;
@@ -124,14 +116,6 @@ namespace Emby.Server.Implementations.UserViews
         public ManualCollectionFolderImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, ILibraryManager libraryManager) : base(fileSystem, providerManager, applicationPaths, imageProcessor)
         {
             _libraryManager = libraryManager;
-        }
-
-        public override IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
-        {
-            return new List<ImageType>
-                {
-                    ImageType.Primary
-                };
         }
 
         protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)

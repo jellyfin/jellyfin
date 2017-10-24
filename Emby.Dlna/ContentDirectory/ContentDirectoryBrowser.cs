@@ -33,7 +33,7 @@ namespace Emby.Dlna.ContentDirectory
             {
                 CancellationToken = cancellationToken,
                 UserAgent = "Emby",
-                RequestContentType = "text/xml; charset=\"utf-8\"",
+                RequestContentType = "text/xml",
                 LogErrorResponseBody = true,
                 Url = request.ContentDirectoryUrl,
                 BufferContent = false
@@ -43,37 +43,38 @@ namespace Emby.Dlna.ContentDirectory
 
             options.RequestContent = GetRequestBody(request);
 
-            var response = await _httpClient.SendAsync(options, "POST");
-
-            using (var reader = new StreamReader(response.Content))
+            using (var response = await _httpClient.SendAsync(options, "POST"))
             {
-                var doc = XDocument.Parse(reader.ReadToEnd(), LoadOptions.PreserveWhitespace);
-
-                var queryResult = new QueryResult<ChannelItemInfo>();
-
-                if (doc.Document == null)
-                    return queryResult;
-
-                var responseElement = doc.Document.Descendants(UNamespace + "BrowseResponse").ToList();
-
-                var countElement = responseElement.Select(i => i.Element("TotalMatches")).FirstOrDefault(i => i != null);
-                var countValue = countElement == null ? null : countElement.Value;
-
-                int count;
-                if (!string.IsNullOrWhiteSpace(countValue) && int.TryParse(countValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out count))
+                using (var reader = new StreamReader(response.Content))
                 {
-                    queryResult.TotalRecordCount = count;
+                    var doc = XDocument.Parse(reader.ReadToEnd(), LoadOptions.PreserveWhitespace);
 
-                    var resultElement = responseElement.Select(i => i.Element("Result")).FirstOrDefault(i => i != null);
-                    var resultString = (string)resultElement;
+                    var queryResult = new QueryResult<ChannelItemInfo>();
 
-                    if (resultElement != null)
+                    if (doc.Document == null)
+                        return queryResult;
+
+                    var responseElement = doc.Document.Descendants(UNamespace + "BrowseResponse").ToList();
+
+                    var countElement = responseElement.Select(i => i.Element("TotalMatches")).FirstOrDefault(i => i != null);
+                    var countValue = countElement == null ? null : countElement.Value;
+
+                    int count;
+                    if (!string.IsNullOrWhiteSpace(countValue) && int.TryParse(countValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out count))
                     {
-                        var xElement = XElement.Parse(resultString);
-                    }
-                }
+                        queryResult.TotalRecordCount = count;
 
-                return queryResult;
+                        var resultElement = responseElement.Select(i => i.Element("Result")).FirstOrDefault(i => i != null);
+                        var resultString = (string)resultElement;
+
+                        if (resultElement != null)
+                        {
+                            var xElement = XElement.Parse(resultString);
+                        }
+                    }
+
+                    return queryResult;
+                }
             }
         }
 

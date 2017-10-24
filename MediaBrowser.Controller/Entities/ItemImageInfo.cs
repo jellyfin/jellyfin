@@ -24,6 +24,9 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The date modified.</value>
         public DateTime DateModified { get; set; }
 
+        public int Width { get; set; }
+        public int Height { get; set; }
+
         [IgnoreDataMember]
         public bool IsLocalFile
         {

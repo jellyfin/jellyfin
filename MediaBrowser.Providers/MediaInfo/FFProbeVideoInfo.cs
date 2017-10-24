@@ -248,7 +248,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (string.IsNullOrWhiteSpace(chapter.Name) ||
                     TimeSpan.TryParse(chapter.Name, out time))
                 {
-                    chapter.Name = string.Format(_localization.GetLocalizedString("LabelChapterName"), index.ToString(CultureInfo.InvariantCulture));
+                    chapter.Name = string.Format(_localization.GetLocalizedString("ChapterNameValue"), index.ToString(CultureInfo.InvariantCulture));
                 }
                 index++;
             }

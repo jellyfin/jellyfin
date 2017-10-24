@@ -42,13 +42,13 @@ namespace Mono.Nat
 {
     internal class PmpSearcher : ISearcher
     {
-		static PmpSearcher instance = new PmpSearcher();
-        
-		
-		public static PmpSearcher Instance
-		{
-			get { return instance; }
-		}
+        static PmpSearcher instance = new PmpSearcher();
+
+
+        public static PmpSearcher Instance
+        {
+            get { return instance; }
+        }
 
         private int timeout;
         private DateTime nextSearch;
@@ -143,21 +143,21 @@ namespace Mono.Nat
         }
 
         public async void Search()
-		{
-			foreach (UdpClient s in sockets)
-			{
-				try
-				{
-					await Search(s).ConfigureAwait(false);
-				}
-				catch
-				{
-					// Ignore any search errors
-				}
-			}
-		}
+        {
+            foreach (UdpClient s in sockets)
+            {
+                try
+                {
+                    await Search(s).ConfigureAwait(false);
+                }
+                catch
+                {
+                    // Ignore any search errors
+                }
+            }
+        }
 
-		async Task Search (UdpClient client)
+        async Task Search(UdpClient client)
         {
             // Sort out the time for the next search first. The spec says the 
             // timeout should double after each attempt. Once it reaches 64 seconds
@@ -175,10 +175,10 @@ namespace Mono.Nat
 
             // The nat-pmp search message. Must be sent to GatewayIP:53531
             byte[] buffer = new byte[] { PmpConstants.Version, PmpConstants.OperationCode };
-		    foreach (IPEndPoint gatewayEndpoint in gatewayLists[client])
-		    {
-		        await client.SendAsync(buffer, buffer.Length, gatewayEndpoint).ConfigureAwait(false);
-		    }
+            foreach (IPEndPoint gatewayEndpoint in gatewayLists[client])
+            {
+                await client.SendAsync(buffer, buffer.Length, gatewayEndpoint).ConfigureAwait(false);
+            }
         }
 
         bool IsSearchAddress(IPAddress address)

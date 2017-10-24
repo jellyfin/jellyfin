@@ -393,75 +393,75 @@ namespace Emby.Dlna.Didl
         {
             if (itemStubType.HasValue && itemStubType.Value == StubType.Latest)
             {
-                return _localization.GetLocalizedString("ViewTypeMusicLatest");
+                return _localization.GetLocalizedString("Latest");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.Playlists)
             {
-                return _localization.GetLocalizedString("ViewTypeMusicPlaylists");
+                return _localization.GetLocalizedString("Playlists");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.AlbumArtists)
             {
-                return _localization.GetLocalizedString("ViewTypeMusicAlbumArtists");
+                return _localization.GetLocalizedString("HeaderAlbumArtists");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.Albums)
             {
-                return _localization.GetLocalizedString("ViewTypeMusicAlbums");
+                return _localization.GetLocalizedString("Albums");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.Artists)
             {
-                return _localization.GetLocalizedString("ViewTypeMusicArtists");
+                return _localization.GetLocalizedString("Artists");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.Songs)
             {
-                return _localization.GetLocalizedString("ViewTypeMusicSongs");
+                return _localization.GetLocalizedString("Songs");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.Genres)
             {
-                return _localization.GetLocalizedString("ViewTypeTvGenres");
+                return _localization.GetLocalizedString("Genres");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteAlbums)
             {
-                return _localization.GetLocalizedString("ViewTypeMusicFavoriteAlbums");
+                return _localization.GetLocalizedString("HeaderFavoriteAlbums");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteArtists)
             {
-                return _localization.GetLocalizedString("ViewTypeMusicFavoriteArtists");
+                return _localization.GetLocalizedString("HeaderFavoriteArtists");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteSongs)
             {
-                return _localization.GetLocalizedString("ViewTypeMusicFavoriteSongs");
+                return _localization.GetLocalizedString("HeaderFavoriteSongs");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.ContinueWatching)
             {
-                return _localization.GetLocalizedString("ViewTypeMovieResume");
+                return _localization.GetLocalizedString("HeaderContinueWatching");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.Movies)
             {
-                return _localization.GetLocalizedString("ViewTypeMovieMovies");
+                return _localization.GetLocalizedString("Movies");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.Collections)
             {
-                return _localization.GetLocalizedString("ViewTypeMovieCollections");
+                return _localization.GetLocalizedString("Collections");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.Favorites)
             {
-                return _localization.GetLocalizedString("ViewTypeMovieFavorites");
+                return _localization.GetLocalizedString("Favorites");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.NextUp)
             {
-                return _localization.GetLocalizedString("ViewTypeTvNextUp");
+                return _localization.GetLocalizedString("HeaderNextUp");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteSeries)
             {
-                return _localization.GetLocalizedString("ViewTypeTvFavoriteSeries");
+                return _localization.GetLocalizedString("HeaderFavoriteShows");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteEpisodes)
             {
-                return _localization.GetLocalizedString("ViewTypeTvFavoriteEpisodes");
+                return _localization.GetLocalizedString("HeaderFavoriteEpisodes");
             }
             if (itemStubType.HasValue && itemStubType.Value == StubType.Series)
             {
-                return _localization.GetLocalizedString("ViewTypeTvShowSeries");
+                return _localization.GetLocalizedString("Shows");
             }
 
             var episode = item as Episode;
@@ -1071,8 +1071,10 @@ namespace Emby.Dlna.Didl
 
             writer.WriteStartElement(string.Empty, "res", NS_DIDL);
 
-            var width = albumartUrlInfo.Width;
-            var height = albumartUrlInfo.Height;
+            // Images must have a reported size or many clients (Bubble upnp), will only use the first thumbnail
+            // rather than using a larger one when available
+            var width = albumartUrlInfo.Width ?? maxWidth;
+            var height = albumartUrlInfo.Height ?? maxHeight;
 
             var contentFeatures = new ContentFeatureBuilder(_profile)
                 .BuildImageHeader(format, width, height, imageInfo.IsDirectStream, org_Pn);
@@ -1083,10 +1085,7 @@ namespace Emby.Dlna.Didl
                 contentFeatures
                 ));
 
-            if (width.HasValue && height.HasValue)
-            {
-                writer.WriteAttributeString("resolution", string.Format("{0}x{1}", width.Value, height.Value));
-            }
+            writer.WriteAttributeString("resolution", string.Format("{0}x{1}", width, height));
 
             writer.WriteString(albumartUrlInfo.Url);
 
@@ -1138,8 +1137,21 @@ namespace Emby.Dlna.Didl
 
             }
 
-            int? width = null;
-            int? height = null;
+            int? width = imageInfo.Width;
+            int? height = imageInfo.Height;
+
+            if (width == 0 || height == 0)
+            {
+                //_imageProcessor.GetImageSize(item, imageInfo);
+                width = null;
+                height = null;
+            }
+
+            else if (width == -1 || height == -1)
+            {
+                width = null;
+                height = null;
+            }
 
             //try
             //{

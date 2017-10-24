@@ -95,14 +95,18 @@ namespace Emby.Server.Implementations.Library
 
                 if (parents.Count > 0)
                 {
-                    list.Add(GetUserView(parents, viewType, string.Empty, user, query.PresetViews, cancellationToken));
+                    var localizationKey = string.Equals(viewType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) ?
+                        "TvShows" :
+                        "Movies";
+
+                    list.Add(GetUserView(parents, viewType, localizationKey, string.Empty, user, query.PresetViews, cancellationToken));
                 }
             }
 
             if (_config.Configuration.EnableFolderView)
             {
-                var name = _localizationManager.GetLocalizedString("ViewType" + CollectionType.Folders);
-                list.Add(await _libraryManager.GetNamedView(name, CollectionType.Folders, string.Empty, cancellationToken).ConfigureAwait(false));
+                var name = _localizationManager.GetLocalizedString("Folders");
+                list.Add(_libraryManager.GetNamedView(name, CollectionType.Folders, string.Empty, cancellationToken));
             }
 
             if (query.IncludeExternalContent)
@@ -117,7 +121,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (_config.Configuration.EnableChannelView && channels.Length > 0)
                 {
-                    list.Add(await _channelManager.GetInternalChannelFolder(cancellationToken).ConfigureAwait(false));
+                    list.Add(_channelManager.GetInternalChannelFolder(cancellationToken));
                 }
                 else
                 {
@@ -126,7 +130,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (_liveTvManager.GetEnabledUsers().Select(i => i.Id.ToString("N")).Contains(query.UserId))
                 {
-                    list.Add(await _liveTvManager.GetInternalLiveTvFolder(CancellationToken.None).ConfigureAwait(false));
+                    list.Add(_liveTvManager.GetInternalLiveTvFolder(CancellationToken.None));
                 }
             }
 
@@ -158,21 +162,21 @@ namespace Emby.Server.Implementations.Library
                 .ToArray();
         }
 
-        public Task<UserView> GetUserSubView(string name, string parentId, string type, string sortName, CancellationToken cancellationToken)
+        public UserView GetUserSubViewWithName(string name, string parentId, string type, string sortName, CancellationToken cancellationToken)
         {
             var uniqueId = parentId + "subview" + type;
 
             return _libraryManager.GetNamedView(name, parentId, type, sortName, uniqueId, cancellationToken);
         }
 
-        public Task<UserView> GetUserSubView(string parentId, string type, string sortName, CancellationToken cancellationToken)
+        public UserView GetUserSubView(string parentId, string type, string localizationKey, string sortName, CancellationToken cancellationToken)
         {
-            var name = _localizationManager.GetLocalizedString("ViewType" + type);
+            var name = _localizationManager.GetLocalizedString(localizationKey);
 
-            return GetUserSubView(name, parentId, type, sortName, cancellationToken);
+            return GetUserSubViewWithName(name, parentId, type, sortName, cancellationToken);
         }
 
-        private Folder GetUserView(List<ICollectionFolder> parents, string viewType, string sortName, User user, string[] presetViews, CancellationToken cancellationToken)
+        private Folder GetUserView(List<ICollectionFolder> parents, string viewType, string localizationKey, string sortName, User user, string[] presetViews, CancellationToken cancellationToken)
         {
             if (parents.Count == 1 && parents.All(i => string.Equals(i.CollectionType, viewType, StringComparison.OrdinalIgnoreCase)))
             {
@@ -184,7 +188,7 @@ namespace Emby.Server.Implementations.Library
                 return GetUserView((Folder)parents[0], viewType, string.Empty, cancellationToken);
             }
 
-            var name = _localizationManager.GetLocalizedString("ViewType" + viewType);
+            var name = _localizationManager.GetLocalizedString(localizationKey);
             return _libraryManager.GetNamedView(user, name, viewType, sortName, cancellationToken);
         }
 

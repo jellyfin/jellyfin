@@ -93,13 +93,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         protected override async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, string channelId, CancellationToken cancellationToken)
         {
-            var channelIdPrefix = GetFullChannelIdPrefix(info);
-
-            if (!channelId.StartsWith(channelIdPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                return null;
-            }
-
             var channels = await GetChannels(info, true, cancellationToken).ConfigureAwait(false);
             var channel = channels.FirstOrDefault(c => string.Equals(c.Id, channelId, StringComparison.OrdinalIgnoreCase));
             if (channel != null)
@@ -165,7 +158,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 RequiresOpening = true,
                 RequiresClosing = true,
                 RequiresLooping = info.EnableStreamLooping,
-                EnableMpDecimate = info.EnableMpDecimate,
 
                 ReadAtNativeFramerate = false,
 

@@ -127,11 +127,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        public bool EnableMpDecimate
-        {
-            get { return MediaSource.EnableMpDecimate; }
-        }
-
         public string AlbumCoverPath { get; set; }
 
         public string InputAudioSync { get; set; }

@@ -350,8 +350,6 @@ namespace MediaBrowser.Providers.TV
 
             foreach (var episodeToRemove in episodesToRemove.Select(e => e.Episode))
             {
-                _logger.Info("Removing missing/unaired episode {0} {1}x{2}", episodeToRemove.Series.Name, episodeToRemove.ParentIndexNumber, episodeToRemove.IndexNumber);
-
                 await episodeToRemove.Delete(new DeleteOptions
                 {
                     DeleteFileLocation = true
@@ -418,8 +416,6 @@ namespace MediaBrowser.Providers.TV
 
             foreach (var seasonToRemove in seasonsToRemove)
             {
-                _logger.Info("Removing virtual season {0} {1}", seasonToRemove.Series.Name, seasonToRemove.IndexNumber);
-
                 await seasonToRemove.Delete(new DeleteOptions
                 {
                     DeleteFileLocation = true

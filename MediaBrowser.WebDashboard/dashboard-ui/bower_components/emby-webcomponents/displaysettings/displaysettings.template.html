@@ -1,0 +1,142 @@
+﻿<form style="margin: 0 auto;">
+
+    <h1 class="sectionTitle">
+        ${Display}
+    </h1>
+    <div class="selectContainer languageSection hide">
+        <select id="selectLanguage" is="emby-select" label="${LabelDisplayLanguage}">
+            <option value="">${Auto}</option>
+            <option value="ar">Arabic</option>
+            <option value="be-BY">Belarusian (Belarus)</option>
+            <option value="bg-BG">Bulgarian (Bulgaria)</option>
+            <option value="ca">Catalan</option>
+            <option value="zh-CN">Chinese Simplified</option>
+            <option value="zh-TW">Chinese Traditional</option>
+            <option value="zh-HK">Chinese Traditional (Hong Kong)</option>
+            <option value="hr">Croatian</option>
+            <option value="cs">Czech</option>
+            <option value="da">Danish</option>
+            <option value="nl">Dutch</option>
+            <option value="en-GB">English (United Kingdom)</option>
+            <option value="en-US">English (United States)</option>
+            <option value="fi">Finnish</option>
+            <option value="fr">French</option>
+            <option value="fr-CA">French (Canada)</option>
+            <option value="de">German</option>
+            <option value="el">Greek</option>
+            <option value="he">Hebrew</option>
+            <option value="hi-IN">Hindi (India)</option>
+            <option value="hu">Hungarian</option>
+            <option value="id">Indonesian</option>
+            <option value="it">Italian</option>
+            <option value="ja">Japanese</option>
+            <option value="kk">Kazakh</option>
+            <option value="ko">Korean</option>
+            <option value="lt-LT">Lithuanian</option>
+            <option value="ms">Malay</option>
+            <option value="nb">Norwegian Bokmål</option>
+            <option value="fa">Persian</option>
+            <option value="pl">Polish</option>
+            <option value="pt-BR">Portuguese (Brazil)</option>
+            <option value="pt-PT">Portuguese (Portugal)</option>
+            <option value="ro">Romanian</option>
+            <option value="ru">Russian</option>
+            <option value="sk">Slovak</option>
+            <option value="sl-SI">Slovenian (Slovenia)</option>
+            <option value="es">Spanish</option>
+            <option value="es-419">Spanish (Latin America)</option>
+            <option value="es-MX">Spanish (Mexico)</option>
+            <option value="sv">Swedish</option>
+            <option value="gsw">Swiss German</option>
+            <option value="tr">Turkish</option>
+            <option value="uk">Ukrainian</option>
+            <option value="vi">Vietnamese</option>
+        </select>
+        <div class="fieldDescription">
+            <div>${LabelDisplayLanguageHelp}</div>
+            <div style="margin-top: .25em;">
+                <a is="emby-linkbutton" class="button-link" href="http://emby.media/community/index.php?/topic/5727-join-our-translation-team" target="_blank">${LearnHowYouCanContribute}</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="selectContainer fldDisplayMode hide">
+        <select is="emby-select" class="selectLayout" label="${LabelDisplayMode}">
+            <option value="">${Auto}</option>
+            <option value="desktop">${Desktop}</option>
+            <option value="mobile">${Mobile}</option>
+            <option value="tv">${TV}</option>
+        </select>
+        <div class="fieldDescription">${DisplayModeHelp}</div>
+    </div>
+
+    <div class="selectContainer hide selectSkinContainer">
+        <select is="emby-select" class="selectSkin" label="${LabelSkin}"></select>
+    </div>
+
+    <div class="selectContainer">
+        <select id="selectTheme" is="emby-select" label="${LabelTheme}"></select>
+        <div class="fieldDescription">${FeatureRequiresEmbyPremiere}</div>
+    </div>
+
+    <div class="checkboxContainer checkboxContainer-withDescription">
+        <label>
+            <input type="checkbox" is="emby-checkbox" id="chkSeasonalThemes" />
+            <span>${AllowSeasonalThemes}</span>
+        </label>
+        <div class="fieldDescription checkboxFieldDescription">${AllowSeasonalThemesHelp}</div>
+    </div>
+
+    <div class="selectContainer selectDashboardThemeContainer hide">
+        <select id="selectDashboardTheme" is="emby-select" label="${LabelDashboardTheme}"></select>
+        <div class="fieldDescription">${FeatureRequiresEmbyPremiere}</div>
+    </div>
+    <div class="selectContainer hide selectScreensaverContainer">
+        <select is="emby-select" class="selectScreensaver" label="${LabelScreensaver}"></select>
+    </div>
+
+    <div class="selectContainer fldSoundEffects hide">
+        <select is="emby-select" class="selectSoundEffects" label="${LabelSoundEffects}"></select>
+    </div>
+
+    <div class="checkboxContainer checkboxContainer-withDescription">
+        <label>
+            <input type="checkbox" is="emby-checkbox" id="chkBackdrops" />
+            <span>${EnableBackdrops}</span>
+        </label>
+        <div class="fieldDescription checkboxFieldDescription">${EnableBackdropsHelp}</div>
+    </div>
+    <div class="checkboxContainer checkboxContainer-withDescription">
+        <label>
+            <input type="checkbox" is="emby-checkbox" id="chkThemeSong" />
+            <span>${EnableThemeSongs}</span>
+        </label>
+        <div class="fieldDescription checkboxFieldDescription">${EnableThemeSongsHelp}</div>
+    </div>
+    <div class="checkboxContainer checkboxContainer-withDescription">
+        <label>
+            <input type="checkbox" is="emby-checkbox" id="chkThemeVideo" />
+            <span>${EnableThemeVideos}</span>
+        </label>
+        <div class="fieldDescription checkboxFieldDescription">${EnableThemeVideosHelp}</div>
+    </div>
+
+    <div class="checkboxContainer hide fldAutorun">
+        <label>
+            <input type="checkbox" is="emby-checkbox" class="chkRunAtStartup" />
+            <span>${RunAtStartup}</span>
+        </label>
+    </div>
+
+    <div class="checkboxContainer checkboxContainer-withDescription">
+        <label>
+            <input type="checkbox" is="emby-checkbox" class="chkDisplayMissingEpisodes" />
+            <span>${DisplayMissingEpisodesWithinSeasons}</span>
+        </label>
+        <div class="fieldDescription checkboxFieldDescription">${DisplayMissingEpisodesWithinSeasonsHelp}</div>
+    </div>
+
+    <button is="emby-button" type="submit" class="raised button-submit block btnSave hide">
+        <span>${Save}</span>
+    </button>
+</form>

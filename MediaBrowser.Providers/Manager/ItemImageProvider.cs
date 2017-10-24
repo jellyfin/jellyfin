@@ -517,17 +517,7 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
-            if (libraryOptions.DownloadImagesInAdvance)
-            {
-                return false;
-            }
-
             if (item.LocationType == LocationType.Remote || item.LocationType == LocationType.Virtual)
-            {
-                return true;
-            }
-
-            if (!item.IsSaveLocalMetadataEnabled())
             {
                 return true;
             }
@@ -541,13 +531,17 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            switch (type)
+            if (libraryOptions.DownloadImagesInAdvance)
             {
-                case ImageType.Primary:
-                    return true;
-                default:
-                    return true;
+                return false;
             }
+
+            //if (!item.IsSaveLocalMetadataEnabled())
+            //{
+            //    return true;
+            //}
+
+            return true;
         }
 
         private void SaveImageStub(IHasMetadata item, ImageType imageType, IEnumerable<string> urls)

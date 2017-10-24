@@ -53,9 +53,8 @@ namespace Emby.Server.Implementations.Data
 
                 string[] queries = {
 
-                                "create table if not exists users (guid GUID primary key, data BLOB)",
+                                "create table if not exists users (guid GUID primary key NOT NULL, data BLOB NOT NULL)",
                                 "create index if not exists idx_users on users(guid)",
-                                "create table if not exists schema_version (table_name primary key, version)",
 
                                 "pragma shrink_memory"
                                };

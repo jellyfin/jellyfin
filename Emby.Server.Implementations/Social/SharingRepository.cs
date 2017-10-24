@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.Social
 
                 string[] queries = {
 
-                                "create table if not exists Shares (Id GUID, ItemId TEXT, UserId TEXT, ExpirationDate DateTime, PRIMARY KEY (Id))",
+                                "create table if not exists Shares (Id GUID NOT NULL, ItemId TEXT NOT NULL, UserId TEXT NOT NULL, ExpirationDate DateTime NOT NULL, PRIMARY KEY (Id))",
                                 "create index if not exists idx_Shares on Shares(Id)",
 
                                 "pragma shrink_memory"

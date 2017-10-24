@@ -29,14 +29,12 @@
                     <input is="emby-input" id="txtUserName" required type="text" label="${LabelName}" />
                 </div>
                 <div id="fldConnectInfo" style="display: none;">
-                    <div class="paperList" style="padding: 1em; border-radius: 5px;">
-                        <div class="inputContainer">
-                            <input is="emby-input" id="txtConnectUserName" type="text" label="${LabelConnectUserName}" />
-                            <div class="fieldDescription">
-                                <div>${LabelConnectUserNameHelp}</div>
-                                <div style="margin-top: .75em;">
-                                    <a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a>
-                                </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" id="txtConnectUserName" type="text" label="${LabelConnectUserName}" />
+                        <div class="fieldDescription">
+                            <div>${LabelConnectUserNameHelp}</div>
+                            <div style="margin-top: .75em;">
+                                <a is="emby-linkbutton" class="button-link" href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a>
                             </div>
                         </div>
                     </div>
@@ -46,13 +44,9 @@
                     <input type="checkbox" is="emby-checkbox" id="chkIsAdmin" />
                     <span>${OptionAllowUserToManageServer}</span>
                 </label>
-                <div id="featureAccessFields">
-                    <h3 class="paperListLabel">${HeaderFeatureAccess}</h3>
+                <div id="featureAccessFields" class="verticalSection">
+                    <h2 class="paperListLabel">${HeaderFeatureAccess}</h2>
                     <div class="checkboxList paperList" style="padding:.5em 1em;">
-                        <label>
-                            <input type="checkbox" is="emby-checkbox" id="chkEnableContentDeletion" />
-                            <span>${OptionAllowDeleteLibraryContent}</span>
-                        </label>
                         <label>
                             <input type="checkbox" is="emby-checkbox" id="chkEnableLiveTvAccess" />
                             <span>${OptionAllowBrowsingLiveTv}</span>
@@ -63,9 +57,8 @@
                         </label>
                     </div>
                 </div>
-                <div>
-                    <br />
-                    <h3 class="paperListLabel">${HeaderPlayback}</h3>
+                <div class="verticalSection">
+                    <h2 class="paperListLabel">${HeaderPlayback}</h2>
                     <div class="checkboxList paperList" style="padding:.5em 1em;">
                         <label>
                             <input type="checkbox" is="emby-checkbox" id="chkEnableMediaPlayback" />
@@ -87,14 +80,26 @@
                     <div class="fieldDescription">${OptionAllowMediaPlaybackTranscodingHelp}</div>
                 </div>
                 <br />
-                <br />
-                <div class="inputContainer">
-                    <input is="emby-input" type="number" id="txtRemoteClientBitrateLimit" pattern="[0-9]*" min="0" step=".25" label="${LabelRemoteClientBitrateLimit}" />
-                    <div class="fieldDescription">${LabelRemoteClientBitrateLimitHelp}</div>
-                    <div class="fieldDescription">${LabelUserRemoteClientBitrateLimitHelp}</div>
+                <div class="verticalSection">
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="txtRemoteClientBitrateLimit" pattern="[0-9]*" min="0" step=".25" label="${LabelRemoteClientBitrateLimit}" />
+                        <div class="fieldDescription">${LabelRemoteClientBitrateLimitHelp}</div>
+                        <div class="fieldDescription">${LabelUserRemoteClientBitrateLimitHelp}</div>
+                    </div>
+                </div>
+                <div class="verticalSection">
+                    <h2>${HeaderMediaDeletion}</h2>
+                    <label class="checkboxContainer">
+                        <input type="checkbox" is="emby-checkbox" id="chkEnableDeleteAllFolders" />
+                        <span>${AllowDeletionFromAll}</span>
+                    </label>
+                    <div class="deleteAccessListContainer">
+                        <div class="deleteAccess">
+                        </div>
+                    </div>
                 </div>
                 <div>
-                    <h3 class="checkboxListLabel">${HeaderRemoteControl}</h3>
+                    <h2 class="checkboxListLabel">${HeaderRemoteControl}</h2>
                     <div class="checkboxList paperList" style="padding:.5em 1em;">
                         <label>
                             <input type="checkbox" is="emby-checkbox" id="chkEnableRemoteControlOtherUsers" />
@@ -110,7 +115,7 @@
                 </div>
                 <div>
                     <br />
-                    <h3 class="checkboxListLabel">${Downloading}</h3>
+                    <h2 class="checkboxListLabel">${Downloading}</h2>
                     <div class="checkboxList paperList" style="padding:.5em 1em;">
                         <label>
                             <input type="checkbox" is="emby-checkbox" id="chkEnableDownloading" />

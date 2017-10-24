@@ -86,16 +86,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 CancellationToken = cancellationToken,
                 BufferContent = false
             };
-            using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
+            using (var response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false))
             {
-                var lineup = JsonSerializer.DeserializeFromStream<List<Channels>>(stream) ?? new List<Channels>();
-
-                if (info.ImportFavoritesOnly)
+                using (var stream = response.Content)
                 {
-                    lineup = lineup.Where(i => i.Favorite).ToList();
-                }
+                    var lineup = JsonSerializer.DeserializeFromStream<List<Channels>>(stream) ?? new List<Channels>();
 
-                return lineup.Where(i => !i.DRM).ToList();
+                    if (info.ImportFavoritesOnly)
+                    {
+                        lineup = lineup.Where(i => i.Favorite).ToList();
+                    }
+
+                    return lineup.Where(i => !i.DRM).ToList();
+                }
             }
         }
 
@@ -143,26 +146,29 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             try
             {
-                using (var stream = await _httpClient.Get(new HttpRequestOptions()
+                using (var response = await _httpClient.SendAsync(new HttpRequestOptions()
                 {
                     Url = string.Format("{0}/discover.json", GetApiUrl(info, false)),
                     CancellationToken = cancellationToken,
                     TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds),
                     BufferContent = false
 
-                }).ConfigureAwait(false))
+                }, "GET").ConfigureAwait(false))
                 {
-                    var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
-
-                    if (!string.IsNullOrWhiteSpace(info.Id))
+                    using (var stream = response.Content)
                     {
-                        lock (_modelCache)
-                        {
-                            _modelCache[info.Id] = response;
-                        }
-                    }
+                        var discoverResponse = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
 
-                    return response;
+                        if (!string.IsNullOrWhiteSpace(info.Id))
+                        {
+                            lock (_modelCache)
+                            {
+                                _modelCache[info.Id] = discoverResponse;
+                            }
+                        }
+
+                        return discoverResponse;
+                    }
                 }
             }
             catch (HttpException ex)
@@ -197,7 +203,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var uri = new Uri(GetApiUrl(info, false));
 
-            using (var manager = new HdHomerunManager(_socketFactory))
+            using (var manager = new HdHomerunManager(_socketFactory, Logger))
             {
                 // Legacy HdHomeruns are IPv4 only
                 var ipInfo = _networkManager.ParseIpAddress(uri.Host);
@@ -299,6 +305,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             int? videoBitrate = null;
             int? audioBitrate = null;
 
+            var isHd = channelInfo.IsHD ?? true;
+
             if (string.Equals(profile, "mobile", StringComparison.OrdinalIgnoreCase))
             {
                 width = 1280;
@@ -350,7 +358,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             else
             {
                 // This is for android tv's 1200 condition. Remove once not needed anymore so that we can avoid possible side effects of dummying up this data
-                if ((channelInfo.IsHD ?? true))
+                if (isHd)
                 {
                     width = 1920;
                     height = 1080;
@@ -367,9 +375,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 if (!videoBitrate.HasValue)
                 {
-                    videoBitrate = (channelInfo.IsHD ?? true) ? 15000000 : 2000000;
+                    videoBitrate = isHd ? 15000000 : 2000000;
                 }
-                audioBitrate = (channelInfo.IsHD ?? true) ? 448000 : 192000;
+                audioBitrate = isHd ? 448000 : 192000;
             }
 
             // normalize

@@ -738,8 +738,7 @@ namespace Emby.Server.Implementations.Library
                     if (folder.ParentId != rootFolder.Id)
                     {
                         folder.ParentId = rootFolder.Id;
-                        var task = folder.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None);
-                        Task.WaitAll(task);
+                        folder.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None);
                     }
 
                     rootFolder.AddVirtualChild(folder);
@@ -1827,6 +1826,13 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
+        public void UpdateImages(BaseItem item)
+        {
+            ItemRepository.SaveImages(item);
+
+            RegisterItem(item);
+        }
+
         /// <summary>
         /// Updates the item.
         /// </summary>
@@ -1834,12 +1840,12 @@ namespace Emby.Server.Implementations.Library
         /// <param name="updateReason">The update reason.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task UpdateItem(BaseItem item, ItemUpdateType updateReason, CancellationToken cancellationToken)
+        public void UpdateItem(BaseItem item, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
             var locationType = item.LocationType;
             if (locationType != LocationType.Remote && locationType != LocationType.Virtual)
             {
-                await _providerManagerFactory().SaveMetadata(item, updateReason).ConfigureAwait(false);
+                _providerManagerFactory().SaveMetadata(item, updateReason);
             }
 
             item.DateLastSaved = DateTime.UtcNow;
@@ -2053,7 +2059,7 @@ namespace Emby.Server.Implementations.Library
             return GetNamedView(user, name, null, viewType, sortName, cancellationToken);
         }
 
-        public async Task<UserView> GetNamedView(string name,
+        public UserView GetNamedView(string name,
             string viewType,
             string sortName,
             CancellationToken cancellationToken)
@@ -2100,7 +2106,7 @@ namespace Emby.Server.Implementations.Library
 
             if (refresh)
             {
-                await item.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None).ConfigureAwait(false);
+                item.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None);
                 _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
                 {
                     // Not sure why this is necessary but need to figure it out
@@ -2241,7 +2247,7 @@ namespace Emby.Server.Implementations.Library
             return item;
         }
 
-        public async Task<UserView> GetNamedView(string name,
+        public UserView GetNamedView(string name,
             string parentId,
             string viewType,
             string sortName,
@@ -2294,7 +2300,7 @@ namespace Emby.Server.Implementations.Library
             if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
             {
                 item.ViewType = viewType;
-                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken);
             }
 
             var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
@@ -2822,7 +2828,7 @@ namespace Emby.Server.Implementations.Library
 
                     await _providerManagerFactory().SaveImage(item, url, image.Type, imageIndex, CancellationToken.None).ConfigureAwait(false);
 
-                    await item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+                    item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
 
                     return item.GetImageInfo(image.Type, imageIndex);
                 }
@@ -2838,7 +2844,7 @@ namespace Emby.Server.Implementations.Library
 
             // Remove this image to prevent it from retrying over and over
             item.RemoveImage(image);
-            await item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+            item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
 
             throw new InvalidOperationException();
         }

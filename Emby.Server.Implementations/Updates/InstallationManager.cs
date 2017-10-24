@@ -175,13 +175,24 @@ namespace Emby.Server.Implementations.Updates
                     { "systemid", _applicationHost.SystemId }
                 };
 
-                using (var json = await _httpClient.Post("https://www.mb3admin.com/admin/service/package/retrieveall?includeAllRuntimes=true", data, cancellationToken).ConfigureAwait(false))
+                var options = new HttpRequestOptions
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
+                    Url = "https://www.mb3admin.com/admin/service/package/retrieveall?includeAllRuntimes=true",
+                    CancellationToken = cancellationToken
+                };
 
-                    var packages = _jsonSerializer.DeserializeFromStream<PackageInfo[]>(json);
+                options.SetPostData(data);
 
-                    return FilterPackages(packages, packageType, applicationVersion);
+                using (var response = await _httpClient.SendAsync(options, "POST").ConfigureAwait(false))
+                {
+                    using (var json = response.Content)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        var packages = _jsonSerializer.DeserializeFromStream<PackageInfo[]>(json);
+
+                        return FilterPackages(packages, packageType, applicationVersion);
+                    }
                 }
             }
             else
@@ -442,11 +453,6 @@ namespace Emby.Server.Implementations.Updates
         /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
         public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(Version applicationVersion, bool withAutoUpdateEnabled, CancellationToken cancellationToken)
         {
-            if (!_config.CommonConfiguration.EnableAutoUpdate)
-            {
-                return new PackageVersionInfo[] { };
-            }
-
             var catalog = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
             var systemUpdateLevel = GetSystemUpdateLevel();

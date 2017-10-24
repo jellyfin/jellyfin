@@ -131,7 +131,7 @@ namespace MediaBrowser.Controller.LiveTv
             return true;
         }
 
-        public override bool IsAuthorizedToDelete(User user)
+        public override bool IsAuthorizedToDelete(User user, List<Folder> allCollectionFolders)
         {
             return user.Policy.EnableLiveTvManagement;
         }
@@ -159,11 +159,6 @@ namespace MediaBrowser.Controller.LiveTv
         public override Task Delete(DeleteOptions options)
         {
             return LiveTvManager.DeleteRecording(this);
-        }
-
-        public override Task OnFileDeleted()
-        {
-            return LiveTvManager.OnRecordingFileDeleted(this);
         }
     }
 }

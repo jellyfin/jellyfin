@@ -34,6 +34,6 @@
       "type": "image/png"
     }
   ],
-  "display": "standalone",
+  "display": "minimal-ui",
   "theme_color": "#52B54B"
 }

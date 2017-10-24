@@ -176,6 +176,7 @@
     <Compile Include="MediaEncoding\MediaStreamSelector.cs" />
     <Compile Include="Net\AuthenticatedAttribute.cs" />
     <Compile Include="Net\AuthorizationInfo.cs" />
+    <Compile Include="Net\BasePeriodicWebSocketListener.cs" />
     <Compile Include="Net\IAuthorizationContext.cs" />
     <Compile Include="Net\IAuthService.cs" />
     <Compile Include="Net\IHasResultFactory.cs" />
@@ -219,7 +220,6 @@
     <Compile Include="Providers\IExternalId.cs" />
     <Compile Include="Providers\IExtrasProvider.cs" />
     <Compile Include="Providers\IForcedProvider.cs" />
-    <Compile Include="Providers\IHasChangeMonitor.cs" />
     <Compile Include="Entities\IHasMetadata.cs" />
     <Compile Include="Providers\IHasItemChangeMonitor.cs" />
     <Compile Include="Providers\IHasLookupInfo.cs" />

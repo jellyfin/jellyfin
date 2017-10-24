@@ -1,85 +1,84 @@
 ﻿<div id="myPreferencesMenuPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderSettings}" data-backbutton="true">
 
-    <div class="padded-left padded-right padded-bottom-page">
+    <div class="padded-left padded-right padded-bottom-page padded-top">
         <div class="readOnlyContent" style="margin: 0 auto;">
-            <h1 class="settingsMenuHeader" style="padding-left:.25em;">${HeaderSettings}</h1>
-            <div>
-                <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="clearLink lnkDisplayPreferences">
+            <div class="verticalSection verticalSection-extrabottompadding">
+                <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="lnkDisplayPreferences listItem-shaded">
                     <div class="listItem">
-                        <i class="md-icon listItemIcon" style="background-color: #03a9f4;">tv</i>
+                        <i class="md-icon listItemIcon listItemIcon-transparent">tv</i>
                         <div class="listItemBody">
                             <div class="listItemBodyText">${HeaderDisplay}</div>
                         </div>
                     </div>
                 </a>
 
-                <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="clearLink lnkHomeScreenPreferences">
+                <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="lnkHomeScreenPreferences listItem-shaded">
                     <div class="listItem">
-                        <i class="md-icon listItemIcon" style="background-color: #e57373;">home</i>
+                        <i class="md-icon listItemIcon listItemIcon-transparent">home</i>
                         <div class="listItemBody">
                             <div class="listItemBodyText">${TabHomeScreen}</div>
                         </div>
                     </div>
                 </a>
 
-                <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="clearLink lnkLanguagePreferences">
+                <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="lnkLanguagePreferences listItem-shaded">
                     <div class="listItem">
-                        <i class="md-icon listItemIcon" style="background-color: #81c784;">play_circle_filled</i>
+                        <i class="md-icon listItemIcon listItemIcon-transparent">play_circle_filled</i>
                         <div class="listItemBody">
                             <div class="listItemBodyText">${TitlePlayback}</div>
                         </div>
                     </div>
                 </a>
 
-                <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="clearLink lnkSubtitleSettings">
+                <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="lnkSubtitleSettings listItem-shaded">
                     <div class="listItem">
-                        <i class="md-icon listItemIcon" style="background-color: #444;">closed_caption</i>
+                        <i class="md-icon listItemIcon listItemIcon-transparent">closed_caption</i>
                         <div class="listItemBody">
                             <div class="listItemBodyText">${Subtitles}</div>
                         </div>
                     </div>
                 </a>
 
-                <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="clearLink lnkMyProfile">
+                <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="lnkMyProfile listItem-shaded">
                     <div class="listItem">
-                        <i class="md-icon listItemIcon" style="background-color: #ffd54f;">person</i>
+                        <i class="md-icon listItemIcon listItemIcon-transparent">person</i>
                         <div class="listItemBody">
                             <div class="listItemBodyText">${ButtonProfile}</div>
                         </div>
                     </div>
                 </a>
 
-                <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="clearLink lnkCameraUpload hide">
+                <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="lnkCameraUpload hide listItem-shaded">
                     <div class="listItem">
-                        <i class="md-icon listItemIcon" style="background-color: #673AB7;">photo</i>
+                        <i class="md-icon listItemIcon listItemIcon-transparent">photo</i>
                         <div class="listItemBody">
                             <div class="listItemBodyText">${TabCameraUpload}</div>
                         </div>
                     </div>
                 </a>
 
-                <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="clearLink lnkSync hide">
+                <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="#" class="lnkSync hide listItem-shaded">
                     <div class="listItem">
-                        <i class="md-icon listItemIcon">file_download</i>
+                        <i class="md-icon listItemIcon listItemIcon-transparent">file_download</i>
                         <div class="listItemBody">
                             <div class="listItemBodyText">${HeaderOfflineSync}</div>
                         </div>
                     </div>
                 </a>
             </div>
-            <div>
-                <h1 class="headerUser" style="padding-left:.25em;"></h1>
+            <div class="verticalSection verticalSection-extrabottompadding">
+                <h2 class="sectionTitle headerUser" style="padding-left:.25em;"></h2>
                 <div>
-                    <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="selectserver.html" class="clearLink selectServer hide">
+                    <a is="emby-linkbutton" style="display:block; padding: 0; margin:0;" data-ripple="false" href="selectserver.html" class="selectServer hide listItem-shaded">
                         <div class="listItem">
-                            <i class="md-icon listItemIcon">wifi</i>
+                            <i class="md-icon listItemIcon listItemIcon-transparent">wifi</i>
                             <div class="listItemBody">
                                 <div class="listItemBodyText">${HeaderSelectServer}</div>
                             </div>
                         </div>
                     </a>
-                    <div class="listItem btnLogout">
-                        <i class="md-icon listItemIcon" style="background-color:#444;">lock</i>
+                    <div class="listItem btnLogout listItem-shaded">
+                        <i class="md-icon listItemIcon listItemIcon-transparent">lock</i>
                         <div class="listItemBody">
                             <div class="listItemBodyText">${ButtonSignOut}</div>
                         </div>
@@ -87,12 +86,12 @@
                 </div>
             </div>
 
-            <div class="adminSection hide">
-                <h1 style="padding-left:.25em;">${HeaderAdmin}</h1>
+            <div class="adminSection hide verticalSection verticalSection-extrabottompadding">
+                <h2 class="sectionTitle" style="padding-left:.25em;">${HeaderAdmin}</h2>
                 <div>
-                    <a is="emby-linkbutton" href="dashboard.html" class="clearLink" style="display: block; padding: 0; margin:0;" data-ripple="false">
+                    <a is="emby-linkbutton" href="dashboard.html" style="display: block; padding: 0; margin:0;" class="listItem-shaded">
                         <div class="listItem">
-                            <i class="md-icon listItemIcon">settings</i>
+                            <i class="md-icon listItemIcon listItemIcon-transparent">settings</i>
                             <div class="listItemBody">
                                 <div class="listItemBodyText">${ButtonServerDashboard}</div>
                             </div>

@@ -38,12 +38,6 @@ namespace MediaBrowser.Controller.Entities
             return SeriesPresentationUniqueKey;
         }
 
-        [IgnoreDataMember]
-        public override bool EnableRefreshOnDateModifiedChange
-        {
-            get { return true; }
-        }
-
         public Guid? FindSeriesId()
         {
             return SeriesId;

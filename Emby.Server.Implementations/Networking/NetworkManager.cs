@@ -29,7 +29,7 @@ namespace Emby.Server.Implementations.Networking
 
         public List<IpAddressInfo> GetLocalIpAddresses()
         {
-            const int cacheMinutes = 5;
+            const int cacheMinutes = 10;
 
             lock (_localIpAddressSyncLock)
             {
@@ -81,8 +81,18 @@ namespace Emby.Server.Implementations.Networking
                 return true;
             }
 
-            // Handle ipv4 mapped to ipv6
-            endpoint = endpoint.Replace("::ffff:", string.Empty);
+            // ipv6
+            if (endpoint.Split('.').Length > 4)
+            {
+                // Handle ipv4 mapped to ipv6
+                var originalEndpoint = endpoint;
+                endpoint = endpoint.Replace("::ffff:", string.Empty);
+
+                if (string.Equals(endpoint, originalEndpoint, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
 
             // Private address space:
             // http://en.wikipedia.org/wiki/Private_network
@@ -92,13 +102,74 @@ namespace Emby.Server.Implementations.Networking
                 return Is172AddressPrivate(endpoint);
             }
 
-            return
+            return endpoint.StartsWith("localhost", StringComparison.OrdinalIgnoreCase) ||
+                endpoint.StartsWith("127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
+                IsInPrivateAddressSpaceAndLocalSubnet(endpoint);
+        }
 
-                endpoint.StartsWith("localhost", StringComparison.OrdinalIgnoreCase) ||
+        public bool IsInPrivateAddressSpaceAndLocalSubnet(string endpoint)
+        {
+            var endpointFirstPart = endpoint.Split('.')[0];
+
+            string subnet_Match = "";
+            if (
                 endpoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("192.168", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase);
+                endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase)
+                )
+            {
+                foreach (NetworkInterface adapter in NetworkInterface.GetAllNetworkInterfaces())
+                    foreach (UnicastIPAddressInformation unicastIPAddressInformation in adapter.GetIPProperties().UnicastAddresses)
+                        if (unicastIPAddressInformation.Address.AddressFamily == AddressFamily.InterNetwork && endpointFirstPart == unicastIPAddressInformation.Address.ToString().Split('.')[0])
+                        {
+                            int subnet_Test = 0;
+                            foreach (string part in unicastIPAddressInformation.IPv4Mask.ToString().Split('.'))
+                            {
+                                if (part.Equals("0")) break;
+                                subnet_Test++;
+                            }
+
+                            subnet_Match = String.Join(".", unicastIPAddressInformation.Address.ToString().Split('.').Take(subnet_Test).ToArray());
+                        }
+            }
+
+            return endpoint.StartsWith(subnet_Match + ".", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private Dictionary<string, string> _subnetLookup = new Dictionary<string, string>(StringComparer.Ordinal);
+        private string GetSubnet(string endpointFirstPart)
+        {
+            string subnet_Match = "";
+
+            lock (_subnetLookup)
+            {
+                if (_subnetLookup.TryGetValue(endpointFirstPart, out subnet_Match))
+                {
+                    return subnet_Match;
+                }
+
+                foreach (NetworkInterface adapter in NetworkInterface.GetAllNetworkInterfaces())
+                    foreach (UnicastIPAddressInformation unicastIPAddressInformation in adapter.GetIPProperties().UnicastAddresses)
+                        if (unicastIPAddressInformation.Address.AddressFamily == AddressFamily.InterNetwork && endpointFirstPart == unicastIPAddressInformation.Address.ToString().Split('.')[0])
+                        {
+                            int subnet_Test = 0;
+                            foreach (string part in unicastIPAddressInformation.IPv4Mask.ToString().Split('.'))
+                            {
+                                if (part.Equals("0")) break;
+                                subnet_Test++;
+                            }
+
+                            subnet_Match = String.Join(".", unicastIPAddressInformation.Address.ToString().Split('.').Take(subnet_Test).ToArray());
+                        }
+
+                if (!string.IsNullOrWhiteSpace(subnet_Match))
+                {
+                    _subnetLookup[endpointFirstPart] = subnet_Match;
+                }
+            }
+
+            return subnet_Match;
         }
 
         private bool Is172AddressPrivate(string endpoint)
@@ -198,12 +269,6 @@ namespace Emby.Server.Implementations.Networking
             return Dns.GetHostAddressesAsync(hostName);
         }
 
-        private readonly List<NetworkInterfaceType> _validNetworkInterfaceTypes = new List<NetworkInterfaceType>
-        {
-            NetworkInterfaceType.Ethernet,
-            NetworkInterfaceType.Wireless80211
-        };
-
         private List<IPAddress> GetIPsDefault()
         {
             NetworkInterface[] interfaces;
@@ -227,7 +292,8 @@ namespace Emby.Server.Implementations.Networking
 
                 try
                 {
-                    Logger.Debug("Querying interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
+                    // suppress logging because it might be causing nas device wake up
+                    //Logger.Debug("Querying interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
 
                     var ipProperties = network.GetIPProperties();
 

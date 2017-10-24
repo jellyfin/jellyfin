@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.Devices
         [IgnoreDataMember]
         public override string CollectionType
         {
-            get { return MediaBrowser.Model.Entities.CollectionType.Photos; }
+            get { return MediaBrowser.Model.Entities.CollectionType.HomeVideos; }
         }
 
         [IgnoreDataMember]

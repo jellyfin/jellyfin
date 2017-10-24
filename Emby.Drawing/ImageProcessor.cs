@@ -442,19 +442,44 @@ namespace Emby.Drawing
             return GetCachePath(ResizedImageCachePath, filename, "." + format.ToString().ToLower());
         }
 
-        public ImageSize GetImageSize(ItemImageInfo info, bool allowSlowMethods)
+        public ImageSize GetImageSize(BaseItem item, ItemImageInfo info)
         {
-            return GetImageSize(info.Path, allowSlowMethods);
+            return GetImageSize(item, info, false, true);
         }
 
-        public ImageSize GetImageSize(ItemImageInfo info)
+        public ImageSize GetImageSize(BaseItem item, ItemImageInfo info, bool allowSlowMethods, bool updateItem)
         {
-            return GetImageSize(info.Path, false);
+            var width = info.Width;
+            var height = info.Height;
+
+            if (height > 0 && width > 0)
+            {
+                return new ImageSize
+                {
+                    Width = width,
+                    Height = height
+                };
+            }
+
+            var path = info.Path;
+            _logger.Info("Getting image size for item {0} {1}", item.GetType().Name, path);
+
+            var size = GetImageSize(path, allowSlowMethods);
+
+            info.Height = Convert.ToInt32(size.Height);
+            info.Width = Convert.ToInt32(size.Width);
+
+            if (updateItem)
+            {
+                _libraryManager().UpdateImages(item);
+            }
+
+            return size;
         }
 
         public ImageSize GetImageSize(string path)
         {
-            return GetImageSize(path, false);
+            return GetImageSize(path, true);
         }
 
         /// <summary>

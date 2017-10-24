@@ -67,7 +67,7 @@
     <Compile Include="Devices\CameraUploadsFolder.cs" />
     <Compile Include="Devices\DeviceId.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
-    <Compile Include="Devices\DeviceRepository.cs" />
+    <Compile Include="Devices\SqliteDeviceRepository.cs" />
     <Compile Include="Diagnostics\CommonProcess.cs" />
     <Compile Include="Diagnostics\ProcessFactory.cs" />
     <Compile Include="Dto\DtoService.cs" />
@@ -435,7 +435,6 @@
     <Compile Include="Data\BaseSqliteRepository.cs" />
     <Compile Include="Data\CleanDatabaseScheduledTask.cs" />
     <Compile Include="Data\SqliteExtensions.cs" />
-    <Compile Include="Photos\PhotoAlbumImageProvider.cs" />
     <Compile Include="Playlists\ManualPlaylistsFolder.cs" />
     <Compile Include="Playlists\PlaylistImageProvider.cs" />
     <Compile Include="Playlists\PlaylistManager.cs" />
@@ -573,6 +572,7 @@
     <Compile Include="Updates\InstallationManager.cs" />
     <Compile Include="UserViews\CollectionFolderImageProvider.cs" />
     <Compile Include="UserViews\DynamicImageProvider.cs" />
+    <Compile Include="UserViews\FolderImageProvider.cs" />
     <Compile Include="Xml\XmlReaderSettingsFactory.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -675,46 +675,40 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Localization\countries.json" />
     <EmbeddedResource Include="Localization\Core\ar.json" />
     <EmbeddedResource Include="Localization\Core\bg-BG.json" />
     <EmbeddedResource Include="Localization\Core\ca.json" />
     <EmbeddedResource Include="Localization\Core\cs.json" />
     <EmbeddedResource Include="Localization\Core\da.json" />
     <EmbeddedResource Include="Localization\Core\de.json" />
-    <EmbeddedResource Include="Localization\Core\el.json" />
     <EmbeddedResource Include="Localization\Core\en-GB.json" />
-    <EmbeddedResource Include="Localization\Core\en-US.json" />
     <EmbeddedResource Include="Localization\Core\es-AR.json" />
     <EmbeddedResource Include="Localization\Core\es-MX.json" />
     <EmbeddedResource Include="Localization\Core\es.json" />
-    <EmbeddedResource Include="Localization\Core\fi.json" />
     <EmbeddedResource Include="Localization\Core\fr-CA.json" />
     <EmbeddedResource Include="Localization\Core\fr.json" />
-    <EmbeddedResource Include="Localization\Core\gsw.json" />
     <EmbeddedResource Include="Localization\Core\he.json" />
     <EmbeddedResource Include="Localization\Core\hr.json" />
     <EmbeddedResource Include="Localization\Core\hu.json" />
-    <EmbeddedResource Include="Localization\Core\id.json" />
     <EmbeddedResource Include="Localization\Core\it.json" />
     <EmbeddedResource Include="Localization\Core\kk.json" />
     <EmbeddedResource Include="Localization\Core\ko.json" />
+    <EmbeddedResource Include="Localization\Core\lt-LT.json" />
     <EmbeddedResource Include="Localization\Core\ms.json" />
     <EmbeddedResource Include="Localization\Core\nb.json" />
     <EmbeddedResource Include="Localization\Core\nl.json" />
     <EmbeddedResource Include="Localization\Core\pl.json" />
     <EmbeddedResource Include="Localization\Core\pt-BR.json" />
     <EmbeddedResource Include="Localization\Core\pt-PT.json" />
-    <EmbeddedResource Include="Localization\Core\ro.json" />
     <EmbeddedResource Include="Localization\Core\ru.json" />
+    <EmbeddedResource Include="Localization\Core\sk.json" />
     <EmbeddedResource Include="Localization\Core\sl-SI.json" />
     <EmbeddedResource Include="Localization\Core\sv.json" />
     <EmbeddedResource Include="Localization\Core\tr.json" />
-    <EmbeddedResource Include="Localization\Core\uk.json" />
-    <EmbeddedResource Include="Localization\Core\vi.json" />
     <EmbeddedResource Include="Localization\Core\zh-CN.json" />
     <EmbeddedResource Include="Localization\Core\zh-HK.json" />
-    <EmbeddedResource Include="Localization\Core\zh-TW.json" />
-    <EmbeddedResource Include="Localization\countries.json" />
+    <EmbeddedResource Include="Localization\Core\en-US.json" />
     <None Include="packages.config" />
     <None Include="TextEncoding\NLangDetect\Profiles\afr" />
     <None Include="TextEncoding\NLangDetect\Profiles\ara" />

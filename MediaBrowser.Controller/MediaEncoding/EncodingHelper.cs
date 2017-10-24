@@ -794,11 +794,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return false;
             }
 
-            if (state.EnableMpDecimate)
-            {
-                return false;
-            }
-
             if (videoStream.IsInterlaced)
             {
                 if (state.DeInterlace(videoStream.Codec, false))
@@ -1515,11 +1510,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            if (state.EnableMpDecimate)
-            {
-                filters.Add("mpdecimate,setpts=N/FRAME_RATE/TB");
-            }
-
             if (filters.Count > 0)
             {
                 output += string.Format(" -vf \"{0}\"", string.Join(",", filters.ToArray()));
@@ -1638,7 +1628,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.InputProtocol == MediaProtocol.Rtsp)
             {
-                inputModifier += " -rtsp_transport tcp";
+                inputModifier += " -rtsp_transport tcp -rtsp_transport udp -rtsp_flags prefer_tcp";
             }
 
             if (!string.IsNullOrEmpty(state.InputAudioSync))
@@ -1958,6 +1948,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                             if (_mediaEncoder.SupportsDecoder("h264_mmal") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
                             {
                                 return "-c:v h264_mmal";
+                            }
+                            break;
+                        case "mpeg2video":
+                            if (_mediaEncoder.SupportsDecoder("mpeg2_mmal") && encodingOptions.HardwareDecodingCodecs.Contains("mpeg2video", StringComparer.OrdinalIgnoreCase))
+                            {
+                                return "-c:v mpeg2_mmal";
                             }
                             break;
                     }
