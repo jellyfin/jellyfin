@@ -1508,6 +1508,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 _logger.Info("Retrying recording in {0} seconds.", retryIntervalSeconds);
 
                 timer.Status = RecordingStatus.New;
+                timer.PrePaddingSeconds = 0;
                 timer.StartDate = DateTime.UtcNow.AddSeconds(retryIntervalSeconds);
                 timer.RetryCount++;
                 _timerProvider.AddOrUpdate(timer);
