@@ -101,7 +101,7 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Fields { get; set; }
-        
+
         /// <summary>
         /// Gets the filters.
         /// </summary>
@@ -160,7 +160,7 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "ChannelIds", Description = "Optional. Specify one or more channel id's, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string ChannelIds { get; set; }
-        
+
         /// <summary>
         /// Gets the filters.
         /// </summary>
@@ -177,7 +177,7 @@ namespace MediaBrowser.Api
             return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
         }
     }
-    
+
     [Route("/Channels/Folder", "GET", Summary = "Gets the users channel folder, along with configured images")]
     public class GetChannelFolder : IReturn<BaseItemDto>
     {
@@ -209,9 +209,9 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(result);
         }
 
-        public async Task<object> Get(GetChannelFolder request)
+        public object Get(GetChannelFolder request)
         {
-            return ToOptimizedResult(await _channelManager.GetChannelFolder(request.UserId, CancellationToken.None).ConfigureAwait(false));
+            return ToOptimizedResult(_channelManager.GetChannelFolder(request.UserId, CancellationToken.None));
         }
 
         public async Task<object> Get(GetChannels request)

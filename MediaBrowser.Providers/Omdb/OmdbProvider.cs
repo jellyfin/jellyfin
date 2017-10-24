@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers.Omdb
             var result = await GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
 
             // Only take the name and rating if the user's language is set to english, since Omdb has no localization
-            if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase) || _configurationManager.Configuration.EnableNewOmdbSupport)
             {
                 item.Name = result.Title;
 
@@ -153,7 +153,7 @@ namespace MediaBrowser.Providers.Omdb
             }
 
             // Only take the name and rating if the user's language is set to english, since Omdb has no localization
-            if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase) || _configurationManager.Configuration.EnableNewOmdbSupport)
             {
                 item.Name = result.Title;
 
@@ -301,11 +301,14 @@ namespace MediaBrowser.Providers.Omdb
 
             var url = GetOmdbUrl(string.Format("i={0}&plot=short&tomatoes=true&r=json", imdbParam), cancellationToken);
 
-            using (var stream = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
+            using (var response = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
-                var rootObject = _jsonSerializer.DeserializeFromStream<RootObject>(stream);
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
-                _jsonSerializer.SerializeToFile(rootObject, path);
+                using (var stream = response.Content)
+                {
+                    var rootObject = _jsonSerializer.DeserializeFromStream<RootObject>(stream);
+                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                    _jsonSerializer.SerializeToFile(rootObject, path);
+                }
             }
 
             return path;
@@ -335,25 +338,28 @@ namespace MediaBrowser.Providers.Omdb
 
             var url = GetOmdbUrl(string.Format("i={0}&season={1}&detail=full", imdbParam, seasonId), cancellationToken);
 
-            using (var stream = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
+            using (var response = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
-                var rootObject = _jsonSerializer.DeserializeFromStream<SeasonRootObject>(stream);
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
-                _jsonSerializer.SerializeToFile(rootObject, path);
+                using (var stream = response.Content)
+                {
+                    var rootObject = _jsonSerializer.DeserializeFromStream<SeasonRootObject>(stream);
+                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                    _jsonSerializer.SerializeToFile(rootObject, path);
+                }
             }
 
             return path;
         }
 
-        public static Task<Stream> GetOmdbResponse(IHttpClient httpClient, string url, CancellationToken cancellationToken)
+        public static Task<HttpResponseInfo> GetOmdbResponse(IHttpClient httpClient, string url, CancellationToken cancellationToken)
         {
-            return httpClient.Get(new HttpRequestOptions
+            return httpClient.SendAsync(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
                 BufferContent = true,
                 EnableDefaultUserAgent = true
-            });
+            }, "GET");
         }
 
         internal string GetDataFilePath(string imdbId)
@@ -389,7 +395,7 @@ namespace MediaBrowser.Providers.Omdb
         {
             T item = itemResult.Item;
 
-            var isConfiguredForEnglish = IsConfiguredForEnglish(item);
+            var isConfiguredForEnglish = IsConfiguredForEnglish(item) || _configurationManager.Configuration.EnableNewOmdbSupport;
 
             // Grab series genres because imdb data is better than tvdb. Leave movies alone
             // But only do it if english is the preferred language because this data will not be localized

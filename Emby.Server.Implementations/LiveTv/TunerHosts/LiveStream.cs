@@ -32,6 +32,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         protected readonly string TempFilePath;
         protected readonly ILogger Logger;
+        protected readonly CancellationTokenSource LiveStreamCancellationTokenSource = new CancellationTokenSource();
 
         public LiveStream(MediaSourceInfo mediaSource, IEnvironmentInfo environment, IFileSystem fileSystem, ILogger logger, IServerApplicationPaths appPaths)
         {
@@ -46,19 +47,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             TempFilePath = Path.Combine(appPaths.TranscodingTempPath, UniqueId + ".ts");
         }
 
-        public Task Open(CancellationToken cancellationToken)
-        {
-            return OpenInternal(cancellationToken);
-        }
-
-        protected virtual Task OpenInternal(CancellationToken cancellationToken)
+        public virtual Task Open(CancellationToken openCancellationToken)
         {
             return Task.FromResult(true);
         }
 
-        public virtual Task Close()
+        public virtual void Close()
         {
-            return Task.FromResult(true);
         }
 
         protected Stream GetInputStream(string path, bool allowAsyncFileRead)
@@ -75,9 +70,22 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         protected async Task DeleteTempFile(string path, int retryCount = 0)
         {
+            if (retryCount == 0)
+            {
+                Logger.Info("Deleting temp file {0}", path);
+            }
+
             try
             {
                 FileSystem.DeleteFile(path);
+                return;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return;
+            }
+            catch (FileNotFoundException)
+            {
                 return;
             }
             catch
@@ -96,6 +104,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
         {
+            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, LiveStreamCancellationTokenSource.Token).Token;
+
             var allowAsync = false;//Environment.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows;
             // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
 
@@ -110,26 +120,33 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         private static async Task CopyTo(Stream source, Stream destination, int bufferSize, Action onStarted, CancellationToken cancellationToken)
         {
             byte[] buffer = new byte[bufferSize];
-            while (true)
+
+            var eofCount = 0;
+            var emptyReadLimit = 1000;
+
+            while (eofCount < emptyReadLimit)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var read = source.Read(buffer, 0, buffer.Length);
+                var bytesRead = source.Read(buffer, 0, buffer.Length);
 
-                if (read > 0)
+                if (bytesRead == 0)
                 {
+                    eofCount++;
+                    await Task.Delay(10, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    eofCount = 0;
+
                     //await destination.WriteAsync(buffer, 0, read).ConfigureAwait(false);
-                    destination.Write(buffer, 0, read);
+                    destination.Write(buffer, 0, bytesRead);
 
                     if (onStarted != null)
                     {
                         onStarted();
                         onStarted = null;
                     }
-                }
-                else
-                {
-                    await Task.Delay(10).ConfigureAwait(false);
                 }
             }
         }
@@ -139,6 +156,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             try
             {
                 stream.Seek(offset, SeekOrigin.End);
+            }
+            catch (IOException)
+            {
+
             }
             catch (ArgumentException)
             {

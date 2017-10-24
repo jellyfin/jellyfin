@@ -23,14 +23,14 @@ namespace MediaBrowser.Controller.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        void AttachPrimaryImageAspectRatio(IItemDto dto, IHasMetadata item);
+        void AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item);
 
         /// <summary>
         /// Gets the primary image aspect ratio.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.Nullable&lt;System.Double&gt;.</returns>
-        double? GetPrimaryImageAspectRatio(IHasMetadata item);
+        double? GetPrimaryImageAspectRatio(BaseItem item);
 
         /// <summary>
         /// Gets the base item dto.

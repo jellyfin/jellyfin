@@ -60,7 +60,12 @@ namespace MediaBrowser.Providers.TV
 
                     result.HasMetadata = true;
                     result.Item = new Season();
-                    result.Item.Name = seasonInfo.name;
+
+                    // Don't use moviedb season names for now until if/when we have field-level configuration
+                    //result.Item.Name = seasonInfo.name;
+
+                    result.Item.Name = info.Name;
+
                     result.Item.IndexNumber = seasonNumber;
 
                     result.Item.Overview = seasonInfo.overview;
@@ -209,7 +214,7 @@ namespace MediaBrowser.Providers.TV
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+            using (var response = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
@@ -217,7 +222,10 @@ namespace MediaBrowser.Providers.TV
 
             }).ConfigureAwait(false))
             {
-                return _jsonSerializer.DeserializeFromStream<RootObject>(json);
+                using (var json = response.Content)
+                {
+                    return _jsonSerializer.DeserializeFromStream<RootObject>(json);
+                }
             }
         }
 

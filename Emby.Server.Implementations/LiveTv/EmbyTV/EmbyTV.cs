@@ -1222,7 +1222,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                         _logger.Info("Closing live stream {0}", id);
 
-                        await stream.Close().ConfigureAwait(false);
+                        stream.Close();
                         _logger.Info("Live stream {0} closed successfully", id);
                     }
                 }
@@ -1286,9 +1286,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     Id = timer.Id
                 };
 
-                if (_activeRecordings.TryAdd(timer.Id, activeRecordingInfo))
+                if (!_activeRecordings.ContainsKey(timer.Id))
                 {
-                    await RecordStream(timer, recordingEndDate, activeRecordingInfo, activeRecordingInfo.CancellationTokenSource.Token).ConfigureAwait(false);
+                    await RecordStream(timer, recordingEndDate, activeRecordingInfo).ConfigureAwait(false);
                 }
                 else
                 {
@@ -1397,8 +1397,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return Path.Combine(recordPath, recordingFileName);
         }
 
-        private async Task RecordStream(TimerInfo timer, DateTime recordingEndDate,
-            ActiveRecordingInfo activeRecordingInfo, CancellationToken cancellationToken)
+        private async Task RecordStream(TimerInfo timer, DateTime recordingEndDate, ActiveRecordingInfo activeRecordingInfo)
         {
             if (timer == null)
             {
@@ -1420,19 +1419,18 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             if (programInfo != null)
             {
                 CopyProgramInfoToTimerInfo(programInfo, timer);
-                //activeRecordingInfo.Program = programInfo;
             }
 
             string seriesPath = null;
             var recordPath = GetRecordingPath(timer, out seriesPath);
             var recordingStatus = RecordingStatus.New;
 
+            var recorder = await GetRecorder().ConfigureAwait(false);
+
             string liveStreamId = null;
 
             try
             {
-                var recorder = await GetRecorder().ConfigureAwait(false);
-
                 var allMediaSources = await GetChannelStreamMediaSources(timer.ChannelId, CancellationToken.None).ConfigureAwait(false);
 
                 _logger.Info("Opening recording stream from tuner provider");
@@ -1442,14 +1440,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 var mediaStreamInfo = liveStreamInfo.Item2;
                 liveStreamId = mediaStreamInfo.Id;
 
-                // HDHR doesn't seem to release the tuner right away after first probing with ffmpeg
-                //await Task.Delay(3000, cancellationToken).ConfigureAwait(false);
-
                 recordPath = recorder.GetOutputPath(mediaStreamInfo, recordPath);
                 recordPath = EnsureFileUnique(recordPath, timer.Id);
 
                 _libraryMonitor.ReportFileSystemChangeBeginning(recordPath);
-                activeRecordingInfo.Path = recordPath;
 
                 var duration = recordingEndDate - DateTime.UtcNow;
 
@@ -1459,15 +1453,22 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 Action onStarted = async () =>
                 {
+                    activeRecordingInfo.Path = recordPath;
+
+                    _activeRecordings.TryAdd(timer.Id, activeRecordingInfo);
+
                     timer.Status = RecordingStatus.InProgress;
                     _timerProvider.AddOrUpdate(timer, false);
 
                     await SaveRecordingMetadata(timer, recordPath, seriesPath).ConfigureAwait(false);
+
+                    CreateRecordingFolders();
+
                     TriggerRefresh(recordPath);
                     EnforceKeepUpTo(timer, seriesPath);
                 };
 
-                await recorder.Record(liveStreamInfo.Item1 as IDirectStreamProvider, mediaStreamInfo, recordPath, duration, onStarted, cancellationToken).ConfigureAwait(false);
+                await recorder.Record(liveStreamInfo.Item1 as IDirectStreamProvider, mediaStreamInfo, recordPath, duration, onStarted, activeRecordingInfo.CancellationTokenSource.Token).ConfigureAwait(false);
 
                 recordingStatus = RecordingStatus.Completed;
                 _logger.Info("Recording completed: {0}", recordPath);
@@ -1507,6 +1508,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 _logger.Info("Retrying recording in {0} seconds.", retryIntervalSeconds);
 
                 timer.Status = RecordingStatus.New;
+                timer.PrePaddingSeconds = 0;
                 timer.StartDate = DateTime.UtcNow.AddSeconds(retryIntervalSeconds);
                 timer.RetryCount++;
                 _timerProvider.AddOrUpdate(timer);
@@ -1526,13 +1528,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private void TriggerRefresh(string path)
         {
-            _logger.Debug("Triggering refresh on {0}", path);
+            _logger.Info("Triggering refresh on {0}", path);
 
             var item = GetAffectedBaseItem(_fileSystem.GetDirectoryName(path));
 
             if (item != null)
             {
-                _logger.Debug("Refreshing recording parent {0}", item.Path);
+                _logger.Info("Refreshing recording parent {0}", item.Path);
 
                 _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
                 {

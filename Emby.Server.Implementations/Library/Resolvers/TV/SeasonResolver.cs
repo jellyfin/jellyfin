@@ -55,10 +55,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 if (season.IndexNumber.HasValue)
                 {
                     var seasonNumber = season.IndexNumber.Value;
-                    
+
                     season.Name = seasonNumber == 0 ?
                         args.LibraryOptions.SeasonZeroDisplayName :
-                        string.Format(_localization.GetLocalizedString("NameSeasonNumber"), seasonNumber.ToString(UsCulture));
+                        string.Format(_localization.GetLocalizedString("NameSeasonNumber"), seasonNumber.ToString(UsCulture), args.GetLibraryOptions().PreferredMetadataLanguage);
                 }
 
                 return season;

@@ -66,19 +66,22 @@ namespace Emby.Server.Implementations.Session
             return SendMessage(name, new Dictionary<string, string>(), cancellationToken);
         }
 
-        private Task SendMessage(string name,
+        private async Task SendMessage(string name,
             Dictionary<string, string> args,
             CancellationToken cancellationToken)
         {
             var url = PostUrl + "/" + name + ToQueryString(args);
 
-            return _httpClient.Post(new HttpRequestOptions
+            using ((await _httpClient.Post(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
                 BufferContent = false
 
-            });
+            }).ConfigureAwait(false)))
+            {
+
+            }
         }
 
         public Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)

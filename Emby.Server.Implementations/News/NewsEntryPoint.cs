@@ -88,15 +88,18 @@ namespace Emby.Server.Implementations.News
                 BufferContent = false
             };
 
-            using (var stream = await _httpClient.Get(requestOptions).ConfigureAwait(false))
+            using (var response = await _httpClient.SendAsync(requestOptions, "GET").ConfigureAwait(false))
             {
-                using (var reader = XmlReader.Create(stream))
+                using (var stream = response.Content)
                 {
-                    var news = ParseRssItems(reader).ToList();
+                    using (var reader = XmlReader.Create(stream))
+                    {
+                        var news = ParseRssItems(reader).ToList();
 
-                    _json.SerializeToFile(news, path);
+                        _json.SerializeToFile(news, path);
 
-                    await CreateNotifications(news, lastUpdate, CancellationToken.None).ConfigureAwait(false);
+                        await CreateNotifications(news, lastUpdate, CancellationToken.None).ConfigureAwait(false);
+                    }
                 }
             }
         }

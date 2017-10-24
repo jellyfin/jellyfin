@@ -17,7 +17,7 @@ using TagLib.IFD.Tags;
 
 namespace Emby.Photos
 {
-    public class PhotoProvider : ICustomMetadataProvider<Photo>, IHasItemChangeMonitor, IForcedProvider
+    public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider
     {
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
@@ -31,14 +31,14 @@ namespace Emby.Photos
         }
 
         // These are causing taglib to hang
-        private string[] _excludeExtensions = new string[] { ".dng" };
+        private string[] _includextensions = new string[] { ".jpg", ".jpeg", ".png", ".tiff" };
 
         public Task<ItemUpdateType> FetchAsync(Photo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             item.SetImagePath(ImageType.Primary, item.Path);
 
             // Examples: https://github.com/mono/taglib-sharp/blob/a5f6949a53d09ce63ee7495580d6802921a21f14/tests/fixtures/TagLib.Tests.Images/NullOrientationTest.cs
-            if (!_excludeExtensions.Contains(Path.GetExtension(item.Path) ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (_includextensions.Contains(Path.GetExtension(item.Path) ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
                 try
                 {
@@ -163,10 +163,14 @@ namespace Emby.Photos
 
             if (!item.Width.HasValue || !item.Height.HasValue)
             {
-                var size = _imageProcessor.GetImageSize(item.Path);
+                var img = item.GetImageInfo(ImageType.Primary, 0);
+                var size = _imageProcessor.GetImageSize(item, img, false, false);
 
-                item.Width = Convert.ToInt32(size.Width);
-                item.Height = Convert.ToInt32(size.Height);
+                if (size.Width > 0 && size.Height > 0)
+                {
+                    item.Width = Convert.ToInt32(size.Width);
+                    item.Height = Convert.ToInt32(size.Height);
+                }
             }
 
             const ItemUpdateType result = ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataImport;
@@ -176,20 +180,6 @@ namespace Emby.Photos
         public string Name
         {
             get { return "Embedded Information"; }
-        }
-
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
-        {
-            if (item.EnableRefreshOnDateModifiedChange && !string.IsNullOrWhiteSpace(item.Path) && item.LocationType == LocationType.FileSystem)
-            {
-                var file = directoryService.GetFile(item.Path);
-                if (file != null && file.LastWriteTimeUtc != item.DateModified)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }

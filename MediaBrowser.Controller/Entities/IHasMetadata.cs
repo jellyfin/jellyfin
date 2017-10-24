@@ -151,11 +151,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Swaps the images.
         /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="index1">The index1.</param>
-        /// <param name="index2">The index2.</param>
-        /// <returns>Task.</returns>
-        Task SwapImages(ImageType type, int index1, int index2);
+        void SwapImages(ImageType type, int index1, int index2);
 
         /// <summary>
         /// Gets or sets the primary image path.
@@ -249,10 +245,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Updates to repository.
         /// </summary>
-        /// <param name="updateReason">The update reason.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken);
+        void UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the image.

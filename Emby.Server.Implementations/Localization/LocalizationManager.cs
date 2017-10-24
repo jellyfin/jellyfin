@@ -315,6 +315,15 @@ namespace Emby.Server.Implementations.Localization
 
         public string GetLocalizedString(string phrase, string culture)
         {
+            if (string.IsNullOrWhiteSpace(culture))
+            {
+                culture = _configurationManager.Configuration.UICulture;
+            }
+            if (string.IsNullOrWhiteSpace(culture))
+            {
+                culture = DefaultCulture;
+            }
+
             var dictionary = GetLocalizationDictionary(culture);
 
             string value;
@@ -327,19 +336,31 @@ namespace Emby.Server.Implementations.Localization
             return phrase;
         }
 
+        const string DefaultCulture = "en-US";
+
         private readonly ConcurrentDictionary<string, Dictionary<string, string>> _dictionaries =
             new ConcurrentDictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
 
         public Dictionary<string, string> GetLocalizationDictionary(string culture)
         {
+            if (string.IsNullOrWhiteSpace(culture))
+            {
+                throw new ArgumentNullException("culture");
+            }
+
             const string prefix = "Core";
             var key = prefix + culture;
 
-            return _dictionaries.GetOrAdd(key, k => GetDictionary(prefix, culture, "en-US.json"));
+            return _dictionaries.GetOrAdd(key, k => GetDictionary(prefix, culture, DefaultCulture + ".json"));
         }
 
         private Dictionary<string, string> GetDictionary(string prefix, string culture, string baseFilename)
         {
+            if (string.IsNullOrWhiteSpace(culture))
+            {
+                throw new ArgumentNullException("culture");
+            }
+
             var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var namespaceName = GetType().Namespace + "." + prefix;
@@ -387,36 +408,47 @@ namespace Emby.Server.Implementations.Localization
             return new LocalizatonOption[]
             {
                 new LocalizatonOption{ Name="Arabic", Value="ar"},
+                new LocalizatonOption{ Name="Belarusian (Belarus)", Value="be-BY"},
                 new LocalizatonOption{ Name="Bulgarian (Bulgaria)", Value="bg-BG"},
                 new LocalizatonOption{ Name="Catalan", Value="ca"},
                 new LocalizatonOption{ Name="Chinese Simplified", Value="zh-CN"},
                 new LocalizatonOption{ Name="Chinese Traditional", Value="zh-TW"},
+                new LocalizatonOption{ Name="Chinese Traditional (Hong Kong)", Value="zh-HK"},
                 new LocalizatonOption{ Name="Croatian", Value="hr"},
                 new LocalizatonOption{ Name="Czech", Value="cs"},
                 new LocalizatonOption{ Name="Danish", Value="da"},
                 new LocalizatonOption{ Name="Dutch", Value="nl"},
                 new LocalizatonOption{ Name="English (United Kingdom)", Value="en-GB"},
-                new LocalizatonOption{ Name="English (United States)", Value="en-us"},
+                new LocalizatonOption{ Name="English (United States)", Value="en-US"},
                 new LocalizatonOption{ Name="Finnish", Value="fi"},
                 new LocalizatonOption{ Name="French", Value="fr"},
                 new LocalizatonOption{ Name="French (Canada)", Value="fr-CA"},
                 new LocalizatonOption{ Name="German", Value="de"},
                 new LocalizatonOption{ Name="Greek", Value="el"},
                 new LocalizatonOption{ Name="Hebrew", Value="he"},
+                new LocalizatonOption{ Name="Hindi (India)", Value="hi-IN"},
                 new LocalizatonOption{ Name="Hungarian", Value="hu"},
                 new LocalizatonOption{ Name="Indonesian", Value="id"},
                 new LocalizatonOption{ Name="Italian", Value="it"},
+                new LocalizatonOption{ Name="Japanese", Value="ja"},
                 new LocalizatonOption{ Name="Kazakh", Value="kk"},
+                new LocalizatonOption{ Name="Korean", Value="ko"},
+                new LocalizatonOption{ Name="Lithuanian", Value="lt-LT"},
+                new LocalizatonOption{ Name="Malay", Value="ms"},
                 new LocalizatonOption{ Name="Norwegian Bokmål", Value="nb"},
                 new LocalizatonOption{ Name="Persian", Value="fa"},
                 new LocalizatonOption{ Name="Polish", Value="pl"},
                 new LocalizatonOption{ Name="Portuguese (Brazil)", Value="pt-BR"},
                 new LocalizatonOption{ Name="Portuguese (Portugal)", Value="pt-PT"},
+                new LocalizatonOption{ Name="Romanian", Value="ro"},
                 new LocalizatonOption{ Name="Russian", Value="ru"},
+                new LocalizatonOption{ Name="Slovak", Value="sk"},
                 new LocalizatonOption{ Name="Slovenian (Slovenia)", Value="sl-SI"},
-                new LocalizatonOption{ Name="Spanish", Value="es-ES"},
+                new LocalizatonOption{ Name="Spanish", Value="es"},
+                new LocalizatonOption{ Name="Spanish (Latin America)", Value="es-419"},
                 new LocalizatonOption{ Name="Spanish (Mexico)", Value="es-MX"},
                 new LocalizatonOption{ Name="Swedish", Value="sv"},
+                new LocalizatonOption{ Name="Swiss German", Value="gsw"},
                 new LocalizatonOption{ Name="Turkish", Value="tr"},
                 new LocalizatonOption{ Name="Ukrainian", Value="uk"},
                 new LocalizatonOption{ Name="Vietnamese", Value="vi"}

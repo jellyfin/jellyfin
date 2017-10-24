@@ -146,11 +146,11 @@ namespace Emby.Server.Implementations.Data
 
                     "create table if not exists TypedBaseItems (guid GUID primary key NOT NULL, type TEXT NOT NULL, data BLOB NULL, ParentId GUID NULL, Path TEXT NULL)",
 
-                    "create table if not exists AncestorIds (ItemId GUID, AncestorId GUID, AncestorIdText TEXT, PRIMARY KEY (ItemId, AncestorId))",
+                    "create table if not exists AncestorIds (ItemId GUID NOT NULL, AncestorId GUID NOT NULL, AncestorIdText TEXT NOT NULL, PRIMARY KEY (ItemId, AncestorId))",
                     "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
                     "create index if not exists idx_AncestorIds5 on AncestorIds(AncestorIdText,ItemId)",
 
-                    "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT, CleanValue TEXT)",
+                    "create table if not exists ItemValues (ItemId GUID NOT NULL, Type INT NOT NULL, Value TEXT NOT NULL, CleanValue TEXT NOT NULL)",
 
                     "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
 
@@ -158,7 +158,7 @@ namespace Emby.Server.Implementations.Data
                     "create index if not exists idxPeopleItemId1 on People(ItemId,ListOrder)",
                     "create index if not exists idxPeopleName on People(Name)",
 
-                    "create table if not exists "+ChaptersTableName+" (ItemId GUID, ChapterIndex INT, StartPositionTicks BIGINT, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
+                    "create table if not exists "+ChaptersTableName+" (ItemId GUID, ChapterIndex INT NOT NULL, StartPositionTicks BIGINT NOT NULL, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
 
                     createMediaStreamsTableCommand,
 
@@ -614,6 +614,33 @@ namespace Emby.Server.Implementations.Data
             }
 
             SaveItems(new List<BaseItem> { item }, cancellationToken);
+        }
+
+        public void SaveImages(BaseItem item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            CheckDisposed();
+
+            using (WriteLock.Write())
+            {
+                using (var connection = CreateConnection())
+                {
+                    connection.RunInTransaction(db =>
+                    {
+                        using (var saveImagesStatement = PrepareStatement(db, "Update TypedBaseItems set Images=@Images where guid=@Id"))
+                        {
+                            saveImagesStatement.TryBind("@Id", item.Id.ToGuidBlob());
+                            saveImagesStatement.TryBind("@Images", SerializeImages(item));
+
+                            saveImagesStatement.MoveNext();
+                        }
+                    }, TransactionMode);
+                }
+            }
         }
 
         /// <summary>
@@ -1170,7 +1197,11 @@ namespace Emby.Server.Implementations.Data
                    delimeter +
                    image.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) +
                    delimeter +
-                   image.Type;
+                   image.Type +
+                   delimeter +
+                   image.Width.ToString(CultureInfo.InvariantCulture) +
+                   delimeter +
+                   image.Height.ToString(CultureInfo.InvariantCulture);
         }
 
         public ItemImageInfo ItemImageInfoFromValueString(string value)
@@ -1196,6 +1227,20 @@ namespace Emby.Server.Implementations.Data
             if (Enum.TryParse(parts[2], true, out type))
             {
                 image.Type = type;
+            }
+
+            if (parts.Length >= 5)
+            {
+                int width;
+                int height;
+                if (int.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out width))
+                {
+                    if (int.TryParse(parts[4], NumberStyles.Integer, CultureInfo.InvariantCulture, out height))
+                    {
+                        image.Width = width;
+                        image.Height = height;
+                    }
+                }
             }
 
             return image;
@@ -3038,8 +3083,8 @@ namespace Emby.Server.Implementations.Data
             {
                 if (orderBy.Count == 0)
                 {
-                    orderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
                     orderBy.Add(new Tuple<string, SortOrder>("SimilarityScore", SortOrder.Descending));
+                    orderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
                     //orderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
                 }
             }

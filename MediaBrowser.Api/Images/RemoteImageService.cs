@@ -84,7 +84,7 @@ namespace MediaBrowser.Api.Images
     }
 
     [Route("/Items/{Id}/RemoteImages/Download", "POST", Summary = "Downloads a remote image for an item")]
-    [Authenticated(Roles="Admin")]
+    [Authenticated(Roles = "Admin")]
     public class DownloadRemoteImage : BaseDownloadRemoteImage
     {
         /// <summary>
@@ -207,7 +207,7 @@ namespace MediaBrowser.Api.Images
         {
             await _providerManager.SaveImage(item, request.ImageUrl, request.Type, null, CancellationToken.None).ConfigureAwait(false);
 
-            await item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+            item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
         /// <summary>
@@ -232,9 +232,9 @@ namespace MediaBrowser.Api.Images
                 contentPath = _fileSystem.ReadAllText(pointerCachePath);
 
                 if (_fileSystem.FileExists(contentPath))
-				{
-				    return await ResultFactory.GetStaticFileResult(Request, contentPath).ConfigureAwait(false);
-				}
+                {
+                    return await ResultFactory.GetStaticFileResult(Request, contentPath).ConfigureAwait(false);
+                }
             }
             catch (FileNotFoundException)
             {
@@ -262,28 +262,29 @@ namespace MediaBrowser.Api.Images
         /// <returns>Task.</returns>
         private async Task DownloadImage(string url, Guid urlHash, string pointerCachePath)
         {
-            var result = await _httpClient.GetResponse(new HttpRequestOptions
+            using (var result = await _httpClient.GetResponse(new HttpRequestOptions
             {
                 Url = url,
                 BufferContent = false
 
-            }).ConfigureAwait(false);
-
-            var ext = result.ContentType.Split('/').Last();
-
-            var fullCachePath = GetFullCachePath(urlHash + "." + ext);
-
-			_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(fullCachePath));
-            using (var stream = result.Content)
+            }).ConfigureAwait(false))
             {
-                using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
-                {
-                    await stream.CopyToAsync(filestream).ConfigureAwait(false);
-                }
-            }
+                var ext = result.ContentType.Split('/').Last();
 
-			_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(pointerCachePath));
-            _fileSystem.WriteAllText(pointerCachePath, fullCachePath);
+                var fullCachePath = GetFullCachePath(urlHash + "." + ext);
+
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(fullCachePath));
+                using (var stream = result.Content)
+                {
+                    using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
+                    {
+                        await stream.CopyToAsync(filestream).ConfigureAwait(false);
+                    }
+                }
+
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(pointerCachePath));
+                _fileSystem.WriteAllText(pointerCachePath, fullCachePath);
+            }
         }
 
         /// <summary>

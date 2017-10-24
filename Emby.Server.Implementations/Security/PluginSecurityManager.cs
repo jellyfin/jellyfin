@@ -293,10 +293,13 @@ namespace Emby.Server.Implementations.Security
 
                     options.SetPostData(data);
 
-                    using (var json = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
+                    using (var response = (await _httpClient.Post(options).ConfigureAwait(false)))
                     {
-                        reg = _jsonSerializer.DeserializeFromStream<RegRecord>(json);
-                        success = true;
+                        using (var json = response.Content)
+                        {
+                            reg = _jsonSerializer.DeserializeFromStream<RegRecord>(json);
+                            success = true;
+                        }
                     }
 
                     if (reg.registered)

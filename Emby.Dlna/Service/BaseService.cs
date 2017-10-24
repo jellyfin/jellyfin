@@ -24,9 +24,9 @@ namespace Emby.Dlna.Service
             return EventManager.CancelEventSubscription(subscriptionId);
         }
 
-        public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string timeoutString)
+        public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string notificationType, string timeoutString, string callbackUrl)
         {
-            return EventManager.RenewEventSubscription(subscriptionId, timeoutString);
+            return EventManager.RenewEventSubscription(subscriptionId, notificationType, timeoutString, callbackUrl);
         }
 
         public EventSubscriptionResponse CreateEventSubscription(string notificationType, string timeoutString, string callbackUrl)

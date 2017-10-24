@@ -96,23 +96,17 @@ namespace Emby.Server.Implementations.Library
             return GetMediaStreamsForItem(list);
         }
 
-        private List<MediaStream> GetMediaStreamsForItem(IEnumerable<MediaStream> streams)
+        private List<MediaStream> GetMediaStreamsForItem(List<MediaStream> streams)
         {
-            var list = streams.ToList();
-
-            var subtitleStreams = list
-                .Where(i => i.Type == MediaStreamType.Subtitle)
-                .ToList();
-
-            if (subtitleStreams.Count > 0)
+            foreach (var stream in streams)
             {
-                foreach (var subStream in subtitleStreams)
+                if (stream.Type == MediaStreamType.Subtitle)
                 {
-                    subStream.SupportsExternalStream = StreamSupportsExternalStream(subStream);
+                    stream.SupportsExternalStream = StreamSupportsExternalStream(stream);
                 }
             }
 
-            return list;
+            return streams;
         }
 
         public async Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, string userId, bool enablePathSubstitution, string[] supportedLiveMediaTypes, CancellationToken cancellationToken)

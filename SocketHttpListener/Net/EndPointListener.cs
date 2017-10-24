@@ -93,6 +93,15 @@ namespace SocketHttpListener.Net
                 }
             }
 
+            try
+            {
+                sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            }
+            catch (SocketException)
+            {
+                // This is not supported on all operating systems (qnap)
+            }
+
             sock.Bind(endpoint);
 
             // This is the number TcpListener uses.

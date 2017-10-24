@@ -216,24 +216,27 @@ namespace MediaBrowser.Providers.TV
 
             var url = string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, NormalizeLanguage(preferredMetadataLanguage));
 
-            using (var zipStream = await _httpClient.Get(new HttpRequestOptions
+            using (var response = await _httpClient.SendAsync(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
                 BufferContent = false
 
-            }).ConfigureAwait(false))
+            }, "GET").ConfigureAwait(false))
             {
-                // Delete existing files
-                DeleteXmlFiles(seriesDataPath);
-
-                // Copy to memory stream because we need a seekable stream
-                using (var ms = _memoryStreamProvider.CreateNew())
+                using (var zipStream = response.Content)
                 {
-                    await zipStream.CopyToAsync(ms).ConfigureAwait(false);
+                    // Delete existing files
+                    DeleteXmlFiles(seriesDataPath);
 
-                    ms.Position = 0;
-                    _zipClient.ExtractAllFromZip(ms, seriesDataPath, true);
+                    // Copy to memory stream because we need a seekable stream
+                    using (var ms = _memoryStreamProvider.CreateNew())
+                    {
+                        await zipStream.CopyToAsync(ms).ConfigureAwait(false);
+
+                        ms.Position = 0;
+                        _zipClient.ExtractAllFromZip(ms, seriesDataPath, true);
+                    }
                 }
             }
 
@@ -260,15 +263,18 @@ namespace MediaBrowser.Providers.TV
         {
             var url = string.Format(GetSeriesByImdbId, id, NormalizeLanguage(language));
 
-            using (var result = await _httpClient.Get(new HttpRequestOptions
+            using (var response = await _httpClient.SendAsync(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
                 BufferContent = false
 
-            }).ConfigureAwait(false))
+            }, "GET").ConfigureAwait(false))
             {
-                return FindSeriesId(result);
+                using (var result = response.Content)
+                {
+                    return FindSeriesId(result);
+                }
             }
         }
 
@@ -514,64 +520,67 @@ namespace MediaBrowser.Providers.TV
 
             var comparableName = GetComparableName(name);
 
-            using (var stream = await _httpClient.Get(new HttpRequestOptions
+            using (var response = await _httpClient.SendAsync(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
                 BufferContent = false
 
-            }).ConfigureAwait(false))
+            }, "GET").ConfigureAwait(false))
             {
-                var settings = _xmlSettings.Create(false);
-
-                settings.CheckCharacters = false;
-                settings.IgnoreProcessingInstructions = true;
-                settings.IgnoreComments = true;
-
-                using (var streamReader = new StreamReader(stream, Encoding.UTF8))
+                using (var stream = response.Content)
                 {
-                    // Use XmlReader for best performance
-                    using (var reader = XmlReader.Create(streamReader, settings))
+                    var settings = _xmlSettings.Create(false);
+
+                    settings.CheckCharacters = false;
+                    settings.IgnoreProcessingInstructions = true;
+                    settings.IgnoreComments = true;
+
+                    using (var streamReader = new StreamReader(stream, Encoding.UTF8))
                     {
-                        reader.MoveToContent();
-                        reader.Read();
-
-                        // Loop through each element
-                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                        // Use XmlReader for best performance
+                        using (var reader = XmlReader.Create(streamReader, settings))
                         {
-                            cancellationToken.ThrowIfCancellationRequested();
+                            reader.MoveToContent();
+                            reader.Read();
 
-                            if (reader.NodeType == XmlNodeType.Element)
+                            // Loop through each element
+                            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                             {
-                                switch (reader.Name)
+                                cancellationToken.ThrowIfCancellationRequested();
+
+                                if (reader.NodeType == XmlNodeType.Element)
                                 {
-                                    case "Series":
-                                        {
-                                            if (reader.IsEmptyElement)
+                                    switch (reader.Name)
+                                    {
+                                        case "Series":
                                             {
-                                                reader.Read();
-                                                continue;
-                                            }
-                                            using (var subtree = reader.ReadSubtree())
-                                            {
-                                                var searchResult = GetSeriesSearchResultFromSubTree(subtree, comparableName);
-                                                if (searchResult != null)
+                                                if (reader.IsEmptyElement)
                                                 {
-                                                    searchResult.SearchProviderName = Name;
-                                                    searchResults.Add(searchResult);
+                                                    reader.Read();
+                                                    continue;
                                                 }
+                                                using (var subtree = reader.ReadSubtree())
+                                                {
+                                                    var searchResult = GetSeriesSearchResultFromSubTree(subtree, comparableName);
+                                                    if (searchResult != null)
+                                                    {
+                                                        searchResult.SearchProviderName = Name;
+                                                        searchResults.Add(searchResult);
+                                                    }
+                                                }
+                                                break;
                                             }
-                                            break;
-                                        }
 
-                                    default:
-                                        reader.Skip();
-                                        break;
+                                        default:
+                                            reader.Skip();
+                                            break;
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                reader.Read();
+                                else
+                                {
+                                    reader.Read();
+                                }
                             }
                         }
                     }
@@ -1631,8 +1640,7 @@ namespace MediaBrowser.Providers.TV
         {
             get
             {
-                // After Omdb
-                return 1;
+                return 0;
             }
         }
 

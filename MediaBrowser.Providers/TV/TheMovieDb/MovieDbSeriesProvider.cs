@@ -352,7 +352,7 @@ namespace MediaBrowser.Providers.TV
 
             RootObject mainResult;
 
-            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+            using (var response = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
@@ -360,11 +360,14 @@ namespace MediaBrowser.Providers.TV
 
             }).ConfigureAwait(false))
             {
-                mainResult = _jsonSerializer.DeserializeFromStream<RootObject>(json);
-
-                if (!string.IsNullOrEmpty(language))
+                using (var json = response.Content)
                 {
-                    mainResult.ResultLanguage = language;
+                    mainResult = _jsonSerializer.DeserializeFromStream<RootObject>(json);
+
+                    if (!string.IsNullOrEmpty(language))
+                    {
+                        mainResult.ResultLanguage = language;
+                    }
                 }
             }
 
@@ -386,7 +389,7 @@ namespace MediaBrowser.Providers.TV
                     url += "&include_image_language=" + MovieDbProvider.GetImageLanguagesParam(language);
                 }
 
-                using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+                using (var response = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
@@ -394,10 +397,13 @@ namespace MediaBrowser.Providers.TV
 
                 }).ConfigureAwait(false))
                 {
-                    var englishResult = _jsonSerializer.DeserializeFromStream<RootObject>(json);
+                    using (var json = response.Content)
+                    {
+                        var englishResult = _jsonSerializer.DeserializeFromStream<RootObject>(json);
 
-                    mainResult.overview = englishResult.overview;
-                    mainResult.ResultLanguage = "en";
+                        mainResult.overview = englishResult.overview;
+                        mainResult.ResultLanguage = "en";
+                    }
                 }
             }
 
@@ -449,7 +455,7 @@ namespace MediaBrowser.Providers.TV
                 MovieDbProvider.ApiKey,
                 externalSource);
 
-            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+            using (var response = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
@@ -457,27 +463,30 @@ namespace MediaBrowser.Providers.TV
 
             }).ConfigureAwait(false))
             {
-                var result = _jsonSerializer.DeserializeFromStream<MovieDbSearch.ExternalIdLookupResult>(json);
-
-                if (result != null && result.tv_results != null)
+                using (var json = response.Content)
                 {
-                    var tv = result.tv_results.FirstOrDefault();
+                    var result = _jsonSerializer.DeserializeFromStream<MovieDbSearch.ExternalIdLookupResult>(json);
 
-                    if (tv != null)
+                    if (result != null && result.tv_results != null)
                     {
-                        var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-                        var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
+                        var tv = result.tv_results.FirstOrDefault();
 
-                        var remoteResult = new RemoteSearchResult
+                        if (tv != null)
                         {
-                            Name = tv.name,
-                            SearchProviderName = Name,
-                            ImageUrl = string.IsNullOrWhiteSpace(tv.poster_path) ? null : tmdbImageUrl + tv.poster_path
-                        };
+                            var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
+                            var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
 
-                        remoteResult.SetProviderId(MetadataProviders.Tmdb, tv.id.ToString(_usCulture));
+                            var remoteResult = new RemoteSearchResult
+                            {
+                                Name = tv.name,
+                                SearchProviderName = Name,
+                                ImageUrl = string.IsNullOrWhiteSpace(tv.poster_path) ? null : tmdbImageUrl + tv.poster_path
+                            };
 
-                        return remoteResult;
+                            remoteResult.SetProviderId(MetadataProviders.Tmdb, tv.id.ToString(_usCulture));
+
+                            return remoteResult;
+                        }
                     }
                 }
             }

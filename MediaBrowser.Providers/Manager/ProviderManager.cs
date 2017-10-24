@@ -118,7 +118,29 @@ namespace MediaBrowser.Providers.Manager
 
         public Task<ItemUpdateType> RefreshSingleItem(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            var service = _metadataServices.FirstOrDefault(i => i.CanRefresh(item));
+            IMetadataService service = null;
+            var type = item.GetType();
+
+            foreach (var current in _metadataServices)
+            {
+                if (current.CanRefreshPrimary(type))
+                {
+                    service = current;
+                    break;
+                }
+            }
+
+            if (service == null)
+            {
+                foreach (var current in _metadataServices)
+                {
+                    if (current.CanRefresh(item))
+                    {
+                        service = current;
+                        break;
+                    }
+                }
+            }
 
             if (service != null)
             {
@@ -131,16 +153,16 @@ namespace MediaBrowser.Providers.Manager
 
         public async Task SaveImage(IHasMetadata item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
-            var response = await _httpClient.GetResponse(new HttpRequestOptions
+            using (var response = await _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
                 Url = url,
                 BufferContent = false
 
-            }).ConfigureAwait(false);
-
-            await SaveImage(item, response.Content, response.ContentType, type, imageIndex, cancellationToken)
-                    .ConfigureAwait(false);
+            }).ConfigureAwait(false))
+            {
+                await SaveImage(item, response.Content, response.ContentType, type, imageIndex, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         public Task SaveImage(IHasMetadata item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
@@ -452,6 +474,8 @@ namespace MediaBrowser.Providers.Manager
                 GetPluginSummary<MusicAlbum>(),
                 GetPluginSummary<MusicArtist>(),
                 GetPluginSummary<Audio>(),
+                GetPluginSummary<AudioBook>(),
+                GetPluginSummary<AudioPodcast>(),
                 GetPluginSummary<Genre>(),
                 GetPluginSummary<Studio>(),
                 GetPluginSummary<GameGenre>(),
@@ -560,30 +584,20 @@ namespace MediaBrowser.Providers.Manager
                 new MetadataOptions();
         }
 
-        private Task _completedTask = Task.FromResult(true);
         /// <summary>
         /// Saves the metadata.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="updateType">Type of the update.</param>
-        /// <returns>Task.</returns>
-        public Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType)
+        public void SaveMetadata(IHasMetadata item, ItemUpdateType updateType)
         {
             SaveMetadata(item, updateType, _savers);
-            return _completedTask;
         }
 
         /// <summary>
         /// Saves the metadata.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="updateType">Type of the update.</param>
-        /// <param name="savers">The savers.</param>
-        /// <returns>Task.</returns>
-        public Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType, IEnumerable<string> savers)
+        public void SaveMetadata(IHasMetadata item, ItemUpdateType updateType, IEnumerable<string> savers)
         {
             SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
-            return _completedTask;
         }
 
         /// <summary>

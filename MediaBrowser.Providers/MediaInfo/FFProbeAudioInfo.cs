@@ -123,7 +123,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.Name = data.Name;
             }
 
-            if (!audio.LockedFields.Contains(MetadataFields.Cast))
+            if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataFields.Cast))
             {
                 var people = new List<PersonInfo>();
 
