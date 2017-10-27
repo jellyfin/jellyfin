@@ -120,6 +120,36 @@ namespace Emby.Server.Implementations.Networking
                 endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase)
                 )
             {
+                var subnets = GetSubnets(endpointFirstPart);
+
+                foreach (var subnet_Match in subnets)
+                {
+                    //Logger.Debug("subnet_Match:" + subnet_Match);
+
+                    if (endpoint.StartsWith(subnet_Match + ".", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private Dictionary<string, List<string>> _subnetLookup = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        private List<string> GetSubnets(string endpointFirstPart)
+        {
+            List<string> subnets;
+
+            lock (_subnetLookup)
+            {
+                if (_subnetLookup.TryGetValue(endpointFirstPart, out subnets))
+                {
+                    return subnets;
+                }
+
+                subnets = new List<string>();
+
                 foreach (NetworkInterface adapter in NetworkInterface.GetAllNetworkInterfaces())
                 {
                     foreach (UnicastIPAddressInformation unicastIPAddressInformation in adapter.GetIPProperties().UnicastAddresses)
@@ -135,51 +165,19 @@ namespace Emby.Server.Implementations.Networking
 
                             var subnet_Match = String.Join(".", unicastIPAddressInformation.Address.ToString().Split('.').Take(subnet_Test).ToArray());
 
-                            if (endpoint.StartsWith(subnet_Match + ".", StringComparison.OrdinalIgnoreCase))
+                            // TODO: Is this check necessary?
+                            if (adapter.OperationalStatus == OperationalStatus.Up)
                             {
-                                return true;
+                                subnets.Add(subnet_Match);
                             }
                         }
                     }
                 }
+
+                _subnetLookup[endpointFirstPart] = subnets;
+
+                return subnets;
             }
-
-            return false;
-        }
-
-        private Dictionary<string, string> _subnetLookup = new Dictionary<string, string>(StringComparer.Ordinal);
-        private string GetSubnet(string endpointFirstPart)
-        {
-            string subnet_Match = "";
-
-            lock (_subnetLookup)
-            {
-                if (_subnetLookup.TryGetValue(endpointFirstPart, out subnet_Match))
-                {
-                    return subnet_Match;
-                }
-
-                foreach (NetworkInterface adapter in NetworkInterface.GetAllNetworkInterfaces())
-                    foreach (UnicastIPAddressInformation unicastIPAddressInformation in adapter.GetIPProperties().UnicastAddresses)
-                        if (unicastIPAddressInformation.Address.AddressFamily == AddressFamily.InterNetwork && endpointFirstPart == unicastIPAddressInformation.Address.ToString().Split('.')[0])
-                        {
-                            int subnet_Test = 0;
-                            foreach (string part in unicastIPAddressInformation.IPv4Mask.ToString().Split('.'))
-                            {
-                                if (part.Equals("0")) break;
-                                subnet_Test++;
-                            }
-
-                            subnet_Match = String.Join(".", unicastIPAddressInformation.Address.ToString().Split('.').Take(subnet_Test).ToArray());
-                        }
-
-                if (!string.IsNullOrWhiteSpace(subnet_Match))
-                {
-                    _subnetLookup[endpointFirstPart] = subnet_Match;
-                }
-            }
-
-            return subnet_Match;
         }
 
         private bool Is172AddressPrivate(string endpoint)
