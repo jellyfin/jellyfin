@@ -124,18 +124,6 @@ namespace Emby.Server.Implementations.HttpClientManager
             }
         }
 
-        private void AddIpv4Option(HttpWebRequest request, HttpRequestOptions options)
-        {
-            request.ServicePoint.BindIPEndPointDelegate = (servicePount, remoteEndPoint, retryCount) =>
-            {
-                if (remoteEndPoint.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    return new IPEndPoint(IPAddress.Any, 0);
-                }
-                throw new InvalidOperationException("no IPv4 address");
-            };
-        }
-
         private WebRequest GetRequest(HttpRequestOptions options, string method)
         {
             var url = options.Url;
@@ -153,11 +141,6 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (httpWebRequest != null)
             {
-                if (options.PreferIpv4)
-                {
-                    AddIpv4Option(httpWebRequest, options);
-                }
-
                 AddRequestHeaders(httpWebRequest, options);
 
                 if (options.EnableHttpCompression)
