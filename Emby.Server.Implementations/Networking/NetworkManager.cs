@@ -113,7 +113,6 @@ namespace Emby.Server.Implementations.Networking
         {
             var endpointFirstPart = endpoint.Split('.')[0];
 
-            string subnet_Match = "";
             if (
                 endpoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
@@ -122,7 +121,9 @@ namespace Emby.Server.Implementations.Networking
                 )
             {
                 foreach (NetworkInterface adapter in NetworkInterface.GetAllNetworkInterfaces())
+                {
                     foreach (UnicastIPAddressInformation unicastIPAddressInformation in adapter.GetIPProperties().UnicastAddresses)
+                    {
                         if (unicastIPAddressInformation.Address.AddressFamily == AddressFamily.InterNetwork && endpointFirstPart == unicastIPAddressInformation.Address.ToString().Split('.')[0])
                         {
                             int subnet_Test = 0;
@@ -132,11 +133,18 @@ namespace Emby.Server.Implementations.Networking
                                 subnet_Test++;
                             }
 
-                            subnet_Match = String.Join(".", unicastIPAddressInformation.Address.ToString().Split('.').Take(subnet_Test).ToArray());
+                            var subnet_Match = String.Join(".", unicastIPAddressInformation.Address.ToString().Split('.').Take(subnet_Test).ToArray());
+
+                            if (endpoint.StartsWith(subnet_Match + ".", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
                         }
+                    }
+                }
             }
 
-            return endpoint.StartsWith(subnet_Match + ".", StringComparison.OrdinalIgnoreCase);
+            return false;
         }
 
         private Dictionary<string, string> _subnetLookup = new Dictionary<string, string>(StringComparer.Ordinal);
