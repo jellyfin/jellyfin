@@ -860,55 +860,35 @@ namespace Emby.Dlna.Didl
         {
             AddCommonFields(item, itemStubType, context, writer, filter);
 
-            var audio = item as Audio;
+            var hasArtists = item as IHasArtist;
+            var hasAlbumArtists = item as IHasAlbumArtist;
 
-            if (audio != null)
+            if (hasArtists != null)
             {
-                foreach (var artist in audio.Artists)
+                foreach (var artist in hasArtists.Artists)
                 {
                     AddValue(writer, "upnp", "artist", artist, NS_UPNP);
-                }
+                    AddValue(writer, "dc", "creator", artist, NS_DC);
 
-                if (!string.IsNullOrEmpty(audio.Album))
-                {
-                    AddValue(writer, "upnp", "album", audio.Album, NS_UPNP);
-                }
-
-                foreach (var artist in audio.AlbumArtists)
-                {
-                    AddAlbumArtist(writer, artist);
+                    // If it doesn't support album artists (musicvideo), then tag as both
+                    if (hasAlbumArtists == null)
+                    {
+                        AddAlbumArtist(writer, artist);
+                    }
                 }
             }
 
-            var album = item as MusicAlbum;
-
-            if (album != null)
+            if (hasAlbumArtists != null)
             {
-                foreach (var artist in album.AlbumArtists)
+                foreach (var albumArtist in hasAlbumArtists.AlbumArtists)
                 {
-                    AddAlbumArtist(writer, artist);
-                    AddValue(writer, "upnp", "artist", artist, NS_UPNP);
-                }
-                foreach (var artist in album.Artists)
-                {
-                    AddValue(writer, "upnp", "artist", artist, NS_UPNP);
+                    AddAlbumArtist(writer, albumArtist);
                 }
             }
 
-            var musicVideo = item as MusicVideo;
-
-            if (musicVideo != null)
+            if (!string.IsNullOrWhiteSpace(item.Album))
             {
-                foreach (var artist in musicVideo.Artists)
-                {
-                    AddValue(writer, "upnp", "artist", artist, NS_UPNP);
-                    AddAlbumArtist(writer, artist);
-                }
-
-                if (!string.IsNullOrEmpty(musicVideo.Album))
-                {
-                    AddValue(writer, "upnp", "album", musicVideo.Album, NS_UPNP);
-                }
+                AddValue(writer, "upnp", "album", item.Album, NS_UPNP);
             }
 
             if (item.IndexNumber.HasValue)
