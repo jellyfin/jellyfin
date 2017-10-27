@@ -103,7 +103,9 @@ namespace Emby.Server.Implementations.Networking
             }
 
             return endpoint.StartsWith("localhost", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
+                endpoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
+                endpoint.StartsWith("192.168", StringComparison.OrdinalIgnoreCase) ||
+                endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase) ||
                 IsInPrivateAddressSpaceAndLocalSubnet(endpoint);
         }
 
