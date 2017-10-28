@@ -117,6 +117,17 @@ namespace MediaBrowser.Providers.Music
                             ProductionYear = i.Year
                         };
 
+                        if (i.Artists.Count > 0)
+                        {
+                            result.AlbumArtist = new RemoteSearchResult
+                            {
+                                SearchProviderName = Name,
+                                Name = i.Artists[0].Item1
+                            };
+
+                            result.AlbumArtist.SetProviderId(MetadataProviders.MusicBrainzArtist, i.Artists[0].Item2);
+                        }
+
                         if (!string.IsNullOrWhiteSpace(i.ReleaseId))
                         {
                             result.SetProviderId(MetadataProviders.MusicBrainzAlbum, i.ReleaseId);
@@ -285,6 +296,8 @@ namespace MediaBrowser.Providers.Music
             public string Overview;
             public int? Year;
 
+            public List<Tuple<string, string>> Artists = new List<Tuple<string, string>>();
+
             public static List<ReleaseResult> Parse(XmlReader reader)
             {
                 reader.MoveToContent();
@@ -419,6 +432,32 @@ namespace MediaBrowser.Providers.Music
                                     reader.Skip();
                                     break;
                                 }
+                            case "artist-credit":
+                                {
+                                    // TODO
+
+                                    /*
+                                     * <artist-credit>
+<name-credit>
+<artist id="e225cda5-882d-4b80-b8a3-b36d7175b1ea">
+<name>SARCASTIC+ZOOKEEPER</name>
+<sort-name>SARCASTIC+ZOOKEEPER</sort-name>
+</artist>
+</name-credit>
+</artist-credit>
+                                     */
+                                    using (var subReader = reader.ReadSubtree())
+                                    {
+                                        var artist = ParseArtistCredit(subReader);
+
+                                        if (artist != null)
+                                        {
+                                            result.Artists.Add(artist);
+                                        }
+                                    }
+
+                                    break;
+                                }
                             default:
                                 {
                                     reader.Skip();
@@ -434,6 +473,130 @@ namespace MediaBrowser.Providers.Music
 
                 return result;
             }
+        }
+
+        private static Tuple<string, string> ParseArtistCredit(XmlReader reader)
+        {
+            reader.MoveToContent();
+            reader.Read();
+
+            // http://stackoverflow.com/questions/2299632/why-does-xmlreader-skip-every-other-element-if-there-is-no-whitespace-separator
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "name-credit":
+                            {
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    return ParseArtistNameCredit(subReader);
+                                }
+                            }
+                        default:
+                            {
+                                reader.Skip();
+                                break;
+                            }
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+
+            return null;
+        }
+
+        private static Tuple<string, string> ParseArtistNameCredit(XmlReader reader)
+        {
+            reader.MoveToContent();
+            reader.Read();
+
+            string name = null;
+
+            // http://stackoverflow.com/questions/2299632/why-does-xmlreader-skip-every-other-element-if-there-is-no-whitespace-separator
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "artist":
+                            {
+                                var id = reader.GetAttribute("id");
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    return ParseArtistArtistCredit(subReader, id);
+                                }
+                            }
+                        default:
+                            {
+                                reader.Skip();
+                                break;
+                            }
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return null;
+            }
+
+            return new Tuple<string, string>(name, null);
+        }
+
+        private static Tuple<string, string> ParseArtistArtistCredit(XmlReader reader, string artistId)
+        {
+            reader.MoveToContent();
+            reader.Read();
+
+            string name = null;
+
+            // http://stackoverflow.com/questions/2299632/why-does-xmlreader-skip-every-other-element-if-there-is-no-whitespace-separator
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "name":
+                            {
+                                name = reader.ReadElementContentAsString();
+                                break;
+                            }
+                        default:
+                            {
+                                reader.Skip();
+                                break;
+                            }
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return null;
+            }
+
+            return new Tuple<string, string>(name, artistId);
         }
 
         private async Task<string> GetReleaseIdFromReleaseGroupId(string releaseGroupId, CancellationToken cancellationToken)
