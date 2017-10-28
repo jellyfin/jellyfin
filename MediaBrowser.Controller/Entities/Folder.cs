@@ -1266,7 +1266,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var childOwner = child.IsOwnedItem ? (child.GetOwner() ?? child) : child;
 
-                if (childOwner != null)
+                if (childOwner != null && !(child is IItemByName))
                 {
                     var childLocationType = childOwner.LocationType;
                     if (childLocationType == LocationType.Remote || childLocationType == LocationType.Virtual)

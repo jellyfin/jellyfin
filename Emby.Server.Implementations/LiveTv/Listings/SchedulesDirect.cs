@@ -653,6 +653,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             // Schedules direct requires that the client support compression and will return a 400 response without it
             options.EnableHttpCompression = true;
 
+            // On windows 7 under .net core, this header is not getting added
+#if NETSTANDARD2_0
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                options.RequestHeaders["Accept-Encoding"] = "deflate";
+            }
+#endif
+
             try
             {
                 return await _httpClient.Post(options).ConfigureAwait(false);
@@ -683,6 +691,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             // Schedules direct requires that the client support compression and will return a 400 response without it
             options.EnableHttpCompression = true;
+
+            // On windows 7 under .net core, this header is not getting added
+#if NETSTANDARD2_0
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                options.RequestHeaders["Accept-Encoding"] = "deflate";
+            }
+#endif
 
             try
             {
