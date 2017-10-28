@@ -600,6 +600,6 @@
     "HeaderRestartingEmbyServer": "Red\u00e9marrage du serveur Emby",
     "RestartPleaseWaitMessage": "Veuillez patienter pendant que le serveur Emby s'arr\u00eate et red\u00e9marre. Cela peut prendre une minute ou deux.",
     "PlayNext": "Lire le suivant",
-    "AllowSeasonalThemes": "Allow automatic seasonal themes",
-    "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting."
+    "AllowSeasonalThemes": "Autoriser les th\u00e8mes saisonniers automatiques",
+    "AllowSeasonalThemesHelp": "Des th\u00e8mes saisonniers viendront occasionnellement remplacer votre th\u00e8me r\u00e9gulier."
 }

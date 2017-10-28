@@ -34,6 +34,8 @@ namespace MediaBrowser.Model.Providers
         public string GameSystem { get; set; }
         public string Overview { get; set; }
 
+        public RemoteSearchResult AlbumArtist { get; set; }
+
         public RemoteSearchResult()
         {
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

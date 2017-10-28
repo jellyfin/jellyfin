@@ -600,6 +600,6 @@
     "HeaderRestartingEmbyServer": "Trwa ponownie uruchomienie serwera Emby",
     "RestartPleaseWaitMessage": "Czekaj na zamkni\u0119cie i ponowne uruchomienie serwera Emby. To mo\u017ce trwa\u0107 ok. jednej, dw\u00f3ch minut.",
     "PlayNext": "Odtwarzaj nast\u0119pne",
-    "AllowSeasonalThemes": "Allow automatic seasonal themes",
-    "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting."
+    "AllowSeasonalThemes": "Zezwalaj na automatyczne motywy sezonowe",
+    "AllowSeasonalThemesHelp": "Je\u015bli aktywne, motywy sezonowe b\u0119d\u0105 sporadycznie nadpisywa\u0107 Twoje ustawienia motywu."
 }
