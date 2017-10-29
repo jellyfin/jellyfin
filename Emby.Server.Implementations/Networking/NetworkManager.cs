@@ -106,6 +106,7 @@ namespace Emby.Server.Implementations.Networking
                 endpoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("192.168", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase) ||
+                endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
                 IsInPrivateAddressSpaceAndLocalSubnet(endpoint);
         }
 
@@ -113,12 +114,7 @@ namespace Emby.Server.Implementations.Networking
         {
             var endpointFirstPart = endpoint.Split('.')[0];
 
-            if (
-                endpoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("192.168", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase)
-                )
+            if (endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase))
             {
                 var subnets = GetSubnets(endpointFirstPart);
 

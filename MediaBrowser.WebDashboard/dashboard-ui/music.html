@@ -1,8 +1,18 @@
 ﻿<div id="musicRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs withTabs" data-backdroptype="musicartist">
 
+    <style>
+        @media all and (max-width: 32em) {
+
+            .musicglobalButton {
+                display: none;
+            }
+        }
+    </style>
     <div class="pageTabContent pageTabContent" id="suggestionsTab" data-index="0">
+
         <div class="verticalSection">
-            <h2 class="sectionTitle sectionTitle-cards padded-left">${HeaderLatestMusic}</h2>
+
+            <h2 class="sectionTitle sectionTitle-cards padded-left flex-grow">${HeaderLatestMusic}</h2>
 
             <div is="emby-itemscontainer" id="recentlyAddedSongs" class="itemsContainer padded-left padded-right" style="text-align:left;">
             </div>
@@ -27,6 +37,8 @@
     <div class="pageTabContent pageTabContent" id="albumsTab" data-index="1">
         <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em 1em;">
             <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnPlayAll musicglobalButton" title="${HeaderPlayAll}"><i class="md-icon">&#xE037;</i></button>
+            <button is="paper-icon-button-light" class="btnShuffle musicglobalButton" title="${ButtonShuffle}"><i class="md-icon">&#xE043;</i></button>
             <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
             <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
             <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
