@@ -46,7 +46,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [use HTTPS]; otherwise, <c>false</c>.</value>
         public bool EnableHttps { get; set; }
-        public bool EnableLocalizedGuids { get; set; }
         public bool EnableNormalizedItemByNameIds { get; set; }
 
         /// <summary>
@@ -198,7 +197,6 @@ namespace MediaBrowser.Model.Configuration
             LocalNetworkAddresses = new string[] { };
             CodecsUsed = new string[] { };
             ImageExtractionTimeoutMs = 0;
-            EnableLocalizedGuids = true;
             PathSubstitutions = new PathSubstitution[] { };
             EnableSimpleArtistDetection = true;
 

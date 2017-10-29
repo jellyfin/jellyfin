@@ -9,7 +9,7 @@ using MediaBrowser.Model.Tasks;
 
 namespace Emby.Server.Implementations.Channels
 {
-    class RefreshChannelsScheduledTask : IScheduledTask
+    class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
         private readonly IChannelManager _channelManager;
         private readonly IUserManager _userManager;
@@ -39,6 +39,21 @@ namespace Emby.Server.Implementations.Channels
             get { return "Internet Channels"; }
         }
 
+        public bool IsHidden
+        {
+            get { return ((ChannelManager)_channelManager).Channels.Length == 0; }
+        }
+
+        public bool IsEnabled
+        {
+            get { return true; }
+        }
+
+        public bool IsLogged
+        {
+            get { return true; }
+        }
+
         public async Task Execute(System.Threading.CancellationToken cancellationToken, IProgress<double> progress)
         {
             var manager = (ChannelManager)_channelManager;
@@ -64,16 +79,6 @@ namespace Emby.Server.Implementations.Channels
         public string Key
         {
             get { return "RefreshInternetChannels"; }
-        }
-
-        public bool IsHidden
-        {
-            get { return false; }
-        }
-
-        public bool IsEnabled
-        {
-            get { return true; }
         }
     }
 }
