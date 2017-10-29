@@ -1099,15 +1099,6 @@ namespace MediaBrowser.Model.Dlna
             {
                 string audioCodec = audioStream.Codec;
 
-                if (string.IsNullOrEmpty(audioCodec))
-                {
-                    _logger.Info("Profile: {0}, DirectPlay=false. Reason=Unknown audio codec. Path: {1}",
-                        profile.Name ?? "Unknown Profile",
-                        mediaSource.Path ?? "Unknown path");
-
-                    return new Tuple<PlayMethod?, List<TranscodeReason>>(null, new List<TranscodeReason> { TranscodeReason.UnknownAudioStreamInfo });
-                }
-
                 conditions = new List<ProfileCondition>();
                 bool? isSecondaryAudio = audioStream == null ? null : mediaSource.IsSecondaryAudio(audioStream);
 

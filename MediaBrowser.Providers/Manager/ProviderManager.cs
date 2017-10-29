@@ -948,7 +948,8 @@ namespace MediaBrowser.Providers.Manager
                 }
                 else
                 {
-                    throw new Exception(string.Format("Refresh for item {0} {1} is not in progress", item.GetType().Name, item.Id.ToString("N")));
+                    // TODO: Need to hunt down the conditions for this happening
+                    //throw new Exception(string.Format("Refresh for item {0} {1} is not in progress", item.GetType().Name, item.Id.ToString("N")));
                 }
             }
         }
