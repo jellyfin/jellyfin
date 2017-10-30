@@ -24,7 +24,7 @@
   "LabelPinCode": "Pin code:",
   "DeleteMedia": "Delete media",
   "HeaderSync": "Sync",
-  "HeaderPlayAll":  "Play All",
+  "HeaderPlayAll": "Play All",
   "HeaderUpcomingNews": "Upcoming News",
   "ButtonOk": "Ok",
   "ButtonCancel": "Cancel",
@@ -1850,5 +1850,6 @@
   "AllowOnTheFlySubtitleExtractionHelp": "Embedded subtitles can be extracted from videos and delivered to Emby apps in plain text in order to help prevent video transcoding. On some systems this can take a long time and cause video playback to stall during the extraction process. Disable this to have embedded subtitles burned in with video transcoding when they are not natively supported by the client device.",
   "ButtonStopRecording": "Stop Recording",
   "StopRecording": "Stop recording",
-  "CancelSeries": "Cancel series"
+  "CancelSeries": "Cancel series",
+  "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments."
 }
