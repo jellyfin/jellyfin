@@ -34,25 +34,6 @@
             Basic) if no inner exception is specified. 
             </param>
         </member>
-        <member name="M:SimpleInjector.ActivationException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
-            <summary>
-            Initializes a new instance of the <see cref="T:SimpleInjector.ActivationException" /> class with serialized data.
-            </summary>
-            <param name="info">
-            The <see cref="T:System.Runtime.Serialization.SerializationInfo" /> that holds the serialized object data about the exception 
-            being thrown. 
-            </param>
-            <param name="context">
-            The <see cref="T:System.Runtime.Serialization.StreamingContext" /> that contains contextual information about the source or 
-            destination. 
-            </param>
-            <exception cref="T:System.ArgumentNullException">
-            The <paramref name="info" /> parameter is null. 
-            </exception>
-            <exception cref="T:System.Runtime.Serialization.SerializationException">
-            The class name is null or hresult is zero (0). 
-            </exception>
-        </member>
         <member name="T:SimpleInjector.Container">
             <summary>
             The container. Create an instance of this type for registration of dependencies.
@@ -73,7 +54,6 @@
             <see cref="M:SimpleInjector.Container.AddRegistration(System.Type,SimpleInjector.Registration)"/> or anything related to registering from multiple threads concurrently.
             </para>
             </remarks>
-            <summary>Common Container methods specific for the full .NET version of Simple Injector.</summary>
             <summary>Methods for batch registration.</summary>
             <summary>Methods for registration of collections.</summary>
             <summary>Methods for conditional registrations.</summary>
@@ -2566,25 +2546,6 @@
             Basic) if no inner exception is specified. 
             </param>
         </member>
-        <member name="M:SimpleInjector.DiagnosticVerificationException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
-            <summary>
-            Initializes a new instance of the <see cref="T:SimpleInjector.DiagnosticVerificationException" /> class with serialized data.
-            </summary>
-            <param name="info">
-            The <see cref="T:System.Runtime.Serialization.SerializationInfo" /> that holds the serialized object data about the exception 
-            being thrown. 
-            </param>
-            <param name="context">
-            The <see cref="T:System.Runtime.Serialization.StreamingContext" /> that contains contextual information about the source or 
-            destination. 
-            </param>
-            <exception cref="T:System.ArgumentNullException">
-            The <paramref name="info" /> parameter is null. 
-            </exception>
-            <exception cref="T:System.Runtime.Serialization.SerializationException">
-            The class name is null or hresult is zero (0). 
-            </exception>
-        </member>
         <member name="P:SimpleInjector.DiagnosticVerificationException.Errors">
             <summary>Gets the list of <see cref="T:SimpleInjector.Diagnostics.DiagnosticResult"/> instances.</summary>
             <value>A list of <see cref="T:SimpleInjector.Diagnostics.DiagnosticResult"/> instances.</value>
@@ -4007,7 +3968,7 @@
         <member name="P:SimpleInjector.TypesToRegisterOptions.IncludeGenericTypeDefinitions">
             <summary>
             Gets or sets a value indicating whether generic type definitions (types that have
-            <see cref="P:System.Type.IsGenericTypeDefinition">Type.IsGenericTypeDefinition</see>
+            <see cref="P:System.Reflection.TypeInfo.IsGenericTypeDefinition">TypeInfo.IsGenericTypeDefinition</see>
             set to true) 
             should be included in the result. The default value for this property is <b>false</b>.
             </summary>
@@ -4819,9 +4780,8 @@
         <member name="T:SimpleInjector.Internals.CyclicDependencyValidator">
             <summary>
             Allows verifying whether a given type has a direct or indirect dependency on itself. Verifying is done
-            by preventing recursive calls to a IInstanceProvider. An instance of this type is related to a single 
-            instance of a IInstanceProvider. A RecursiveDependencyValidator instance checks a single 
-            IInstanceProvider and therefore a single service type.
+            by preventing recursive calls to an InstanceProducer. A CyclicDependencyValidator instance checks a 
+            single InstanceProducer and therefore a single service type.
             </summary>
         </member>
         <member name="T:SimpleInjector.Internals.GenericArgumentFinder">

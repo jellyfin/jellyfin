@@ -4780,9 +4780,8 @@
         <member name="T:SimpleInjector.Internals.CyclicDependencyValidator">
             <summary>
             Allows verifying whether a given type has a direct or indirect dependency on itself. Verifying is done
-            by preventing recursive calls to a IInstanceProvider. An instance of this type is related to a single 
-            instance of a IInstanceProvider. A RecursiveDependencyValidator instance checks a single 
-            IInstanceProvider and therefore a single service type.
+            by preventing recursive calls to an InstanceProducer. A CyclicDependencyValidator instance checks a 
+            single InstanceProducer and therefore a single service type.
             </summary>
         </member>
         <member name="T:SimpleInjector.Internals.GenericArgumentFinder">
