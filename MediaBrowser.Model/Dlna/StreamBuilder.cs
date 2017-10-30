@@ -965,15 +965,6 @@ namespace MediaBrowser.Model.Dlna
                 return new Tuple<PlayMethod?, List<TranscodeReason>>(PlayMethod.DirectStream, new List<TranscodeReason>());
             }
 
-            if (videoStream == null)
-            {
-                _logger.Info("Profile: {0}, Cannot direct stream with no known video stream. Path: {1}",
-                    profile.Name ?? "Unknown Profile",
-                    mediaSource.Path ?? "Unknown path");
-
-                return new Tuple<PlayMethod?, List<TranscodeReason>>(null, new List<TranscodeReason> { TranscodeReason.UnknownVideoStreamInfo });
-            }
-
             // See if it can be direct played
             DirectPlayProfile directPlay = null;
             foreach (DirectPlayProfile i in profile.DirectPlayProfiles)
