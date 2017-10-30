@@ -108,5 +108,7 @@ namespace MediaBrowser.Controller
         string InternalMetadataPath { get; }
 
         string ArtistsPath { get; }
+
+        string GetTranscodingTempPath();
     }
 }
