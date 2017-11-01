@@ -20,10 +20,6 @@ namespace MediaBrowser.Controller.Configuration
         /// <value>The configuration.</value>
         ServerConfiguration Configuration { get; }
 
-        /// <summary>
-        /// Sets the preferred metadata service.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        void DisableMetadataService(string service);
+        bool SetOptimalValues();
     }
 }

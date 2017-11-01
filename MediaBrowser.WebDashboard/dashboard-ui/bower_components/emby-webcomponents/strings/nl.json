@@ -1,6 +1,4 @@
 {
-    "AutoBasedOnLanguageSetting": "Auto (based on language setting)",
-    "LabelDateTimeLocale": "Date time locale:",
     "MessageUnlockAppWithPurchaseOrSupporter": "Ontgrendel deze functie met een kleine eenmalige aankoop, of met een actief Emby Premiere abonnement.",
     "MessageUnlockAppWithSupporter": "Ontgrendel deze functie met een actief Emby Premiere abonnement.",
     "MessageToValidateSupporter": "Als u een actieve Emby Premiere abonnement heeft, zorg er dan voor dat u deze activeert in uw Emby Server Dashboard door te klikken op Emby Premiere in het hoofdmenu.",
@@ -603,5 +601,11 @@
     "RestartPleaseWaitMessage": "Please wait while Emby Server shuts down and restarts. This may take a minute or two.",
     "PlayNext": "Play next",
     "AllowSeasonalThemes": "Allow automatic seasonal themes",
-    "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting."
+    "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting.",
+    "AutoBasedOnLanguageSetting": "Auto (based on language setting)",
+    "LabelDateTimeLocale": "Date time locale:",
+    "DirectorValue": "Director: {0}",
+    "DirectorsValue": "Directors: {0}",
+    "GenreValue": "Genre: {0}",
+    "GenresValue": "Genres: {0}"
 }

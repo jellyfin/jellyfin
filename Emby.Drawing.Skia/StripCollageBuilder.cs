@@ -83,7 +83,7 @@ namespace Emby.Drawing.Skia
                 for (int i = 0; i < 4; i++)
                 {
                     SKCodecOrigin origin;
-                    using (var currentBitmap = SkiaEncoder.Decode(paths[imageIndex], false, out origin))
+                    using (var currentBitmap = SkiaEncoder.Decode(paths[imageIndex], false, _fileSystem, out origin))
                     {
                         // resize to the same aspect as the original
                         int iWidth = (int)Math.Abs(iHeight * currentBitmap.Width / currentBitmap.Height);
@@ -165,7 +165,7 @@ namespace Emby.Drawing.Skia
                     for (var y = 0; y < 2; y++)
                     {
                         SKCodecOrigin origin;
-                        using (var currentBitmap = SkiaEncoder.Decode(paths[imageIndex], false, out origin))
+                        using (var currentBitmap = SkiaEncoder.Decode(paths[imageIndex], false, _fileSystem, out origin))
                         {
                             using (var resizedBitmap = new SKBitmap(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType))
                             {
