@@ -10,22 +10,27 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Extensions;
+using System.Globalization;
+using MediaBrowser.Model.Globalization;
 
 namespace Emby.Drawing.Skia
 {
     public class SkiaEncoder : IImageEncoder
     {
         private readonly ILogger _logger;
-        private readonly IApplicationPaths _appPaths;
+        private static IApplicationPaths _appPaths;
         private readonly Func<IHttpClient> _httpClientFactory;
         private readonly IFileSystem _fileSystem;
+        private static ILocalizationManager _localizationManager;
 
-        public SkiaEncoder(ILogger logger, IApplicationPaths appPaths, Func<IHttpClient> httpClientFactory, IFileSystem fileSystem)
+        public SkiaEncoder(ILogger logger, IApplicationPaths appPaths, Func<IHttpClient> httpClientFactory, IFileSystem fileSystem, ILocalizationManager localizationManager)
         {
             _logger = logger;
             _appPaths = appPaths;
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
+            _localizationManager = localizationManager;
 
             LogVersion();
         }
@@ -190,14 +195,53 @@ namespace Emby.Drawing.Skia
             }
         }
 
-        private static string[] TransparentImageTypes = new string[] { ".png", ".gif", ".webp" };
-        internal static SKBitmap Decode(string path, bool forceCleanBitmap, out SKCodecOrigin origin)
+        private static bool HasDiacritics(string text)
         {
+            return !String.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
+        }
+
+        private static bool RequiresSpecialCharacterHack(string path)
+        {
+            if (_localizationManager.HasUnicodeCategory(path, UnicodeCategory.OtherLetter))
+            {
+                return true;
+            }
+
+            if (HasDiacritics(path))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static string NormalizePath(string path, IFileSystem fileSystem)
+        {
+            if (!RequiresSpecialCharacterHack(path))
+            {
+                return path;
+            }
+
+            var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path) ?? string.Empty);
+
+            fileSystem.CopyFile(path, tempPath, true);
+
+            return tempPath;
+        }
+
+        private static string[] TransparentImageTypes = new string[] { ".png", ".gif", ".webp" };
+        internal static SKBitmap Decode(string path, bool forceCleanBitmap, IFileSystem fileSystem, out SKCodecOrigin origin)
+        {
+            if (!fileSystem.FileExists(path))
+            {
+                throw new FileNotFoundException("File not found", path);
+            }
+
             var requiresTransparencyHack = TransparentImageTypes.Contains(Path.GetExtension(path) ?? string.Empty);
 
             if (requiresTransparencyHack || forceCleanBitmap)
             {
-                using (var stream = new SKFileStream(path))
+                using (var stream = new SKFileStream(NormalizePath(path, fileSystem)))
                 {
                     using (var codec = SKCodec.Create(stream))
                     {
@@ -227,11 +271,11 @@ namespace Emby.Drawing.Skia
                 }
             }
 
-            var resultBitmap = SKBitmap.Decode(path);
+            var resultBitmap = SKBitmap.Decode(NormalizePath(path, fileSystem));
 
             if (resultBitmap == null)
             {
-                return Decode(path, true, out origin);
+                return Decode(path, true, fileSystem, out origin);
             }
 
             // If we have to resize these they often end up distorted
@@ -239,7 +283,7 @@ namespace Emby.Drawing.Skia
             {
                 using (resultBitmap)
                 {
-                    return Decode(path, true, out origin);
+                    return Decode(path, true, fileSystem, out origin);
                 }
             }
 
@@ -251,13 +295,13 @@ namespace Emby.Drawing.Skia
         {
             if (cropWhitespace)
             {
-                using (var bitmap = Decode(path, forceAnalyzeBitmap, out origin))
+                using (var bitmap = Decode(path, forceAnalyzeBitmap, _fileSystem, out origin))
                 {
                     return CropWhiteSpace(bitmap);
                 }
             }
 
-            return Decode(path, forceAnalyzeBitmap, out origin);
+            return Decode(path, forceAnalyzeBitmap, _fileSystem, out origin);
         }
 
         private SKBitmap GetBitmap(string path, bool cropWhitespace, bool autoOrient)
