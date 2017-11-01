@@ -189,8 +189,6 @@ namespace MediaBrowser.Model.Configuration
         public PathSubstitution[] PathSubstitutions { get; set; }
         public bool EnableSimpleArtistDetection { get; set; }
 
-        public bool EnableLocalizedGuids { get; set; }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -202,7 +200,6 @@ namespace MediaBrowser.Model.Configuration
             PathSubstitutions = new PathSubstitution[] { };
             EnableSimpleArtistDetection = true;
 
-            EnableLocalizedGuids = true;
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
 

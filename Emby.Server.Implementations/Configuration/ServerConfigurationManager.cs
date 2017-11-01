@@ -237,12 +237,6 @@ namespace Emby.Server.Implementations.Configuration
                 changed = true;
             }
 
-            if (!config.EnableLocalizedGuids)
-            {
-                config.EnableLocalizedGuids = true;
-                changed = true;
-            }
-
             return changed;
         }
     }
