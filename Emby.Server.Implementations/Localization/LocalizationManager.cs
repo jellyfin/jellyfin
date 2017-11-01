@@ -308,6 +308,19 @@ namespace Emby.Server.Implementations.Localization
             return value == null ? (int?)null : value.Value;
         }
 
+        public bool HasUnicodeCategory(string value, UnicodeCategory category)
+        {
+            foreach (var chr in value)
+            {
+                if (char.GetUnicodeCategory(chr) == category)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public string GetLocalizedString(string phrase)
         {
             return GetLocalizedString(phrase, _configurationManager.Configuration.UICulture);
