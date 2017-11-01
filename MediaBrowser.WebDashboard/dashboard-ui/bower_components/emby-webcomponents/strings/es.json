@@ -1,6 +1,4 @@
 {
-    "AutoBasedOnLanguageSetting": "Auto (based on language setting)",
-    "LabelDateTimeLocale": "Date time locale:",
     "MessageUnlockAppWithPurchaseOrSupporter": "Desbloquea esta caracter\u00edstica con una peque\u00f1a compra una vez o con una suscripci\u00f3n a Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Desbloquea esta caracter\u00edstica con una suscripci\u00f3n a Emby Premiere.",
     "MessageToValidateSupporter": "Si tienes una suscripci\u00f3n a Emby Premiere aseg\u00farate de que la has configurado en el Panel de Control de tu servidor Emby en Ayuda -> Emby Premiere.",
@@ -90,7 +88,7 @@
     "EnableBackdrops": "Enable backdrops",
     "EnableThemeSongsHelp": "If enabled, theme songs will be played in the background while browsing the library.",
     "EnableBackdropsHelp": "If enabled, backdrops will be displayed in the background of some pages while browsing the library.",
-    "EnableThemeVideos": "Enable theme videos",
+    "EnableThemeVideos": "Habilitar temas videos",
     "EnableThemeVideosHelp": "If enabled, theme videos will be played in the background while browsing the library.",
     "RunAtStartup": "Run at startup",
     "LabelScreensaver": "Salvapantallas",
@@ -603,5 +601,11 @@
     "RestartPleaseWaitMessage": "Please wait while Emby Server shuts down and restarts. This may take a minute or two.",
     "PlayNext": "Reproducir siguiente",
     "AllowSeasonalThemes": "Allow automatic seasonal themes",
-    "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting."
+    "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting.",
+    "AutoBasedOnLanguageSetting": "Auto (based on language setting)",
+    "LabelDateTimeLocale": "Date time locale:",
+    "DirectorValue": "Director: {0}",
+    "DirectorsValue": "Directors: {0}",
+    "GenreValue": "Genre: {0}",
+    "GenresValue": "Genres: {0}"
 }

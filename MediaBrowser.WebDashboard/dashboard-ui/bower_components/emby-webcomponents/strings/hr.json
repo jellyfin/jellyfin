@@ -1,6 +1,4 @@
 {
-    "AutoBasedOnLanguageSetting": "Auto (based on language setting)",
-    "LabelDateTimeLocale": "Date time locale:",
     "MessageUnlockAppWithPurchaseOrSupporter": "Otklju\u010daj ovu mogu\u0107nost s malom jednokratnom kupnjom ili s aktivnom pretplatom Emby Premijere.",
     "MessageUnlockAppWithSupporter": "Otklju\u010daj ovu mogu\u0107nost sa pretplatom Emby Premijere.",
     "MessageToValidateSupporter": "Ako imate aktivnu pretplatu Emby Premijere provjerite dali ste postavili Emby Premijeru u svojoj nadzornoj plo\u010di Emby Server-a kojoj mo\u017eete pristupiti klikom Emby Premijera u glavnom izborniku.",
@@ -603,5 +601,11 @@
     "RestartPleaseWaitMessage": "Please wait while Emby Server shuts down and restarts. This may take a minute or two.",
     "PlayNext": "Play next",
     "AllowSeasonalThemes": "Allow automatic seasonal themes",
-    "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting."
+    "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting.",
+    "AutoBasedOnLanguageSetting": "Auto (based on language setting)",
+    "LabelDateTimeLocale": "Date time locale:",
+    "DirectorValue": "Director: {0}",
+    "DirectorsValue": "Directors: {0}",
+    "GenreValue": "Genre: {0}",
+    "GenresValue": "Genres: {0}"
 }
