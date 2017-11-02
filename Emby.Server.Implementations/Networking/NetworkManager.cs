@@ -106,7 +106,7 @@ namespace Emby.Server.Implementations.Networking
                 endpoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("192.168", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase) ||
-                //endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
+                endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
                 IsInPrivateAddressSpaceAndLocalSubnet(endpoint);
         }
 
