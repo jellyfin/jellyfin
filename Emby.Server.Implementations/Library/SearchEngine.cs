@@ -99,8 +99,6 @@ namespace Emby.Server.Implementations.Library
 
             var terms = GetWords(searchTerm);
 
-            var hints = new List<Tuple<BaseItem, string, int>>();
-
             var excludeItemTypes = query.ExcludeItemTypes.ToList();
             var includeItemTypes = (query.IncludeItemTypes ?? new string[] { }).ToList();
 
@@ -161,8 +159,15 @@ namespace Emby.Server.Implementations.Library
 
             AddIfMissing(excludeItemTypes, typeof(CollectionFolder).Name);
             AddIfMissing(excludeItemTypes, typeof(Folder).Name);
+            var mediaTypes = query.MediaTypes.ToList();
 
-            var mediaItems = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            if (includeItemTypes.Count > 0)
+            {
+                excludeItemTypes.Clear();
+                mediaTypes.Clear();
+            }
+
+            var searchQuery = new InternalItemsQuery(user)
             {
                 NameContains = searchTerm,
                 ExcludeItemTypes = excludeItemTypes.ToArray(excludeItemTypes.Count),
@@ -178,7 +183,7 @@ namespace Emby.Server.Implementations.Library
                 IsNews = query.IsNews,
                 IsSeries = query.IsSeries,
                 IsSports = query.IsSports,
-                MediaTypes = query.MediaTypes,
+                MediaTypes = mediaTypes.ToArray(),
 
                 DtoOptions = new DtoOptions
                 {
@@ -189,17 +194,33 @@ namespace Emby.Server.Implementations.Library
                          ItemFields.ChannelInfo
                     }
                 }
-            });
+            };
 
-            // Add search hints based on item name
-            hints.AddRange(mediaItems.Select(item =>
+            List<BaseItem> mediaItems;
+
+            if (searchQuery.IncludeItemTypes.Length == 1 && string.Equals(searchQuery.IncludeItemTypes[0], "MusicArtist", StringComparison.OrdinalIgnoreCase))
+            {
+                if (searchQuery.ParentId.HasValue)
+                {
+                    searchQuery.AncestorIds = new string[] { searchQuery.ParentId.Value.ToString("N") };
+                }
+                searchQuery.ParentId = null;
+                searchQuery.IncludeItemsByName = true;
+                searchQuery.IncludeItemTypes = new string[] { };
+                mediaItems = _libraryManager.GetArtists(searchQuery).Items.Select(i => i.Item1).ToList();
+            }
+            else
+            {
+                mediaItems = _libraryManager.GetItemList(searchQuery);
+            }
+
+            var returnValue = mediaItems.Select(item =>
             {
                 var index = GetIndex(item.Name, searchTerm, terms);
 
                 return new Tuple<BaseItem, string, int>(item, index.Item1, index.Item2);
-            }));
 
-            var returnValue = hints.Where(i => i.Item3 >= 0).OrderBy(i => i.Item3).ThenBy(i => i.Item1.SortName).Select(i => new SearchHintInfo
+            }).OrderBy(i => i.Item3).ThenBy(i => i.Item1.SortName).Select(i => new SearchHintInfo
             {
                 Item = i.Item1,
                 MatchedTerm = i.Item2

@@ -160,7 +160,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     ProductionYear = video.Year,
                     Name = parseName ?
                         video.Name :
-                        Path.GetFileName(video.Files[0].Path),
+                        Path.GetFileNameWithoutExtension(video.Files[0].Path),
                     AdditionalParts = video.Files.Skip(1).Select(i => i.Path).ToArray(),
                     LocalAlternateVersions = video.AlternateVersions.Select(i => i.Path).ToArray()
                 };

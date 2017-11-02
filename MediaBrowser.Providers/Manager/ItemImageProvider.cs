@@ -412,7 +412,18 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
-                        currentImage.DateModified = _fileSystem.GetLastWriteTimeUtc(image.FileInfo);
+
+                        var newDateModified = _fileSystem.GetLastWriteTimeUtc(image.FileInfo);
+
+                        // If date changed then we need to reset saved image dimensions
+                        if (currentImage.DateModified != newDateModified && (currentImage.Width > 0 || currentImage.Height > 0))
+                        {
+                            currentImage.Width = 0;
+                            currentImage.Height = 0;
+                            changed = true;
+                        }
+
+                        currentImage.DateModified = newDateModified;
                     }
                 }
                 else

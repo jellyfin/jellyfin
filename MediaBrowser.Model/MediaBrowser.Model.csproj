@@ -98,7 +98,6 @@
     <Compile Include="Dlna\ResponseProfile.cs" />
     <Compile Include="Dlna\StreamInfoSorter.cs" />
     <Compile Include="Dlna\PlaybackErrorCode.cs" />
-    <Compile Include="Dlna\PlaybackException.cs" />
     <Compile Include="Dlna\ResolutionConfiguration.cs" />
     <Compile Include="Dlna\ResolutionNormalizer.cs" />
     <Compile Include="Dlna\ResolutionOptions.cs" />
