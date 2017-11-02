@@ -206,6 +206,23 @@ namespace Emby.Server.Implementations
             }
         }
 
+        public string GetTranscodingTempPath()
+        {
+            var path = TranscodingTempPath;
+
+            try
+            {
+                Directory.CreateDirectory(path);
+                return path;
+            }
+            catch
+            {
+                path = Path.Combine(ProgramDataPath, "transcoding-temp");
+                Directory.CreateDirectory(path);
+                return path;
+            }
+        }
+
         /// <summary>
         /// Gets the game genre path.
         /// </summary>

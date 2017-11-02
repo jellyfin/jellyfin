@@ -601,5 +601,11 @@
     "RestartPleaseWaitMessage": "Por favor, aguarde enquanto o Servidor Emby reinicia. Isto pode levar um ou dois minutos.",
     "PlayNext": "Play next",
     "AllowSeasonalThemes": "Allow automatic seasonal themes",
-    "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting."
+    "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting.",
+    "AutoBasedOnLanguageSetting": "Auto (based on language setting)",
+    "LabelDateTimeLocale": "Date time locale:",
+    "DirectorValue": "Director: {0}",
+    "DirectorsValue": "Directors: {0}",
+    "GenreValue": "Genre: {0}",
+    "GenresValue": "Genres: {0}"
 }

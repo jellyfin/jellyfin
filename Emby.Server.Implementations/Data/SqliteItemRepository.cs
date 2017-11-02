@@ -5298,7 +5298,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 OfficialRatings = query.OfficialRatings,
                 GenreIds = query.GenreIds,
                 Genres = query.Genres,
-                Years = query.Years
+                Years = query.Years,
+                NameContains = query.NameContains
             };
 
             var outerWhereClauses = GetWhereClauses(outerQuery, null);

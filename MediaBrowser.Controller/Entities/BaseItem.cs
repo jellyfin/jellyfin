@@ -1987,6 +1987,10 @@ namespace MediaBrowser.Controller.Entities
 
                 image.Path = file.FullName;
                 image.DateModified = imageInfo.DateModified;
+
+                // reset these values
+                image.Width = 0;
+                image.Height = 0;
             }
         }
 
@@ -2137,6 +2141,7 @@ namespace MediaBrowser.Controller.Entities
 
             var newImageList = new List<FileSystemMetadata>();
             var imageAdded = false;
+            var imageUpdated = false;
 
             foreach (var newImage in images)
             {
@@ -2157,7 +2162,17 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if (existing.IsLocalFile)
                     {
-                        existing.DateModified = FileSystem.GetLastWriteTimeUtc(newImage);
+                        var newDateModified = FileSystem.GetLastWriteTimeUtc(newImage);
+
+                        // If date changed then we need to reset saved image dimensions
+                        if (existing.DateModified != newDateModified && (existing.Width > 0 || existing.Height > 0))
+                        {
+                            existing.Width = 0;
+                            existing.Height = 0;
+                            imageUpdated = true;
+                        }
+
+                        existing.DateModified = newDateModified;
                     }
                 }
             }
@@ -2190,7 +2205,7 @@ namespace MediaBrowser.Controller.Entities
                 ImageInfos = newList;
             }
 
-            return newImageList.Count > 0;
+            return imageUpdated || newImageList.Count > 0;
         }
 
         private ItemImageInfo GetImageInfo(FileSystemMetadata file, ImageType type)

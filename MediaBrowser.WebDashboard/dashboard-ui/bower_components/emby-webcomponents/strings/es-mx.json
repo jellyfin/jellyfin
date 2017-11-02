@@ -601,5 +601,11 @@
     "RestartPleaseWaitMessage": "Por favor espere mientras el Servidor Emby cierra y reinicia. Este puede tomar un minuto o dos.",
     "PlayNext": "Reproducir siguiente",
     "AllowSeasonalThemes": "Permitir temas de temporada autom\u00e1ticamente",
-    "AllowSeasonalThemesHelp": "Si esta habilitado,  temas de temporada reemplazaran ocasionalmente el tema por defecto."
+    "AllowSeasonalThemesHelp": "Si esta habilitado,  temas de temporada reemplazaran ocasionalmente el tema por defecto.",
+    "AutoBasedOnLanguageSetting": "Auto (basado en la configuraci\u00f3n del lenguaje)",
+    "LabelDateTimeLocale": "Configuraci\u00f3n regional de Fecha y Hora:",
+    "DirectorValue": "Director: {0}",
+    "DirectorsValue": "Directors: {0}",
+    "GenreValue": "Genre: {0}",
+    "GenresValue": "Genres: {0}"
 }

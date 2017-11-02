@@ -63,7 +63,7 @@ namespace MediaBrowser.Api
         public void Post(ReportStartupWizardComplete request)
         {
             _config.Configuration.IsStartupWizardCompleted = true;
-            SetWizardFinishValues(_config.Configuration);
+            _config.SetOptimalValues();
             _config.SaveConfiguration();
         }
 
@@ -85,16 +85,6 @@ namespace MediaBrowser.Api
             };
 
             return result;
-        }
-
-        private void SetWizardFinishValues(ServerConfiguration config)
-        {
-            config.EnableCaseSensitiveItemIds = true;
-            config.SkipDeserializationForBasicTypes = true;
-            config.EnableSimpleArtistDetection = true;
-            config.EnableNormalizedItemByNameIds = true;
-            config.DisableLiveTvChannelUserDataName = true;
-            config.EnableNewOmdbSupport = true;
         }
 
         public void Post(UpdateStartupConfiguration request)

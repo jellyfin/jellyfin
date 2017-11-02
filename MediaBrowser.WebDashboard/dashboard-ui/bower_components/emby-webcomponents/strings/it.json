@@ -601,5 +601,11 @@
     "RestartPleaseWaitMessage": "Per piacere aspetta mentre Emby Server si arresta e riavvia. Questo pu\u00f2 richiedere un minuto o due.",
     "PlayNext": "Riproduci prossimo",
     "AllowSeasonalThemes": "Consenti temi automatici stagionali",
-    "AllowSeasonalThemesHelp": "Se abilitato, i temi stagionali sovrascriveranno occasionalmente l'impostazione del tema."
+    "AllowSeasonalThemesHelp": "Se abilitato, i temi stagionali sovrascriveranno occasionalmente l'impostazione del tema.",
+    "AutoBasedOnLanguageSetting": "Auto (based on language setting)",
+    "LabelDateTimeLocale": "Date time locale:",
+    "DirectorValue": "Director: {0}",
+    "DirectorsValue": "Directors: {0}",
+    "GenreValue": "Genre: {0}",
+    "GenresValue": "Genres: {0}"
 }
