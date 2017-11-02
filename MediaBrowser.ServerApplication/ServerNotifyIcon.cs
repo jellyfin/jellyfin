@@ -144,12 +144,12 @@ namespace MediaBrowser.ServerApplication
         {
             _uiCulture = _configurationManager.Configuration.UICulture;
 
-            cmdExit.Text = _localization.GetLocalizedString("LabelExit");
-            cmdCommunity.Text = _localization.GetLocalizedString("LabelVisitCommunity");
-            cmdPremiere.Text = _localization.GetLocalizedString("Emby Premiere");
-            cmdBrowse.Text = _localization.GetLocalizedString("LabelBrowseLibrary");
-            cmdConfigure.Text = _localization.GetLocalizedString("LabelConfigureServer");
-            cmdRestart.Text = _localization.GetLocalizedString("LabelRestartServer");
+            cmdExit.Text = "Exit";
+            cmdCommunity.Text = "Visit Emby Community";
+            cmdPremiere.Text = "Emby Premiere";
+            cmdBrowse.Text = "Browse Library";
+            cmdConfigure.Text = "Configure Emby Server";
+            cmdRestart.Text = "Restart Emby Server";
         }
 
         private string _uiCulture;

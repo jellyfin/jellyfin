@@ -304,6 +304,19 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
+        private static string UpdatePackageFileName
+        {
+            get
+            {
+                if (Environment.Is64BitOperatingSystem)
+                {
+                    return "embyserver-win-x64-{version}.zip";
+                }
+
+                return "embyserver-win-x86-{version}.zip";
+            }
+        }
+
         /// <summary>
         /// Runs the application.
         /// </summary>
@@ -324,7 +337,7 @@ namespace MediaBrowser.ServerApplication
                 options,
                 fileSystem,
                 new PowerManagement(),
-                "emby.windows.zip",
+                UpdatePackageFileName,
                 environmentInfo,
                 new NullImageEncoder(),
                 new SystemEvents(logManager.GetLogger("SystemEvents")),
@@ -355,7 +368,7 @@ namespace MediaBrowser.ServerApplication
                 }
 
                 // set image encoder here
-                appHost.ImageProcessor.ImageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => appHost.HttpClient, appPaths);
+                appHost.ImageProcessor.ImageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => appHost.HttpClient, appPaths, appHost.LocalizationManager);
 
                 task = task.ContinueWith(new Action<Task>(a => appHost.RunStartupTasks()), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
 
