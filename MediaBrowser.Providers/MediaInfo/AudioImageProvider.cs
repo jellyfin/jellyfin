@@ -92,23 +92,33 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private string GetAudioImagePath(Audio item)
         {
-            var filename = item.Album ?? string.Empty;
-            filename += string.Join(",", item.Artists);
+            string filename;
 
-            if (!string.IsNullOrWhiteSpace(item.Album))
+            if (item.GetType() == typeof(Audio))
             {
-                filename += "_" + item.Album;
-            }
-            else if (!string.IsNullOrWhiteSpace(item.Name))
-            {
-                filename += "_" + item.Name;
+                filename = item.Album ?? string.Empty;
+                filename += string.Join(",", item.Artists);
+
+                if (!string.IsNullOrWhiteSpace(item.Album))
+                {
+                    filename += "_" + item.Album;
+                }
+                else if (!string.IsNullOrWhiteSpace(item.Name))
+                {
+                    filename += "_" + item.Name;
+                }
+                else
+                {
+                    filename += "_" + item.Id.ToString("N");
+                }
+
+                filename = filename.GetMD5() + ".jpg";
             }
             else
             {
-                filename += "_" + item.Id.ToString("N");
+                // If it's an audio book or audio podcast, allow unique image per item
+                filename = item.Id.ToString("N") + ".jpg";
             }
-
-            filename = filename.GetMD5() + ".jpg";
 
             var prefix = filename.Substring(0, 1);
 
