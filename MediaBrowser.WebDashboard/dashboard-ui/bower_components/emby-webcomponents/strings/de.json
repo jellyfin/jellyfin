@@ -601,5 +601,11 @@
     "RestartPleaseWaitMessage": "Warte bitte bis der Emby Server heruntergefahren und neu gestartet wurde. Dieser Vorgang dauert 1 bis 2 Minuten.",
     "PlayNext": "Spiele als N\u00e4chstes ab",
     "AllowSeasonalThemes": "Erlaube automatische Saison-Themes",
-    "AllowSeasonalThemesHelp": "Wenn aktiviert, werden Saison-Themes von Zeit zu Zeit deine Theme-Einstellungen \u00fcberschreiben."
+    "AllowSeasonalThemesHelp": "Wenn aktiviert, werden Saison-Themes von Zeit zu Zeit deine Theme-Einstellungen \u00fcberschreiben.",
+    "AutoBasedOnLanguageSetting": "Automatisch (basierend auf Spracheinstellung)",
+    "LabelDateTimeLocale": "Datum\/Zeit lokal:",
+    "DirectorValue": "Regisseur: {0}",
+    "DirectorsValue": "Regisseure: {0}",
+    "GenreValue": "Genre: {0}",
+    "GenresValue": "Genres: {0}"
 }

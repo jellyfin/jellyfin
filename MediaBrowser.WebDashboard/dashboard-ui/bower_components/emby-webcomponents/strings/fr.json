@@ -601,5 +601,11 @@
     "RestartPleaseWaitMessage": "Veuillez patienter pendant que le serveur Emby s'arr\u00eate et red\u00e9marre. Cela peut prendre une minute ou deux.",
     "PlayNext": "Lire le suivant",
     "AllowSeasonalThemes": "Autoriser les th\u00e8mes saisonniers automatiques",
-    "AllowSeasonalThemesHelp": "Des th\u00e8mes saisonniers viendront occasionnellement remplacer votre th\u00e8me r\u00e9gulier."
+    "AllowSeasonalThemesHelp": "Des th\u00e8mes saisonniers viendront occasionnellement remplacer votre th\u00e8me r\u00e9gulier.",
+    "AutoBasedOnLanguageSetting": "Auto (bas\u00e9 sur le r\u00e9glage de la langue)",
+    "LabelDateTimeLocale": "Date et heure locale\u00a0:",
+    "DirectorValue": "R\u00e9alisateur: {0}",
+    "DirectorsValue": "R\u00e9alisateurs: {0}",
+    "GenreValue": "Genre: {0}",
+    "GenresValue": "Genres: {0}"
 }

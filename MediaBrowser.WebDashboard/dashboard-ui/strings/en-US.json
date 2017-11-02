@@ -24,7 +24,7 @@
   "LabelPinCode": "Pin code:",
   "DeleteMedia": "Delete media",
   "HeaderSync": "Sync",
-  "HeaderPlayAll":  "Play All",
+  "HeaderPlayAll": "Play All",
   "HeaderUpcomingNews": "Upcoming News",
   "ButtonOk": "Ok",
   "ButtonCancel": "Cancel",
@@ -949,7 +949,7 @@
   "TabDevices": "Devices",
   "HeaderLibrarySettings": "Library Settings",
   "HeaderChapterSettings": "Chapter Settings",
-  "HeaderCameraUploadHelp": "Emby apps can automatically upload photos and videos taken from your mobile devices into Emby Server.",
+  "HeaderCameraUploadHelp": "Emby apps can automatically upload photos taken from your mobile devices into Emby Server.",
   "LabelCameraUploadPath": "Camera upload path:",
   "LabelCameraUploadPathHelp": "Select a custom upload path. This will override any default settings set in the Camera Upload section. If left blank, a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
   "LabelCreateCameraUploadSubfolder": "Create a subfolder for each device",
@@ -1850,5 +1850,6 @@
   "AllowOnTheFlySubtitleExtractionHelp": "Embedded subtitles can be extracted from videos and delivered to Emby apps in plain text in order to help prevent video transcoding. On some systems this can take a long time and cause video playback to stall during the extraction process. Disable this to have embedded subtitles burned in with video transcoding when they are not natively supported by the client device.",
   "ButtonStopRecording": "Stop Recording",
   "StopRecording": "Stop recording",
-  "CancelSeries": "Cancel series"
+  "CancelSeries": "Cancel series",
+  "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments."
 }

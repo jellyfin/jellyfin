@@ -195,52 +195,49 @@ namespace Emby.Server.Implementations.Configuration
             }
         }
 
-        public void DisableMetadataService(string service)
+        public bool SetOptimalValues()
         {
-            DisableMetadataService(typeof(Movie), Configuration, service);
-            DisableMetadataService(typeof(Episode), Configuration, service);
-            DisableMetadataService(typeof(Series), Configuration, service);
-            DisableMetadataService(typeof(Season), Configuration, service);
-            DisableMetadataService(typeof(MusicArtist), Configuration, service);
-            DisableMetadataService(typeof(MusicAlbum), Configuration, service);
-            DisableMetadataService(typeof(MusicVideo), Configuration, service);
-            DisableMetadataService(typeof(Video), Configuration, service);
-        }
+            var config = Configuration;
 
-        private void DisableMetadataService(Type type, ServerConfiguration config, string service)
-        {
-            var options = GetMetadataOptions(type, config);
+            var changed = false;
 
-            if (!options.DisabledMetadataSavers.Contains(service, StringComparer.OrdinalIgnoreCase))
+            if (!config.EnableCaseSensitiveItemIds)
             {
-                var list = options.DisabledMetadataSavers.ToList();
-
-                list.Add(service);
-
-                options.DisabledMetadataSavers = list.ToArray(list.Count);
-            }
-        }
-
-        private MetadataOptions GetMetadataOptions(Type type, ServerConfiguration config)
-        {
-            var options = config.MetadataOptions
-                .FirstOrDefault(i => string.Equals(i.ItemType, type.Name, StringComparison.OrdinalIgnoreCase));
-
-            if (options == null)
-            {
-                var list = config.MetadataOptions.ToList();
-
-                options = new MetadataOptions
-                {
-                    ItemType = type.Name
-                };
-
-                list.Add(options);
-
-                config.MetadataOptions = list.ToArray(list.Count);
+                config.EnableCaseSensitiveItemIds = true;
+                changed = true;
             }
 
-            return options;
+            if (!config.SkipDeserializationForBasicTypes)
+            {
+                config.SkipDeserializationForBasicTypes = true;
+                changed = true;
+            }
+
+            if (!config.EnableSimpleArtistDetection)
+            {
+                config.EnableSimpleArtistDetection = true;
+                changed = true;
+            }
+
+            if (!config.EnableNormalizedItemByNameIds)
+            {
+                config.EnableNormalizedItemByNameIds = true;
+                changed = true;
+            }
+
+            if (!config.DisableLiveTvChannelUserDataName)
+            {
+                config.DisableLiveTvChannelUserDataName = true;
+                changed = true;
+            }
+
+            if (!config.EnableNewOmdbSupport)
+            {
+                config.EnableNewOmdbSupport = true;
+                changed = true;
+            }
+
+            return changed;
         }
     }
 }
