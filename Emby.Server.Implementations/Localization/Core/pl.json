@@ -27,7 +27,7 @@
     "Artists": "Wykonawcy",
     "Folders": "Foldery",
     "Songs": "Utwory",
-    "TvShows": "TV Shows",
+    "TvShows": "Seriale",
     "Shows": "Seriale",
     "Genres": "Gatunki",
     "NameSeasonNumber": "Sezon {0}",
@@ -87,10 +87,5 @@
     "User": "U\u017cytkownik",
     "System": "System",
     "Application": "Aplikacja",
-    "Plugin": "Wtyczka",
-    "LabelExit": "Wyj\u015bcie",
-    "LabelVisitCommunity": "Odwied\u017a spo\u0142eczno\u015b\u0107",
-    "LabelBrowseLibrary": "Przegl\u0105daj bibliotek\u0119",
-    "LabelConfigureServer": "Konfiguracja Emby",
-    "LabelRestartServer": "Uruchom serwer ponownie"
+    "Plugin": "Wtyczka"
 }

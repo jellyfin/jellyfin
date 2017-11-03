@@ -87,10 +87,5 @@
     "User": "Gebruiker",
     "System": "Systeem",
     "Application": "Toepassing",
-    "Plugin": "Plug-in",
-    "LabelExit": "Afsluiten",
-    "LabelVisitCommunity": "Bezoek Gemeenschap",
-    "LabelBrowseLibrary": "Bekijk bibliotheek",
-    "LabelConfigureServer": "Emby Configureren",
-    "LabelRestartServer": "Server herstarten"
+    "Plugin": "Plug-in"
 }

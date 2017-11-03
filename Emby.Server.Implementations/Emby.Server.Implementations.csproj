@@ -117,7 +117,6 @@
     <Compile Include="IO\ManagedFileSystem.cs" />
     <Compile Include="IO\MbLinkShortcutHandler.cs" />
     <Compile Include="IO\MemoryStreamProvider.cs" />
-    <Compile Include="IO\ProgressStream.cs" />
     <Compile Include="IO\SharpCifsFileSystem.cs" />
     <Compile Include="IO\SharpCifs\Config.cs" />
     <Compile Include="IO\SharpCifs\Dcerpc\DcerpcBind.cs" />
