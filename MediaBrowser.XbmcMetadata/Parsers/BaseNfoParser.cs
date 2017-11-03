@@ -243,13 +243,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
 
             // Support Tmdb
-            // http://www.themoviedb.org/movie/36557
+            // https://www.themoviedb.org/movie/30287-fallo
             var srch = MovieDbParserSearchString;
             var index = xml.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
 
             if (index != -1)
             {
-                var tmdbId = xml.Substring(index + srch.Length).TrimEnd('/');
+                var tmdbId = xml.Substring(index + srch.Length).TrimEnd('/').Split('-')[0];
                 int value;
                 if (!string.IsNullOrWhiteSpace(tmdbId) && int.TryParse(tmdbId, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
                 {

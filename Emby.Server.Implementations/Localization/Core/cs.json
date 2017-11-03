@@ -87,10 +87,5 @@
     "User": "U\u017eivatel",
     "System": "Syst\u00e9m",
     "Application": "Aplikace",
-    "Plugin": "Z\u00e1suvn\u00fd modul",
-    "LabelExit": "Uko\u010dit",
-    "LabelVisitCommunity": "Nav\u0161t\u00edvit komunitu",
-    "LabelBrowseLibrary": "Proch\u00e1zet knihovnu",
-    "LabelConfigureServer": "Konfigurovat Emby",
-    "LabelRestartServer": "Restartovat Server"
+    "Plugin": "Z\u00e1suvn\u00fd modul"
 }
