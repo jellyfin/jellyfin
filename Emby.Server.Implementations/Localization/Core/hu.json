@@ -87,10 +87,5 @@
     "User": "User",
     "System": "System",
     "Application": "Application",
-    "Plugin": "Plugin",
-    "LabelExit": "Kil\u00e9p\u00e9s",
-    "LabelVisitCommunity": "K\u00f6z\u00f6ss\u00e9g",
-    "LabelBrowseLibrary": "M\u00e9diat\u00e1r tall\u00f3z\u00e1sa",
-    "LabelConfigureServer": "Emby konfigur\u00e1l\u00e1sa",
-    "LabelRestartServer": "Szerver \u00fajraindit\u00e1sa"
+    "Plugin": "Plugin"
 }

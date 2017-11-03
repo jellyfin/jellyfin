@@ -27,7 +27,7 @@
     "Artists": "Artistas",
     "Folders": "Carpetas",
     "Songs": "Canciones",
-    "TvShows": "TV Shows",
+    "TvShows": "Series TV",
     "Shows": "Series",
     "Genres": "G\u00e9neros",
     "NameSeasonNumber": "Temporada {0}",
@@ -61,8 +61,8 @@
     "AuthenticationSucceededWithUserName": "{0} autenticado correctamente",
     "UserOfflineFromDevice": "{0} se ha desconectado de {1}",
     "DeviceOfflineWithName": "{0} se ha desconectado",
-    "UserStartedPlayingItemWithValues": "{0} ha comenzado jugando {1}",
-    "UserStoppedPlayingItemWithValues": "{0} ha dejado de reproducir {1}",
+    "UserStartedPlayingItemWithValues": "{0} ha comenzado reproducir {1}",
+    "UserStoppedPlayingItemWithValues": "{0} ha parado de reproducir {1}",
     "NotificationOptionPluginError": "Error en plugin",
     "NotificationOptionApplicationUpdateAvailable": "Actualizaci\u00f3n de la aplicaci\u00f3n disponible",
     "NotificationOptionApplicationUpdateInstalled": "Actualizaci\u00f3n de la aplicaci\u00f3n instalada",
@@ -87,10 +87,5 @@
     "User": "Usuario",
     "System": "Sistema",
     "Application": "Aplicaci\u00f3n",
-    "Plugin": "Plugin",
-    "LabelExit": "Salida",
-    "LabelVisitCommunity": "Visita la Comunidad",
-    "LabelBrowseLibrary": "Navegar la biblioteca",
-    "LabelConfigureServer": "Configurar Emby",
-    "LabelRestartServer": "Configurar Emby"
+    "Plugin": "Plugin"
 }

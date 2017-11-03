@@ -1376,11 +1376,6 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        internal virtual bool IsValidFromResolver(BaseItem newItem)
-        {
-            return true;
-        }
-
         internal virtual ItemUpdateType UpdateFromResolvedItem(BaseItem newItem)
         {
             var updateType = ItemUpdateType.None;
