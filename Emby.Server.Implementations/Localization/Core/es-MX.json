@@ -87,10 +87,5 @@
     "User": "Usuario",
     "System": "Sistema",
     "Application": "Aplicaci\u00f3n",
-    "Plugin": "Complemento",
-    "LabelExit": "Salir",
-    "LabelVisitCommunity": "Visitar la Comunidad",
-    "LabelBrowseLibrary": "Explorar Biblioteca",
-    "LabelConfigureServer": "Configurar Emby",
-    "LabelRestartServer": "Reiniciar el Servidor"
+    "Plugin": "Complemento"
 }

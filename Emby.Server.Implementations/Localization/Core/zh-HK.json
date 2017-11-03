@@ -87,10 +87,5 @@
     "User": "User",
     "System": "System",
     "Application": "Application",
-    "Plugin": "Plugin",
-    "LabelExit": "Exit",
-    "LabelVisitCommunity": "\u8a2a\u554f\u8a0e\u8ad6\u5340",
-    "LabelBrowseLibrary": "Browse Library",
-    "LabelConfigureServer": "Configure Emby",
-    "LabelRestartServer": "Restart Server"
+    "Plugin": "Plugin"
 }

@@ -87,10 +87,5 @@
     "User": "Korisnik",
     "System": "Sistem",
     "Application": "Aplikacija",
-    "Plugin": "Dodatak",
-    "LabelExit": "Izlaz",
-    "LabelVisitCommunity": "Posjeti zajednicu",
-    "LabelBrowseLibrary": "Pregledaj biblioteku",
-    "LabelConfigureServer": "Podesi Emby",
-    "LabelRestartServer": "Restartiraj Server"
+    "Plugin": "Dodatak"
 }

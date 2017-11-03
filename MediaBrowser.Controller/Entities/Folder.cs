@@ -416,7 +416,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     BaseItem currentChild;
 
-                    if (currentChildren.TryGetValue(child.Id, out currentChild) && currentChild.IsValidFromResolver(child))
+                    if (currentChildren.TryGetValue(child.Id, out currentChild))
                     {
                         validChildren.Add(currentChild);
 
