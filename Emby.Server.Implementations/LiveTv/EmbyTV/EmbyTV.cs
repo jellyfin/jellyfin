@@ -2445,6 +2445,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                             {
                                 existingTimer.Status = RecordingStatus.Cancelled;
                             }
+                            else if (!existingTimer.IsManual)
+                            {
+                                existingTimer.Status = RecordingStatus.New;
+                            }
 
                             if (existingTimer.Status != RecordingStatus.Cancelled)
                             {

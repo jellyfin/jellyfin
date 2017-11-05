@@ -109,6 +109,11 @@ namespace MediaBrowser.Controller.Entities
             get { return true; }
         }
 
+        public bool SupportsMediaSourceSelection()
+        {
+            return SourceType == SourceType.Library;
+        }
+
         /// <summary>
         /// Gets or sets the timestamp.
         /// </summary>

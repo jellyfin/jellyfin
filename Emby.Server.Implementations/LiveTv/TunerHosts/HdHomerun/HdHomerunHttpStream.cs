@@ -73,9 +73,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             //OpenedMediaSource.SupportsTranscoding = true;
         }
 
-        public override void Close()
+        protected override void CloseInternal()
         {
-            Logger.Info("Closing HDHR live stream");
             LiveStreamCancellationTokenSource.Cancel();
         }
 
@@ -106,7 +105,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     Logger.ErrorException("Error copying live stream.", ex);
                 }
-
+                EnableStreamSharing = false;
                 await DeleteTempFile(TempFilePath).ConfigureAwait(false);
             });
         }
