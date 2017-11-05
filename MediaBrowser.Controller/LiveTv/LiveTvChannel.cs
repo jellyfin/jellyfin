@@ -24,6 +24,11 @@ namespace MediaBrowser.Controller.LiveTv
             return list;
         }
 
+        public bool SupportsMediaSourceSelection()
+        {
+            return false;
+        }
+
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.LiveTvChannel;

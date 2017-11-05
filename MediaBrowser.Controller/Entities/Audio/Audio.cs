@@ -51,6 +51,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             return 1;
         }
 
+        public bool SupportsMediaSourceSelection()
+        {
+            return false;
+        }
+
         [IgnoreDataMember]
         public override bool SupportsPlayedStatus
         {

@@ -8,5 +8,8 @@ namespace MediaBrowser.Controller.Providers
         FileSystemMetadata[] GetFileSystemEntries(string path);
         List<FileSystemMetadata> GetFiles(string path);
         FileSystemMetadata GetFile(string path);
+
+        List<string> GetFilePaths(string path);
+        List<string> GetFilePaths(string path, bool clearCache);
     }
 }
