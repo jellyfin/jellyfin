@@ -14,11 +14,11 @@ namespace MediaBrowser.Controller.Providers
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache =
-            new ConcurrentDictionary<string, FileSystemMetadata[]>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, FileSystemMetadata[]> _cache = new Dictionary<string, FileSystemMetadata[]>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache =
-        new ConcurrentDictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, FileSystemMetadata> _fileCache = new Dictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
+
+        private readonly Dictionary<string, List<string>> _filePathCache = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
         public DirectoryService(ILogger logger, IFileSystem fileSystem)
         {
@@ -33,24 +33,12 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            return GetFileSystemEntries(path, false);
-        }
-
-        private FileSystemMetadata[] GetFileSystemEntries(string path, bool clearCache)
-        {
             if (string.IsNullOrWhiteSpace(path))
             {
                 throw new ArgumentNullException("path");
             }
 
             FileSystemMetadata[] entries;
-
-            if (clearCache)
-            {
-                FileSystemMetadata[] removed;
-
-                _cache.TryRemove(path, out removed);
-            }
 
             if (!_cache.TryGetValue(path, out entries))
             {
@@ -66,7 +54,8 @@ namespace MediaBrowser.Controller.Providers
                     entries = new FileSystemMetadata[] { };
                 }
 
-                _cache.TryAdd(path, entries);
+                //_cache.TryAdd(path, entries);
+                _cache[path] = entries;
             }
 
             return entries;
@@ -74,13 +63,8 @@ namespace MediaBrowser.Controller.Providers
 
         public List<FileSystemMetadata> GetFiles(string path)
         {
-            return GetFiles(path, false);
-        }
-
-        public List<FileSystemMetadata> GetFiles(string path, bool clearCache)
-        {
             var list = new List<FileSystemMetadata>();
-            var items = GetFileSystemEntries(path, clearCache);
+            var items = GetFileSystemEntries(path);
             foreach (var item in items)
             {
                 if (!item.IsDirectory)
@@ -100,7 +84,8 @@ namespace MediaBrowser.Controller.Providers
 
                 if (file != null && file.Exists)
                 {
-                    _fileCache.TryAdd(path, file);
+                    //_fileCache.TryAdd(path, file);
+                    _fileCache[path] = file;
                 }
                 else
                 {
@@ -111,5 +96,24 @@ namespace MediaBrowser.Controller.Providers
             return file;
             //return _fileSystem.GetFileInfo(path);
         }
+
+        public List<string> GetFilePaths(string path)
+        {
+            return GetFilePaths(path, false);
+        }
+
+        public List<string> GetFilePaths(string path, bool clearCache)
+        {
+            List<string> result;
+            if (clearCache || !_filePathCache.TryGetValue(path, out result))
+            {
+                result = _fileSystem.GetFilePaths(path).ToList();
+
+                _filePathCache[path] = result;
+            }
+
+            return result;
+        }
+
     }
 }

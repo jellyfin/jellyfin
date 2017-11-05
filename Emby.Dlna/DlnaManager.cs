@@ -554,7 +554,6 @@ namespace Emby.Dlna
             var list = new List<DeviceProfile>
             {
                 new SamsungSmartTvProfile(),
-                new Xbox360Profile(),
                 new XboxOneProfile(),
                 new SonyPs3Profile(),
                 new SonyPs4Profile(),

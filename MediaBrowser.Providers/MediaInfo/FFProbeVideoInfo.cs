@@ -229,7 +229,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     extractDuringScan = libraryOptions.ExtractChapterImagesDuringLibraryScan;
                 }
 
-                await _encodingManager.RefreshChapterImages(video, chapters, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
+                await _encodingManager.RefreshChapterImages(video, options.DirectoryService, chapters, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
 
                 _chapterManager.SaveChapters(video.Id.ToString(), chapters);
             }
@@ -472,7 +472,7 @@ namespace MediaBrowser.Providers.MediaInfo
             var subtitleResolver = new SubtitleResolver(_localization, _fileSystem);
 
             var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
-            var externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, false).ToList();
+            var externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, false);
 
             var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.Default ||
                                             options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
@@ -497,7 +497,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 // Rescan
                 if (downloadedLanguages.Count > 0)
                 {
-                    externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, true).ToList();
+                    externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, true);
                 }
             }
 

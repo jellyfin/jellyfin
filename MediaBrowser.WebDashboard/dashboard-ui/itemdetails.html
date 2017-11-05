@@ -46,6 +46,21 @@
 
                     </div>
 
+                    <div class="trackSelections flex align-items-center flex-wrap hide" style="margin: 1.5em 0;font-size:92%;">
+                        <div class="selectContainer selectContainer-inline selectSourceContainer hide trackSelectionFieldContainer" style="margin-right:2em;">
+                            <select is="emby-select" class="selectSource" label="">
+                            </select>
+                        </div>
+                        <div class="selectContainer selectContainer-inline selectAudioContainer hide trackSelectionFieldContainer" style="margin-right:2em;">
+                            <select is="emby-select" class="selectAudio" label="">
+                            </select>
+                        </div>
+                        <div class="selectContainer selectContainer-inline selectSubtitlesContainer hide trackSelectionFieldContainer">
+                            <select is="emby-select" class="selectSubtitles" label="">
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="mainDetailButtons">
 
                         <button is="emby-button" type="button" class="button-flat btnResume btnPlaySimple hide detailButton-mobile" data-mode="resume">
@@ -142,8 +157,6 @@
                         <p class="itemGenres"></p>
                         <h3 class="tagline"></h3>
                         <p class="overview"></p>
-                        <div class="mediaInfoIcons hide">
-                        </div>
                         <p id="itemBirthday"></p>
                         <p id="itemBirthLocation"></p>
                         <p id="itemDeathDate"></p>

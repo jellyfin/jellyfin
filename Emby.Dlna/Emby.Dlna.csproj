@@ -105,7 +105,6 @@
     <Compile Include="Profiles\SonyPs3Profile.cs" />
     <Compile Include="Profiles\SonyPs4Profile.cs" />
     <Compile Include="Profiles\WdtvLiveProfile.cs" />
-    <Compile Include="Profiles\Xbox360Profile.cs" />
     <Compile Include="Profiles\XboxOneProfile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\DescriptionXmlBuilder.cs" />
@@ -175,7 +174,6 @@
     <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 3.xml" />
     <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 4.xml" />
     <EmbeddedResource Include="Profiles\Xml\WDTV Live.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Xbox 360.xml" />
     <EmbeddedResource Include="Profiles\Xml\Xbox One.xml" />
   </ItemGroup>
   <ItemGroup>
