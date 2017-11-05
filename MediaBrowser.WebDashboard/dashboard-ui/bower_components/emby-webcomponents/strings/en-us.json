@@ -609,5 +609,8 @@
   "GenreValue": "Genre: {0}",
   "GenresValue": "Genres: {0}",
   "LinksValue": "Links: {0}",
-  "TagsValue": "Tags: {0}"
+  "TagsValue": "Tags: {0}",
+  "LabelAudio": "Audio:",
+  "LabelSubtitles": "Subtitles:",
+  "Off": "Off"
 }

@@ -487,14 +487,17 @@ namespace Emby.Server.Implementations.IO
             AssertDirectoryExists(dir, path);
 
             var list = ListFiles(dir, recursive);
+            var result = new List<FileSystemMetadata>();
 
             foreach (var file in list)
             {
                 if (file.IsDirectory())
                 {
-                    yield return ToMetadata(file);
+                    result.Add(ToMetadata(file));
                 }
             }
+
+            return result;
         }
 
         public IEnumerable<FileSystemMetadata> GetFiles(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
@@ -503,6 +506,7 @@ namespace Emby.Server.Implementations.IO
             AssertDirectoryExists(dir, path);
 
             var list = ListFiles(dir, recursive);
+            var result = new List<FileSystemMetadata>();
 
             foreach (var file in list)
             {
@@ -513,10 +517,12 @@ namespace Emby.Server.Implementations.IO
 
                     if (extensions == null || extensions.Length == 0 || extensions.Contains(extension ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                     {
-                        yield return ToMetadata(file);
+                        result.Add(ToMetadata(file));
                     }
                 }
             }
+
+            return result;
         }
 
         public IEnumerable<FileSystemMetadata> GetFileSystemEntries(string path, bool recursive = false)
@@ -525,15 +531,19 @@ namespace Emby.Server.Implementations.IO
             AssertDirectoryExists(dir, path);
 
             var list = ListFiles(dir, recursive);
+            var result = new List<FileSystemMetadata>();
 
             foreach (var file in list)
             {
-                yield return ToMetadata(file);
+                result.Add(ToMetadata(file));
             }
+
+            return result;
         }
 
-        public IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false)
+        public List<string> GetFileSystemEntryPaths(string path, bool recursive = false)
         {
+            var result = new List<string>();
             var dir = CreateSmbDirectoryForListFiles(path);
             AssertDirectoryExists(dir, path);
 
@@ -541,16 +551,18 @@ namespace Emby.Server.Implementations.IO
 
             foreach (var file in list)
             {
-                yield return GetReturnPath(file);
+                result.Add(GetReturnPath(file));
             }
+            return result;
         }
 
-        public IEnumerable<string> GetFilePaths(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
+        public List<string> GetFilePaths(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
             var dir = CreateSmbDirectoryForListFiles(path);
             AssertDirectoryExists(dir, path);
 
             var list = ListFiles(dir, recursive);
+            var result = new List<string>();
 
             foreach (var file in list)
             {
@@ -561,44 +573,52 @@ namespace Emby.Server.Implementations.IO
 
                     if (extensions == null || extensions.Length == 0 || extensions.Contains(extension ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                     {
-                        yield return filePath;
+                        result.Add(filePath);
                     }
                 }
             }
+
+            return result;
         }
 
-        public IEnumerable<string> GetDirectoryPaths(string path, bool recursive = false)
+        public List<string> GetDirectoryPaths(string path, bool recursive = false)
         {
             var dir = CreateSmbDirectoryForListFiles(path);
             AssertDirectoryExists(dir, path);
 
             var list = ListFiles(dir, recursive);
+            var result = new List<string>();
 
             foreach (var file in list)
             {
                 if (file.IsDirectory())
                 {
-                    yield return GetReturnPath(file);
+                    result.Add(GetReturnPath(file));
                 }
             }
+
+            return result;
         }
 
         private IEnumerable<SmbFile> ListFiles(SmbFile dir, bool recursive)
         {
             var list = dir.ListFiles();
+            var result = new List<SmbFile>();
 
             foreach (var file in list)
             {
-                yield return file;
+                result.Add(file);
 
                 if (recursive && file.IsDirectory())
                 {
                     foreach (var subFile in ListFiles(file, recursive))
                     {
-                        yield return subFile;
+                        result.Add(subFile);
                     }
                 }
             }
+
+            return result;
         }
     }
 }

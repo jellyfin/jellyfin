@@ -13,5 +13,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task{IEnumerable{MediaSourceInfo}}.</returns>
         List<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution);
         List<MediaStream> GetMediaStreams();
+        bool SupportsMediaSourceSelection();
     }
 }

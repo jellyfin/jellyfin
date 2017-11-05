@@ -52,7 +52,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return Task.FromResult(true);
         }
 
-        public virtual void Close()
+        public void Close()
+        {
+            EnableStreamSharing = false;
+
+            Logger.Info("Closing " + GetType().Name);
+
+            CloseInternal();
+        }
+
+        protected virtual void CloseInternal()
         {
         }
 

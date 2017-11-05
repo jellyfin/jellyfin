@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Localization
 
             var localizationPath = LocalizationPath;
 
-			_fileSystem.CreateDirectory(localizationPath);
+            _fileSystem.CreateDirectory(localizationPath);
 
             var existingFiles = GetRatingsFiles(localizationPath)
                 .Select(Path.GetFileName)
@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.Localization
                     }
                 }
             }
-            
+
             foreach (var file in GetRatingsFiles(localizationPath))
             {
                 LoadRatings(file);
@@ -128,12 +128,20 @@ namespace Emby.Server.Implementations.Localization
             return _textLocalizer.NormalizeFormKD(text);
         }
 
+        private CultureDto[] _cultures;
+
         /// <summary>
         /// Gets the cultures.
         /// </summary>
         /// <returns>IEnumerable{CultureDto}.</returns>
         public CultureDto[] GetCultures()
         {
+            var result = _cultures;
+            if (result != null)
+            {
+                return result;
+            }
+
             var type = GetType();
             var path = type.Namespace + ".iso6392.txt";
 
@@ -166,10 +174,14 @@ namespace Emby.Server.Implementations.Localization
                 }
             }
 
-            return list.Where(i => !string.IsNullOrWhiteSpace(i.Name) &&
-                !string.IsNullOrWhiteSpace(i.DisplayName) &&
-                !string.IsNullOrWhiteSpace(i.ThreeLetterISOLanguageName) &&
-                !string.IsNullOrWhiteSpace(i.TwoLetterISOLanguageName)).ToArray();
+            result = list.Where(i => !string.IsNullOrWhiteSpace(i.Name) &&
+               !string.IsNullOrWhiteSpace(i.DisplayName) &&
+               !string.IsNullOrWhiteSpace(i.ThreeLetterISOLanguageName) &&
+               !string.IsNullOrWhiteSpace(i.TwoLetterISOLanguageName)).ToArray();
+
+            _cultures = result;
+
+            return result;
         }
 
         /// <summary>
@@ -239,7 +251,7 @@ namespace Emby.Server.Implementations.Localization
         /// <returns>Dictionary{System.StringParentalRating}.</returns>
         private void LoadRatings(string file)
         {
-			var dict = _fileSystem.ReadAllLines(file).Select(i =>
+            var dict = _fileSystem.ReadAllLines(file).Select(i =>
             {
                 if (!string.IsNullOrWhiteSpace(i))
                 {
@@ -269,7 +281,7 @@ namespace Emby.Server.Implementations.Localization
             _allParentalRatings.TryAdd(countryCode, dict);
         }
 
-        private readonly string[] _unratedValues = {"n/a", "unrated", "not rated"};
+        private readonly string[] _unratedValues = { "n/a", "unrated", "not rated" };
 
         /// <summary>
         /// Gets the rating level.

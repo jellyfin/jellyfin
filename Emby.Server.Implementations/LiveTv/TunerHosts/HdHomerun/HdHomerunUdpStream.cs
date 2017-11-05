@@ -105,9 +105,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             await taskCompletionSource.Task.ConfigureAwait(false);
         }
 
-        public override void Close()
+        protected override void CloseInternal()
         {
-            Logger.Info("Closing HDHR UDP live stream");
             LiveStreamCancellationTokenSource.Cancel();
         }
 
@@ -133,6 +132,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                             Logger.ErrorException("Error opening live stream:", ex);
                             openTaskCompletionSource.TrySetException(ex);
                         }
+
+                        EnableStreamSharing = false;
 
                         try
                         {

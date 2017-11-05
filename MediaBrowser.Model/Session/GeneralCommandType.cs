@@ -39,6 +39,7 @@
         ChannelDown = 31,
         SetMaxStreamingBitrate = 31,
         Guide = 32,
-        ToggleStats = 33
+        ToggleStats = 33,
+        PlayMediaSource = 34
     }
 }
