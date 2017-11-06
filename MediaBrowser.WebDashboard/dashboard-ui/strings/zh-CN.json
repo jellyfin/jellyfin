@@ -287,7 +287,7 @@
     "LabelAllowServerAutoRestart": "\u5141\u8bb8\u670d\u52a1\u5668\u81ea\u52a8\u91cd\u542f\u6765\u5b89\u88c5\u66f4\u65b0",
     "LabelAllowServerAutoRestartHelp": "\u8be5\u670d\u52a1\u5668\u4ec5\u4f1a\u5728\u7a7a\u95f2\u548c\u6ca1\u6709\u6d3b\u52a8\u7528\u6237\u7684\u671f\u95f4\u91cd\u65b0\u542f\u52a8\u3002",
     "LabelRunServerAtStartup": "\u5f00\u673a\u542f\u52a8\u670d\u52a1\u5668",
-    "LabelRunServerAtStartupHelp": "\u670d\u52a1\u5668\u6258\u76d8\u56fe\u6807\u5c06\u4f1a\u5728windows\u5f00\u673a\u65f6\u542f\u52a8\u3002\u8981\u542f\u52a8windows\u670d\u52a1\uff0c\u8bf7\u53d6\u6d88\u8fd9\u4e2a\u9009\u9879\uff0c\u5e76\u4eceWindows\u63a7\u5236\u9762\u677f\u4e2d\u8fd0\u884c\u670d\u52a1\u3002\u8bf7\u6ce8\u610f\uff1a\u4f60\u4e0d\u80fd\u8ba9\u6258\u76d8\u56fe\u6807\u548cwindows\u670d\u52a1\u540c\u65f6\u8fd0\u884c\uff0c\u542f\u52a8\u670d\u52a1\u4e4b\u524d\u4f60\u5fc5\u987b\u5148\u9000\u51fa\u6258\u76d8\u56fe\u6807\u3002",
+    "LabelRunServerAtStartupHelp": "This will start the Emby tray icon on Windows startup. If you've set up a Windows service then leave this unchecked and configure the service to run at startup.",
     "ButtonSelectDirectory": "\u9009\u62e9\u76ee\u5f55",
     "LabelCachePath": "\u7f13\u5b58\u8def\u5f84\uff1a",
     "DefaultMetadataLangaugeDescription": "These are your defaults and can be customized on a per-library basis.",
@@ -949,7 +949,7 @@
     "TabDevices": "\u8bbe\u5907",
     "HeaderLibrarySettings": "Library Settings",
     "HeaderChapterSettings": "Chapter Settings",
-    "HeaderCameraUploadHelp": "Emby apps can automatically upload photos and videos taken from your mobile devices into Emby Server.",
+    "HeaderCameraUploadHelp": "Emby apps can automatically upload photos taken from your mobile devices into Emby Server.",
     "LabelCameraUploadPath": "\u6444\u50cf\u5934\u4e0a\u4f20\u8def\u5f84\uff1a",
     "LabelCameraUploadPathHelp": "Select a custom upload path. This will override any default settings set in the Camera Upload section. If left blank, a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
     "LabelCreateCameraUploadSubfolder": "\u4e3a\u6bcf\u4e2a\u8bbe\u5907\u521b\u5efa\u5b50\u6587\u4ef6\u5939",
@@ -1851,5 +1851,7 @@
     "ButtonStopRecording": "Stop Recording",
     "StopRecording": "Stop recording",
     "CancelSeries": "Cancel series",
-    "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments."
+    "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments.",
+    "SaveSubtitlesInOriginalMediaFolders": "Save subtitles into media folders",
+    "SaveSubtitlesInOriginalMediaFoldersHelp": "Saving subtitles into media folders will make them easier to locate and manage."
 }

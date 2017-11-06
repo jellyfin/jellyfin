@@ -1851,5 +1851,7 @@
     "ButtonStopRecording": "Detener Grabaci\u00f3n",
     "StopRecording": "Detener grabaci\u00f3n",
     "CancelSeries": "Cancelar Serie",
-    "EnableDebugLoggingHelp": "El registro de depuraci\u00f3n deber\u00eda ser habilitado solamente para prop\u00f3sitos de soluci\u00f3n de problemas. El incremento en el archivo de sistema podr\u00eda prevenir que el servidor entre en modo suspendido bajo algunos entornos."
+    "EnableDebugLoggingHelp": "El registro de depuraci\u00f3n deber\u00eda ser habilitado solamente para prop\u00f3sitos de soluci\u00f3n de problemas. El incremento en el archivo de sistema podr\u00eda prevenir que el servidor entre en modo suspendido bajo algunos entornos.",
+    "SaveSubtitlesInOriginalMediaFolders": "Save subtitles into media folders",
+    "SaveSubtitlesInOriginalMediaFoldersHelp": "Saving subtitles into media folders will make them easier to locate and manage."
 }

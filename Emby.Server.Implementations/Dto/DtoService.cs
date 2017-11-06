@@ -373,8 +373,6 @@ namespace Emby.Server.Implementations.Dto
                     }
 
                     NormalizeMediaSourceContainers(dto);
-
-                    dto.SupportsMediaSourceSelection = hasMediaSources.SupportsMediaSourceSelection();
                 }
             }
 

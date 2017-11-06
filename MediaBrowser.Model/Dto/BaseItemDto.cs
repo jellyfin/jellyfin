@@ -75,7 +75,6 @@ namespace MediaBrowser.Model.Dto
         public bool? CanDownload { get; set; }
 
         public bool? HasSubtitles { get; set; }
-        public bool? SupportsMediaSourceSelection { get; set; }
 
         public string PreferredMetadataLanguage { get; set; }
         public string PreferredMetadataCountryCode { get; set; }
