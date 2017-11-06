@@ -57,7 +57,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             Logger.Info("Opened HDHR stream from {0}", url);
 
-            StartStreaming(response, LiveStreamCancellationTokenSource.Token);
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+            StartStreaming(response, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
 
             //OpenedMediaSource.Protocol = MediaProtocol.File;
             //OpenedMediaSource.Path = tempFile;
@@ -71,6 +72,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             //OpenedMediaSource.SupportsDirectPlay = false;
             //OpenedMediaSource.SupportsDirectStream = true;
             //OpenedMediaSource.SupportsTranscoding = true;
+            await taskCompletionSource.Task.ConfigureAwait(false);
         }
 
         protected override void CloseInternal()
@@ -78,7 +80,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             LiveStreamCancellationTokenSource.Cancel();
         }
 
-        private Task StartStreaming(HttpResponseInfo response, CancellationToken cancellationToken)
+        private Task StartStreaming(HttpResponseInfo response, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
             return Task.Run(async () =>
             {
@@ -90,10 +92,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         {
                             Logger.Info("Beginning HdHomerunHttpStream stream to file");
 
-                            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(TempFilePath));
                             using (var fileStream = FileSystem.GetFileStream(TempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
                             {
-                                StreamHelper.CopyTo(stream, fileStream, 81920, null, cancellationToken);
+                                StreamHelper.CopyTo(stream, fileStream, 81920, () => Resolve(openTaskCompletionSource), cancellationToken);
                             }
                         }
                     }
@@ -112,10 +113,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private void Resolve(TaskCompletionSource<bool> openTaskCompletionSource)
         {
-            Task.Run(() =>
-            {
-                openTaskCompletionSource.TrySetResult(true);
-            });
+            openTaskCompletionSource.TrySetResult(true);
         }
     }
 }
