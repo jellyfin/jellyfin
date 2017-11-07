@@ -58,7 +58,7 @@ namespace Emby.Dlna.Profiles
                     Container = "avi",
                     Type = DlnaProfileType.Video,
                     VideoCodec = "mpeg1video,mpeg2video,mpeg4,h264,vc1",
-                    AudioCodec = "ac3,dca,mp2,mp3,pcm,dts"
+                    AudioCodec = "ac3,eac3,dca,mp2,mp3,pcm,dts"
                 },
 
                 new DirectPlayProfile
@@ -66,7 +66,7 @@ namespace Emby.Dlna.Profiles
                     Container = "mpeg",
                     Type = DlnaProfileType.Video,
                     VideoCodec = "mpeg1video,mpeg2video",
-                    AudioCodec = "ac3,dca,mp2,mp3,pcm,dts"
+                    AudioCodec = "ac3,eac3,dca,mp2,mp3,pcm,dts"
                 },
 
                 new DirectPlayProfile
@@ -74,7 +74,7 @@ namespace Emby.Dlna.Profiles
                     Container = "mkv",
                     Type = DlnaProfileType.Video,
                     VideoCodec = "mpeg1video,mpeg2video,mpeg4,h264,vc1",
-                    AudioCodec = "ac3,dca,aac,mp2,mp3,pcm,dts"
+                    AudioCodec = "ac3,eac3,dca,aac,mp2,mp3,pcm,dts"
                 },
 
                 new DirectPlayProfile
@@ -82,7 +82,7 @@ namespace Emby.Dlna.Profiles
                     Container = "ts,m2ts",
                     Type = DlnaProfileType.Video,
                     VideoCodec = "mpeg1video,mpeg2video,h264,vc1",
-                    AudioCodec = "ac3,dca,mp2,mp3,aac,dts"
+                    AudioCodec = "ac3,eac3,dca,mp2,mp3,aac,dts"
                 },
 
                 new DirectPlayProfile
@@ -90,7 +90,7 @@ namespace Emby.Dlna.Profiles
                     Container = "mp4,mov,m4v",
                     Type = DlnaProfileType.Video,
                     VideoCodec = "h264,mpeg4",
-                    AudioCodec = "ac3,aac,mp2,mp3,dca,dts"
+                    AudioCodec = "ac3,eac3,aac,mp2,mp3,dca,dts"
                 },
 
                 new DirectPlayProfile
