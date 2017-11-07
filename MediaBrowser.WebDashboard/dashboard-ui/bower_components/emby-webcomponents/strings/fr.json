@@ -607,5 +607,10 @@
     "DirectorValue": "R\u00e9alisateur: {0}",
     "DirectorsValue": "R\u00e9alisateurs: {0}",
     "GenreValue": "Genre: {0}",
-    "GenresValue": "Genres: {0}"
+    "GenresValue": "Genres: {0}",
+    "LinksValue": "Liens: {0}",
+    "TagsValue": "Mots cl\u00e9s: {0}",
+    "LabelAudio": "Audio:",
+    "LabelSubtitles": "Sous-titres:",
+    "Off": "Arr\u00eat"
 }

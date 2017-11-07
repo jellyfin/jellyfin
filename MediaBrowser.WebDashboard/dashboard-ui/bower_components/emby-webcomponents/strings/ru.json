@@ -607,5 +607,10 @@
     "DirectorValue": "\u0420\u0435\u0436\u0438\u0441\u0441\u0451\u0440: {0}",
     "DirectorsValue": "\u0420\u0435\u0436\u0438\u0441\u0441\u0451\u0440\u044b: {0}",
     "GenreValue": "\u0416\u0430\u043d\u0440: {0}",
-    "GenresValue": "\u0416\u0430\u043d\u0440\u044b: {0}"
+    "GenresValue": "\u0416\u0430\u043d\u0440\u044b: {0}",
+    "LinksValue": "\u0421\u0441\u044b\u043b\u043a\u0438: {0}",
+    "TagsValue": "\u0422\u0435\u0433\u0438: {0}",
+    "LabelAudio": "\u0410\u0443\u0434\u0438\u043e:",
+    "LabelSubtitles": "\u0421\u0443\u0431\u0442\u0438\u0442\u0440\u044b:",
+    "Off": "\u0412\u044b\u043a\u043b"
 }

@@ -602,10 +602,15 @@
     "PlayNext": "Riproduci prossimo",
     "AllowSeasonalThemes": "Consenti temi automatici stagionali",
     "AllowSeasonalThemesHelp": "Se abilitato, i temi stagionali sovrascriveranno occasionalmente l'impostazione del tema.",
-    "AutoBasedOnLanguageSetting": "Auto (based on language setting)",
-    "LabelDateTimeLocale": "Date time locale:",
-    "DirectorValue": "Director: {0}",
-    "DirectorsValue": "Directors: {0}",
-    "GenreValue": "Genre: {0}",
-    "GenresValue": "Genres: {0}"
+    "AutoBasedOnLanguageSetting": "Auto (basato sull'impostazione della lingua)",
+    "LabelDateTimeLocale": "Data locale:",
+    "DirectorValue": "Regista: {0}",
+    "DirectorsValue": "Registi: {0}",
+    "GenreValue": "Genere: {0}",
+    "GenresValue": "Generi: {0}",
+    "LinksValue": "Links: {0}",
+    "TagsValue": "Tags: {0}",
+    "LabelAudio": "Audio:",
+    "LabelSubtitles": "Subtitles:",
+    "Off": "Off"
 }

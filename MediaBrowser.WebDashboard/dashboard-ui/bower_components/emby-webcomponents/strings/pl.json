@@ -607,5 +607,10 @@
     "DirectorValue": "Re\u017cyser: {0}",
     "DirectorsValue": "Re\u017cyserzy: {0}",
     "GenreValue": "Gatunek: {0}",
-    "GenresValue": "Gatunki: {0}"
+    "GenresValue": "Gatunki: {0}",
+    "LinksValue": "\u0141\u0105cza: {0}",
+    "TagsValue": "Znaczniki: {0}",
+    "LabelAudio": "Audio:",
+    "LabelSubtitles": "Subtitles:",
+    "Off": "Off"
 }
