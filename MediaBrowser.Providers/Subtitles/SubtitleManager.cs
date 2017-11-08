@@ -116,7 +116,7 @@ namespace MediaBrowser.Providers.Subtitles
             var parts = subtitleId.Split(new[] { '_' }, 2);
             var provider = GetProvider(parts.First());
 
-            var saveInMediaFolder = GetOptions().SaveSubtitlesInMediaFolders && video.SupportsLocalMetadata;
+            var saveInMediaFolder = video.IsSaveLocalMetadataEnabled();
 
             try
             {

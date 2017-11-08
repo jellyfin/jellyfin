@@ -9,6 +9,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Common.Net;
+using System.Threading;
 
 namespace MediaBrowser.Api
 {
@@ -50,14 +52,16 @@ namespace MediaBrowser.Api
         private readonly IUserManager _userManager;
         private readonly IConnectManager _connectManager;
         private readonly IMediaEncoder _mediaEncoder;
+        private readonly IHttpClient _httpClient;
 
-        public StartupWizardService(IServerConfigurationManager config, IServerApplicationHost appHost, IUserManager userManager, IConnectManager connectManager, IMediaEncoder mediaEncoder)
+        public StartupWizardService(IServerConfigurationManager config, IHttpClient httpClient, IServerApplicationHost appHost, IUserManager userManager, IConnectManager connectManager, IMediaEncoder mediaEncoder)
         {
             _config = config;
             _appHost = appHost;
             _userManager = userManager;
             _connectManager = connectManager;
             _mediaEncoder = mediaEncoder;
+            _httpClient = httpClient;
         }
 
         public void Post(ReportStartupWizardComplete request)
@@ -65,6 +69,35 @@ namespace MediaBrowser.Api
             _config.Configuration.IsStartupWizardCompleted = true;
             _config.SetOptimalValues();
             _config.SaveConfiguration();
+
+            Task.Run(UpdateStats);
+        }
+
+        private async Task UpdateStats()
+        {
+            try
+            {
+                var url = string.Format("http://www.mb3admin.com/admin/service/package/installed?mac={0}&product=MBServer&operation=Install&version={1}",
+                    _appHost.SystemId,
+                    _appHost.ApplicationVersion.ToString());
+
+                using (var response = await _httpClient.SendAsync(new HttpRequestOptions
+                {
+
+                    Url = url,
+                    CancellationToken = CancellationToken.None,
+                    LogErrors = false,
+                    LogRequest = false
+
+                }, "GET").ConfigureAwait(false))
+                {
+
+                }
+            }
+            catch
+            {
+
+            }
         }
 
         public object Get(GetStartupInfo request)
