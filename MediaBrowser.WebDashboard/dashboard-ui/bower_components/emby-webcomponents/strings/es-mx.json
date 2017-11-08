@@ -611,6 +611,7 @@
     "LinksValue": "Enlaces: {0}",
     "TagsValue": "Etiquetas: {0}",
     "LabelAudio": "Audio:",
-    "LabelSubtitles": "Subtitles:",
-    "Off": "Off"
+    "LabelVideo": "Video:",
+    "LabelSubtitles": "Subt\u00edtulos:",
+    "Off": "Apagar"
 }

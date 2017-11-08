@@ -611,6 +611,7 @@
     "LinksValue": "L\u00e4nkar: {0}",
     "TagsValue": "Etiketter: {0}",
     "LabelAudio": "Audio:",
+    "LabelVideo": "Video:",
     "LabelSubtitles": "Subtitles:",
     "Off": "Off"
 }

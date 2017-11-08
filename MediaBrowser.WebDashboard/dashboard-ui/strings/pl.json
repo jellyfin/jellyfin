@@ -487,7 +487,7 @@
     "LabelTransferMethod": "Metoda transferu",
     "HeaderLatestNews": "Najnowsze wiadomo\u015bci",
     "HeaderRunningTasks": "Uruchomione zadania",
-    "HeaderActiveDevices": "Aktywne Urz\u0105dzenia",
+    "HeaderActiveDevices": "Aktywne urz\u0105dzenia",
     "HeaderPendingInstallations": "Instalacje w toku",
     "ButtonRestartNow": "Uruchom ponownie",
     "ButtonRestart": "Uruchom ponownie",
@@ -798,7 +798,7 @@
     "LabelImage": "Obraz:",
     "HeaderImages": "Obrazy",
     "HeaderBackdrops": "Fototapety",
-    "HeaderAddUpdateImage": "Dodaj\/Aktualizuj obraz",
+    "HeaderAddUpdateImage": "Dodaj \/ Aktualizuj obraz",
     "LabelDropImageHere": "Upu\u015b\u0107 obraz tutaj.",
     "LabelJpgPngOnly": "Tylko JPG\/PNG",
     "LabelImageType": "Typ obrazka:",
@@ -1853,5 +1853,5 @@
     "CancelSeries": "Anuluj nagrywanie seryjne",
     "EnableDebugLoggingHelp": "Rejestrowanie informacji diagnostycznych powinno by\u0107 aktywowane tylko w celu rozwi\u0105zania problem\u00f3w. Zwi\u0119kszona ilo\u015b\u0107 operacji na systemie plik\u00f3w mo\u017ce uniemo\u017cliwia\u0107, w przypadku niekt\u00f3rych \u015brodowisk, przej\u015bcie maszyny serwera w tryb u\u015bpienia.",
     "SaveSubtitlesInOriginalMediaFolders": "Zapisuj napisy w folderach medi\u00f3w",
-    "SaveSubtitlesInOriginalMediaFoldersHelp": "Saving subtitles into media folders will make them easier to locate and manage."
+    "SaveSubtitlesInOriginalMediaFoldersHelp": "Umo\u017cliwia zapisywanie napis\u00f3w w folderach medi\u00f3w, w celu \u0142atwego lokalizowania i zarz\u0105dzania."
 }

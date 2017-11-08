@@ -611,6 +611,7 @@
     "LinksValue": "Links: {0}",
     "TagsValue": "Tags: {0}",
     "LabelAudio": "Zvuk:",
+    "LabelVideo": "Video:",
     "LabelSubtitles": "Titulky:",
     "Off": "Vypnuto"
 }
