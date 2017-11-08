@@ -13,7 +13,6 @@ namespace MediaBrowser.Model.Providers
         public bool IsOpenSubtitleVipAccount { get; set; }
 
         public bool RequirePerfectMatch { get; set; }
-        public bool SaveSubtitlesInMediaFolders { get; set; }
 
         public SubtitleOptions()
         {
@@ -21,7 +20,6 @@ namespace MediaBrowser.Model.Providers
 
             SkipIfAudioTrackMatches = true;
             RequirePerfectMatch = true;
-            SaveSubtitlesInMediaFolders = true;
         }
     }
 }
