@@ -66,7 +66,7 @@ namespace MediaBrowser.Api.Session
 
     [Route("/Sessions/{Id}/Playing", "POST", Summary = "Instructs a session to play an item")]
     [Authenticated]
-    public class Play : IReturnVoid
+    public class Play : PlayRequest
     {
         /// <summary>
         /// Gets or sets the id.
@@ -74,27 +74,6 @@ namespace MediaBrowser.Api.Session
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
-
-        /// <summary>
-        /// Artist, Genre, Studio, Person, or any kind of BaseItem
-        /// </summary>
-        /// <value>The type of the item.</value>
-        [ApiMember(Name = "ItemIds", Description = "The ids of the items to play, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
-        public string ItemIds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the start position ticks that the first item should be played at
-        /// </summary>
-        /// <value>The start position ticks.</value>
-        [ApiMember(Name = "StartPositionTicks", Description = "The starting position of the first item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public long? StartPositionTicks { get; set; }
-
-        /// <summary>
-        /// Gets or sets the play command.
-        /// </summary>
-        /// <value>The play command.</value>
-        [ApiMember(Name = "PlayCommand", Description = "The type of play command to issue (PlayNow, PlayNext, PlayLast). Clients who have not yet implemented play next and play last may play now.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public PlayCommand PlayCommand { get; set; }
     }
 
     [Route("/Sessions/{Id}/Playing/{Command}", "POST", Summary = "Issues a playstate command to a client")]
@@ -471,15 +450,7 @@ namespace MediaBrowser.Api.Session
         /// <param name="request">The request.</param>
         public void Post(Play request)
         {
-            var command = new PlayRequest
-            {
-                ItemIds = request.ItemIds.Split(','),
-
-                PlayCommand = request.PlayCommand,
-                StartPositionTicks = request.StartPositionTicks
-            };
-
-            var task = _sessionManager.SendPlayCommand(GetSession(_sessionContext).Result.Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendPlayCommand(GetSession(_sessionContext).Result.Id, request.Id, request, CancellationToken.None);
 
             Task.WaitAll(task);
         }
