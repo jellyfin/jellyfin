@@ -328,7 +328,7 @@ namespace Emby.Dlna.PlayTo
             {
                 if (isFirst && command.StartPositionTicks.HasValue)
                 {
-                    playlist.Add(CreatePlaylistItem(item, user, command.StartPositionTicks.Value, null, null, null));
+                    playlist.Add(CreatePlaylistItem(item, user, command.StartPositionTicks.Value, command.MediaSourceId, command.AudioStreamIndex, command.SubtitleStreamIndex));
                     isFirst = false;
                 }
                 else
