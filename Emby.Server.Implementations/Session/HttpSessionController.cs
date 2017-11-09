@@ -109,6 +109,18 @@ namespace Emby.Server.Implementations.Session
             {
                 dict["StartPositionTicks"] = command.StartPositionTicks.Value.ToString(CultureInfo.InvariantCulture);
             }
+            if (command.AudioStreamIndex.HasValue)
+            {
+                dict["AudioStreamIndex"] = command.AudioStreamIndex.Value.ToString(CultureInfo.InvariantCulture);
+            }
+            if (command.SubtitleStreamIndex.HasValue)
+            {
+                dict["SubtitleStreamIndex"] = command.SubtitleStreamIndex.Value.ToString(CultureInfo.InvariantCulture);
+            }
+            if (!string.IsNullOrWhiteSpace(command.MediaSourceId))
+            {
+                dict["MediaSourceId"] = command.MediaSourceId;
+            }
 
             return SendMessage(command.PlayCommand.ToString(), dict, cancellationToken);
         }

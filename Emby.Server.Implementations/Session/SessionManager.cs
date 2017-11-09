@@ -972,7 +972,6 @@ namespace Emby.Server.Implementations.Session
             if (command.PlayCommand == PlayCommand.PlayInstantMix)
             {
                 items = command.ItemIds.SelectMany(i => TranslateItemForInstantMix(i, user))
-                    .Where(i => i.LocationType != LocationType.Virtual)
                     .ToList();
 
                 command.PlayCommand = PlayCommand.PlayNow;
@@ -986,9 +985,7 @@ namespace Emby.Server.Implementations.Session
                     list.AddRange(subItems);
                 }
 
-                items = list
-                   .Where(i => i.LocationType != LocationType.Virtual)
-                   .ToList();
+                items = list;
             }
 
             if (command.PlayCommand == PlayCommand.PlayShuffle)
@@ -1074,7 +1071,8 @@ namespace Emby.Server.Implementations.Session
                         {
                             ItemFields.SortName
                         }
-                    }
+                    },
+                    IsVirtualItem = false
                 });
 
                 return FilterToSingleMediaType(items)
@@ -1097,7 +1095,8 @@ namespace Emby.Server.Implementations.Session
                         {
                             ItemFields.SortName
                         }
-                    }
+                    },
+                    IsVirtualItem = false
 
                 });
 
