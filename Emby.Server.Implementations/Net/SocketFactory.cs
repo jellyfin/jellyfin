@@ -196,8 +196,18 @@ namespace Emby.Server.Implementations.Net
 
             try
             {
-                //retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
+                // seeing occasional exceptions thrown on qnap
+                // System.Net.Sockets.SocketException (0x80004005): Protocol not available
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            }
+            catch (SocketException)
+            {
+
+            }
+
+            try
+            {
+                //retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
 
                 var localIp = IPAddress.Any;
