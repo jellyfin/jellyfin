@@ -18,7 +18,6 @@ namespace MediaBrowser.Model.Configuration
 
             SaveImagePathsInNfo = true;
             EnablePathSubstitution = true;
-            EnableExtraThumbsDuplication = true;
         }
     }
 }
