@@ -48,10 +48,10 @@ namespace MediaBrowser.Model.Entities
             {
                 if (Type == MediaStreamType.Audio)
                 {
-                    if (!string.IsNullOrEmpty(Title))
-                    {
-                        return AddLanguageIfNeeded(Title);
-                    }
+                    //if (!string.IsNullOrEmpty(Title))
+                    //{
+                    //    return AddLanguageIfNeeded(Title);
+                    //}
 
                     List<string> attributes = new List<string>();
 
@@ -105,10 +105,10 @@ namespace MediaBrowser.Model.Entities
 
                 if (Type == MediaStreamType.Subtitle)
                 {
-                    if (!string.IsNullOrEmpty(Title))
-                    {
-                        return AddLanguageIfNeeded(Title);
-                    }
+                    //if (!string.IsNullOrEmpty(Title))
+                    //{
+                    //    return AddLanguageIfNeeded(Title);
+                    //}
 
                     List<string> attributes = new List<string>();
 

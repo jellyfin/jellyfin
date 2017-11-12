@@ -366,6 +366,12 @@ namespace Rssdp.Infrastructure
             {
                 foreach (var address in _networkManager.GetLocalIpAddresses())
                 {
+                    if (address.AddressFamily == IpAddressFamily.InterNetworkV6)
+                    {
+                        // Not supported ?
+                        continue;
+                    }
+
                     try
                     {
                         sockets.Add(_SocketFactory.CreateSsdpUdpSocket(address, _LocalPort));
