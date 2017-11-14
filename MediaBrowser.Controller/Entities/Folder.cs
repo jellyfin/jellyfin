@@ -1421,6 +1421,16 @@ namespace MediaBrowser.Controller.Entities
             // Sweep through recursively and update status
             foreach (var item in itemsResult)
             {
+                if (item.IsVirtualItem)
+                {
+                    // The querying doesn't support virtual unaired
+                    var episode = item as Episode;
+                    if (episode != null && episode.IsUnaired)
+                    {
+                        continue;
+                    }
+                }
+
                 item.MarkPlayed(user, datePlayed, resetPosition);
             }
         }

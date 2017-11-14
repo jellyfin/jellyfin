@@ -79,8 +79,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             var sources = await GetChannelStreamMediaSources(info, channelId, cancellationToken).ConfigureAwait(false);
 
-            var liveStream = new LiveStream(sources.First(), _environment, FileSystem, Logger, Config.ApplicationPaths);
-            return liveStream;
+            var mediaSource = sources.First();
+
+            if (mediaSource.Protocol == MediaProtocol.Http && !mediaSource.RequiresLooping)
+            {
+                return new SharedHttpStream(mediaSource, streamId, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _environment);
+            }
+
+            return new LiveStream(mediaSource, _environment, FileSystem, Logger, Config.ApplicationPaths);
         }
 
         public async Task Validate(TunerHostInfo info)
