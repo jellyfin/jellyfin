@@ -618,7 +618,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
                 mediaSource.Path = httpUrl;
 
-                return new HdHomerunHttpStream(mediaSource, streamId, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _environment);
+                return new SharedHttpStream(mediaSource, streamId, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _environment);
             }
 
             return new HdHomerunUdpStream(mediaSource, streamId, new HdHomerunChannelCommands(hdhomerunChannel.Number, profile), modelInfo.TunerCount, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager, _environment);

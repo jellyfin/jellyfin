@@ -608,10 +608,10 @@
     "DirectorsValue": "Registi: {0}",
     "GenreValue": "Genere: {0}",
     "GenresValue": "Generi: {0}",
-    "LinksValue": "Links: {0}",
+    "LinksValue": "Collegamenti: {0}",
     "TagsValue": "Tags: {0}",
     "LabelAudio": "Audio:",
     "LabelVideo": "Video:",
-    "LabelSubtitles": "Subtitles:",
-    "Off": "Off"
+    "LabelSubtitles": "Sottotitoli:",
+    "Off": "Spento"
 }

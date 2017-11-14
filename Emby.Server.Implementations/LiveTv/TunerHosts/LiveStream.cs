@@ -29,8 +29,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         public List<string> SharedStreamIds { get; private set; }
         protected readonly IEnvironmentInfo Environment;
         protected readonly IFileSystem FileSystem;
+        protected readonly IServerApplicationPaths AppPaths;
 
-        protected readonly string TempFilePath;
+        protected  string TempFilePath;
         protected readonly ILogger Logger;
         protected readonly CancellationTokenSource LiveStreamCancellationTokenSource = new CancellationTokenSource();
 
@@ -44,7 +45,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             EnableStreamSharing = true;
             SharedStreamIds = new List<string>();
             UniqueId = Guid.NewGuid().ToString("N");
-            TempFilePath = Path.Combine(appPaths.GetTranscodingTempPath(), UniqueId + ".ts");
+
+            AppPaths = appPaths;
+
+            SetTempFilePath("ts");
+        }
+
+        protected void SetTempFilePath(string extension)
+        {
+            TempFilePath = Path.Combine(AppPaths.GetTranscodingTempPath(), UniqueId + "." + extension);
         }
 
         public virtual Task Open(CancellationToken openCancellationToken)
