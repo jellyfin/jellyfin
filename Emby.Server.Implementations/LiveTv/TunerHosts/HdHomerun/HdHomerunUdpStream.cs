@@ -32,6 +32,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             OriginalStreamId = originalStreamId;
             _channelCommands = channelCommands;
             _numTuners = numTuners;
+            EnableStreamSharing = true;
         }
 
         public override async Task Open(CancellationToken openCancellationToken)

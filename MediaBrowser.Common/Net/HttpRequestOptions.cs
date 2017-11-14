@@ -93,6 +93,8 @@ namespace MediaBrowser.Common.Net
         public bool LogRequest { get; set; }
         public bool LogRequestAsDebug { get; set; }
         public bool LogErrors { get; set; }
+        public bool LogResponse { get; set; }
+        public bool LogResponseHeaders { get; set; }
 
         public bool LogErrorResponseBody { get; set; }
         public bool EnableKeepAlive { get; set; }
