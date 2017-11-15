@@ -1,9 +1,9 @@
 ﻿<form style="margin: 0 auto;">
 
-    <div class="verticalSection">
-        <h1 class="sectionTitle">
+    <div class="verticalSection verticalSection-extrabottompadding">
+        <h2 class="sectionTitle">
             ${HeaderAudioSettings}
-        </h1>
+        </h2>
         <div class="selectContainer">
             <select is="emby-select" id="selectAudioLanguage" label="${LabelAudioLanguagePreference}"></select>
         </div>
@@ -14,10 +14,10 @@
     </div>
     
     <div class="qualitySections hide">
-        <div class="verticalSection">
-            <h1 class="sectionTitle">
+        <div class="verticalSection verticalSection-extrabottompadding videoQualitySection hide">
+            <h2 class="sectionTitle">
                 ${HeaderVideoQuality}
-            </h1>
+            </h2>
             <div class="selectContainer fldVideoInNetworkQuality hide">
                 <select is="emby-select" class="selectVideoInNetworkQuality" label="${LabelHomeNetworkQuality}"></select>
             </div>
@@ -29,20 +29,20 @@
             </div>
         </div>
 
-        <div class="verticalSection musicQualitySection hide">
-            <h1>
+        <div class="verticalSection verticalSection-extrabottompadding musicQualitySection hide">
+            <h2>
                 ${HeaderMusicQuality}
-            </h1>
+            </h2>
             <div class="selectContainer">
                 <select is="emby-select" class="selectMusicInternetQuality" label="${LabelInternetQuality}"></select>
             </div>
         </div>
     </div>
 
-    <div class="verticalSection">
-        <h1 class="sectionTitle">
+    <div class="verticalSection verticalSection-extrabottompadding">
+        <h2 class="sectionTitle">
             ${Advanced}
-        </h1>
+        </h2>
         <div class="checkboxContainer checkboxContainer-withDescription cinemaModeOptions">
             <label>
                 <input type="checkbox" is="emby-checkbox" class="chkEnableCinemaMode" />
@@ -50,11 +50,13 @@
             </label>
             <div class="fieldDescription checkboxFieldDescription">${CinemaModeConfigurationHelp}</div>
         </div>
-        <label class="checkboxContainer">
-            <input type="checkbox" is="emby-checkbox" class="chkEpisodeAutoPlay" />
-            <span>${PlayNextEpisodeAutomatically}</span>
-        </label>
-        <div class="checkboxContainer checkboxContainer-withDescription">
+        <div class="checkboxContainer fldEpisodeAutoPlay hide">
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkEpisodeAutoPlay" />
+                <span>${PlayNextEpisodeAutomatically}</span>
+            </label>
+        </div>
+        <div class="checkboxContainer checkboxContainer-withDescription fldEnableNextVideoOverlay hide">
             <label>
                 <input type="checkbox" is="emby-checkbox" class="chkEnableNextVideoOverlay" />
                 <span>${EnableNextVideoInfoOverlay}</span>
