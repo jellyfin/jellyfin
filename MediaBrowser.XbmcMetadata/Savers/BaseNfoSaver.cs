@@ -229,7 +229,19 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (wasHidden || ConfigurationManager.Configuration.SaveMetadataHidden)
             {
-                FileSystem.SetHidden(path, true);
+                SetHidden(path, true);
+            }
+        }
+
+        private void SetHidden(string path, bool hidden)
+        {
+            try
+            {
+                FileSystem.SetHidden(path, hidden);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error setting hidden attribute on {0} - {1}", path, ex.Message);
             }
         }
 

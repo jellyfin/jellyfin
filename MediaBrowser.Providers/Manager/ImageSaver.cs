@@ -256,13 +256,25 @@ namespace MediaBrowser.Providers.Manager
 
                 if (_config.Configuration.SaveMetadataHidden)
                 {
-                    _fileSystem.SetHidden(path, true);
+                    SetHidden(path, true);
                 }
             }
             finally
             {
                 _libraryMonitor.ReportFileSystemChangeComplete(path, false);
                 _libraryMonitor.ReportFileSystemChangeComplete(parentFolder, false);
+            }
+        }
+
+        private void SetHidden(string path, bool hidden)
+        {
+            try
+            {
+                _fileSystem.SetHidden(path, hidden);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Error setting hidden attribute on {0} - {1}", path, ex.Message);
             }
         }
 
