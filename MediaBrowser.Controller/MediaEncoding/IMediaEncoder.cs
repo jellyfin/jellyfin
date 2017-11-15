@@ -118,9 +118,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         void UpdateEncoderPath(string path, string pathType);
         bool SupportsEncoder(string encoder);
 
-        void SetLogFilename(string name);
-        void ClearLogFilename();
-
         string[] GetPlayableStreamFileNames(string path, VideoType videoType);
         IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, IIsoMount isoMount, uint? titleNumber);
     }

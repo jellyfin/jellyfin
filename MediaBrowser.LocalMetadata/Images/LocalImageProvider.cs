@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Controller.Entities.Movies;
 
 namespace MediaBrowser.LocalMetadata.Images
 {
@@ -131,35 +132,91 @@ namespace MediaBrowser.LocalMetadata.Images
 
             PopulatePrimaryImages(item, images, files, imagePrefix, isInMixedFolder);
 
-            AddImage(files, images, "logo", imagePrefix, isInMixedFolder, ImageType.Logo);
-            AddImage(files, images, "clearart", imagePrefix, isInMixedFolder, ImageType.Art);
+            var added = false;
+            var isEpisode = item is Episode;
+            var isSong = item.GetType() == typeof(Audio);
+            var isGame = item is Game;
+            var isPerson = item is Person;
+
+            // Logo
+            if (!isEpisode && !isSong && !isPerson)
+            {
+                added = AddImage(files, images, "logo", imagePrefix, isInMixedFolder, ImageType.Logo);
+                if (!added)
+                {
+                    added = AddImage(files, images, "clearlogo", imagePrefix, isInMixedFolder, ImageType.Logo);
+                }
+            }
+
+            // Art
+            if (!isEpisode && !isSong && !isPerson)
+            {
+                AddImage(files, images, "clearart", imagePrefix, isInMixedFolder, ImageType.Art);
+            }
 
             // For music albums, prefer cdart before disc
             if (item is MusicAlbum)
             {
-                AddImage(files, images, "cdart", imagePrefix, isInMixedFolder, ImageType.Disc);
-                AddImage(files, images, "disc", imagePrefix, isInMixedFolder, ImageType.Disc);
+                added = AddImage(files, images, "cdart", imagePrefix, isInMixedFolder, ImageType.Disc);
+
+                if (!added)
+                {
+                    added = AddImage(files, images, "disc", imagePrefix, isInMixedFolder, ImageType.Disc);
+                }
             }
-            else
+            else if (isGame || item is Video || item is BoxSet)
             {
-                AddImage(files, images, "disc", imagePrefix, isInMixedFolder, ImageType.Disc);
-                AddImage(files, images, "cdart", imagePrefix, isInMixedFolder, ImageType.Disc);
+                added = AddImage(files, images, "disc", imagePrefix, isInMixedFolder, ImageType.Disc);
+
+                if (!added)
+                {
+                    added = AddImage(files, images, "cdart", imagePrefix, isInMixedFolder, ImageType.Disc);
+                }
+
+                if (!added)
+                {
+                    added = AddImage(files, images, "discart", imagePrefix, isInMixedFolder, ImageType.Disc);
+                }
             }
 
-            AddImage(files, images, "box", imagePrefix, isInMixedFolder, ImageType.Box);
-            AddImage(files, images, "back", imagePrefix, isInMixedFolder, ImageType.BoxRear);
-            AddImage(files, images, "boxrear", imagePrefix, isInMixedFolder, ImageType.BoxRear);
-            AddImage(files, images, "menu", imagePrefix, isInMixedFolder, ImageType.Menu);
+            if (isGame)
+            {
+                AddImage(files, images, "box", imagePrefix, isInMixedFolder, ImageType.Box);
+                AddImage(files, images, "menu", imagePrefix, isInMixedFolder, ImageType.Menu);
+
+                added = AddImage(files, images, "back", imagePrefix, isInMixedFolder, ImageType.BoxRear);
+
+                if (!added)
+                {
+                    added = AddImage(files, images, "boxrear", imagePrefix, isInMixedFolder, ImageType.BoxRear);
+                }
+            }
 
             // Banner
-            AddImage(files, images, "banner", imagePrefix, isInMixedFolder, ImageType.Banner);
+            if (!isEpisode && !isSong && !isPerson)
+            {
+                AddImage(files, images, "banner", imagePrefix, isInMixedFolder, ImageType.Banner);
+            }
 
             // Thumb
-            AddImage(files, images, "landscape", imagePrefix, isInMixedFolder, ImageType.Thumb);
-            AddImage(files, images, "thumb", imagePrefix, isInMixedFolder, ImageType.Thumb);
+            if (!isEpisode && !isSong && !isPerson)
+            {
+                added = AddImage(files, images, "landscape", imagePrefix, isInMixedFolder, ImageType.Thumb);
+                if (!added)
+                {
+                    added = AddImage(files, images, "thumb", imagePrefix, isInMixedFolder, ImageType.Thumb);
+                }
+            }
 
-            PopulateBackdrops(item, images, files, imagePrefix, isInMixedFolder, directoryService);
-            PopulateScreenshots(images, files, imagePrefix, isInMixedFolder);
+            if (!isEpisode && !isSong && !isPerson)
+            {
+                PopulateBackdrops(item, images, files, imagePrefix, isInMixedFolder, directoryService);
+            }
+
+            if (item is IHasScreenshots)
+            {
+                PopulateScreenshots(images, files, imagePrefix, isInMixedFolder);
+            }
         }
 
         private static readonly string[] CommonImageFileNames = new[]
@@ -232,19 +289,28 @@ namespace MediaBrowser.LocalMetadata.Images
             var fileNameWithoutExtension = item.FileNameWithoutExtension;
             if (!string.IsNullOrEmpty(fileNameWithoutExtension))
             {
-                AddImage(files, images, fileNameWithoutExtension, ImageType.Primary);
+                if (AddImage(files, images, fileNameWithoutExtension, ImageType.Primary))
+                {
+                    return;
+                }
             }
 
             foreach (var name in imageFileNames)
             {
-                AddImage(files, images, imagePrefix + name, ImageType.Primary);
+                if (AddImage(files, images, imagePrefix + name, ImageType.Primary))
+                {
+                    return;
+                }
             }
 
             if (!isInMixedFolder)
             {
                 foreach (var name in imageFileNames)
                 {
-                    AddImage(files, images, name, ImageType.Primary);
+                    if (AddImage(files, images, name, ImageType.Primary))
+                    {
+                        return;
+                    }
                 }
             }
         }
