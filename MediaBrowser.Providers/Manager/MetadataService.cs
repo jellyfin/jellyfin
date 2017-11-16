@@ -126,7 +126,7 @@ namespace MediaBrowser.Providers.Manager
                 var providers = GetProviders(item, refreshOptions, isFirstRefresh, requiresRefresh)
                     .ToList();
 
-                if (providers.Count > 0 || isFirstRefresh)
+                if (providers.Count > 0 || isFirstRefresh || requiresRefresh)
                 {
                     if (item.BeforeMetadataRefresh())
                     {
