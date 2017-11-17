@@ -114,12 +114,14 @@ namespace MediaBrowser.Api
 
             foreach (var link in video.GetLinkedAlternateVersions())
             {
-                link.PrimaryVersionId = null;
+                link.SetPrimaryVersionId(null);
+                link.LinkedAlternateVersions = Video.EmptyLinkedChildArray;
 
                 link.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
             }
 
             video.LinkedAlternateVersions = Video.EmptyLinkedChildArray;
+            video.SetPrimaryVersionId(null);
             video.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
         }
 
@@ -174,7 +176,7 @@ namespace MediaBrowser.Api
 
             foreach (var item in items.Where(i => i.Id != primaryVersion.Id))
             {
-                item.PrimaryVersionId = primaryVersion.Id.ToString("N");
+                item.SetPrimaryVersionId(primaryVersion.Id.ToString("N"));
 
                 item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
 
