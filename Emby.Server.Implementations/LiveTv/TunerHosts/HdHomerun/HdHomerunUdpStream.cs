@@ -11,6 +11,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.LiveTv;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -23,8 +24,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly int _numTuners;
         private readonly INetworkManager _networkManager;
 
-        public HdHomerunUdpStream(MediaSourceInfo mediaSource, string originalStreamId, IHdHomerunChannelCommands channelCommands, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager, IEnvironmentInfo environment)
-            : base(mediaSource, environment, fileSystem, logger, appPaths)
+        public HdHomerunUdpStream(MediaSourceInfo mediaSource, TunerHostInfo tunerHostInfo, string originalStreamId, IHdHomerunChannelCommands channelCommands, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager, IEnvironmentInfo environment)
+            : base(mediaSource, tunerHostInfo, environment, fileSystem, logger, appPaths)
         {
             _appHost = appHost;
             _socketFactory = socketFactory;
