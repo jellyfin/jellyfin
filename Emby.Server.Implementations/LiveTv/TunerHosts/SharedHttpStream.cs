@@ -14,6 +14,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using System.Globalization;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.LiveTv;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
@@ -22,8 +23,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
 
-        public SharedHttpStream(MediaSourceInfo mediaSource, string originalStreamId, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, IEnvironmentInfo environment)
-            : base(mediaSource, environment, fileSystem, logger, appPaths)
+        public SharedHttpStream(MediaSourceInfo mediaSource, TunerHostInfo tunerHostInfo, string originalStreamId, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, IEnvironmentInfo environment)
+            : base(mediaSource, tunerHostInfo, environment, fileSystem, logger, appPaths)
         {
             _httpClient = httpClient;
             _appHost = appHost;
