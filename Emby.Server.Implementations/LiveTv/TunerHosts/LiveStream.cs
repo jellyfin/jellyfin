@@ -10,6 +10,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.LiveTv;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
@@ -21,7 +22,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             get { return SharedStreamIds.Count; }
         }
-        public ITunerHost TunerHost { get; set; }
+
         public string OriginalStreamId { get; set; }
         public bool EnableStreamSharing { get; set; }
         public string UniqueId { get; private set; }
@@ -35,7 +36,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         protected readonly ILogger Logger;
         protected readonly CancellationTokenSource LiveStreamCancellationTokenSource = new CancellationTokenSource();
 
-        public LiveStream(MediaSourceInfo mediaSource, IEnvironmentInfo environment, IFileSystem fileSystem, ILogger logger, IServerApplicationPaths appPaths)
+        public string TunerHostId { get; private set; }
+
+        public LiveStream(MediaSourceInfo mediaSource, TunerHostInfo tuner, IEnvironmentInfo environment, IFileSystem fileSystem, ILogger logger, IServerApplicationPaths appPaths)
         {
             OriginalMediaSource = mediaSource;
             Environment = environment;
@@ -45,6 +48,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             EnableStreamSharing = true;
             SharedStreamIds = new List<string>();
             UniqueId = Guid.NewGuid().ToString("N");
+            TunerHostId = tuner.Id;
 
             AppPaths = appPaths;
 

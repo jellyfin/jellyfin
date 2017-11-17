@@ -84,6 +84,20 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public void SetPrimaryVersionId(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                PrimaryVersionId = null;
+            }
+            else
+            {
+                PrimaryVersionId = id;
+            }
+
+            PresentationUniqueKey = CreatePresentationUniqueKey();
+        }
+
         public override string CreatePresentationUniqueKey()
         {
             if (!string.IsNullOrWhiteSpace(PrimaryVersionId))
@@ -667,8 +681,6 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("media");
             }
 
-            var mediaStreams = MediaSourceManager.GetMediaStreams(media.Id);
-
             var locationType = media.LocationType;
 
             var info = new MediaSourceInfo
@@ -676,8 +688,8 @@ namespace MediaBrowser.Controller.Entities
                 Id = media.Id.ToString("N"),
                 IsoType = media.IsoType,
                 Protocol = locationType == LocationType.Remote ? MediaProtocol.Http : MediaProtocol.File,
-                MediaStreams = mediaStreams,
-                Name = GetMediaSourceName(media, mediaStreams),
+                MediaStreams = MediaSourceManager.GetMediaStreams(media.Id),
+                Name = GetMediaSourceName(media),
                 Path = enablePathSubstitution ? GetMappedPath(media, media.Path, locationType) : media.Path,
                 RunTimeTicks = media.RunTimeTicks,
                 Video3DFormat = media.Video3DFormat,
@@ -740,12 +752,20 @@ namespace MediaBrowser.Controller.Entities
             return info;
         }
 
-        private static string GetMediaSourceName(Video video, List<MediaStream> mediaStreams)
+        private static string GetMediaSourceName(Video video)
         {
             var terms = new List<string>();
 
-            var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-            var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
+            var locationType = video.LocationType;
+            var path = video.Path;
+            if ((locationType == LocationType.FileSystem || locationType == LocationType.Offline) && !string.IsNullOrWhiteSpace(path))
+            {
+                terms.Add(System.IO.Path.GetFileName(path));
+            }
+            else
+            {
+                terms.Add(video.Name);
+            }
 
             if (video.Video3DFormat.HasValue)
             {
@@ -776,50 +796,6 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     terms.Add("ISO");
-                }
-            }
-
-            if (videoStream != null)
-            {
-                if (videoStream.Width.HasValue)
-                {
-                    if (videoStream.Width.Value >= 3800)
-                    {
-                        terms.Add("4K");
-                    }
-                    else if (videoStream.Width.Value >= 1900)
-                    {
-                        terms.Add("1080P");
-                    }
-                    else if (videoStream.Width.Value >= 1270)
-                    {
-                        terms.Add("720P");
-                    }
-                    else if (videoStream.Width.Value >= 700)
-                    {
-                        terms.Add("480P");
-                    }
-                    else
-                    {
-                        terms.Add("SD");
-                    }
-                }
-            }
-
-            if (videoStream != null && !string.IsNullOrWhiteSpace(videoStream.Codec))
-            {
-                terms.Add(videoStream.Codec.ToUpper());
-            }
-
-            if (audioStream != null)
-            {
-                var audioCodec = string.Equals(audioStream.Codec, "dca", StringComparison.OrdinalIgnoreCase)
-                    ? audioStream.Profile
-                    : audioStream.Codec;
-
-                if (!string.IsNullOrEmpty(audioCodec))
-                {
-                    terms.Add(audioCodec.ToUpper());
                 }
             }
 
