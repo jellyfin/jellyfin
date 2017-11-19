@@ -1335,19 +1335,15 @@ namespace MediaBrowser.Model.Dlna
                 return true;
             }
 
-            if (!maxBitrate.HasValue)
-            {
-                _logger.Info("Cannot " + playMethod + " due to unknown supported bitrate");
-                return false;
-            }
+            var requestedMaxBitrate = maxBitrate ?? 1000000;
 
             // If we don't know the bitrate, then force a transcode if requested max bitrate is under 40 mbps
             var itemBitrate = item.Bitrate ?? 
                 40000000;
 
-            if (itemBitrate > maxBitrate.Value)
+            if (itemBitrate > requestedMaxBitrate)
             {
-                _logger.Info("Bitrate exceeds " + playMethod + " limit: media bitrate: {0}, max bitrate: {1}", item.Bitrate.Value.ToString(CultureInfo.InvariantCulture), maxBitrate.Value.ToString(CultureInfo.InvariantCulture));
+                _logger.Info("Bitrate exceeds " + playMethod + " limit: media bitrate: {0}, max bitrate: {1}", item.Bitrate.Value.ToString(CultureInfo.InvariantCulture), requestedMaxBitrate.ToString(CultureInfo.InvariantCulture));
                 return false;
             }
 
