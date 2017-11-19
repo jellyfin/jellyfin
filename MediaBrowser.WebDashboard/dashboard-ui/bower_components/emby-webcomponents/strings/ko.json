@@ -1,4 +1,5 @@
 {
+    "LabelVersion": "Version:",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -162,6 +163,7 @@
     "VoiceInput": "Voice Input",
     "LabelContentType": "\ucf58\ud150\uce20 \uc885\ub958:",
     "LabelPath": "Path:",
+    "Playlists": "Playlists",
     "LabelTitle": "Title:",
     "LabelOriginalTitle": "Original title:",
     "LabelSortTitle": "Sort title:",
@@ -170,6 +172,7 @@
     "LabelStatus": "\uc0c1\ud0dc:",
     "LabelArtists": "\uc544\ud2f0\uc2a4\ud2b8:",
     "LabelArtistsHelp": "Separate multiple using ;",
+    "HeaderAlbumArtists": "Album Artists",
     "LabelAlbumArtists": "\uc568\ubc94 \uc544\ud2f0\uc2a4\ud2b8:",
     "LabelAlbum": "\uc568\ubc94",
     "Artists": "Artists",

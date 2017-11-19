@@ -1,4 +1,5 @@
 {
+    "LabelVersion": "Wersja:",
     "MessageUnlockAppWithPurchaseOrSupporter": "Odblokuj t\u0119 funkcj\u0119, za niewielk\u0105 jednorazow\u0105 op\u0142at\u0105 lub przy u\u017cyciu aktywnej subskrypcji Emby Premium.",
     "MessageUnlockAppWithSupporter": "Odblokuj t\u0119 funkcj\u0119 przy u\u017cyciu subskrypcji Emby Premium.",
     "MessageToValidateSupporter": "Je\u015bli posiadasz aktywn\u0105 subskrypcj\u0119 Emby Premium, upewnij si\u0119, \u017ce j\u0105 poprawnie skonfigurowa\u0142e\u015b przy pomocy Kokpitu serwera Emby, do kt\u00f3rego mo\u017cesz uzyska\u0107 dost\u0119p, klikaj\u0105c na pozycj\u0119 Premium menu startowego.",
@@ -162,6 +163,7 @@
     "VoiceInput": "Wej\u015bcie g\u0142osowe",
     "LabelContentType": "Typ zawarto\u015bci",
     "LabelPath": "Folder:",
+    "Playlists": "Listy",
     "LabelTitle": "Tytu\u0142:",
     "LabelOriginalTitle": "Tytu\u0142 oryginalny:",
     "LabelSortTitle": "Tytu\u0142 sortowania:",
@@ -170,6 +172,7 @@
     "LabelStatus": "Stan:",
     "LabelArtists": "Wykonawcy:",
     "LabelArtistsHelp": "Oddzielaj u\u017cywaj\u0105c ;",
+    "HeaderAlbumArtists": "Wykonawcy album\u00f3w",
     "LabelAlbumArtists": "Wykonawcy album\u00f3w",
     "LabelAlbum": "Album",
     "Artists": "Wykonawcy",
