@@ -65,10 +65,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var requiresRemux = false;
 
             var contentType = response.ContentType ?? string.Empty;
-            if (contentType.IndexOf("mp4", StringComparison.OrdinalIgnoreCase) != -1 || 
-                contentType.IndexOf("matroska", StringComparison.OrdinalIgnoreCase) != -1 || 
-                contentType.IndexOf("dash", StringComparison.OrdinalIgnoreCase) != -1 ||
-                contentType.IndexOf("mpegURL", StringComparison.OrdinalIgnoreCase) != -1)
+            if (contentType.IndexOf("matroska", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                extension = "mkv";
+            }
+            else if (contentType.IndexOf("mp4", StringComparison.OrdinalIgnoreCase) != -1 ||
+               contentType.IndexOf("dash", StringComparison.OrdinalIgnoreCase) != -1 ||
+               contentType.IndexOf("mpegURL", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 requiresRemux = true;
             }
