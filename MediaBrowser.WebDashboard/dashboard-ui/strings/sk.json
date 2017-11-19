@@ -408,7 +408,7 @@
     "HeaderAdditionalParts": "Additional Parts",
     "ButtonSplitVersionsApart": "Split Versions Apart",
     "ButtonPlayTrailer": "Trailer",
-    "LabelMissing": "Missing",
+    "LabelMissing": "Ch\u00fdbaj\u00face",
     "OptionSpecialEpisode": "Specials",
     "OptionMissingEpisode": "Ch\u00fdbaj\u00face epiz\u00f3dy",
     "OptionUnairedEpisode": "Nevysielan\u00e9 epiz\u00f3dy",
@@ -485,7 +485,7 @@
     "HeaderResult": "V\u00fdsledok",
     "OptionOverwriteExistingEpisodes": "Prep\u00edsa\u0165 existuj\u00face epiz\u00f3dy",
     "LabelTransferMethod": "Sp\u00f4sob prenosu",
-    "HeaderLatestNews": "Latest News",
+    "HeaderLatestNews": "Najnov\u0161ie spr\u00e1vy",
     "HeaderRunningTasks": "Be\u017eiace \u00falohy",
     "HeaderActiveDevices": "Akt\u00edvne zariadenia",
     "HeaderPendingInstallations": "\u010cakaj\u00face in\u0161tal\u00e1cie",
@@ -1853,5 +1853,7 @@
     "CancelSeries": "Cancel series",
     "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments.",
     "SaveSubtitlesInOriginalMediaFolders": "Save subtitles into media folders",
-    "SaveSubtitlesInOriginalMediaFoldersHelp": "Saving subtitles into media folders will make them easier to locate and manage."
+    "SaveSubtitlesInOriginalMediaFoldersHelp": "Saving subtitles into media folders will make them easier to locate and manage.",
+    "LabelSimultaneousConnectionLimit": "Simultaneous stream limit:",
+    "SimultaneousConnectionLimitHelp": "The maximum number of allowed simultaneous streams. Enter 0 for no limit."
 }
