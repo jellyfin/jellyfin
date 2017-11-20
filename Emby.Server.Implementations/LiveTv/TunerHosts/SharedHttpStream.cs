@@ -67,7 +67,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var contentType = response.ContentType ?? string.Empty;
             if (contentType.IndexOf("matroska", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                extension = "mkv";
+                requiresRemux = true;
             }
             else if (contentType.IndexOf("mp4", StringComparison.OrdinalIgnoreCase) != -1 ||
                contentType.IndexOf("dash", StringComparison.OrdinalIgnoreCase) != -1 ||
@@ -96,6 +96,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             OpenedMediaSource.Path = _appHost.GetLocalApiUrl("127.0.0.1") + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             OpenedMediaSource.Protocol = MediaProtocol.Http;
+
+            if (OpenedMediaSource.SupportsProbing)
+            {
+                await Task.Delay(3000).ConfigureAwait(false);
+            }
+
+            //OpenedMediaSource.Path = TempFilePath;
+            //OpenedMediaSource.Protocol = MediaProtocol.File;
 
             //OpenedMediaSource.Path = _tempFilePath;
             //OpenedMediaSource.Protocol = MediaProtocol.File;
