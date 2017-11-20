@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
+using MediaBrowser.Model.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.TV
 {
@@ -21,16 +22,18 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         private readonly ILibraryManager _libraryManager;
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
         private readonly ILocalizationManager _localization;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SeasonResolver"/> class.
         /// </summary>
         /// <param name="config">The config.</param>
-        public SeasonResolver(IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization)
+        public SeasonResolver(IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization, ILogger logger)
         {
             _config = config;
             _libraryManager = libraryManager;
             _localization = localization;
+            _logger = logger;
         }
 
         /// <summary>
@@ -45,20 +48,40 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
                 var series = ((Series)args.Parent);
 
+                var path = args.Path;
+
                 var season = new Season
                 {
-                    IndexNumber = new SeasonPathParser(namingOptions, new RegexProvider()).Parse(args.Path, true, true).SeasonNumber,
+                    IndexNumber = new SeasonPathParser(namingOptions, new RegexProvider()).Parse(path, true, true).SeasonNumber,
                     SeriesId = series.Id,
                     SeriesName = series.Name
                 };
 
                 if (season.IndexNumber.HasValue)
                 {
+                    var resolver = new Emby.Naming.TV.EpisodeResolver(namingOptions);
+
+                    var episodeInfo = resolver.Resolve(path, true);
+
+                    if (episodeInfo != null)
+                    {
+                        if (episodeInfo.EpisodeNumber.HasValue && episodeInfo.SeasonNumber.HasValue)
+                        {
+                            _logger.Info("Found folder underneath series with episode number: {0}. Season {1}. Episode {2}", 
+                                path,
+                                episodeInfo.SeasonNumber.Value,
+                                episodeInfo.EpisodeNumber.Value);
+
+                            return null;
+                        }
+                    }
+
                     var seasonNumber = season.IndexNumber.Value;
 
                     season.Name = seasonNumber == 0 ?
                         args.LibraryOptions.SeasonZeroDisplayName :
                         string.Format(_localization.GetLocalizedString("NameSeasonNumber"), seasonNumber.ToString(UsCulture), args.GetLibraryOptions().PreferredMetadataLanguage);
+
                 }
 
                 return season;
