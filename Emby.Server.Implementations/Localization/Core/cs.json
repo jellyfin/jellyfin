@@ -27,7 +27,7 @@
     "Artists": "Um\u011blci",
     "Folders": "Slo\u017eky",
     "Songs": "Skladby",
-    "TvShows": "TV Shows",
+    "TvShows": "TV seri\u00e1ly",
     "Shows": "Seri\u00e1ly",
     "Genres": "\u017d\u00e1nry",
     "NameSeasonNumber": "Sez\u00f3na {0}",
@@ -87,10 +87,5 @@
     "User": "U\u017eivatel",
     "System": "Syst\u00e9m",
     "Application": "Aplikace",
-    "Plugin": "Z\u00e1suvn\u00fd modul",
-    "LabelExit": "Uko\u010dit",
-    "LabelVisitCommunity": "Nav\u0161t\u00edvit komunitu",
-    "LabelBrowseLibrary": "Proch\u00e1zet knihovnu",
-    "LabelConfigureServer": "Konfigurovat Emby",
-    "LabelRestartServer": "Restartovat Server"
+    "Plugin": "Z\u00e1suvn\u00fd modul"
 }

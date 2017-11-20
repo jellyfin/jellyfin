@@ -1052,10 +1052,27 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 _liveStreamsSemaphore.Release();
             }
-
         }
 
-        private async Task<Tuple<ILiveStream, MediaSourceInfo, ITunerHost>> GetChannelStreamInternal(string channelId, string streamId, CancellationToken cancellationToken)
+        public async Task<List<ILiveStream>> GetLiveStreams(TunerHostInfo host, CancellationToken cancellationToken)
+        {
+            //await _liveStreamsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            //try
+            //{
+            var hostId = host.Id;
+
+            return _liveStreams
+                .Where(i => string.Equals(i.TunerHostId, hostId, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            //}
+            //finally
+            //{
+            //    _liveStreamsSemaphore.Release();
+            //}
+        }
+
+        private async Task<Tuple<ILiveStream, MediaSourceInfo>> GetChannelStreamInternal(string channelId, string streamId, CancellationToken cancellationToken)
         {
             _logger.Info("Streaming Channel " + channelId);
 
@@ -1072,7 +1089,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     _logger.Info("Live stream {0} consumer count is now {1}", streamId, result.ConsumerCount);
 
-                    return new Tuple<ILiveStream, MediaSourceInfo, ITunerHost>(result, openedMediaSource, result.TunerHost);
+                    return new Tuple<ILiveStream, MediaSourceInfo>(result, openedMediaSource);
                 }
 
                 foreach (var hostInstance in _liveTvManager.TunerHosts)
@@ -1086,13 +1103,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         result.SharedStreamIds.Add(openedMediaSource.Id);
                         _liveStreams.Add(result);
 
-                        result.TunerHost = hostInstance;
                         result.OriginalStreamId = streamId;
 
                         _logger.Info("Returning mediasource streamId {0}, mediaSource.Id {1}, mediaSource.LiveStreamId {2}",
                             streamId, openedMediaSource.Id, openedMediaSource.LiveStreamId);
 
-                        return new Tuple<ILiveStream, MediaSourceInfo, ITunerHost>(result, openedMediaSource, hostInstance);
+                        return new Tuple<ILiveStream, MediaSourceInfo>(result, openedMediaSource);
                     }
                     catch (FileNotFoundException)
                     {
@@ -2444,6 +2460,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                             if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
                             {
                                 existingTimer.Status = RecordingStatus.Cancelled;
+                            }
+                            else if (!existingTimer.IsManual)
+                            {
+                                existingTimer.Status = RecordingStatus.New;
                             }
 
                             if (existingTimer.Status != RecordingStatus.Cancelled)

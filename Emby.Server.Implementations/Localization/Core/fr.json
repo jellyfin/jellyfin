@@ -27,7 +27,7 @@
     "Artists": "Artistes",
     "Folders": "Dossiers",
     "Songs": "Chansons",
-    "TvShows": "TV Shows",
+    "TvShows": "S\u00e9ries T\u00e9l\u00e9",
     "Shows": "\u00c9missions",
     "Genres": "Genres",
     "NameSeasonNumber": "Saison {0}",
@@ -87,10 +87,5 @@
     "User": "Utilisateur",
     "System": "Syst\u00e8me",
     "Application": "Application",
-    "Plugin": "Extension",
-    "LabelExit": "Quitter",
-    "LabelVisitCommunity": "Visiter la communaut\u00e9",
-    "LabelBrowseLibrary": "Parcourir la m\u00e9diath\u00e8que",
-    "LabelConfigureServer": "Configurer Emby",
-    "LabelRestartServer": "Red\u00e9marrer le serveur"
+    "Plugin": "Extension"
 }

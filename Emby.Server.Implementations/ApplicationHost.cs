@@ -799,7 +799,7 @@ namespace Emby.Server.Implementations
 
         protected abstract IConnectManager CreateConnectManager();
         protected abstract ISyncManager CreateSyncManager();
-        
+
         protected virtual IHttpClient CreateHttpClient()
         {
             return new HttpClientManager.HttpClientManager(ApplicationPaths, LogManager.GetLogger("HttpClient"), FileSystemManager, MemoryStreamFactory, GetDefaultUserAgent);
@@ -953,6 +953,7 @@ namespace Emby.Server.Implementations
             var deviceRepo = new SqliteDeviceRepository(LogManager.GetLogger("DeviceManager"), ServerConfigurationManager, FileSystemManager, JsonSerializer);
             deviceRepo.Initialize();
             DeviceManager = new DeviceManager(deviceRepo, UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager, LogManager.GetLogger("DeviceManager"), NetworkManager);
+            RegisterSingleInstance<IDeviceRepository>(deviceRepo);
             RegisterSingleInstance(DeviceManager);
 
             var newsService = new Emby.Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
@@ -996,7 +997,7 @@ namespace Emby.Server.Implementations
             NotificationManager = new NotificationManager(LogManager, UserManager, ServerConfigurationManager);
             RegisterSingleInstance(NotificationManager);
 
-            SubtitleManager = new SubtitleManager(LogManager.GetLogger("SubtitleManager"), FileSystemManager, LibraryMonitor, LibraryManager, MediaSourceManager);
+            SubtitleManager = new SubtitleManager(LogManager.GetLogger("SubtitleManager"), FileSystemManager, LibraryMonitor, LibraryManager, MediaSourceManager, ServerConfigurationManager);
             RegisterSingleInstance(SubtitleManager);
 
             RegisterSingleInstance<IDeviceDiscovery>(new DeviceDiscovery(LogManager.GetLogger("IDeviceDiscovery"), ServerConfigurationManager, SocketFactory, TimerFactory));

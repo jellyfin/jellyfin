@@ -11,6 +11,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.LiveTv;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -23,8 +24,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly int _numTuners;
         private readonly INetworkManager _networkManager;
 
-        public HdHomerunUdpStream(MediaSourceInfo mediaSource, string originalStreamId, IHdHomerunChannelCommands channelCommands, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager, IEnvironmentInfo environment)
-            : base(mediaSource, environment, fileSystem, logger, appPaths)
+        public HdHomerunUdpStream(MediaSourceInfo mediaSource, TunerHostInfo tunerHostInfo, string originalStreamId, IHdHomerunChannelCommands channelCommands, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager, IEnvironmentInfo environment)
+            : base(mediaSource, tunerHostInfo, environment, fileSystem, logger, appPaths)
         {
             _appHost = appHost;
             _socketFactory = socketFactory;
@@ -32,6 +33,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             OriginalStreamId = originalStreamId;
             _channelCommands = channelCommands;
             _numTuners = numTuners;
+            EnableStreamSharing = true;
         }
 
         public override async Task Open(CancellationToken openCancellationToken)
@@ -105,9 +107,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             await taskCompletionSource.Task.ConfigureAwait(false);
         }
 
-        public override void Close()
+        protected override void CloseInternal()
         {
-            Logger.Info("Closing HDHR UDP live stream");
             LiveStreamCancellationTokenSource.Cancel();
         }
 
@@ -133,6 +134,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                             Logger.ErrorException("Error opening live stream:", ex);
                             openTaskCompletionSource.TrySetException(ex);
                         }
+
+                        EnableStreamSharing = false;
 
                         try
                         {

@@ -27,7 +27,7 @@
     "Artists": "Artister",
     "Folders": "Mappar",
     "Songs": "L\u00e5tar",
-    "TvShows": "TV Shows",
+    "TvShows": "TV-serier",
     "Shows": "Serier",
     "Genres": "Genrer",
     "NameSeasonNumber": "S\u00e4song {0}",
@@ -87,10 +87,5 @@
     "User": "Anv\u00e4ndare",
     "System": "System",
     "Application": "App",
-    "Plugin": "Till\u00e4gg",
-    "LabelExit": "Avsluta",
-    "LabelVisitCommunity": "Bes\u00f6k v\u00e5rt diskussionsforum",
-    "LabelBrowseLibrary": "Bl\u00e4ddra i biblioteket",
-    "LabelConfigureServer": "Konfigurera Emby",
-    "LabelRestartServer": "Starta om servern"
+    "Plugin": "Till\u00e4gg"
 }

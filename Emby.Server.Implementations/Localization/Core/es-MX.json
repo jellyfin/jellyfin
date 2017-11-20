@@ -27,7 +27,7 @@
     "Artists": "Artistas",
     "Folders": "Carpetas",
     "Songs": "Canciones",
-    "TvShows": "TV Shows",
+    "TvShows": "Programas de TV",
     "Shows": "Programas",
     "Genres": "G\u00e9neros",
     "NameSeasonNumber": "Temporada {0}",
@@ -87,10 +87,5 @@
     "User": "Usuario",
     "System": "Sistema",
     "Application": "Aplicaci\u00f3n",
-    "Plugin": "Complemento",
-    "LabelExit": "Salir",
-    "LabelVisitCommunity": "Visitar la Comunidad",
-    "LabelBrowseLibrary": "Explorar Biblioteca",
-    "LabelConfigureServer": "Configurar Emby",
-    "LabelRestartServer": "Reiniciar el Servidor"
+    "Plugin": "Complemento"
 }

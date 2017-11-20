@@ -202,14 +202,14 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         {
             var collectionType = args.GetCollectionType();
 
-            if (IsInvalid(args.Parent, collectionType))
-            {
-                return null;
-            }
-
             // Find movies with their own folders
             if (args.IsDirectory)
             {
+                if (IsInvalid(args.Parent, collectionType))
+                {
+                    return null;
+                }
+
                 var files = args.FileSystemChildren
                     .Where(i => !LibraryManager.IgnoreFile(i, args.Parent))
                     .ToList();
@@ -251,8 +251,13 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 return null;
             }
 
-            // Owned items will be caught by the plain video resolver
+            // Handle owned items
             if (args.Parent == null)
+            {
+                return base.Resolve(args);
+            }
+
+            if (IsInvalid(args.Parent, collectionType))
             {
                 return null;
             }
@@ -528,6 +533,15 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             return returnVideo;
         }
 
+        private string[] ValidCollectionTypes = new[]
+        {
+                CollectionType.Movies,
+                CollectionType.HomeVideos,
+                CollectionType.MusicVideos,
+                CollectionType.Movies,
+                CollectionType.Photos
+            };
+
         private bool IsInvalid(Folder parent, string collectionType)
         {
             if (parent != null)
@@ -538,21 +552,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 }
             }
 
-            var validCollectionTypes = new[]
-            {
-                CollectionType.Movies,
-                CollectionType.HomeVideos,
-                CollectionType.MusicVideos,
-                CollectionType.Movies,
-                CollectionType.Photos
-            };
-
             if (string.IsNullOrWhiteSpace(collectionType))
             {
                 return false;
             }
 
-            return !validCollectionTypes.Contains(collectionType, StringComparer.OrdinalIgnoreCase);
+            return !ValidCollectionTypes.Contains(collectionType, StringComparer.OrdinalIgnoreCase);
         }
 
         private IImageProcessor _imageProcessor;

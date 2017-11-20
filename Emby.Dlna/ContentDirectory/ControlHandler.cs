@@ -491,18 +491,27 @@ namespace Emby.Dlna.ContentDirectory
                 return GetGenreItems(item, null, user, sort, startIndex, limit);
             }
 
-            var collectionFolder = item as ICollectionFolder;
-            if (collectionFolder != null && string.Equals(CollectionType.Music, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
+            if (!stubType.HasValue || stubType.Value != StubType.Folder)
             {
-                return GetMusicFolders(item, user, stubType, sort, startIndex, limit);
-            }
-            if (collectionFolder != null && string.Equals(CollectionType.Movies, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
-            {
-                return GetMovieFolders(item, user, stubType, sort, startIndex, limit);
-            }
-            if (collectionFolder != null && string.Equals(CollectionType.TvShows, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
-            {
-                return GetTvFolders(item, user, stubType, sort, startIndex, limit);
+                var collectionFolder = item as ICollectionFolder;
+                if (collectionFolder != null && string.Equals(CollectionType.Music, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetMusicFolders(item, user, stubType, sort, startIndex, limit);
+                }
+                if (collectionFolder != null && string.Equals(CollectionType.Movies, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetMovieFolders(item, user, stubType, sort, startIndex, limit);
+                }
+                if (collectionFolder != null && string.Equals(CollectionType.TvShows, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetTvFolders(item, user, stubType, sort, startIndex, limit);
+                }
+
+                var userView = item as UserView;
+                if (userView != null && string.Equals(CollectionType.Folders, userView.ViewType, StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetFolders(item, user, stubType, sort, startIndex, limit);
+                }
             }
 
             if (stubType.HasValue)
@@ -513,7 +522,10 @@ namespace Emby.Dlna.ContentDirectory
                     return GetItemsFromPerson(person, user, startIndex, limit);
                 }
 
-                return ApplyPaging(new QueryResult<ServerItem>(), startIndex, limit);
+                if (stubType.Value != StubType.Folder)
+                {
+                    return ApplyPaging(new QueryResult<ServerItem>(), startIndex, limit);
+                }
             }
 
             var folder = (Folder)item;
@@ -730,6 +742,23 @@ namespace Emby.Dlna.ContentDirectory
             {
                 Items = list.ToArray(list.Count),
                 TotalRecordCount = list.Count
+            };
+        }
+
+        private QueryResult<ServerItem> GetFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
+        {
+            var folders = user.RootFolder.GetChildren(user, true)
+                .OrderBy(i => i.SortName)
+                .Select(i => new ServerItem(i)
+                {
+                    StubType = StubType.Folder
+                })
+                .ToArray();
+
+            return new QueryResult<ServerItem>
+            {
+                Items = folders,
+                TotalRecordCount = folders.Length
             };
         }
 

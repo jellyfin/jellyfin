@@ -27,6 +27,7 @@ namespace MediaBrowser.Providers.Manager
         protected readonly IFileSystem FileSystem;
         protected readonly IUserDataManager UserDataManager;
         protected readonly ILibraryManager LibraryManager;
+        private readonly SubtitleResolver _subtitleResolver;
 
         protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager)
         {
@@ -36,6 +37,8 @@ namespace MediaBrowser.Providers.Manager
             FileSystem = fileSystem;
             UserDataManager = userDataManager;
             LibraryManager = libraryManager;
+
+            _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager, fileSystem);
         }
 
         public async Task<ItemUpdateType> RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
@@ -76,8 +79,7 @@ namespace MediaBrowser.Providers.Manager
                         if (video != null && !video.IsPlaceHolder)
                         {
                             requiresRefresh = !video.SubtitleFiles
-                                .SequenceEqual(SubtitleResolver.GetSubtitleFiles(video, refreshOptions.DirectoryService, FileSystem, false)
-                                .OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
+                                .SequenceEqual(_subtitleResolver.GetExternalSubtitleFiles(video, refreshOptions.DirectoryService, false), StringComparer.Ordinal);
                         }
                     }
                 }
@@ -124,7 +126,7 @@ namespace MediaBrowser.Providers.Manager
                 var providers = GetProviders(item, refreshOptions, isFirstRefresh, requiresRefresh)
                     .ToList();
 
-                if (providers.Count > 0 || isFirstRefresh)
+                if (providers.Count > 0 || isFirstRefresh || requiresRefresh)
                 {
                     if (item.BeforeMetadataRefresh())
                     {

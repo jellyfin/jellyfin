@@ -117,7 +117,6 @@
     <Compile Include="IO\ManagedFileSystem.cs" />
     <Compile Include="IO\MbLinkShortcutHandler.cs" />
     <Compile Include="IO\MemoryStreamProvider.cs" />
-    <Compile Include="IO\ProgressStream.cs" />
     <Compile Include="IO\SharpCifsFileSystem.cs" />
     <Compile Include="IO\SharpCifs\Config.cs" />
     <Compile Include="IO\SharpCifs\Dcerpc\DcerpcBind.cs" />
@@ -405,11 +404,11 @@
     <Compile Include="LiveTv\TunerHosts\BaseTunerHost.cs" />
     <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunManager.cs" />
     <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunHost.cs" />
-    <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunHttpStream.cs" />
     <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunUdpStream.cs" />
     <Compile Include="LiveTv\TunerHosts\LiveStream.cs" />
     <Compile Include="LiveTv\TunerHosts\M3uParser.cs" />
     <Compile Include="LiveTv\TunerHosts\M3UTunerHost.cs" />
+    <Compile Include="LiveTv\TunerHosts\SharedHttpStream.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="Localization\TextLocalizer.cs" />
     <Compile Include="Logging\ConsoleLogger.cs" />

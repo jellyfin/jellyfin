@@ -265,21 +265,6 @@ namespace MediaBrowser.Controller.Entities
             return changed;
         }
 
-        internal override bool IsValidFromResolver(BaseItem newItem)
-        {
-            var newCollectionFolder = newItem as CollectionFolder;
-
-            if (newCollectionFolder != null)
-            {
-                if (!string.Equals(CollectionType, newCollectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-            }
-
-            return base.IsValidFromResolver(newItem);
-        }
-
         private ItemResolveArgs CreateResolveArgs(IDirectoryService directoryService, bool setPhysicalLocations)
         {
             var path = ContainingFolderPath;

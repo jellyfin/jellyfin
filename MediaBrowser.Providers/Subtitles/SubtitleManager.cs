@@ -16,8 +16,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.Subtitles
@@ -30,17 +30,19 @@ namespace MediaBrowser.Providers.Subtitles
         private readonly ILibraryMonitor _monitor;
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IServerConfigurationManager _config;
 
         public event EventHandler<SubtitleDownloadEventArgs> SubtitlesDownloaded;
         public event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
 
-        public SubtitleManager(ILogger logger, IFileSystem fileSystem, ILibraryMonitor monitor, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager)
+        public SubtitleManager(ILogger logger, IFileSystem fileSystem, ILibraryMonitor monitor, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager, IServerConfigurationManager config)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _monitor = monitor;
             _libraryManager = libraryManager;
             _mediaSourceManager = mediaSourceManager;
+            _config = config;
         }
 
         public void AddParts(IEnumerable<ISubtitleProvider> subtitleProviders)
@@ -102,6 +104,11 @@ namespace MediaBrowser.Providers.Subtitles
             return results.SelectMany(i => i).ToArray();
         }
 
+        private SubtitleOptions GetOptions()
+        {
+            return _config.GetConfiguration<SubtitleOptions>("subtitles");
+        }
+
         public async Task DownloadSubtitles(Video video,
             string subtitleId,
             CancellationToken cancellationToken)
@@ -109,49 +116,37 @@ namespace MediaBrowser.Providers.Subtitles
             var parts = subtitleId.Split(new[] { '_' }, 2);
             var provider = GetProvider(parts.First());
 
+            var saveInMediaFolder = video.IsSaveLocalMetadataEnabled();
+
             try
             {
                 var response = await GetRemoteSubtitles(subtitleId, cancellationToken).ConfigureAwait(false);
 
                 using (var stream = response.Stream)
                 {
-                    var savePath = Path.Combine(_fileSystem.GetDirectoryName(video.Path),
-                        _fileSystem.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLower());
-
-                    if (response.IsForced)
+                    using (var memoryStream = new MemoryStream())
                     {
-                        savePath += ".forced";
-                    }
+                        await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+                        memoryStream.Position = 0;
 
-                    savePath += "." + response.Format.ToLower();
+                        var savePaths = new List<string>();
+                        var saveFileName = _fileSystem.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLower();
 
-                    _logger.Info("Saving subtitles to {0}", savePath);
-
-                    _monitor.ReportFileSystemChangeBeginning(savePath);
-
-                    try
-                    {
-                        //var isText = MediaStream.IsTextFormat(response.Format);
-
-                        using (var fs = _fileSystem.GetFileStream(savePath, FileOpenMode.Create, FileAccessMode.Write,
-                                FileShareMode.Read, true))
+                        if (response.IsForced)
                         {
-                            await stream.CopyToAsync(fs).ConfigureAwait(false);
+                            saveFileName += ".forced";
                         }
 
-                        EventHelper.FireEventIfNotNull(SubtitlesDownloaded, this, new SubtitleDownloadEventArgs
-                        {
-                            Item = video,
-                            Format = response.Format,
-                            Language = response.Language,
-                            IsForced = response.IsForced,
-                            Provider = provider.Name
+                        saveFileName += "." + response.Format.ToLower();
 
-                        }, _logger);
-                    }
-                    finally
-                    {
-                        _monitor.ReportFileSystemChangeComplete(savePath, false);
+                        if (saveInMediaFolder)
+                        {
+                            savePaths.Add(Path.Combine(video.ContainingFolderPath, saveFileName));
+                        }
+
+                        savePaths.Add(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
+
+                        await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
                     }
                 }
             }
@@ -170,6 +165,46 @@ namespace MediaBrowser.Providers.Subtitles
                 }, _logger);
 
                 throw;
+            }
+        }
+
+        private async Task TrySaveToFiles(Stream stream, List<string> savePaths)
+        {
+            Exception exceptionToThrow = null;
+
+            foreach (var savePath in savePaths)
+            {
+                _logger.Info("Saving subtitles to {0}", savePath);
+
+                _monitor.ReportFileSystemChangeBeginning(savePath);
+
+                try
+                {
+                    using (var fs = _fileSystem.GetFileStream(savePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
+                    {
+                        await stream.CopyToAsync(fs).ConfigureAwait(false);
+                    }
+
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    if (exceptionToThrow == null)
+                    {
+                        exceptionToThrow = ex;
+                    }
+                }
+                finally
+                {
+                    _monitor.ReportFileSystemChangeComplete(savePath, false);
+                }
+
+                stream.Position = 0;
+            }
+
+            if (exceptionToThrow != null)
+            {
+                throw exceptionToThrow;
             }
         }
 

@@ -16,6 +16,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Controller.IO;
 
 namespace Emby.Server.Implementations.HttpClientManager
 {
@@ -633,12 +634,9 @@ namespace Emby.Server.Implementations.HttpClientManager
                     }
                     else
                     {
-                        using (var stream = ProgressStream.CreateReadProgressStream(httpResponse.GetResponseStream(), options.Progress.Report, contentLength.Value))
+                        using (var fs = _fileSystem.GetFileStream(tempFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                         {
-                            using (var fs = _fileSystem.GetFileStream(tempFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
-                            {
-                                await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
-                            }
+                            await StreamHelper.CopyToAsync(httpResponse.GetResponseStream(), fs, StreamDefaults.DefaultCopyToBufferSize, options.Progress, contentLength.Value, options.CancellationToken).ConfigureAwait(false);
                         }
                     }
 

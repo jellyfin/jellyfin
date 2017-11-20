@@ -87,10 +87,5 @@
     "User": "Bruker",
     "System": "System",
     "Application": "Applikasjon",
-    "Plugin": "Plugin",
-    "LabelExit": "Avslutt",
-    "LabelVisitCommunity": "Bes\u00f8k Samfunnet",
-    "LabelBrowseLibrary": "Bla i biblioteket",
-    "LabelConfigureServer": "Konfigurere Emby",
-    "LabelRestartServer": "Start om serveren"
+    "Plugin": "Plugin"
 }

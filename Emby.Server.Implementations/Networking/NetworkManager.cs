@@ -59,7 +59,13 @@ namespace Emby.Server.Implementations.Networking
                 list.AddRange(GetLocalIpAddressesFallback().Result);
             }
 
-            return list.Where(FilterIpAddress).DistinctBy(i => i.ToString());
+            var listClone = list.ToList();
+
+            return list
+                .OrderBy(i => i.AddressFamily == AddressFamily.InterNetwork ? 0 : 1)
+                .ThenBy(i => listClone.IndexOf(i))
+                .Where(FilterIpAddress)
+                .DistinctBy(i => i.ToString());
         }
 
         private bool FilterIpAddress(IPAddress address)
@@ -106,16 +112,16 @@ namespace Emby.Server.Implementations.Networking
                 endpoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("192.168", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
+                //endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
                 IsInPrivateAddressSpaceAndLocalSubnet(endpoint);
         }
 
         public bool IsInPrivateAddressSpaceAndLocalSubnet(string endpoint)
         {
-            var endpointFirstPart = endpoint.Split('.')[0];
-
             if (endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase))
             {
+                var endpointFirstPart = endpoint.Split('.')[0];
+
                 var subnets = GetSubnets(endpointFirstPart);
 
                 foreach (var subnet_Match in subnets)
@@ -217,7 +223,7 @@ namespace Emby.Server.Implementations.Networking
                 }
                 else if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
-                    lengthMatch = 10;
+                    lengthMatch = 9;
                     if (IsInPrivateAddressSpace(endpoint))
                     {
                         return true;
@@ -317,7 +323,7 @@ namespace Emby.Server.Implementations.Networking
                     return ipProperties.UnicastAddresses
                         //.Where(i => i.IsDnsEligible)
                         .Select(i => i.Address)
-                        .Where(i => i.AddressFamily == AddressFamily.InterNetwork)
+                        .Where(i => i.AddressFamily == AddressFamily.InterNetwork || i.AddressFamily == AddressFamily.InterNetworkV6)
                         .ToList();
                 }
                 catch (Exception ex)
@@ -337,7 +343,7 @@ namespace Emby.Server.Implementations.Networking
             // Reverse them because the last one is usually the correct one
             // It's not fool-proof so ultimately the consumer will have to examine them and decide
             return host.AddressList
-                .Where(i => i.AddressFamily == AddressFamily.InterNetwork)
+                .Where(i => i.AddressFamily == AddressFamily.InterNetwork || i.AddressFamily == AddressFamily.InterNetworkV6)
                 .Reverse();
         }
 
