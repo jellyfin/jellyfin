@@ -162,6 +162,7 @@
   "VoiceInput": "Voice Input",
   "LabelContentType": "Content type:",
   "LabelPath": "Path:",
+  "Playlists": "Playlists",
   "LabelTitle": "Title:",
   "LabelOriginalTitle": "Original title:",
   "LabelSortTitle": "Sort title:",
@@ -170,6 +171,7 @@
   "LabelStatus": "Status:",
   "LabelArtists": "Artists:",
   "LabelArtistsHelp": "Separate multiple using ;",
+  "HeaderAlbumArtists": "Album Artists",
   "LabelAlbumArtists": "Album artists:",
   "LabelAlbum": "Album:",
   "Artists": "Artists",
@@ -426,6 +428,7 @@
   "LabelSyncTo": "Sync to:",
   "Next": "Next",
   "LabelSource": "Source:",
+  "LabelVersion": "Version:",
   "AllLanguages": "All languages",
   "Previous": "Previous",
   "HeaderNextUp": "Next Up",
@@ -607,5 +610,11 @@
   "DirectorValue": "Director: {0}",
   "DirectorsValue": "Directors: {0}",
   "GenreValue": "Genre: {0}",
-  "GenresValue": "Genres: {0}"
+  "GenresValue": "Genres: {0}",
+  "LinksValue": "Links: {0}",
+  "TagsValue": "Tags: {0}",
+  "LabelAudio": "Audio:",
+  "LabelVideo": "Video:",
+  "LabelSubtitles": "Subtitles:",
+  "Off": "Off"
 }

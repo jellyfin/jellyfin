@@ -709,6 +709,13 @@ namespace Emby.Server.Implementations.Library
 
             var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath));
 
+            // In case program data folder was moved
+            if (!string.Equals(rootFolder.Path, rootFolderPath, StringComparison.Ordinal))
+            {
+                _logger.Info("Resetting root folder path to {0}", rootFolderPath);
+                rootFolder.Path = rootFolderPath;
+            }
+
             // Add in the plug-in folders
             foreach (var child in PluginFolderCreators)
             {
@@ -769,6 +776,13 @@ namespace Emby.Server.Implementations.Library
                         if (tmpItem == null)
                         {
                             tmpItem = (UserRootFolder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath));
+                        }
+
+                        // In case program data folder was moved
+                        if (!string.Equals(tmpItem.Path, userRootPath, StringComparison.Ordinal))
+                        {
+                            _logger.Info("Resetting user root folder path to {0}", userRootPath);
+                            tmpItem.Path = userRootPath;
                         }
 
                         _userRootFolder = tmpItem;

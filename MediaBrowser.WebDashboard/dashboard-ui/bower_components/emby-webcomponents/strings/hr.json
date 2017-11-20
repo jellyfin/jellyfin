@@ -1,4 +1,5 @@
 {
+    "LabelVersion": "Version:",
     "MessageUnlockAppWithPurchaseOrSupporter": "Otklju\u010daj ovu mogu\u0107nost s malom jednokratnom kupnjom ili s aktivnom pretplatom Emby Premijere.",
     "MessageUnlockAppWithSupporter": "Otklju\u010daj ovu mogu\u0107nost sa pretplatom Emby Premijere.",
     "MessageToValidateSupporter": "Ako imate aktivnu pretplatu Emby Premijere provjerite dali ste postavili Emby Premijeru u svojoj nadzornoj plo\u010di Emby Server-a kojoj mo\u017eete pristupiti klikom Emby Premijera u glavnom izborniku.",
@@ -162,6 +163,7 @@
     "VoiceInput": "Ulazni glas",
     "LabelContentType": "Tip sadr\u017eaja:",
     "LabelPath": "Putanja:",
+    "Playlists": "Playlists",
     "LabelTitle": "Naslov:",
     "LabelOriginalTitle": "Originalni naslov:",
     "LabelSortTitle": "Naziv vrste:",
@@ -170,6 +172,7 @@
     "LabelStatus": "Status:",
     "LabelArtists": "Izvo\u0111a\u010di:",
     "LabelArtistsHelp": "Odvoji vi\u0161estruko koriste\u0107i ;",
+    "HeaderAlbumArtists": "Album Artists",
     "LabelAlbumArtists": "Izvo\u0111a\u010di albuma",
     "LabelAlbum": "Album:",
     "Artists": "Artists",
@@ -607,5 +610,11 @@
     "DirectorValue": "Director: {0}",
     "DirectorsValue": "Directors: {0}",
     "GenreValue": "Genre: {0}",
-    "GenresValue": "Genres: {0}"
+    "GenresValue": "Genres: {0}",
+    "LinksValue": "Links: {0}",
+    "TagsValue": "Tags: {0}",
+    "LabelAudio": "Audio:",
+    "LabelVideo": "Video:",
+    "LabelSubtitles": "Subtitles:",
+    "Off": "Off"
 }

@@ -1851,5 +1851,9 @@
   "ButtonStopRecording": "Stop Recording",
   "StopRecording": "Stop recording",
   "CancelSeries": "Cancel series",
-  "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments."
+  "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments.",
+  "SaveSubtitlesInOriginalMediaFolders": "Save subtitles into media folders",
+  "SaveSubtitlesInOriginalMediaFoldersHelp": "Saving subtitles into media folders will make them easier to locate and manage.",
+  "LabelSimultaneousConnectionLimit": "Simultaneous stream limit:",
+  "SimultaneousConnectionLimitHelp": "The maximum number of allowed simultaneous streams. Enter 0 for no limit."
 }

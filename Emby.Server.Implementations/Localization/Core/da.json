@@ -87,10 +87,5 @@
     "User": "Bruger",
     "System": "System",
     "Application": "Applikation",
-    "Plugin": "Plugin",
-    "LabelExit": "Afslut",
-    "LabelVisitCommunity": "Bes\u00f8g F\u00e6llesskab",
-    "LabelBrowseLibrary": "Gennemse Bibliotek",
-    "LabelConfigureServer": "Konfigurer Emby",
-    "LabelRestartServer": "Genstart Server"
+    "Plugin": "Plugin"
 }

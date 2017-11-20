@@ -19,7 +19,7 @@
     "ButtonTermsOfService": "Terms of Service",
     "ButtonConvertMedia": "Convert media",
     "HeaderSupporterBenefits": "Emby Premiere Benefits",
-    "HeaderAddUser": "Add User",
+    "HeaderAddUser": "Th\u00eam ng\u01b0\u1eddi d\u00f9ng",
     "LabelAddConnectSupporterHelp": "To add a user who isn't listed, you'll need to first link their account to Emby Connect from their user profile page.",
     "LabelPinCode": "Pin code:",
     "DeleteMedia": "Delete media",
@@ -30,7 +30,7 @@
     "ButtonCancel": "Tho\u00e1t",
     "ButtonExit": "Exit",
     "ButtonNew": "M\u1edbi",
-    "All": "All",
+    "All": "T\u00e2\u0341t ca\u0309",
     "OptionDev": "Dev",
     "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Task Triggers",
@@ -949,7 +949,7 @@
     "TabDevices": "Devices",
     "HeaderLibrarySettings": "Library Settings",
     "HeaderChapterSettings": "Chapter Settings",
-    "HeaderCameraUploadHelp": "Emby apps can automatically upload photos and videos taken from your mobile devices into Emby Server.",
+    "HeaderCameraUploadHelp": "Emby apps can automatically upload photos taken from your mobile devices into Emby Server.",
     "LabelCameraUploadPath": "Camera upload path:",
     "LabelCameraUploadPathHelp": "Select a custom upload path. This will override any default settings set in the Camera Upload section. If left blank, a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
     "LabelCreateCameraUploadSubfolder": "Create a subfolder for each device",
@@ -1851,5 +1851,9 @@
     "ButtonStopRecording": "Stop Recording",
     "StopRecording": "Stop recording",
     "CancelSeries": "Cancel series",
-    "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments."
+    "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments.",
+    "SaveSubtitlesInOriginalMediaFolders": "Save subtitles into media folders",
+    "SaveSubtitlesInOriginalMediaFoldersHelp": "Saving subtitles into media folders will make them easier to locate and manage.",
+    "LabelSimultaneousConnectionLimit": "Simultaneous stream limit:",
+    "SimultaneousConnectionLimitHelp": "The maximum number of allowed simultaneous streams. Enter 0 for no limit."
 }

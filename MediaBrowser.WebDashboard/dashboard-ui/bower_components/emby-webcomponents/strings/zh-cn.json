@@ -1,4 +1,5 @@
 {
+    "LabelVersion": "Version:",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -162,6 +163,7 @@
     "VoiceInput": "\u8bed\u97f3\u8f93\u5165",
     "LabelContentType": "\u5185\u5bb9\u7c7b\u578b",
     "LabelPath": "\u8def\u5f84\uff1a",
+    "Playlists": "Playlists",
     "LabelTitle": "\u6807\u9898\uff1a",
     "LabelOriginalTitle": "\u539f\u6807\u9898\uff1a",
     "LabelSortTitle": "\u77ed\u6807\u9898\uff1a",
@@ -170,6 +172,7 @@
     "LabelStatus": "\u72b6\u6001\uff1a",
     "LabelArtists": "\u827a\u672f\u5bb6\uff1a",
     "LabelArtistsHelp": "\u72ec\u7acb\u591a\u529f\u80fd\uff1b",
+    "HeaderAlbumArtists": "Album Artists",
     "LabelAlbumArtists": "\u4e13\u8f91\u4f5c\u5bb6\uff1a",
     "LabelAlbum": "\u4e13\u8f91\uff1a",
     "Artists": "Artists",
@@ -607,5 +610,11 @@
     "DirectorValue": "Director: {0}",
     "DirectorsValue": "Directors: {0}",
     "GenreValue": "Genre: {0}",
-    "GenresValue": "Genres: {0}"
+    "GenresValue": "Genres: {0}",
+    "LinksValue": "Links: {0}",
+    "TagsValue": "Tags: {0}",
+    "LabelAudio": "Audio:",
+    "LabelVideo": "Video:",
+    "LabelSubtitles": "Subtitles:",
+    "Off": "Off"
 }

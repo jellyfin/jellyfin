@@ -799,7 +799,7 @@
     "HeaderImages": "K\u00e9pek",
     "HeaderBackdrops": "H\u00e1tterek",
     "HeaderAddUpdateImage": "K\u00e9p hozz\u00e1ad\u00e1sa \/ friss\u00edt\u00e9se",
-    "LabelDropImageHere": "Dobd ide a k\u00e9pet",
+    "LabelDropImageHere": "Drop image here.",
     "LabelJpgPngOnly": "Csak JPG\/PNG",
     "LabelImageType": "Image type:",
     "OptionPrimary": "Primary",
@@ -949,7 +949,7 @@
     "TabDevices": "Eszk\u00f6z\u00f6k",
     "HeaderLibrarySettings": "Library Settings",
     "HeaderChapterSettings": "Chapter Settings",
-    "HeaderCameraUploadHelp": "Emby apps can automatically upload photos and videos taken from your mobile devices into Emby Server.",
+    "HeaderCameraUploadHelp": "Emby apps can automatically upload photos taken from your mobile devices into Emby Server.",
     "LabelCameraUploadPath": "Kamera felt\u00f6lt\u00e9si \u00fatvonal:",
     "LabelCameraUploadPathHelp": "Select a custom upload path. This will override any default settings set in the Camera Upload section. If left blank, a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
     "LabelCreateCameraUploadSubfolder": "Create a subfolder for each device",
@@ -1851,5 +1851,9 @@
     "ButtonStopRecording": "Stop Recording",
     "StopRecording": "Stop recording",
     "CancelSeries": "Cancel series",
-    "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments."
+    "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments.",
+    "SaveSubtitlesInOriginalMediaFolders": "Save subtitles into media folders",
+    "SaveSubtitlesInOriginalMediaFoldersHelp": "Saving subtitles into media folders will make them easier to locate and manage.",
+    "LabelSimultaneousConnectionLimit": "Simultaneous stream limit:",
+    "SimultaneousConnectionLimitHelp": "The maximum number of allowed simultaneous streams. Enter 0 for no limit."
 }

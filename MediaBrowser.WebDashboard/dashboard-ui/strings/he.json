@@ -287,7 +287,7 @@
     "LabelAllowServerAutoRestart": "\u05d0\u05e4\u05e9\u05e8 \u05dc\u05e9\u05e8\u05ea \u05dc\u05d4\u05ea\u05d7\u05d9\u05dc \u05d0\u05d5\u05d8\u05d5\u05de\u05d8\u05d9\u05ea \u05db\u05d3\u05d9 \u05dc\u05d0\u05e4\u05e9\u05e8 \u05d0\u05ea \u05d4\u05e2\u05d9\u05d3\u05db\u05d5\u05e0\u05d9\u05dd",
     "LabelAllowServerAutoRestartHelp": "\u05d4\u05e9\u05e8\u05ea \u05d9\u05ea\u05d7\u05d9\u05dc \u05de\u05d7\u05d3\u05e9 \u05e8\u05e7 \u05db\u05e9\u05d0\u05e8 \u05d0\u05d9\u05df \u05de\u05e9\u05ea\u05de\u05e9\u05d9\u05dd \u05e4\u05e2\u05d9\u05dc\u05d9\u05dd",
     "LabelRunServerAtStartup": "\u05d4\u05ea\u05d7\u05dc \u05e9\u05e8\u05ea \u05d1\u05d4\u05e4\u05e2\u05dc\u05ea \u05d4\u05de\u05d7\u05e9\u05d1",
-    "LabelRunServerAtStartupHelp": "\u05d0\u05e4\u05e9\u05e8\u05d5\u05ea \u05d6\u05d5 \u05ea\u05ea\u05d7\u05d9\u05dc \u05d0\u05ea \u05d4\u05e9\u05e8\u05ea \u05d5\u05ea\u05e8\u05d0\u05d4 \u05d0\u05ea \u05d4\u05d0\u05d9\u05e7\u05d5\u05df \u05e9\u05dc\u05d5 \u05d1\u05e9\u05d5\u05e8\u05ea \u05d4\u05de\u05e9\u05d9\u05de\u05d5\u05ea \u05db\u05d0\u05e9\u05e8 \u05d4\u05de\u05d7\u05e9\u05d1 \u05e2\u05d5\u05dc\u05d4. \u05db\u05d3\u05d9 \u05dc\u05d4\u05ea\u05d7\u05d9\u05dc \u05d0\u05ea \u05e9\u05d9\u05e8\u05d5\u05ea \u05d5\u05d5\u05d9\u05e0\u05d3\u05d5\u05e1, \u05d1\u05d8\u05dc \u05d0\u05e4\u05e9\u05e8\u05d5\u05ea \u05d6\u05d0\u05ea \u05d5\u05d4\u05ea\u05d7\u05dc \u05d0\u05ea \u05d4\u05e9\u05d9\u05e8\u05d5\u05ea \u05de\u05dc\u05d5\u05d7 \u05d4\u05d1\u05e7\u05e8\u05d4 \u05e9\u05dc \u05d5\u05d5\u05d9\u05e0\u05d3\u05d5\u05e1. \u05d1\u05d1\u05e7\u05e9\u05d4 \u05e9\u05d9\u05dd \u05dc\u05d1 \u05e9\u05d0\u05d9\u05e0\u05da \u05d9\u05db\u05d5\u05dc \u05dc\u05d4\u05e8\u05d9\u05e5 \u05d0\u05ea \u05e9\u05ea\u05d9 \u05d4\u05d0\u05e4\u05e9\u05e8\u05d5\u05d9\u05d5\u05ea \u05d4\u05d0\u05dc\u05d5 \u05d1\u05de\u05e7\u05d1\u05d9\u05dc, \u05d0\u05ea\u05d4 \u05e6\u05e8\u05d9\u05da \u05dc\u05e6\u05d0\u05ea \u05d5\u05dc\u05e1\u05d2\u05d5\u05e8 \u05d0\u05ea \u05d4\u05e9\u05e8\u05ea \u05dc\u05e4\u05e0\u05d9 \u05d4\u05ea\u05d7\u05dc\u05ea \u05d4\u05e9\u05d9\u05e8\u05d5\u05ea.",
+    "LabelRunServerAtStartupHelp": "This will start the Emby tray icon on Windows startup. If you've set up a Windows service then leave this unchecked and configure the service to run at startup.",
     "ButtonSelectDirectory": "\u05d1\u05d7\u05e8 \u05ea\u05d9\u05e7\u05d9\u05d5\u05ea",
     "LabelCachePath": "\u05e0\u05ea\u05d9\u05d1 cache:",
     "DefaultMetadataLangaugeDescription": "These are your defaults and can be customized on a per-library basis.",
@@ -949,7 +949,7 @@
     "TabDevices": "Devices",
     "HeaderLibrarySettings": "Library Settings",
     "HeaderChapterSettings": "Chapter Settings",
-    "HeaderCameraUploadHelp": "Emby apps can automatically upload photos and videos taken from your mobile devices into Emby Server.",
+    "HeaderCameraUploadHelp": "Emby apps can automatically upload photos taken from your mobile devices into Emby Server.",
     "LabelCameraUploadPath": "Camera upload path:",
     "LabelCameraUploadPathHelp": "Select a custom upload path. This will override any default settings set in the Camera Upload section. If left blank, a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
     "LabelCreateCameraUploadSubfolder": "Create a subfolder for each device",
@@ -1851,5 +1851,9 @@
     "ButtonStopRecording": "Stop Recording",
     "StopRecording": "Stop recording",
     "CancelSeries": "Cancel series",
-    "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments."
+    "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments.",
+    "SaveSubtitlesInOriginalMediaFolders": "Save subtitles into media folders",
+    "SaveSubtitlesInOriginalMediaFoldersHelp": "Saving subtitles into media folders will make them easier to locate and manage.",
+    "LabelSimultaneousConnectionLimit": "Simultaneous stream limit:",
+    "SimultaneousConnectionLimitHelp": "The maximum number of allowed simultaneous streams. Enter 0 for no limit."
 }

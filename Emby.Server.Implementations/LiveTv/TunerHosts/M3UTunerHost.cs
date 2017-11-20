@@ -77,10 +77,28 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
         {
+            var tunerCount = info.TunerCount;
+
+            if (tunerCount > 0)
+            {
+                var liveStreams = await EmbyTV.EmbyTV.Current.GetLiveStreams(info, cancellationToken).ConfigureAwait(false);
+
+                if (liveStreams.Count >= info.TunerCount)
+                {
+                    throw new LiveTvConflictException();
+                }
+            }
+
             var sources = await GetChannelStreamMediaSources(info, channelId, cancellationToken).ConfigureAwait(false);
 
-            var liveStream = new LiveStream(sources.First(), _environment, FileSystem, Logger, Config.ApplicationPaths);
-            return liveStream;
+            var mediaSource = sources.First();
+
+            if (mediaSource.Protocol == MediaProtocol.Http && !mediaSource.RequiresLooping)
+            {
+                return new SharedHttpStream(mediaSource, info, streamId, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _environment);
+            }
+
+            return new LiveStream(mediaSource, info, _environment, FileSystem, Logger, Config.ApplicationPaths);
         }
 
         public async Task Validate(TunerHostInfo info)

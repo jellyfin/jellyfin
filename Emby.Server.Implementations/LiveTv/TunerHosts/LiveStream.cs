@@ -10,6 +10,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.LiveTv;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
@@ -21,7 +22,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             get { return SharedStreamIds.Count; }
         }
-        public ITunerHost TunerHost { get; set; }
+
         public string OriginalStreamId { get; set; }
         public bool EnableStreamSharing { get; set; }
         public string UniqueId { get; private set; }
@@ -29,12 +30,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         public List<string> SharedStreamIds { get; private set; }
         protected readonly IEnvironmentInfo Environment;
         protected readonly IFileSystem FileSystem;
+        protected readonly IServerApplicationPaths AppPaths;
 
-        protected readonly string TempFilePath;
+        protected  string TempFilePath;
         protected readonly ILogger Logger;
         protected readonly CancellationTokenSource LiveStreamCancellationTokenSource = new CancellationTokenSource();
 
-        public LiveStream(MediaSourceInfo mediaSource, IEnvironmentInfo environment, IFileSystem fileSystem, ILogger logger, IServerApplicationPaths appPaths)
+        public string TunerHostId { get; private set; }
+
+        public LiveStream(MediaSourceInfo mediaSource, TunerHostInfo tuner, IEnvironmentInfo environment, IFileSystem fileSystem, ILogger logger, IServerApplicationPaths appPaths)
         {
             OriginalMediaSource = mediaSource;
             Environment = environment;
@@ -44,7 +48,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             EnableStreamSharing = true;
             SharedStreamIds = new List<string>();
             UniqueId = Guid.NewGuid().ToString("N");
-            TempFilePath = Path.Combine(appPaths.GetTranscodingTempPath(), UniqueId + ".ts");
+            TunerHostId = tuner.Id;
+
+            AppPaths = appPaths;
+
+            SetTempFilePath("ts");
+        }
+
+        protected void SetTempFilePath(string extension)
+        {
+            TempFilePath = Path.Combine(AppPaths.GetTranscodingTempPath(), UniqueId + "." + extension);
         }
 
         public virtual Task Open(CancellationToken openCancellationToken)
@@ -52,7 +65,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return Task.FromResult(true);
         }
 
-        public virtual void Close()
+        public void Close()
+        {
+            EnableStreamSharing = false;
+
+            Logger.Info("Closing " + GetType().Name);
+
+            CloseInternal();
+        }
+
+        protected virtual void CloseInternal()
         {
         }
 

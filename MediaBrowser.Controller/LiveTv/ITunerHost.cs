@@ -63,8 +63,8 @@ namespace MediaBrowser.Controller.LiveTv
         void Close();
         int ConsumerCount { get; }
         string OriginalStreamId { get; set; }
+        string TunerHostId { get; }
         bool EnableStreamSharing { get; set; }
-        ITunerHost TunerHost { get; set; }
         MediaSourceInfo OpenedMediaSource { get; set; }
         string UniqueId { get; }
         List<string> SharedStreamIds { get; }

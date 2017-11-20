@@ -940,7 +940,7 @@
     "LabelEnableCinemaMode": "Aktiviere den Kino-Modus",
     "HeaderCinemaMode": "Kino-Modus",
     "LabelDateAddedBehavior": "Verhalten f\u00fcr Hinzuf\u00fcgedatum bei neuen Inhalten:",
-    "OptionDateAddedImportTime": "Benutze das Scandatum vom hinzuf\u00fcgen in die Bbliothek",
+    "OptionDateAddedImportTime": "Benutze das Scandatum vom Hinzuf\u00fcgen in die Bibliothek",
     "OptionDateAddedFileTime": "Benutze das Erstellungsdatum der Datei",
     "LabelDateAddedBehaviorHelp": "Wenn ein Metadatenwert vorhanden ist, wird dieser immer gegen\u00fcber den anderen Optionen bevorzugt werden.",
     "LabelNumberTrailerToPlay": "Anzahl der abzuspielenden Trailer:",
@@ -949,7 +949,7 @@
     "TabDevices": "Ger\u00e4te",
     "HeaderLibrarySettings": "Bibliothekseinstellungen",
     "HeaderChapterSettings": "Kapiteleinstellungen",
-    "HeaderCameraUploadHelp": "Emby Apps k\u00f6nnen automatisch Fotos und Videos von dem Ger\u00e4t, auf dem sie aufgenommen wurden, auf den Emby Server hochladen.",
+    "HeaderCameraUploadHelp": "Emby Apps k\u00f6nnen automatisch Fotos von dem Ger\u00e4t, auf dem sie aufgenommen wurden, auf den Emby Server hochladen.",
     "LabelCameraUploadPath": "Kamera-Upload Pfad:",
     "LabelCameraUploadPathHelp": "W\u00e4hle einen eigenen Upload-Pfad. Diese Einstellung \u00fcberschreibt die Standardeinstellung die in den Kamera-Uploadeinstellungen festgelegt wurde. Wird kein eigener Upload-Pfad festgelegt, so wird der Standard-Pfad verwendet. Ein eigener Pfad muss zus\u00e4tzlich in der Medienbibliothek hinzugef\u00fcgt werden!",
     "LabelCreateCameraUploadSubfolder": "Erstelle ein Unterverzeichnis f\u00fcr jedes Ger\u00e4t",
@@ -1851,5 +1851,9 @@
     "ButtonStopRecording": "Aufnahme stoppen",
     "StopRecording": "Aufnahme stoppen",
     "CancelSeries": "Serienaufnahme beenden",
-    "EnableDebugLoggingHelp": "Debug-Logging sollte nur zur Fehlersuche aktiviert werden. Der Zugriff auf das Dateisystem kann das System unter Umst\u00e4nden daran hindern, in den Energiesparmodus zu gehen."
+    "EnableDebugLoggingHelp": "Debug-Logging sollte nur zur Fehlersuche aktiviert werden. Der Zugriff auf das Dateisystem kann das System unter Umst\u00e4nden daran hindern, in den Energiesparmodus zu gehen.",
+    "SaveSubtitlesInOriginalMediaFolders": "Speichere Untertitel in den Medienverzeichnissen",
+    "SaveSubtitlesInOriginalMediaFoldersHelp": "Untertitel in den Medienverzeichnissen speichern macht es einfacher sie zu lokalisieren und zu organisieren.",
+    "LabelSimultaneousConnectionLimit": "Simultaneous stream limit:",
+    "SimultaneousConnectionLimitHelp": "The maximum number of allowed simultaneous streams. Enter 0 for no limit."
 }

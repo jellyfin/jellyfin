@@ -46,13 +46,13 @@ namespace MediaBrowser.Model.Entities
         {
             get
             {
-                if (!string.IsNullOrEmpty(Title))
-                {
-                    return AddLanguageIfNeeded(Title);
-                }
-
                 if (Type == MediaStreamType.Audio)
                 {
+                    //if (!string.IsNullOrEmpty(Title))
+                    //{
+                    //    return AddLanguageIfNeeded(Title);
+                    //}
+
                     List<string> attributes = new List<string>();
 
                     if (!string.IsNullOrEmpty(Language))
@@ -84,8 +84,32 @@ namespace MediaBrowser.Model.Entities
                     return string.Join(" ", attributes.ToArray(attributes.Count));
                 }
 
+                if (Type == MediaStreamType.Video)
+                {
+                    List<string> attributes = new List<string>();
+
+                    var resolutionText = GetResolutionText();
+
+                    if (!string.IsNullOrEmpty(resolutionText))
+                    {
+                        attributes.Add(resolutionText);
+                    }
+
+                    if (!string.IsNullOrEmpty(Codec))
+                    {
+                        attributes.Add(Codec.ToUpper());
+                    }
+
+                    return string.Join(" ", attributes.ToArray(attributes.Count));
+                }
+
                 if (Type == MediaStreamType.Subtitle)
                 {
+                    //if (!string.IsNullOrEmpty(Title))
+                    //{
+                    //    return AddLanguageIfNeeded(Title);
+                    //}
+
                     List<string> attributes = new List<string>();
 
                     if (!string.IsNullOrEmpty(Language))
@@ -119,6 +143,54 @@ namespace MediaBrowser.Model.Entities
 
                 return null;
             }
+        }
+
+        private string GetResolutionText()
+        {
+            var i = this;
+
+            if (i.Width.HasValue)
+            {
+                if (i.Width >= 3800)
+                {
+                    return "4K";
+                }
+                if (i.Width >= 2500)
+                {
+                    if (i.IsInterlaced)
+                    {
+                        return "1440I";
+                    }
+                    return "1440P";
+                }
+                if (i.Width >= 1900)
+                {
+                    if (i.IsInterlaced)
+                    {
+                        return "1080I";
+                    }
+                    return "1080P";
+                }
+                if (i.Width >= 1260)
+                {
+                    if (i.IsInterlaced)
+                    {
+                        return "720I";
+                    }
+                    return "720P";
+                }
+                if (i.Width >= 700)
+                {
+
+                    if (i.IsInterlaced)
+                    {
+                        return "480I";
+                    }
+                    return "480P";
+                }
+
+            }
+            return null;
         }
 
         private string AddLanguageIfNeeded(string title)

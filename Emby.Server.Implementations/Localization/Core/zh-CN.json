@@ -87,10 +87,5 @@
     "User": "\u7528\u6237",
     "System": "\u7cfb\u7edf",
     "Application": "\u5e94\u7528\u7a0b\u5e8f",
-    "Plugin": "\u63d2\u4ef6",
-    "LabelExit": "\u9000\u51fa",
-    "LabelVisitCommunity": "\u8bbf\u95ee\u793e\u533a",
-    "LabelBrowseLibrary": "\u6d4f\u89c8\u5a92\u4f53\u5e93",
-    "LabelConfigureServer": "\u914d\u7f6e Emby",
-    "LabelRestartServer": "\u91cd\u542f\u670d\u52a1\u5668"
+    "Plugin": "\u63d2\u4ef6"
 }

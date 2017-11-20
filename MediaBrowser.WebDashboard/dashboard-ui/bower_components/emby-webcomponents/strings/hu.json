@@ -1,4 +1,5 @@
 {
+    "LabelVersion": "Version:",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -162,6 +163,7 @@
     "VoiceInput": "Voice Input",
     "LabelContentType": "Tartalom t\u00edpusa:",
     "LabelPath": "\u00datvonal:",
+    "Playlists": "Playlists",
     "LabelTitle": "C\u00edm:",
     "LabelOriginalTitle": "Eredeti c\u00edm:",
     "LabelSortTitle": "ABC szerinti c\u00edm:",
@@ -170,6 +172,7 @@
     "LabelStatus": "St\u00e1tusz:",
     "LabelArtists": "El\u0151ad\u00f3k:",
     "LabelArtistsHelp": "Separate multiple using ;",
+    "HeaderAlbumArtists": "Album Artists",
     "LabelAlbumArtists": "Album artists:",
     "LabelAlbum": "Album:",
     "Artists": "Artists",
@@ -607,5 +610,11 @@
     "DirectorValue": "Director: {0}",
     "DirectorsValue": "Directors: {0}",
     "GenreValue": "Genre: {0}",
-    "GenresValue": "Genres: {0}"
+    "GenresValue": "Genres: {0}",
+    "LinksValue": "Links: {0}",
+    "TagsValue": "Tags: {0}",
+    "LabelAudio": "Audio:",
+    "LabelVideo": "Video:",
+    "LabelSubtitles": "Subtitles:",
+    "Off": "Off"
 }

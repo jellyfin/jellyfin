@@ -464,6 +464,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="e">The e.</param>
         void progress_ProgressChanged(object sender, double e)
         {
+            e = Math.Min(e, 100);
+
             CurrentProgress = e;
 
             EventHelper.FireEventIfNotNull(TaskProgress, this, new GenericEventArgs<double>

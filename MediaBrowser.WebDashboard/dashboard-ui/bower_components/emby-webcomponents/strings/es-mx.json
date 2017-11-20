@@ -1,4 +1,5 @@
 {
+    "LabelVersion": "Versi\u00f3n:",
     "MessageUnlockAppWithPurchaseOrSupporter": "Desbloquee esta caracter\u00edstica con una peque\u00f1a compra \u00fanica, o con una suscripci\u00f3n activa de Emby Premier.",
     "MessageUnlockAppWithSupporter": "Desbloquee esta caracter\u00edstica con una suscripci\u00f3n activa de Emby Premier.",
     "MessageToValidateSupporter": "Si tiene una subscripci\u00f3n de Emby Premiere activa, aseg\u00farese de que ha configurado Emby Premiere en el Panel de Control del Servidor Emby, al cual puede acceder dando click en Emby Premiere dentro del men\u00fa principal.",
@@ -162,6 +163,7 @@
     "VoiceInput": "Entrada de Voz",
     "LabelContentType": "Tipo de Contenido:",
     "LabelPath": "Ruta:",
+    "Playlists": "Listas de reproducci\u00f3n",
     "LabelTitle": "Titulo:",
     "LabelOriginalTitle": "Titulo original:",
     "LabelSortTitle": "Titulo para ordenar:",
@@ -170,6 +172,7 @@
     "LabelStatus": "Estado:",
     "LabelArtists": "Artistas:",
     "LabelArtistsHelp": "Separar m\u00faltiples empleando:",
+    "HeaderAlbumArtists": "Artistas del \u00e1lbum",
     "LabelAlbumArtists": "Artistas del \u00e1lbum:",
     "LabelAlbum": "\u00c1lbum",
     "Artists": "Artistas",
@@ -605,7 +608,13 @@
     "AutoBasedOnLanguageSetting": "Auto (basado en la configuraci\u00f3n del lenguaje)",
     "LabelDateTimeLocale": "Configuraci\u00f3n regional de Fecha y Hora:",
     "DirectorValue": "Director: {0}",
-    "DirectorsValue": "Directors: {0}",
-    "GenreValue": "Genre: {0}",
-    "GenresValue": "Genres: {0}"
+    "DirectorsValue": "Directores: {0}",
+    "GenreValue": "Genero: {0}",
+    "GenresValue": "G\u00e9neros: {0}",
+    "LinksValue": "Enlaces: {0}",
+    "TagsValue": "Etiquetas: {0}",
+    "LabelAudio": "Audio:",
+    "LabelVideo": "Video:",
+    "LabelSubtitles": "Subt\u00edtulos:",
+    "Off": "Apagar"
 }

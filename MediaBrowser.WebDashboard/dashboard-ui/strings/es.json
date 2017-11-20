@@ -949,7 +949,7 @@
     "TabDevices": "Dispositivos",
     "HeaderLibrarySettings": "Ajustes de la biblioteca",
     "HeaderChapterSettings": "Ajustes del cap\u00edtulo",
-    "HeaderCameraUploadHelp": "Emby apps can automatically upload photos and videos taken from your mobile devices into Emby Server.",
+    "HeaderCameraUploadHelp": "Emby apps can automatically upload photos taken from your mobile devices into Emby Server.",
     "LabelCameraUploadPath": "Ruta de subidas desde la c\u00e1mara:",
     "LabelCameraUploadPathHelp": "Select a custom upload path. This will override any default settings set in the Camera Upload section. If left blank, a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
     "LabelCreateCameraUploadSubfolder": "Crear subcarpetas para cada dispositivo",
@@ -1851,5 +1851,9 @@
     "ButtonStopRecording": "Parar Grabaci\u00f3n",
     "StopRecording": "Parar grabaci\u00f3n",
     "CancelSeries": "Cancelar serie",
-    "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments."
+    "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments.",
+    "SaveSubtitlesInOriginalMediaFolders": "Save subtitles into media folders",
+    "SaveSubtitlesInOriginalMediaFoldersHelp": "Saving subtitles into media folders will make them easier to locate and manage.",
+    "LabelSimultaneousConnectionLimit": "Simultaneous stream limit:",
+    "SimultaneousConnectionLimitHelp": "The maximum number of allowed simultaneous streams. Enter 0 for no limit."
 }

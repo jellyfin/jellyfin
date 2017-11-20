@@ -83,8 +83,8 @@
     <Reference Include="SimpleInjector, Version=4.0.12.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
       <HintPath>..\packages\SimpleInjector.4.0.12\lib\net45\SimpleInjector.dll</HintPath>
     </Reference>
-    <Reference Include="SkiaSharp, Version=1.59.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\SkiaSharp.1.59.2\lib\net45\SkiaSharp.dll</HintPath>
+    <Reference Include="SkiaSharp, Version=1.58.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\SkiaSharp.1.58.1\lib\net45\SkiaSharp.dll</HintPath>
     </Reference>
     <Reference Include="SQLitePCLRaw.core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
       <HintPath>..\packages\SQLitePCLRaw.core.1.1.8\lib\net45\SQLitePCLRaw.core.dll</HintPath>
@@ -161,11 +161,11 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\packages\SkiaSharp.1.59.2\runtimes\win7-x64\native\libSkiaSharp.dll">
+    <Content Include="..\packages\SkiaSharp.1.58.1\runtimes\win7-x64\native\libSkiaSharp.dll">
       <Link>x64\libSkiaSharp.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\packages\SkiaSharp.1.59.2\runtimes\win7-x86\native\libSkiaSharp.dll">
+    <Content Include="..\packages\SkiaSharp.1.58.1\runtimes\win7-x86\native\libSkiaSharp.dll">
       <Link>x86\libSkiaSharp.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

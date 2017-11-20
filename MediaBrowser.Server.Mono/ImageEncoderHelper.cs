@@ -32,7 +32,7 @@ namespace MediaBrowser.Server.Startup.Common
                 }
                 catch (Exception ex)
                 {
-                    logger.Error("Skia not available. Will try next image processor. {0}", ex.Message);
+                    logger.Info("Skia not available. Will try next image processor. {0}", ex.Message);
                 }
 
                 try
@@ -41,7 +41,7 @@ namespace MediaBrowser.Server.Startup.Common
                 }
                 catch
                 {
-                    logger.Error("ImageMagick not available. Will try next image processor.");
+                    logger.Info("ImageMagick not available. Will try next image processor.");
                 }
             }
 

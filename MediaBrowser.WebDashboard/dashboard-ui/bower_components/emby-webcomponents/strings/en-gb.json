@@ -1,4 +1,5 @@
 {
+    "LabelVersion": "Version:",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -162,6 +163,7 @@
     "VoiceInput": "Voice Input",
     "LabelContentType": "Content type:",
     "LabelPath": "Path:",
+    "Playlists": "Playlists",
     "LabelTitle": "Title:",
     "LabelOriginalTitle": "Original title:",
     "LabelSortTitle": "Sort title:",
@@ -170,6 +172,7 @@
     "LabelStatus": "Status:",
     "LabelArtists": "Artists:",
     "LabelArtistsHelp": "Separate multiple using ;",
+    "HeaderAlbumArtists": "Album Artists",
     "LabelAlbumArtists": "Album artists:",
     "LabelAlbum": "Album:",
     "Artists": "Artists",
@@ -585,7 +588,7 @@
     "LabelAudioLanguagePreference": "Preferred audio language:",
     "LabelPlayDefaultAudioTrack": "Play default audio track regardless of language",
     "HeaderVideoQuality": "Video Quality",
-    "CinemaModeConfigurationHelp": "Cinema mode brings the theater experience straight to your living room with the ability to play trailers and custom intros before the main feature.",
+    "CinemaModeConfigurationHelp": "Cinema mode brings the theatre experience straight to your living room with the ability to play trailers and custom intros before the main feature.",
     "EnableNextVideoInfoOverlay": "Enable next video info during playback",
     "EnableNextVideoInfoOverlayHelp": "At the end of a video, display info about the next video coming up in the current playlist.",
     "PlayNextEpisodeAutomatically": "Play next episode automatically",
@@ -603,9 +606,15 @@
     "AllowSeasonalThemes": "Allow automatic seasonal themes",
     "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting.",
     "AutoBasedOnLanguageSetting": "Auto (based on language setting)",
-    "LabelDateTimeLocale": "Date time locale:",
+    "LabelDateTimeLocale": "Date\/time locale:",
     "DirectorValue": "Director: {0}",
     "DirectorsValue": "Directors: {0}",
     "GenreValue": "Genre: {0}",
-    "GenresValue": "Genres: {0}"
+    "GenresValue": "Genres: {0}",
+    "LinksValue": "Links: {0}",
+    "TagsValue": "Tags: {0}",
+    "LabelAudio": "Audio:",
+    "LabelVideo": "Video:",
+    "LabelSubtitles": "Subtitles:",
+    "Off": "Off"
 }

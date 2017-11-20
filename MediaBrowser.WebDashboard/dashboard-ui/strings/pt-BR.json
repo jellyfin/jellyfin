@@ -1024,7 +1024,7 @@
     "OptionAllowAudioPlaybackTranscoding": "Permitir reprodu\u00e7\u00e3o de \u00e1udio que necessite de transcodifica\u00e7\u00e3o",
     "OptionAllowVideoPlaybackTranscoding": "Permitir reprodu\u00e7\u00e3o de v\u00eddeo que necessite de transcodifica\u00e7\u00e3o",
     "OptionAllowVideoPlaybackRemuxing": "Permitir reprodu\u00e7\u00e3o de v\u00eddeos que requeiram convers\u00e3o sem re-encoda\u00e7\u00e3o",
-    "OptionAllowMediaPlaybackTranscodingHelp": "Os usu\u00e1rios receber\u00e3o mensagens de erro amig\u00e1veis quando o conte\u00fado n\u00e3o for reproduz\u00edvel, baseado nas pol\u00edticas.",
+    "OptionAllowMediaPlaybackTranscodingHelp": "Restricting access to transcoding may cause playback failures in Emby apps due to unsupported media formats.",
     "TabStreaming": "Streaming",
     "LabelRemoteClientBitrateLimit": "Limite de taxa de bits para streaming da Internet (Mbps):",
     "LabelRemoteClientBitrateLimitHelp": "Um limite opcional da taxa de bits por-stream para todos os dispositivos fora da rede. Esta op\u00e7\u00e3o \u00e9 \u00fatil para evitar que os dispositivos demandem uma taxa de bits maior que a permitida pela sua conex\u00e3o. Isto pode causar um aumento na carga da CPU de seu servidor para que possa transcodificar os v\u00eddeos em tempo real para uma taxa mais baixa.",
@@ -1851,5 +1851,9 @@
     "ButtonStopRecording": "Parar Grava\u00e7\u00e3o",
     "StopRecording": "Parar grava\u00e7\u00e3o",
     "CancelSeries": "Cancelar s\u00e9rie",
-    "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments."
+    "EnableDebugLoggingHelp": "Debug logging should only be enabled as needed for troubleshooting purposes. The increased file system access may prevent the server machine from being able to sleep in some environments.",
+    "SaveSubtitlesInOriginalMediaFolders": "Save subtitles into media folders",
+    "SaveSubtitlesInOriginalMediaFoldersHelp": "Saving subtitles into media folders will make them easier to locate and manage.",
+    "LabelSimultaneousConnectionLimit": "Simultaneous stream limit:",
+    "SimultaneousConnectionLimitHelp": "The maximum number of allowed simultaneous streams. Enter 0 for no limit."
 }

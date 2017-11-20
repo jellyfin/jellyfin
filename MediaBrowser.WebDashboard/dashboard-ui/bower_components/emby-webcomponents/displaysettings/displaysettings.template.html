@@ -1,8 +1,8 @@
 ﻿<form style="margin: 0 auto;">
 
-    <h1 class="sectionTitle">
+    <h2 class="sectionTitle">
         ${Display}
-    </h1>
+    </h2>
     <div class="selectContainer languageSection hide">
         <select id="selectLanguage" is="emby-select" label="${LabelDisplayLanguage}">
             <option value="">${Auto}</option>
@@ -150,21 +150,21 @@
         <select is="emby-select" class="selectSoundEffects" label="${LabelSoundEffects}"></select>
     </div>
 
-    <div class="checkboxContainer checkboxContainer-withDescription">
+    <div class="checkboxContainer checkboxContainer-withDescription fldBackdrops hide">
         <label>
             <input type="checkbox" is="emby-checkbox" id="chkBackdrops" />
             <span>${EnableBackdrops}</span>
         </label>
         <div class="fieldDescription checkboxFieldDescription">${EnableBackdropsHelp}</div>
     </div>
-    <div class="checkboxContainer checkboxContainer-withDescription">
+    <div class="checkboxContainer checkboxContainer-withDescription fldThemeSong hide">
         <label>
             <input type="checkbox" is="emby-checkbox" id="chkThemeSong" />
             <span>${EnableThemeSongs}</span>
         </label>
         <div class="fieldDescription checkboxFieldDescription">${EnableThemeSongsHelp}</div>
     </div>
-    <div class="checkboxContainer checkboxContainer-withDescription">
+    <div class="checkboxContainer checkboxContainer-withDescription fldThemeVideo hide">
         <label>
             <input type="checkbox" is="emby-checkbox" id="chkThemeVideo" />
             <span>${EnableThemeVideos}</span>
@@ -179,7 +179,7 @@
         </label>
     </div>
 
-    <div class="checkboxContainer checkboxContainer-withDescription">
+    <div class="checkboxContainer checkboxContainer-withDescription fldDisplayMissingEpisodes hide">
         <label>
             <input type="checkbox" is="emby-checkbox" class="chkDisplayMissingEpisodes" />
             <span>${DisplayMissingEpisodesWithinSeasons}</span>

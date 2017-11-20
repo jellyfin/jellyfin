@@ -949,7 +949,7 @@
     "TabDevices": "Dispositivos",
     "HeaderLibrarySettings": "Configuraciones de Biblioteca",
     "HeaderChapterSettings": "Configuraciones de Capitulos",
-    "HeaderCameraUploadHelp": "Las aplicaciones de Emby pueden subir autom\u00e1ticamente fotograf\u00edas y videos tomados desde sus dispositivos m\u00f3viles al Servidor Emby.",
+    "HeaderCameraUploadHelp": "Las aplicaciones de Emby pueden subir autom\u00e1ticamente fotograf\u00edas tomadas desde sus dispositivos m\u00f3viles al Servidor Emby.",
     "LabelCameraUploadPath": "Ruta para subir desde la c\u00e1mara:",
     "LabelCameraUploadPathHelp": "Seleccione una ruta personalizada de subida. Esto tendr\u00e1 prioridad sobre cualquier configuraci\u00f3n predeterminada en la secci\u00f3n de \"Cargar desde Camara\". Si se deja en blanco, se utilizara una carpeta predeterminada. Si se usa una ruta personalizada necesita se agregada tambi\u00e9n en las configuraciones  de biblioteca.",
     "LabelCreateCameraUploadSubfolder": "Crear una subcarpeta para cada dispositivo",
@@ -1851,5 +1851,9 @@
     "ButtonStopRecording": "Detener Grabaci\u00f3n",
     "StopRecording": "Detener grabaci\u00f3n",
     "CancelSeries": "Cancelar Serie",
-    "EnableDebugLoggingHelp": "El registro de depuraci\u00f3n deber\u00eda ser habilitado solamente para prop\u00f3sitos de soluci\u00f3n de problemas. El incremento en el archivo de sistema podr\u00eda prevenir que el servidor entre en modo suspendido bajo algunos entornos."
+    "EnableDebugLoggingHelp": "El registro de depuraci\u00f3n deber\u00eda ser habilitado solamente para prop\u00f3sitos de soluci\u00f3n de problemas. El incremento en el archivo de sistema podr\u00eda prevenir que el servidor entre en modo suspendido bajo algunos entornos.",
+    "SaveSubtitlesInOriginalMediaFolders": "Salvar subtitulos en las carpetas de medios",
+    "SaveSubtitlesInOriginalMediaFoldersHelp": "Salvar los subtitulos en las carpetas de medios los har\u00e1 mas f\u00e1cil de encontrar y administrar.",
+    "LabelSimultaneousConnectionLimit": "Limite de transmisiones simultaneas:",
+    "SimultaneousConnectionLimitHelp": "El numero m\u00e1ximo de transmisiones simultaneas permitidas. Ingrese 0 para ilimitados."
 }

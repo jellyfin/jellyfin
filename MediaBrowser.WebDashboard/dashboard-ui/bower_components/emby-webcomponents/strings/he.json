@@ -1,4 +1,5 @@
 {
+    "LabelVersion": "Version:",
     "MessageUnlockAppWithPurchaseOrSupporter": "\u05e0\u05e2\u05d9\u05dc\u05ea \u05ea\u05db\u05d5\u05e0\u05d4 \u05d6\u05d5 \u05e2\u05dd \u05e8\u05db\u05d9\u05e9\u05d4 \u05d7\u05d3 \u05e4\u05e2\u05de\u05d9\u05ea \u05e7\u05d8\u05e0\u05d4, \u05d0\u05d5 \u05e2\u05dd \u05de\u05e0\u05d5\u05d9 \u05e4\u05e2\u05d9\u05dc Premiere \u05d0\u05de\u05d1\u05d9.",
     "MessageUnlockAppWithSupporter": "\u05d1\u05d9\u05d8\u05d5\u05dc \u05e0\u05e2\u05d9\u05dc\u05d4 \u05e9\u05dc \u05ea\u05db\u05d5\u05e0\u05d4 \u05d6\u05d5 \u05e2\u05dd \u05de\u05e0\u05d5\u05d9 \u05e4\u05e2\u05d9\u05dc \u05e9\u05dc Emby Premiere.",
     "MessageToValidateSupporter": "\u05d0\u05dd \u05d9\u05e9 \u05dc\u05da \u05de\u05e0\u05d5\u05d9 \u05e4\u05e2\u05d9\u05dc \u05e9\u05dc Emby Premiere, \u05d5\u05d3\u05d0 \u05e9\u05d4\u05d2\u05d3\u05e8\u05ea \u05d0\u05ea Emby Premiere \u05d1\u05de\u05e8\u05db\u05d6 \u05d4\u05e9\u05dc\u05d9\u05d8\u05d4 \u05e9\u05dc \u200b\u200b\u05d0\u05de\u05d1\u05d9 \u05e9\u05e8\u05ea, \u05e9\u05d1\u05d5 \u05d1\u05d0\u05e4\u05e9\u05e8\u05d5\u05ea\u05da \u05dc\u05d2\u05e9\u05ea \u05e2\u05dc-\u05d9\u05d3\u05d9 \u05dc\u05d7\u05d9\u05e6\u05d4 \u05e2\u05dc Emby Premiere \u05d1\u05ea\u05e4\u05e8\u05d9\u05d8 \u05d4\u05e8\u05d0\u05e9\u05d9.",
@@ -162,6 +163,7 @@
     "VoiceInput": "\u05e7\u05dc\u05d8 \u05e7\u05d5\u05dc\u05d9",
     "LabelContentType": "\u05e1\u05d5\u05d2 \u05d4\u05ea\u05d5\u05db\u05df",
     "LabelPath": "\u05e0\u05ea\u05d9\u05d1:",
+    "Playlists": "Playlists",
     "LabelTitle": "\u05db\u05d5\u05ea\u05e8\u05ea:",
     "LabelOriginalTitle": "\u05db\u05d5\u05ea\u05e8\u05ea \u05de\u05e7\u05d5\u05e8\u05d9\u05ea:",
     "LabelSortTitle": "\u05de\u05d9\u05d9\u05df \u05db\u05d5\u05ea\u05e8\u05ea:",
@@ -170,6 +172,7 @@
     "LabelStatus": "\u05e1\u05d8\u05d8\u05d5\u05e1:",
     "LabelArtists": "\u05d0\u05d5\u05de\u05e0\u05d9\u05dd:",
     "LabelArtistsHelp": "\u05d4\u05e4\u05e8\u05d3 \u05de\u05e8\u05d5\u05d1\u05d9\u05dd \u05d1\u05d0\u05de\u05e6\u05e2\u05d5\u05ea;",
+    "HeaderAlbumArtists": "Album Artists",
     "LabelAlbumArtists": "\u05d0\u05dc\u05d1\u05d5\u05dd \u05d0\u05d5\u05de\u05e0\u05d9\u05dd:",
     "LabelAlbum": "\u05d0\u05dc\u05d1\u05d5\u05dd:",
     "Artists": "Artists",
@@ -607,5 +610,11 @@
     "DirectorValue": "Director: {0}",
     "DirectorsValue": "Directors: {0}",
     "GenreValue": "Genre: {0}",
-    "GenresValue": "Genres: {0}"
+    "GenresValue": "Genres: {0}",
+    "LinksValue": "Links: {0}",
+    "TagsValue": "Tags: {0}",
+    "LabelAudio": "Audio:",
+    "LabelVideo": "Video:",
+    "LabelSubtitles": "Subtitles:",
+    "Off": "Off"
 }

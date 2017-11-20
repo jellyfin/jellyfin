@@ -16,28 +16,90 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILocalizationManager _localization;
         private readonly IFileSystem _fileSystem;
 
+        private string[] SubtitleExtensions = new[]
+        {
+            ".srt",
+            ".ssa",
+            ".ass",
+            ".sub",
+            ".smi",
+            ".sami",
+            ".vtt"
+        };
+
         public SubtitleResolver(ILocalizationManager localization, IFileSystem fileSystem)
         {
             _localization = localization;
             _fileSystem = fileSystem;
         }
 
-        public IEnumerable<MediaStream> GetExternalSubtitleStreams(Video video,
+        public List<MediaStream> GetExternalSubtitleStreams(Video video,
           int startIndex,
           IDirectoryService directoryService,
           bool clearCache)
         {
-            var files = GetSubtitleFiles(video, directoryService, _fileSystem, clearCache);
-
             var streams = new List<MediaStream>();
 
-            var videoFileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(video.Path);
+            GetExternalSubtitleStreams(streams, video.ContainingFolderPath, video.Path, startIndex, directoryService, clearCache);
+
+            startIndex += streams.Count;
+
+            try
+            {
+                GetExternalSubtitleStreams(streams, video.GetInternalMetadataPath(), video.Path, startIndex, directoryService, clearCache);
+            }
+            catch (IOException)
+            {
+
+            }
+
+            return streams;
+        }
+
+        public List<string> GetExternalSubtitleFiles(Video video,
+          IDirectoryService directoryService,
+          bool clearCache)
+        {
+            var streams = GetExternalSubtitleStreams(video, 0, directoryService, clearCache);
+
+            var list = new List<string>();
+
+            foreach (var stream in streams)
+            {
+                list.Add(stream.Path);
+            }
+
+            return list;
+        }
+
+        private void GetExternalSubtitleStreams(List<MediaStream> streams, string folder,
+            string videoPath,
+            int startIndex,
+            IDirectoryService directoryService,
+            bool clearCache)
+        {
+            var videoFileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(videoPath);
             videoFileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(videoFileNameWithoutExtension);
+
+            var files = directoryService.GetFilePaths(folder, clearCache);
 
             foreach (var fullName in files)
             {
+                var extension = Path.GetExtension(fullName);
+
+                if (!SubtitleExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 var fileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(fullName);
                 fileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(fileNameWithoutExtension);
+
+                if (!string.Equals(videoFileNameWithoutExtension, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase) &&
+                    !fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension + ".", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
 
                 var codec = Path.GetExtension(fullName).ToLower().TrimStart('.');
 
@@ -98,8 +160,6 @@ namespace MediaBrowser.Providers.MediaInfo
                     });
                 }
             }
-
-            return streams;
         }
 
         private string NormalizeFilenameForSubtitleComparison(string filename)
@@ -114,49 +174,6 @@ namespace MediaBrowser.Providers.MediaInfo
             //filename = filename.Replace(".", string.Empty);
 
             return filename;
-        }
-
-        private static IEnumerable<string> SubtitleExtensions
-        {
-            get
-            {
-                return new[] { ".srt", ".ssa", ".ass", ".sub", ".smi", ".sami", ".vtt" };
-            }
-        }
-
-        public static IEnumerable<string> GetSubtitleFiles(Video video, IDirectoryService directoryService, IFileSystem fileSystem, bool clearCache)
-        {
-            var containingPath = video.ContainingFolderPath;
-
-            if (string.IsNullOrEmpty(containingPath))
-            {
-                throw new ArgumentException(string.Format("Cannot search for items that don't have a path: {0} {1}", video.Name, video.Id));
-            }
-
-            var files = fileSystem.GetFilePaths(containingPath, clearCache);
-
-            var videoFileNameWithoutExtension = fileSystem.GetFileNameWithoutExtension(video.Path);
-
-            return files.Where(i =>
-            {
-                var extension = Path.GetExtension(i);
-
-                if (SubtitleExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
-                {
-                    var fileNameWithoutExtension = fileSystem.GetFileNameWithoutExtension(i);
-
-                    if (string.Equals(videoFileNameWithoutExtension, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-                    if (fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension + ".", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            });
         }
     }
 }

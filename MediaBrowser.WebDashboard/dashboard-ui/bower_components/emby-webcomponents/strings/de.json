@@ -1,4 +1,5 @@
 {
+    "LabelVersion": "Version:",
     "MessageUnlockAppWithPurchaseOrSupporter": "Schalte diese Funktion mit einer kleinen einmaligen Geb\u00fchr oder einem aktiven Emby Premium Abo frei.",
     "MessageUnlockAppWithSupporter": "Schalte diese Funktion mit einem aktiven Emby Premium Abo frei.",
     "MessageToValidateSupporter": "Wenn du eine aktive Emby Premiere Mitgliedschaft hast, stelle bitte sicher, dass du diese \u00fcber das Emby Server Dashboard eingerichtet hast (Hauptmenu -> Emby Premiere).",
@@ -162,6 +163,7 @@
     "VoiceInput": "Spracheingabe",
     "LabelContentType": "Typ des Inhalts:",
     "LabelPath": "Pfad:",
+    "Playlists": "Playlists",
     "LabelTitle": "Titel:",
     "LabelOriginalTitle": "Original Titel:",
     "LabelSortTitle": "Sortierungs Titel:",
@@ -170,6 +172,7 @@
     "LabelStatus": "Status:",
     "LabelArtists": "Interpreten:",
     "LabelArtistsHelp": "Trenne mehrere Eintr\u00e4ge durch ;",
+    "HeaderAlbumArtists": "Album Artists",
     "LabelAlbumArtists": "Alben Interpreten:",
     "LabelAlbum": "Album:",
     "Artists": "Interpreten",
@@ -607,5 +610,11 @@
     "DirectorValue": "Regisseur: {0}",
     "DirectorsValue": "Regisseure: {0}",
     "GenreValue": "Genre: {0}",
-    "GenresValue": "Genres: {0}"
+    "GenresValue": "Genres: {0}",
+    "LinksValue": "Links: {0}",
+    "TagsValue": "Tags: {0}",
+    "LabelAudio": "Audio:",
+    "LabelVideo": "Video:",
+    "LabelSubtitles": "Subtitles:",
+    "Off": "Off"
 }

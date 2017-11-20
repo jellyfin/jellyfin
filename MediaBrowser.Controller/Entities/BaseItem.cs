@@ -1376,11 +1376,6 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        internal virtual bool IsValidFromResolver(BaseItem newItem)
-        {
-            return true;
-        }
-
         internal virtual ItemUpdateType UpdateFromResolvedItem(BaseItem newItem)
         {
             var updateType = ItemUpdateType.None;
@@ -2045,7 +2040,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i.IsLocalFile)
                 .Select(i => FileSystem.GetDirectoryName(i.Path))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .SelectMany(i => FileSystem.GetFilePaths(i))
+                .SelectMany(i => directoryService.GetFilePaths(i))
                 .ToList();
 
             var deletedImages = ImageInfos
