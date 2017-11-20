@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// <value>The priority.</value>
         public override ResolverPriority Priority
         {
-            get { return ResolverPriority.Last; }
+            get { return ResolverPriority.Fourth; }
         }
 
         public MultiItemResolverResult ResolveMultiple(Folder parent,
@@ -220,13 +220,19 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
             foreach (var resolvedItem in resolverResult)
             {
+                if (resolvedItem.Files.Count > 1)
+                {
+                    // For now, until we sort out naming for multi-part books
+                    continue;
+                }
+
                 var firstMedia = resolvedItem.Files.First();
                 
                 var libraryItem = new T
                 {
                     Path = firstMedia.Path,
                     IsInMixedFolder = isInMixedFolder,
-                    //ProductionYear = resolvedItem.Year,
+                    ProductionYear = resolvedItem.Year,
                     Name = parseName ?
                         resolvedItem.Name :
                         Path.GetFileNameWithoutExtension(firstMedia.Path),
