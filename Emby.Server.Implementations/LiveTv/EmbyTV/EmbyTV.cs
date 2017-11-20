@@ -1897,7 +1897,15 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     imageSaveFilenameWithoutExtension = "logo";
                     break;
                 case ImageType.Thumb:
-                    imageSaveFilenameWithoutExtension = "landscape";
+                    if (program.IsSeries)
+                    {
+                        imageSaveFilenameWithoutExtension = Path.GetFileNameWithoutExtension(recordingPath) + "-thumb";
+                    }
+                    else
+                    {
+                        imageSaveFilenameWithoutExtension = "landscape";
+                    }
+
                     break;
                 case ImageType.Backdrop:
                     imageSaveFilenameWithoutExtension = "fanart";
@@ -1921,9 +1929,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private async Task SaveRecordingImages(string recordingPath, LiveTvProgram program)
         {
-            var image = program.GetImageInfo(ImageType.Primary, 0);
+            var image = program.IsSeries ?
+                (program.GetImageInfo(ImageType.Thumb, 0) ?? program.GetImageInfo(ImageType.Primary, 0)) :
+                (program.GetImageInfo(ImageType.Primary, 0) ?? program.GetImageInfo(ImageType.Thumb, 0));
 
-            if (image != null && program.IsMovie)
+            if (image != null)
             {
                 try
                 {
