@@ -1,5 +1,4 @@
 {
-    "LabelVersion": "Version:",
     "MessageUnlockAppWithPurchaseOrSupporter": "D\u00e9verrouillez cette fonctionnalit\u00e9 avec un petit achat unique ou avec un abonnement Emby Premiere actif.",
     "MessageUnlockAppWithSupporter": "D\u00e9verrouillez cette fonctionnalit\u00e9 avec un abonnement Emby Premi\u00e8re actif.",
     "MessageToValidateSupporter": "Si vous avez un abonnement Emby Premi\u00e8re actif, assurez-vous d'avoir install\u00e9 Emby Premi\u00e8re sur le tableau de bord de votre serveur Emby, auquel vous pouvez acc\u00e9der en cliquant sur Emby Premi\u00e8re dans le menu principal.",
@@ -335,6 +334,7 @@
     "LabelChannels": "Channels:",
     "ChannelNameOnly": "Channel {0} only",
     "Anytime": "Anytime",
+    "AnyLanguage": "Any language",
     "AroundTime": "Around {0}",
     "All": "All",
     "AllChannels": "All channels",
@@ -429,6 +429,7 @@
     "LabelSyncTo": "Sync to:",
     "Next": "Next",
     "LabelSource": "Source:",
+    "LabelVersion": "Version:",
     "AllLanguages": "All languages",
     "Previous": "Previous",
     "HeaderNextUp": "\u00c0 Suivre",

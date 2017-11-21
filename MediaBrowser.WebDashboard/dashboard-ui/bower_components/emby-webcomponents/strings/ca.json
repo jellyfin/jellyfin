@@ -1,5 +1,4 @@
 {
-    "LabelVersion": "Version:",
     "MessageUnlockAppWithPurchaseOrSupporter": "Activa aquesta funcionalitat amb un \u00fanic pagament, o amb una subscripci\u00f3 activa d'Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Activa aquesta funcionalitat amb una subscripci\u00f3 activa d'Emby Premiere.",
     "MessageToValidateSupporter": "Si tens una subscripci\u00f3 activa d'Emby Premiere assegura't que l'has configurat al teu tauler de control de l'Emby Server, on pots accedir clicant a l'opci\u00f3 d'Emby Premiere al men\u00fa principal.",
@@ -335,6 +334,7 @@
     "LabelChannels": "Canals:",
     "ChannelNameOnly": "Channel {0} only",
     "Anytime": "Anytime",
+    "AnyLanguage": "Any language",
     "AroundTime": "Cap a les {0}",
     "All": "All",
     "AllChannels": "Tots els canals",
@@ -429,6 +429,7 @@
     "LabelSyncTo": "Sync to:",
     "Next": "Next",
     "LabelSource": "Source:",
+    "LabelVersion": "Version:",
     "AllLanguages": "All languages",
     "Previous": "Previous",
     "HeaderNextUp": "A continuaci\u00f3",

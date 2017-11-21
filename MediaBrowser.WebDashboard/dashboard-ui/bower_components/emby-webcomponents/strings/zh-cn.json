@@ -1,5 +1,4 @@
 {
-    "LabelVersion": "Version:",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -335,6 +334,7 @@
     "LabelChannels": "\u9891\u9053\uff1a",
     "ChannelNameOnly": "\u53ea\u5728\u9891\u9053 {0}",
     "Anytime": "\u4efb\u4f55\u65f6\u95f4",
+    "AnyLanguage": "Any language",
     "AroundTime": "{0} \u5de6\u53f3",
     "All": "All",
     "AllChannels": "\u6240\u6709\u9891\u9053",
@@ -429,6 +429,7 @@
     "LabelSyncTo": "\u540c\u6b65\u5230\uff1a",
     "Next": "Next",
     "LabelSource": "Source:",
+    "LabelVersion": "Version:",
     "AllLanguages": "All languages",
     "Previous": "Previous",
     "HeaderNextUp": "Next Up",
