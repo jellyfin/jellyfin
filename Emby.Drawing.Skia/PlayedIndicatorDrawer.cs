@@ -15,7 +15,6 @@ namespace Emby.Drawing.Skia
 {
     public class PlayedIndicatorDrawer
     {
-        private const int FontSize = 42;
         private const int OffsetFromTopRightCorner = 38;
 
         private readonly IApplicationPaths _appPaths;
@@ -44,48 +43,23 @@ namespace Emby.Drawing.Skia
             {
                 paint.Color = new SKColor(255, 255, 255, 255);
                 paint.Style = SKPaintStyle.Fill;
-                paint.Typeface = SKTypeface.FromFile(await DownloadFont("webdings.ttf", "https://github.com/MediaBrowser/Emby.Resources/raw/master/fonts/webdings.ttf",
-                    _appPaths, _iHttpClient, _fileSystem).ConfigureAwait(false));
-                paint.TextSize = FontSize;
+
+                paint.TextSize = 30;
                 paint.IsAntialias = true;
 
-                canvas.DrawText("a", (float)x-20, OffsetFromTopRightCorner + 12, paint);
+                var text = "✔️";
+                var emojiChar = StringUtilities.GetUnicodeCharacterCode(text, SKTextEncoding.Utf32);
+                // or:
+                //var emojiChar = 0x1F680;
+
+                // ask the font manager for a font with that character
+                var fontManager = SKFontManager.Default;
+                var emojiTypeface = fontManager.MatchCharacter(emojiChar);
+
+                paint.Typeface = emojiTypeface;
+
+                canvas.DrawText(text, (float)x-20, OffsetFromTopRightCorner + 12, paint);
             }
-        }
-
-        internal static string ExtractFont(string name, IApplicationPaths paths, IFileSystem fileSystem)
-        {
-            var filePath = Path.Combine(paths.ProgramDataPath, "fonts", name);
-
-            if (fileSystem.FileExists(filePath))
-            {
-                return filePath;
-            }
-
-            var namespacePath = typeof(PlayedIndicatorDrawer).Namespace + ".fonts." + name;
-            var tempPath = Path.Combine(paths.TempDirectory, Guid.NewGuid().ToString("N") + ".ttf");
-            fileSystem.CreateDirectory(fileSystem.GetDirectoryName(tempPath));
-
-            using (var stream = typeof(PlayedIndicatorDrawer).GetTypeInfo().Assembly.GetManifestResourceStream(namespacePath))
-            {
-                using (var fileStream = fileSystem.GetFileStream(tempPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
-                {
-                    stream.CopyTo(fileStream);
-                }
-            }
-
-            fileSystem.CreateDirectory(fileSystem.GetDirectoryName(filePath));
-
-            try
-            {
-                fileSystem.CopyFile(tempPath, filePath, false);
-            }
-            catch (IOException)
-            {
-
-            }
-
-            return tempPath;
         }
 
         internal static async Task<string> DownloadFont(string name, string url, IApplicationPaths paths, IHttpClient httpClient, IFileSystem fileSystem)

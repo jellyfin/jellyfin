@@ -152,6 +152,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 isRemote = !_networkManager.IsInLocalNetwork(uri.Host);
             }
 
+            var supportsDirectPlay = !info.EnableStreamLooping && info.TunerCount == 0;
+
             var mediaSource = new MediaSourceInfo
             {
                 Path = path,
@@ -183,7 +185,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 IsInfiniteStream = true,
                 IsRemote = isRemote,
 
-                IgnoreDts = true
+                IgnoreDts = true,
+                SupportsDirectPlay = supportsDirectPlay
             };
 
             mediaSource.InferTotalBitrate();
