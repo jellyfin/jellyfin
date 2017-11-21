@@ -40,7 +40,7 @@ namespace Emby.Drawing.Skia
             {
                 paint.Color = new SKColor(255, 255, 255, 255);
                 paint.Style = SKPaintStyle.Fill;
-                paint.Typeface = SKTypeface.FromFile(PlayedIndicatorDrawer.ExtractFont("robotoregular.ttf", _appPaths, _fileSystem));
+
                 paint.TextSize = 24;
                 paint.IsAntialias = true;
 

@@ -61,7 +61,7 @@ namespace Emby.Server.Implementations.Browser
             {
                 appHost.LaunchUrl(url);
             }
-            catch (NotImplementedException)
+            catch (NotSupportedException)
             {
                 
             }

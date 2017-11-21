@@ -2317,12 +2317,17 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public void LaunchUrl(string url)
+        public virtual void LaunchUrl(string url)
         {
             if (EnvironmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows &&
                 EnvironmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.OSX)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException();
+            }
+
+            if (!Environment.UserInteractive)
+            {
+                throw new NotSupportedException();
             }
 
             var process = ProcessFactory.Create(new ProcessOptions
