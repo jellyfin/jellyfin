@@ -1,5 +1,4 @@
 {
-    "LabelVersion": "Version:",
     "MessageUnlockAppWithPurchaseOrSupporter": "Schalte diese Funktion mit einer kleinen einmaligen Geb\u00fchr oder einem aktiven Emby Premium Abo frei.",
     "MessageUnlockAppWithSupporter": "Schalte diese Funktion mit einem aktiven Emby Premium Abo frei.",
     "MessageToValidateSupporter": "Wenn du eine aktive Emby Premiere Mitgliedschaft hast, stelle bitte sicher, dass du diese \u00fcber das Emby Server Dashboard eingerichtet hast (Hauptmenu -> Emby Premiere).",
@@ -335,6 +334,7 @@
     "LabelChannels": "Kan\u00e4le:",
     "ChannelNameOnly": "Nur Kanal {0}",
     "Anytime": "Jederzeit",
+    "AnyLanguage": "Any language",
     "AroundTime": "Um {0}",
     "All": "Alle",
     "AllChannels": "Alle Kan\u00e4le:",
@@ -429,6 +429,7 @@
     "LabelSyncTo": "Synchronisiere mit:",
     "Next": "N\u00e4chstes",
     "LabelSource": "Quelle:",
+    "LabelVersion": "Version:",
     "AllLanguages": "Alle Sprachen",
     "Previous": "Vorheriges",
     "HeaderNextUp": "Als N\u00e4chstes",

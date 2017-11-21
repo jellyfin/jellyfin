@@ -117,6 +117,10 @@ namespace Emby.Server.Implementations.Session
             {
                 dict["SubtitleStreamIndex"] = command.SubtitleStreamIndex.Value.ToString(CultureInfo.InvariantCulture);
             }
+            if (command.StartIndex.HasValue)
+            {
+                dict["StartIndex"] = command.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+            }
             if (!string.IsNullOrWhiteSpace(command.MediaSourceId))
             {
                 dict["MediaSourceId"] = command.MediaSourceId;

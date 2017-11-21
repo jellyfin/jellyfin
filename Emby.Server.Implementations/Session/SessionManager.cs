@@ -1423,7 +1423,7 @@ namespace Emby.Server.Implementations.Session
 
             if (enforcePassword)
             {
-                var result = await _userManager.AuthenticateUser(request.Username, request.Password, request.PasswordSha1, request.PasswordMd5, request.RemoteEndPoint).ConfigureAwait(false);
+                var result = await _userManager.AuthenticateUser(request.Username, request.Password, request.PasswordSha1, request.PasswordMd5, request.RemoteEndPoint, true).ConfigureAwait(false);
 
                 if (result == null)
                 {
