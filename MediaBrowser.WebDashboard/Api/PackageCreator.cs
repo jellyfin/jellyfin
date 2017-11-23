@@ -200,7 +200,16 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<link rel=\"manifest\" href=\"manifest.json\">");
             sb.Append("<meta name=\"format-detection\" content=\"telephone=no\">");
             sb.Append("<meta name=\"msapplication-tap-highlight\" content=\"no\">");
-            sb.Append("<meta name=\"viewport\" content=\"user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width\">");
+
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\">");
+            }
+            else
+            {
+                sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, minimum-scale=1\">");
+            }
+
             sb.Append("<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">");
             sb.Append("<meta name=\"mobile-web-app-capable\" content=\"yes\">");
             sb.Append("<meta name=\"application-name\" content=\"Emby\">");

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Threading;
+using System.Threading;
 
 namespace MediaBrowser.Api.System
 {
@@ -43,7 +44,7 @@ namespace MediaBrowser.Api.System
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>Task{SystemInfo}.</returns>
-        protected override Task<List<ActivityLogEntry>> GetDataToSend(WebSocketListenerState state)
+        protected override Task<List<ActivityLogEntry>> GetDataToSend(WebSocketListenerState state, CancellationToken CancellationToken)
         {
             return Task.FromResult(new List<ActivityLogEntry>());
         }

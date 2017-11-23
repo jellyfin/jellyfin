@@ -13,6 +13,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Threading;
 using Mono.Nat;
 using MediaBrowser.Model.Extensions;
+using System.Threading;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -158,7 +159,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 try
                 {
-                    var localAddressString = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
+                    var localAddressString = await _appHost.GetLocalApiUrl(CancellationToken.None).ConfigureAwait(false);
 
                     Uri uri;
                     if (Uri.TryCreate(localAddressString, UriKind.Absolute, out uri))
