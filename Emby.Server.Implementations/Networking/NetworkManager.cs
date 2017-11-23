@@ -11,6 +11,7 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
+using System.Threading;
 
 namespace Emby.Server.Implementations.Networking
 {
@@ -37,7 +38,7 @@ namespace Emby.Server.Implementations.Networking
 
                 if (_localIpAddresses == null || forceRefresh)
                 {
-                    var addresses = GetLocalIpAddressesInternal().Select(ToIpAddressInfo).ToList();
+                    var addresses = GetLocalIpAddressesInternal().Result.Select(ToIpAddressInfo).ToList();
 
                     _localIpAddresses = addresses;
                     _lastRefresh = DateTime.UtcNow;
@@ -49,14 +50,14 @@ namespace Emby.Server.Implementations.Networking
             return _localIpAddresses;
         }
 
-        private IEnumerable<IPAddress> GetLocalIpAddressesInternal()
+        private async Task<List<IPAddress>> GetLocalIpAddressesInternal()
         {
             var list = GetIPsDefault()
                 .ToList();
 
             if (list.Count == 0)
             {
-                list.AddRange(GetLocalIpAddressesFallback().Result);
+                list.AddRange(await GetLocalIpAddressesFallback().ConfigureAwait(false));
             }
 
             var listClone = list.ToList();
@@ -65,7 +66,8 @@ namespace Emby.Server.Implementations.Networking
                 .OrderBy(i => i.AddressFamily == AddressFamily.InterNetwork ? 0 : 1)
                 .ThenBy(i => listClone.IndexOf(i))
                 .Where(FilterIpAddress)
-                .DistinctBy(i => i.ToString());
+                .DistinctBy(i => i.ToString())
+                .ToList();
         }
 
         private bool FilterIpAddress(IPAddress address)

@@ -248,9 +248,20 @@ namespace MediaBrowser.Api
 
             if (song != null)
             {
-                result.Album = song.Album;
                 result.AlbumArtist = song.AlbumArtists.FirstOrDefault();
                 result.Artists = song.Artists;
+
+                album = song.AlbumEntity;
+
+                if (album != null)
+                {
+                    result.Album = album.Name;
+                    result.AlbumId = album.Id.ToString("N");
+                }
+                else
+                {
+                    result.Album = song.Album;
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(item.ChannelId))

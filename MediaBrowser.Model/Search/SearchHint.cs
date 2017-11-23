@@ -107,6 +107,7 @@ namespace MediaBrowser.Model.Search
         /// </summary>
         /// <value>The album.</value>
         public string Album { get; set; }
+        public string AlbumId { get; set; }
 
         /// <summary>
         /// Gets or sets the album artist.

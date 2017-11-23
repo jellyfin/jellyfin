@@ -1182,7 +1182,7 @@ namespace Emby.Server.Implementations.Session
         {
             var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
 
-            var info = await _appHost.GetSystemInfo().ConfigureAwait(false);
+            var info = await _appHost.GetSystemInfo(cancellationToken).ConfigureAwait(false);
 
             var tasks = sessions.Select(session => Task.Run(async () =>
             {

@@ -1901,9 +1901,9 @@ namespace Emby.Server.Implementations
         /// Gets the system status.
         /// </summary>
         /// <returns>SystemInfo.</returns>
-        public async Task<SystemInfo> GetSystemInfo()
+        public async Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken)
         {
-            var localAddress = await GetLocalApiUrl().ConfigureAwait(false);
+            var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
 
             return new SystemInfo
             {
@@ -1955,12 +1955,12 @@ namespace Emby.Server.Implementations
             get { return Certificate != null || ServerConfigurationManager.Configuration.IsBehindProxy; }
         }
 
-        public async Task<string> GetLocalApiUrl()
+        public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken)
         {
             try
             {
                 // Return the first matched address, if found, or the first known local address
-                var address = (await GetLocalIpAddresses().ConfigureAwait(false)).FirstOrDefault(i => !i.Equals(IpAddressInfo.Loopback) && !i.Equals(IpAddressInfo.IPv6Loopback));
+                var address = (await GetLocalIpAddresses(cancellationToken).ConfigureAwait(false)).FirstOrDefault(i => !i.Equals(IpAddressInfo.Loopback) && !i.Equals(IpAddressInfo.IPv6Loopback));
 
                 if (address != null)
                 {
@@ -1994,7 +1994,7 @@ namespace Emby.Server.Implementations
                 HttpPort.ToString(CultureInfo.InvariantCulture));
         }
 
-        public async Task<List<IpAddressInfo>> GetLocalIpAddresses()
+        public async Task<List<IpAddressInfo>> GetLocalIpAddresses(CancellationToken cancellationToken)
         {
             var addresses = ServerConfigurationManager
                 .Configuration
@@ -2011,7 +2011,7 @@ namespace Emby.Server.Implementations
 
                 foreach (var address in addresses)
                 {
-                    var valid = await IsIpAddressValidAsync(address).ConfigureAwait(false);
+                    var valid = await IsIpAddressValidAsync(address, cancellationToken).ConfigureAwait(false);
                     if (valid)
                     {
                         list.Add(address);
@@ -2043,7 +2043,7 @@ namespace Emby.Server.Implementations
 
         private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
         private DateTime _lastAddressCacheClear;
-        private async Task<bool> IsIpAddressValidAsync(IpAddressInfo address)
+        private async Task<bool> IsIpAddressValidAsync(IpAddressInfo address, CancellationToken cancellationToken)
         {
             if (address.Equals(IpAddressInfo.Loopback) ||
                 address.Equals(IpAddressInfo.IPv6Loopback))
@@ -2075,7 +2075,9 @@ namespace Emby.Server.Implementations
                     LogErrors = false,
                     LogRequest = false,
                     TimeoutMs = 30000,
-                    BufferContent = false
+                    BufferContent = false,
+
+                    CancellationToken = cancellationToken
 
                 }, "POST").ConfigureAwait(false))
                 {
@@ -2089,6 +2091,10 @@ namespace Emby.Server.Implementations
                         return valid;
                     }
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch
             {
