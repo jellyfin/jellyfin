@@ -5,8 +5,9 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Threading;
 using MediaBrowser.Model.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Session
 {
@@ -86,7 +87,7 @@ namespace MediaBrowser.Api.Session
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>Task{SystemInfo}.</returns>
-        protected override Task<IEnumerable<SessionInfoDto>> GetDataToSend(WebSocketListenerState state)
+        protected override Task<IEnumerable<SessionInfoDto>> GetDataToSend(WebSocketListenerState state, CancellationToken cancellationToken)
         {
             return Task.FromResult(_sessionManager.Sessions.Where(i => i.IsActive).Select(_sessionManager.GetSessionInfoDto));
         }

@@ -3,9 +3,10 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Threading;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.ScheduledTasks
 {
@@ -63,7 +64,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>Task{IEnumerable{TaskInfo}}.</returns>
-        protected override Task<IEnumerable<TaskInfo>> GetDataToSend(WebSocketListenerState state)
+        protected override Task<IEnumerable<TaskInfo>> GetDataToSend(WebSocketListenerState state, CancellationToken cancellationToken)
         {
             return Task.FromResult(TaskManager.ScheduledTasks
                 .OrderBy(i => i.Name)

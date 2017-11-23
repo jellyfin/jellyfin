@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Threading;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -89,7 +90,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        public async Task<XDocument> GetDataAsync(string url)
+        public async Task<XDocument> GetDataAsync(string url, CancellationToken cancellationToken)
         {
             var options = new HttpRequestOptions
             {
@@ -99,7 +100,9 @@ namespace Emby.Dlna.PlayTo
                 BufferContent = false,
 
                 // The periodic requests may keep some devices awake
-                LogRequestAsDebug = true
+                LogRequestAsDebug = true,
+
+                CancellationToken = cancellationToken
             };
 
             options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;

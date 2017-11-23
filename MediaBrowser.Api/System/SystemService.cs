@@ -14,6 +14,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
+using System.Threading;
 
 namespace MediaBrowser.Api.System
 {
@@ -164,14 +165,14 @@ namespace MediaBrowser.Api.System
         /// <returns>System.Object.</returns>
         public async Task<object> Get(GetSystemInfo request)
         {
-            var result = await _appHost.GetSystemInfo().ConfigureAwait(false);
+            var result = await _appHost.GetSystemInfo(CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
 
         public async Task<object> Get(GetPublicSystemInfo request)
         {
-            var result = await _appHost.GetSystemInfo().ConfigureAwait(false);
+            var result = await _appHost.GetSystemInfo(CancellationToken.None).ConfigureAwait(false);
 
             var publicInfo = new PublicSystemInfo
             {

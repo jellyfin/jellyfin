@@ -191,7 +191,8 @@ namespace Emby.Server.Implementations.Library
                     {
                          ItemFields.AirTime,
                          ItemFields.DateCreated,
-                         ItemFields.ChannelInfo
+                         ItemFields.ChannelInfo,
+                         ItemFields.ParentId
                     }
                 }
             };
