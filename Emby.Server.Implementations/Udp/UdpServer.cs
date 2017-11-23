@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.Udp
 
         private bool _isDisposed;
 
-        private readonly List<Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, Task>>> _responders = new List<Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, Task>>>();
+        private readonly List<Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, CancellationToken, Task>>> _responders = new List<Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, CancellationToken, Task>>>();
 
         private readonly IServerApplicationHost _appHost;
         private readonly IJsonSerializer _json;
@@ -44,9 +44,9 @@ namespace Emby.Server.Implementations.Udp
             AddMessageResponder("who is MediaBrowserServer_v2?", false, RespondToV2Message);
         }
 
-        private void AddMessageResponder(string message, bool isSubstring, Func<string, IpEndPointInfo, Encoding, Task> responder)
+        private void AddMessageResponder(string message, bool isSubstring, Func<string, IpEndPointInfo, Encoding, CancellationToken, Task> responder)
         {
-            _responders.Add(new Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, Task>>(message, isSubstring, responder));
+            _responders.Add(new Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, CancellationToken, Task>>(message, isSubstring, responder));
         }
 
         /// <summary>
@@ -67,9 +67,15 @@ namespace Emby.Server.Implementations.Udp
 
             if (responder != null)
             {
+                var cancellationToken = CancellationToken.None;
+
                 try
                 {
-                    await responder.Item2.Item3(responder.Item1, message.RemoteEndPoint, encoding).ConfigureAwait(false);
+                    await responder.Item2.Item3(responder.Item1, message.RemoteEndPoint, encoding, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+
                 }
                 catch (Exception ex)
                 {
@@ -78,7 +84,7 @@ namespace Emby.Server.Implementations.Udp
             }
         }
 
-        private Tuple<string, Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, Task>>> GetResponder(byte[] buffer, int bytesReceived, Encoding encoding)
+        private Tuple<string, Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, CancellationToken, Task>>> GetResponder(byte[] buffer, int bytesReceived, Encoding encoding)
         {
             var text = encoding.GetString(buffer, 0, bytesReceived);
             var responder = _responders.FirstOrDefault(i =>
@@ -94,14 +100,14 @@ namespace Emby.Server.Implementations.Udp
             {
                 return null;
             }
-            return new Tuple<string, Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, Task>>>(text, responder);
+            return new Tuple<string, Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, CancellationToken, Task>>>(text, responder);
         }
 
-        private async Task RespondToV2Message(string messageText, IpEndPointInfo endpoint, Encoding encoding)
+        private async Task RespondToV2Message(string messageText, IpEndPointInfo endpoint, Encoding encoding, CancellationToken cancellationToken)
         {
             var parts = messageText.Split('|');
 
-            var localUrl = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
+            var localUrl = await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(localUrl))
             {
@@ -112,7 +118,7 @@ namespace Emby.Server.Implementations.Udp
                     Name = _appHost.FriendlyName
                 };
 
-                await SendAsync(encoding.GetBytes(_json.SerializeToString(response)), endpoint).ConfigureAwait(false);
+                await SendAsync(encoding.GetBytes(_json.SerializeToString(response)), endpoint, cancellationToken).ConfigureAwait(false);
 
                 if (parts.Length > 1)
                 {
@@ -248,7 +254,7 @@ namespace Emby.Server.Implementations.Udp
             }
         }
 
-        public async Task SendAsync(byte[] bytes, IpEndPointInfo remoteEndPoint)
+        public async Task SendAsync(byte[] bytes, IpEndPointInfo remoteEndPoint, CancellationToken cancellationToken)
         {
             if (_isDisposed)
             {
@@ -267,7 +273,7 @@ namespace Emby.Server.Implementations.Udp
 
             try
             {
-                await _udpClient.SendToAsync(bytes, 0, bytes.Length, remoteEndPoint, CancellationToken.None).ConfigureAwait(false);
+                await _udpClient.SendToAsync(bytes, 0, bytes.Length, remoteEndPoint, cancellationToken).ConfigureAwait(false);
 
                 _logger.Info("Udp message sent to {0}", remoteEndPoint);
             }

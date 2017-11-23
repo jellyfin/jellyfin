@@ -831,7 +831,7 @@ namespace Emby.Dlna.PlayTo
 
         #region From XML
 
-        private async Task GetAVProtocolAsync()
+        private async Task GetAVProtocolAsync(CancellationToken cancellationToken)
         {
             if (_disposed)
             {
@@ -845,12 +845,12 @@ namespace Emby.Dlna.PlayTo
             string url = NormalizeUrl(Properties.BaseUrl, avService.ScpdUrl);
 
             var httpClient = new SsdpHttpClient(_httpClient, _config);
-            var document = await httpClient.GetDataAsync(url).ConfigureAwait(false);
+            var document = await httpClient.GetDataAsync(url, cancellationToken).ConfigureAwait(false);
 
             AvCommands = TransportCommands.Create(document);
         }
 
-        private async Task GetRenderingProtocolAsync()
+        private async Task GetRenderingProtocolAsync(CancellationToken cancellationToken)
         {
             if (_disposed)
             {
@@ -864,7 +864,7 @@ namespace Emby.Dlna.PlayTo
             string url = NormalizeUrl(Properties.BaseUrl, avService.ScpdUrl);
 
             var httpClient = new SsdpHttpClient(_httpClient, _config);
-            var document = await httpClient.GetDataAsync(url).ConfigureAwait(false);
+            var document = await httpClient.GetDataAsync(url, cancellationToken).ConfigureAwait(false);
 
             RendererCommands = TransportCommands.Create(document);
         }
@@ -897,11 +897,11 @@ namespace Emby.Dlna.PlayTo
             set;
         }
 
-        public static async Task<Device> CreateuPnpDeviceAsync(Uri url, IHttpClient httpClient, IServerConfigurationManager config, ILogger logger, ITimerFactory timerFactory)
+        public static async Task<Device> CreateuPnpDeviceAsync(Uri url, IHttpClient httpClient, IServerConfigurationManager config, ILogger logger, ITimerFactory timerFactory, CancellationToken cancellationToken)
         {
             var ssdpHttpClient = new SsdpHttpClient(httpClient, config);
 
-            var document = await ssdpHttpClient.GetDataAsync(url.ToString()).ConfigureAwait(false);
+            var document = await ssdpHttpClient.GetDataAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
 
             var deviceProperties = new DeviceInfo();
 
@@ -987,8 +987,8 @@ namespace Emby.Dlna.PlayTo
 
             if (device.GetAvTransportService() != null)
             {
-                await device.GetRenderingProtocolAsync().ConfigureAwait(false);
-                await device.GetAVProtocolAsync().ConfigureAwait(false);
+                await device.GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
+                await device.GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
             }
 
             return device;

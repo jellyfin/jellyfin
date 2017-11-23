@@ -815,7 +815,7 @@ namespace Emby.Server.Implementations.Library
 
             var text = new StringBuilder();
 
-            var localAddress = _appHost.GetLocalApiUrl().Result ?? string.Empty;
+            var localAddress = _appHost.GetLocalApiUrl(CancellationToken.None).Result ?? string.Empty;
 
             text.AppendLine("Use your web browser to visit:");
             text.AppendLine(string.Empty);
