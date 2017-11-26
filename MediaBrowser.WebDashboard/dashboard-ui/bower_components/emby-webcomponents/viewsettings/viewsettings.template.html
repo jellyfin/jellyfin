@@ -1,0 +1,36 @@
+<div class="formDialogContent smoothScrollY">
+    <div class="dialogContentInner dialog-content-centered">
+        <form style="margin:auto;">
+
+            <div class="verticalSection">
+
+                <h2 class="sectionTitle">
+                    ${HeaderPosterOptions}
+                </h2>
+
+                <div class="selectContainer viewSetting hide" data-settingname="imagetype">
+                    <select is="emby-select" label="${LabelImageType}" class="selectImageType">
+                        <option value="">${Primary}</option>
+                        <option value="banner">${Banner}</option>
+                        <option value="disc">${Disc}</option>
+                        <option value="thumb">${Thumb}</option>
+                    </select>
+                </div>
+
+                <div class="checkboxContainer viewSetting hide" data-settingname="showtitle">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" id="chkShowTitle" />
+                        <span>${ShowTitle}</span>
+                    </label>
+                </div>
+
+                <div class="checkboxContainer viewSetting hide" data-settingname="showyear">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" id="chkShowYear" />
+                        <span>${ShowYear}</span>
+                    </label>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

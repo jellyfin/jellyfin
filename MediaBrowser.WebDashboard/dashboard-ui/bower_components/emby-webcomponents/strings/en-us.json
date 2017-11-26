@@ -617,5 +617,8 @@
   "LabelAudio": "Audio:",
   "LabelVideo": "Video:",
   "LabelSubtitles": "Subtitles:",
-  "Off": "Off"
+  "Off": "Off",
+  "ShowTitle": "Show title",
+  "ShowYear": "Show year",
+  "HeaderPosterOptions": "Poster Options"
 }
