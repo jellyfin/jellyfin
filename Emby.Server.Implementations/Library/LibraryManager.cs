@@ -443,7 +443,7 @@ namespace Emby.Server.Implementations.Library
             BaseItem removed;
             _libraryItemsCache.TryRemove(item.Id, out removed);
 
-            ReportItemRemoved(item);
+            ReportItemRemoved(item, parent);
         }
 
         private IEnumerable<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
@@ -1804,7 +1804,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task.</returns>
         public void CreateItem(BaseItem item, CancellationToken cancellationToken)
         {
-            CreateItems(new[] { item }, cancellationToken);
+            CreateItems(new[] { item }, item.GetParent(), cancellationToken);
         }
 
         /// <summary>
@@ -1813,7 +1813,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="items">The items.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public void CreateItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken)
+        public void CreateItems(IEnumerable<BaseItem> items, BaseItem parent, CancellationToken cancellationToken)
         {
             var list = items.ToList();
 
@@ -1830,7 +1830,11 @@ namespace Emby.Server.Implementations.Library
                 {
                     try
                     {
-                        ItemAdded(this, new ItemChangeEventArgs { Item = item });
+                        ItemAdded(this, new ItemChangeEventArgs
+                        {
+                            Item = item,
+                            Parent = parent ?? item.GetParent()
+                        });
                     }
                     catch (Exception ex)
                     {
@@ -1878,6 +1882,7 @@ namespace Emby.Server.Implementations.Library
                     ItemUpdated(this, new ItemChangeEventArgs
                     {
                         Item = item,
+                        Parent = item.GetParent(),
                         UpdateReason = updateReason
                     });
                 }
@@ -1892,13 +1897,17 @@ namespace Emby.Server.Implementations.Library
         /// Reports the item removed.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void ReportItemRemoved(BaseItem item)
+        public void ReportItemRemoved(BaseItem item, BaseItem parent)
         {
             if (ItemRemoved != null)
             {
                 try
                 {
-                    ItemRemoved(this, new ItemChangeEventArgs { Item = item });
+                    ItemRemoved(this, new ItemChangeEventArgs
+                    {
+                        Item = item,
+                        Parent = parent
+                    });
                 }
                 catch (Exception ex)
                 {

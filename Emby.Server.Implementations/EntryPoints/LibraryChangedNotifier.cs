@@ -260,7 +260,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
                 }
 
-                var parent = e.Item.GetParent() as Folder;
+                var parent = e.Parent as Folder;
                 if (parent != null)
                 {
                     _foldersRemovedFrom.Add(parent);
@@ -363,9 +363,15 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="foldersRemovedFrom">The folders removed from.</param>
         /// <param name="userId">The user id.</param>
         /// <returns>LibraryUpdateInfo.</returns>
-        private LibraryUpdateInfo GetLibraryUpdateInfo(IEnumerable<BaseItem> itemsAdded, IEnumerable<BaseItem> itemsUpdated, IEnumerable<BaseItem> itemsRemoved, IEnumerable<Folder> foldersAddedTo, IEnumerable<Folder> foldersRemovedFrom, Guid userId)
+        private LibraryUpdateInfo GetLibraryUpdateInfo(List<BaseItem> itemsAdded, List<BaseItem> itemsUpdated, List<BaseItem> itemsRemoved, List<Folder> foldersAddedTo, List<Folder> foldersRemovedFrom, Guid userId)
         {
             var user = _userManager.GetUserById(userId);
+
+            var newAndRemoved = new List<BaseItem>();
+            newAndRemoved.AddRange(foldersAddedTo);
+            newAndRemoved.AddRange(foldersRemovedFrom);
+
+            var allUserRootChildren = _libraryManager.GetUserRootFolder().GetChildren(user, true).OfType<Folder>().ToList();
 
             return new LibraryUpdateInfo
             {
@@ -377,7 +383,9 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 FoldersAddedTo = foldersAddedTo.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N")).Distinct().ToArray(),
 
-                FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N")).Distinct().ToArray()
+                FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N")).Distinct().ToArray(),
+
+                CollectionFolders = GetTopParentIds(newAndRemoved, user, allUserRootChildren).ToArray()
             };
         }
 
@@ -394,6 +402,28 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 
             return item.SourceType == SourceType.Library;
+        }
+
+        private IEnumerable<string> GetTopParentIds(List<BaseItem> items, User user, List<Folder> allUserRootChildren)
+        {
+            var list = new List<string>();
+
+            foreach (var item in items)
+            {
+                // If the physical root changed, return the user root
+                if (item is AggregateFolder)
+                {
+                    continue;
+                }
+
+                var collectionFolders = _libraryManager.GetCollectionFolders(item, allUserRootChildren);
+                foreach (var folder in allUserRootChildren)
+                {
+                    list.Add(folder.Id.ToString("N"));
+                }
+            }
+
+            return list.Distinct(StringComparer.Ordinal);
         }
 
         /// <summary>
