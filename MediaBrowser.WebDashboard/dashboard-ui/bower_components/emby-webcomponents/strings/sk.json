@@ -1,4 +1,5 @@
 {
+    "ShowTitle": "Show title",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -587,7 +588,7 @@
     "ValueSeconds": "{0} sek\u00fand",
     "HeaderAudioSettings": "Nastavenia zvuku",
     "LabelAudioLanguagePreference": "Uprednost\u0148ovan\u00fd jazyk zvuku:",
-    "LabelPlayDefaultAudioTrack": "Play default audio track regardless of language",
+    "LabelPlayDefaultAudioTrack": "Prehra\u0165 predvolen\u00fa zvukov\u00fa stopu bez oh\u013eadu na jazyk",
     "HeaderVideoQuality": "Kvalita videa",
     "CinemaModeConfigurationHelp": "Cinema mode brings the theater experience straight to your living room with the ability to play trailers and custom intros before the main feature.",
     "EnableNextVideoInfoOverlay": "Enable next video info during playback",
@@ -603,7 +604,7 @@
     "HeaderLatestMedia": "Najnov\u0161ie m\u00e9di\u00e1",
     "HeaderRestartingEmbyServer": "Emby Server sa re\u0161tartuje",
     "RestartPleaseWaitMessage": "Po\u010dkajte pros\u00edm k\u00fdm sa Emby Server vypne a znova na\u0161tartuje. M\u00f4\u017ee to trva\u0165 min\u00fatu alebo dve.",
-    "PlayNext": "Play next",
+    "PlayNext": "Prehra\u0165 \u010fal\u0161ie",
     "AllowSeasonalThemes": "Allow automatic seasonal themes",
     "AllowSeasonalThemesHelp": "If enabled, seasonal themes will occasionally override your theme setting.",
     "AutoBasedOnLanguageSetting": "Auto (based on language setting)",
@@ -617,5 +618,6 @@
     "LabelAudio": "Audio:",
     "LabelVideo": "Video:",
     "LabelSubtitles": "Titulky:",
-    "Off": "Off"
+    "Off": "Off",
+    "ShowTitles": "Show titles"
 }

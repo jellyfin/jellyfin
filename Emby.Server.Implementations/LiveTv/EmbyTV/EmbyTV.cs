@@ -1512,6 +1512,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
+            DeleteFileIfEmpty(recordPath);
+
             TriggerRefresh(recordPath);
             _libraryMonitor.ReportFileSystemChangeComplete(recordPath, false);
 
@@ -1539,6 +1541,23 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             else
             {
                 _timerProvider.Delete(timer);
+            }
+        }
+
+        private void DeleteFileIfEmpty(string path)
+        {
+            var file = _fileSystem.GetFileInfo(path);
+
+            if (file.Exists && file.Length == 0)
+            {
+                try
+                {
+                    _fileSystem.DeleteFile(path);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error deleting 0-byte failed recording file {0}", ex, path);
+                }
             }
         }
 

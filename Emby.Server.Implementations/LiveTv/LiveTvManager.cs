@@ -1421,7 +1421,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                     if (newPrograms.Count > 0)
                     {
-                        _libraryManager.CreateItems(newPrograms, cancellationToken);
+                        _libraryManager.CreateItems(newPrograms, null, cancellationToken);
                     }
 
                     // TODO: Do this in bulk

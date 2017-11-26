@@ -473,6 +473,11 @@ namespace Emby.Server.Implementations.IO
 
         public void SetHidden(string path, bool isHidden)
         {
+            if (_environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
+            {
+                return;
+            }
+
             if (_sharpCifsFileSystem.IsEnabledForPath(path))
             {
                 _sharpCifsFileSystem.SetHidden(path, isHidden);
@@ -498,6 +503,11 @@ namespace Emby.Server.Implementations.IO
 
         public void SetReadOnly(string path, bool isReadOnly)
         {
+            if (_environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
+            {
+                return;
+            }
+
             if (_sharpCifsFileSystem.IsEnabledForPath(path))
             {
                 _sharpCifsFileSystem.SetReadOnly(path, isReadOnly);
@@ -523,6 +533,11 @@ namespace Emby.Server.Implementations.IO
 
         public void SetAttributes(string path, bool isHidden, bool isReadOnly)
         {
+            if (_environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
+            {
+                return;
+            }
+
             if (_sharpCifsFileSystem.IsEnabledForPath(path))
             {
                 _sharpCifsFileSystem.SetAttributes(path, isHidden, isReadOnly);
