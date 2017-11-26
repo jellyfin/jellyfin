@@ -13,6 +13,8 @@ namespace MediaBrowser.Controller.Library
         /// <value>The item.</value>
         public BaseItem Item { get; set; }
 
+        public BaseItem Parent { get; set; }
+
         /// <summary>
         /// Gets or sets the item.
         /// </summary>
