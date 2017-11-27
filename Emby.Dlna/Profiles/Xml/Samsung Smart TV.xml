@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Samsung Smart TV</Name>
   <Identification>
     <ModelUrl>samsung.com</ModelUrl>
@@ -14,7 +14,7 @@
   <ModelNumber>Emby</ModelNumber>
   <ModelUrl>http://emby.media/</ModelUrl>
   <EnableAlbumArtInDidl>true</EnableAlbumArtInDidl>
-  <EnableSingleAlbumArtLimit>false</EnableSingleAlbumArtLimit>
+  <EnableSingleAlbumArtLimit>true</EnableSingleAlbumArtLimit>
   <EnableSingleSubtitleLimit>false</EnableSingleSubtitleLimit>
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
   <AlbumArtPn>JPEG_SM</AlbumArtPn>
@@ -51,7 +51,7 @@
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" minSegments="0" segmentLength="0" breakOnNonKeyFrames="false" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" minSegments="0" segmentLength="0" breakOnNonKeyFrames="false" />
+    <TranscodingProfile container="ts,mpegts" type="Video" videoCodec="h264" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" minSegments="0" segmentLength="0" breakOnNonKeyFrames="false" />
     <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" minSegments="0" segmentLength="0" breakOnNonKeyFrames="false" />
   </TranscodingProfiles>
   <ContainerProfiles>
@@ -100,7 +100,7 @@
       </Conditions>
       <ApplyConditions />
     </CodecProfile>
-    <CodecProfile type="VideoAudio" codec="ac3,wmav2,dca,aac,mp3,dts">
+    <CodecProfile type="VideoAudio" codec="wmav2,dca,aac,mp3,dts">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="true" />
       </Conditions>

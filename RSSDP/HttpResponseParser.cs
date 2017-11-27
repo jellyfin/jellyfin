@@ -75,7 +75,7 @@ namespace Rssdp.Infrastructure
 			if (message == null) throw new ArgumentNullException("message");
 
 			var parts = data.Split(' ');
-			if (parts.Length < 3) throw new ArgumentException("data status line is invalid. Insufficient status parts.", "data");
+			if (parts.Length < 2) throw new ArgumentException("data status line is invalid. Insufficient status parts.", "data");
 
 			message.Version = ParseHttpVersion(parts[0].Trim());
 
@@ -84,8 +84,12 @@ namespace Rssdp.Infrastructure
 				throw new ArgumentException("data status line is invalid. Status code is not a valid integer.", "data");
 
 			message.StatusCode = (HttpStatusCode)statusCode;
-			message.ReasonPhrase = parts[2].Trim();
-		}
+
+            if (parts.Length >= 3)
+            {
+                message.ReasonPhrase = parts[2].Trim();
+            }
+        }
 
 		#endregion
 

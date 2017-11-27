@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Sony Bravia (2012)</Name>
   <Identification>
     <FriendlyName>KDL-\d{2}[A-Z]X\d5(\d|G).*</FriendlyName>
@@ -39,8 +39,8 @@
     <XmlAttribute name="xmlns:av" value="urn:schemas-sony-com:av" />
   </XmlRootAttributes>
   <DirectPlayProfiles>
-    <DirectPlayProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" />
-    <DirectPlayProfile container="ts" audioCodec="mp3,mp2" videoCodec="mpeg2video" type="Video" />
+    <DirectPlayProfile container="ts,mpegts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="ts,mpegts" audioCodec="mp3,mp2" videoCodec="mpeg2video" type="Video" />
     <DirectPlayProfile container="mp4,m4v" audioCodec="ac3,aac,mp3,mp2" videoCodec="h264,mpeg4" type="Video" />
     <DirectPlayProfile container="avi" audioCodec="ac3,mp3" videoCodec="mpeg4" type="Video" />
     <DirectPlayProfile container="mpeg" audioCodec="mp3,mp2" videoCodec="mpeg2video,mpeg1video" type="Video" />
@@ -85,21 +85,21 @@
     </CodecProfile>
   </CodecProfiles>
   <ResponseProfiles>
-    <ResponseProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" orgPn="AVC_TS_HD_24_AC3_T,AVC_TS_HD_50_AC3_T,AVC_TS_HD_60_AC3_T,AVC_TS_HD_EU_T" mimeType="video/vnd.dlna.mpeg-tts">
+    <ResponseProfile container="ts,mpegts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" orgPn="AVC_TS_HD_24_AC3_T,AVC_TS_HD_50_AC3_T,AVC_TS_HD_60_AC3_T,AVC_TS_HD_EU_T" mimeType="video/vnd.dlna.mpeg-tts">
       <Conditions>
         <ProfileCondition condition="Equals" property="PacketLength" value="192" isRequired="true" />
         <ProfileCondition condition="Equals" property="VideoTimestamp" value="Valid" isRequired="true" />
       </Conditions>
     </ResponseProfile>
-    <ResponseProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" orgPn="AVC_TS_HD_24_AC3_ISO,AVC_TS_HD_50_AC3_ISO,AVC_TS_HD_60_AC3_ISO,AVC_TS_HD_EU_ISO" mimeType="video/mpeg">
+    <ResponseProfile container="ts,mpegts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" orgPn="AVC_TS_HD_24_AC3_ISO,AVC_TS_HD_50_AC3_ISO,AVC_TS_HD_60_AC3_ISO,AVC_TS_HD_EU_ISO" mimeType="video/mpeg">
       <Conditions>
         <ProfileCondition condition="Equals" property="PacketLength" value="188" isRequired="true" />
       </Conditions>
     </ResponseProfile>
-    <ResponseProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" orgPn="AVC_TS_HD_24_AC3,AVC_TS_HD_50_AC3,AVC_TS_HD_60_AC3,AVC_TS_HD_EU" mimeType="video/vnd.dlna.mpeg-tts">
+    <ResponseProfile container="ts,mpegts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" orgPn="AVC_TS_HD_24_AC3,AVC_TS_HD_50_AC3,AVC_TS_HD_60_AC3,AVC_TS_HD_EU" mimeType="video/vnd.dlna.mpeg-tts">
       <Conditions />
     </ResponseProfile>
-    <ResponseProfile container="ts" videoCodec="mpeg2video" type="Video" orgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO" mimeType="video/vnd.dlna.mpeg-tts">
+    <ResponseProfile container="ts,mpegts" videoCodec="mpeg2video" type="Video" orgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO" mimeType="video/vnd.dlna.mpeg-tts">
       <Conditions />
     </ResponseProfile>
     <ResponseProfile container="mpeg" videoCodec="mpeg1video,mpeg2video" type="Video" orgPn="MPEG_PS_NTSC,MPEG_PS_PAL" mimeType="video/mpeg">

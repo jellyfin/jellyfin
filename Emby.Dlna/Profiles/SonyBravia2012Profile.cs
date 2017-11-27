@@ -66,14 +66,14 @@ namespace Emby.Dlna.Profiles
             {
                 new DirectPlayProfile
                 {
-                    Container = "ts",
+                    Container = "ts,mpegts",
                     VideoCodec = "h264",
                     AudioCodec = "ac3,aac,mp3",
                     Type = DlnaProfileType.Video
                 },
                 new DirectPlayProfile
                 {
-                    Container = "ts",
+                    Container = "ts,mpegts",
                     VideoCodec = "mpeg2video",
                     AudioCodec = "mp3,mp2",
                     Type = DlnaProfileType.Video
@@ -129,7 +129,7 @@ namespace Emby.Dlna.Profiles
             {
                 new ResponseProfile
                 {
-                    Container = "ts",
+                    Container = "ts,mpegts",
                     VideoCodec="h264",
                     AudioCodec="ac3,aac,mp3",
                     MimeType = "video/vnd.dlna.mpeg-tts",
@@ -155,7 +155,7 @@ namespace Emby.Dlna.Profiles
 
                 new ResponseProfile
                 {
-                    Container = "ts",
+                    Container = "ts,mpegts",
                     VideoCodec="h264",
                     AudioCodec="ac3,aac,mp3",
                     MimeType = "video/mpeg",
@@ -175,7 +175,7 @@ namespace Emby.Dlna.Profiles
 
                 new ResponseProfile
                 {
-                    Container = "ts",
+                    Container = "ts,mpegts",
                     VideoCodec="h264",
                     AudioCodec="ac3,aac,mp3",
                     MimeType = "video/vnd.dlna.mpeg-tts",
@@ -185,7 +185,7 @@ namespace Emby.Dlna.Profiles
 
                 new ResponseProfile
                 {
-                    Container = "ts",
+                    Container = "ts,mpegts",
                     VideoCodec="mpeg2video",
                     MimeType = "video/vnd.dlna.mpeg-tts",
                     OrgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO",

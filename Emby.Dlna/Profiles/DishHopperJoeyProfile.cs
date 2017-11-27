@@ -208,7 +208,7 @@ namespace Emby.Dlna.Profiles
             {
                 new ResponseProfile
                 {
-                    Container = "mkv,ts",
+                    Container = "mkv,ts,mpegts",
                     Type = DlnaProfileType.Video,
                     MimeType = "video/mp4"
                 }

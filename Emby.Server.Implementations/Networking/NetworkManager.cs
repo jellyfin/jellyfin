@@ -19,10 +19,43 @@ namespace Emby.Server.Implementations.Networking
     {
         protected ILogger Logger { get; private set; }
         private DateTime _lastRefresh;
+        private int NetworkCacheMinutes = 360;
 
         public NetworkManager(ILogger logger)
         {
             Logger = logger;
+
+            try
+            {
+                NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
+            }
+            catch (Exception ex)
+            {
+                NetworkCacheMinutes = 15;
+                Logger.ErrorException("Error binding to NetworkAddressChanged event", ex);
+            }
+
+            try
+            {
+                NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAvailabilityChanged;
+            }
+            catch (Exception ex)
+            {
+                NetworkCacheMinutes = 15;
+                Logger.ErrorException("Error binding to NetworkChange_NetworkAvailabilityChanged event", ex);
+            }
+        }
+
+        private void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        {
+            Logger.Debug("NetworkAvailabilityChanged");
+            _lastRefresh = DateTime.MinValue;
+        }
+
+        private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
+        {
+            Logger.Debug("NetworkAddressChanged");
+            _lastRefresh = DateTime.MinValue;
         }
 
         private List<IpAddressInfo> _localIpAddresses;
@@ -30,11 +63,9 @@ namespace Emby.Server.Implementations.Networking
 
         public List<IpAddressInfo> GetLocalIpAddresses()
         {
-            const int cacheMinutes = 10;
-
             lock (_localIpAddressSyncLock)
             {
-                var forceRefresh = (DateTime.UtcNow - _lastRefresh).TotalMinutes >= cacheMinutes;
+                var forceRefresh = (DateTime.UtcNow - _lastRefresh).TotalMinutes >= NetworkCacheMinutes;
 
                 if (_localIpAddresses == null || forceRefresh)
                 {
