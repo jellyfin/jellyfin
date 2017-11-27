@@ -64,7 +64,7 @@ namespace Rssdp.Infrastructure
 			if (message == null) throw new ArgumentNullException("message");
 
 			var parts = data.Split(' ');
-			if (parts.Length < 3) throw new ArgumentException("Status line is invalid. Insufficient status parts.", "data");
+			if (parts.Length < 2) throw new ArgumentException("Status line is invalid. Insufficient status parts.", "data");
 
 			message.Method = new HttpMethod(parts[0].Trim());
 			Uri requestUri;
@@ -73,8 +73,11 @@ namespace Rssdp.Infrastructure
 			else
 				System.Diagnostics.Debug.WriteLine(parts[1]);
 
-			message.Version = ParseHttpVersion(parts[2].Trim());
-		}
+            if (parts.Length >= 3)
+            {
+                message.Version = ParseHttpVersion(parts[2].Trim());
+            }
+        }
 
 		/// <summary>
 		/// Returns a boolean indicating whether the specified HTTP header name represents a content header (true), or a message header (false).
