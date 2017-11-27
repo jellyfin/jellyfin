@@ -184,20 +184,9 @@ namespace MediaBrowser.Common.Updates
 
         private bool IsAsset(Asset asset, string assetFilename, string version)
         {
-            var downloadFilename = Path.GetFileNameWithoutExtension(asset.browser_download_url) ?? string.Empty;
-            var assetExtension = Path.GetExtension(assetFilename);
+            var downloadFilename = Path.GetFileName(asset.browser_download_url) ?? string.Empty;
 
             assetFilename = assetFilename.Replace("{version}", version);
-            assetFilename = Path.GetFileNameWithoutExtension(assetFilename);
-
-            var zipExtensions = new[] { ".zip", ".7z" };
-            var extensionMatch = zipExtensions.Contains(Path.GetExtension(asset.browser_download_url) ?? string.Empty, StringComparer.OrdinalIgnoreCase) &&
-                                 zipExtensions.Contains(assetExtension ?? string.Empty, StringComparer.OrdinalIgnoreCase);
-
-            if (!extensionMatch)
-            {
-                return false;
-            }
 
             if (downloadFilename.IndexOf(assetFilename, StringComparison.OrdinalIgnoreCase) != -1)
             {

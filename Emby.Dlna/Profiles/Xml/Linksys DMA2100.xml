@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Linksys DMA2100</Name>
   <Identification>
     <ModelName>DMA2100us</ModelName>
@@ -34,7 +34,7 @@
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="mp3,flac,m4a,wma" type="Audio" />
-    <DirectPlayProfile container="avi,mp4,mkv,ts,m4v" type="Video" />
+    <DirectPlayProfile container="avi,mp4,mkv,ts,mpegts,m4v" type="Video" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" minSegments="0" segmentLength="0" breakOnNonKeyFrames="false" />
