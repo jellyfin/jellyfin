@@ -393,6 +393,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return "wmav2";
             }
+            if (string.Equals(codec, "opus", StringComparison.OrdinalIgnoreCase))
+            {
+                return "libopus";
+            }
 
             return codec.ToLower();
         }

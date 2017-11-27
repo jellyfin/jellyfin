@@ -93,6 +93,7 @@ namespace Emby.Dlna.PlayTo
             if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
                      nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
             {
+                //_logger.Debug("Upnp device {0} does not contain a MediaRenderer device (0).", location);
                 return;
             }
 
@@ -149,6 +150,7 @@ namespace Emby.Dlna.PlayTo
 
             if (device.RendererCommands == null)
             {
+                //_logger.Debug("Upnp device {0} does not contain a MediaRenderer device (1).", location);
                 _nonRendererUrls.Add(location);
                 return;
             }

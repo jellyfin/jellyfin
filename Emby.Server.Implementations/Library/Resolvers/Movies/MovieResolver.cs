@@ -126,10 +126,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 {
                     leftOver.Add(child);
                 }
-                else if (IsIgnored(child.Name))
-                {
-
-                }
                 else
                 {
                     files.Add(child);
@@ -296,22 +292,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             }
 
             return item;
-        }
-
-        private bool IsIgnored(string filename)
-        {
-            // Ignore samples
-            var sampleFilename = " " + filename.Replace(".", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("-", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("_", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("!", " ", StringComparison.OrdinalIgnoreCase);
-
-            if (sampleFilename.IndexOf(" sample ", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>

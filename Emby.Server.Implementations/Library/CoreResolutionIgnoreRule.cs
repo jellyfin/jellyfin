@@ -141,17 +141,6 @@ namespace Emby.Server.Implementations.Library
                         return true;
                     }
                 }
-                
-                // Ignore samples
-                var sampleFilename = " " + filename.Replace(".", " ", StringComparison.OrdinalIgnoreCase)
-                    .Replace("-", " ", StringComparison.OrdinalIgnoreCase)
-                    .Replace("_", " ", StringComparison.OrdinalIgnoreCase)
-                    .Replace("!", " ", StringComparison.OrdinalIgnoreCase);
-
-                if (sampleFilename.IndexOf(" sample ", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    return true;
-                }
             }
 
             return false;

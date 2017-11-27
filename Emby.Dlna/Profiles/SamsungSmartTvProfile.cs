@@ -12,6 +12,9 @@ namespace Emby.Dlna.Profiles
 
             EnableAlbumArtInDidl = true;
 
+            // Without this, older samsungs fail to browse
+            EnableSingleAlbumArtLimit = true;
+
             Identification = new DeviceIdentification
             {
                 ModelUrl = "samsung.com",
@@ -39,7 +42,7 @@ namespace Emby.Dlna.Profiles
                },
                new TranscodingProfile
                {
-                   Container = "ts",
+                   Container = "ts,mpegts",
                    AudioCodec = "ac3",
                    VideoCodec = "h264",
                    Type = DlnaProfileType.Video,
@@ -300,7 +303,7 @@ namespace Emby.Dlna.Profiles
                new CodecProfile
                {
                    Type = CodecType.VideoAudio,
-                   Codec = "ac3,wmav2,dca,aac,mp3,dts",
+                   Codec = "wmav2,dca,aac,mp3,dts",
 
                    Conditions = new[]
                    {
