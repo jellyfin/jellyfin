@@ -1,5 +1,9 @@
 {
     "ShowTitle": "Show title",
+    "ShowYear": "Show year",
+    "HeaderPosterOptions": "Poster Options",
+    "Filters": "Filters",
+    "Unplayed": "Unplayed",
     "MessageUnlockAppWithPurchaseOrSupporter": "Desbloquea esta caracter\u00edstica con una peque\u00f1a compra una vez o con una suscripci\u00f3n a Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Desbloquea esta caracter\u00edstica con una suscripci\u00f3n a Emby Premiere.",
     "MessageToValidateSupporter": "Si tienes una suscripci\u00f3n a Emby Premiere aseg\u00farate de que la has configurado en el Panel de Control de tu servidor Emby en Ayuda -> Emby Premiere.",

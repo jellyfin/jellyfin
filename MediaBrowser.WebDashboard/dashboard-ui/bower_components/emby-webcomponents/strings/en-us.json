@@ -620,5 +620,7 @@
   "Off": "Off",
   "ShowTitle": "Show title",
   "ShowYear": "Show year",
-  "HeaderPosterOptions": "Poster Options"
+  "HeaderPosterOptions": "Poster Options",
+  "Filters": "Filters",
+  "Unplayed": "Unplayed"
 }
