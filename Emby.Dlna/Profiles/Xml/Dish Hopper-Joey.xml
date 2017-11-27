@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Dish Hopper-Joey</Name>
   <Identification>
     <Manufacturer>Echostar Technologies LLC</Manufacturer>
@@ -86,7 +86,7 @@
     </CodecProfile>
   </CodecProfiles>
   <ResponseProfiles>
-    <ResponseProfile container="mkv,ts" type="Video" mimeType="video/mp4">
+    <ResponseProfile container="mkv,ts,mpegts" type="Video" mimeType="video/mp4">
       <Conditions />
     </ResponseProfile>
   </ResponseProfiles>

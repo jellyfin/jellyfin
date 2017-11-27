@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Popcorn Hour</Name>
   <Manufacturer>Emby</Manufacturer>
   <ManufacturerUrl>http://emby.media/</ManufacturerUrl>
@@ -30,7 +30,7 @@
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="mp4,mov,m4v" audioCodec="aac" videoCodec="h264,mpeg4" type="Video" />
-    <DirectPlayProfile container="ts" audioCodec="aac,ac3,eac3,mp3,mp2,pcm" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="ts,mpegts" audioCodec="aac,ac3,eac3,mp3,mp2,pcm" videoCodec="h264" type="Video" />
     <DirectPlayProfile container="asf,wmv" audioCodec="wmav2,wmapro" videoCodec="wmv3,vc1" type="Video" />
     <DirectPlayProfile container="avi" audioCodec="mp3,ac3,eac3,mp2,pcm" videoCodec="mpeg4,msmpeg4" type="Video" />
     <DirectPlayProfile container="mkv" audioCodec="aac,mp3,ac3,eac3,mp2,pcm" videoCodec="h264" type="Video" />
