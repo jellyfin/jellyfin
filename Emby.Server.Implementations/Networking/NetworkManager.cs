@@ -19,7 +19,9 @@ namespace Emby.Server.Implementations.Networking
     {
         protected ILogger Logger { get; private set; }
         private DateTime _lastRefresh;
-        private int NetworkCacheMinutes = 360;
+        private int NetworkCacheMinutes = 720;
+
+        public event EventHandler NetworkChanged;
 
         public NetworkManager(ILogger logger)
         {
@@ -50,12 +52,22 @@ namespace Emby.Server.Implementations.Networking
         {
             Logger.Debug("NetworkAvailabilityChanged");
             _lastRefresh = DateTime.MinValue;
+            OnNetworkChanged();
         }
 
         private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
         {
             Logger.Debug("NetworkAddressChanged");
             _lastRefresh = DateTime.MinValue;
+            OnNetworkChanged();
+        }
+
+        private void OnNetworkChanged()
+        {
+            if (NetworkChanged != null)
+            {
+                NetworkChanged(this, EventArgs.Empty);
+            }
         }
 
         private List<IpAddressInfo> _localIpAddresses;

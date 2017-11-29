@@ -4286,7 +4286,7 @@ namespace Emby.Server.Implementations.Data
 
             if (query.MinParentalRating.HasValue)
             {
-                whereClauses.Add("InheritedParentalRatingValue<=@MinParentalRating");
+                whereClauses.Add("InheritedParentalRatingValue>=@MinParentalRating");
                 if (statement != null)
                 {
                     statement.TryBind("@MinParentalRating", query.MinParentalRating.Value);

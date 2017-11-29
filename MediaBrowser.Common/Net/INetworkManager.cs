@@ -1,13 +1,15 @@
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using System.Collections.Generic;
-using System.Net;
+using System;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Net
 {
     public interface INetworkManager
     {
+        event EventHandler NetworkChanged;
+
         /// <summary>
         /// Gets a random port number that is currently available
         /// </summary>
