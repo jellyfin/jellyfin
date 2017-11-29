@@ -1,9 +1,4 @@
 {
-    "ShowTitle": "Show title",
-    "ShowYear": "Show year",
-    "HeaderPosterOptions": "Poster Options",
-    "Filters": "Filters",
-    "Unplayed": "Unplayed",
     "MessageUnlockAppWithPurchaseOrSupporter": "Otklju\u010daj ovu mogu\u0107nost s malom jednokratnom kupnjom ili s aktivnom pretplatom Emby Premijere.",
     "MessageUnlockAppWithSupporter": "Otklju\u010daj ovu mogu\u0107nost sa pretplatom Emby Premijere.",
     "MessageToValidateSupporter": "Ako imate aktivnu pretplatu Emby Premijere provjerite dali ste postavili Emby Premijeru u svojoj nadzornoj plo\u010di Emby Server-a kojoj mo\u017eete pristupiti klikom Emby Premijera u glavnom izborniku.",
@@ -623,5 +618,13 @@
     "LabelVideo": "Video:",
     "LabelSubtitles": "Subtitles:",
     "Off": "Off",
-    "ShowTitles": "Show titles"
+    "ShowTitle": "Show title",
+    "ShowYear": "Show year",
+    "HeaderPosterOptions": "Poster Options",
+    "Filters": "Filters",
+    "Unplayed": "Unplayed",
+    "LabelTVHomeScreen": "TV mode home screen:",
+    "Horizontal": "Horizontal",
+    "Vertical": "Vertical",
+    "GroupBySeries": "Group by series"
 }
