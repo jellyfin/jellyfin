@@ -1,33 +1,36 @@
-<div class="formDialogContent smoothScrollY">
+<div class="formDialogContent smoothScrollY" style="padding-top:2em;">
     <div class="dialogContentInner dialog-content-centered">
         <form style="margin:auto;">
 
             <div class="verticalSection">
 
-                <h2 class="sectionTitle">
-                    ${HeaderPosterOptions}
-                </h2>
-
-                <div class="selectContainer viewSetting hide" data-settingname="imagetype">
+                <div class="selectContainer viewSetting hide" data-settingname="imageType">
                     <select is="emby-select" label="${LabelImageType}" class="selectImageType">
-                        <option value="">${Primary}</option>
+                        <option value="primary">${Primary}</option>
                         <option value="banner">${Banner}</option>
                         <option value="disc">${Disc}</option>
                         <option value="thumb">${Thumb}</option>
                     </select>
                 </div>
 
-                <div class="checkboxContainer viewSetting hide" data-settingname="showtitle">
+                <div class="checkboxContainer viewSetting viewSetting-checkboxContainer hide" data-settingname="showTitle">
                     <label>
-                        <input is="emby-checkbox" type="checkbox" id="chkShowTitle" />
+                        <input is="emby-checkbox" type="checkbox" />
                         <span>${ShowTitle}</span>
                     </label>
                 </div>
 
-                <div class="checkboxContainer viewSetting hide" data-settingname="showyear">
+                <div class="checkboxContainer viewSetting viewSetting-checkboxContainer hide" data-settingname="showYear">
                     <label>
-                        <input is="emby-checkbox" type="checkbox" id="chkShowYear" />
+                        <input is="emby-checkbox" type="checkbox" />
                         <span>${ShowYear}</span>
+                    </label>
+                </div>
+
+                <div class="checkboxContainer viewSetting viewSetting-checkboxContainer hide" data-settingname="groupBySeries">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" />
+                        <span>${GroupBySeries}</span>
                     </label>
                 </div>
             </div>

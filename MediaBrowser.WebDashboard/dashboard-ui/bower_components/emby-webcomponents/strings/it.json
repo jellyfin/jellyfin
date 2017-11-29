@@ -1,9 +1,4 @@
 {
-    "ShowTitle": "Show title",
-    "ShowYear": "Show year",
-    "HeaderPosterOptions": "Poster Options",
-    "Filters": "Filters",
-    "Unplayed": "Unplayed",
     "MessageUnlockAppWithPurchaseOrSupporter": "Sblocca questa funzionalit\u00e0 con un piccolo acquisto singolo, o con un abbonamento Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Sblocca questa funzionalit\u00e0 con un abbonamento Emby Premiere",
     "MessageToValidateSupporter": "Se hai un abbonamento Emby Premiere, assicurati di averlo configurato nel Pannello di Controllo del Server, a cui puoi accedere cliccando su Emby Premiere dal menu principale.",
@@ -623,5 +618,13 @@
     "LabelVideo": "Video:",
     "LabelSubtitles": "Sottotitoli:",
     "Off": "Spento",
-    "ShowTitles": "Show titles"
+    "ShowTitle": "Show title",
+    "ShowYear": "Show year",
+    "HeaderPosterOptions": "Poster Options",
+    "Filters": "Filters",
+    "Unplayed": "Unplayed",
+    "LabelTVHomeScreen": "TV mode home screen:",
+    "Horizontal": "Horizontal",
+    "Vertical": "Vertical",
+    "GroupBySeries": "Group by series"
 }

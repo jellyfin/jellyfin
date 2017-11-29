@@ -1,9 +1,4 @@
 {
-    "ShowTitle": "Pokazuj tytu\u0142",
-    "ShowYear": "Show year",
-    "HeaderPosterOptions": "Poster Options",
-    "Filters": "Filters",
-    "Unplayed": "Unplayed",
     "MessageUnlockAppWithPurchaseOrSupporter": "Odblokuj t\u0119 funkcj\u0119, za niewielk\u0105 jednorazow\u0105 op\u0142at\u0105 lub przy u\u017cyciu aktywnej subskrypcji Emby Premium.",
     "MessageUnlockAppWithSupporter": "Odblokuj t\u0119 funkcj\u0119 przy u\u017cyciu subskrypcji Emby Premium.",
     "MessageToValidateSupporter": "Je\u015bli posiadasz aktywn\u0105 subskrypcj\u0119 Emby Premium, upewnij si\u0119, \u017ce j\u0105 poprawnie skonfigurowa\u0142e\u015b przy pomocy Kokpitu serwera Emby, do kt\u00f3rego mo\u017cesz uzyska\u0107 dost\u0119p, klikaj\u0105c na pozycj\u0119 Premium menu startowego.",
@@ -623,5 +618,13 @@
     "LabelVideo": "Wideo:",
     "LabelSubtitles": "Napisy:",
     "Off": "Wy\u0142\u0105czone",
-    "ShowTitles": "Pokazuj tytu\u0142y"
+    "ShowTitle": "Pokazuj tytu\u0142",
+    "ShowYear": "Pokazuj rok",
+    "HeaderPosterOptions": "Opcje plakatu",
+    "Filters": "Filtry",
+    "Unplayed": "Nieodtwarzane",
+    "LabelTVHomeScreen": "Ekran startowy trybu telewizyjnego:",
+    "Horizontal": "Horyzontalny",
+    "Vertical": "Wertykalny",
+    "GroupBySeries": "Grupuj po serialach"
 }

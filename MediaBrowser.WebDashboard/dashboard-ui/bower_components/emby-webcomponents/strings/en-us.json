@@ -620,7 +620,11 @@
   "Off": "Off",
   "ShowTitle": "Show title",
   "ShowYear": "Show year",
-  "HeaderPosterOptions": "Poster Options",
   "Filters": "Filters",
-  "Unplayed": "Unplayed"
+  "Unplayed": "Unplayed",
+  "LabelTVHomeScreen": "TV mode home screen:",
+  "Horizontal": "Horizontal",
+  "Vertical": "Vertical",
+  "GroupBySeries": "Group by series",
+  "Resumable": "Resumable"
 }

@@ -125,6 +125,14 @@
         <select is="emby-select" class="selectSkin" label="${LabelSkin}"></select>
     </div>
 
+    <div class="selectContainer hide selectTVHomeScreenContainer">
+        <select is="emby-select" class="selectTVHomeScreen" label="${LabelTVHomeScreen}">
+            <option value="">${Horizontal}</option>
+            <option value="vertical">${Vertical}</option>
+        </select>
+        <div class="fieldDescription">Changes take effect after signing out or restarting the app.</div>
+    </div>
+
     <div class="selectContainer">
         <select id="selectTheme" is="emby-select" label="${LabelTheme}"></select>
         <div class="fieldDescription">${FeatureRequiresEmbyPremiere}</div>
