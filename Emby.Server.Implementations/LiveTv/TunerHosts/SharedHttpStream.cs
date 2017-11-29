@@ -71,7 +71,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
             else if (contentType.IndexOf("mp4", StringComparison.OrdinalIgnoreCase) != -1 ||
                contentType.IndexOf("dash", StringComparison.OrdinalIgnoreCase) != -1 ||
-               contentType.IndexOf("mpegURL", StringComparison.OrdinalIgnoreCase) != -1)
+               contentType.IndexOf("mpegURL", StringComparison.OrdinalIgnoreCase) != -1 ||
+               contentType.IndexOf("text/", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 requiresRemux = true;
             }
