@@ -361,7 +361,7 @@ namespace Emby.Server.Implementations
 
         protected IAuthService AuthService { get; private set; }
 
-        protected readonly StartupOptions StartupOptions;
+        public StartupOptions StartupOptions { get; private set; }
         protected readonly string ReleaseAssetFilename;
 
         internal IPowerManagement PowerManagement { get; private set; }
@@ -1947,6 +1947,21 @@ namespace Emby.Server.Implementations
                 SystemArchitecture = EnvironmentInfo.SystemArchitecture,
                 SystemUpdateLevel = SystemUpdateLevel,
                 PackageName = StartupOptions.GetOption("-package")
+            };
+        }
+
+        public async Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken)
+        {
+            var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+
+            return new PublicSystemInfo
+            {
+                Version = ApplicationVersion.ToString(),
+                Id = SystemId,
+                OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
+                WanAddress = ConnectManager.WanApiAddress,
+                ServerName = FriendlyName,
+                LocalAddress = localAddress
             };
         }
 

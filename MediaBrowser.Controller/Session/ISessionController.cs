@@ -55,10 +55,7 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Sends the restart required message.
         /// </summary>
-        /// <param name="info">The information.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SendRestartRequiredNotification(SystemInfo info, CancellationToken cancellationToken);
+        Task SendRestartRequiredNotification(CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the user data change info.
