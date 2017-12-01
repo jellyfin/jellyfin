@@ -11,15 +11,12 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
-using System.Threading;
 
 namespace Emby.Server.Implementations.Networking
 {
     public class NetworkManager : INetworkManager
     {
         protected ILogger Logger { get; private set; }
-        private DateTime _lastRefresh;
-        private int NetworkCacheMinutes = 720;
 
         public event EventHandler NetworkChanged;
 
@@ -33,7 +30,6 @@ namespace Emby.Server.Implementations.Networking
             }
             catch (Exception ex)
             {
-                NetworkCacheMinutes = 15;
                 Logger.ErrorException("Error binding to NetworkAddressChanged event", ex);
             }
 
@@ -43,7 +39,6 @@ namespace Emby.Server.Implementations.Networking
             }
             catch (Exception ex)
             {
-                NetworkCacheMinutes = 15;
                 Logger.ErrorException("Error binding to NetworkChange_NetworkAvailabilityChanged event", ex);
             }
         }
@@ -51,19 +46,21 @@ namespace Emby.Server.Implementations.Networking
         private void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
             Logger.Debug("NetworkAvailabilityChanged");
-            _lastRefresh = DateTime.MinValue;
             OnNetworkChanged();
         }
 
         private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
         {
             Logger.Debug("NetworkAddressChanged");
-            _lastRefresh = DateTime.MinValue;
             OnNetworkChanged();
         }
 
         private void OnNetworkChanged()
         {
+            lock (_localIpAddressSyncLock)
+            {
+                _localIpAddresses = null;
+            }
             if (NetworkChanged != null)
             {
                 NetworkChanged(this, EventArgs.Empty);
@@ -77,20 +74,16 @@ namespace Emby.Server.Implementations.Networking
         {
             lock (_localIpAddressSyncLock)
             {
-                var forceRefresh = (DateTime.UtcNow - _lastRefresh).TotalMinutes >= NetworkCacheMinutes;
-
-                if (_localIpAddresses == null || forceRefresh)
+                if (_localIpAddresses == null)
                 {
                     var addresses = GetLocalIpAddressesInternal().Result.Select(ToIpAddressInfo).ToList();
 
                     _localIpAddresses = addresses;
-                    _lastRefresh = DateTime.UtcNow;
 
                     return addresses;
                 }
+                return _localIpAddresses;
             }
-
-            return _localIpAddresses;
         }
 
         private async Task<List<IPAddress>> GetLocalIpAddressesInternal()

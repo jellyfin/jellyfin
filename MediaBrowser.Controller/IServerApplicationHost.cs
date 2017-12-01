@@ -22,6 +22,8 @@ namespace MediaBrowser.Controller
         /// <returns>SystemInfo.</returns>
         Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken);
 
+        Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken);
+
         /// <summary>
         /// Gets a value indicating whether [supports automatic run at startup].
         /// </summary>
