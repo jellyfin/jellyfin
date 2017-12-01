@@ -173,6 +173,8 @@ namespace Emby.Drawing.ImageMagick
                     originalImage.CurrentImage.CompressionQuality = quality;
                     originalImage.CurrentImage.StripImage();
 
+                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
+
                     originalImage.SaveImage(outputPath);
                 }
             }
