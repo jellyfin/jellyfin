@@ -151,7 +151,7 @@ namespace Emby.Server.Implementations.Session
             return SendMessage("LibraryChanged", info, cancellationToken);
         }
 
-        public Task SendRestartRequiredNotification(SystemInfo info, CancellationToken cancellationToken)
+        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
         {
             return SendMessage("RestartRequired", cancellationToken);
         }

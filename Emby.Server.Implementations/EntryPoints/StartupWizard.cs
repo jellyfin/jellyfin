@@ -41,7 +41,12 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             else if (_config.Configuration.IsStartupWizardCompleted)
             {
-                BrowserLauncher.OpenDashboardPage("index.html", _appHost);
+                var options = ((ApplicationHost)_appHost).StartupOptions;
+
+                if (!options.ContainsOption("-service") && !options.ContainsOption("-nobrowser"))
+                {
+                    BrowserLauncher.OpenDashboardPage("index.html", _appHost);
+                }
             }
         }
 

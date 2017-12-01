@@ -145,12 +145,12 @@ namespace Emby.Server.Implementations.Session
         /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SendRestartRequiredNotification(SystemInfo info, CancellationToken cancellationToken)
+        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
         {
-            return SendMessagesInternal(new WebSocketMessage<SystemInfo>
+            return SendMessagesInternal(new WebSocketMessage<string>
             {
                 MessageType = "RestartRequired",
-                Data = info
+                Data = string.Empty
 
             }, cancellationToken);
         }
