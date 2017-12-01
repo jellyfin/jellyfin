@@ -430,7 +430,7 @@ namespace Emby.Dlna.PlayTo
             return Task.FromResult(true);
         }
 
-        public Task SendRestartRequiredNotification(SystemInfo info, CancellationToken cancellationToken)
+        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
         }

@@ -43,7 +43,7 @@ namespace Emby.Server.Implementations.Social
                 throw new ResourceNotFoundException();
             }
 
-            var externalUrl = (await _appHost.GetSystemInfo(CancellationToken.None).ConfigureAwait(false)).WanAddress;
+            var externalUrl = (await _appHost.GetPublicSystemInfo(CancellationToken.None).ConfigureAwait(false)).WanAddress;
 
             if (string.IsNullOrWhiteSpace(externalUrl))
             {
@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.Social
         {
             var info = _repository.GetShareInfo(id);
 
-            AddShareInfo(info, _appHost.GetSystemInfo(CancellationToken.None).Result.WanAddress);
+            AddShareInfo(info, _appHost.GetPublicSystemInfo(CancellationToken.None).Result.WanAddress);
 
             return info;
         }

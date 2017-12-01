@@ -626,5 +626,7 @@
   "Horizontal": "Horizontal",
   "Vertical": "Vertical",
   "GroupBySeries": "Group by series",
-  "Resumable": "Resumable"
+  "Resumable": "Resumable",
+  "HeaderVideoType": "Video Type",
+  "HeaderSeriesStatus": "Series Status"
 }

@@ -23,6 +23,54 @@
                     </label>
                 </div>
             </div>
+
+            <div class="verticalSection viewSetting" data-settingname="SeriesStatus">
+                <h3 class="checkboxListLabel">${HeaderSeriesStatus}</h3>
+                <div class="checkboxList">
+
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkSeriesStatus" data-filter="Continuing" />
+                        <span>${Continuing}</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkSeriesStatus" data-filter="Ended" />
+                        <span>${Ended}</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="verticalSection viewSetting" data-settingname="VideoType">
+                <h3 class="checkboxListLabel">${HeaderVideoType}</h3>
+                <div class="checkboxList">
+
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="simpleFilter" data-settingname="IsHD" />
+                        <span>HD</span>
+                    </label>
+
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="simpleFilter" data-settingname="IsSD" />
+                        <span>SD</span>
+                    </label>
+
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="simpleFilter" data-settingname="Is3D" />
+                        <span>3D</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter" data-filter="Bluray" />
+                        <span>Blu-ray</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter" data-filter="Dvd" />
+                        <span>DVD</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter" data-filter="Iso" />
+                        <span>ISO</span>
+                    </label>
+                </div>
+            </div>
         </form>
     </div>
 </div>
