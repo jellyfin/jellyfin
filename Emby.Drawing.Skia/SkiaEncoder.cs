@@ -528,6 +528,7 @@ namespace Emby.Drawing.Skia
                     // If all we're doing is resizing then we can stop now
                     if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
                     {
+                        _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
                         using (var outputStream = new SKFileWStream(outputPath))
                         {
                             resizedBitmap.Encode(outputStream, skiaOutputFormat, quality);
@@ -580,6 +581,7 @@ namespace Emby.Drawing.Skia
                                 DrawIndicator(canvas, width, height, options);
                             }
 
+                            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
                             using (var outputStream = new SKFileWStream(outputPath))
                             {
                                 saveBitmap.Encode(outputStream, skiaOutputFormat, quality);
