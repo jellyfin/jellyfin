@@ -5264,7 +5264,13 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 ItemIds = query.ItemIds,
                 TopParentIds = query.TopParentIds,
                 ParentId = query.ParentId,
-                IsPlayed = query.IsPlayed
+                IsPlayed = query.IsPlayed,
+                IsAiring = query.IsAiring,
+                IsMovie = query.IsMovie,
+                IsSports = query.IsSports,
+                IsKids = query.IsKids,
+                IsNews = query.IsNews,
+                IsSeries = query.IsSeries
             };
 
             var innerWhereClauses = GetWhereClauses(innerQuery, null);
