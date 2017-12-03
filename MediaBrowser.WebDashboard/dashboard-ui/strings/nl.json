@@ -1855,5 +1855,7 @@
     "SaveSubtitlesInOriginalMediaFolders": "Sla ondertitels op in media mappen.",
     "SaveSubtitlesInOriginalMediaFoldersHelp": "Ondertitels opslaan in media mappen maakt ze eenvoudiger te vinden en te beheren.",
     "LabelSimultaneousConnectionLimit": "Gelijktijdige streams limiet:",
-    "SimultaneousConnectionLimitHelp": "Het maximum aantal toegestane gelijktijdige streams. Geef 0 in voor geen limiet."
+    "SimultaneousConnectionLimitHelp": "Het maximum aantal toegestane gelijktijdige streams. Geef 0 in voor geen limiet.",
+    "LaunchWebAppOnStartup": "Launch the Emby web app in my web browser when Emby Server starts",
+    "LaunchWebAppOnStartupHelp": "This will open the web app in your default web browser when Emby Server initially starts. This will not occur when using the restart server function."
 }

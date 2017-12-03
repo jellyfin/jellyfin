@@ -1855,5 +1855,7 @@
     "SaveSubtitlesInOriginalMediaFolders": "Salvar subtitulos en las carpetas de medios",
     "SaveSubtitlesInOriginalMediaFoldersHelp": "Salvar los subtitulos en las carpetas de medios los har\u00e1 mas f\u00e1cil de encontrar y administrar.",
     "LabelSimultaneousConnectionLimit": "Limite de transmisiones simultaneas:",
-    "SimultaneousConnectionLimitHelp": "El numero m\u00e1ximo de transmisiones simultaneas permitidas. Ingrese 0 para ilimitados."
+    "SimultaneousConnectionLimitHelp": "El numero m\u00e1ximo de transmisiones simultaneas permitidas. Ingrese 0 para ilimitados.",
+    "LaunchWebAppOnStartup": "Launch the Emby web app in my web browser when Emby Server starts",
+    "LaunchWebAppOnStartupHelp": "This will open the web app in your default web browser when Emby Server initially starts. This will not occur when using the restart server function."
 }

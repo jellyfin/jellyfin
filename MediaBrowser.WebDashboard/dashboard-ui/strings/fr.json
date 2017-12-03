@@ -1855,5 +1855,7 @@
     "SaveSubtitlesInOriginalMediaFolders": "Enregistrer les sous-titres dans les dossiers multim\u00e9dia",
     "SaveSubtitlesInOriginalMediaFoldersHelp": "L'enregistrement des sous-titres dans les dossiers multim\u00e9dia les rendra plus faciles \u00e0 localiser et \u00e0 g\u00e9rer.",
     "LabelSimultaneousConnectionLimit": "Limite de flux simultan\u00e9e:",
-    "SimultaneousConnectionLimitHelp": "Le nombre maximal de flux simultan\u00e9s autoris\u00e9s. Entrez 0 pour aucune limite."
+    "SimultaneousConnectionLimitHelp": "Le nombre maximal de flux simultan\u00e9s autoris\u00e9s. Entrez 0 pour aucune limite.",
+    "LaunchWebAppOnStartup": "Launch the Emby web app in my web browser when Emby Server starts",
+    "LaunchWebAppOnStartupHelp": "This will open the web app in your default web browser when Emby Server initially starts. This will not occur when using the restart server function."
 }

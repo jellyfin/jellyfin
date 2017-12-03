@@ -421,6 +421,7 @@
     "HeaderMyMedia": "Min Media",
     "HeaderMyMediaSmall": "Min Media (liten)",
     "LatestFromLibrary": "Senaste {0}",
+    "ContinueWatching": "Continue watching",
     "HeaderLatestChannelMedia": "Senaste nytt i Kanaler",
     "HeaderContinueWatching": "Forts\u00e4tt kolla p\u00e5",
     "HeaderContinueListening": "Forts\u00e4tt lyssna p\u00e5",
@@ -620,11 +621,17 @@
     "Off": "Off",
     "ShowTitle": "Show title",
     "ShowYear": "Show year",
-    "HeaderPosterOptions": "Poster Options",
     "Filters": "Filters",
     "Unplayed": "Unplayed",
     "LabelTVHomeScreen": "TV mode home screen:",
     "Horizontal": "Horizontal",
     "Vertical": "Vertical",
-    "GroupBySeries": "Group by series"
+    "GroupBySeries": "Group by series",
+    "HeaderVideoType": "Video Type",
+    "HeaderSeriesStatus": "Series Status",
+    "Features": "Features",
+    "Trailers": "Trailers",
+    "Extras": "Extras",
+    "ThemeSongs": "Theme songs",
+    "ThemeVideos": "Theme videos"
 }

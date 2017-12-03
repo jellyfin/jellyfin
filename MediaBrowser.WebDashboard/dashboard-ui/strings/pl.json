@@ -1855,5 +1855,7 @@
     "SaveSubtitlesInOriginalMediaFolders": "Zapisuj napisy w folderach medi\u00f3w",
     "SaveSubtitlesInOriginalMediaFoldersHelp": "Umo\u017cliwia zapisywanie napis\u00f3w w folderach medi\u00f3w, w celu \u0142atwego lokalizowania i zarz\u0105dzania.",
     "LabelSimultaneousConnectionLimit": "Limit jednoczesnych transmisji:",
-    "SimultaneousConnectionLimitHelp": "Okre\u015bla maksymaln\u0105 liczb\u0119 dozwolonych jednoczesnych transmisji. Wprowad\u017a 0 jako brak limitu."
+    "SimultaneousConnectionLimitHelp": "Okre\u015bla maksymaln\u0105 liczb\u0119 dozwolonych jednoczesnych transmisji. Wprowad\u017a 0 jako brak limitu.",
+    "LaunchWebAppOnStartup": "Launch the Emby web app in my web browser when Emby Server starts",
+    "LaunchWebAppOnStartupHelp": "This will open the web app in your default web browser when Emby Server initially starts. This will not occur when using the restart server function."
 }

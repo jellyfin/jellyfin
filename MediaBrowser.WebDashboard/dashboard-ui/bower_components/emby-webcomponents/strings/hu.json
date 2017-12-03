@@ -421,6 +421,7 @@
     "HeaderMyMedia": "M\u00e9diat\u00e1ram",
     "HeaderMyMediaSmall": "M\u00e9diat\u00e1ram (kicsi)",
     "LatestFromLibrary": "Leg\u00fajabb {0}",
+    "ContinueWatching": "Continue watching",
     "HeaderLatestChannelMedia": "Latest Channel Items",
     "HeaderContinueWatching": "Vet\u00edt\u00e9s(ek) folytat\u00e1sa",
     "HeaderContinueListening": "Continue Listening",
@@ -620,11 +621,17 @@
     "Off": "Off",
     "ShowTitle": "Show title",
     "ShowYear": "Show year",
-    "HeaderPosterOptions": "Poster Options",
     "Filters": "Filters",
     "Unplayed": "Unplayed",
     "LabelTVHomeScreen": "TV mode home screen:",
     "Horizontal": "Horizontal",
     "Vertical": "Vertical",
-    "GroupBySeries": "Group by series"
+    "GroupBySeries": "Group by series",
+    "HeaderVideoType": "Video Type",
+    "HeaderSeriesStatus": "Series Status",
+    "Features": "Features",
+    "Trailers": "Trailers",
+    "Extras": "Extras",
+    "ThemeSongs": "Theme songs",
+    "ThemeVideos": "Theme videos"
 }
