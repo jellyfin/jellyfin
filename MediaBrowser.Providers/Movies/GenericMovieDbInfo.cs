@@ -262,7 +262,7 @@ namespace MediaBrowser.Providers.Movies
                 var keepTypes = new[]
                 {
                     PersonType.Director,
-                    PersonType.Writer,
+                    //PersonType.Writer,
                     //PersonType.Producer
                 };
 

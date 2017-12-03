@@ -76,6 +76,21 @@ namespace Emby.Server.Implementations.MediaEncoder
                 return false;
             }
 
+            if (video.VideoType == VideoType.Iso)
+            {
+                return false;
+            }
+
+            if (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd)
+            {
+                return false;
+            }
+
+            if (video.IsShortcut)
+            {
+                return false;
+            }
+
             if (!video.IsCompleteMedia)
             {
                 return false;
@@ -118,16 +133,6 @@ namespace Emby.Server.Implementations.MediaEncoder
                 {
                     if (extractImages)
                     {
-                        if (video.VideoType == VideoType.Iso)
-                        {
-                            continue;
-                        }
-
-                        if (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd)
-                        {
-                            continue;
-                        }
-
                         try
                         {
                             // Add some time for the first chapter to make sure we don't end up with a black image

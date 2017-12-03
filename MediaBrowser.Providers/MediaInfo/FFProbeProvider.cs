@@ -153,7 +153,6 @@ namespace MediaBrowser.Providers.MediaInfo
             if (item.IsShortcut)
             {
                 FetchShortcutInfo(item);
-                return Task.FromResult(ItemUpdateType.MetadataImport);
             }
 
             var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem, _config, _subtitleManager, _chapterManager, _libraryManager);
