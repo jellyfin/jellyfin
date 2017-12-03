@@ -421,6 +421,7 @@
     "HeaderMyMedia": "Mijn Media",
     "HeaderMyMediaSmall": "Mijn Media (klein)",
     "LatestFromLibrary": "Laatste {0}",
+    "ContinueWatching": "Continue watching",
     "HeaderLatestChannelMedia": "Nieuwste Kanaal Items",
     "HeaderContinueWatching": "Kijken hervatten",
     "HeaderContinueListening": "Luisteren hervatten",
@@ -620,11 +621,17 @@
     "Off": "Uit",
     "ShowTitle": "Toon titel",
     "ShowYear": "Toon jaar",
-    "HeaderPosterOptions": "Poster Opties",
     "Filters": "Filters",
     "Unplayed": "Niet afgespeeld",
     "LabelTVHomeScreen": "TV mode begin scherm",
     "Horizontal": "Horizontaal",
     "Vertical": "Verticaal",
-    "GroupBySeries": "Group by series"
+    "GroupBySeries": "Group by series",
+    "HeaderVideoType": "Video Type",
+    "HeaderSeriesStatus": "Series Status",
+    "Features": "Features",
+    "Trailers": "Trailers",
+    "Extras": "Extras",
+    "ThemeSongs": "Theme songs",
+    "ThemeVideos": "Theme videos"
 }

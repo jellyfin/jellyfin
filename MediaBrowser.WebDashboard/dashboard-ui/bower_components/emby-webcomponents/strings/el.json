@@ -421,6 +421,7 @@
     "HeaderMyMedia": "\u03a4\u03b1 \u03a0\u03bf\u03bb\u03c5\u03bc\u03ad\u03c3\u03b1 \u03bc\u03bf\u03c5",
     "HeaderMyMediaSmall": "\u03a4\u03b1 \u03a0\u03bf\u03bb\u03c5\u03bc\u03ad\u03c3\u03b1 \u03bc\u03bf\u03c5 (\u03bc\u03b9\u03ba\u03c1\u03ac)",
     "LatestFromLibrary": "\u03a4\u03b5\u03bb\u03b5\u03c5\u03c4\u03b1\u03af\u03b1 {0}",
+    "ContinueWatching": "Continue watching",
     "HeaderLatestChannelMedia": "\u03a4\u03b5\u03bb\u03b5\u03c5\u03c4\u03b1\u03af\u03b1 \u03c3\u03c4\u03bf\u03b9\u03c7\u03b5\u03af\u03b1 \u03ba\u03b1\u03bd\u03b1\u03bb\u03b9\u03bf\u03cd",
     "HeaderContinueWatching": "\u03a3\u03c5\u03bd\u03b5\u03c7\u03af\u03c3\u03c4\u03b5 \u03c4\u03b7\u03bd \u03c0\u03b1\u03c1\u03b1\u03ba\u03bf\u03bb\u03bf\u03cd\u03b8\u03b7\u03c3\u03b7",
     "HeaderContinueListening": "\u03a3\u03c5\u03bd\u03b5\u03c7\u03af\u03c3\u03c4\u03b5 \u03c4\u03b7\u03bd \u03b1\u03ba\u03c1\u03cc\u03b1\u03c3\u03b7",
@@ -620,11 +621,17 @@
     "Off": "\u039a\u03bb\u03b5\u03b9\u03c3\u03c4\u03cc",
     "ShowTitle": "Show title",
     "ShowYear": "Show year",
-    "HeaderPosterOptions": "Poster Options",
     "Filters": "Filters",
     "Unplayed": "Unplayed",
     "LabelTVHomeScreen": "TV mode home screen:",
     "Horizontal": "Horizontal",
     "Vertical": "Vertical",
-    "GroupBySeries": "Group by series"
+    "GroupBySeries": "Group by series",
+    "HeaderVideoType": "Video Type",
+    "HeaderSeriesStatus": "Series Status",
+    "Features": "Features",
+    "Trailers": "Trailers",
+    "Extras": "Extras",
+    "ThemeSongs": "Theme songs",
+    "ThemeVideos": "Theme videos"
 }

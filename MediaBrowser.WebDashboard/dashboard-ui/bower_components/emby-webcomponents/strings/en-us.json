@@ -421,6 +421,7 @@
   "HeaderMyMedia": "My Media",
   "HeaderMyMediaSmall": "My Media (small)",
   "LatestFromLibrary": "Latest {0}",
+  "ContinueWatching": "Continue watching",
   "HeaderLatestChannelMedia": "Latest Channel Items",
   "HeaderContinueWatching": "Continue Watching",
   "HeaderContinueListening": "Continue Listening",
@@ -626,7 +627,11 @@
   "Horizontal": "Horizontal",
   "Vertical": "Vertical",
   "GroupBySeries": "Group by series",
-  "Resumable": "Resumable",
   "HeaderVideoType": "Video Type",
-  "HeaderSeriesStatus": "Series Status"
+  "HeaderSeriesStatus": "Series Status",
+  "Features": "Features",
+  "Trailers": "Trailers",
+  "Extras": "Extras",
+  "ThemeSongs": "Theme songs",
+  "ThemeVideos": "Theme videos"
 }

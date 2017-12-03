@@ -421,6 +421,7 @@
     "HeaderMyMedia": "Moje m\u00e9dia",
     "HeaderMyMediaSmall": "Moje m\u00e9dia (mal\u00e9)",
     "LatestFromLibrary": "Nejnov\u011bj\u0161\u00ed {0}",
+    "ContinueWatching": "Continue watching",
     "HeaderLatestChannelMedia": "Nejnov\u011bj\u0161\u00ed polo\u017eky kan\u00e1lu",
     "HeaderContinueWatching": "Pokra\u010dovat ve sledov\u00e1n\u00ed",
     "HeaderContinueListening": "Pokra\u010dovat v poslechu",
@@ -620,11 +621,17 @@
     "Off": "Vypnuto",
     "ShowTitle": "Show title",
     "ShowYear": "Show year",
-    "HeaderPosterOptions": "Poster Options",
     "Filters": "Filters",
     "Unplayed": "Unplayed",
     "LabelTVHomeScreen": "TV mode home screen:",
     "Horizontal": "Horizontal",
     "Vertical": "Vertical",
-    "GroupBySeries": "Group by series"
+    "GroupBySeries": "Group by series",
+    "HeaderVideoType": "Video Type",
+    "HeaderSeriesStatus": "Series Status",
+    "Features": "Features",
+    "Trailers": "Trailers",
+    "Extras": "Extras",
+    "ThemeSongs": "Theme songs",
+    "ThemeVideos": "Theme videos"
 }

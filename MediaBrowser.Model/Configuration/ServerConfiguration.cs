@@ -61,6 +61,8 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if this instance is port authorized; otherwise, <c>false</c>.</value>
         public bool IsPortAuthorized { get; set; }
 
+        public bool AutoRunWebApp { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [enable case sensitive item ids].
         /// </summary>

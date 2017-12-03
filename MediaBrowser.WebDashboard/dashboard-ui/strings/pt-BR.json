@@ -1855,5 +1855,7 @@
     "SaveSubtitlesInOriginalMediaFolders": "Salvar legendas dentro das pastas de m\u00eddia",
     "SaveSubtitlesInOriginalMediaFoldersHelp": "Salvar legendas dentro das pastas de m\u00eddia deixar\u00e1 mais f\u00e1cil localiz\u00e1-las e gerenci\u00e1-las.",
     "LabelSimultaneousConnectionLimit": "Limite de stream simult\u00e2neo:",
-    "SimultaneousConnectionLimitHelp": "O n\u00famero m\u00e1ximo permitido de streams simult\u00e2neos. Digitar 0 para n\u00e3o haver limite."
+    "SimultaneousConnectionLimitHelp": "O n\u00famero m\u00e1ximo permitido de streams simult\u00e2neos. Digitar 0 para n\u00e3o haver limite.",
+    "LaunchWebAppOnStartup": "Launch the Emby web app in my web browser when Emby Server starts",
+    "LaunchWebAppOnStartupHelp": "This will open the web app in your default web browser when Emby Server initially starts. This will not occur when using the restart server function."
 }

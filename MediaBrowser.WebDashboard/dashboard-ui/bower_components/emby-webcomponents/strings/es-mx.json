@@ -421,6 +421,7 @@
     "HeaderMyMedia": "Mis Medios",
     "HeaderMyMediaSmall": "Mis medios (peque\u00f1o)",
     "LatestFromLibrary": "M\u00e1s recientes {0}",
+    "ContinueWatching": "Continue watching",
     "HeaderLatestChannelMedia": "\u00cdtems Recientes de Canales",
     "HeaderContinueWatching": "Continuar Viendo",
     "HeaderContinueListening": "Continuar Escuchando",
@@ -620,11 +621,17 @@
     "Off": "Apagar",
     "ShowTitle": "Mostrar titulo",
     "ShowYear": "Mostrar a\u00f1o",
-    "HeaderPosterOptions": "Opciones de Poster",
     "Filters": "Filtros",
     "Unplayed": "No reproducido",
     "LabelTVHomeScreen": "Modo de pantalla de TV:",
     "Horizontal": "Horizontal",
     "Vertical": "Vertical",
-    "GroupBySeries": "Agrupar por series"
+    "GroupBySeries": "Agrupar por series",
+    "HeaderVideoType": "Tipo de Video",
+    "HeaderSeriesStatus": "Estado de la Serie",
+    "Features": "Features",
+    "Trailers": "Trailers",
+    "Extras": "Extras",
+    "ThemeSongs": "Theme songs",
+    "ThemeVideos": "Theme videos"
 }
