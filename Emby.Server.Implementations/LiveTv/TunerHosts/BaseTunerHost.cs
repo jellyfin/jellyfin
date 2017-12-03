@@ -39,6 +39,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             FileSystem = fileSystem;
         }
 
+        public virtual bool IsSupported
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         protected abstract Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken);
         public abstract string Type { get; }
 
