@@ -148,6 +148,34 @@ namespace Emby.Server.Implementations
             }
         }
 
+        public virtual bool CanLaunchWebBrowser
+        {
+            get
+            {
+                if (!Environment.UserInteractive)
+                {
+                    return false;
+                }
+
+                if (StartupOptions.ContainsOption("-service"))
+                {
+                    return false;
+                }
+
+                if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
+                {
+                    return true;
+                }
+
+                if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.OSX)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
         /// <summary>
         /// Occurs when [has pending restart changed].
         /// </summary>
@@ -1936,6 +1964,7 @@ namespace Emby.Server.Implementations
                 OperatingSystemDisplayName = OperatingSystemDisplayName,
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
+                CanLaunchWebBrowser = CanLaunchWebBrowser,
                 WanAddress = ConnectManager.WanApiAddress,
                 HasUpdateAvailable = HasUpdateAvailable,
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
@@ -2358,13 +2387,7 @@ namespace Emby.Server.Implementations
 
         public virtual void LaunchUrl(string url)
         {
-            if (EnvironmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows &&
-                EnvironmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.OSX)
-            {
-                throw new NotSupportedException();
-            }
-
-            if (!Environment.UserInteractive)
+            if (!CanLaunchWebBrowser)
             {
                 throw new NotSupportedException();
             }

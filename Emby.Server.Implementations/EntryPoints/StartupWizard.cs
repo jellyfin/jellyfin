@@ -35,15 +35,20 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         public void Run()
         {
+            if (!_appHost.CanLaunchWebBrowser)
+            {
+                return;
+            }
+
             if (_appHost.IsFirstRun)
             {
                 BrowserLauncher.OpenDashboardPage("wizardstart.html", _appHost);
             }
-            else if (_config.Configuration.IsStartupWizardCompleted)
+            else if (_config.Configuration.IsStartupWizardCompleted && _config.Configuration.AutoRunWebApp)
             {
                 var options = ((ApplicationHost)_appHost).StartupOptions;
 
-                if (!options.ContainsOption("-service") && !options.ContainsOption("-nobrowser"))
+                if (!options.ContainsOption("-noautorunwebapp"))
                 {
                     BrowserLauncher.OpenDashboardPage("index.html", _appHost);
                 }
