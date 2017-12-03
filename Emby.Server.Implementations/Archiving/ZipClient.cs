@@ -89,6 +89,24 @@ namespace Emby.Server.Implementations.Archiving
             }
         }
 
+        public void ExtractFirstFileFromGz(Stream source, string targetPath, string defaultFileName)
+        {
+            using (var reader = GZipReader.Open(source))
+            {
+                if (reader.MoveToNextEntry())
+                {
+                    var entry = reader.Entry;
+
+                    var filename = entry.Key;
+                    if (string.IsNullOrWhiteSpace(filename))
+                    {
+                        filename = defaultFileName;
+                    }
+                    reader.WriteEntryToFile(Path.Combine(targetPath, filename));
+                }
+            }
+        }
+
         /// <summary>
         /// Extracts all from7z.
         /// </summary>
