@@ -1021,7 +1021,8 @@ namespace Emby.Server.Implementations.LiveTv
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending) },
                 TopParentIds = new[] { topFolder.Id.ToString("N") },
-                DtoOptions = options
+                DtoOptions = options,
+                GenreIds = query.GenreIds
             };
 
             if (query.Limit.HasValue)
