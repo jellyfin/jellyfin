@@ -1855,5 +1855,7 @@
     "SaveSubtitlesInOriginalMediaFolders": "Speichere Untertitel in den Medienverzeichnissen",
     "SaveSubtitlesInOriginalMediaFoldersHelp": "Untertitel in den Medienverzeichnissen speichern macht es einfacher sie zu lokalisieren und zu organisieren.",
     "LabelSimultaneousConnectionLimit": "Simultaneous stream limit:",
-    "SimultaneousConnectionLimitHelp": "The maximum number of allowed simultaneous streams. Enter 0 for no limit."
+    "SimultaneousConnectionLimitHelp": "The maximum number of allowed simultaneous streams. Enter 0 for no limit.",
+    "LaunchWebAppOnStartup": "Launch the Emby web app in my web browser when Emby Server starts",
+    "LaunchWebAppOnStartupHelp": "This will open the web app in your default web browser when Emby Server initially starts. This will not occur when using the restart server function."
 }

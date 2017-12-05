@@ -54,7 +54,7 @@
         </select>
         <div class="fieldDescription">
             <div>${LabelDisplayLanguageHelp}</div>
-            <div style="margin-top: .25em;">
+            <div class="learnHowToContributeContainer hide" style="margin-top: .25em;">
                 <a is="emby-linkbutton" class="button-link" href="http://emby.media/community/index.php?/topic/5727-join-our-translation-team" target="_blank">${LearnHowYouCanContribute}</a>
             </div>
         </div>
@@ -125,12 +125,20 @@
         <select is="emby-select" class="selectSkin" label="${LabelSkin}"></select>
     </div>
 
+    <div class="selectContainer hide selectTVHomeScreenContainer">
+        <select is="emby-select" class="selectTVHomeScreen" label="${LabelTVHomeScreen}">
+            <option value="">${Horizontal}</option>
+            <option value="vertical">${Vertical}</option>
+        </select>
+        <div class="fieldDescription">Changes take effect after signing out or restarting the app.</div>
+    </div>
+
     <div class="selectContainer">
         <select id="selectTheme" is="emby-select" label="${LabelTheme}"></select>
         <div class="fieldDescription">${FeatureRequiresEmbyPremiere}</div>
     </div>
 
-    <div class="checkboxContainer checkboxContainer-withDescription">
+    <div class="checkboxContainer checkboxContainer-withDescription fldSeasonalThemes hide">
         <label>
             <input type="checkbox" is="emby-checkbox" id="chkSeasonalThemes" />
             <span>${AllowSeasonalThemes}</span>

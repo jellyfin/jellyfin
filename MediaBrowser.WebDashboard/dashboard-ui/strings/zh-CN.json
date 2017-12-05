@@ -900,7 +900,7 @@
     "LabelExtractChaptersDuringLibraryScanHelp": "\u5982\u679c\u542f\u7528\uff0c\u5f53\u5a92\u4f53\u5e93\u5bfc\u5165\u89c6\u9891\u5e76\u626b\u63cf\u65f6\uff0c\u5c06\u63d0\u53d6\u7ae0\u8282\u56fe\u50cf\u3002\u5982\u679c\u7981\u7528\uff0c\u7ae0\u8282\u56fe\u50cf\u5c06\u5728\u4e4b\u540e\u7684\u8ba1\u5212\u4efb\u52a1\u63d0\u53d6\uff0c\u800c\u5a92\u4f53\u5e93\u4f1a\u66f4\u5feb\u5b8c\u6210\u626b\u63cf\u3002",
     "LabelConnectGuestUserName": "\u4ed6\u4eec\u7684 Emby \u7528\u6237\u540d\u6216\u90ae\u7bb1\u5730\u5740\uff1a",
     "LabelConnectUserName": "Emby \u7528\u6237\u540d\u6216\u90ae\u7bb1\u5730\u5740\uff1a",
-    "LabelConnectUserNameHelp": "Connect this local user to an online Emby account to enable easy sign-in access from any Emby app without having to know the server ip address.",
+    "LabelConnectUserNameHelp": "Connect this local user to an Emby Connect account to enable easy sign-in access from any Emby app without having to know the server ip address.",
     "ButtonLearnMoreAboutEmbyConnect": "Learn more about Emby Connect",
     "LabelExternalPlayers": "\u5916\u90e8\u64ad\u653e\u5668\uff1a",
     "LabelNativeExternalPlayersHelp": "Play videos using external players.",
@@ -1855,5 +1855,7 @@
     "SaveSubtitlesInOriginalMediaFolders": "Save subtitles into media folders",
     "SaveSubtitlesInOriginalMediaFoldersHelp": "Saving subtitles into media folders will make them easier to locate and manage.",
     "LabelSimultaneousConnectionLimit": "Simultaneous stream limit:",
-    "SimultaneousConnectionLimitHelp": "The maximum number of allowed simultaneous streams. Enter 0 for no limit."
+    "SimultaneousConnectionLimitHelp": "The maximum number of allowed simultaneous streams. Enter 0 for no limit.",
+    "LaunchWebAppOnStartup": "Launch the Emby web app in my web browser when Emby Server starts",
+    "LaunchWebAppOnStartupHelp": "This will open the web app in your default web browser when Emby Server initially starts. This will not occur when using the restart server function."
 }

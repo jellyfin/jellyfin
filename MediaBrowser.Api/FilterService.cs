@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ using MediaBrowser.Model.Services;
 namespace MediaBrowser.Api
 {
     [Route("/Items/Filters", "GET", Summary = "Gets branding configuration")]
-    public class GetQueryFilters : IReturn<QueryFilters>
+    public class GetQueryFiltersLegacy : IReturn<QueryFiltersLegacy>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -40,6 +41,43 @@ namespace MediaBrowser.Api
         }
     }
 
+    [Route("/Items/Filters2", "GET", Summary = "Gets branding configuration")]
+    public class GetQueryFilters : IReturn<QueryFilters>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string UserId { get; set; }
+
+        [ApiMember(Name = "ParentId", Description = "Specify this to localize the search to a specific item or folder. Omit to use the root", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ParentId { get; set; }
+
+        [ApiMember(Name = "IncludeItemTypes", Description = "Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string IncludeItemTypes { get; set; }
+
+        [ApiMember(Name = "MediaTypes", Description = "Optional filter by MediaType. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string MediaTypes { get; set; }
+
+        public string[] GetMediaTypes()
+        {
+            return (MediaTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string[] GetIncludeItemTypes()
+        {
+            return (IncludeItemTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public bool? IsAiring { get; set; }
+        public bool? IsMovie { get; set; }
+        public bool? IsSports { get; set; }
+        public bool? IsKids { get; set; }
+        public bool? IsNews { get; set; }
+        public bool? IsSeries { get; set; }
+    }
+
     [Authenticated]
     public class FilterService : BaseApiService
     {
@@ -57,18 +95,96 @@ namespace MediaBrowser.Api
             var parentItem = string.IsNullOrEmpty(request.ParentId) ? null : _libraryManager.GetItemById(request.ParentId);
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
+            if (string.Equals(request.IncludeItemTypes, "BoxSet", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(request.IncludeItemTypes, "Playlist", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(request.IncludeItemTypes, typeof(Trailer).Name, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(request.IncludeItemTypes, "Program", StringComparison.OrdinalIgnoreCase))
+            {
+                parentItem = null;
+            }
+
+            var filters = new QueryFilters();
+
+            var genreQuery = new InternalItemsQuery(user)
+            {
+                AncestorIds = parentItem == null ? new string[] { } : new string[] { parentItem.Id.ToString("N") },
+                IncludeItemTypes = request.GetIncludeItemTypes(),
+                DtoOptions = new Controller.Dto.DtoOptions
+                {
+                    Fields = new ItemFields[] { },
+                    EnableImages = false,
+                    EnableUserData = false
+                },
+                IsAiring = request.IsAiring,
+                IsMovie = request.IsMovie,
+                IsSports = request.IsSports,
+                IsKids = request.IsKids,
+                IsNews = request.IsNews,
+                IsSeries = request.IsSeries
+            };
+
+            if (string.Equals(request.IncludeItemTypes, "MusicAlbum", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(request.IncludeItemTypes, "MusicVideo", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(request.IncludeItemTypes, "MusicArtist", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(request.IncludeItemTypes, "Audio", StringComparison.OrdinalIgnoreCase))
+            {
+                filters.Genres = _libraryManager.GetMusicGenres(genreQuery).Items.Select(i => new NameIdPair
+                {
+                    Name = i.Item1.Name,
+                    Id = i.Item1.Id.ToString("N")
+
+                }).ToArray();
+            }
+            else if (string.Equals(request.IncludeItemTypes, "Game", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(request.IncludeItemTypes, "GameSystem", StringComparison.OrdinalIgnoreCase))
+            {
+                filters.Genres = _libraryManager.GetGameGenres(genreQuery).Items.Select(i => new NameIdPair
+                {
+                    Name = i.Item1.Name,
+                    Id = i.Item1.Id.ToString("N")
+
+                }).ToArray();
+            }
+            else
+            {
+                filters.Genres = _libraryManager.GetGenres(genreQuery).Items.Select(i => new NameIdPair
+                {
+                    Name = i.Item1.Name,
+                    Id = i.Item1.Id.ToString("N")
+
+                }).ToArray();
+            }
+
+            return ToOptimizedResult(filters);
+        }
+
+        public object Get(GetQueryFiltersLegacy request)
+        {
+            var parentItem = string.IsNullOrEmpty(request.ParentId) ? null : _libraryManager.GetItemById(request.ParentId);
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
+
+            if (string.Equals(request.IncludeItemTypes, "BoxSet", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(request.IncludeItemTypes, "Playlist", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(request.IncludeItemTypes, typeof(Trailer).Name, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(request.IncludeItemTypes, "Program", StringComparison.OrdinalIgnoreCase))
+            {
+                parentItem = null;
+            }
+
             var item = string.IsNullOrEmpty(request.ParentId) ?
                user == null ? _libraryManager.RootFolder : user.RootFolder :
                parentItem;
 
             var result = ((Folder)item).GetItemList(GetItemsQuery(request, user));
 
-            return ToOptimizedResult(GetFilters(result));
+            var filters = GetFilters(result);
+
+            return ToOptimizedResult(filters);
         }
 
-        private QueryFilters GetFilters(BaseItem[] items)
+        private QueryFiltersLegacy GetFilters(BaseItem[] items)
         {
-            var result = new QueryFilters();
+            var result = new QueryFiltersLegacy();
 
             result.Years = items.Select(i => i.ProductionYear ?? -1)
                 .Where(i => i > 0)
@@ -97,7 +213,7 @@ namespace MediaBrowser.Api
             return result;
         }
 
-        private InternalItemsQuery GetItemsQuery(GetQueryFilters request, User user)
+        private InternalItemsQuery GetItemsQuery(GetQueryFiltersLegacy request, User user)
         {
             var query = new InternalItemsQuery
             {

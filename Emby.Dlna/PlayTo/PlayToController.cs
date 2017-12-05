@@ -321,6 +321,12 @@ namespace Emby.Dlna.PlayTo
                 AddItemFromId(Guid.Parse(id), items);
             }
 
+            var startIndex = command.StartIndex ?? 0;
+            if (startIndex > 0)
+            {
+                items = items.Skip(startIndex).ToList();
+            }
+
             var playlist = new List<PlaylistItem>();
             var isFirst = true;
 
@@ -424,7 +430,7 @@ namespace Emby.Dlna.PlayTo
             return Task.FromResult(true);
         }
 
-        public Task SendRestartRequiredNotification(SystemInfo info, CancellationToken cancellationToken)
+        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
         }

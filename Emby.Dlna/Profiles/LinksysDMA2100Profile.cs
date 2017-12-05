@@ -26,7 +26,7 @@ namespace Emby.Dlna.Profiles
 
                 new DirectPlayProfile
                 {
-                    Container = "avi,mp4,mkv,ts,m4v",
+                    Container = "avi,mp4,mkv,ts,mpegts,m4v",
                     Type = DlnaProfileType.Video
                 }
             };

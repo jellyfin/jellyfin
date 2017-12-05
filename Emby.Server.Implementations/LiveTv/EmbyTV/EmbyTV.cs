@@ -1512,6 +1512,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
+            DeleteFileIfEmpty(recordPath);
+
             TriggerRefresh(recordPath);
             _libraryMonitor.ReportFileSystemChangeComplete(recordPath, false);
 
@@ -1539,6 +1541,23 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             else
             {
                 _timerProvider.Delete(timer);
+            }
+        }
+
+        private void DeleteFileIfEmpty(string path)
+        {
+            var file = _fileSystem.GetFileInfo(path);
+
+            if (file.Exists && file.Length == 0)
+            {
+                try
+                {
+                    _fileSystem.DeleteFile(path);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error deleting 0-byte failed recording file {0}", ex, path);
+                }
             }
         }
 
@@ -1897,7 +1916,15 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     imageSaveFilenameWithoutExtension = "logo";
                     break;
                 case ImageType.Thumb:
-                    imageSaveFilenameWithoutExtension = "landscape";
+                    if (program.IsSeries)
+                    {
+                        imageSaveFilenameWithoutExtension = Path.GetFileNameWithoutExtension(recordingPath) + "-thumb";
+                    }
+                    else
+                    {
+                        imageSaveFilenameWithoutExtension = "landscape";
+                    }
+
                     break;
                 case ImageType.Backdrop:
                     imageSaveFilenameWithoutExtension = "fanart";
@@ -1921,9 +1948,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private async Task SaveRecordingImages(string recordingPath, LiveTvProgram program)
         {
-            var image = program.GetImageInfo(ImageType.Primary, 0);
+            var image = program.IsSeries ?
+                (program.GetImageInfo(ImageType.Thumb, 0) ?? program.GetImageInfo(ImageType.Primary, 0)) :
+                (program.GetImageInfo(ImageType.Primary, 0) ?? program.GetImageInfo(ImageType.Thumb, 0));
 
-            if (image != null && program.IsMovie)
+            if (image != null)
             {
                 try
                 {

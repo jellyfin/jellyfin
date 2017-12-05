@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Panasonic Viera</Name>
   <Identification>
     <FriendlyName>VIERA</FriendlyName>
@@ -40,7 +40,7 @@
   <DirectPlayProfiles>
     <DirectPlayProfile container="mpeg,mpg" audioCodec="ac3,mp3,pcm_dvd" videoCodec="mpeg2video,mpeg4" type="Video" />
     <DirectPlayProfile container="mkv" audioCodec="aac,ac3,dca,mp3,mp2,pcm,dts" videoCodec="h264,mpeg2video" type="Video" />
-    <DirectPlayProfile container="ts" audioCodec="aac,mp3,mp2" videoCodec="h264,mpeg2video" type="Video" />
+    <DirectPlayProfile container="ts,mpegts" audioCodec="aac,mp3,mp2" videoCodec="h264,mpeg2video" type="Video" />
     <DirectPlayProfile container="mp4,m4v" audioCodec="aac,ac3,mp3,pcm" videoCodec="h264" type="Video" />
     <DirectPlayProfile container="mov" audioCodec="aac,pcm" videoCodec="h264" type="Video" />
     <DirectPlayProfile container="avi" audioCodec="pcm" videoCodec="mpeg4" type="Video" />
@@ -73,7 +73,7 @@
     </CodecProfile>
   </CodecProfiles>
   <ResponseProfiles>
-    <ResponseProfile container="ts" type="Video" orgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO" mimeType="video/vnd.dlna.mpeg-tts">
+    <ResponseProfile container="ts,mpegts" type="Video" orgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO" mimeType="video/vnd.dlna.mpeg-tts">
       <Conditions />
     </ResponseProfile>
     <ResponseProfile container="m4v" type="Video" mimeType="video/mp4">

@@ -1,0 +1,107 @@
+<div class="formDialogContent smoothScrollY">
+    <div class="dialogContentInner dialog-content-centered">
+        <form style="margin:auto;">
+
+            <div class="verticalSection verticalSection-extrabottompadding basicFilterSection focuscontainer-x" style="margin-top:2em;">
+                <div class="checkboxList checkboxList-verticalwrap">
+                    <label class="viewSetting simpleFilter" data-settingname="IsUnplayed">
+                        <input type="checkbox" is="emby-checkbox" />
+                        <span>${Unplayed}</span>
+                    </label>
+                    <label class="viewSetting simpleFilter" data-settingname="IsPlayed">
+                        <input type="checkbox" is="emby-checkbox" />
+                        <span>${Played}</span>
+                    </label>
+                    <label class="viewSetting simpleFilter" data-settingname="IsFavorite">
+                        <input type="checkbox" is="emby-checkbox" />
+                        <span>${Favorite}</span>
+                    </label>
+                    <label class="viewSetting simpleFilter" data-settingname="IsResumable">
+                        <input type="checkbox" is="emby-checkbox" />
+                        <span>${ContinueWatching}</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="verticalSection verticalSection-extrabottompadding viewSetting focuscontainer-x" data-settingname="SeriesStatus">
+                <h2 class="checkboxListLabel">${HeaderSeriesStatus}</h2>
+                <div class="checkboxList checkboxList-verticalwrap">
+
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkSeriesStatus" data-filter="Continuing" />
+                        <span>${Continuing}</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkSeriesStatus" data-filter="Ended" />
+                        <span>${Ended}</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="verticalSection verticalSection-extrabottompadding hide genreFilters focuscontainer-x">
+                <h2 class="checkboxListLabel">${Genres}</h2>
+                <div class="checkboxList checkboxList-verticalwrap filterOptions">
+                </div>
+            </div>
+
+            <div class="verticalSection verticalSection-extrabottompadding viewSetting focuscontainer-x" data-settingname="VideoType">
+                <h2 class="checkboxListLabel">${HeaderVideoType}</h2>
+                <div class="checkboxList checkboxList-verticalwrap">
+
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="simpleFilter" data-settingname="IsHD" />
+                        <span>HD</span>
+                    </label>
+
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="simpleFilter" data-settingname="IsSD" />
+                        <span>SD</span>
+                    </label>
+
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="simpleFilter" data-settingname="Is3D" />
+                        <span>3D</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter" data-filter="Bluray" />
+                        <span>Blu-ray</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter" data-filter="Dvd" />
+                        <span>DVD</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter" data-filter="Iso" />
+                        <span>ISO</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="verticalSection verticalSection-extrabottompadding featureSection hide focuscontainer-x">
+                <h2 class="checkboxListLabel">${Features}</h2>
+                <div class="checkboxList checkboxList-verticalwrap">
+                    <label class="viewSetting simpleFilter" data-settingname="HasSubtitles">
+                        <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" />
+                        <span>${Subtitles}</span>
+                    </label>
+                    <label class="viewSetting simpleFilter" data-settingname="HasTrailer">
+                        <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" />
+                        <span>${Trailers}</span>
+                    </label>
+                    <label class="viewSetting simpleFilter" data-settingname="HasSpecialFeature">
+                        <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" />
+                        <span>${Extras}</span>
+                    </label>
+                    <label class="viewSetting simpleFilter" data-settingname="HasThemeSong">
+                        <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" />
+                        <span>${ThemeSongs}</span>
+                    </label>
+                    <label class="viewSetting simpleFilter" data-settingname="HasThemeVideo">
+                        <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" />
+                        <span>${ThemeVideos}</span>
+                    </label>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

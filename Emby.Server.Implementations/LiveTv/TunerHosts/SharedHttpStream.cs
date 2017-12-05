@@ -71,7 +71,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
             else if (contentType.IndexOf("mp4", StringComparison.OrdinalIgnoreCase) != -1 ||
                contentType.IndexOf("dash", StringComparison.OrdinalIgnoreCase) != -1 ||
-               contentType.IndexOf("mpegURL", StringComparison.OrdinalIgnoreCase) != -1)
+               contentType.IndexOf("mpegURL", StringComparison.OrdinalIgnoreCase) != -1 ||
+               contentType.IndexOf("text/", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 requiresRemux = true;
             }
@@ -88,6 +89,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             SetTempFilePath(extension);
 
             var taskCompletionSource = new TaskCompletionSource<bool>();
+
+            var now = DateTime.UtcNow;
+
             StartStreaming(response, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
 
             //OpenedMediaSource.Protocol = MediaProtocol.File;
@@ -96,11 +100,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             OpenedMediaSource.Path = _appHost.GetLocalApiUrl("127.0.0.1") + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             OpenedMediaSource.Protocol = MediaProtocol.Http;
-
-            if (OpenedMediaSource.SupportsProbing)
-            {
-                await Task.Delay(3000).ConfigureAwait(false);
-            }
 
             //OpenedMediaSource.Path = TempFilePath;
             //OpenedMediaSource.Protocol = MediaProtocol.File;
@@ -111,6 +110,20 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             //OpenedMediaSource.SupportsDirectStream = true;
             //OpenedMediaSource.SupportsTranscoding = true;
             await taskCompletionSource.Task.ConfigureAwait(false);
+
+            if (OpenedMediaSource.SupportsProbing)
+            {
+                var elapsed = (DateTime.UtcNow - now).TotalMilliseconds;
+
+                var delay = Convert.ToInt32(3000 - elapsed);
+
+                if (delay > 0)
+                {
+                    Logger.Info("Delaying shared stream by {0}ms to allow the buffer to build.", delay);
+
+                    await Task.Delay(delay).ConfigureAwait(false);
+                }
+            }
         }
 
         protected override void CloseInternal()

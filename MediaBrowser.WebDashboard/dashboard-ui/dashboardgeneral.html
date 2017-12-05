@@ -5,69 +5,76 @@
 
             <form class="dashboardGeneralForm">
 
-                <div class="selectContainer">
-                    <select is="emby-select" id="selectLocalizationLanguage" label="${LabelPreferredDisplayLanguage}"></select>
-                    <div class="fieldDescription">
-                        <div>${LabelPreferredDisplayLanguageHelp}</div>
-                        <div style="margin-top: .25em;">
-                            <a is="emby-linkbutton" class="button-link" href="http://emby.media/community/index.php?/topic/5727-join-our-translation-team/" target="_blank">${LabelReadHowYouCanContribute}</a>
+                <div class="verticalSection verticalSection-extrabottompadding">
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selectLocalizationLanguage" label="${LabelPreferredDisplayLanguage}"></select>
+                        <div class="fieldDescription">
+                            <div>${LabelPreferredDisplayLanguageHelp}</div>
+                            <div style="margin-top: .25em;">
+                                <a is="emby-linkbutton" class="button-link" href="http://emby.media/community/index.php?/topic/5727-join-our-translation-team/" target="_blank">${LabelReadHowYouCanContribute}</a>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div id="fldRunAtStartup" style="display: none;" class="checkboxContainer checkboxContainer-withDescription">
-                    <label>
-                        <input is="emby-checkbox" type="checkbox" id="chkRunAtStartup" />
-                        <span>${LabelRunServerAtStartup}</span>
-                    </label>
-                    <div id="windowsStartupDescription" class="fieldDescription checkboxFieldDescription" style="display: none;">
-                        ${LabelRunServerAtStartupHelp}
-                    </div>
-                </div>
-
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label>
-                        <input is="emby-checkbox" type="checkbox" id="chkUsageData" />
-                        <span>${OptionEnableAnonymousUsageReporting}</span>
-                    </label>
-                    <div class="fieldDescription checkboxFieldDescription">
-                        ${OptionEnableAnonymousUsageReportingHelp}
-                        <div style="margin-top:.5em;">
-                            <a is="emby-linkbutton" class="button-link" target="_blank" href="https://emby.media/privacy">${ButtonLearnMore}</a>
+                    <div id="fldRunAtStartup" class="checkboxContainer checkboxContainer-withDescription hide">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="chkRunAtStartup" />
+                            <span>${LabelRunServerAtStartup}</span>
+                        </label>
+                        <div id="windowsStartupDescription" class="fieldDescription checkboxFieldDescription hide">
+                            ${LabelRunServerAtStartupHelp}
                         </div>
                     </div>
-                </div>
 
-                <div is="emby-collapse" title="${HeaderAdvanced}">
-                    <div class="collapseContent">
-                        <div>
-                            <div class="inputContainer">
-                                <div style="display: flex; align-items: center;">
-                                    <div style="flex-grow:1;">
-                                        <input is="emby-input" id="txtCachePath" label="${LabelCachePath}" autocomplete="off" />
-                                    </div>
-                                    <button type="button" is="paper-icon-button-light" id="btnSelectCachePath" title="${ButtonSelectDirectory}" class="emby-input-iconbutton"><i class="md-icon">search</i></button>
-                                </div>
-                                <div class="fieldDescription">${LabelCachePathHelp}</div>
+                    <div id="fldRunWebAppAtStartup" class="checkboxContainer checkboxContainer-withDescription hide">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="chkRunWebAppAtStartup" />
+                            <span>${LaunchWebAppOnStartup}</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            ${LaunchWebAppOnStartupHelp}
+                        </div>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="chkUsageData" />
+                            <span>${OptionEnableAnonymousUsageReporting}</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            ${OptionEnableAnonymousUsageReportingHelp}
+                            <div style="margin-top:.5em;">
+                                <a is="emby-linkbutton" class="button-link" target="_blank" href="https://emby.media/privacy">${ButtonLearnMore}</a>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div is="emby-collapse" title="${HeaderAutomaticUpdates}" class="autoUpdatesContainer hide">
-                    <div class="collapseContent">
-                        <br />
-                        <label class="fldAutomaticUpdates checkboxContainer">
-                            <input is="emby-checkbox" type="checkbox" id="chkEnableAutomaticServerUpdates" />
-                            <span>${OptionEnableAutomaticServerUpdates}</span>
-                        </label>
-                        <div id="fldEnableAutomaticRestart" style="display: none;" class="checkboxContainer checkboxContainer-withDescription">
-                            <label>
-                                <input is="emby-checkbox" type="checkbox" id="chkEnableAutomaticRestart" />
-                                <span>${LabelAllowServerAutoRestart}</span>
-                            </label>
-                            <div class="fieldDescription checkboxFieldDescription">${LabelAllowServerAutoRestartHelp}</div>
+                <div class="verticalSection verticalSection-extrabottompadding">
+                    <h2>${Advanced}</h2>
+                    <div class="inputContainer">
+                        <div style="display: flex; align-items: center;">
+                            <div style="flex-grow:1;">
+                                <input is="emby-input" id="txtCachePath" label="${LabelCachePath}" autocomplete="off" />
+                            </div>
+                            <button type="button" is="paper-icon-button-light" id="btnSelectCachePath" title="${ButtonSelectDirectory}" class="emby-input-iconbutton"><i class="md-icon">search</i></button>
                         </div>
+                        <div class="fieldDescription">${LabelCachePathHelp}</div>
+                    </div>
+                </div>
+
+                <div class="verticalSection autoUpdatesContainer hide">
+                    <h2>${HeaderAutomaticUpdates}</h2>
+                    <label class="fldAutomaticUpdates checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="chkEnableAutomaticServerUpdates" />
+                        <span>${OptionEnableAutomaticServerUpdates}</span>
+                    </label>
+                    <div id="fldEnableAutomaticRestart" class="checkboxContainer checkboxContainer-withDescription hide">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="chkEnableAutomaticRestart" />
+                            <span>${LabelAllowServerAutoRestart}</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">${LabelAllowServerAutoRestartHelp}</div>
                     </div>
                 </div>
 

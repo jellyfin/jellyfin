@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
+using System.Threading;
 
 namespace MediaBrowser.Controller
 {
@@ -19,14 +20,18 @@ namespace MediaBrowser.Controller
         /// Gets the system info.
         /// </summary>
         /// <returns>SystemInfo.</returns>
-        Task<SystemInfo> GetSystemInfo();
+        Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken);
+
+        Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets a value indicating whether [supports automatic run at startup].
         /// </summary>
         /// <value><c>true</c> if [supports automatic run at startup]; otherwise, <c>false</c>.</value>
         bool SupportsAutoRunAtStartup { get; }
-        
+
+        bool CanLaunchWebBrowser { get; }
+
         /// <summary>
         /// Gets the HTTP server port.
         /// </summary>
@@ -61,13 +66,13 @@ namespace MediaBrowser.Controller
         /// Gets the local ip address.
         /// </summary>
         /// <value>The local ip address.</value>
-        Task<List<IpAddressInfo>> GetLocalIpAddresses();
+        Task<List<IpAddressInfo>> GetLocalIpAddresses(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the local API URL.
         /// </summary>
         /// <value>The local API URL.</value>
-        Task<string> GetLocalApiUrl();
+        Task<string> GetLocalApiUrl(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the local API URL.

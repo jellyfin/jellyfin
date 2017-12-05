@@ -473,7 +473,7 @@ namespace MediaBrowser.Api
             }
             else
             {
-                var success = await _userManager.AuthenticateUser(user.Name, request.CurrentPw, request.CurrentPassword, null, Request.RemoteIp).ConfigureAwait(false);
+                var success = await _userManager.AuthenticateUser(user.Name, request.CurrentPw, request.CurrentPassword, null, Request.RemoteIp, false).ConfigureAwait(false);
 
                 if (success == null)
                 {

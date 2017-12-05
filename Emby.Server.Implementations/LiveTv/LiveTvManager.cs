@@ -125,7 +125,7 @@ namespace Emby.Server.Implementations.LiveTv
         public void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<ITunerHost> tunerHosts, IEnumerable<IListingsProvider> listingProviders)
         {
             _services = services.ToArray();
-            _tunerHosts.AddRange(tunerHosts);
+            _tunerHosts.AddRange(tunerHosts.Where(i => i.IsSupported));
             _listingProviders.AddRange(listingProviders);
 
             foreach (var service in _services)
@@ -947,6 +947,7 @@ namespace Emby.Server.Implementations.LiveTv
                 IsKids = query.IsKids,
                 IsNews = query.IsNews,
                 Genres = query.Genres,
+                GenreIds = query.GenreIds,
                 StartIndex = query.StartIndex,
                 Limit = query.Limit,
                 OrderBy = query.OrderBy,
@@ -1020,7 +1021,8 @@ namespace Emby.Server.Implementations.LiveTv
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending) },
                 TopParentIds = new[] { topFolder.Id.ToString("N") },
-                DtoOptions = options
+                DtoOptions = options,
+                GenreIds = query.GenreIds
             };
 
             if (query.Limit.HasValue)
@@ -1421,7 +1423,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                     if (newPrograms.Count > 0)
                     {
-                        _libraryManager.CreateItems(newPrograms, cancellationToken);
+                        _libraryManager.CreateItems(newPrograms, null, cancellationToken);
                     }
 
                     // TODO: Do this in bulk

@@ -218,7 +218,7 @@ namespace Emby.Server.Implementations.Library
             return builder.ToString();
         }
 
-        public async Task<User> AuthenticateUser(string username, string password, string hashedPassword, string passwordMd5, string remoteEndPoint)
+        public async Task<User> AuthenticateUser(string username, string password, string hashedPassword, string passwordMd5, string remoteEndPoint, bool isUserSession)
         {
             if (string.IsNullOrWhiteSpace(username))
             {
@@ -288,8 +288,11 @@ namespace Emby.Server.Implementations.Library
             // Update LastActivityDate and LastLoginDate, then save
             if (success)
             {
-                user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
-                UpdateUser(user);
+                if (isUserSession)
+                {
+                    user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
+                    UpdateUser(user);
+                }
                 UpdateInvalidLoginAttemptCount(user, 0);
             }
             else
@@ -812,7 +815,7 @@ namespace Emby.Server.Implementations.Library
 
             var text = new StringBuilder();
 
-            var localAddress = _appHost.GetLocalApiUrl().Result ?? string.Empty;
+            var localAddress = _appHost.GetLocalApiUrl(CancellationToken.None).Result ?? string.Empty;
 
             text.AppendLine("Use your web browser to visit:");
             text.AppendLine(string.Empty);

@@ -186,6 +186,11 @@ namespace MediaBrowser.Model.Dlna
                 return MediaSource.Path;
             }
 
+            if (string.IsNullOrWhiteSpace(PlaySessionId))
+            {
+                PlaySessionId = Guid.NewGuid().ToString("N");
+            }
+
             string dlnaCommand = BuildDlnaParam(this, accessToken);
             return GetUrl(baseUrl, dlnaCommand);
         }

@@ -148,6 +148,34 @@ namespace Emby.Server.Implementations
             }
         }
 
+        public virtual bool CanLaunchWebBrowser
+        {
+            get
+            {
+                if (!Environment.UserInteractive)
+                {
+                    return false;
+                }
+
+                if (StartupOptions.ContainsOption("-service"))
+                {
+                    return false;
+                }
+
+                if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
+                {
+                    return true;
+                }
+
+                if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.OSX)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
         /// <summary>
         /// Occurs when [has pending restart changed].
         /// </summary>
@@ -361,7 +389,7 @@ namespace Emby.Server.Implementations
 
         protected IAuthService AuthService { get; private set; }
 
-        protected readonly StartupOptions StartupOptions;
+        public StartupOptions StartupOptions { get; private set; }
         protected readonly string ReleaseAssetFilename;
 
         internal IPowerManagement PowerManagement { get; private set; }
@@ -393,6 +421,7 @@ namespace Emby.Server.Implementations
             ISystemEvents systemEvents,
             INetworkManager networkManager)
         {
+
             // hack alert, until common can target .net core
             BaseExtensions.CryptographyProvider = CryptographyProvider;
 
@@ -423,6 +452,13 @@ namespace Emby.Server.Implementations
             SetBaseExceptionMessage();
 
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
+
+            NetworkManager.NetworkChanged += NetworkManager_NetworkChanged;
+        }
+
+        private void NetworkManager_NetworkChanged(object sender, EventArgs e)
+        {
+            _validAddressResults.Clear();
         }
 
         private Version _version;
@@ -1901,9 +1937,9 @@ namespace Emby.Server.Implementations
         /// Gets the system status.
         /// </summary>
         /// <returns>SystemInfo.</returns>
-        public async Task<SystemInfo> GetSystemInfo()
+        public async Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken)
         {
-            var localAddress = await GetLocalApiUrl().ConfigureAwait(false);
+            var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
 
             return new SystemInfo
             {
@@ -1928,6 +1964,7 @@ namespace Emby.Server.Implementations
                 OperatingSystemDisplayName = OperatingSystemDisplayName,
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
+                CanLaunchWebBrowser = CanLaunchWebBrowser,
                 WanAddress = ConnectManager.WanApiAddress,
                 HasUpdateAvailable = HasUpdateAvailable,
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
@@ -1939,6 +1976,21 @@ namespace Emby.Server.Implementations
                 SystemArchitecture = EnvironmentInfo.SystemArchitecture,
                 SystemUpdateLevel = SystemUpdateLevel,
                 PackageName = StartupOptions.GetOption("-package")
+            };
+        }
+
+        public async Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken)
+        {
+            var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+
+            return new PublicSystemInfo
+            {
+                Version = ApplicationVersion.ToString(),
+                Id = SystemId,
+                OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
+                WanAddress = ConnectManager.WanApiAddress,
+                ServerName = FriendlyName,
+                LocalAddress = localAddress
             };
         }
 
@@ -1955,14 +2007,14 @@ namespace Emby.Server.Implementations
             get { return Certificate != null || ServerConfigurationManager.Configuration.IsBehindProxy; }
         }
 
-        public async Task<string> GetLocalApiUrl()
+        public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken)
         {
             try
             {
                 // Return the first matched address, if found, or the first known local address
-                var address = (await GetLocalIpAddresses().ConfigureAwait(false)).FirstOrDefault(i => !i.Equals(IpAddressInfo.Loopback) && !i.Equals(IpAddressInfo.IPv6Loopback));
+                var addresses = await GetLocalIpAddressesInternal(false, 1, cancellationToken).ConfigureAwait(false);
 
-                if (address != null)
+                foreach (var address in addresses)
                 {
                     return GetLocalApiUrl(address);
                 }
@@ -1994,7 +2046,12 @@ namespace Emby.Server.Implementations
                 HttpPort.ToString(CultureInfo.InvariantCulture));
         }
 
-        public async Task<List<IpAddressInfo>> GetLocalIpAddresses()
+        public Task<List<IpAddressInfo>> GetLocalIpAddresses(CancellationToken cancellationToken)
+        {
+            return GetLocalIpAddressesInternal(true, 0, cancellationToken);
+        }
+
+        private async Task<List<IpAddressInfo>> GetLocalIpAddressesInternal(bool allowLoopback, int limit, CancellationToken cancellationToken)
         {
             var addresses = ServerConfigurationManager
                 .Configuration
@@ -2006,22 +2063,33 @@ namespace Emby.Server.Implementations
             if (addresses.Count == 0)
             {
                 addresses.AddRange(NetworkManager.GetLocalIpAddresses());
+            }
 
-                var list = new List<IpAddressInfo>();
+            var resultList = new List<IpAddressInfo>();
 
-                foreach (var address in addresses)
+            foreach (var address in addresses)
+            {
+                if (!allowLoopback)
                 {
-                    var valid = await IsIpAddressValidAsync(address).ConfigureAwait(false);
-                    if (valid)
+                    if (address.Equals(IpAddressInfo.Loopback) || address.Equals(IpAddressInfo.IPv6Loopback))
                     {
-                        list.Add(address);
+                        continue;
                     }
                 }
 
-                addresses = list;
+                var valid = await IsIpAddressValidAsync(address, cancellationToken).ConfigureAwait(false);
+                if (valid)
+                {
+                    resultList.Add(address);
+
+                    if (limit > 0 && resultList.Count >= limit)
+                    {
+                        return resultList;
+                    }
+                }
             }
 
-            return addresses;
+            return resultList;
         }
 
         private IpAddressInfo NormalizeConfiguredLocalAddress(string address)
@@ -2042,8 +2110,7 @@ namespace Emby.Server.Implementations
         }
 
         private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-        private DateTime _lastAddressCacheClear;
-        private async Task<bool> IsIpAddressValidAsync(IpAddressInfo address)
+        private async Task<bool> IsIpAddressValidAsync(IpAddressInfo address, CancellationToken cancellationToken)
         {
             if (address.Equals(IpAddressInfo.Loopback) ||
                 address.Equals(IpAddressInfo.IPv6Loopback))
@@ -2053,12 +2120,6 @@ namespace Emby.Server.Implementations
 
             var apiUrl = GetLocalApiUrl(address);
             apiUrl += "/system/ping";
-
-            if ((DateTime.UtcNow - _lastAddressCacheClear).TotalMinutes >= 15)
-            {
-                _lastAddressCacheClear = DateTime.UtcNow;
-                _validAddressResults.Clear();
-            }
 
             bool cachedResult;
             if (_validAddressResults.TryGetValue(apiUrl, out cachedResult))
@@ -2075,7 +2136,9 @@ namespace Emby.Server.Implementations
                     LogErrors = false,
                     LogRequest = false,
                     TimeoutMs = 30000,
-                    BufferContent = false
+                    BufferContent = false,
+
+                    CancellationToken = cancellationToken
 
                 }, "POST").ConfigureAwait(false))
                 {
@@ -2085,14 +2148,19 @@ namespace Emby.Server.Implementations
                         var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
 
                         _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
-                        //Logger.Debug("Ping test result to {0}. Success: {1}", apiUrl, valid);
+                        Logger.Debug("Ping test result to {0}. Success: {1}", apiUrl, valid);
                         return valid;
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                Logger.Debug("Ping test result to {0}. Success: {1}", apiUrl, "Cancelled");
+                throw;
+            }
             catch
             {
-                //Logger.Debug("Ping test result to {0}. Success: {1}", apiUrl, false);
+                Logger.Debug("Ping test result to {0}. Success: {1}", apiUrl, false);
 
                 _validAddressResults.AddOrUpdate(apiUrl, false, (k, v) => false);
                 return false;
@@ -2317,12 +2385,11 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public void LaunchUrl(string url)
+        public virtual void LaunchUrl(string url)
         {
-            if (EnvironmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows &&
-                EnvironmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.OSX)
+            if (!CanLaunchWebBrowser)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException();
             }
 
             var process = ProcessFactory.Create(new ProcessOptions

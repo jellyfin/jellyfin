@@ -215,23 +215,6 @@ namespace MediaBrowser.Controller.Entities.TV
             return list;
         }
 
-        [IgnoreDataMember]
-        public bool ContainsEpisodesWithoutSeasonFolders
-        {
-            get
-            {
-                var children = Children;
-                foreach (var child in children)
-                {
-                    if (child is Video)
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        }
-
         public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             return GetSeasons(user, new DtoOptions(true));
