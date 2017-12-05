@@ -459,6 +459,9 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "EnableImageTypes", Description = "Optional. The image types to include in the output.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string EnableImageTypes { get; set; }
 
+        [ApiMember(Name = "GenreIds", Description = "The genres to return guide information for.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
+        public string GenreIds { get; set; }
+
         /// <summary>
         /// Fields to return within the items, in addition to basic information
         /// </summary>
@@ -1039,6 +1042,8 @@ namespace MediaBrowser.Api.LiveTv
                 IsSports = request.IsSports,
                 EnableTotalRecordCount = request.EnableTotalRecordCount
             };
+
+            query.GenreIds = (request.GenreIds ?? String.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
 
             var result = _liveTvManager.GetRecommendedPrograms(query, GetDtoOptions(_authContext, request), CancellationToken.None);
 
