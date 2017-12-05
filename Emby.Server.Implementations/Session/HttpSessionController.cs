@@ -117,6 +117,10 @@ namespace Emby.Server.Implementations.Session
             {
                 dict["SubtitleStreamIndex"] = command.SubtitleStreamIndex.Value.ToString(CultureInfo.InvariantCulture);
             }
+            if (command.StartIndex.HasValue)
+            {
+                dict["StartIndex"] = command.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+            }
             if (!string.IsNullOrWhiteSpace(command.MediaSourceId))
             {
                 dict["MediaSourceId"] = command.MediaSourceId;
@@ -147,7 +151,7 @@ namespace Emby.Server.Implementations.Session
             return SendMessage("LibraryChanged", info, cancellationToken);
         }
 
-        public Task SendRestartRequiredNotification(SystemInfo info, CancellationToken cancellationToken)
+        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
         {
             return SendMessage("RestartRequired", cancellationToken);
         }

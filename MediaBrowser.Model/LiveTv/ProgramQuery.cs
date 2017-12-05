@@ -14,6 +14,7 @@ namespace MediaBrowser.Model.LiveTv
             ChannelIds = new string[] { };
             OrderBy = new Tuple<string, SortOrder>[] { };
             Genres = new string[] { };
+            GenreIds = new string[] { };
             EnableTotalRecordCount = true;
             EnableUserData = true;
         }
@@ -110,6 +111,7 @@ namespace MediaBrowser.Model.LiveTv
         /// Limit results to items containing specific genres
         /// </summary>
         /// <value>The genres.</value>
+        public string[] GenreIds { get; set; }
         public string[] Genres { get; set; }
     }
 }

@@ -59,7 +59,7 @@ namespace Emby.Dlna.Profiles
             {
                 new DirectPlayProfile
                 {
-                    Container = "ts",
+                    Container = "ts,mpegts",
                     VideoCodec = "h264,mpeg2video,hevc",
                     AudioCodec = "ac3,aac,mp3",
                     Type = DlnaProfileType.Video

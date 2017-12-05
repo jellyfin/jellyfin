@@ -708,6 +708,8 @@
     <EmbeddedResource Include="Localization\Core\zh-CN.json" />
     <EmbeddedResource Include="Localization\Core\zh-HK.json" />
     <EmbeddedResource Include="Localization\Core\en-US.json" />
+    <EmbeddedResource Include="Localization\Core\el.json" />
+    <EmbeddedResource Include="Localization\Core\gsw.json" />
     <None Include="packages.config" />
     <None Include="TextEncoding\NLangDetect\Profiles\afr" />
     <None Include="TextEncoding\NLangDetect\Profiles\ara" />

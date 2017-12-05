@@ -68,6 +68,8 @@ namespace MediaBrowser.Model.System
         /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
         public bool CanSelfUpdate { get; set; }
 
+        public bool CanLaunchWebBrowser { get; set; }
+
         /// <summary>
         /// Gets or sets plugin assemblies that failed to load.
         /// </summary>

@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>Task{`1}.</returns>
-        protected abstract Task<TReturnDataType> GetDataToSend(TStateType state);
+        protected abstract Task<TReturnDataType> GetDataToSend(TStateType state, CancellationToken cancellationToken);
 
         /// <summary>
         /// The logger
@@ -209,7 +209,9 @@ namespace MediaBrowser.Controller.Net
             {
                 var state = tuple.Item4;
 
-                var data = await GetDataToSend(state).ConfigureAwait(false);
+                var cancellationToken = tuple.Item2.Token;
+
+                var data = await GetDataToSend(state, cancellationToken).ConfigureAwait(false);
 
                 if (data != null)
                 {
@@ -218,7 +220,7 @@ namespace MediaBrowser.Controller.Net
                         MessageType = Name,
                         Data = data
 
-                    }, tuple.Item2.Token).ConfigureAwait(false);
+                    }, cancellationToken).ConfigureAwait(false);
 
                     state.DateLastSendUtc = DateTime.UtcNow;
                 }

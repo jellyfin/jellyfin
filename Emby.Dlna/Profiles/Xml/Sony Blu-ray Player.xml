@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Sony Blu-ray Player</Name>
   <Identification>
     <FriendlyName>Blu-ray Disc Player</FriendlyName>
@@ -39,7 +39,7 @@
     <XmlAttribute name="xmlns:av" value="urn:schemas-sony-com:av" />
   </XmlRootAttributes>
   <DirectPlayProfiles>
-    <DirectPlayProfile container="ts" audioCodec="ac3,aac,mp3,pcm" videoCodec="mpeg1video,mpeg2video,h264" type="Video" />
+    <DirectPlayProfile container="ts,mpegts" audioCodec="ac3,aac,mp3,pcm" videoCodec="mpeg1video,mpeg2video,h264" type="Video" />
     <DirectPlayProfile container="mpeg" audioCodec="ac3,mp3,pcm" videoCodec="mpeg1video,mpeg2video" type="Video" />
     <DirectPlayProfile container="avi,mp4,m4v" audioCodec="ac3,aac,mp3,pcm" videoCodec="mpeg4,h264" type="Video" />
     <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
@@ -84,7 +84,7 @@
     </CodecProfile>
   </CodecProfiles>
   <ResponseProfiles>
-    <ResponseProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264,mpeg4,vc1" type="Video" orgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO" mimeType="video/vnd.dlna.mpeg-tts">
+    <ResponseProfile container="ts,mpegts" audioCodec="ac3,aac,mp3" videoCodec="h264,mpeg4,vc1" type="Video" orgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO" mimeType="video/vnd.dlna.mpeg-tts">
       <Conditions />
     </ResponseProfile>
     <ResponseProfile container="avi" type="Video" mimeType="video/mpeg">
@@ -93,7 +93,7 @@
     <ResponseProfile container="mkv" type="Video" mimeType="video/vnd.dlna.mpeg-tts">
       <Conditions />
     </ResponseProfile>
-    <ResponseProfile container="ts" type="Video" mimeType="video/vnd.dlna.mpeg-tts">
+    <ResponseProfile container="ts,mpegts" type="Video" mimeType="video/vnd.dlna.mpeg-tts">
       <Conditions />
     </ResponseProfile>
     <ResponseProfile container="mp4" type="Video" mimeType="video/mpeg">

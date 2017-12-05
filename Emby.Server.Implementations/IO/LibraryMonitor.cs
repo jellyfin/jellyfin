@@ -237,7 +237,7 @@ namespace Emby.Server.Implementations.IO
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
         void LibraryManager_ItemRemoved(object sender, ItemChangeEventArgs e)
         {
-            if (e.Item.GetParent() is AggregateFolder)
+            if (e.Parent is AggregateFolder)
             {
                 StopWatchingPath(e.Item.Path);
             }
@@ -250,7 +250,7 @@ namespace Emby.Server.Implementations.IO
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
         void LibraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if (e.Item.GetParent() is AggregateFolder)
+            if (e.Parent is AggregateFolder)
             {
                 StartWatching(e.Item);
             }
@@ -320,7 +320,8 @@ namespace Emby.Server.Implementations.IO
                         IncludeSubdirectories = true
                     };
 
-                    if (_environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
+                    if (_environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows ||
+                    _environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.OSX)
                     {
                         newWatcher.InternalBufferSize = 32767;
                     }

@@ -37,5 +37,6 @@ namespace MediaBrowser.Model.Session
         public int? SubtitleStreamIndex { get; set; }
         public int? AudioStreamIndex { get; set; }
         public string MediaSourceId { get; set; }
+        public int? StartIndex { get; set; }
     }
 }

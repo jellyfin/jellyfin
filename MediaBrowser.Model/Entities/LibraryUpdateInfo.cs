@@ -35,6 +35,8 @@ namespace MediaBrowser.Model.Entities
         /// <value>The items updated.</value>
         public string[] ItemsUpdated { get; set; }
 
+        public string[] CollectionFolders { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryUpdateInfo"/> class.
         /// </summary>
@@ -45,6 +47,7 @@ namespace MediaBrowser.Model.Entities
             ItemsAdded = new string[] { };
             ItemsRemoved = new string[] { };
             ItemsUpdated = new string[] { };
+            CollectionFolders = new string[] { };
         }
     }
 }

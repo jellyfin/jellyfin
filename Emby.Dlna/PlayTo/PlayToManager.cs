@@ -18,6 +18,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Threading;
+using System.Threading;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -44,6 +45,8 @@ namespace Emby.Dlna.PlayTo
         private readonly List<string> _nonRendererUrls = new List<string>();
         private DateTime _lastRendererClear;
         private bool _disposed;
+        private SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
+        private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
 
         public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, ITimerFactory timerFactory)
         {
@@ -90,6 +93,7 @@ namespace Emby.Dlna.PlayTo
             if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
                      nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
             {
+                //_logger.Debug("Upnp device {0} does not contain a MediaRenderer device (0).", location);
                 return;
             }
 
@@ -98,92 +102,105 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
+            var cancellationToken = _disposeCancellationTokenSource.Token;
+
+            await _sessionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
             try
             {
-                lock (_nonRendererUrls)
-                {
-                    if ((DateTime.UtcNow - _lastRendererClear).TotalMinutes >= 10)
-                    {
-                        _nonRendererUrls.Clear();
-                        _lastRendererClear = DateTime.UtcNow;
-                    }
-
-                    if (_nonRendererUrls.Contains(location, StringComparer.OrdinalIgnoreCase))
-                    {
-                        return;
-                    }
-                }
-
-                var uri = info.Location;
-                _logger.Debug("Attempting to create PlayToController from location {0}", location);
-                var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger, _timerFactory).ConfigureAwait(false);
-
-                if (device.RendererCommands == null)
-                {
-                    lock (_nonRendererUrls)
-                    {
-                        _nonRendererUrls.Add(location);
-                        return;
-                    }
-                }
-
                 if (_disposed)
                 {
                     return;
                 }
 
-                _logger.Debug("Logging session activity from location {0}", location);
-                var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, _appHost.ApplicationVersion.ToString(), device.Properties.UUID, device.Properties.Name, uri.OriginalString, null)
-                    .ConfigureAwait(false);
+                await AddDevice(info, location, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
 
-                var controller = sessionInfo.SessionController as PlayToController;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error creating PlayTo device.", ex);
 
-                if (controller == null)
+                _nonRendererUrls.Add(location);
+            }
+            finally
+            {
+                _sessionLock.Release();
+            }
+        }
+
+        private async Task AddDevice(UpnpDeviceInfo info, string location, CancellationToken cancellationToken)
+        {
+            if ((DateTime.UtcNow - _lastRendererClear).TotalMinutes >= 10)
+            {
+                _nonRendererUrls.Clear();
+                _lastRendererClear = DateTime.UtcNow;
+            }
+
+            if (_nonRendererUrls.Contains(location, StringComparer.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            var uri = info.Location;
+            _logger.Debug("Attempting to create PlayToController from location {0}", location);
+            var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger, _timerFactory, cancellationToken).ConfigureAwait(false);
+
+            if (device.RendererCommands == null)
+            {
+                //_logger.Debug("Upnp device {0} does not contain a MediaRenderer device (1).", location);
+                _nonRendererUrls.Add(location);
+                return;
+            }
+
+            _logger.Debug("Logging session activity from location {0}", location);
+            var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, _appHost.ApplicationVersion.ToString(), device.Properties.UUID, device.Properties.Name, uri.OriginalString, null).ConfigureAwait(false);
+
+            var controller = sessionInfo.SessionController as PlayToController;
+
+            if (controller == null)
+            {
+                string serverAddress;
+                if (info.LocalIpAddress == null || info.LocalIpAddress.Equals(IpAddressInfo.Any) || info.LocalIpAddress.Equals(IpAddressInfo.IPv6Loopback))
                 {
-                    if (_disposed)
+                    serverAddress = await GetServerAddress(null, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    serverAddress = await GetServerAddress(info.LocalIpAddress, cancellationToken).ConfigureAwait(false);
+                }
+
+                string accessToken = null;
+
+                sessionInfo.SessionController = controller = new PlayToController(sessionInfo,
+                    _sessionManager,
+                    _libraryManager,
+                    _logger,
+                    _dlnaManager,
+                    _userManager,
+                    _imageProcessor,
+                    serverAddress,
+                    accessToken,
+                    _deviceDiscovery,
+                    _userDataManager,
+                    _localization,
+                    _mediaSourceManager,
+                    _config,
+                    _mediaEncoder);
+
+                controller.Init(device);
+
+                var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
+                              _dlnaManager.GetDefaultProfile();
+
+                _sessionManager.ReportCapabilities(sessionInfo.Id, new ClientCapabilities
+                {
+                    PlayableMediaTypes = profile.GetSupportedMediaTypes(),
+
+                    SupportedCommands = new string[]
                     {
-                        return;
-                    }
-
-                    string serverAddress;
-                    if (info.LocalIpAddress == null || info.LocalIpAddress.Equals(IpAddressInfo.Any) || info.LocalIpAddress.Equals(IpAddressInfo.IPv6Loopback))
-                    {
-                        serverAddress = await GetServerAddress(null).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        serverAddress = await GetServerAddress(info.LocalIpAddress).ConfigureAwait(false);
-                    }
-
-                    string accessToken = null;
-
-                    sessionInfo.SessionController = controller = new PlayToController(sessionInfo,
-                        _sessionManager,
-                        _libraryManager,
-                        _logger,
-                        _dlnaManager,
-                        _userManager,
-                        _imageProcessor,
-                        serverAddress,
-                        accessToken,
-                        _deviceDiscovery,
-                        _userDataManager,
-                        _localization,
-                        _mediaSourceManager,
-                        _config,
-                        _mediaEncoder);
-
-                    controller.Init(device);
-
-                    var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
-                                  _dlnaManager.GetDefaultProfile();
-
-                    _sessionManager.ReportCapabilities(sessionInfo.Id, new ClientCapabilities
-                    {
-                        PlayableMediaTypes = profile.GetSupportedMediaTypes(),
-
-                        SupportedCommands = new string[]
-                        {
                             GeneralCommandType.VolumeDown.ToString(),
                             GeneralCommandType.VolumeUp.ToString(),
                             GeneralCommandType.Mute.ToString(),
@@ -192,33 +209,23 @@ namespace Emby.Dlna.PlayTo
                             GeneralCommandType.SetVolume.ToString(),
                             GeneralCommandType.SetAudioStreamIndex.ToString(),
                             GeneralCommandType.SetSubtitleStreamIndex.ToString()
-                        },
+                    },
 
-                        SupportsMediaControl = true,
+                    SupportsMediaControl = true,
 
-                        // xbox one creates a new uuid everytime it restarts
-                        SupportsPersistentIdentifier = (device.Properties.ModelName ?? string.Empty).IndexOf("xbox", StringComparison.OrdinalIgnoreCase) == -1
-                    });
+                    // xbox one creates a new uuid everytime it restarts
+                    SupportsPersistentIdentifier = (device.Properties.ModelName ?? string.Empty).IndexOf("xbox", StringComparison.OrdinalIgnoreCase) == -1
+                });
 
-                    _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error creating PlayTo device.", ex);
-
-                lock (_nonRendererUrls)
-                {
-                    _nonRendererUrls.Add(location);
-                }
+                _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
             }
         }
 
-        private Task<string> GetServerAddress(IpAddressInfo address)
+        private Task<string> GetServerAddress(IpAddressInfo address, CancellationToken cancellationToken)
         {
             if (address == null)
             {
-                return _appHost.GetLocalApiUrl();
+                return _appHost.GetLocalApiUrl(cancellationToken);
             }
 
             return Task.FromResult(_appHost.GetLocalApiUrl(address));
@@ -226,6 +233,15 @@ namespace Emby.Dlna.PlayTo
 
         public void Dispose()
         {
+            try
+            {
+                _disposeCancellationTokenSource.Cancel();
+            }
+            catch
+            {
+
+            }
+
             _disposed = true;
             _deviceDiscovery.DeviceDiscovered -= _deviceDiscovery_DeviceDiscovered;
             GC.SuppressFinalize(this);

@@ -17,11 +17,54 @@ namespace Emby.Server.Implementations.Networking
     public class NetworkManager : INetworkManager
     {
         protected ILogger Logger { get; private set; }
-        private DateTime _lastRefresh;
+
+        public event EventHandler NetworkChanged;
 
         public NetworkManager(ILogger logger)
         {
             Logger = logger;
+
+            try
+            {
+                NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error binding to NetworkAddressChanged event", ex);
+            }
+
+            try
+            {
+                NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAvailabilityChanged;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error binding to NetworkChange_NetworkAvailabilityChanged event", ex);
+            }
+        }
+
+        private void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        {
+            Logger.Debug("NetworkAvailabilityChanged");
+            OnNetworkChanged();
+        }
+
+        private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
+        {
+            Logger.Debug("NetworkAddressChanged");
+            OnNetworkChanged();
+        }
+
+        private void OnNetworkChanged()
+        {
+            lock (_localIpAddressSyncLock)
+            {
+                _localIpAddresses = null;
+            }
+            if (NetworkChanged != null)
+            {
+                NetworkChanged(this, EventArgs.Empty);
+            }
         }
 
         private List<IpAddressInfo> _localIpAddresses;
@@ -29,34 +72,28 @@ namespace Emby.Server.Implementations.Networking
 
         public List<IpAddressInfo> GetLocalIpAddresses()
         {
-            const int cacheMinutes = 10;
-
             lock (_localIpAddressSyncLock)
             {
-                var forceRefresh = (DateTime.UtcNow - _lastRefresh).TotalMinutes >= cacheMinutes;
-
-                if (_localIpAddresses == null || forceRefresh)
+                if (_localIpAddresses == null)
                 {
-                    var addresses = GetLocalIpAddressesInternal().Select(ToIpAddressInfo).ToList();
+                    var addresses = GetLocalIpAddressesInternal().Result.Select(ToIpAddressInfo).ToList();
 
                     _localIpAddresses = addresses;
-                    _lastRefresh = DateTime.UtcNow;
 
                     return addresses;
                 }
+                return _localIpAddresses;
             }
-
-            return _localIpAddresses;
         }
 
-        private IEnumerable<IPAddress> GetLocalIpAddressesInternal()
+        private async Task<List<IPAddress>> GetLocalIpAddressesInternal()
         {
             var list = GetIPsDefault()
                 .ToList();
 
             if (list.Count == 0)
             {
-                list.AddRange(GetLocalIpAddressesFallback().Result);
+                list.AddRange(await GetLocalIpAddressesFallback().ConfigureAwait(false));
             }
 
             var listClone = list.ToList();
@@ -65,7 +102,8 @@ namespace Emby.Server.Implementations.Networking
                 .OrderBy(i => i.AddressFamily == AddressFamily.InterNetwork ? 0 : 1)
                 .ThenBy(i => listClone.IndexOf(i))
                 .Where(FilterIpAddress)
-                .DistinctBy(i => i.ToString());
+                .DistinctBy(i => i.ToString())
+                .ToList();
         }
 
         private bool FilterIpAddress(IPAddress address)

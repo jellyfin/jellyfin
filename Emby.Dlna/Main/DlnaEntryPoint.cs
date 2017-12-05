@@ -24,6 +24,7 @@ using MediaBrowser.Model.System;
 using MediaBrowser.Model.Threading;
 using Rssdp;
 using Rssdp.Infrastructure;
+using System.Threading;
 
 namespace Emby.Dlna.Main
 {
@@ -252,7 +253,7 @@ namespace Emby.Dlna.Main
             var cacheLength = _config.GetDlnaConfiguration().BlastAliveMessageIntervalSeconds;
             _Publisher.SupportPnpRootDevice = false;
 
-            var addresses = (await _appHost.GetLocalIpAddresses().ConfigureAwait(false)).ToList();
+            var addresses = (await _appHost.GetLocalIpAddresses(CancellationToken.None).ConfigureAwait(false)).ToList();
 
             var udn = CreateUuid(_appHost.SystemId);
 

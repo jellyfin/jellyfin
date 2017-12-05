@@ -743,6 +743,14 @@ namespace Rssdp
 
         private static void AddCustomProperty(XmlReader reader, SsdpDevice device)
         {
+            // If the property is an empty element, there is no value to read
+            // Advance the reader and return
+            if (reader.IsEmptyElement)
+            {
+                reader.Read();
+                return;
+            }
+
             var newProp = new SsdpDeviceProperty() { Namespace = reader.Prefix, Name = reader.LocalName };
             int depth = reader.Depth;
             reader.Read();

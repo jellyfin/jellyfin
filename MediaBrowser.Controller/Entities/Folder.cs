@@ -466,11 +466,11 @@ namespace MediaBrowser.Controller.Entities
 
                             item.SetParent(null);
                             await LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }).ConfigureAwait(false);
-                            LibraryManager.ReportItemRemoved(item);
+                            LibraryManager.ReportItemRemoved(item, this);
                         }
                     }
 
-                    LibraryManager.CreateItems(newItems, cancellationToken);
+                    LibraryManager.CreateItems(newItems, this, cancellationToken);
                 }
             }
             else

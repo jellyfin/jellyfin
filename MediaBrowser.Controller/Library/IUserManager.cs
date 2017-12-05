@@ -143,7 +143,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Authenticates the user.
         /// </summary>
-        Task<User> AuthenticateUser(string username, string password, string passwordSha1, string passwordMd5, string remoteEndPoint);
+        Task<User> AuthenticateUser(string username, string password, string passwordSha1, string passwordMd5, string remoteEndPoint, bool isUserSession);
 
         /// <summary>
         /// Starts the forgot password process.
