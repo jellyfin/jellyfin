@@ -421,7 +421,7 @@
     "HeaderMyMedia": "Moje media",
     "HeaderMyMediaSmall": "Moje media (ma\u0142e)",
     "LatestFromLibrary": "Ostatnio dodane do {0}",
-    "ContinueWatching": "Continue watching",
+    "ContinueWatching": "Kontynuuj odtwarzanie",
     "HeaderLatestChannelMedia": "Kana\u0142y ostatnio dodane",
     "HeaderContinueWatching": "Kontynuuj ogl\u0105danie",
     "HeaderContinueListening": "Kontynuuj s\u0142uchanie",
@@ -627,11 +627,11 @@
     "Horizontal": "Horyzontalny",
     "Vertical": "Wertykalny",
     "GroupBySeries": "Grupuj po serialach",
-    "HeaderVideoType": "Video Type",
-    "HeaderSeriesStatus": "Series Status",
-    "Features": "Features",
-    "Trailers": "Trailers",
-    "Extras": "Extras",
-    "ThemeSongs": "Theme songs",
-    "ThemeVideos": "Theme videos"
+    "HeaderVideoType": "Typ wideo",
+    "HeaderSeriesStatus": "Stan serialu",
+    "Features": "Funkcje",
+    "Trailers": "Zwiastuny",
+    "Extras": "Materia\u0142y dodatkowe",
+    "ThemeSongs": "Motywy muzyczne",
+    "ThemeVideos": "Motywy wideo"
 }
