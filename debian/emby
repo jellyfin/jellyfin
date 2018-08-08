@@ -1,0 +1,37 @@
+#Allow emby group to start, stop and restart itself
+Cmnd_Alias RESTARTSERVER_SYSV = /sbin/service emby-server restart, /usr/sbin/service emby-server restart
+Cmnd_Alias STARTSERVER_SYSV = /sbin/service emby-server start, /usr/sbin/service emby-server start
+Cmnd_Alias STOPSERVER_SYSV = /sbin/service emby-server stop, /usr/sbin/service emby-server stop
+Cmnd_Alias RESTARTSERVER_SYSTEMD = /usr/bin/systemctl restart emby-server, /bin/systemctl restart emby-server
+Cmnd_Alias STARTSERVER_SYSTEMD = /usr/bin/systemctl start emby-server, /bin/systemctl start emby-server
+Cmnd_Alias STOPSERVER_SYSTEMD = /usr/bin/systemctl stop emby-server, /bin/systemctl stop emby-server
+Cmnd_Alias RESTARTSERVER_INITD = /etc/init.d/emby-server restart
+Cmnd_Alias STARTSERVER_INITD = /etc/init.d/emby-server start
+Cmnd_Alias STOPSERVER_INITD = /etc/init.d/emby-server stop
+
+
+%emby ALL=(ALL) NOPASSWD: RESTARTSERVER_SYSV
+%emby ALL=(ALL) NOPASSWD: STARTSERVER_SYSV
+%emby ALL=(ALL) NOPASSWD: STOPSERVER_SYSV
+%emby ALL=(ALL) NOPASSWD: RESTARTSERVER_SYSTEMD
+%emby ALL=(ALL) NOPASSWD: STARTSERVER_SYSTEMD
+%emby ALL=(ALL) NOPASSWD: STOPSERVER_SYSTEMD
+%emby ALL=(ALL) NOPASSWD: RESTARTSERVER_INITD
+%emby ALL=(ALL) NOPASSWD: STARTSERVER_INITD
+%emby ALL=(ALL) NOPASSWD: STOPSERVER_INITD
+
+Defaults!RESTARTSERVER_SYSV !requiretty
+Defaults!STARTSERVER_SYSV !requiretty
+Defaults!STOPSERVER_SYSV !requiretty
+Defaults!RESTARTSERVER_SYSTEMD !requiretty
+Defaults!STARTSERVER_SYSTEMD !requiretty
+Defaults!STOPSERVER_SYSTEMD !requiretty
+Defaults!RESTARTSERVER_INITD !requiretty
+Defaults!STARTSERVER_INITD !requiretty
+Defaults!STOPSERVER_INITD !requiretty
+
+#Allow the server to mount iso images
+%emby ALL=(ALL) NOPASSWD: /bin/mount
+%emby ALL=(ALL) NOPASSWD: /bin/umount
+
+Defaults:%emby !requiretty

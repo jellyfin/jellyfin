@@ -1,0 +1,88 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          emby-server
+# Required-Start:    $remote_fs $local_fs $network
+# Required-Stop:     $remote_fs $local_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts instance of Emby
+# Description:       starts instance of Emby
+### END INIT INFO
+
+
+# chkconfig: 2345 20 80
+#The above indicates that the script should be started in levels 2, 3, 4, and 5, #that its start priority should be 20, and that its stop priority should be 80.
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
+. /lib/lsb/init-functions
+
+NAME=emby-server
+CONF_FILE=/etc/${NAME}.conf
+DEFAULT_FILE=/etc/default/${NAME}
+
+# Source Emby server default configuration
+. $DEFAULT_FILE
+
+# Source Emby server user configuration overrides
+if [[ -f $CONF_FILE ]]; then
+  . $CONF_FILE
+else
+  echo "${CONF_FILE} not found using default settings.";
+fi
+
+# Path of emby binary
+EMBYSERVER=/usr/bin/emby-server
+PIDFILE=${EMBY_PIDFILE-/var/run/emby-server.pid}
+
+case "$1" in
+  start)
+    log_daemon_msg "Starting $NAME daemon"
+    if [[ -s $PIDFILE ]] && [[ -n "$(ps -p $(cat $PIDFILE) -o pid=)" ]]; then
+      log_daemon_msg "apparently already running"
+      log_end_msg 0
+      exit 0
+    fi
+    exec $EMBYSERVER start &
+    sleep 2
+    if [[ -s $PIDFILE ]] && [[ -n "$(ps -p $(cat $PIDFILE) -o pid=)" ]]; then
+      log_end_msg 0
+    else
+      log_end_msg 1
+    fi
+    ;;
+  stop)
+    log_daemon_msg "Stopping $NAME daemon"
+    if [[ ! -s $PIDFILE ]] ||  [[ -z "$(ps -p $(cat $PIDFILE) -o pid=)" ]]; then
+      [[ -e $PIDFILE ]] && rm -rf $PIDFILE
+      log_success_msg "apparently already stopped"
+      log_end_msg 0
+      exit 0
+    fi
+    PID=$(cat $PIDFILE)
+    CPIDS=$(pgrep -P $PID)
+    sleep 2 && kill -KILL $CPIDS
+    kill -TERM $CPIDS > /dev/null 2>&1
+    sleep 2
+    if [[ -z "$(ps -p $PID -o pid=)" ]]; then
+      rm -rf $PIDFILE
+      log_end_msg 0
+    else
+      log_end_msg 1
+    fi
+    ;;
+  status)
+    status_of_proc -p $PIDFILE "$EMBYSERVER" "$NAME"
+    exit $? # notreached due to set -e
+    ;;
+  restart|force-reload)
+    $0 stop || exit $?
+    $0 start || exit $?
+    ;;
+  *)
+    echo "Usage: /etc/init.d/emby-server {start|stop|status|restart|force-reload}" >&2
+    exit 3
+    ;;
+esac

@@ -1,0 +1,3 @@
+# This is an override for the following lintian errors:
+emby-server source: license-problem-md5sum-non-free-file Emby.Drawing/ImageMagick/fonts/webdings.ttf*
+emby-server source: source-is-missing

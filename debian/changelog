@@ -1,0 +1,6 @@
+emby-server (3.4.1.4-unlocked) unstable; urgency=medium
+
+  * New upstream minor release with merged fix for premium
+
+ -- Joshua Boniface <joshua@boniface.me>  Fri, 8 Aug 2018 01:18:45 -0400
+

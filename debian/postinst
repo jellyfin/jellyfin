@@ -1,0 +1,81 @@
+#!/bin/bash
+set -e
+
+NAME=emby-server
+CONF_FILE=/etc/${NAME}.conf
+DEFAULT_FILE=/etc/default/${NAME}
+
+# Source Emby server default configuration
+if [[ -f $DEFAULT_FILE ]]; then
+  . $DEFAULT_FILE
+fi
+
+# Source Emby server user configuration overrides
+if [[ -f $CONF_FILE ]]; then
+  . $CONF_FILE
+fi
+
+# Data directory where Emby database, cache and logs are stored
+PROGRAMDATA=${EMBY_DATA-/var/lib/$NAME}
+
+case "$1" in
+  configure)
+    # create emby group if it does not exist
+    if [[ -z "$(getent group emby)" ]]; then
+      addgroup --quiet --system emby > /dev/null 2>&1
+    fi
+    # create emby user if it does not exist
+    if [[ -z "$(getent passwd emby)"  ]]; then
+      adduser --system --ingroup emby --shell /bin/false emby --no-create-home --home ${PROGRAMDATA} \
+        --gecos "Emby Server default user" > /dev/null 2>&1
+    fi
+    # ensure $PROGRAMDATA has appropriate permissions
+    if [[ ! -d $PROGRAMDATA ]]; then
+      mkdir $PROGRAMDATA
+      chown -R emby:emby $PROGRAMDATA
+    fi
+    # ensure emby-server binary has appropriate permissions
+    chmod 755 /usr/bin/emby-server
+
+    /usr/bin/mono --aot=full -O=all $EMBY_BIN > /dev/null 2>&1 || true
+
+    chmod +x ${EMBY_DIR}/restart.sh > /dev/null 2>&1 || true
+
+    ;;
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+    *)
+      echo "postinst called with unknown argument \`$1'" >&2
+      exit 1
+    ;;
+esac
+
+#DEBHELPER
+
+if [[ -x "/usr/bin/deb-systemd-helper" ]]; then
+  # Manual init script handling
+  deb-systemd-helper unmask emby-server.service >/dev/null || true
+  # was-enabled defaults to true, so new installations run enable.
+  if deb-systemd-helper --quiet was-enabled emby-server.service; then
+    # Enables the unit on first installation, creates new
+    # symlinks on upgrades if the unit file has changed.
+    deb-systemd-helper enable emby-server.service >/dev/null || true
+  else
+    # Update the statefile to add new symlinks (if any), which need to be
+    # cleaned up on purge. Also remove old symlinks.
+    deb-systemd-helper update-state emby-server.service >/dev/null || true
+  fi
+fi
+
+# End automatically added section
+# Automatically added by dh_installinit
+if [[ "$1" == "configure" ]] || [[ "$1" == "abort-upgrade" ]]; then
+  if [[ -d "/run/systemd/systemd" ]]; then
+    systemctl --system daemon-reload >/dev/null || true
+    deb-systemd-invoke start emby-server >/dev/null || true
+  elif [[ -x "/etc/init.d/emby-server" ]] || [[ -e "/etc/init/emby-server.conf" ]]; then
+    update-rc.d emby-server defaults >/dev/null
+    invoke-rc.d emby-server start || exit $?
+  fi
+fi
+exit 0

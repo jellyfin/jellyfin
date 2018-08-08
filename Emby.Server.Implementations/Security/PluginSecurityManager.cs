@@ -156,7 +156,6 @@ namespace Emby.Server.Implementations.Security
 
                 if (e.StatusCode.HasValue && e.StatusCode.Value == HttpStatusCode.PaymentRequired)
                 {
-                    throw new PaymentRequiredException();
                 }
                 throw new Exception("Error registering store sale");
             }
@@ -192,98 +191,14 @@ namespace Emby.Server.Implementations.Security
 
             try
             {
-                var regInfo = LicenseFile.GetRegInfo(feature);
-                var lastChecked = regInfo == null ? DateTime.MinValue : regInfo.LastChecked;
-                var expDate = regInfo == null ? DateTime.MinValue : regInfo.ExpirationDate;
-
-                var maxCacheDays = 14;
-                var nextCheckDate = new[] { expDate, lastChecked.AddDays(maxCacheDays) }.Min();
-
-                if (nextCheckDate > DateTime.UtcNow.AddDays(maxCacheDays))
-                {
-                    nextCheckDate = DateTime.MinValue;
-                }
-
-                //check the reg file first to alleviate strain on the MB admin server - must actually check in every 30 days tho
-                var reg = new RegRecord
-                {
-                    // Cache the result for up to a week
-                    registered = regInfo != null && nextCheckDate >= DateTime.UtcNow && expDate >= DateTime.UtcNow,
-                    expDate = expDate
-                };
-
-                var key = SupporterKey;
-
-                if (!forceCallToServer && string.IsNullOrWhiteSpace(key))
-                {
-                    return new MBRegistrationRecord();
-                }
-
-                var success = reg.registered;
-
-                if (!(lastChecked > DateTime.UtcNow.AddDays(-1)) || (!reg.registered))
-                {
-                    var data = new Dictionary<string, string>
-                {
-                    { "feature", feature },
-                    { "key", key },
-                    { "mac", _appHost.SystemId },
-                    { "systemid", _appHost.SystemId },
-                    { "ver", version },
-                    { "platform", _appHost.OperatingSystemDisplayName }
-                };
-
-                    try
-                    {
-                        var options = new HttpRequestOptions
-                        {
-                            Url = MBValidateUrl,
-
-                            // Seeing block length errors
-                            EnableHttpCompression = false,
-                            BufferContent = false,
-                            CancellationToken = cancellationToken
-                        };
-
-                        options.SetPostData(data);
-
-                        using (var response = (await _httpClient.Post(options).ConfigureAwait(false)))
-                        {
-                            using (var json = response.Content)
-                            {
-                                reg = await _jsonSerializer.DeserializeFromStreamAsync<RegRecord>(json).ConfigureAwait(false);
-                                success = true;
-                            }
-                        }
-
-                        if (reg.registered)
-                        {
-                            _logger.Info("Registered for feature {0}", feature);
-                            LicenseFile.AddRegCheck(feature, reg.expDate);
-                        }
-                        else
-                        {
-                            _logger.Info("Not registered for feature {0}", feature);
-                            LicenseFile.RemoveRegCheck(feature);
-                        }
-
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.ErrorException("Error checking registration status of {0}", e, feature);
-                    }
-                }
-
                 var record = new MBRegistrationRecord
                 {
-                    IsRegistered = reg.registered,
-                    ExpirationDate = reg.expDate,
+                    IsRegistered = true,
                     RegChecked = true,
-                    RegError = !success
+                    TrialVersion = false,
+                    IsValid = true,
+                    RegError = false
                 };
-
-                record.TrialVersion = IsInTrial(reg.expDate, record.RegChecked, record.IsRegistered);
-                record.IsValid = !record.RegChecked || record.IsRegistered || record.TrialVersion;
 
                 return record;
             }
