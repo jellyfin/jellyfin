@@ -7,6 +7,7 @@ Build-Depends:  debhelper (>= 9),
                 libmono-cil-dev (>= 4.6),
                 mono-devel (>= 4.6),
                 mono-xbuild (>= 4.6),
+                cli-common-dev (>= 0.8),
                 referenceassemblies-pcl,
                 libc6-dev
 Standards-Version: 3.9.4
