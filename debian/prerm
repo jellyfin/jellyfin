@@ -1,0 +1,64 @@
+#!/bin/bash
+set -e
+
+NAME=emby-server
+CONF_FILE=/etc/${NAME}.conf
+DEFAULT_FILE=/etc/default/${NAME}
+
+# Source Emby server default configuration
+if [[ -f $DEFAULT_FILE ]]; then
+  . $DEFAULT_FILE
+fi
+
+# Source Emby server user configuration overrides
+if [[ -f $CONF_FILE ]]; then
+  . $CONF_FILE
+fi
+
+# Data directory where Emby database, cache and logs are stored
+PROGRAMDATA=${EMBY_DATA-/var/lib/$NAME}
+
+case "$1" in
+  remove|upgrade|deconfigure)
+    echo "Stopping Emby Server!"
+    # try graceful termination;
+    if [[ -d /run/systemd/system ]]; then
+      deb-systemd-invoke stop ${NAME}.service > /dev/null 2>&1 || true
+    elif [ -x "/etc/init.d/${NAME}" ] || [ -e "/etc/init/${NAME}.conf" ]; then
+      invoke-rc.d ${NAME} stop > /dev/null 2>&1 || true
+    fi
+    # Ensure that it is shutdown
+    PIDFILE=$(find /var/run/ -maxdepth 1 -mindepth 1 -name "emby*.pid" -print -quit)
+    [[ -n "$PIDFILE" ]] && [[ -s "$PIDFILE" ]] && EMBY_PID=$(cat ${PIDFILE})
+    # if its running, let's stop it
+    if [[ -n "$EMBY_PID" ]]; then
+      # if emby is still running, kill it
+      if [[ -n "$(ps -p $EMBY_PID -o pid=)" ]]; then
+        CPIDS=$(pgrep -P $EMBY_PID)
+        sleep 2 && kill -KILL $CPIDS
+        kill -TERM $CPIDS > /dev/null 2>&1
+      fi
+      sleep 1
+      # if it's still running, show error
+      if [[ -n "$(ps -p $EMBY_PID -o pid=)" ]]; then
+        echo "Could not successfully stop EmbyServer, please do so before uninstalling."
+        exit 1
+      else
+        [[ -f $PIDFILE ]] && rm $PIDFILE
+      fi
+    fi
+    if [[ -f /usr/lib/emby-server/bin/MediaBrowser.Server.Mono.exe.so ]]; then
+      rm /usr/lib/emby-server/bin/MediaBrowser.Server.Mono.exe.so
+    fi
+    ;;
+  failed-upgrade)
+    ;;
+  *)
+    echo "prerm called with unknown argument \`$1'" >&2
+    exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

@@ -1,0 +1,64 @@
+#!/bin/bash
+set -e
+
+NAME=emby-server
+CONF_FILE=/etc/${NAME}.conf
+DEFAULT_FILE=/etc/default/${NAME}
+
+# Source Emby server default configuration
+if [[ -f $DEFAULT_FILE ]]; then
+  . $DEFAULT_FILE
+fi
+
+# Source Emby server user configuration overrides
+if [[ -f $CONF_FILE ]]; then
+  . $CONF_FILE
+fi
+
+# Data directory where Emby database, cache and logs are stored
+PROGRAMDATA=${EMBY_DATA-/var/lib/$NAME}
+
+# In case this system is running systemd, we make systemd reload the unit files
+# to pick up changes.
+if [[ -d /run/systemd/system ]] ; then
+  systemctl --system daemon-reload >/dev/null || true
+fi
+
+case "$1" in
+  purge)
+    echo PURGE | debconf-communicate $NAME > /dev/null 2>&1 || true
+
+    if [[ -x "/etc/init.d/emby-server" ]] || [[ -e "/etc/init/emby-server.connf" ]]; then
+      update-rc.d emby-server remove >/dev/null 2>&1 || true
+    fi
+
+    if [[ -x "/usr/bin/deb-systemd-helper" ]]; then
+      deb-systemd-helper purge emby-server.service >/dev/null
+      deb-systemd-helper unmask emby-server.service >/dev/null
+    fi
+
+    userdel emby > /dev/null 2>&1 || true
+    delgroup --quiet emby > /dev/null 2>&1 || true
+    if [[ -d $PROGRAMDATA ]]; then
+      rm -rf $PROGRAMDATA
+    fi
+    [[ -f /usr/bin/emby-server ]] && rm /usr/bin/emby-server
+    [[ -f /etc/sudoers.d/emby ]] && rm /etc/sudoers.d/emby
+    [[ -d /var/lib/emby-server ]] && rm -rf /var/lib/emby-server
+    ;;
+  remove)
+    if [[ -x "/usr/bin/deb-systemd-helper" ]]; then
+      deb-systemd-helper mask emby-server.service >/dev/null
+    fi
+    ;;
+  upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+    ;;
+  *)
+    echo "postrm called with unknown argument \`$1'" >&2
+    exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0
