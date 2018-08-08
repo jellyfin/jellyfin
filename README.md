@@ -5,7 +5,7 @@ Emby Server is a personal media server with apps on just about every device.
 
 It features a REST-based API with built-in documention to facilitate client development. We also have client libraries for our API to enable rapid development.
 
-This repository is a hard fork of Emby 4.2.1.14 which eliminates the Premium options and unlocks all included features.
+This repository is a hard fork of Emby 3.4.1.14 which eliminates the Premium options and unlocks all included features.
 
 ## Emby Apps
 
