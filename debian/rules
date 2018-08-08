@@ -22,10 +22,10 @@ ifneq ("$(wildcard $(CURDIR)/MediaBrowser.Server.Mono/SQLitePCLRaw.provider.sqli
 		sed -i -e 's%<dllmap dll="dl" target="libdl.so" os="linux"/>%<dllmap dll="dl" target="libdl.so.2" os="linux"/>%' $(CURDIR)/MediaBrowser.Server.Mono/SQLitePCLRaw.provider.sqlite3.dll.config; \
 	fi
 endif
-	xbuild $(CURDIR)/MediaBrowser.sln /p:Configuration="Release Mono" /p:Platform="Any Cpu" /property:OutputPath='$(CURDIR)/usr/lib/emby-server/bin' /t:build
+	msbuild $(CURDIR)/MediaBrowser.sln /p:Configuration="Release Mono" /p:Platform="Any Cpu" /property:OutputPath='$(CURDIR)/usr/lib/emby-server/bin' /t:build
 
 override_dh_auto_clean:
-	xbuild $(CURDIR)/MediaBrowser.sln /p:Configuration="Release Mono" /p:Platform="Any Cpu" /t:clean
+	msbuild $(CURDIR)/MediaBrowser.sln /p:Configuration="Release Mono" /p:Platform="Any Cpu" /t:clean
 
 # disable package does not produce library files
 override_dh_makeclilibs:
