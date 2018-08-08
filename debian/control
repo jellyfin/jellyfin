@@ -3,11 +3,11 @@ Section: misc
 Priority: optional
 Maintainer: HurricaneHernandez <carlos@techbyte.ca>
 Build-Depends:  debhelper (>= 9),
-                cli-common-dev (>= 0.7),
-                libmono-cil-dev (>= 4.6),
-                mono-devel (>= 4.6),
-                mono-xbuild (>= 4.6),
-                cli-common-dev (>= 0.8),
+                cli-common-dev (>= 0.9),
+                libmono-cil-dev (>= 5.14),
+                mono-devel (>= 5.14),
+                mono-xbuild (>= 5.14),
+                cli-common-dev (>= 0.9),
                 referenceassemblies-pcl,
                 libc6-dev
 Standards-Version: 3.9.4
