@@ -33,6 +33,8 @@ I welcome any feedback, forks, or pull requests.
 
 Enter the repository directory and run `dpkg-buildpackage -us -uc -jX`, where X is your core count. It will take some time to build and has many dependencies, especially `mono-devel` version 5.18 or newer. Obtain the latest version by using the [instructions here](https://www.mono-project.com/download/stable/#download-lin-debian).
 
+A huge thanks to Carlos Hernandez who created the Debian build configuration for Emby 3.1.1, which is forward-ported to 3.4.1 in this repository. His repository is [here](https://download.opensuse.org/repositories/home:/emby/Debian_9.0/) and contains stock packages for the 3.1.1 release.
+
 ---
 
 The original README follows
