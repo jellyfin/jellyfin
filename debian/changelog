@@ -1,6 +1,6 @@
 emby-server (3.4.1.18-unlocked) unstable; urgency=medium
 
-  * New upstream minor release with merged fix for premium
+  * Hard fork of Emby 3.4.1.18 including premium unlock
 
- -- Joshua Boniface <joshua@boniface.me>  Fri, 8 Aug 2018 01:18:45 -0400
+ -- Joshua Boniface <joshua@boniface.me>  Thu, 9 Aug 2018 00:33:19 -0400
 
