@@ -20,6 +20,9 @@ local.properties
 .settings/
 .loadpath
 
+# Don't ignore the debian/bin folder
+!debian/bin/
+
 # External tool builders
 .externalToolBuilders/
 
