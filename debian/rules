@@ -12,7 +12,6 @@ override_dh_auto_test:
 override_dh_clistrip:
 
 override_dh_auto_build:
-	sed -i -e 's%<dllmap dll="CORE_RL_Wand_.dll" target="libMagickWand-6.Q8.so" os="linux"/>%<dllmap dll="CORE_RL_Wand_.dll" target="libEmbyMagickWand-6.Q8.so.2" os="linux"/>\n<dllmap dll="CORE_RL_magick_.dll" target="libEmbyMagickCore-6.Q8.so.2" os="linux"/>%' $(CURDIR)/MediaBrowser.Server.Mono/ImageMagickSharp.dll.config
 ifneq ("$(wildcard $(CURDIR)/MediaBrowser.Server.Mono/SQLitePCLRaw.provider.sqlite3.dll.config)","")
 	$(eval libdl_count := $(shell grep -c "libdl" $(CURDIR)/MediaBrowser.Server.Mono/SQLitePCLRaw.provider.sqlite3.dll.config))
 	@ if [[ "$(libdl_count)" -eq "0" ]]; then \
@@ -30,7 +29,7 @@ override_dh_auto_clean:
 override_dh_makeclilibs:
 
 override_dh_clideps:
-	dh_clideps --exclude-moduleref=i:ole32 --exclude-moduleref=i:msvcrt --exclude-moduleref=i:Mono.Posix.dll --exclude-moduleref=i:MonoPosixHelper --exclude-moduleref=i:CORE_RL_Wand_ --exclude-moduleref=i:MediaInfo --exclude-moduleref=i:CORE_RL_magick_ --exclude-moduleref=i:sqlite3 --exclude-moduleref=i:libSkiaSharp --exclude-moduleref=i:SkiaSharp --exclude-moduleref=i:libEGL.dll --exclude-moduleref=ntdll.dll 
+	dh_clideps --exclude-moduleref=i:ole32 --exclude-moduleref=i:msvcrt --exclude-moduleref=i:Mono.Posix.dll --exclude-moduleref=i:MonoPosixHelper --exclude-moduleref=i:CORE_RL_Wand_ --exclude-moduleref=i:MediaInfo --exclude-moduleref=i:CORE_RL_magick_ --exclude-moduleref=i:sqlite3 --exclude-moduleref=i:libSkiaSharp --exclude-moduleref=i:SkiaSharp --exclude-moduleref=i:libEGL.dll --exclude-moduleref=ntdll.dll
 
 override_dh_installinit:
 	# use "emby-server" as our service name, not "emby-server-beta"
