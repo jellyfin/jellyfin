@@ -3,10 +3,10 @@ Section: misc
 Priority: optional
 Maintainer: Joshua Boniface <joshua@boniface.me>
 Build-Depends:  debhelper (>= 9),
-                cli-common-dev (>= 0.9),
-                libmono-cil-dev (>= 5.14),
                 mono-devel (>= 5.14),
                 mono-xbuild (>= 5.14),
+                msbuild (>= 15.6),
+                libmono-cil-dev (>= 5.14),
                 cli-common-dev (>= 0.9),
                 referenceassemblies-pcl,
                 libc6-dev
