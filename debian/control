@@ -3,12 +3,12 @@ Section: misc
 Priority: optional
 Maintainer: Joshua Boniface <joshua@boniface.me>
 Build-Depends:  debhelper (>= 9),
-                mono-devel (>= 5.14),
-                mono-xbuild (>= 5.14),
-                msbuild (>= 15.6),
-                libmono-cil-dev (>= 5.14),
-                cli-common-dev (>= 0.9),
-                referenceassemblies-pcl,
+#                libmono-cil-dev (>= 5.14),
+#                mono-devel (>= 5.14),
+#                mono-xbuild (>= 5.14),
+#                cli-common-dev (>= 0.9),
+#                referenceassemblies-pcl,
+                dotnet-sdk-2.1,
                 libc6-dev
 Standards-Version: 3.9.4
 
@@ -17,6 +17,6 @@ Replaces: mediabrowser, emby, emby-server-beta, emby-server-dev
 Breaks: mediabrowser, emby, emby-server-beta, emby-server-dev
 Conflicts: mediabrowser, emby, emby-server-beta, emby-server-dev
 Architecture: all
-Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends}, at, libsqlite3-0, mono-runtime (>= 5.14)
+Depends: ${shlibs:Depends}, ${misc:Depends}, at, libsqlite3-0
 Description: Emby Server is a home media server.
  It is built on top of other popular open source technologies such as Service Stack, jQuery, jQuery mobile, and Mono. It features a REST-based api with built-in documentation to facilitate client development. We also have client libraries for our api to enable rapid development.
