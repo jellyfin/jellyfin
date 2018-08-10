@@ -20,9 +20,6 @@ local.properties
 .settings/
 .loadpath
 
-# Don't ignore the debian/bin folder
-!debian/bin/
-
 # External tool builders
 .externalToolBuilders/
 
@@ -237,3 +234,6 @@ pip-log.txt
 .mr.developer.cfg
 MediaBrowser.WebDashboard/dashboard-ui/.idea/
 /.vs
+
+# Don't ignore the debian/bin folder
+!debian/bin/
