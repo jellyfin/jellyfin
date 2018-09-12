@@ -1,4 +1,4 @@
-﻿
+﻿using System;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Querying
@@ -9,13 +9,13 @@ namespace MediaBrowser.Model.Querying
         /// The user to localize search results for
         /// </summary>
         /// <value>The user id.</value>
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Specify this to localize the search to a specific item or folder. Omit to use the root.
         /// </summary>
         /// <value>The parent id.</value>
-        public string ParentId { get; set; }
+        public Guid ParentId { get; set; }
 
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.

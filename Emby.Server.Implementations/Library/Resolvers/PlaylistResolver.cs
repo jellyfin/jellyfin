@@ -2,11 +2,20 @@
 using MediaBrowser.Controller.Playlists;
 using System;
 using System.IO;
+using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Entities;
+using System.Linq;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
     public class PlaylistResolver : FolderResolver<Playlist>
     {
+        private string[] SupportedCollectionTypes = new string[] {
+
+            string.Empty,
+            CollectionType.Music
+        };
+
         /// <summary>
         /// Resolves the specified args.
         /// </summary>
@@ -31,8 +40,24 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     return new Playlist
                     {
                         Path = args.Path,
-                        Name = ResolverHelper.StripBrackets(Path.GetFileName(args.Path))
+                        Name = Path.GetFileName(args.Path).Replace("[playlist]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim()
                     };
+                }
+            }
+            else
+            {
+                if (SupportedCollectionTypes.Contains(args.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                {
+                    var extension = Path.GetExtension(args.Path);
+                    if (Playlist.SupportedExtensions.Contains(extension ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return new Playlist
+                        {
+                            Path = args.Path,
+                            Name = Path.GetFileNameWithoutExtension(args.Path),
+                            IsInMixedFolder = true
+                        };
+                    }
                 }
             }
 

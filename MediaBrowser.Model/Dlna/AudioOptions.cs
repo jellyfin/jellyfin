@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Dto;
 using System.Collections.Generic;
+using System;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -21,7 +22,7 @@ namespace MediaBrowser.Model.Dlna
         public bool ForceDirectPlay { get; set; }
         public bool ForceDirectStream { get; set; }
 
-        public string ItemId { get; set; }
+        public Guid ItemId { get; set; }
         public MediaSourceInfo[] MediaSources { get; set; }
         public DeviceProfile Profile { get; set; }
 

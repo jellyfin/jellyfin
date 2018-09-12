@@ -1,0 +1,58 @@
+<div data-role="page" class="view flex flex-direction-column page libraryPage noSecondaryNavPage" data-backbutton="true">
+
+    <div class="alphaPicker alphaPicker-vertical alphaPicker-fixed focuscontainer-y hide"></div>
+
+
+    <div class="flex-grow padded-left padded-right pageContainerTopPadding">
+
+        <div class="flex align-items-center focuscontainer-x itemsViewSettingsContainer padded-top padded-bottom flex-wrap-wrap">
+            <button is="emby-button" class="btnPlay button-flat hide listTextButton-autohide">
+                <span>${HeaderPlayAll}</span>
+            </button>
+            <button is="paper-icon-button-light" class="btnPlay listIconButton-autohide">
+                <i class="md-icon">&#xE037;</i>
+            </button>
+            <button is="emby-button" class="btnQueue button-flat hide listTextButton-autohide">
+                <span>${Queue}</span>
+            </button>
+            <button is="paper-icon-button-light" class="btnQueue hide listIconButton-autohide">
+                <i class="md-icon">&#xE03B;</i>
+            </button>
+            <button is="emby-button" class="btnShuffle button-flat hide listTextButton-autohide">
+                <span>${Shuffle}</span>
+            </button>
+            <button is="paper-icon-button-light" class="btnShuffle hide listIconButton-autohide">
+                <i class="md-icon">&#xE043;</i>
+            </button>
+            <button is="emby-button" class="btnNewItem hide button-flat listTextButton-autohide">
+                <span>${New}</span>
+            </button>
+            <button is="paper-icon-button-light" class="btnNewItem hide listIconButton-autohide">
+                <i class="md-icon">&#xE145;</i>
+            </button>
+
+            <button is="emby-button" class="btnSort hide button-flat listTextButton-autohide">
+                <span class="btnSortText"></span>
+                <i class="md-icon btnSortIcon">&#xE5D8;</i>
+            </button>
+            <button is="paper-icon-button-light" class="btnSort hide listIconButton-autohide">
+                <i class="md-icon">&#xE164;</i>
+            </button>
+            <button is="emby-button" class="btnFilter button-flat listTextButton-autohide">
+                <span>${Filter}</span>
+            </button>
+            <button is="paper-icon-button-light" class="btnFilter listIconButton-autohide" data-ripple="false" style="overflow:visible;">
+                <i class="md-icon">&#xE152;</i>
+            </button>
+            <button is="emby-button" class="btnViewSettings button-flat listTextButton-autohide">
+                <i class="md-icon">&#xE5D3;</i>
+            </button>
+            <button is="paper-icon-button-light" class="btnViewSettings listIconButton-autohide">
+                <i class="md-icon">&#xE5D3;</i>
+            </button>
+        </div>
+
+        <div is="emby-itemscontainer" class="vertical-wrap itemsContainer centered" style="padding: 0 0 10vh 0;">
+        </div>
+    </div>
+</div>

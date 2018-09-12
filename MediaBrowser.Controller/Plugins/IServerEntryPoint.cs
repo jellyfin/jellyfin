@@ -12,4 +12,9 @@ namespace MediaBrowser.Controller.Plugins
         /// </summary>
         void Run();
     }
+
+    public interface IRunBeforeStartup
+    {
+
+    }
 }

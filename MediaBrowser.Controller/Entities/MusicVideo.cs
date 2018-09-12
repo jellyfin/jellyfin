@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using System.Collections.Generic;
 using MediaBrowser.Model.Serialization;
+using System;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -13,7 +14,7 @@ namespace MediaBrowser.Controller.Entities
 
         public MusicVideo()
         {
-            Artists = EmptyStringArray;
+            Artists = Array.Empty<string>();
         }
 
         [IgnoreDataMember]
@@ -32,12 +33,16 @@ namespace MediaBrowser.Controller.Entities
 
         public MusicVideoInfo GetLookupInfo()
         {
-            return GetItemLookupInfo<MusicVideoInfo>();
+            var info = GetItemLookupInfo<MusicVideoInfo>();
+
+            info.Artists = Artists;
+
+            return info;
         }
 
-        public override bool BeforeMetadataRefresh()
+        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
         {
-            var hasChanges = base.BeforeMetadataRefresh();
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
 
             if (!ProductionYear.HasValue)
             {

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Net.WebSockets;
 
 namespace Emby.Server.Implementations.Session
 {
@@ -40,26 +41,12 @@ namespace Emby.Server.Implementations.Session
             get { return HasOpenSockets; }
         }
 
-        private bool _isActive;
-        private DateTime _lastActivityDate;
         public bool IsSessionActive
         {
             get
             {
-                if (HasOpenSockets)
-                {
-                    return true;
-                }
-
-                //return false;
-                return _isActive && (DateTime.UtcNow - _lastActivityDate).TotalMinutes <= 10;
+                return HasOpenSockets;
             }
-        }
-
-        public void OnActivity()
-        {
-            _isActive = true;
-            _lastActivityDate = DateTime.UtcNow;
         }
 
         private IEnumerable<IWebSocketConnection> GetActiveSockets()
@@ -81,200 +68,32 @@ namespace Emby.Server.Implementations.Session
 
         void connection_Closed(object sender, EventArgs e)
         {
-            if (!GetActiveSockets().Any())
-            {
-                _isActive = false;
+            var connection = (IWebSocketConnection)sender;
+            var sockets = Sockets.ToList();
+            sockets.Remove(connection);
 
-                try
-                {
-                    _sessionManager.ReportSessionEnded(Session.Id);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error reporting session ended.", ex);
-                }
-            }
+            Sockets = sockets;
+
+            _sessionManager.CloseIfNeeded(Session);
         }
 
-        private IWebSocketConnection GetActiveSocket()
+        public Task SendMessage<T>(string name, string messageId, T data, ISessionController[] allControllers, CancellationToken cancellationToken)
         {
             var socket = GetActiveSockets()
                 .FirstOrDefault();
 
             if (socket == null)
             {
-                throw new InvalidOperationException("The requested session does not have an open web socket.");
+                return Task.CompletedTask;
             }
 
-            return socket;
-        }
-
-        public Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
-        {
-            return SendMessageInternal(new WebSocketMessage<PlayRequest>
-            {
-                MessageType = "Play",
-                Data = command
-
-            }, cancellationToken);
-        }
-
-        public Task SendPlaystateCommand(PlaystateRequest command, CancellationToken cancellationToken)
-        {
-            return SendMessageInternal(new WebSocketMessage<PlaystateRequest>
-            {
-                MessageType = "Playstate",
-                Data = command
-
-            }, cancellationToken);
-        }
-
-        public Task SendLibraryUpdateInfo(LibraryUpdateInfo info, CancellationToken cancellationToken)
-        {
-            return SendMessagesInternal(new WebSocketMessage<LibraryUpdateInfo>
-            {
-                MessageType = "LibraryChanged",
-                Data = info
-
-            }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Sends the restart required message.
-        /// </summary>
-        /// <param name="info">The information.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
-        {
-            return SendMessagesInternal(new WebSocketMessage<string>
-            {
-                MessageType = "RestartRequired",
-                Data = string.Empty
-
-            }, cancellationToken);
-        }
-
-
-        /// <summary>
-        /// Sends the user data change info.
-        /// </summary>
-        /// <param name="info">The info.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SendUserDataChangeInfo(UserDataChangeInfo info, CancellationToken cancellationToken)
-        {
-            return SendMessagesInternal(new WebSocketMessage<UserDataChangeInfo>
-            {
-                MessageType = "UserDataChanged",
-                Data = info
-
-            }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Sends the server shutdown notification.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SendServerShutdownNotification(CancellationToken cancellationToken)
-        {
-            return SendMessagesInternal(new WebSocketMessage<string>
-            {
-                MessageType = "ServerShuttingDown",
-                Data = string.Empty
-
-            }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Sends the server restart notification.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SendServerRestartNotification(CancellationToken cancellationToken)
-        {
-            return SendMessagesInternal(new WebSocketMessage<string>
-            {
-                MessageType = "ServerRestarting",
-                Data = string.Empty
-
-            }, cancellationToken);
-        }
-
-        public Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
-        {
-            return SendMessageInternal(new WebSocketMessage<GeneralCommand>
-            {
-                MessageType = "GeneralCommand",
-                Data = command
-
-            }, cancellationToken);
-        }
-
-        public Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
-        {
-            return SendMessagesInternal(new WebSocketMessage<SessionInfoDto>
-            {
-                MessageType = "SessionEnded",
-                Data = sessionInfo
-
-            }, cancellationToken);
-        }
-
-        public Task SendPlaybackStartNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
-        {
-            return SendMessagesInternal(new WebSocketMessage<SessionInfoDto>
-            {
-                MessageType = "PlaybackStart",
-                Data = sessionInfo
-
-            }, cancellationToken);
-        }
-
-        public Task SendPlaybackStoppedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
-        {
-            return SendMessagesInternal(new WebSocketMessage<SessionInfoDto>
-            {
-                MessageType = "PlaybackStopped",
-                Data = sessionInfo
-
-            }, cancellationToken);
-        }
-
-        public Task SendMessage<T>(string name, T data, CancellationToken cancellationToken)
-        {
-            return SendMessagesInternal(new WebSocketMessage<T>
+            return socket.SendAsync(new WebSocketMessage<T>
             {
                 Data = data,
-                MessageType = name
+                MessageType = name,
+                MessageId = messageId
 
             }, cancellationToken);
-        }
-
-        private Task SendMessageInternal<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
-        {
-            var socket = GetActiveSocket();
-
-            return socket.SendAsync(message, cancellationToken);
-        }
-
-        private Task SendMessagesInternal<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
-        {
-            var tasks = GetActiveSockets().Select(i => Task.Run(async () =>
-            {
-                try
-                {
-                    await i.SendAsync(message, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error sending web socket message", ex);
-                }
-
-            }, cancellationToken));
-
-            return Task.WhenAll(tasks);
         }
 
         public void Dispose()
@@ -283,7 +102,6 @@ namespace Emby.Server.Implementations.Session
             {
                 socket.Closed -= connection_Closed;
             }
-            GC.SuppressFinalize(this);
         }
     }
 }

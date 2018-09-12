@@ -1,7 +1,15 @@
-﻿<div id="userLibraryAccessPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userlibraryaccess,emby-linkbutton,emby-checkbox,emby-button">
+﻿<div id="userLibraryAccessPage" data-role="page" class="page type-interior" data-require="scripts/userlibraryaccess,emby-linkbutton,emby-checkbox,emby-button">
 
     <div>
         <div class="content-primary">
+
+            <div class="verticalSection">
+                <div class="sectionTitleContainer flex align-items-center">
+                    <h2 class="sectionTitle username"></h2>
+                    <a is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Users">${Help}</a>
+                </div>
+            </div>
+
             <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                 <a is="emby-linkbutton" href="#" data-role="button" onclick="Dashboard.navigate('useredit.html', true);">${TabProfile}</a>
                 <a is="emby-linkbutton" href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);" class="ui-btn-active">${TabAccess}</a>
@@ -22,7 +30,6 @@
                         <div class="fieldDescription">${LibraryAccessHelp}</div>
                     </div>
                 </div>
-                <br />
                 <div class="channelAccessContainer" style="display:none;">
                     <h2>${HeaderChannelAccess}</h2>
                     <label class="checkboxContainer">

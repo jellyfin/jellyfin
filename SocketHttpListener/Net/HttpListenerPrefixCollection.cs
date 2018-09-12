@@ -36,13 +36,13 @@ namespace SocketHttpListener.Net
         public void Add(string uriPrefix)
         {
             listener.CheckDisposed();
-            ListenerPrefix.CheckUri(uriPrefix);
+            //ListenerPrefix.CheckUri(uriPrefix);
             if (prefixes.Contains(uriPrefix))
                 return;
 
             prefixes.Add(uriPrefix);
             if (listener.IsListening)
-                EndPointManager.AddPrefix(_logger, uriPrefix, listener);
+                HttpEndPointManager.AddPrefix(_logger, uriPrefix, listener);
         }
 
         public void Clear()
@@ -50,7 +50,7 @@ namespace SocketHttpListener.Net
             listener.CheckDisposed();
             prefixes.Clear();
             if (listener.IsListening)
-                EndPointManager.RemoveListener(_logger, listener);
+                HttpEndPointManager.RemoveListener(_logger, listener);
         }
 
         public bool Contains(string uriPrefix)
@@ -89,7 +89,7 @@ namespace SocketHttpListener.Net
 
             bool result = prefixes.Remove(uriPrefix);
             if (result && listener.IsListening)
-                EndPointManager.RemovePrefix(_logger, uriPrefix, listener);
+                HttpEndPointManager.RemovePrefix(_logger, uriPrefix, listener);
 
             return result;
         }

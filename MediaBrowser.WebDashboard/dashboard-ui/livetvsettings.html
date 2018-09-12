@@ -1,6 +1,13 @@
-﻿<div id="liveTvSettingsPage" data-role="page" class="page type-interior liveTvPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvsettings,emby-checkbox,emby-input,emby-select,emby-collapse,emby-button">
+﻿<div id="liveTvSettingsPage" data-role="page" class="page type-interior liveTvPage" data-require="scripts/livetvsettings,emby-checkbox,emby-input,emby-select,emby-collapse,emby-button">
     <div>
         <div class="content-primary">
+            <div class="verticalSection">
+                <div class="sectionTitleContainer flex align-items-center">
+                    <h2 class="sectionTitle">DVR</h2>
+                    <a is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki//Live%20TV">${Help}</a>
+                </div>
+            </div>
+
             <form class="liveTvSettingsForm">
                 <div class="selectContainer">
                     <select is="emby-select" id="selectGuideDays" label="${LabelNumberOfGuideDays}">
@@ -47,38 +54,8 @@
                         <button type="button" is="paper-icon-button-light" id="btnSelectSeriesRecordingPath" title="${ButtonSelectDirectory}" class="emby-input-iconbutton"><i class="md-icon">search</i></button>
                     </div>
                 </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkConvertRecordings" />
-                        <span>${OptionConvertRecordingsToStreamingFormat}</span>
-                    </label>
-                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingsToStreamingFormatHelp}</div>
-                    <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting"><a is="emby-linkbutton" class="button-link" href="https://emby.media/premiere" target="_blank">${FeatureRequiresEmbyPremiere}</a></div>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkPreserveAudio" />
-                        <span>${OptionConvertRecordingPreserveAudio}</span>
-                    </label>
-                    <div class="fieldDescription checkboxFieldDescription">${OptionConvertRecordingPreserveAudioHelp}</div>
-                </div>
-                <div>
-                    <h1>${HeaderRecordingPostProcessing}</h1>
-                    <div class="inputContainer">
-                        <div style="display: flex; align-items: center;">
-                            <div style="flex-grow:1;">
-                                <input is="emby-input" type="text" id="txtPostProcessor" label="${LabelPostProcessor}" />
-                            </div>
-                            <button type="button" is="paper-icon-button-light" id="btnSelectPostProcessorPath" class="emby-input-iconbutton"><i class="md-icon">search</i></button>
-                        </div>
-                    </div>
-                    <div class="inputContainer">
-                        <input is="emby-input" type="text" id="txtPostProcessorArguments" label="${LabelPostProcessorArguments}" />
-                        <div class="fieldDescription">${LabelPostProcessorArgumentsHelp}</div>
-                    </div>
-                </div>
-                <div>
-                    <h1>${HeaderDefaultRecordingSettings}</h1>
+                <div class="verticalSection">
+                    <h2 class="sectionTitle">${HeaderDefaultRecordingSettings}</h2>
                     <div class="inputContainer">
                         <div style="display: flex; align-items: center;">
                             <div style="flex-grow: 1;">
@@ -98,6 +75,21 @@
                                 ${MinutesAfter}
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div class="verticalSection">
+                    <h2 class="sectionTitle">${HeaderRecordingPostProcessing}</h2>
+                    <div class="inputContainer">
+                        <div style="display: flex; align-items: center;">
+                            <div style="flex-grow:1;">
+                                <input is="emby-input" type="text" id="txtPostProcessor" label="${LabelPostProcessor}" />
+                            </div>
+                            <button type="button" is="paper-icon-button-light" id="btnSelectPostProcessorPath" class="emby-input-iconbutton"><i class="md-icon">search</i></button>
+                        </div>
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="text" id="txtPostProcessorArguments" label="${LabelPostProcessorArguments}" />
+                        <div class="fieldDescription">${LabelPostProcessorArgumentsHelp}</div>
                     </div>
                 </div>
                 <br />

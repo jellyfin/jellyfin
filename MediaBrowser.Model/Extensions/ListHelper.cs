@@ -6,31 +6,9 @@ namespace MediaBrowser.Model.Extensions
     {
         public static bool ContainsIgnoreCase(string[] list, string value)
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException("value");
-            }
-
             foreach (var item in list)
             {
                 if (string.Equals(item, value, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public static bool ContainsAnyIgnoreCase(string[] list, string[] values)
-        {
-            if (values == null)
-            {
-                throw new ArgumentNullException("values");
-            }
-
-            foreach (string val in values)
-            {
-                if (ContainsIgnoreCase(list, val))
                 {
                     return true;
                 }

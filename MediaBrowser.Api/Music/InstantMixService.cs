@@ -29,13 +29,6 @@ namespace MediaBrowser.Api.Music
     {
     }
 
-    [Route("/Artists/{Name}/InstantMix", "GET", Summary = "Creates an instant playlist based on a given artist")]
-    public class GetInstantMixFromArtist : BaseGetSimilarItems
-    {
-        [ApiMember(Name = "Name", Description = "The artist name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
-    }
-
     [Route("/MusicGenres/{Name}/InstantMix", "GET", Summary = "Creates an instant playlist based on a music genre")]
     public class GetInstantMixFromMusicGenre : BaseGetSimilarItems
     {
@@ -170,18 +163,6 @@ namespace MediaBrowser.Api.Music
             return GetResult(items, user, request, dtoOptions);
         }
 
-        public object Get(GetInstantMixFromArtist request)
-        {
-            var user = _userManager.GetUserById(request.UserId);
-            var artist = _libraryManager.GetArtist(request.Name, new DtoOptions(false));
-
-            var dtoOptions = GetDtoOptions(_authContext, request);
-
-            var items = _musicManager.GetInstantMixFromArtist(artist, user, dtoOptions);
-
-            return GetResult(items, user, request, dtoOptions);
-        }
-
         private object GetResult(List<BaseItem> items, User user, BaseGetSimilarItems request, DtoOptions dtoOptions)
         {
             var list = items;
@@ -200,7 +181,7 @@ namespace MediaBrowser.Api.Music
 
             result.Items = returnList;
 
-            return ToOptimizedResult(result);
+            return result;
         }
 
     }

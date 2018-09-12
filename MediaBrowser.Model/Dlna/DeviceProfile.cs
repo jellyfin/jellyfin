@@ -2,6 +2,7 @@
 using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
 using System.Xml.Serialization;
+using System;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -55,14 +56,6 @@ namespace MediaBrowser.Model.Dlna
         public int? MaxStaticMusicBitrate { get; set; }
 
         /// <summary>
-        /// Controls the content of the X_DLNADOC element in the urn:schemas-dlna-org:device-1-0 namespace.
-        /// </summary>
-        public string XDlnaDoc { get; set; }
-        /// <summary>
-        /// Controls the content of the X_DLNACAP element in the urn:schemas-dlna-org:device-1-0 namespace.
-        /// </summary>
-        public string XDlnaCap { get; set; }
-        /// <summary>
         /// Controls the content of the aggregationFlags element in the urn:schemas-sonycom:av namespace.
         /// </summary>
         public string SonyAggregationFlags { get; set; }
@@ -104,7 +97,7 @@ namespace MediaBrowser.Model.Dlna
             ResponseProfiles = new ResponseProfile[] { };
             CodecProfiles = new CodecProfile[] { };
             ContainerProfiles = new ContainerProfile[] { };
-            SubtitleProfiles = new SubtitleProfile[] { };
+            SubtitleProfiles = Array.Empty<SubtitleProfile>();
 
             XmlRootAttributes = new XmlAttribute[] { };
 
@@ -121,7 +114,7 @@ namespace MediaBrowser.Model.Dlna
 
         public TranscodingProfile GetAudioTranscodingProfile(string container, string audioCodec)
         {
-            container = StringHelper.TrimStart(container ?? string.Empty, '.');
+            container = (container ?? string.Empty).TrimStart('.');
 
             foreach (var i in TranscodingProfiles)
             {
@@ -147,7 +140,7 @@ namespace MediaBrowser.Model.Dlna
 
         public TranscodingProfile GetVideoTranscodingProfile(string container, string audioCodec, string videoCodec)
         {
-            container = StringHelper.TrimStart(container ?? string.Empty, '.');
+            container = (container ?? string.Empty).TrimStart('.');
 
             foreach (var i in TranscodingProfiles)
             {
@@ -274,7 +267,7 @@ namespace MediaBrowser.Model.Dlna
             int? videoBitrate,
             string videoProfile,
             double? videoLevel,
-            float? videoFramerate,
+            float videoFramerate,
             int? packetLength,
             TransportStreamTimestamp timestamp,
             bool? isAnamorphic,

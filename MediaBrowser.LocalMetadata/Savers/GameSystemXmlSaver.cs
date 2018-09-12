@@ -16,7 +16,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         {
         }
 
-        public override bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
+        public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
         {
             if (!item.SupportsLocalMetadata)
             {
@@ -26,17 +26,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             return item is GameSystem && updateType >= ItemUpdateType.MetadataDownload;
         }
 
-        protected override List<string> GetTagsUsed()
-        {
-            var list = new List<string>
-            {
-                "GameSystem"
-            };
-
-            return list;
-        }
-
-        protected override void WriteCustomElements(IHasMetadata item, XmlWriter writer)
+        protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
             var gameSystem = (GameSystem)item;
 
@@ -46,12 +36,12 @@ namespace MediaBrowser.LocalMetadata.Savers
             }
         }
 
-        protected override string GetLocalSavePath(IHasMetadata item)
+        protected override string GetLocalSavePath(BaseItem item)
         {
             return Path.Combine(item.Path, "gamesystem.xml");
         }
 
-        protected override string GetRootElementName(IHasMetadata item)
+        protected override string GetRootElementName(BaseItem item)
         {
             return "Item";
         }

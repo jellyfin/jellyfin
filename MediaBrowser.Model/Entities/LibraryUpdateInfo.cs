@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
@@ -37,17 +38,25 @@ namespace MediaBrowser.Model.Entities
 
         public string[] CollectionFolders { get; set; }
 
+        public bool IsEmpty
+        {
+            get
+            {
+                return FoldersAddedTo.Length == 0 && FoldersRemovedFrom.Length == 0 && ItemsAdded.Length == 0 && ItemsRemoved.Length == 0 && ItemsUpdated.Length == 0 && CollectionFolders.Length == 0;
+            }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryUpdateInfo"/> class.
         /// </summary>
         public LibraryUpdateInfo()
         {
-            FoldersAddedTo = new string[] { };
-            FoldersRemovedFrom = new string[] { };
-            ItemsAdded = new string[] { };
-            ItemsRemoved = new string[] { };
-            ItemsUpdated = new string[] { };
-            CollectionFolders = new string[] { };
+            FoldersAddedTo = Array.Empty<string>();
+            FoldersRemovedFrom = Array.Empty<string>();
+            ItemsAdded = Array.Empty<string>();
+            ItemsRemoved = Array.Empty<string>();
+            ItemsUpdated = Array.Empty<string>();
+            CollectionFolders = Array.Empty<string>();
         }
     }
 }

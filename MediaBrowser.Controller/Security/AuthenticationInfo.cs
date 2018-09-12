@@ -8,7 +8,7 @@ namespace MediaBrowser.Controller.Security
         /// Gets or sets the identifier.
         /// </summary>
         /// <value>The identifier.</value>
-        public string Id { get; set; }
+        public long Id { get; set; }
 
         /// <summary>
         /// Gets or sets the access token.
@@ -44,13 +44,9 @@ namespace MediaBrowser.Controller.Security
         /// Gets or sets the user identifier.
         /// </summary>
         /// <value>The user identifier.</value>
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is active.
-        /// </summary>
-        /// <value><c>true</c> if this instance is active; otherwise, <c>false</c>.</value>
-        public bool IsActive { get; set; }
+        public string UserName { get; set; }
 
         /// <summary>
         /// Gets or sets the date created.
@@ -58,10 +54,6 @@ namespace MediaBrowser.Controller.Security
         /// <value>The date created.</value>
         public DateTime DateCreated { get; set; }
 
-        /// <summary>
-        /// Gets or sets the date revoked.
-        /// </summary>
-        /// <value>The date revoked.</value>
-        public DateTime? DateRevoked { get; set; }
+        public DateTime DateLastActivity { get; set; }
     }
 }

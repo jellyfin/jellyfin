@@ -45,11 +45,6 @@ namespace MediaBrowser.Common.Extensions
         [Obsolete("Use LibraryManager.GetNewItemId")]
         public static Guid GetMBId(this string str, Type type)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException("type");
-            }
-
             var key = type.FullName + str.ToLower();
 
             return key.GetMD5();

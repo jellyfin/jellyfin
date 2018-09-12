@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Entities;
+using System;
 
 namespace MediaBrowser.Model.Querying
 {
@@ -8,7 +9,7 @@ namespace MediaBrowser.Model.Querying
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the parent identifier.

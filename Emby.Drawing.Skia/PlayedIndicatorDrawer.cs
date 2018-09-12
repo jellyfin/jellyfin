@@ -2,14 +2,7 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Drawing;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
-using System.Reflection;
-using MediaBrowser.Common.Progress;
 
 namespace Emby.Drawing.Skia
 {
@@ -28,7 +21,7 @@ namespace Emby.Drawing.Skia
             _fileSystem = fileSystem;
         }
 
-        public async Task DrawPlayedIndicator(SKCanvas canvas, ImageSize imageSize)
+        public void DrawPlayedIndicator(SKCanvas canvas, ImageSize imageSize)
         {
             var x = imageSize.Width - OffsetFromTopRightCorner;
 
@@ -60,36 +53,6 @@ namespace Emby.Drawing.Skia
 
                 canvas.DrawText(text, (float)x-20, OffsetFromTopRightCorner + 12, paint);
             }
-        }
-
-        internal static async Task<string> DownloadFont(string name, string url, IApplicationPaths paths, IHttpClient httpClient, IFileSystem fileSystem)
-        {
-            var filePath = Path.Combine(paths.ProgramDataPath, "fonts", name);
-
-            if (fileSystem.FileExists(filePath))
-            {
-                return filePath;
-            }
-
-            var tempPath = await httpClient.GetTempFile(new HttpRequestOptions
-            {
-                Url = url,
-                Progress = new SimpleProgress<double>()
-
-            }).ConfigureAwait(false);
-
-            fileSystem.CreateDirectory(fileSystem.GetDirectoryName(filePath));
-
-            try
-            {
-                fileSystem.CopyFile(tempPath, filePath, false);
-            }
-            catch (IOException)
-            {
-
-            }
-
-            return tempPath;
         }
     }
 }

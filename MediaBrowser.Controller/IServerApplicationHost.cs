@@ -91,5 +91,10 @@ namespace MediaBrowser.Controller
         void EnableLoopback(string appName);
 
         string PackageRuntime { get; }
+
+        WakeOnLanInfo[] GetWakeOnLanInfo();
+
+        string ExpandVirtualPath(string path);
+        string ReverseVirtualPath(string path);
     }
 }

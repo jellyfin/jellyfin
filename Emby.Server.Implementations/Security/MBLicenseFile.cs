@@ -22,12 +22,8 @@ namespace Emby.Server.Implementations.Security
             get { return _regKey; }
             set
             {
-                if (value != _regKey)
-                {
-                    //if key is changed - clear out our saved validations
-                    _updateRecords.Clear();
-                    _regKey = value;
-                }
+                _updateRecords.Clear();
+                _regKey = value;
             }
         }
 
@@ -114,14 +110,14 @@ namespace Emby.Server.Implementations.Security
                 {
                     lock (_fileLock)
                     {
-                        _fileSystem.WriteAllBytes(licenseFile, new byte[] { });
+                        _fileSystem.WriteAllBytes(licenseFile, Array.Empty<byte>());
                     }
                 }
                 catch (IOException)
                 {
                     lock (_fileLock)
                     {
-                        _fileSystem.WriteAllBytes(licenseFile, new byte[] { });
+                        _fileSystem.WriteAllBytes(licenseFile, Array.Empty<byte>());
                     }
                 }
             }

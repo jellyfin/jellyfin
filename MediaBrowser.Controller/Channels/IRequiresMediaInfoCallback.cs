@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -9,9 +10,6 @@ namespace MediaBrowser.Controller.Channels
         /// <summary>
         /// Gets the channel item media information.
         /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{ChannelMediaInfo}}.</returns>
-        Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaInfo(string id, CancellationToken cancellationToken);
+        Task<IEnumerable<MediaSourceInfo>> GetChannelItemMediaInfo(string id, CancellationToken cancellationToken);
     }
 }

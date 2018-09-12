@@ -10,10 +10,12 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+using MediaBrowser.Model.Dto;
+using System;
+using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -24,65 +26,52 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
         private readonly ILibraryManager _libraryManager;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public FFProbeAudioInfo(IMediaEncoder mediaEncoder, IItemRepository itemRepo, IApplicationPaths appPaths, IJsonSerializer json, ILibraryManager libraryManager)
+        public FFProbeAudioInfo(IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IApplicationPaths appPaths, IJsonSerializer json, ILibraryManager libraryManager)
         {
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
             _appPaths = appPaths;
             _json = json;
             _libraryManager = libraryManager;
+            _mediaSourceManager = mediaSourceManager;
         }
 
-        public async Task<ItemUpdateType> Probe<T>(T item, CancellationToken cancellationToken)
+        public async Task<ItemUpdateType> Probe<T>(T item, MetadataRefreshOptions options,
+            CancellationToken cancellationToken)
             where T : Audio
         {
-            var result = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
+            var path = item.Path;
+            var protocol = item.PathProtocol ?? MediaProtocol.File;
 
-            cancellationToken.ThrowIfCancellationRequested();
+            if (!item.IsShortcut || options.EnableRemoteContentProbe)
+            {
+                if (item.IsShortcut)
+                {
+                    path = item.ShortcutPath;
+                    protocol = _mediaSourceManager.GetPathProtocol(path);
+                }
 
-            Fetch(item, cancellationToken, result);
+                var result = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
+                {
+                    MediaType = DlnaProfileType.Audio,
+                    MediaSource = new MediaSourceInfo
+                    {
+                        Path = path,
+                        Protocol = protocol
+                    }
+
+                }, cancellationToken).ConfigureAwait(false);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                Fetch(item, cancellationToken, result);
+            }
 
             return ItemUpdateType.MetadataImport;
-        }
-
-        private const string SchemaVersion = "3";
-
-        private async Task<Model.MediaInfo.MediaInfo> GetMediaInfo(BaseItem item, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            //var idString = item.Id.ToString("N");
-            //var cachePath = Path.Combine(_appPaths.CachePath,
-            //    "ffprobe-audio",
-            //    idString.Substring(0, 2), idString, "v" + SchemaVersion + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
-
-            //try
-            //{
-            //    return _json.DeserializeFromFile<Model.MediaInfo.MediaInfo>(cachePath);
-            //}
-            //catch (FileNotFoundException)
-            //{
-
-            //}
-            //catch (DirectoryNotFoundException)
-            //{
-            //}
-
-            var result = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
-            {
-                InputPath = item.Path,
-                MediaType = DlnaProfileType.Audio,
-                Protocol = MediaProtocol.File
-
-            }, cancellationToken).ConfigureAwait(false);
-
-            //Directory.CreateDirectory(_fileSystem.GetDirectoryName(cachePath));
-            //_json.SerializeToFile(result, cachePath);
-
-            return result;
         }
 
         /// <summary>
@@ -156,7 +145,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!audio.LockedFields.Contains(MetadataFields.Genres))
             {
-                audio.Genres.Clear();
+                audio.Genres = Array.Empty<string>();
 
                 foreach (var genre in data.Genres)
                 {

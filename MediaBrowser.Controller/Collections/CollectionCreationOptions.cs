@@ -15,13 +15,13 @@ namespace MediaBrowser.Controller.Collections
         public Dictionary<string, string> ProviderIds { get; set; }
 
         public string[] ItemIdList { get; set; }
-        public string[] UserIds { get; set; }
+        public Guid[] UserIds { get; set; }
 
         public CollectionCreationOptions()
         {
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            ItemIdList = new string[] { };
-            UserIds = new string[] { };
+            ItemIdList = Array.Empty<string>();
+            UserIds = Array.Empty<Guid>();
         }
     }
 }

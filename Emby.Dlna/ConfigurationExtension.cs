@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Configuration;
+using Emby.Dlna.Configuration;
 using System.Collections.Generic;
 
 namespace Emby.Dlna
@@ -16,7 +16,7 @@ namespace Emby.Dlna
     {
         public IEnumerable<ConfigurationStore> GetConfigurations()
         {
-            return new List<ConfigurationStore>
+            return new ConfigurationStore[]
             {
                 new ConfigurationStore
                 {

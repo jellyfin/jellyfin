@@ -36,10 +36,9 @@ namespace MediaBrowser.Providers.TV
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
-        private readonly IMemoryStreamFactory _memoryStreamProvider;
         private readonly ILocalizationManager _localizationManager;
 
-        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager, IMemoryStreamFactory memoryStreamProvider, IXmlReaderSettingsFactory xmlSettings, ILocalizationManager localizationManager)
+        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager, IXmlReaderSettingsFactory xmlSettings, ILocalizationManager localizationManager)
         {
             _zipClient = zipClient;
             _httpClient = httpClient;
@@ -47,15 +46,17 @@ namespace MediaBrowser.Providers.TV
             _config = config;
             _logger = logger;
             _libraryManager = libraryManager;
-            _memoryStreamProvider = memoryStreamProvider;
             _xmlSettings = xmlSettings;
             _localizationManager = localizationManager;
             Current = this;
         }
 
-        private const string SeriesSearchUrl = "https://www.thetvdb.com/api/GetSeries.php?seriesname={0}&language={1}";
-        private const string SeriesGetZip = "https://www.thetvdb.com/api/{0}/series/{1}/all/{2}.zip";
-        private const string GetSeriesByImdbId = "https://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid={0}&language={1}";
+        public const string TvdbBaseUrl = "https://www.thetvdb.com/";
+
+        private const string SeriesSearchUrl = TvdbBaseUrl + "api/GetSeries.php?seriesname={0}&language={1}";
+        private const string SeriesGetZip = TvdbBaseUrl + "api/{0}/series/{1}/all/{2}.zip";
+        private const string GetSeriesByImdbId = TvdbBaseUrl + "api/GetSeriesByRemoteID.php?imdbid={0}&language={1}";
+        private const string GetSeriesByZap2ItId = TvdbBaseUrl + "api/GetSeriesByRemoteID.php?zap2it={0}&language={1}";
 
         private string NormalizeLanguage(string language)
         {
@@ -108,7 +109,12 @@ namespace MediaBrowser.Providers.TV
 
             if (IsValidSeries(itemId.ProviderIds))
             {
-                await EnsureSeriesInfo(itemId.ProviderIds, itemId.Name, itemId.Year, itemId.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                var seriesDataPath = await EnsureSeriesInfo(itemId.ProviderIds, itemId.Name, itemId.Year, itemId.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+
+                if (string.IsNullOrEmpty(seriesDataPath))
+                {
+                    return result;
+                }
 
                 result.Item = new Series();
                 result.HasMetadata = true;
@@ -140,6 +146,11 @@ namespace MediaBrowser.Providers.TV
             if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out id) && !string.IsNullOrEmpty(id))
             {
                 series.SetProviderId(MetadataProviders.Imdb, id);
+            }
+
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Zap2It.ToString(), out id) && !string.IsNullOrEmpty(id))
+            {
+                series.SetProviderId(MetadataProviders.Zap2It, id);
             }
 
             var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
@@ -230,7 +241,7 @@ namespace MediaBrowser.Providers.TV
                     DeleteXmlFiles(seriesDataPath);
 
                     // Copy to memory stream because we need a seekable stream
-                    using (var ms = _memoryStreamProvider.CreateNew())
+                    using (var ms = new MemoryStream())
                     {
                         await zipStream.CopyToAsync(ms).ConfigureAwait(false);
 
@@ -261,7 +272,15 @@ namespace MediaBrowser.Providers.TV
 
         private async Task<string> GetSeriesByRemoteId(string id, string idType, string language, CancellationToken cancellationToken)
         {
-            var url = string.Format(GetSeriesByImdbId, id, NormalizeLanguage(language));
+            String url;
+            if (string.Equals(idType, MetadataProviders.Zap2It.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                url = string.Format(GetSeriesByZap2ItId, id, NormalizeLanguage(language));
+            }
+            else
+            {
+                url = string.Format(GetSeriesByImdbId, id, NormalizeLanguage(language));
+            }
 
             using (var response = await _httpClient.SendAsync(new HttpRequestOptions
             {
@@ -388,6 +407,15 @@ namespace MediaBrowser.Providers.TV
                     return true;
                 }
             }
+
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Zap2It.ToString(), out id))
+            {
+                // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
+                if (!string.IsNullOrWhiteSpace(id))
+                {
+                    return true;
+                }
+            }
             return false;
         }
 
@@ -421,7 +449,37 @@ namespace MediaBrowser.Providers.TV
                     // The post-scan task will take care of updates so we don't need to re-download here
                     if (!IsCacheValid(seriesDataPath, preferredMetadataLanguage))
                     {
-                        await DownloadSeriesZip(seriesId, MetadataProviders.Imdb.ToString(), seriesName, seriesYear, seriesDataPath, null, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
+                        try
+                        {
+                            await DownloadSeriesZip(seriesId, MetadataProviders.Imdb.ToString(), seriesName, seriesYear, seriesDataPath, null, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
+                        }
+                        catch (ArgumentNullException)
+                        {
+                            // Unable to determine tvdb id based on imdb id
+                            return null;
+                        }
+                    }
+
+                    return seriesDataPath;
+                }
+
+                if (seriesProviderIds.TryGetValue(MetadataProviders.Zap2It.ToString(), out seriesId) && !string.IsNullOrWhiteSpace(seriesId))
+                {
+                    var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
+
+                    // Only download if not already there
+                    // The post-scan task will take care of updates so we don't need to re-download here
+                    if (!IsCacheValid(seriesDataPath, preferredMetadataLanguage))
+                    {
+                        try
+                        {
+                            await DownloadSeriesZip(seriesId, MetadataProviders.Zap2It.ToString(), seriesName, seriesYear, seriesDataPath, null, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
+                        }
+                        catch (ArgumentNullException)
+                        {
+                            // Unable to determine tvdb id based on Zap2It id
+                            return null;
+                        }
                     }
 
                     return seriesDataPath;
@@ -516,9 +574,10 @@ namespace MediaBrowser.Providers.TV
         private async Task<List<RemoteSearchResult>> FindSeriesInternal(string name, string language, CancellationToken cancellationToken)
         {
             var url = string.Format(SeriesSearchUrl, WebUtility.UrlEncode(name), NormalizeLanguage(language));
-            var searchResults = new List<RemoteSearchResult>();
 
             var comparableName = GetComparableName(name);
+
+            var list = new List<Tuple<List<string>, RemoteSearchResult>>();
 
             using (var response = await _httpClient.SendAsync(new HttpRequestOptions
             {
@@ -562,11 +621,11 @@ namespace MediaBrowser.Providers.TV
                                                 }
                                                 using (var subtree = reader.ReadSubtree())
                                                 {
-                                                    var searchResult = GetSeriesSearchResultFromSubTree(subtree, comparableName);
-                                                    if (searchResult != null)
+                                                    var searchResultInfo = GetSeriesSearchResultFromSubTree(subtree);
+                                                    if (searchResultInfo != null)
                                                     {
-                                                        searchResult.SearchProviderName = Name;
-                                                        searchResults.Add(searchResult);
+                                                        searchResultInfo.Item2.SearchProviderName = Name;
+                                                        list.Add(searchResultInfo);
                                                     }
                                                 }
                                                 break;
@@ -587,22 +646,21 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (searchResults.Count == 0)
-            {
-                _logger.Info("TVDb Provider - Could not find " + name + ". Check name on Thetvdb.org.");
-            }
-
-            return searchResults;
+            return list
+                .OrderBy(i => i.Item1.Contains(comparableName, StringComparer.OrdinalIgnoreCase) ? 0 : 1)
+                .ThenBy(i => list.IndexOf(i))
+                .Select(i => i.Item2)
+                .ToList();
         }
 
-        private RemoteSearchResult GetSeriesSearchResultFromSubTree(XmlReader reader, string comparableName)
+        private Tuple<List<string>, RemoteSearchResult> GetSeriesSearchResultFromSubTree(XmlReader reader)
         {
             var searchResult = new RemoteSearchResult
             {
                 SearchProviderName = Name
             };
 
-            var titles = new List<string>();
+            var tvdbTitles = new List<string>();
             string seriesId = null;
 
             reader.MoveToContent();
@@ -621,7 +679,7 @@ namespace MediaBrowser.Providers.TV
 
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
-                                    titles.Add(GetComparableName(val));
+                                    tvdbTitles.Add(GetComparableName(val));
                                 }
                                 break;
                             }
@@ -631,7 +689,7 @@ namespace MediaBrowser.Providers.TV
                                 var val = reader.ReadElementContentAsString();
 
                                 var alias = (val ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(GetComparableName);
-                                titles.AddRange(alias);
+                                tvdbTitles.AddRange(alias);
                                 break;
                             }
 
@@ -695,22 +753,15 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            foreach (var title in titles)
+            if (tvdbTitles.Count == 0)
             {
-                if (string.Equals(title, comparableName, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!string.IsNullOrWhiteSpace(seriesId))
-                    {
-                        searchResult.Name = title;
-                        searchResult.SetProviderId(MetadataProviders.Tvdb, seriesId);
-                        return searchResult;
-                    }
-                    break;
-                }
-                _logger.Info("TVDb Provider - " + title + " did not match " + comparableName);
+                return null;
             }
 
-            return null;
+            searchResult.Name = tvdbTitles.FirstOrDefault();
+            searchResult.SetProviderId(MetadataProviders.Tvdb, seriesId);
+
+            return new Tuple<List<string>, RemoteSearchResult>(tvdbTitles, searchResult);
         }
 
         /// <summary>
@@ -1081,6 +1132,12 @@ namespace MediaBrowser.Providers.TV
                 {
                     switch (reader.Name)
                     {
+                        case "id":
+                            {
+                                item.SetProviderId(MetadataProviders.Tvdb.ToString(), (reader.ReadElementContentAsString() ?? string.Empty).Trim());
+                                break;
+                            }
+
                         case "SeriesName":
                             {
                                 item.Name = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
@@ -1100,26 +1157,26 @@ namespace MediaBrowser.Providers.TV
                             }
 
                         case "Airs_DayOfWeek":
-                        {
-                            var val = reader.ReadElementContentAsString();
-
-                            if (!string.IsNullOrWhiteSpace(val))
                             {
-                                item.AirDays = TVUtils.GetAirDays(val);
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    item.AirDays = TVUtils.GetAirDays(val);
+                                }
+                                break;
                             }
-                            break;
-                        }
 
                         case "Airs_Time":
-                        {
-                            var val = reader.ReadElementContentAsString();
-
-                            if (!string.IsNullOrWhiteSpace(val))
                             {
-                                item.AirTime = val;
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    item.AirTime = val;
+                                }
+                                break;
                             }
-                            break;
-                        }
 
                         case "ContentRating":
                             {
@@ -1256,7 +1313,7 @@ namespace MediaBrowser.Providers.TV
 
                                     if (vals.Count > 0)
                                     {
-                                        item.Genres.Clear();
+                                        item.Genres = Array.Empty<string>();
 
                                         foreach (var genre in vals)
                                         {
@@ -1369,6 +1426,9 @@ namespace MediaBrowser.Providers.TV
             var absoluteNumber = -1;
             var lastUpdateString = string.Empty;
 
+            var dvdSeasonNumber = -1;
+            var dvdEpisodeNumber = -1.0;
+
             using (var streamReader = new StringReader(xml))
             {
                 // Use XmlReader for best performance
@@ -1401,6 +1461,40 @@ namespace MediaBrowser.Providers.TV
                                                 episodeNumber = num;
                                             }
                                         }
+                                        break;
+                                    }
+
+                                case "Combined_episodenumber":
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            float num;
+
+                                            if (float.TryParse(val, NumberStyles.Any, _usCulture, out num))
+                                            {
+                                                dvdEpisodeNumber = num;
+                                            }
+                                        }
+
+                                        break;
+                                    }
+
+                                case "Combined_season":
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            float num;
+
+                                            if (float.TryParse(val, NumberStyles.Any, _usCulture, out num))
+                                            {
+                                                dvdSeasonNumber = Convert.ToInt32(num);
+                                            }
+                                        }
+
                                         break;
                                     }
 
@@ -1493,6 +1587,27 @@ namespace MediaBrowser.Providers.TV
                     }
                 }
             }
+
+            if (dvdSeasonNumber != -1 && dvdEpisodeNumber != -1 && (dvdSeasonNumber != seasonNumber || dvdEpisodeNumber != episodeNumber))
+            {
+                file = Path.Combine(seriesDataPath, string.Format("episode-dvd-{0}-{1}.xml", dvdSeasonNumber, dvdEpisodeNumber));
+
+                // Only save the file if not already there, or if the episode has changed
+                if (hasEpisodeChanged || !_fileSystem.FileExists(file))
+                {
+                    using (var fileStream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.None, true))
+                    {
+                        using (var writer = XmlWriter.Create(fileStream, new XmlWriterSettings
+                        {
+                            Encoding = Encoding.UTF8,
+                            Async = true
+                        }))
+                        {
+                            await writer.WriteRawAsync(xml).ConfigureAwait(false);
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -1512,6 +1627,13 @@ namespace MediaBrowser.Providers.TV
             }
 
             if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out seriesId) && !string.IsNullOrEmpty(seriesId))
+            {
+                var seriesDataPath = Path.Combine(GetSeriesDataPath(appPaths), seriesId);
+
+                return seriesDataPath;
+            }
+
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Zap2It.ToString(), out seriesId) && !string.IsNullOrEmpty(seriesId))
             {
                 var seriesDataPath = Path.Combine(GetSeriesDataPath(appPaths), seriesId);
 

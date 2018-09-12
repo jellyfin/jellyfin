@@ -22,12 +22,12 @@ namespace Emby.Dlna.Server
 
         public DescriptionXmlBuilder(DeviceProfile profile, string serverUdn, string serverAddress, string serverName, string serverId)
         {
-            if (string.IsNullOrWhiteSpace(serverUdn))
+            if (string.IsNullOrEmpty(serverUdn))
             {
                 throw new ArgumentNullException("serverUdn");
             }
 
-            if (string.IsNullOrWhiteSpace(serverAddress))
+            if (string.IsNullOrEmpty(serverAddress))
             {
                 throw new ArgumentNullException("serverAddress");
             }
@@ -77,6 +77,11 @@ namespace Emby.Dlna.Server
             builder.Append("<minor>0</minor>");
             builder.Append("</specVersion>");
 
+            if (!EnableAbsoluteUrls)
+            {
+                builder.Append("<URLBase>" + Escape(_serverAddress) + "</URLBase>");
+            }
+
             AppendDeviceInfo(builder);
 
             builder.Append("</root>");
@@ -90,6 +95,9 @@ namespace Emby.Dlna.Server
             AppendDeviceProperties(builder);
 
             AppendIconList(builder);
+
+            builder.Append("<presentationURL>" + Escape(_serverAddress) + "/web/index.html</presentationURL>");
+
             AppendServiceList(builder);
             builder.Append("</device>");
         }
@@ -169,12 +177,12 @@ namespace Emby.Dlna.Server
 
         private void AppendDeviceProperties(StringBuilder builder)
         {
-            builder.Append("<deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>");
+            builder.Append("<dlna:X_DLNACAP/>");
 
-            builder.Append("<dlna:X_DLNACAP>" + Escape(_profile.XDlnaCap ?? string.Empty) + "</dlna:X_DLNACAP>");
-
+            builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">DMS-1.50</dlna:X_DLNADOC>");
             builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">M-DMS-1.50</dlna:X_DLNADOC>");
-            builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + Escape(_profile.XDlnaDoc ?? string.Empty) + "</dlna:X_DLNADOC>");
+
+            builder.Append("<deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>");
 
             builder.Append("<friendlyName>" + Escape(GetFriendlyName()) + "</friendlyName>");
             builder.Append("<manufacturer>" + Escape(_profile.Manufacturer ?? string.Empty) + "</manufacturer>");
@@ -186,7 +194,7 @@ namespace Emby.Dlna.Server
             builder.Append("<modelNumber>" + Escape(_profile.ModelNumber ?? string.Empty) + "</modelNumber>");
             builder.Append("<modelURL>" + Escape(_profile.ModelUrl ?? string.Empty) + "</modelURL>");
 
-            if (string.IsNullOrWhiteSpace(_profile.SerialNumber))
+            if (string.IsNullOrEmpty(_profile.SerialNumber))
             {
                 builder.Append("<serialNumber>" + Escape(_serverId) + "</serialNumber>");
             }
@@ -195,15 +203,11 @@ namespace Emby.Dlna.Server
                 builder.Append("<serialNumber>" + Escape(_profile.SerialNumber) + "</serialNumber>");
             }
 
+            builder.Append("<UPC/>");
+
             builder.Append("<UDN>uuid:" + Escape(_serverUdn) + "</UDN>");
-            builder.Append("<presentationURL>" + Escape(_serverAddress) + "</presentationURL>");
 
-            if (!EnableAbsoluteUrls)
-            {
-                //builder.Append("<URLBase>" + Escape(_serverAddress) + "</URLBase>");
-            }
-
-            if (!string.IsNullOrWhiteSpace(_profile.SonyAggregationFlags))
+            if (!string.IsNullOrEmpty(_profile.SonyAggregationFlags))
             {
                 builder.Append("<av:aggregationFlags xmlns:av=\"urn:schemas-sony-com:av\">" + Escape(_profile.SonyAggregationFlags) + "</av:aggregationFlags>");
             }
@@ -211,7 +215,7 @@ namespace Emby.Dlna.Server
 
         private string GetFriendlyName()
         {
-            if (string.IsNullOrWhiteSpace(_profile.FriendlyName))
+            if (string.IsNullOrEmpty(_profile.FriendlyName))
             {
                 return "Emby - " + _serverName;
             }
@@ -226,7 +230,7 @@ namespace Emby.Dlna.Server
                 }
             }
 
-            var characters = characterList.ToArray(characterList.Count);
+            var characters = characterList.ToArray();
 
             var serverName = new string(characters);
 
@@ -277,7 +281,7 @@ namespace Emby.Dlna.Server
 
         private string BuildUrl(string url)
         {
-            if (string.IsNullOrWhiteSpace(url))
+            if (string.IsNullOrEmpty(url))
             {
                 return string.Empty;
             }

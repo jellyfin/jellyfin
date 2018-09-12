@@ -9,48 +9,28 @@ namespace MediaBrowser.Controller.MediaEncoding
 {
     public class EncodingJobOptions : BaseEncodingJobOptions
     {
-        public string OutputDirectory { get; set; }
-
-        public string DeviceId { get; set; }
-        public string ItemId { get; set; }
-        public string MediaSourceId { get; set; }
-        public string AudioCodec { get; set; }
+        public string TempDirectory { get; set; }
+        public bool ReadInputAtNativeFramerate { get; set; }
 
         public DeviceProfile DeviceProfile { get; set; }
 
-        public bool ReadInputAtNativeFramerate { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has fixed resolution.
-        /// </summary>
-        /// <value><c>true</c> if this instance has fixed resolution; otherwise, <c>false</c>.</value>
-        public bool HasFixedResolution
-        {
-            get
-            {
-                return Width.HasValue || Height.HasValue;
-            }
-        }
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         public EncodingJobOptions(StreamInfo info, DeviceProfile deviceProfile)
         {
-            OutputContainer = info.Container;
+            Container = info.Container;
             StartTimeTicks = info.StartPositionTicks;
             MaxWidth = info.MaxWidth;
             MaxHeight = info.MaxHeight;
             MaxFramerate = info.MaxFramerate;
-            ItemId = info.ItemId;
+            Id = info.ItemId;
             MediaSourceId = info.MediaSourceId;
             AudioCodec = info.TargetAudioCodec.FirstOrDefault();
-            MaxAudioChannels = info.MaxAudioChannels;
+            MaxAudioChannels = info.GlobalMaxAudioChannels;
             AudioBitRate = info.AudioBitrate;
             AudioSampleRate = info.TargetAudioSampleRate;
             DeviceProfile = deviceProfile;
             VideoCodec = info.TargetVideoCodec.FirstOrDefault();
             VideoBitRate = info.VideoBitrate;
             AudioStreamIndex = info.AudioStreamIndex;
-            MaxVideoBitDepth = info.MaxVideoBitDepth;
             SubtitleMethod = info.SubtitleDeliveryMethod;
             Context = info.Context;
             TranscodingMaxAudioChannels = info.TranscodingMaxAudioChannels;
@@ -66,6 +46,29 @@ namespace MediaBrowser.Controller.MediaEncoding
     // For now until api and media encoding layers are unified
     public class BaseEncodingJobOptions
     {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public Guid Id { get; set; }
+
+        [ApiMember(Name = "MediaSourceId", Description = "The media version id, if playing an alternate version", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string MediaSourceId { get; set; }
+
+        [ApiMember(Name = "DeviceId", Description = "The device id of the client requesting. Used to stop encoding processes when needed.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string DeviceId { get; set; }
+
+        [ApiMember(Name = "Container", Description = "Container", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Container { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audio codec.
+        /// </summary>
+        /// <value>The audio codec.</value>
+        [ApiMember(Name = "AudioCodec", Description = "Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string AudioCodec { get; set; }
+
         [ApiMember(Name = "EnableAutoStreamCopy", Description = "Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool EnableAutoStreamCopy { get; set; }
 
@@ -191,8 +194,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         public bool RequireNonAnamorphic { get; set; }
         public int? TranscodingMaxAudioChannels { get; set; }
         public int? CpuCoreLimit { get; set; }
-        public string OutputContainer { get; set; }
+
         public string LiveStreamId { get; set; }
+
+        public bool EnableMpegtsM2TsMode { get; set; }
 
         /// <summary>
         /// Gets or sets the video codec.
@@ -221,21 +226,18 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public EncodingContext Context { get; set; }
 
-        public void SetOption(string qualifier, string name, string value)
-        {
-            SetOption(qualifier + "-" + name, value);
-        }
-
         public Dictionary<string, string> StreamOptions { get; set; }
-
-        public void SetOption(string name, string value)
-        {
-            StreamOptions[name] = value;
-        }
 
         public string GetOption(string qualifier, string name)
         {
-            return GetOption(qualifier + "-" + name);
+            var value = GetOption(qualifier + "-" + name);
+
+            if (string.IsNullOrEmpty(value))
+            {
+                value = GetOption(name);
+            }
+
+            return value;
         }
 
         public string GetOption(string name)

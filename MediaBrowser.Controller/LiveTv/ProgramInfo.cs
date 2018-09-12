@@ -198,10 +198,16 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The etag.</value>
         public string Etag { get; set; }
-        
+
+        public Dictionary<string, string> ProviderIds { get; set; }
+        public Dictionary<string, string> SeriesProviderIds { get; set; }
+
         public ProgramInfo()
         {
             Genres = new List<string>();
+
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }

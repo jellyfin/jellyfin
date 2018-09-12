@@ -9,6 +9,8 @@ namespace MediaBrowser.Providers.Movies
 {
     public class MovieDbMovieExternalId : IExternalId
     {
+        public const string BaseMovieDbUrl = "https://www.themoviedb.org/";
+
         public string Name
         {
             get { return "TheMovieDb"; }
@@ -21,7 +23,7 @@ namespace MediaBrowser.Providers.Movies
 
         public string UrlFormatString
         {
-            get { return "https://www.themoviedb.org/movie/{0}"; }
+            get { return BaseMovieDbUrl + "movie/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -51,7 +53,7 @@ namespace MediaBrowser.Providers.Movies
 
         public string UrlFormatString
         {
-            get { return "https://www.themoviedb.org/tv/{0}"; }
+            get { return MovieDbMovieExternalId.BaseMovieDbUrl + "tv/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -74,7 +76,7 @@ namespace MediaBrowser.Providers.Movies
 
         public string UrlFormatString
         {
-            get { return "https://www.themoviedb.org/collection/{0}"; }
+            get { return MovieDbMovieExternalId.BaseMovieDbUrl + "collection/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -97,7 +99,7 @@ namespace MediaBrowser.Providers.Movies
 
         public string UrlFormatString
         {
-            get { return "https://www.themoviedb.org/person/{0}"; }
+            get { return MovieDbMovieExternalId.BaseMovieDbUrl + "person/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -120,7 +122,7 @@ namespace MediaBrowser.Providers.Movies
 
         public string UrlFormatString
         {
-            get { return "https://www.themoviedb.org/collection/{0}"; }
+            get { return MovieDbMovieExternalId.BaseMovieDbUrl + "collection/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -143,7 +145,7 @@ namespace MediaBrowser.Providers.Movies
 
         public string UrlFormatString
         {
-            get { return "http://www.imdb.com/title/{0}"; }
+            get { return "https://www.imdb.com/title/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -174,7 +176,7 @@ namespace MediaBrowser.Providers.Movies
 
         public string UrlFormatString
         {
-            get { return "http://www.imdb.com/name/{0}"; }
+            get { return "https://www.imdb.com/name/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)

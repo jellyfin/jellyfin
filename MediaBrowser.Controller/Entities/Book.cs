@@ -23,7 +23,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public string SeriesName { get; set; }
         [IgnoreDataMember]
-        public Guid? SeriesId { get; set; }
+        public Guid SeriesId { get; set; }
 
         public string FindSeriesSortName()
         {
@@ -38,16 +38,23 @@ namespace MediaBrowser.Controller.Entities
             return SeriesPresentationUniqueKey;
         }
 
-        public Guid? FindSeriesId()
+        public Guid FindSeriesId()
         {
             return SeriesId;
         }
 
         public override bool CanDownload()
         {
-            var locationType = LocationType;
-            return locationType != LocationType.Remote &&
-                   locationType != LocationType.Virtual;
+            return CanDownloadAsSingleMedia();
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsExternalTransfer
+        {
+            get
+            {
+                return CanDownloadAsSingleMedia();
+            }
         }
 
         public override UnratedItem GetBlockUnratedType()

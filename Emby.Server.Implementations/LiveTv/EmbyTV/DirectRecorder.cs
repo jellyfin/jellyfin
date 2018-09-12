@@ -17,12 +17,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
+        private readonly IStreamHelper _streamHelper;
 
-        public DirectRecorder(ILogger logger, IHttpClient httpClient, IFileSystem fileSystem)
+        public DirectRecorder(ILogger logger, IHttpClient httpClient, IFileSystem fileSystem, IStreamHelper streamHelper)
         {
             _logger = logger;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
+            _streamHelper = streamHelper;
         }
 
         public string GetOutputPath(MediaSourceInfo mediaSource, string targetFile)
@@ -50,7 +52,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 _logger.Info("Copying recording stream to file {0}", targetFile);
 
-                // The media source if infinite so we need to handle stopping ourselves
+                // The media source is infinite so we need to handle stopping ourselves
                 var durationToken = new CancellationTokenSource(duration);
                 cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
 
@@ -90,45 +92,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     var durationToken = new CancellationTokenSource(duration);
                     cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
 
-                    await CopyUntilCancelled(response.Content, output, cancellationToken).ConfigureAwait(false);
+                    await _streamHelper.CopyUntilCancelled(response.Content, output, 81920, cancellationToken).ConfigureAwait(false);
                 }
             }
 
             _logger.Info("Recording completed to file {0}", targetFile);
-        }
-
-        private const int BufferSize = 81920;
-        public static async Task CopyUntilCancelled(Stream source, Stream target, CancellationToken cancellationToken)
-        {
-            byte[] buffer = new byte[BufferSize];
-
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var bytesRead = await CopyToAsyncInternal(source, target, buffer, cancellationToken).ConfigureAwait(false);
-
-                //var position = fs.Position;
-                //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
-
-                if (bytesRead == 0)
-                {
-                    await Task.Delay(100).ConfigureAwait(false);
-                }
-            }
-        }
-
-        private static async Task<int> CopyToAsyncInternal(Stream source, Stream destination, byte[] buffer, CancellationToken cancellationToken)
-        {
-            int bytesRead;
-            int totalBytesRead = 0;
-
-            while ((bytesRead = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
-            {
-                destination.Write(buffer, 0, bytesRead);
-
-                totalBytesRead += bytesRead;
-            }
-
-            return totalBytesRead;
         }
     }
 }

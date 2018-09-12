@@ -3,23 +3,22 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
+using MediaBrowser.Model.Dto;
+using System;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
     public class MediaInfoRequest
     {
-        public string InputPath { get; set; }
-        public MediaProtocol Protocol { get; set; }
+        public MediaSourceInfo MediaSource { get; set; }
         public bool ExtractChapters { get; set; }
         public DlnaProfileType MediaType { get; set; }
         public IIsoMount MountedIso { get; set; }
-        public VideoType VideoType { get; set; }
         public string[] PlayableStreamFileNames { get; set; }
-        public int AnalyzeDurationMs { get; set; }
 
         public MediaInfoRequest()
         {
-            PlayableStreamFileNames = new string[] { };
+            PlayableStreamFileNames = Array.Empty<string>();
         }
     }
 }

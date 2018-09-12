@@ -8,6 +8,7 @@ namespace MediaBrowser.Controller.Subtitles
     public class SubtitleSearchRequest : IHasProviderIds
     {
         public string Language { get; set; }
+        public string TwoLetterISOLanguageName { get; set; }
 
         public VideoContentType ContentType { get; set; }
 
@@ -23,11 +24,16 @@ namespace MediaBrowser.Controller.Subtitles
         public Dictionary<string, string> ProviderIds { get; set; }
 
         public bool SearchAllProviders { get; set; }
+        public string[] DisabledSubtitleFetchers { get; set; }
+        public string[] SubtitleFetcherOrder { get; set; }
 
         public SubtitleSearchRequest()
         {
             SearchAllProviders = true;
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            DisabledSubtitleFetchers = Array.Empty<string>();
+            SubtitleFetcherOrder = Array.Empty<string>();
         }
     }
 }

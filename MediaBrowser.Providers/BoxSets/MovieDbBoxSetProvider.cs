@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.BoxSets
 {
     public class MovieDbBoxSetProvider : IRemoteMetadataProvider<BoxSet, BoxSetInfo>
     {
-        private const string GetCollectionInfo3 = @"https://api.themoviedb.org/3/collection/{0}?api_key={1}&append_to_response=images";
+        private const string GetCollectionInfo3 = MovieDbProvider.BaseMovieDbUrl + @"3/collection/{0}?api_key={1}&append_to_response=images";
 
         internal static MovieDbBoxSetProvider Current;
 
@@ -66,7 +66,7 @@ namespace MediaBrowser.Providers.BoxSets
 
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-                var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
+                var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
 
                 var result = new RemoteSearchResult
                 {
@@ -189,7 +189,7 @@ namespace MediaBrowser.Providers.BoxSets
             {
                 using (var json = response.Content)
                 {
-                    mainResult = _json.DeserializeFromStream<RootObject>(json);
+                    mainResult = await _json.DeserializeFromStreamAsync<RootObject>(json).ConfigureAwait(false);
                 }
             }
 
@@ -217,7 +217,7 @@ namespace MediaBrowser.Providers.BoxSets
                     {
                         using (var json = response.Content)
                         {
-                            mainResult = _json.DeserializeFromStream<RootObject>(json);
+                            mainResult = await _json.DeserializeFromStreamAsync<RootObject>(json).ConfigureAwait(false);
                         }
                     }
                 }
@@ -225,7 +225,6 @@ namespace MediaBrowser.Providers.BoxSets
             return mainResult;
         }
 
-        private readonly Task _cachedTask = Task.FromResult(true);
         internal Task EnsureInfo(string tmdbId, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
             var path = GetDataFilePath(_config.ApplicationPaths, tmdbId, preferredMetadataLanguage);
@@ -235,9 +234,9 @@ namespace MediaBrowser.Providers.BoxSets
             if (fileInfo.Exists)
             {
                 // If it's recent or automatic updates are enabled, don't re-download
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 3)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
                 {
-                    return _cachedTask;
+                    return Task.CompletedTask;
                 }
             }
 

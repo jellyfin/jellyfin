@@ -17,7 +17,7 @@ using MediaBrowser.Controller.Dto;
 namespace Emby.Server.Implementations.Photos
 {
     public abstract class BaseFolderImageProvider<T> : BaseDynamicImageProvider<T>
-        where T : Folder, new ()
+        where T : Folder, new()
     {
         protected ILibraryManager _libraryManager;
 
@@ -27,43 +27,33 @@ namespace Emby.Server.Implementations.Photos
             _libraryManager = libraryManager;
         }
 
-        protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
+        protected override List<BaseItem> GetItemsWithImages(BaseItem item)
         {
             return _libraryManager.GetItemList(new InternalItemsQuery
             {
-                Parent = item as BaseItem,
-                GroupByPresentationUniqueKey = false,
+                Parent = item,
                 DtoOptions = new DtoOptions(true),
-                ImageTypes = new ImageType[] { ImageType.Primary }
+                ImageTypes = new ImageType[] { ImageType.Primary },
+                OrderBy = new System.ValueTuple<string, SortOrder>[] 
+                {
+                    new System.ValueTuple<string, SortOrder>(ItemSortBy.IsFolder, SortOrder.Ascending),
+                    new System.ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending)
+                },
+                Limit = 1
             });
         }
 
-        protected override string CreateImage(IHasMetadata item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override string CreateImage(BaseItem item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             return CreateSingleImage(itemsWithImages, outputPathWithoutExtension, ImageType.Primary);
         }
 
-        protected override bool Supports(IHasMetadata item)
+        protected override bool Supports(BaseItem item)
         {
-            if (item is PhotoAlbum || item is MusicAlbum)
-            {
-                return true;
-            }
-
-            if (item.GetType() == typeof(Folder))
-            {
-                var folder = item as Folder;
-                if (folder.IsTopParent)
-                {
-                    return false;
-                }
-                return true;
-            }
-
-            return false;
+            return item is T;
         }
 
-        protected override bool HasChangedByDate(IHasMetadata item, ItemImageInfo image)
+        protected override bool HasChangedByDate(BaseItem item, ItemImageInfo image)
         {
             if (item is MusicAlbum)
             {
@@ -79,6 +69,25 @@ namespace Emby.Server.Implementations.Photos
         public FolderImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, ILibraryManager libraryManager)
             : base(fileSystem, providerManager, applicationPaths, imageProcessor, libraryManager)
         {
+        }
+
+        protected override bool Supports(BaseItem item)
+        {
+            if (item is PhotoAlbum || item is MusicAlbum)
+            {
+                return false;
+            }
+
+            var folder = item as Folder;
+            if (folder != null)
+            {
+                if (folder.IsTopParent)
+                {
+                    return false;
+                }
+            }
+            return true;
+            //return item.SourceType == SourceType.Library;
         }
     }
 

@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly ITimerFactory _timerFactory;
         private const int UpdateDuration = 500;
 
-        private readonly Dictionary<Guid, List<IHasUserData>> _changedItems = new Dictionary<Guid, List<IHasUserData>>();
+        private readonly Dictionary<Guid, List<BaseItem>> _changedItems = new Dictionary<Guid, List<BaseItem>>();
 
         public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, ILogger logger, IUserManager userManager, ITimerFactory timerFactory)
         {
@@ -62,22 +62,22 @@ namespace Emby.Server.Implementations.EntryPoints
                     UpdateTimer.Change(UpdateDuration, Timeout.Infinite);
                 }
 
-                List<IHasUserData> keys;
+                List<BaseItem> keys;
 
                 if (!_changedItems.TryGetValue(e.UserId, out keys))
                 {
-                    keys = new List<IHasUserData>();
+                    keys = new List<BaseItem>();
                     _changedItems[e.UserId] = keys;
                 }
 
                 keys.Add(e.Item);
 
-                var baseItem = e.Item as BaseItem;
+                var baseItem = e.Item;
 
                 // Go up one level for indicators
                 if (baseItem != null)
                 {
-                    var parent = baseItem.IsOwnedItem ? baseItem.GetOwner() : baseItem.GetParent();
+                    var parent = baseItem.GetOwner() ?? baseItem.GetParent();
 
                     if (parent != null)
                     {
@@ -105,50 +105,41 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
-        private async Task SendNotifications(IEnumerable<KeyValuePair<Guid, List<IHasUserData>>> changes, CancellationToken cancellationToken)
+        private async Task SendNotifications(List<KeyValuePair<Guid, List<BaseItem>>> changes, CancellationToken cancellationToken)
         {
             foreach (var pair in changes)
             {
-                var userId = pair.Key;
-                var userSessions = _sessionManager.Sessions
-                    .Where(u => u.ContainsUser(userId) && u.SessionController != null && u.IsActive)
-                    .ToList();
-
-                if (userSessions.Count > 0)
-                {
-                    var user = _userManager.GetUserById(userId);
-
-                    var dtoList = pair.Value
-                        .DistinctBy(i => i.Id)
-                        .Select(i =>
-                        {
-                            var dto = _userDataManager.GetUserDataDto(i, user);
-                            dto.ItemId = i.Id.ToString("N");
-                            return dto;
-                        })
-                        .ToArray();
-
-                    var info = new UserDataChangeInfo
-                    {
-                        UserId = userId.ToString("N"),
-
-                        UserDataList = dtoList
-                    };
-
-                    foreach (var userSession in userSessions)
-                    {
-                        try
-                        {
-                            await userSession.SessionController.SendUserDataChangeInfo(info, cancellationToken).ConfigureAwait(false);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error sending UserDataChanged message", ex);
-                        }
-                    }
-                }
-
+                await SendNotifications(pair.Key, pair.Value, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        private Task SendNotifications(Guid userId, List<BaseItem> changedItems, CancellationToken cancellationToken)
+        {
+            return _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, "UserDataChanged", () => GetUserDataChangeInfo(userId, changedItems), cancellationToken);
+        }
+
+        private UserDataChangeInfo GetUserDataChangeInfo(Guid userId, List<BaseItem> changedItems)
+        {
+            var user = _userManager.GetUserById(userId);
+
+            var dtoList = changedItems
+                .DistinctBy(i => i.Id)
+                .Select(i =>
+                {
+                    var dto = _userDataManager.GetUserDataDto(i, user);
+                    dto.ItemId = i.Id.ToString("N");
+                    return dto;
+                })
+                .ToArray();
+
+            var userIdString = userId.ToString("N");
+
+            return new UserDataChangeInfo
+            {
+                UserId = userIdString,
+
+                UserDataList = dtoList
+            };
         }
 
         public void Dispose()
@@ -160,7 +151,6 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 
             _userDataManager.UserDataSaved -= _userDataManager_UserDataSaved;
-            GC.SuppressFinalize(this);
         }
     }
 }

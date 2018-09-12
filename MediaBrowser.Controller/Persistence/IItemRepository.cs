@@ -28,20 +28,6 @@ namespace MediaBrowser.Controller.Persistence
         void DeleteItem(Guid id, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the critic reviews.
-        /// </summary>
-        /// <param name="itemId">The item id.</param>
-        /// <returns>Task{IEnumerable{ItemReview}}.</returns>
-        List<ItemReview> GetCriticReviews(Guid itemId);
-
-        /// <summary>
-        /// Saves the critic reviews.
-        /// </summary>
-        /// <param name="itemId">The item id.</param>
-        /// <param name="criticReviews">The critic reviews.</param>
-        void SaveCriticReviews(Guid itemId, IEnumerable<ItemReview> criticReviews);
-
-        /// <summary>
         /// Saves the items.
         /// </summary>
         /// <param name="items">The items.</param>
@@ -62,7 +48,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        List<ChapterInfo> GetChapters(Guid id);
+        List<ChapterInfo> GetChapters(BaseItem item);
 
         /// <summary>
         /// Gets a single chapter for an item
@@ -70,7 +56,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="id"></param>
         /// <param name="index"></param>
         /// <returns></returns>
-        ChapterInfo GetChapter(Guid id, int index);
+        ChapterInfo GetChapter(BaseItem item, int index);
 
         /// <summary>
         /// Saves the chapters.

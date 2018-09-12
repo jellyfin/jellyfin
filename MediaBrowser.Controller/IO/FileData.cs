@@ -38,6 +38,7 @@ namespace MediaBrowser.Controller.IO
         public static FileSystemMetadata[] GetFilteredFileSystemEntries(IDirectoryService directoryService,
             string path,
             IFileSystem fileSystem,
+            IServerApplicationHost appHost,
             ILogger logger,
             ItemResolveArgs args,
             int flattenFolderDepth = 0,
@@ -71,9 +72,9 @@ namespace MediaBrowser.Controller.IO
                 {
                     try
                     {
-                        var newPath = fileSystem.ResolveShortcut(fullName);
+                        var newPath = appHost.ExpandVirtualPath(fileSystem.ResolveShortcut(fullName));
 
-                        if (string.IsNullOrWhiteSpace(newPath))
+                        if (string.IsNullOrEmpty(newPath))
                         {
                             //invalid shortcut - could be old or target could just be unavailable
                             logger.Warn("Encountered invalid shortcut: " + fullName);
@@ -95,7 +96,7 @@ namespace MediaBrowser.Controller.IO
                 }
                 else if (flattenFolderDepth > 0 && isDirectory)
                 {
-                    foreach (var child in GetFilteredFileSystemEntries(directoryService, fullName, fileSystem, logger, args, flattenFolderDepth: flattenFolderDepth - 1, resolveShortcuts: resolveShortcuts))
+                    foreach (var child in GetFilteredFileSystemEntries(directoryService, fullName, fileSystem, appHost, logger, args, flattenFolderDepth: flattenFolderDepth - 1, resolveShortcuts: resolveShortcuts))
                     {
                         dict[child.FullName] = child;
                     }

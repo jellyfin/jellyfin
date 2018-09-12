@@ -38,11 +38,6 @@ namespace MediaBrowser.Model.Entities
         /// <returns>System.String.</returns>
         public static string GetProviderId(this IHasProviderIds instance, string name)
         {
-            if (instance == null)
-            {
-                throw new ArgumentNullException("instance");
-            }
-
             if (instance.ProviderIds == null)
             {
                 return null;
@@ -61,11 +56,6 @@ namespace MediaBrowser.Model.Entities
         /// <param name="value">The value.</param>
         public static void SetProviderId(this IHasProviderIds instance, string name, string value)
         {
-            if (instance == null)
-            {
-                throw new ArgumentNullException("instance");
-            }
-            
             // If it's null remove the key from the dictionary
             if (string.IsNullOrEmpty(value))
             {

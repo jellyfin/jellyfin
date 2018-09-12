@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Activity
         /// Gets or sets the identifier.
         /// </summary>
         /// <value>The identifier.</value>
-        public string Id { get; set; }
+        public long Id { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -51,7 +51,7 @@ namespace MediaBrowser.Model.Activity
         /// Gets or sets the user identifier.
         /// </summary>
         /// <value>The user identifier.</value>
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the user primary image tag.

@@ -40,7 +40,7 @@
         </h2>
 
         <div style="margin: 2em 0 2em;">
-            <div class="subtitleappearance-preview flex align-items-center justify-content-center" style="border: 1px solid gray; color: black; background: lightblue url(https://github.com/MediaBrowser/Emby.Resources/raw/master/images/subtitles/previewbg.jpg) no-repeat center center; background-size: cover; min-height: 4em;padding:1em;">
+            <div class="subtitleappearance-preview flex align-items-center justify-content-center" style="border: 1px solid gray; color: black; background: #6A96BD; padding:1em;">
                 <div class="subtitleappearance-preview-window flex align-items-center justify-content-center" style="width: 90%; padding: .25em;">
                     <div class="subtitleappearance-preview-text flex align-items-center justify-content-center">
                         ${TheseSettingsAffectSubtitlesOnThisDevice}
@@ -53,6 +53,7 @@
 
         <div class="selectContainer">
             <select is="emby-select" id="selectTextSize" label="${LabelTextSize}">
+                <option value="smaller">${Smaller}</option>
                 <option value="small">${Small}</option>
                 <option value="">${Normal}</option>
                 <option value="large">${Large}</option>

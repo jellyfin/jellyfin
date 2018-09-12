@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Providers
     }
 
     public interface IRemoteMetadataProvider<TItemType, in TLookupInfoType> : IMetadataProvider<TItemType>, IRemoteMetadataProvider, IRemoteSearchProvider<TLookupInfoType>
-        where TItemType : IHasMetadata, IHasLookupInfo<TLookupInfoType>
+        where TItemType : BaseItem, IHasLookupInfo<TLookupInfoType>
         where TLookupInfoType : ItemLookupInfo, new()
     {
         Task<MetadataResult<TItemType>> GetMetadata(TLookupInfoType info, CancellationToken cancellationToken);

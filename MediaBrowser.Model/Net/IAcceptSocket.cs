@@ -2,18 +2,6 @@
 
 namespace MediaBrowser.Model.Net
 {
-    public interface IAcceptSocket : IDisposable
-    {
-        bool DualMode { get; }
-        IpEndPointInfo LocalEndPoint { get; }
-        IpEndPointInfo RemoteEndPoint { get; }
-        void Close();
-        void Shutdown(bool both);
-        void Listen(int backlog);
-        void Bind(IpEndPointInfo endpoint);
-        void Connect(IpEndPointInfo endPoint);
-    }
-
     public class SocketCreateException : Exception
     {
         public SocketCreateException(string errorCode, Exception originalException)

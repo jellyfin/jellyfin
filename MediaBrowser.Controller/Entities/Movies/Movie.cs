@@ -4,10 +4,6 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
@@ -17,23 +13,8 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasSpecialFeatures, IHasTrailers, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
+    public class Movie : Video, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {
-        public Guid[] SpecialFeatureIds { get; set; }
-
-        public Movie()
-        {
-            SpecialFeatureIds = EmptyGuidArray;
-            RemoteTrailers = EmptyMediaUrlArray;
-            LocalTrailerIds = EmptyGuidArray;
-            RemoteTrailerIds = EmptyGuidArray;
-        }
-
-        public Guid[] LocalTrailerIds { get; set; }
-        public Guid[] RemoteTrailerIds { get; set; }
-
-        public MediaUrl[] RemoteTrailers { get; set; }
-
         /// <summary>
         /// Gets or sets the name of the TMDB collection.
         /// </summary>
@@ -47,60 +28,52 @@ namespace MediaBrowser.Controller.Entities.Movies
             set { TmdbCollectionName = value; }
         }
 
-        public override double? GetDefaultPrimaryImageAspectRatio()
+        public override double GetDefaultPrimaryImageAspectRatio()
         {
+            // hack for tv plugins
+            if (SourceType == SourceType.Channel)
+            {
+                return 0;
+            }
+
             double value = 2;
             value /= 3;
 
             return value;
         }
 
-        protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
+        [IgnoreDataMember]
+        public override bool SupportsLocalTrailers
         {
-            var hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
-
-            // Must have a parent to have special features
-            // In other words, it must be part of the Parent/Child tree
-            if (LocationType == LocationType.FileSystem && GetParent() != null && !IsInMixedFolder)
-            {
-                var specialFeaturesChanged = await RefreshSpecialFeatures(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
-
-                if (specialFeaturesChanged)
-                {
-                    hasChanges = true;
-                }
-            }
-
-            return hasChanges;
+            get { return true; }
         }
 
-        private async Task<bool> RefreshSpecialFeatures(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
+        protected override Dictionary<string, string> GetProviderIdsForLinkedTrailerSearch()
         {
-            var newItems = LibraryManager.FindExtras(this, fileSystemChildren, options.DirectoryService).ToList();
-            var newItemIds = newItems.Select(i => i.Id).ToArray();
+            var providerIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            var itemsChanged = !SpecialFeatureIds.SequenceEqual(newItemIds);
-
-            var ownerId = Id;
-
-            var tasks = newItems.Select(i =>
+            var all = ProviderIds;
+            foreach (var pair in all)
             {
-                var subOptions = new MetadataRefreshOptions(options);
-
-                if (i.OwnerId != ownerId)
+                if (string.Equals(pair.Key, MetadataProviders.TmdbCollection.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
-                    i.OwnerId = ownerId;
-                    subOptions.ForceSave = true;
+                    continue;
                 }
 
-                return RefreshMetadataForOwnedItem(i, false, subOptions, cancellationToken);
-            });
+                providerIds[pair.Key] = pair.Value;
+            }
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            return providerIds;
+        }
 
-            SpecialFeatureIds = newItemIds;
+        protected override BaseItem[] LoadExtras(List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
+        {
+            if (IsFileProtocol && SupportsOwnedItems && !IsInMixedFolder)
+            {
+                return LibraryManager.FindExtras(this, fileSystemChildren, directoryService).ToArray();
+            }
 
-            return itemsChanged;
+            return base.LoadExtras(fileSystemChildren, directoryService);
         }
 
         public override UnratedItem GetBlockUnratedType()
@@ -131,9 +104,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             return info;
         }
 
-        public override bool BeforeMetadataRefresh()
+        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
         {
-            var hasChanges = base.BeforeMetadataRefresh();
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
 
             if (!ProductionYear.HasValue)
             {
@@ -172,7 +145,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             var list = base.GetRelatedUrls();
 
             var imdbId = this.GetProviderId(MetadataProviders.Imdb);
-            if (!string.IsNullOrWhiteSpace(imdbId))
+            if (!string.IsNullOrEmpty(imdbId))
             {
                 list.Add(new ExternalUrl
                 {

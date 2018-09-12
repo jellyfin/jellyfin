@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Model.Connect
 {
     public class ConnectAuthenticationExchangeResult
@@ -7,7 +8,7 @@ namespace MediaBrowser.Model.Connect
         /// Gets or sets the local user identifier.
         /// </summary>
         /// <value>The local user identifier.</value>
-        public string LocalUserId { get; set; }
+        public Guid LocalUserId { get; set; }
         /// <summary>
         /// Gets or sets the access token.
         /// </summary>

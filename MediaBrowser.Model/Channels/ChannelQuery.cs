@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
+using System;
 
 namespace MediaBrowser.Model.Channels
 {
@@ -18,7 +19,7 @@ namespace MediaBrowser.Model.Channels
         /// Gets or sets the user identifier.
         /// </summary>
         /// <value>The user identifier.</value>
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
@@ -38,10 +39,14 @@ namespace MediaBrowser.Model.Channels
         /// <value><c>true</c> if [supports latest items]; otherwise, <c>false</c>.</value>
         public bool? SupportsLatestItems { get; set; }
 
+        public bool? SupportsMediaDeletion { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is favorite.
         /// </summary>
         /// <value><c>null</c> if [is favorite] contains no value, <c>true</c> if [is favorite]; otherwise, <c>false</c>.</value>
         public bool? IsFavorite { get; set; }
+        public bool? IsRecordingsFolder { get; set; }
+        public bool RefreshLatestChannelItems { get; set; }
     }
 }

@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugType>None</DebugType>
+    <RuntimeIdentifiers>ubuntu.16.04-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="5.2.0" />
+    <PackageReference Include="sharpcompress" Version="0.22.0" />
+    <PackageReference Include="SimpleInjector" Version="4.3.0" />
+    <PackageReference Include="SkiaSharp" Version="1.60.3" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="1.1.11" />
+    <PackageReference Include="SQLitePCLRaw.core" Version="1.1.11" />
+    <PackageReference Include="SQLitePCLRaw.provider.sqlite3.netstandard11" Version="1.1.11" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
+    <Reference Include="Emby.Server.Connect">
+      <HintPath>..\ThirdParty\emby\Emby.Server.Connect.dll</HintPath>
+    </Reference>
+    <Reference Include="Emby.Server.Sync">
+      <HintPath>..\ThirdParty\emby\Emby.Server.Sync.dll</HintPath>
+    </Reference>
+    <Reference Include="Emby.Server.MediaEncoding">
+      <HintPath>..\ThirdParty\emby\Emby.Server.MediaEncoding.dll</HintPath>
+    </Reference>
+    <Reference Include="MediaBrowser.IsoMounting.Linux">
+      <HintPath>..\ThirdParty\MediaBrowser.IsoMounting.Linux\MediaBrowser.IsoMounting.Linux.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BDInfo\BDInfo.csproj" />
+    <ProjectReference Include="..\DvdLib\DvdLib.csproj" />
+    <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
+    <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
+    <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
+    <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
+    <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj" />
+    <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj" />
+    <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
+    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj" />
+    <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj" />
+    <ProjectReference Include="..\RSSDP\RSSDP.csproj" />
+    <ProjectReference Include="..\Emby.Drawing.Skia\Emby.Drawing.Skia.csproj" />
+    <ProjectReference Include="..\Emby.Drawing.ImageMagick\Emby.Drawing.ImageMagick.csproj" />
+    <ProjectReference Include="..\SocketHttpListener\SocketHttpListener.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\SharedVersion.cs" />
+  </ItemGroup>
+
+</Project>

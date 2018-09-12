@@ -1,7 +1,7 @@
 ﻿<div id="moviesPage" data-role="page" data-dom-cache="true" class="page libraryPage backdropPage collectionEditorPage pageWithAbsoluteTabs withTabs" data-backdroptype="movie">
 
     <div class="pageTabContent" data-index="0">
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em 1em;">
+        <div class="flex align-items-center justify-content-center flex-wrap-wrap padded-top padded-left padded-right padded-bottom">
             <div class="paging"></div>
             <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
             <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
@@ -13,17 +13,14 @@
 
         <div is="emby-itemscontainer" class="itemsContainer padded-left padded-left-withalphapicker padded-right">
         </div>
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em;">
+        <div class="flex align-items-center justify-content-center flex-wrap-wrap padded-top padded-left padded-right padded-bottom">
             <div class="paging"></div>
         </div>
     </div>
     <div class="pageTabContent" data-index="1">
         <div id="resumableSection" class="verticalSection hide">
-            <div class="sectionTitleContainer">
+            <div class="sectionTitleContainer sectionTitleContainer-cards">
                 <h2 class="sectionTitle sectionTitle-cards padded-left">${HeaderContinueWatching}</h2>
-                <button is="emby-button" type="button" class="raised submit raised-mini categorySyncButton button-accent sectionTitleButton" data-category="Resume">
-                    <span>${ButtonDownload}</span>
-                </button>
             </div>
 
             <div is="emby-itemscontainer" id="resumableItems" class="itemsContainer padded-left padded-right">
@@ -31,10 +28,10 @@
         </div>
 
         <div class="verticalSection">
-            <div class="sectionTitleContainer">
+            <div class="sectionTitleContainer sectionTitleContainer-cards">
                 <h2 class="sectionTitle sectionTitle-cards padded-left">${HeaderLatestMovies}</h2>
-                <button is="emby-button" type="button" class="raised submit raised-mini categorySyncButton button-accent sectionTitleButton" data-category="Latest">
-                    <span>${ButtonDownload}</span>
+                <button is="emby-button" type="button" class="fab submit categorySyncButton button-submit sectionTitleButton" data-category="Latest" title="${ButtonDownload}">
+                    <i class="md-icon">&#xE2C4;</i>
                 </button>
             </div>
 
@@ -50,7 +47,7 @@
         </div>
     </div>
     <div class="pageTabContent" data-index="2">
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em 1em;">
+        <div class="flex align-items-center justify-content-center flex-wrap-wrap padded-top padded-left padded-right padded-bottom">
             <div class="paging"></div>
             <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
             <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
@@ -61,24 +58,24 @@
 
         <div is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-left-withalphapicker padded-right">
         </div>
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+        <div class="flex align-items-center justify-content-center flex-wrap-wrap padded-top padded-left padded-right padded-bottom">
             <div class="paging"></div>
         </div>
     </div>
     <div class="pageTabContent" data-index="3">
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em 1em;">
+        <div class="flex align-items-center justify-content-center flex-wrap-wrap padded-top padded-left padded-right padded-bottom">
             <div class="paging"></div>
             <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
         </div>
 
         <div is="emby-itemscontainer" class="itemsContainer padded-left padded-right">
         </div>
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em;">
+        <div class="flex align-items-center justify-content-center flex-wrap-wrap padded-top padded-left padded-right padded-bottom">
             <div class="paging"></div>
         </div>
     </div>
     <div class="pageTabContent" data-index="4">
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em 1em;">
+        <div class="flex align-items-center justify-content-center flex-wrap-wrap padded-top padded-left padded-right padded-bottom">
             <div class="paging"></div>
             <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
             <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
@@ -87,7 +84,7 @@
 
         <div is="emby-itemscontainer" class="itemsContainer vertical-wrap centered padded-left padded-right" style="text-align:center;">
         </div>
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+        <div class="flex align-items-center justify-content-center flex-wrap-wrap padded-top padded-left padded-right padded-bottom">
             <div class="paging"></div>
         </div>
     </div>

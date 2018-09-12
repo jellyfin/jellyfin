@@ -26,7 +26,7 @@ namespace Emby.Server.Implementations.Library
         public static void SetInitialItemValues(BaseItem item, Folder parent, IFileSystem fileSystem, ILibraryManager libraryManager, IDirectoryService directoryService)
         {
             // This version of the below method has no ItemResolveArgs, so we have to require the path already being set
-            if (string.IsNullOrWhiteSpace(item.Path))
+            if (string.IsNullOrEmpty(item.Path))
             {
                 throw new ArgumentException("Item must have a Path");
             }
@@ -108,17 +108,6 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// The MB name regex
-        /// </summary>
-        private static readonly Regex MbNameRegex = new Regex(@"(\[.*?\])");
-
-        internal static string StripBrackets(string inputString)
-        {
-            var output = MbNameRegex.Replace(inputString, string.Empty).Trim();
-            return Regex.Replace(output, @"\s+", " ");
-        }
-
-        /// <summary>
         /// Ensures DateCreated and DateModified have values
         /// </summary>
         /// <param name="fileSystem">The file system.</param>
@@ -140,7 +129,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             // See if a different path came out of the resolver than what went in
-            if (!string.Equals(args.Path, item.Path, StringComparison.OrdinalIgnoreCase))
+            if (!fileSystem.AreEqual(args.Path, item.Path))
             {
                 var childData = args.IsDirectory ? args.GetFileSystemEntryByPath(item.Path) : null;
 
@@ -173,7 +162,14 @@ namespace Emby.Server.Implementations.Library
                 // directoryService.getFile may return null
                 if (info != null)
                 {
-                    item.DateCreated = fileSystem.GetCreationTimeUtc(info);
+                    var dateCreated = fileSystem.GetCreationTimeUtc(info);
+
+                    if (dateCreated.Equals(DateTime.MinValue))
+                    {
+                        dateCreated = DateTime.UtcNow;
+                    }
+
+                    item.DateCreated = dateCreated;
                 }
             }
             else

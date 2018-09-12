@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Model.Logging
 {
@@ -29,7 +31,7 @@ namespace MediaBrowser.Model.Logging
         /// <summary>
         /// Reloads the logger.
         /// </summary>
-        void ReloadLogger(LogSeverity severity);
+        Task ReloadLogger(LogSeverity severity, CancellationToken cancellationToken);
 
         /// <summary>
         /// Occurs when [logger loaded].

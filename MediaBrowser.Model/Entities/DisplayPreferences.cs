@@ -95,29 +95,5 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the client
         /// </summary>
         public string Client { get; set; }
-
-        /// <summary>
-        /// Increases the size of the image.
-        /// </summary>
-        public void IncreaseImageSize()
-        {
-            double newWidth = PrimaryImageWidth / ImageScale;
-
-            ImageSize size = DrawingUtils.Resize(PrimaryImageWidth, PrimaryImageHeight, newWidth, null, null, null);
-
-            PrimaryImageWidth = Convert.ToInt32(size.Width);
-            PrimaryImageHeight = Convert.ToInt32(size.Height);
-        }
-
-        /// <summary>
-        /// Decreases the size of the image.
-        /// </summary>
-        public void DecreaseImageSize()
-        {
-            ImageSize size = DrawingUtils.Scale(PrimaryImageWidth, PrimaryImageHeight, ImageScale);
-
-            PrimaryImageWidth = Convert.ToInt32(size.Width);
-            PrimaryImageHeight = Convert.ToInt32(size.Height);
-        }
     }
 }

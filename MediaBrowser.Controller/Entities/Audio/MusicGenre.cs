@@ -48,6 +48,15 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsExternalTransfer
+        {
+            get
+            {
+                return CanDownloadAsFolder();
+            }
+        }
+
         /// <summary>
         /// Returns the folder containing the item.
         /// If the item is a folder, it returns the folder itself
@@ -62,7 +71,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
-        public override double? GetDefaultPrimaryImageAspectRatio()
+        public override double GetDefaultPrimaryImageAspectRatio()
         {
             return 1;
         }
@@ -77,19 +86,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             return true;
         }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance is owned item.
-        /// </summary>
-        /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public override bool IsOwnedItem
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         [IgnoreDataMember]
         public override bool SupportsPeople
         {
@@ -99,9 +95,9 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
-        public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
-            query.GenreIds = new[] { Id.ToString("N") };
+            query.GenreIds = new[] { Id };
             query.IncludeItemTypes = new[] { typeof(MusicVideo).Name, typeof(Audio).Name, typeof(MusicAlbum).Name, typeof(MusicArtist).Name };
 
             return LibraryManager.GetItemList(query);
@@ -120,39 +116,6 @@ namespace MediaBrowser.Controller.Entities.Audio
                 name;
 
             return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.MusicGenrePath, validName);
-        }
-
-        private string GetRebasedPath()
-        {
-            return GetPath(System.IO.Path.GetFileName(Path), false);
-        }
-
-        public override bool RequiresRefresh()
-        {
-            var newPath = GetRebasedPath();
-            if (!string.Equals(Path, newPath, StringComparison.Ordinal))
-            {
-                Logger.Debug("{0} path has changed from {1} to {2}", GetType().Name, Path, newPath);
-                return true;
-            }
-            return base.RequiresRefresh();
-        }
-
-        /// <summary>
-        /// This is called before any metadata refresh and returns true or false indicating if changes were made
-        /// </summary>
-        public override bool BeforeMetadataRefresh()
-        {
-            var hasChanges = base.BeforeMetadataRefresh();
-
-            var newPath = GetRebasedPath();
-            if (!string.Equals(Path, newPath, StringComparison.Ordinal))
-            {
-                Path = newPath;
-                hasChanges = true;
-            }
-
-            return hasChanges;
         }
     }
 }

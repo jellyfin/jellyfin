@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Model.Dto
 {
     public class RecommendationDto
@@ -9,6 +10,6 @@ namespace MediaBrowser.Model.Dto
 
         public string BaselineItemName { get; set; }
 
-        public string CategoryId { get; set; }
+        public Guid CategoryId { get; set; }
     }
 }

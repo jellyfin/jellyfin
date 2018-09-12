@@ -36,12 +36,5 @@ namespace MediaBrowser.Controller.Subtitles
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{SubtitleResponse}.</returns>
         Task<SubtitleResponse> GetSubtitles(string id, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets the supported languages.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task&lt;IEnumerable&lt;NameIdPair&gt;&gt;.</returns>
-        Task<IEnumerable<NameIdPair>> GetSupportedLanguages(CancellationToken cancellationToken);
     }
 }

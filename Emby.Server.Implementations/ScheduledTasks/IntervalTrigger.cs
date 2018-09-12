@@ -19,18 +19,15 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public TimeSpan Interval { get; set; }
 
         /// <summary>
+        /// Gets or sets the options of this task.
+        /// </summary>
+        public TaskOptions TaskOptions { get; set; }
+
+        /// <summary>
         /// Gets or sets the timer.
         /// </summary>
         /// <value>The timer.</value>
         private Timer Timer { get; set; }
-
-        /// <summary>
-        /// Gets the execution properties of this task.
-        /// </summary>
-        /// <value>
-        /// The execution properties of this task.
-        /// </value>
-        public TaskExecutionOptions TaskOptions { get; set; }
 
         private DateTime _lastStartDate;
 
@@ -93,7 +90,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Occurs when [triggered].
         /// </summary>
-        public event EventHandler<GenericEventArgs<TaskExecutionOptions>> Triggered;
+        public event EventHandler<EventArgs> Triggered;
 
         /// <summary>
         /// Called when [triggered].
@@ -105,7 +102,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             if (Triggered != null)
             {
                 _lastStartDate = DateTime.UtcNow;
-                Triggered(this, new GenericEventArgs<TaskExecutionOptions>(TaskOptions));
+                Triggered(this, EventArgs.Empty);
             }
         }
     }

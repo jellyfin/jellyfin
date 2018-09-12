@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.Services
                 //      mi.ReturnType
                 //    : Type.GetType(requestType.FullName + "Response");
 
-                RegisterRestPaths(appHost, requestType);
+                RegisterRestPaths(appHost, requestType, serviceType);
 
                 appHost.AddServiceInfo(serviceType, requestType);
             }
@@ -68,14 +68,14 @@ namespace Emby.Server.Implementations.Services
             return null;
         }
 
-        public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>(StringComparer.OrdinalIgnoreCase);
+        public readonly RestPath.RestPathMap RestPathMap = new RestPath.RestPathMap();
 
-        public void RegisterRestPaths(HttpListenerHost appHost, Type requestType)
+        public void RegisterRestPaths(HttpListenerHost appHost, Type requestType, Type serviceType)
         {
             var attrs = appHost.GetRouteAttributes(requestType);
             foreach (RouteAttribute attr in attrs)
             {
-                var restPath = new RestPath(appHost.CreateInstance, appHost.GetParseFn, requestType, attr.Path, attr.Verbs, attr.IsHidden, attr.Summary, attr.Description);
+                var restPath = new RestPath(appHost.CreateInstance, appHost.GetParseFn, requestType, serviceType, attr.Path, attr.Verbs, attr.IsHidden, attr.Summary, attr.Description);
 
                 RegisterRestPath(restPath);
             }
@@ -114,19 +114,20 @@ namespace Emby.Server.Implementations.Services
                 }
 
                 var bestScore = -1;
+                RestPath bestMatch = null;
                 foreach (var restPath in firstMatches)
                 {
                     var score = restPath.MatchScore(httpMethod, matchUsingPathParts, logger);
-                    if (score > bestScore) bestScore = score;
+                    if (score > bestScore)
+                    {
+                        bestScore = score;
+                        bestMatch = restPath;
+                    }
                 }
 
-                if (bestScore > 0)
+                if (bestScore > 0 && bestMatch != null)
                 {
-                    foreach (var restPath in firstMatches)
-                    {
-                        if (bestScore == restPath.MatchScore(httpMethod, matchUsingPathParts, logger))
-                            return restPath;
-                    }
+                    return bestMatch;
                 }
             }
 
@@ -136,18 +137,20 @@ namespace Emby.Server.Implementations.Services
                 if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches)) continue;
 
                 var bestScore = -1;
+                RestPath bestMatch = null;
                 foreach (var restPath in firstMatches)
                 {
                     var score = restPath.MatchScore(httpMethod, matchUsingPathParts, logger);
-                    if (score > bestScore) bestScore = score;
-                }
-                if (bestScore > 0)
-                {
-                    foreach (var restPath in firstMatches)
+                    if (score > bestScore)
                     {
-                        if (bestScore == restPath.MatchScore(httpMethod, matchUsingPathParts, logger))
-                            return restPath;
+                        bestScore = score;
+                        bestMatch = restPath;
                     }
+                }
+
+                if (bestScore > 0 && bestMatch != null)
+                {
+                    return bestMatch;
                 }
             }
 

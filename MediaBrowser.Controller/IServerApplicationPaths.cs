@@ -30,12 +30,6 @@ namespace MediaBrowser.Controller
         string LocalizationPath { get; }
 
         /// <summary>
-        /// Gets the path to the Images By Name directory
-        /// </summary>
-        /// <value>The images by name path.</value>
-        string ItemsByNamePath { get; }
-
-        /// <summary>
         /// Gets the path to the People directory
         /// </summary>
         /// <value>The people path.</value>
@@ -106,6 +100,7 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The internal metadata path.</value>
         string InternalMetadataPath { get; }
+        string VirtualInternalMetadataPath { get; }
 
         string ArtistsPath { get; }
 

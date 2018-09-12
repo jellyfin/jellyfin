@@ -1,9 +1,9 @@
+TV-Y,1
 APPROVED,1
 G,1
 E,1
 EC,1
 TV-G,1
-TV-Y,2
 TV-Y7,3
 TV-Y7-FV,4
 PG,5

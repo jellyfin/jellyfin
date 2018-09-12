@@ -10,7 +10,7 @@ namespace MediaBrowser.Controller.Providers
     }
 
     public interface ICustomMetadataProvider<TItemType> : IMetadataProvider<TItemType>, ICustomMetadataProvider
-        where TItemType : IHasMetadata
+        where TItemType : BaseItem
     {
         /// <summary>
         /// Fetches the asynchronous.

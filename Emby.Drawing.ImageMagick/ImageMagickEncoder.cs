@@ -138,7 +138,7 @@ namespace Emby.Drawing.ImageMagick
             // Even if the caller specified 100, don't use it because it takes forever
             quality = Math.Min(quality, 99);
 
-            if (string.IsNullOrWhiteSpace(options.BackgroundColor) || !HasTransparency(inputPath))
+            if (string.IsNullOrEmpty(options.BackgroundColor) || !HasTransparency(inputPath))
             {
                 using (var originalImage = new MagickWand(inputPath))
                 {
@@ -216,7 +216,7 @@ namespace Emby.Drawing.ImageMagick
 
         private void AddForegroundLayer(MagickWand wand, ImageProcessingOptions options)
         {
-            if (string.IsNullOrWhiteSpace(options.ForegroundLayer))
+            if (string.IsNullOrEmpty(options.ForegroundLayer))
             {
                 return;
             }
@@ -328,7 +328,6 @@ namespace Emby.Drawing.ImageMagick
         {
             _disposed = true;
             Wand.CloseEnvironment();
-            GC.SuppressFinalize(this);
         }
 
         private void CheckDisposed()

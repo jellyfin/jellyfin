@@ -18,13 +18,10 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer
+    public class Series : Folder, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer
     {
         public Series()
         {
-            RemoteTrailers = EmptyMediaUrlArray;
-            LocalTrailerIds = EmptyGuidArray;
-            RemoteTrailerIds = EmptyGuidArray;
             AirDays = new DayOfWeek[] { };
         }
 
@@ -44,6 +41,12 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 return true;
             }
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsLocalTrailers
+        {
+            get { return true; }
         }
 
         [IgnoreDataMember]
@@ -70,11 +73,6 @@ namespace MediaBrowser.Controller.Entities.TV
             get { return true; }
         }
 
-        public Guid[] LocalTrailerIds { get; set; }
-        public Guid[] RemoteTrailerIds { get; set; }
-
-        public MediaUrl[] RemoteTrailers { get; set; }
-
         /// <summary>
         /// airdate, dvd or absolute
         /// </summary>
@@ -86,20 +84,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <value>The status.</value>
         public SeriesStatus? Status { get; set; }
 
-        /// <summary>
-        /// Gets or sets the date last episode added.
-        /// </summary>
-        /// <value>The date last episode added.</value>
-        [IgnoreDataMember]
-        public DateTime DateLastEpisodeAdded
-        {
-            get
-            {
-                return DateLastMediaAdded ?? DateTime.MinValue;
-            }
-        }
-
-        public override double? GetDefaultPrimaryImageAspectRatio()
+        public override double GetDefaultPrimaryImageAspectRatio()
         {
             double value = 2;
             value /= 3;
@@ -125,7 +110,7 @@ namespace MediaBrowser.Controller.Entities.TV
         private string AddLibrariesToPresentationUniqueKey(string key)
         {
             var lang = GetPreferredMetadataLanguage();
-            if (!string.IsNullOrWhiteSpace(lang))
+            if (!string.IsNullOrEmpty(lang))
             {
                 key += "-" + lang;
             }
@@ -201,13 +186,13 @@ namespace MediaBrowser.Controller.Entities.TV
             var list = base.GetUserDataKeys();
 
             var key = this.GetProviderId(MetadataProviders.Imdb);
-            if (!string.IsNullOrWhiteSpace(key))
+            if (!string.IsNullOrEmpty(key))
             {
                 list.Insert(0, key);
             }
 
             key = this.GetProviderId(MetadataProviders.Tvdb);
-            if (!string.IsNullOrWhiteSpace(key))
+            if (!string.IsNullOrEmpty(key))
             {
                 list.Insert(0, key);
             }
@@ -215,7 +200,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return list;
         }
 
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             return GetSeasons(user, new DtoOptions(true));
         }
@@ -234,28 +219,26 @@ namespace MediaBrowser.Controller.Entities.TV
 
         private void SetSeasonQueryOptions(InternalItemsQuery query, User user)
         {
-            var config = user.Configuration;
-
             var seriesKey = GetUniqueSeriesKey(this);
 
             query.AncestorWithPresentationUniqueKey = null;
             query.SeriesPresentationUniqueKey = seriesKey;
             query.IncludeItemTypes = new[] { typeof(Season).Name };
-            query.OrderBy = new[] { ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray();
+            query.OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray();
 
-            if (!config.DisplayMissingEpisodes)
+            if (user != null)
             {
-                query.IsMissing = false;
+                var config = user.Configuration;
+
+                if (!config.DisplayMissingEpisodes)
+                {
+                    query.IsMissing = false;
+                }
             }
         }
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
-            if (query.User == null)
-            {
-                return base.GetItemsInternal(query);
-            }
-
             var user = query.User;
 
             if (query.Recursive)
@@ -266,7 +249,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 query.SeriesPresentationUniqueKey = seriesKey;
                 if (query.OrderBy.Length == 0)
                 {
-                    query.OrderBy = new[] { ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray();
+                    query.OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray();
                 }
                 if (query.IncludeItemTypes.Length == 0)
                 {
@@ -290,7 +273,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
                 IncludeItemTypes = new[] { typeof(Episode).Name, typeof(Season).Name },
-                OrderBy = new[] { ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
                 DtoOptions = options
             };
             var config = user.Configuration;
@@ -322,9 +305,6 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var totalItems = items.Count;
             var numComplete = 0;
-
-            // Refresh current item
-            await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
             // Refresh seasons
             foreach (var item in items)
@@ -387,7 +367,6 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             refreshOptions = new MetadataRefreshOptions(refreshOptions);
-            refreshOptions.IsPostRecursiveRefresh = true;
             await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
         }
 
@@ -405,7 +384,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 AncestorWithPresentationUniqueKey = queryFromSeries ? null : seriesKey,
                 SeriesPresentationUniqueKey = queryFromSeries ? seriesKey : null,
                 IncludeItemTypes = new[] { typeof(Episode).Name },
-                OrderBy = new[] { ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
                 DtoOptions = options
             };
             if (user != null)
@@ -509,9 +488,9 @@ namespace MediaBrowser.Controller.Entities.TV
             return info;
         }
 
-        public override bool BeforeMetadataRefresh()
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
-            var hasChanges = base.BeforeMetadataRefresh();
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             if (!ProductionYear.HasValue)
             {
@@ -534,7 +513,7 @@ namespace MediaBrowser.Controller.Entities.TV
             var list = base.GetRelatedUrls();
 
             var imdbId = this.GetProviderId(MetadataProviders.Imdb);
-            if (!string.IsNullOrWhiteSpace(imdbId))
+            if (!string.IsNullOrEmpty(imdbId))
             {
                 list.Add(new ExternalUrl
                 {

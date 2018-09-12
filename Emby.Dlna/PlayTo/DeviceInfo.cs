@@ -8,15 +8,12 @@ namespace Emby.Dlna.PlayTo
     {
         public DeviceInfo()
         {
-            ClientType = "DLNA";
             Name = "Generic Device";
         }
 
         public string UUID { get; set; }
 
         public string Name { get; set; }
-
-        public string ClientType { get; set; }
 
         public string ModelName { get; set; }
 

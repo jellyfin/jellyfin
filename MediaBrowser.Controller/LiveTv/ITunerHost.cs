@@ -3,6 +3,7 @@ using MediaBrowser.Model.LiveTv;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -24,19 +25,11 @@ namespace MediaBrowser.Controller.LiveTv
         /// <returns>Task&lt;IEnumerable&lt;ChannelInfo&gt;&gt;.</returns>
         Task<List<ChannelInfo>> GetChannels(bool enableCache, CancellationToken cancellationToken);
         /// <summary>
-        /// Gets the tuner infos.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task&lt;List&lt;LiveTvTunerInfo&gt;&gt;.</returns>
-        Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken);
-        /// <summary>
         /// Gets the channel stream.
         /// </summary>
         /// <param name="channelId">The channel identifier.</param>
         /// <param name="streamId">The stream identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
-        Task<ILiveStream> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken);
+        Task<ILiveStream> GetChannelStream(string channelId, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken);
         /// <summary>
         /// Gets the channel stream media sources.
         /// </summary>
@@ -59,18 +52,5 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="info">The information.</param>
         /// <returns>Task.</returns>
         Task Validate(TunerHostInfo info);
-    }
-
-    public interface ILiveStream
-    {
-        Task Open(CancellationToken openCancellationToken);
-        void Close();
-        int ConsumerCount { get; }
-        string OriginalStreamId { get; set; }
-        string TunerHostId { get; }
-        bool EnableStreamSharing { get; set; }
-        MediaSourceInfo OpenedMediaSource { get; set; }
-        string UniqueId { get; }
-        List<string> SharedStreamIds { get; }
     }
 }

@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("person");
             }
 
-            if (string.IsNullOrWhiteSpace(person.Name))
+            if (string.IsNullOrEmpty(person.Name))
             {
                 throw new ArgumentNullException();
             }
@@ -62,7 +62,7 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     // Was there, if no role and we have one - fill it in
-                    if (string.IsNullOrWhiteSpace(existing.Role) && !string.IsNullOrWhiteSpace(person.Role))
+                    if (string.IsNullOrEmpty(existing.Role) && !string.IsNullOrEmpty(person.Role))
                     {
                         existing.Role = person.Role;
                     }
@@ -101,7 +101,7 @@ namespace MediaBrowser.Controller.Entities
 
         public static bool ContainsPerson(List<PersonInfo> people, string name)
         {
-            if (string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentNullException("name");
             }

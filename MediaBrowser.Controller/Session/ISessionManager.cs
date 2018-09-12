@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Authentication;
 
 namespace MediaBrowser.Controller.Session
 {
@@ -57,19 +58,13 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Occurs when [authentication succeeded].
         /// </summary>
-        event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationSucceeded;
+        event EventHandler<GenericEventArgs<AuthenticationResult>> AuthenticationSucceeded;
         
         /// <summary>
         /// Gets the sessions.
         /// </summary>
         /// <value>The sessions.</value>
         IEnumerable<SessionInfo> Sessions { get; }
-
-        /// <summary>
-        /// Adds the parts.
-        /// </summary>
-        /// <param name="sessionFactories">The session factories.</param>
-        void AddParts(IEnumerable<ISessionControllerFactory> sessionFactories);
 
         /// <summary>
         /// Logs the user activity.
@@ -80,9 +75,9 @@ namespace MediaBrowser.Controller.Session
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
-        Task<SessionInfo> LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user);
+        SessionInfo LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user);
+
+        void UpdateDeviceName(string sessionId, string reportedDeviceName);
 
         /// <summary>
         /// Used to report that playback has started for an item
@@ -115,13 +110,6 @@ namespace MediaBrowser.Controller.Session
         /// <param name="sessionId">The session identifier.</param>
         /// <returns>Task.</returns>
         void ReportSessionEnded(string sessionId);
-
-        /// <summary>
-        /// Gets the session info dto.
-        /// </summary>
-        /// <param name="session">The session.</param>
-        /// <returns>SessionInfoDto.</returns>
-        SessionInfoDto GetSessionInfoDto(SessionInfo session);
 
         /// <summary>
         /// Sends the general command.
@@ -188,7 +176,9 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>Task.</returns>
-        Task SendMessageToUserSessions<T>(List<string> userIds, string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, T data, CancellationToken cancellationToken);
+
+        Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, Func<T> dataFn, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message to user device sessions.
@@ -199,9 +189,10 @@ namespace MediaBrowser.Controller.Session
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToUserDeviceSessions<T>(string deviceId, string name, T data,
-            CancellationToken cancellationToken);
-        
+        Task SendMessageToUserDeviceSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken);
+
+        Task SendMessageToUserDeviceAndAdminSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken);
+
         /// <summary>
         /// Sends the restart required message.
         /// </summary>
@@ -228,14 +219,14 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="userId">The user identifier.</param>
-        void AddAdditionalUser(string sessionId, string userId);
+        void AddAdditionalUser(string sessionId, Guid userId);
 
         /// <summary>
         /// Removes the additional user.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="userId">The user identifier.</param>
-        void RemoveAdditionalUser(string sessionId, string userId);
+        void RemoveAdditionalUser(string sessionId, Guid userId);
 
         /// <summary>
         /// Reports the now viewing item.
@@ -301,7 +292,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="deviceId">The device identifier.</param>
         /// <param name="remoteEndpoint">The remote endpoint.</param>
         /// <returns>SessionInfo.</returns>
-        Task<SessionInfo> GetSessionByAuthenticationToken(string token, string deviceId, string remoteEndpoint);
+        SessionInfo GetSessionByAuthenticationToken(string token, string deviceId, string remoteEndpoint);
 
         /// <summary>
         /// Gets the session by authentication token.
@@ -311,7 +302,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="remoteEndpoint">The remote endpoint.</param>
         /// <param name="appVersion">The application version.</param>
         /// <returns>Task&lt;SessionInfo&gt;.</returns>
-        Task<SessionInfo> GetSessionByAuthenticationToken(AuthenticationInfo info, string deviceId, string remoteEndpoint, string appVersion);
+        SessionInfo GetSessionByAuthenticationToken(AuthenticationInfo info, string deviceId, string remoteEndpoint, string appVersion);
 
         /// <summary>
         /// Logouts the specified access token.
@@ -320,17 +311,18 @@ namespace MediaBrowser.Controller.Session
         /// <returns>Task.</returns>
         void Logout(string accessToken);
 
+        void Logout(AuthenticationInfo authenticationInfo);
+
         /// <summary>
         /// Revokes the user tokens.
         /// </summary>
-        /// <returns>Task.</returns>
-        void RevokeUserTokens(string userId, string currentAccessToken);
+        void RevokeUserTokens(Guid userId, string currentAccessToken);
 
         /// <summary>
         /// Revokes the token.
         /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns>Task.</returns>
         void RevokeToken(string id);
+
+        void CloseIfNeeded(SessionInfo session);
     }
 }

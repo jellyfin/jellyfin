@@ -51,16 +51,11 @@ namespace MediaBrowser.Controller.Channels
         {
             try
             {
-                // Don't blow up here because it could cause parent screens with other content to fail
-                return ChannelManager.GetChannelItemsInternal(new ChannelItemQuery
-                {
-                    ChannelId = Id.ToString("N"),
-                    Limit = query.Limit,
-                    StartIndex = query.StartIndex,
-                    UserId = query.User.Id.ToString("N"),
-                    OrderBy = query.OrderBy
+                query.Parent = this;
+                query.ChannelIds = new Guid[] { Id };
 
-                }, new SimpleProgress<double>(), CancellationToken.None).Result;
+                // Don't blow up here because it could cause parent screens with other content to fail
+                return ChannelManager.GetChannelItemsInternal(query, new SimpleProgress<double>(), CancellationToken.None).Result;
             }
             catch
             {
@@ -91,7 +86,7 @@ namespace MediaBrowser.Controller.Channels
 
         internal static bool IsChannelVisible(BaseItem channelItem, User user)
         {
-            var channel = ChannelManager.GetChannel(channelItem.ChannelId);
+            var channel = LibraryManager.GetItemById(channelItem.ChannelId);
 
             return channel.IsVisible(user);
         }

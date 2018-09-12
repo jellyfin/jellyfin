@@ -11,6 +11,7 @@ using MediaBrowser.Model.Search;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Services;
+using System;
 
 namespace MediaBrowser.Api
 {
@@ -39,7 +40,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Supply a user id to search within a user's library or omit to search all.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Search characters used to find items
@@ -134,11 +135,11 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public async Task<object> Get(GetSearchHints request)
+        public object Get(GetSearchHints request)
         {
-            var result = await GetSearchHintsAsync(request).ConfigureAwait(false);
+            var result = GetSearchHintsAsync(request);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -146,9 +147,9 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{IEnumerable{SearchHintResult}}.</returns>
-        private async Task<SearchHintResult> GetSearchHintsAsync(GetSearchHints request)
+        private SearchHintResult GetSearchHintsAsync(GetSearchHints request)
         {
-            var result = await _searchEngine.GetSearchHints(new SearchQuery
+            var result = _searchEngine.GetSearchHints(new SearchQuery
             {
                 Limit = request.Limit,
                 SearchTerm = request.SearchTerm,
@@ -170,7 +171,7 @@ namespace MediaBrowser.Api
                 IsSeries = request.IsSeries,
                 IsSports = request.IsSports
 
-            }).ConfigureAwait(false);
+            });
 
             return new SearchHintResult
             {
@@ -194,7 +195,7 @@ namespace MediaBrowser.Api
                 Name = item.Name,
                 IndexNumber = item.IndexNumber,
                 ParentIndexNumber = item.ParentIndexNumber,
-                ItemId = _dtoService.GetDtoId(item),
+                Id = item.Id,
                 Type = item.GetClientTypeName(),
                 MediaType = item.MediaType,
                 MatchedTerm = hintInfo.MatchedTerm,
@@ -203,6 +204,14 @@ namespace MediaBrowser.Api
                 ChannelId = item.ChannelId,
                 EndDate = item.EndDate
             };
+
+            // legacy
+            result.ItemId = result.Id;
+
+            if (item.IsFolder)
+            {
+                result.IsFolder = true;
+            }
 
             var primaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary);
 
@@ -221,7 +230,7 @@ namespace MediaBrowser.Api
                 result.StartDate = program.StartDate;
             }
 
-            var hasSeries = item as IHasSeries;
+            var hasSeries = item as IHasSeriesName;
             if (hasSeries != null)
             {
                 result.Series = hasSeries.SeriesName;
@@ -256,7 +265,7 @@ namespace MediaBrowser.Api
                 if (album != null)
                 {
                     result.Album = album.Name;
-                    result.AlbumId = album.Id.ToString("N");
+                    result.AlbumId = album.Id;
                 }
                 else
                 {
@@ -264,7 +273,7 @@ namespace MediaBrowser.Api
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(item.ChannelId))
+            if (!item.ChannelId.Equals(Guid.Empty))
             {
                 var channel = _libraryManager.GetItemById(item.ChannelId);
                 result.ChannelName = channel == null ? null : channel.Name;

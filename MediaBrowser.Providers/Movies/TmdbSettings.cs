@@ -8,6 +8,11 @@ namespace MediaBrowser.Providers.Movies
         public string secure_base_url { get; set; }
         public List<string> poster_sizes { get; set; }
         public List<string> profile_sizes { get; set; }
+
+        public string GetImageUrl(string image)
+        {
+            return secure_base_url + image;
+        }
     }
 
     internal class TmdbSettingsResult

@@ -1,12 +1,10 @@
-﻿using System.Diagnostics;
-using MediaBrowser.Model.Serialization;
+﻿using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
     /// This is used by the api to get information about a Person within a BaseItem
     /// </summary>
-    [DebuggerDisplay("Name = {Name}, Role = {Role}, Type = {Type}")]
     public class BaseItemPerson
     {
         /// <summary>

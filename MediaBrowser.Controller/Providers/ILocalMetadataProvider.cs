@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.Providers
     }
 
     public interface ILocalMetadataProvider<TItemType> : IMetadataProvider<TItemType>, ILocalMetadataProvider
-         where TItemType : IHasMetadata
+         where TItemType : BaseItem
     {
         /// <summary>
         /// Gets the metadata.

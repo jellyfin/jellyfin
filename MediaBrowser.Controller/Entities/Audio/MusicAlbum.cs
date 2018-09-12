@@ -23,8 +23,8 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public MusicAlbum()
         {
-            Artists = EmptyStringArray;
-            AlbumArtists = EmptyStringArray;
+            Artists = Array.Empty<string>();
+            AlbumArtists = Array.Empty<string>();
         }
 
         [IgnoreDataMember]
@@ -58,7 +58,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
 
             var name = AlbumArtist;
-            if (!string.IsNullOrWhiteSpace(name))
+            if (!string.IsNullOrEmpty(name))
             {
                 return LibraryManager.GetArtist(name, options);
             }
@@ -136,7 +136,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return Tracks;
         }
 
-        public override double? GetDefaultPrimaryImageAspectRatio()
+        public override double GetDefaultPrimaryImageAspectRatio()
         {
             return 1;
         }
@@ -146,21 +146,21 @@ namespace MediaBrowser.Controller.Entities.Audio
             var list = base.GetUserDataKeys();
 
             var albumArtist = AlbumArtist;
-            if (!string.IsNullOrWhiteSpace(albumArtist))
+            if (!string.IsNullOrEmpty(albumArtist))
             {
                 list.Insert(0, albumArtist + "-" + Name);
             }
 
             var id = this.GetProviderId(MetadataProviders.MusicBrainzAlbum);
 
-            if (!string.IsNullOrWhiteSpace(id))
+            if (!string.IsNullOrEmpty(id))
             {
                 list.Insert(0, "MusicAlbum-Musicbrainz-" + id);
             }
 
             id = this.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
 
-            if (!string.IsNullOrWhiteSpace(id))
+            if (!string.IsNullOrEmpty(id))
             {
                 list.Insert(0, "MusicAlbum-MusicBrainzReleaseGroup-" + id);
             }
@@ -198,9 +198,9 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             var album = id.SongInfos
                 .Select(i => i.Album)
-                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
+                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
 
-            if (!string.IsNullOrWhiteSpace(album))
+            if (!string.IsNullOrEmpty(album))
             {
                 id.Name = album;
             }
@@ -253,7 +253,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             foreach (var i in all)
             {
                 // This should not be necessary but we're seeing some cases of it
-                if (string.IsNullOrWhiteSpace(i))
+                if (string.IsNullOrEmpty(i))
                 {
                     continue;
                 }

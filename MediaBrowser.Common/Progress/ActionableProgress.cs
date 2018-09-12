@@ -7,12 +7,12 @@ namespace MediaBrowser.Common.Progress
     /// Class ActionableProgress
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ActionableProgress<T> : IProgress<T>, IDisposable
+    public class ActionableProgress<T> : IProgress<T>
     {
         /// <summary>
         /// The _actions
         /// </summary>
-        private readonly List<Action<T>> _actions = new List<Action<T>>();
+        private Action<T> _action;
         public event EventHandler<T> ProgressChanged;
 
         /// <summary>
@@ -21,28 +21,7 @@ namespace MediaBrowser.Common.Progress
         /// <param name="action">The action.</param>
         public void RegisterAction(Action<T> action)
         {
-            _actions.Add(action);
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _actions.Clear();
-            }
+            _action = action;
         }
 
         public void Report(T value)
@@ -52,7 +31,8 @@ namespace MediaBrowser.Common.Progress
                 ProgressChanged(this, value);
             }
 
-            foreach (var action in _actions)
+            var action = _action;
+            if (action != null)
             {
                 action(value);
             }

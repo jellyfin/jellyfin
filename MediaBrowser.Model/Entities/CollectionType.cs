@@ -19,7 +19,6 @@
         public const string Books = "books";
         public const string Photos = "photos";
         public const string Games = "games";
-        public const string Channels = "channels";
         public const string LiveTv = "livetv";
         public const string Playlists = "playlists";
         public const string Folders = "folders";
@@ -27,24 +26,17 @@
 
     public static class SpecialFolder
     {
-        public const string LiveTvNowPlaying = "LiveTvNowPlaying";
-        public const string LiveTvChannels = "LiveTvChannels";
-        public const string LiveTvRecordingGroups = "LiveTvRecordingGroups";
-
         public const string TvShowSeries = "TvShowSeries";
         public const string TvGenres = "TvGenres";
         public const string TvGenre = "TvGenre";
         public const string TvLatest = "TvLatest";
         public const string TvNextUp = "TvNextUp";
         public const string TvResume = "TvResume";
-        public const string TvFavoriteSeries = "TvFavoriteSeries";
-        public const string TvFavoriteEpisodes = "TvFavoriteEpisodes";
 
         public const string MovieLatest = "MovieLatest";
         public const string MovieResume = "MovieResume";
         public const string MovieMovies = "MovieMovies";
         public const string MovieCollections = "MovieCollections";
-        public const string MovieFavorites = "MovieFavorites";
         public const string MovieGenres = "MovieGenres";
         public const string MovieGenre = "MovieGenre";
 

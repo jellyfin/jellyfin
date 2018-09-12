@@ -865,7 +865,7 @@ namespace BDInfo
                                                 k += streamInfoLength;
                                             }
                                         }
-                                        catch (Exception ex)
+                                        catch
                                         {
                                             // TODO
                                             //Console.WriteLine(ex.Message);

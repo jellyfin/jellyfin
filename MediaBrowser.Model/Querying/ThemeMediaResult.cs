@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Dto;
+using System;
 
 namespace MediaBrowser.Model.Querying
 {
@@ -11,6 +12,6 @@ namespace MediaBrowser.Model.Querying
         /// Gets or sets the owner id.
         /// </summary>
         /// <value>The owner id.</value>
-        public string OwnerId { get; set; }
+        public Guid OwnerId { get; set; }
     }
 }

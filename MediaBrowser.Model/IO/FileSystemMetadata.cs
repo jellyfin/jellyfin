@@ -50,7 +50,5 @@ namespace MediaBrowser.Model.IO
         /// </summary>
         /// <value><c>true</c> if this instance is directory; otherwise, <c>false</c>.</value>
         public bool IsDirectory { get; set; }
-        public bool IsHidden { get; set; }
-        public bool IsReadOnly { get; set; }
     }
 }

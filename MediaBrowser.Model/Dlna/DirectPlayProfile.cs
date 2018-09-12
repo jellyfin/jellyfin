@@ -23,14 +23,14 @@ namespace MediaBrowser.Model.Dlna
             return ContainerProfile.ContainsContainer(Container, container);
         }
 
-        public string[] GetAudioCodecs()
+        public bool SupportsVideoCodec(string codec)
         {
-            return ContainerProfile.SplitValue(AudioCodec);
+            return ContainerProfile.ContainsContainer(VideoCodec, codec);
         }
 
-        public string[] GetVideoCodecs()
+        public bool SupportsAudioCodec(string codec)
         {
-            return ContainerProfile.SplitValue(VideoCodec);
+            return ContainerProfile.ContainsContainer(AudioCodec, codec);
         }
     }
 }

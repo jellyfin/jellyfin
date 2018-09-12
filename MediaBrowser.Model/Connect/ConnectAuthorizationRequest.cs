@@ -1,9 +1,10 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Model.Connect
 {
     public class ConnectAuthorizationRequest
     {
-        public string SendingUserId { get; set; }
+        public Guid SendingUserId { get; set; }
         public string ConnectUserName { get; set; }
         public string[] EnabledLibraries { get; set; }
         public bool EnableLiveTv { get; set; }
@@ -11,8 +12,8 @@ namespace MediaBrowser.Model.Connect
 
         public ConnectAuthorizationRequest()
         {
-            EnabledLibraries = new string[] { };
-            EnabledChannels = new string[] { };
+            EnabledLibraries = Array.Empty<string>();
+            EnabledChannels = Array.Empty<string>();
         }
     }
 }

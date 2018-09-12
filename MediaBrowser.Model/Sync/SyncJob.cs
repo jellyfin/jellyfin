@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Sync;
 
 namespace MediaBrowser.Model.Sync
 {
@@ -49,7 +50,7 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the current progress.
         /// </summary>
         /// <value>The current progress.</value>
-        public double? Progress { get; set; }
+        public double Progress { get; set; }
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -84,7 +85,7 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the requested item ids.
         /// </summary>
         /// <value>The requested item ids.</value>
-        public string[] RequestedItemIds { get; set; }
+        public Guid[] RequestedItemIds { get; set; }
         /// <summary>
         /// Gets or sets the date created.
         /// </summary>
@@ -107,7 +108,15 @@ namespace MediaBrowser.Model.Sync
 
         public SyncJob()
         {
-            RequestedItemIds = new string[] { };
+            RequestedItemIds = Array.Empty<Guid>();
         }
+    }
+
+    public enum SyncJobUpdateReason
+    {
+        SettingsUpdated,
+        StatusChange,
+        TranscodingProgress,
+        TransferProgress
     }
 }

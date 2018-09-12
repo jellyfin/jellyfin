@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Providers;
 using System.Collections.Generic;
+using System;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -21,7 +22,7 @@ namespace MediaBrowser.Model.Dto
             Countries = new CountryInfo[] { };
             Cultures = new CultureDto[] { };
             ExternalIdInfos = new ExternalIdInfo[] { };
-            ContentTypeOptions = new NameValuePair[] { };
+            ContentTypeOptions = Array.Empty<NameValuePair>();
         }
     }
 }

@@ -132,55 +132,55 @@ namespace Emby.Dlna
 
         private bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
         {
-            if (!string.IsNullOrWhiteSpace(profileInfo.DeviceDescription))
+            if (!string.IsNullOrEmpty(profileInfo.DeviceDescription))
             {
                 if (deviceInfo.DeviceDescription == null || !IsRegexMatch(deviceInfo.DeviceDescription, profileInfo.DeviceDescription))
                     return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(profileInfo.FriendlyName))
+            if (!string.IsNullOrEmpty(profileInfo.FriendlyName))
             {
                 if (deviceInfo.FriendlyName == null || !IsRegexMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
                     return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(profileInfo.Manufacturer))
+            if (!string.IsNullOrEmpty(profileInfo.Manufacturer))
             {
                 if (deviceInfo.Manufacturer == null || !IsRegexMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
                     return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(profileInfo.ManufacturerUrl))
+            if (!string.IsNullOrEmpty(profileInfo.ManufacturerUrl))
             {
                 if (deviceInfo.ManufacturerUrl == null || !IsRegexMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
                     return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(profileInfo.ModelDescription))
+            if (!string.IsNullOrEmpty(profileInfo.ModelDescription))
             {
                 if (deviceInfo.ModelDescription == null || !IsRegexMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
                     return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(profileInfo.ModelName))
+            if (!string.IsNullOrEmpty(profileInfo.ModelName))
             {
                 if (deviceInfo.ModelName == null || !IsRegexMatch(deviceInfo.ModelName, profileInfo.ModelName))
                     return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(profileInfo.ModelNumber))
+            if (!string.IsNullOrEmpty(profileInfo.ModelNumber))
             {
                 if (deviceInfo.ModelNumber == null || !IsRegexMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
                     return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(profileInfo.ModelUrl))
+            if (!string.IsNullOrEmpty(profileInfo.ModelUrl))
             {
                 if (deviceInfo.ModelUrl == null || !IsRegexMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
                     return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(profileInfo.SerialNumber))
+            if (!string.IsNullOrEmpty(profileInfo.SerialNumber))
             {
                 if (deviceInfo.SerialNumber == null || !IsRegexMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
                     return false;
@@ -220,7 +220,7 @@ namespace Emby.Dlna
             }
             else
             {
-                var headerString = string.Join(", ", headers.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray(headers.Count));
+                var headerString = string.Join(", ", headers.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray());
                 _logger.Debug("No matching device profile found. {0}", headerString);
             }
 
@@ -235,7 +235,7 @@ namespace Emby.Dlna
         private bool IsMatch(IDictionary<string, string> headers, HttpHeaderInfo header)
         {
             // Handle invalid user setup
-            if (string.IsNullOrWhiteSpace(header.Name))
+            if (string.IsNullOrEmpty(header.Name))
             {
                 return false;
             }
@@ -332,7 +332,7 @@ namespace Emby.Dlna
 
         public DeviceProfile GetProfile(string id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentNullException("id");
             }
@@ -429,7 +429,7 @@ namespace Emby.Dlna
         {
             profile = ReserializeProfile(profile);
 
-            if (string.IsNullOrWhiteSpace(profile.Name))
+            if (string.IsNullOrEmpty(profile.Name))
             {
                 throw new ArgumentException("Profile is missing Name");
             }
@@ -444,11 +444,11 @@ namespace Emby.Dlna
         {
             profile = ReserializeProfile(profile);
 
-            if (string.IsNullOrWhiteSpace(profile.Id))
+            if (string.IsNullOrEmpty(profile.Id))
             {
                 throw new ArgumentException("Profile is missing Id");
             }
-            if (string.IsNullOrWhiteSpace(profile.Name))
+            if (string.IsNullOrEmpty(profile.Name))
             {
                 throw new ArgumentException("Profile is missing Name");
             }
@@ -531,7 +531,7 @@ namespace Emby.Dlna
         }
     }
 
-    class DlnaProfileEntryPoint : IServerEntryPoint
+    class DlnaProfileEntryPoint /*: IServerEntryPoint*/
     {
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
@@ -546,7 +546,7 @@ namespace Emby.Dlna
 
         public void Run()
         {
-            //DumpProfiles();
+            DumpProfiles();
         }
 
         private void DumpProfiles()
@@ -595,7 +595,6 @@ namespace Emby.Dlna
 
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
         }
     }
 }

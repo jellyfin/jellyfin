@@ -37,12 +37,12 @@ namespace MediaBrowser.Providers.People
             get { return "TheMovieDb"; }
         }
 
-        public bool Supports(IHasMetadata item)
+        public bool Supports(BaseItem item)
         {
             return item is Person;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
+        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType>
             {
@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.People
             };
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var person = (Person)item;
             var id = person.GetProviderId(MetadataProviders.Tmdb);
@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.People
 
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-                var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
+                var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
 
                 return GetImages(images, item.GetPreferredMetadataLanguage(), tmdbImageUrl);
             }

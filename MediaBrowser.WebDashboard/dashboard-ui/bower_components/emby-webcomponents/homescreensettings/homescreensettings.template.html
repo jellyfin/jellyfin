@@ -6,6 +6,14 @@
             ${HeaderHomeScreen}
         </h2>
 
+        <div class="selectContainer hide selectTVHomeScreenContainer">
+            <select is="emby-select" class="selectTVHomeScreen" label="${LabelTVHomeScreen}">
+                <option value="horizontal">${Horizontal}</option>
+                <option value="vertical">${Vertical}</option>
+            </select>
+            <div class="fieldDescription">Changes take effect after signing out or restarting the app.</div>
+        </div>
+
         <div class="selectContainer">
             <select is="emby-select" id="selectHomeSection1" label="{section1label}">
                 <option value="smalllibrarytiles">${HeaderMyMedia}</option>
@@ -14,8 +22,6 @@
                 <option value="resume">${HeaderContinueWatching}</option>
                 <option value="resumeaudio">${HeaderContinueListening}</option>
                 <option value="latestmedia">${HeaderLatestMedia}</option>
-                <option value="latestchannelmedia">${HeaderLatestChannelItems}</option>
-                <option value="latesttvrecordings">${HeaderLatestRecordings}</option>
                 <option value="nextup">${HeaderNextUp}</option>
                 <option value="livetv">${LiveTV}</option>
                 <option value="none">${None}</option>
@@ -29,8 +35,6 @@
                 <option value="resume">${HeaderContinueWatching}</option>
                 <option value="resumeaudio">${HeaderContinueListening}</option>
                 <option value="latestmedia">${HeaderLatestMedia}</option>
-                <option value="latestchannelmedia">${HeaderLatestChannelItems}</option>
-                <option value="latesttvrecordings">${HeaderLatestRecordings}</option>
                 <option value="nextup">${HeaderNextUp}</option>
                 <option value="livetv">${LiveTV}</option>
                 <option value="none">${None}</option>
@@ -44,8 +48,6 @@
                 <option value="resume">${HeaderContinueWatching}</option>
                 <option value="resumeaudio">${HeaderContinueListening}</option>
                 <option value="latestmedia">${HeaderLatestMedia}</option>
-                <option value="latestchannelmedia">${HeaderLatestChannelItems}</option>
-                <option value="latesttvrecordings">${HeaderLatestRecordings}</option>
                 <option value="nextup">${HeaderNextUp}</option>
                 <option value="livetv">${LiveTV}</option>
                 <option value="none">${None}</option>
@@ -59,8 +61,6 @@
                 <option value="resume">${HeaderContinueWatching}</option>
                 <option value="resumeaudio">${HeaderContinueListening}</option>
                 <option value="latestmedia">${HeaderLatestMedia}</option>
-                <option value="latestchannelmedia">${HeaderLatestChannelItems}</option>
-                <option value="latesttvrecordings">${HeaderLatestRecordings}</option>
                 <option value="nextup">${HeaderNextUp}</option>
                 <option value="livetv">${LiveTV}</option>
                 <option value="none">${None}</option>
@@ -74,8 +74,6 @@
                 <option value="resume">${HeaderContinueWatching}</option>
                 <option value="resumeaudio">${HeaderContinueListening}</option>
                 <option value="latestmedia">${HeaderLatestMedia}</option>
-                <option value="latestchannelmedia">${HeaderLatestChannelItems}</option>
-                <option value="latesttvrecordings">${HeaderLatestRecordings}</option>
                 <option value="nextup">${HeaderNextUp}</option>
                 <option value="livetv">${LiveTV}</option>
                 <option value="none">${None}</option>
@@ -89,8 +87,6 @@
                 <option value="resume">${HeaderContinueWatching}</option>
                 <option value="resumeaudio">${HeaderContinueListening}</option>
                 <option value="latestmedia">${HeaderLatestMedia}</option>
-                <option value="latestchannelmedia">${HeaderLatestChannelItems}</option>
-                <option value="latesttvrecordings">${HeaderLatestRecordings}</option>
                 <option value="nextup">${HeaderNextUp}</option>
                 <option value="livetv">${LiveTV}</option>
                 <option value="none">${None}</option>
@@ -104,8 +100,6 @@
                 <option value="resume">${HeaderContinueWatching}</option>
                 <option value="resumeaudio">${HeaderContinueListening}</option>
                 <option value="latestmedia">${HeaderLatestMedia}</option>
-                <option value="latestchannelmedia">${HeaderLatestChannelItems}</option>
-                <option value="latesttvrecordings">${HeaderLatestRecordings}</option>
                 <option value="nextup">${HeaderNextUp}</option>
                 <option value="livetv">${LiveTV}</option>
                 <option value="none">${None}</option>
@@ -124,32 +118,16 @@
 
     </div>
 
+    <div class="perLibrarySettings">
+
+    </div>
+
     <div class="verticalSection verticalSection-extrabottompadding">
-        <h2 class="sectionTitle">
-            ${HeaderHomeScreenContent}
-        </h2>
-        <p>${LabelSelectHomeScreenItemsFolders}</p>
-        <div class="latestItemsList">
-
-        </div>
-
-        <br />
         <label class="checkboxContainer">
             <input class="chkHidePlayedFromLatest" type="checkbox" is="emby-checkbox" />
             <span>${HideWatchedContentFromLatestMedia}</span>
         </label>
 
-    </div>
-
-    <div class="verticalSection verticalSection-extrabottompadding landingScreensSection hide">
-
-        <h2 class="sectionTitle">
-            ${HeaderLandingScreens}
-        </h2>
-        <p>${LandingScreensHelp}</p>
-        <div class="landingScreens">
-
-        </div>
     </div>
 
     <div class="verticalSection verticalSection-extrabottompadding">

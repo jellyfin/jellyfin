@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.Notifications
 {
@@ -35,6 +36,6 @@ namespace MediaBrowser.Controller.Notifications
         /// Gets the notification services.
         /// </summary>
         /// <returns>IEnumerable{NotificationServiceInfo}.</returns>
-        IEnumerable<NotificationServiceInfo> GetNotificationServices();
+        IEnumerable<NameIdPair> GetNotificationServices();
     }
 }

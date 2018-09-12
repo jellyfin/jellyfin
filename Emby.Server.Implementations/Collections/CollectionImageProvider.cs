@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Images;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Extensions;
+using System;
 
 namespace Emby.Server.Implementations.Collections
 {
@@ -21,7 +22,7 @@ namespace Emby.Server.Implementations.Collections
         {
         }
 
-        protected override bool Supports(IHasMetadata item)
+        protected override bool Supports(BaseItem item)
         {
             // Right now this is the only way to prevent this image from getting created ahead of internet image providers
             if (!item.IsLocked)
@@ -32,11 +33,11 @@ namespace Emby.Server.Implementations.Collections
             return base.Supports(item);
         }
 
-        protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
+        protected override List<BaseItem> GetItemsWithImages(BaseItem item)
         {
             var playlist = (BoxSet)item;
 
-            var items = playlist.Children.Concat(playlist.GetLinkedChildren())
+            return playlist.Children.Concat(playlist.GetLinkedChildren())
                 .Select(i =>
                 {
                     var subItem = i;
@@ -57,7 +58,7 @@ namespace Emby.Server.Implementations.Collections
                         return subItem;
                     }
 
-                    var parent = subItem.IsOwnedItem ? subItem.GetOwner() : subItem.GetParent();
+                    var parent = subItem.GetOwner() ?? subItem.GetParent();
 
                     if (parent != null && parent.HasImage(ImageType.Primary))
                     {
@@ -71,12 +72,11 @@ namespace Emby.Server.Implementations.Collections
                 })
                 .Where(i => i != null)
                 .DistinctBy(i => i.Id)
+                .OrderBy(i => Guid.NewGuid())
                 .ToList();
-
-            return GetFinalItems(items, 2);
         }
 
-        protected override string CreateImage(IHasMetadata item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override string CreateImage(BaseItem item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             return CreateSingleImage(itemsWithImages, outputPathWithoutExtension, ImageType.Primary);
         }

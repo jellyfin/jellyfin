@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Dto;
+using System;
 
 namespace MediaBrowser.Model.Querying
 {
@@ -11,21 +12,21 @@ namespace MediaBrowser.Model.Querying
 
         public QueryFiltersLegacy()
         {
-            Genres = new string[] { };
-            Tags = new string[] { };
-            OfficialRatings = new string[] { };
-            Years = new int[] { };
+            Genres = Array.Empty<string>();
+            Tags = Array.Empty<string>();
+            OfficialRatings = Array.Empty<string>();
+            Years = Array.Empty<int>();
         }
     }
     public class QueryFilters
     {
-        public NameIdPair[] Genres { get; set; }
+        public NameGuidPair[] Genres { get; set; }
         public string[] Tags { get; set; }
 
         public QueryFilters()
         {
-            Tags = new string[] { };
-            Genres = new NameIdPair[] { };
+            Tags = Array.Empty<string>();
+            Genres = new NameGuidPair[] { };
         }
     }
 }

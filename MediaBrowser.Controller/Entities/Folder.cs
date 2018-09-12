@@ -21,6 +21,8 @@ using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Configuration;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -29,7 +31,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Folder : BaseItem
     {
-        public static IUserManager UserManager { get; set; }
         public static IUserViewManager UserViewManager { get; set; }
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Folder()
         {
-            LinkedChildren = EmptyLinkedChildArray;
+            LinkedChildren = Array.Empty<LinkedChild>();
         }
 
         [IgnoreDataMember]
@@ -124,6 +125,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsExternalTransfer
+        {
+            get
+            {
+                return CanDownloadAsFolder();
+            }
+        }
+
         public override bool CanDelete()
         {
             if (IsRoot)
@@ -151,7 +161,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (LocationType == LocationType.FileSystem)
+                if (IsFileProtocol)
                 {
                     return System.IO.Path.GetFileName(Path);
                 }
@@ -190,14 +200,9 @@ namespace MediaBrowser.Controller.Entities
         {
             item.SetParent(this);
 
-            if (item.Id == Guid.Empty)
+            if (item.Id.Equals(Guid.Empty))
             {
                 item.Id = LibraryManager.GetNewItemId(item.Path, item.GetType());
-            }
-
-            if (Children.Any(i => i.Id == item.Id))
-            {
-                throw new ArgumentException(string.Format("A child with the Id {0} already exists.", item.Id));
             }
 
             if (item.DateCreated == DateTime.MinValue)
@@ -209,16 +214,7 @@ namespace MediaBrowser.Controller.Entities
                 item.DateModified = DateTime.UtcNow;
             }
 
-            LibraryManager.CreateItem(item, cancellationToken);
-        }
-
-        /// <summary>
-        /// Removes the child.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        public void RemoveChild(BaseItem item)
-        {
-            item.SetParent(null);
+            LibraryManager.CreateItem(item, this);
         }
 
         /// <summary>
@@ -368,19 +364,12 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task ValidateChildrenInternal2(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
-            var locationType = LocationType;
-
             cancellationToken.ThrowIfCancellationRequested();
 
             var validChildren = new List<BaseItem>();
             var validChildrenNeedGeneration = false;
 
-            var allLibraryPaths = LibraryManager
-              .GetVirtualFolders()
-              .SelectMany(i => i.Locations)
-              .ToList();
-
-            if (locationType != LocationType.Remote && locationType != LocationType.Virtual)
+            if (IsFileProtocol)
             {
                 IEnumerable<BaseItem> nonCachedChildren;
 
@@ -388,14 +377,10 @@ namespace MediaBrowser.Controller.Entities
                 {
                     nonCachedChildren = GetNonCachedChildren(directoryService);
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
-                    nonCachedChildren = new BaseItem[] { };
-
-                    Logger.ErrorException("Error getting file system entries for {0}", ex, Path);
+                    return;
                 }
-
-                if (nonCachedChildren == null) return; //nothing to validate
 
                 progress.Report(5);
 
@@ -439,34 +424,19 @@ namespace MediaBrowser.Controller.Entities
                 {
                     // That's all the new and changed ones - now see if there are any that are missing
                     var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
-                    var actualRemovals = new List<BaseItem>();
 
                     foreach (var item in itemsRemoved)
                     {
-                        var itemLocationType = item.LocationType;
-                        if (itemLocationType == LocationType.Virtual ||
-                            itemLocationType == LocationType.Remote)
+                        if (!item.IsFileProtocol)
                         {
                         }
 
-                        else if (!string.IsNullOrEmpty(item.Path) && IsPathOffline(item.Path, allLibraryPaths))
-                        {
-                        }
                         else
-                        {
-                            actualRemovals.Add(item);
-                        }
-                    }
-
-                    if (actualRemovals.Count > 0)
-                    {
-                        foreach (var item in actualRemovals)
                         {
                             Logger.Debug("Removed item: " + item.Path);
 
                             item.SetParent(null);
-                            await LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }).ConfigureAwait(false);
-                            LibraryManager.ReportItemRemoved(item, this);
+                            LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
                         }
                     }
 
@@ -489,24 +459,23 @@ namespace MediaBrowser.Controller.Entities
 
             if (recursive)
             {
-                using (var innerProgress = new ActionableProgress<double>())
+                var innerProgress = new ActionableProgress<double>();
+
+                var folder = this;
+                innerProgress.RegisterAction(p =>
                 {
-                    var folder = this;
-                    innerProgress.RegisterAction(p =>
-                    {
-                        double newPct = .80 * p + 10;
-                        progress.Report(newPct);
-                        ProviderManager.OnRefreshProgress(folder, newPct);
-                    });
+                    double newPct = .80 * p + 10;
+                    progress.Report(newPct);
+                    ProviderManager.OnRefreshProgress(folder, newPct);
+                });
 
-                    if (validChildrenNeedGeneration)
-                    {
-                        validChildren = Children.ToList();
-                        validChildrenNeedGeneration = false;
-                    }
-
-                    await ValidateSubFolders(validChildren.OfType<Folder>().ToList(), directoryService, innerProgress, cancellationToken).ConfigureAwait(false);
+                if (validChildrenNeedGeneration)
+                {
+                    validChildren = Children.ToList();
+                    validChildrenNeedGeneration = false;
                 }
+
+                await ValidateSubFolders(validChildren.OfType<Folder>().ToList(), directoryService, innerProgress, cancellationToken).ConfigureAwait(false);
             }
 
             if (refreshChildMetadata)
@@ -520,32 +489,31 @@ namespace MediaBrowser.Controller.Entities
 
                 var container = this as IMetadataContainer;
 
-                using (var innerProgress = new ActionableProgress<double>())
+                var innerProgress = new ActionableProgress<double>();
+
+                var folder = this;
+                innerProgress.RegisterAction(p =>
                 {
-                    var folder = this;
-                    innerProgress.RegisterAction(p =>
+                    double newPct = .10 * p + 90;
+                    progress.Report(newPct);
+                    if (recursive)
                     {
-                        double newPct = .10 * p + 90;
-                        progress.Report(newPct);
-                        if (recursive)
-                        {
-                            ProviderManager.OnRefreshProgress(folder, newPct);
-                        }
-                    });
-
-                    if (container != null)
-                    {
-                        await container.RefreshAllMetadata(refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false);
+                        ProviderManager.OnRefreshProgress(folder, newPct);
                     }
-                    else
-                    {
-                        if (validChildrenNeedGeneration)
-                        {
-                            validChildren = Children.ToList();
-                        }
+                });
 
-                        await RefreshMetadataRecursive(validChildren, refreshOptions, recursive, innerProgress, cancellationToken);
+                if (container != null)
+                {
+                    await RefreshAllMetadataForContainer(container, refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    if (validChildrenNeedGeneration)
+                    {
+                        validChildren = Children.ToList();
                     }
+
+                    await RefreshMetadataRecursive(validChildren, refreshOptions, recursive, innerProgress, cancellationToken);
                 }
             }
         }
@@ -560,21 +528,20 @@ namespace MediaBrowser.Controller.Entities
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                using (var innerProgress = new ActionableProgress<double>())
+                var innerProgress = new ActionableProgress<double>();
+
+                // Avoid implicitly captured closure
+                var currentInnerPercent = currentPercent;
+
+                innerProgress.RegisterAction(p =>
                 {
-                    // Avoid implicitly captured closure
-                    var currentInnerPercent = currentPercent;
+                    double innerPercent = currentInnerPercent;
+                    innerPercent += p / (count);
+                    progress.Report(innerPercent);
+                });
 
-                    innerProgress.RegisterAction(p =>
-                    {
-                        double innerPercent = currentInnerPercent;
-                        innerPercent += p / (count);
-                        progress.Report(innerPercent);
-                    });
-
-                    await RefreshChildMetadata(child, refreshOptions, recursive && child.IsFolder, innerProgress, cancellationToken)
-                        .ConfigureAwait(false);
-                }
+                await RefreshChildMetadata(child, refreshOptions, recursive && child.IsFolder, innerProgress, cancellationToken)
+                    .ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;
@@ -586,13 +553,24 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private async Task RefreshAllMetadataForContainer(IMetadataContainer container, MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var series = container as Series;
+            if (series != null)
+            {
+                await series.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+            }
+            await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
+        }
+
         private async Task RefreshChildMetadata(BaseItem child, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var container = child as IMetadataContainer;
 
             if (container != null)
             {
-                await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
+                await RefreshAllMetadataForContainer(container, refreshOptions, progress, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -631,21 +609,20 @@ namespace MediaBrowser.Controller.Entities
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                using (var innerProgress = new ActionableProgress<double>())
+                var innerProgress = new ActionableProgress<double>();
+
+                // Avoid implicitly captured closure
+                var currentInnerPercent = currentPercent;
+
+                innerProgress.RegisterAction(p =>
                 {
-                    // Avoid implicitly captured closure
-                    var currentInnerPercent = currentPercent;
+                    double innerPercent = currentInnerPercent;
+                    innerPercent += p / (count);
+                    progress.Report(innerPercent);
+                });
 
-                    innerProgress.RegisterAction(p =>
-                    {
-                        double innerPercent = currentInnerPercent;
-                        innerPercent += p / (count);
-                        progress.Report(innerPercent);
-                    });
-
-                    await child.ValidateChildrenInternal(innerProgress, cancellationToken, true, false, null, directoryService)
-                            .ConfigureAwait(false);
-                }
+                await child.ValidateChildrenInternal(innerProgress, cancellationToken, true, false, null, directoryService)
+                        .ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;
@@ -655,39 +632,6 @@ namespace MediaBrowser.Controller.Entities
 
                 progress.Report(percent);
             }
-        }
-
-        public static bool IsPathOffline(string path, List<string> allLibraryPaths)
-        {
-            //if (FileSystem.FileExists(path))
-            //{
-            //    return false;
-            //}
-
-            var originalPath = path;
-
-            // Depending on whether the path is local or unc, it may return either null or '\' at the top
-            while (!string.IsNullOrWhiteSpace(path) && path.Length > 1)
-            {
-                if (FileSystem.DirectoryExists(path))
-                {
-                    return false;
-                }
-
-                if (allLibraryPaths.Contains(path, StringComparer.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                path = FileSystem.GetDirectoryName(path);
-            }
-
-            return allLibraryPaths.Any(i => ContainsPath(i, originalPath));
-        }
-
-        private static bool ContainsPath(string parent, string path)
-        {
-            return FileSystem.AreEqual(parent, path) || FileSystem.ContainsSubPath(parent, path);
         }
 
         /// <summary>
@@ -764,6 +708,12 @@ namespace MediaBrowser.Controller.Entities
 
             if (!query.ForceDirect && RequiresPostFiltering(query))
             {
+                var startIndex = query.StartIndex;
+                var limit = query.Limit;
+
+                query.StartIndex = null;
+                query.Limit = null;
+
                 IEnumerable<BaseItem> items;
                 Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
@@ -776,81 +726,31 @@ namespace MediaBrowser.Controller.Entities
                     items = GetRecursiveChildren(user, query);
                 }
 
-                return PostFilterAndSort(items, query, true, true);
+                query.StartIndex = startIndex;
+                query.Limit = limit;
+
+                return PostFilterAndSort(items, query, true);
             }
 
             if (!(this is UserRootFolder) && !(this is AggregateFolder))
             {
-                if (!query.ParentId.HasValue)
+                if (query.ParentId.Equals(Guid.Empty))
                 {
                     query.Parent = this;
                 }
             }
 
-            if (RequiresPostFiltering2(query))
+            if (query.User != null &&
+                !query.User.Policy.EnableAllFolders &&
+                query.IncludeItemTypes.Length == 1 &&
+                string.Equals(query.IncludeItemTypes[0], typeof(BoxSet).Name, StringComparison.OrdinalIgnoreCase))
             {
-                return QueryWithPostFiltering2(query);
+                query.BoxSetLibraryFolders = LibraryManager.GetUserRootFolder().GetChildren(user, true)
+                    .Select(i => i.Id)
+                    .ToArray();
             }
 
             return LibraryManager.GetItemsResult(query);
-        }
-
-        private QueryResult<BaseItem> QueryWithPostFiltering2(InternalItemsQuery query)
-        {
-            var startIndex = query.StartIndex;
-            var limit = query.Limit;
-
-            query.StartIndex = null;
-            query.Limit = null;
-
-            var itemsList = LibraryManager.GetItemList(query);
-            var user = query.User;
-
-            if (user != null)
-            {
-                // needed for boxsets
-                itemsList = itemsList.Where(i => i.IsVisibleStandalone(query.User)).ToList();
-            }
-
-            BaseItem[] returnItems;
-            int totalCount = 0;
-
-            if (query.EnableTotalRecordCount)
-            {
-                var itemsArray = itemsList.ToArray();
-                totalCount = itemsArray.Length;
-                returnItems = itemsArray;
-            }
-            else
-            {
-                returnItems = itemsList.ToArray();
-            }
-
-            if (limit.HasValue)
-            {
-                returnItems = returnItems.Skip(startIndex ?? 0).Take(limit.Value).ToArray();
-            }
-            else if (startIndex.HasValue)
-            {
-                returnItems = returnItems.Skip(startIndex.Value).ToArray();
-            }
-
-            return new QueryResult<BaseItem>
-            {
-                TotalRecordCount = totalCount,
-                Items = returnItems.ToArray()
-            };
-        }
-
-        private bool RequiresPostFiltering2(InternalItemsQuery query)
-        {
-            if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], typeof(BoxSet).Name, StringComparison.OrdinalIgnoreCase))
-            {
-                Logger.Debug("Query requires post-filtering due to BoxSet query");
-                return true;
-            }
-
-            return false;
         }
 
         private bool RequiresPostFiltering(InternalItemsQuery query)
@@ -864,94 +764,10 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            if (query.IsInBoxSet.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to IsInBoxSet");
-                return true;
-            }
-
-            // Filter by Video3DFormat
-            if (query.Is3D.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to Is3D");
-                return true;
-            }
-
-            if (query.HasOfficialRating.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to HasOfficialRating");
-                return true;
-            }
-
-            if (query.IsPlaceHolder.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to IsPlaceHolder");
-                return true;
-            }
-
-            if (query.HasSpecialFeature.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to HasSpecialFeature");
-                return true;
-            }
-
-            if (query.HasSubtitles.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to HasSubtitles");
-                return true;
-            }
-
-            if (query.HasTrailer.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to HasTrailer");
-                return true;
-            }
-
-            // Filter by VideoType
-            if (query.VideoTypes.Length > 0)
-            {
-                Logger.Debug("Query requires post-filtering due to VideoTypes");
-                return true;
-            }
-
-            // Apply person filter
-            if (query.ItemIdsFromPersonFilters != null)
-            {
-                Logger.Debug("Query requires post-filtering due to ItemIdsFromPersonFilters");
-                return true;
-            }
-
-            if (UserViewBuilder.CollapseBoxSetItems(query, this, query.User, ConfigurationManager))
+            if (CollapseBoxSetItems(query, this, query.User, ConfigurationManager))
             {
                 Logger.Debug("Query requires post-filtering due to CollapseBoxSetItems");
                 return true;
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.AdjacentTo))
-            {
-                Logger.Debug("Query requires post-filtering due to AdjacentTo");
-                return true;
-            }
-
-            if (query.SeriesStatuses.Length > 0)
-            {
-                Logger.Debug("Query requires post-filtering due to SeriesStatuses");
-                return true;
-            }
-
-            if (query.AiredDuringSeason.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to AiredDuringSeason");
-                return true;
-            }
-
-            if (query.IsPlayed.HasValue)
-            {
-                if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(typeof(Series).Name))
-                {
-                    Logger.Debug("Query requires post-filtering due to IsPlayed");
-                    return true;
-                }
             }
 
             return false;
@@ -961,16 +777,23 @@ namespace MediaBrowser.Controller.Entities
         {
             if (query.ItemIds.Length > 0)
             {
-                var result = LibraryManager.GetItemsResult(query);
-
                 if (query.OrderBy.Length == 0)
                 {
+                    var limit = query.Limit;
+
+                    // Need to sort first, then limit
+                    query.Limit = null;
+
+                    var result = LibraryManager.GetItemsResult(query);
+
                     var ids = query.ItemIds.ToList();
 
                     // Try to preserve order
-                    result.Items = result.Items.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToArray();
+                    result.Items = result.Items.OrderBy(i => ids.IndexOf(i.Id)).Take(limit ?? int.MaxValue).ToArray();
+                    return result;
                 }
-                return result;
+
+                return LibraryManager.GetItemsResult(query);
             }
 
             return GetItemsInternal(query);
@@ -982,16 +805,22 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.ItemIds.Length > 0)
             {
-                var result = LibraryManager.GetItemList(query);
-
                 if (query.OrderBy.Length == 0)
                 {
+                    var limit = query.Limit;
+
+                    // Need to sort first, then limit
+                    query.Limit = null;
+
+                    var result = LibraryManager.GetItemList(query);
+
                     var ids = query.ItemIds.ToList();
 
                     // Try to preserve order
-                    return result.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToArray();
+                    return result.OrderBy(i => ids.IndexOf(i.Id)).Take(limit ?? int.MaxValue).ToArray();
                 }
-                return result.ToArray(result.Count);
+
+                return LibraryManager.GetItemList(query).ToArray();
             }
 
             return GetItemsInternal(query).Items;
@@ -1003,17 +832,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 try
                 {
-                    // Don't blow up here because it could cause parent screens with other content to fail
-                    return ChannelManager.GetChannelItemsInternal(new ChannelItemQuery
-                    {
-                        ChannelId = ChannelId,
-                        FolderId = Id.ToString("N"),
-                        Limit = query.Limit,
-                        StartIndex = query.StartIndex,
-                        UserId = query.User.Id.ToString("N"),
-                        OrderBy = query.OrderBy
+                    query.Parent = this;
+                    query.ChannelIds = new Guid[] { ChannelId };
 
-                    }, new SimpleProgress<double>(), CancellationToken.None).Result;
+                    // Don't blow up here because it could cause parent screens with other content to fail
+                    return ChannelManager.GetChannelItemsInternal(query, new SimpleProgress<double>(), CancellationToken.None).Result;
                 }
                 catch
                 {
@@ -1035,26 +858,290 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.User == null)
             {
-                items = query.Recursive
-                   ? GetRecursiveChildren(filter)
-                   : Children.Where(filter);
+                items = Children.Where(filter);
             }
             else
             {
-                items = query.Recursive
-                   ? GetRecursiveChildren(user, query)
-                   : GetChildren(user, true).Where(filter);
+                items = GetChildren(user, true).Where(filter);
             }
 
-            return PostFilterAndSort(items, query, true, true);
+            return PostFilterAndSort(items, query, true);
         }
 
-        protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query, bool collapseBoxSetItems, bool enableSorting)
+        public static ICollectionManager CollectionManager { get; set; }
+
+        protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query, bool enableSorting)
         {
-            return UserViewBuilder.PostFilterAndSort(items, this, null, query, LibraryManager, ConfigurationManager, collapseBoxSetItems, enableSorting);
+            var user = query.User;
+
+            // Check recursive - don't substitute in plain folder views
+            if (user != null)
+            {
+                items = CollapseBoxSetItemsIfNeeded(items, query, this, user, ConfigurationManager, CollectionManager);
+            }
+
+            if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater))
+            {
+                items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
+            }
+            if (!string.IsNullOrEmpty(query.NameStartsWith))
+            {
+                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrEmpty(query.NameLessThan))
+            {
+                items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.CurrentCultureIgnoreCase) == 1);
+            }
+
+            return UserViewBuilder.SortAndPage(items, null, query, LibraryManager, enableSorting);
         }
 
-        public virtual List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(IEnumerable<BaseItem> items,
+            InternalItemsQuery query,
+            BaseItem queryParent,
+            User user,
+            IServerConfigurationManager configurationManager, ICollectionManager collectionManager)
+        {
+            if (items == null)
+            {
+                throw new ArgumentNullException("items");
+            }
+
+            if (CollapseBoxSetItems(query, queryParent, user, configurationManager))
+            {
+                items = collectionManager.CollapseItemsWithinBoxSets(items, user);
+            }
+
+            return items;
+        }
+
+        private static bool CollapseBoxSetItems(InternalItemsQuery query,
+            BaseItem queryParent,
+            User user,
+            IServerConfigurationManager configurationManager)
+        {
+            // Could end up stuck in a loop like this
+            if (queryParent is BoxSet)
+            {
+                return false;
+            }
+            if (queryParent is Series)
+            {
+                return false;
+            }
+            if (queryParent is Season)
+            {
+                return false;
+            }
+            if (queryParent is MusicAlbum)
+            {
+                return false;
+            }
+            if (queryParent is MusicArtist)
+            {
+                return false;
+            }
+
+            var param = query.CollapseBoxSetItems;
+
+            if (!param.HasValue)
+            {
+                if (user != null && !configurationManager.Configuration.EnableGroupingIntoCollections)
+                {
+                    return false;
+                }
+
+                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains("Movie", StringComparer.OrdinalIgnoreCase))
+                {
+                    param = true;
+                }
+            }
+
+            return param.HasValue && param.Value && AllowBoxSetCollapsing(query);
+        }
+
+        private static bool AllowBoxSetCollapsing(InternalItemsQuery request)
+        {
+            if (request.IsFavorite.HasValue)
+            {
+                return false;
+            }
+            if (request.IsFavoriteOrLiked.HasValue)
+            {
+                return false;
+            }
+            if (request.IsLiked.HasValue)
+            {
+                return false;
+            }
+            if (request.IsPlayed.HasValue)
+            {
+                return false;
+            }
+            if (request.IsResumable.HasValue)
+            {
+                return false;
+            }
+            if (request.IsFolder.HasValue)
+            {
+                return false;
+            }
+
+            if (request.Genres.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.GenreIds.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.HasImdbId.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasOfficialRating.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasOverview.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasParentalRating.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasSpecialFeature.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasSubtitles.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasThemeSong.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasTmdbId.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasTrailer.HasValue)
+            {
+                return false;
+            }
+
+            if (request.ImageTypes.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.IsLocked.HasValue)
+            {
+                return false;
+            }
+
+            if (request.IsPlaceHolder.HasValue)
+            {
+                return false;
+            }
+
+            if (request.IsPlayed.HasValue)
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Person))
+            {
+                return false;
+            }
+
+            if (request.PersonIds.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.ItemIds.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.StudioIds.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.GenreIds.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.VideoTypes.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.Years.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.Tags.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.OfficialRatings.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.MinPlayers.HasValue)
+            {
+                return false;
+            }
+
+            if (request.MaxPlayers.HasValue)
+            {
+                return false;
+            }
+
+            if (request.MinCommunityRating.HasValue)
+            {
+                return false;
+            }
+
+            if (request.MinCriticRating.HasValue)
+            {
+                return false;
+            }
+
+            if (request.MinIndexNumber.HasValue)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        {
+            return GetChildren(user, includeLinkedChildren, null);
+        }
+
+        public virtual List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             if (user == null)
             {
@@ -1062,11 +1149,11 @@ namespace MediaBrowser.Controller.Entities
             }
 
             //the true root should return our users root folder children
-            if (IsPhysicalRoot) return user.RootFolder.GetChildren(user, includeLinkedChildren);
+            if (IsPhysicalRoot) return LibraryManager.GetUserRootFolder().GetChildren(user, includeLinkedChildren);
 
             var result = new Dictionary<Guid, BaseItem>();
 
-            AddChildren(user, includeLinkedChildren, result, false, null);
+            AddChildren(user, includeLinkedChildren, result, false, query);
 
             return result.Values.ToList();
         }
@@ -1084,13 +1171,20 @@ namespace MediaBrowser.Controller.Entities
         {
             foreach (var child in GetEligibleChildrenForRecursiveChildren(user))
             {
-                if (child.IsVisible(user))
+                bool? isVisibleToUser = null;
+
+                if (query == null || UserViewBuilder.FilterItem(child, query))
                 {
-                    if (query == null || UserViewBuilder.FilterItem(child, query))
+                    isVisibleToUser = child.IsVisible(user);
+
+                    if (isVisibleToUser.Value)
                     {
                         result[child.Id] = child;
                     }
+                }
 
+                if (isVisibleToUser ?? child.IsVisible(user))
+                {
                     if (recursive && child.IsFolder)
                     {
                         var folder = (Folder)child;
@@ -1104,9 +1198,9 @@ namespace MediaBrowser.Controller.Entities
             {
                 foreach (var child in GetLinkedChildren(user))
                 {
-                    if (child.IsVisible(user))
+                    if (query == null || UserViewBuilder.FilterItem(child, query))
                     {
-                        if (query == null || UserViewBuilder.FilterItem(child, query))
+                        if (child.IsVisible(user))
                         {
                             result[child.Id] = child;
                         }
@@ -1232,6 +1326,26 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public bool ContainsLinkedChildByItemId(Guid itemId)
+        {
+            var linkedChildren = LinkedChildren;
+            foreach (var i in linkedChildren)
+            {
+                if (i.ItemId.HasValue && i.ItemId.Value == itemId)
+                {
+                    return true;
+                }
+
+                var child = GetLinkedChild(i);
+
+                if (child != null && child.Id == itemId)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public List<BaseItem> GetLinkedChildren(User user)
         {
             if (!FilterLinkedChildrenPerUser || user == null)
@@ -1247,11 +1361,12 @@ namespace MediaBrowser.Controller.Entities
                 return list;
             }
 
-            var allUserRootChildren = user.RootFolder.Children.OfType<Folder>().ToList();
+            var allUserRootChildren = LibraryManager.GetUserRootFolder()
+                .GetChildren(user, true)
+                .OfType<Folder>()
+                .ToList();
 
             var collectionFolderIds = allUserRootChildren
-                .OfType<CollectionFolder>()
-                .Where(i => i.IsVisible(user))
                 .Select(i => i.Id)
                 .ToList();
 
@@ -1264,19 +1379,19 @@ namespace MediaBrowser.Controller.Entities
                     continue;
                 }
 
-                var childOwner = child.IsOwnedItem ? (child.GetOwner() ?? child) : child;
+                var childOwner = child.GetOwner() ?? child;
 
                 if (childOwner != null && !(child is IItemByName))
                 {
-                    var childLocationType = childOwner.LocationType;
-                    if (childLocationType == LocationType.Remote || childLocationType == LocationType.Virtual)
+                    var childProtocol = childOwner.PathProtocol;
+                    if (!childProtocol.HasValue || childProtocol.Value != Model.MediaInfo.MediaProtocol.File)
                     {
                         if (!childOwner.IsVisibleStandalone(user))
                         {
                             continue;
                         }
                     }
-                    else if (childLocationType == LocationType.FileSystem)
+                    else
                     {
                         var itemCollectionFolderIds =
                             LibraryManager.GetCollectionFolders(childOwner, allUserRootChildren).Select(f => f.Id);
@@ -1318,7 +1433,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var changesFound = false;
 
-            if (LocationType == LocationType.FileSystem)
+            if (IsFileProtocol)
             {
                 if (RefreshLinkedChildren(fileSystemChildren))
                 {
@@ -1347,7 +1462,7 @@ namespace MediaBrowser.Controller.Entities
                         {
                             Logger.Debug("Found shortcut at {0}", i.FullName);
 
-                            var resolvedPath = FileSystem.ResolveShortcut(i.FullName);
+                            var resolvedPath = CollectionFolder.ApplicationHost.ExpandVirtualPath(FileSystem.ResolveShortcut(i.FullName));
 
                             if (!string.IsNullOrEmpty(resolvedPath))
                             {
@@ -1518,7 +1633,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, ItemFields[] fields)
+        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions options)
         {
             if (!SupportsUserDataFromChildren)
             {
@@ -1527,7 +1642,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (itemDto != null)
             {
-                if (fields.Contains(ItemFields.RecursiveItemCount))
+                if (options.ContainsField(ItemFields.RecursiveItemCount))
                 {
                     itemDto.RecursiveItemCount = GetRecursiveChildCount(user);
                 }

@@ -15,7 +15,7 @@ namespace MediaBrowser.Model.Dlna
             int? videoBitrate,
             string videoProfile,
             double? videoLevel,
-            float? videoFramerate,
+            float videoFramerate,
             int? packetLength,
             TransportStreamTimestamp? timestamp,
             bool? isAnamorphic,
@@ -131,7 +131,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             int expected;
-            if (int.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out expected))
+            if (int.TryParse(condition.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out expected))
             {
                 switch (condition.Condition)
                 {
@@ -202,9 +202,9 @@ namespace MediaBrowser.Model.Dlna
             return false;
         }
 
-        private bool IsConditionSatisfied(ProfileCondition condition, float? currentValue)
+        private bool IsConditionSatisfied(ProfileCondition condition, float currentValue)
         {
-            if (!currentValue.HasValue)
+            if (currentValue <= 0)
             {
                 // If the value is unknown, it satisfies if not marked as required
                 return !condition.IsRequired;
@@ -216,13 +216,13 @@ namespace MediaBrowser.Model.Dlna
                 switch (condition.Condition)
                 {
                     case ProfileConditionType.Equals:
-                        return currentValue.Value.Equals(expected);
+                        return currentValue.Equals(expected);
                     case ProfileConditionType.GreaterThanEqual:
-                        return currentValue.Value >= expected;
+                        return currentValue >= expected;
                     case ProfileConditionType.LessThanEqual:
-                        return currentValue.Value <= expected;
+                        return currentValue <= expected;
                     case ProfileConditionType.NotEquals:
-                        return !currentValue.Value.Equals(expected);
+                        return !currentValue.Equals(expected);
                     default:
                         throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition);
                 }

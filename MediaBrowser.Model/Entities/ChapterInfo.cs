@@ -1,4 +1,5 @@
 ﻿using System;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -19,11 +20,15 @@ namespace MediaBrowser.Model.Entities
         /// <value>The name.</value>
         public string Name { get; set; }
 
+        public string ImageTag { get; set; }
+
         /// <summary>
         /// Gets or sets the image path.
         /// </summary>
         /// <value>The image path.</value>
+        [IgnoreDataMember]
         public string ImagePath { get; set; }
+        [IgnoreDataMember]
         public DateTime ImageDateModified { get; set; }
     }
 }

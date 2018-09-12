@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.Music
             _json = json;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
+        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType>
             {
@@ -34,7 +34,7 @@ namespace MediaBrowser.Providers.Music
             };
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var id = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
 
@@ -105,7 +105,7 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
-        public bool Supports(IHasMetadata item)
+        public bool Supports(BaseItem item)
         {
             return item is MusicAlbum;
         }

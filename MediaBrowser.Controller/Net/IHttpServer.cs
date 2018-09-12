@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -16,12 +17,6 @@ namespace MediaBrowser.Controller.Net
         string[] UrlPrefixes { get; }
 
         /// <summary>
-        /// Starts the specified server name.
-        /// </summary>
-        /// <param name="urlPrefixes">The URL prefixes.</param>
-        void StartServer(string[] urlPrefixes);
-
-        /// <summary>
         /// Stops this instance.
         /// </summary>
         void Stop();
@@ -29,17 +24,12 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// Occurs when [web socket connected].
         /// </summary>
-        event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
-
-        /// <summary>
-        /// Occurs when [web socket connecting].
-        /// </summary>
-        event EventHandler<WebSocketConnectingEventArgs> WebSocketConnecting;
+        event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
 
         /// <summary>
         /// Inits this instance.
         /// </summary>
-        void Init(IEnumerable<IService> services);
+        void Init(IEnumerable<IService> services, IEnumerable<IWebSocketListener> listeners);
 
         /// <summary>
         /// If set, all requests will respond with this message

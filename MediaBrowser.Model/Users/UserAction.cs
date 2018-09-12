@@ -6,8 +6,8 @@ namespace MediaBrowser.Model.Users
     {
         public string Id { get; set; }
         public string ServerId { get; set; }
-        public string UserId { get; set; }
-        public string ItemId { get; set; }
+        public Guid UserId { get; set; }
+        public Guid ItemId { get; set; }
         public UserActionType Type { get; set; }
         public DateTime Date { get; set; }
         public long? PositionTicks { get; set; }

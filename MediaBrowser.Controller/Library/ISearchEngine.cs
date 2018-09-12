@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Search;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -14,6 +13,6 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>Task{IEnumerable{SearchHintInfo}}.</returns>
-        Task<QueryResult<SearchHintInfo>> GetSearchHints(SearchQuery query);
+        QueryResult<SearchHintInfo> GetSearchHints(SearchQuery query);
     }
 }

@@ -1,6 +1,8 @@
 ﻿using MediaBrowser.Model.LiveTv;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -8,9 +10,16 @@ namespace MediaBrowser.Controller.LiveTv
     {
         public TimerInfo()
         {
-            Genres = new List<string>();
+            Genres = Array.Empty<string>();
             KeepUntil = KeepUntil.UntilDeleted;
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Tags = Array.Empty<string>();
         }
+
+        public Dictionary<string, string> ProviderIds { get; set; }
+        public Dictionary<string, string> SeriesProviderIds { get; set; }
+        public string[] Tags { get; set; }
 
         /// <summary>
         /// Id of the recording.
@@ -106,21 +115,59 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The episode number.</value>
         public int? EpisodeNumber { get; set; }
         public bool IsMovie { get; set; }
-        public bool IsKids { get; set; }
-        public bool IsSports { get; set; }
-        public bool IsNews { get; set; }
+        public bool IsKids
+        {
+            get
+            {
+                return Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
+            }
+        }
+        public bool IsSports
+        {
+            get
+            {
+                return Tags.Contains("Sports", StringComparer.OrdinalIgnoreCase);
+            }
+        }
+        public bool IsNews
+        {
+            get
+            {
+                return Tags.Contains("News", StringComparer.OrdinalIgnoreCase);
+            }
+        }
         public bool IsSeries { get; set; }
-        public bool IsLive { get; set; }
-        public bool IsPremiere { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is live.
+        /// </summary>
+        /// <value><c>true</c> if this instance is live; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
+        public bool IsLive
+        {
+            get
+            {
+                return Tags.Contains("Live", StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
+        [IgnoreDataMember]
+        public bool IsPremiere
+        {
+            get
+            {
+                return Tags.Contains("Premiere", StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
         public int? ProductionYear { get; set; }
         public string EpisodeTitle { get; set; }
         public DateTime? OriginalAirDate { get; set; }
         public bool IsProgramSeries { get; set; }
         public bool IsRepeat { get; set; }
-        public string HomePageUrl { get; set; }
         public float? CommunityRating { get; set; }
         public string OfficialRating { get; set; }
-        public List<string> Genres { get; set; }
+        public string[] Genres { get; set; }
         public string RecordingPath { get; set; }
         public KeepUntil KeepUntil { get; set; }
     }

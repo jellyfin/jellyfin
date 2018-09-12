@@ -11,11 +11,6 @@
         AirTime,
 
         /// <summary>
-        /// The alternate episode numbers
-        /// </summary>
-        AlternateEpisodeNumbers,
-
-        /// <summary>
         /// The can delete
         /// </summary>
         CanDelete,
@@ -76,11 +71,6 @@
         /// Genres
         /// </summary>
         Genres,
-
-        /// <summary>
-        /// The home page URL
-        /// </summary>
-        HomePageUrl,
 
         /// <summary>
         /// The item counts
@@ -171,10 +161,6 @@
         Studios,
 
         BasicSyncInfo,
-        /// <summary>
-        /// The synchronize information
-        /// </summary>
-        SyncInfo,
 
         /// <summary>
         /// The taglines of the item
@@ -205,9 +191,6 @@
         /// The service name
         /// </summary>
         ServiceName,
-        ThemeSongIds,
-        ThemeVideoIds,
-        ExternalEtag,
         PresentationUniqueKey,
         InheritedParentalRatingValue,
         ExternalSeriesId,
@@ -215,6 +198,13 @@
         DateLastRefreshed,
         DateLastSaved,
         RefreshState,
-        ChannelImage
+        ChannelImage,
+        EnableMediaSourceDisplay,
+        Width,
+        Height,
+        IsHD,
+        ExtraIds,
+        SpecialFeatureCount,
+        LocalTrailerCount
     }
 }

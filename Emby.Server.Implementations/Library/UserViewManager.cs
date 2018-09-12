@@ -39,23 +39,14 @@ namespace Emby.Server.Implementations.Library
             _config = config;
         }
 
-        public async Task<Folder[]> GetUserViews(UserViewQuery query, CancellationToken cancellationToken)
+        public Folder[] GetUserViews(UserViewQuery query)
         {
             var user = _userManager.GetUserById(query.UserId);
 
-            var folders = user.RootFolder
+            var folders = _libraryManager.GetUserRootFolder()
                 .GetChildren(user, true)
                 .OfType<Folder>()
                 .ToList();
-
-            if (!query.IncludeHidden)
-            {
-                folders = folders.Where(i =>
-                {
-                    var hidden = i as IHiddenFromDisplay;
-                    return hidden == null || !hidden.IsHiddenFromUser(user);
-                }).ToList();
-            }
 
             var groupedFolders = new List<ICollectionFolder>();
 
@@ -68,7 +59,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (UserView.IsUserSpecific(folder))
                 {
-                    list.Add(_libraryManager.GetNamedView(user, folder.Name, folder.Id.ToString("N"), folderViewType, null, cancellationToken));
+                    list.Add(_libraryManager.GetNamedView(user, folder.Name, folder.Id, folderViewType, null));
                     continue;
                 }
 
@@ -80,7 +71,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (query.PresetViews.Contains(folderViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
-                    list.Add(GetUserView(folder, folderViewType, string.Empty, cancellationToken));
+                    list.Add(GetUserView(folder, folderViewType, string.Empty));
                 }
                 else
                 {
@@ -90,7 +81,7 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var viewType in new[] { CollectionType.Movies, CollectionType.TvShows })
             {
-                var parents = groupedFolders.Where(i => string.Equals(i.CollectionType, viewType, StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(i.CollectionType))
+                var parents = groupedFolders.Where(i => string.Equals(i.CollectionType, viewType, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(i.CollectionType))
                     .ToList();
 
                 if (parents.Count > 0)
@@ -99,39 +90,36 @@ namespace Emby.Server.Implementations.Library
                         "TvShows" :
                         "Movies";
 
-                    list.Add(GetUserView(parents, viewType, localizationKey, string.Empty, user, query.PresetViews, cancellationToken));
+                    list.Add(GetUserView(parents, viewType, localizationKey, string.Empty, user, query.PresetViews));
                 }
             }
 
             if (_config.Configuration.EnableFolderView)
             {
                 var name = _localizationManager.GetLocalizedString("Folders");
-                list.Add(_libraryManager.GetNamedView(name, CollectionType.Folders, string.Empty, cancellationToken));
+                list.Add(_libraryManager.GetNamedView(name, CollectionType.Folders, string.Empty));
             }
 
             if (query.IncludeExternalContent)
             {
-                var channelResult = await _channelManager.GetChannelsInternal(new ChannelQuery
+                var channelResult = _channelManager.GetChannelsInternal(new ChannelQuery
                 {
                     UserId = query.UserId
-
-                }, cancellationToken).ConfigureAwait(false);
+                });
 
                 var channels = channelResult.Items;
 
-                if (_config.Configuration.EnableChannelView && channels.Length > 0)
-                {
-                    list.Add(_channelManager.GetInternalChannelFolder(cancellationToken));
-                }
-                else
-                {
-                    list.AddRange(channels);
-                }
+                list.AddRange(channels);
 
-                if (_liveTvManager.GetEnabledUsers().Select(i => i.Id.ToString("N")).Contains(query.UserId))
+                if (_liveTvManager.GetEnabledUsers().Select(i => i.Id).Contains(query.UserId))
                 {
                     list.Add(_liveTvManager.GetInternalLiveTvFolder(CancellationToken.None));
                 }
+            }
+
+            if (!query.IncludeHidden)
+            {
+                list = list.Where(i => !user.Configuration.MyMediaExcludes.Contains(i.Id.ToString("N"))).ToList();
             }
 
             var sorted = _libraryManager.Sort(list, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
@@ -148,7 +136,7 @@ namespace Emby.Server.Implementations.Library
                         var view = i as UserView;
                         if (view != null)
                         {
-                            if (view.DisplayParentId != Guid.Empty)
+                            if (!view.DisplayParentId.Equals(Guid.Empty))
                             {
                                 index = orders.IndexOf(view.DisplayParentId.ToString("N"));
                             }
@@ -162,21 +150,21 @@ namespace Emby.Server.Implementations.Library
                 .ToArray();
         }
 
-        public UserView GetUserSubViewWithName(string name, string parentId, string type, string sortName, CancellationToken cancellationToken)
+        public UserView GetUserSubViewWithName(string name, Guid parentId, string type, string sortName)
         {
             var uniqueId = parentId + "subview" + type;
 
-            return _libraryManager.GetNamedView(name, parentId, type, sortName, uniqueId, cancellationToken);
+            return _libraryManager.GetNamedView(name, parentId, type, sortName, uniqueId);
         }
 
-        public UserView GetUserSubView(string parentId, string type, string localizationKey, string sortName, CancellationToken cancellationToken)
+        public UserView GetUserSubView(Guid parentId, string type, string localizationKey, string sortName)
         {
             var name = _localizationManager.GetLocalizedString(localizationKey);
 
-            return GetUserSubViewWithName(name, parentId, type, sortName, cancellationToken);
+            return GetUserSubViewWithName(name, parentId, type, sortName);
         }
 
-        private Folder GetUserView(List<ICollectionFolder> parents, string viewType, string localizationKey, string sortName, User user, string[] presetViews, CancellationToken cancellationToken)
+        private Folder GetUserView(List<ICollectionFolder> parents, string viewType, string localizationKey, string sortName, User user, string[] presetViews)
         {
             if (parents.Count == 1 && parents.All(i => string.Equals(i.CollectionType, viewType, StringComparison.OrdinalIgnoreCase)))
             {
@@ -185,16 +173,16 @@ namespace Emby.Server.Implementations.Library
                     return (Folder)parents[0];
                 }
 
-                return GetUserView((Folder)parents[0], viewType, string.Empty, cancellationToken);
+                return GetUserView((Folder)parents[0], viewType, string.Empty);
             }
 
             var name = _localizationManager.GetLocalizedString(localizationKey);
-            return _libraryManager.GetNamedView(user, name, viewType, sortName, cancellationToken);
+            return _libraryManager.GetNamedView(user, name, viewType, sortName);
         }
 
-        public UserView GetUserView(Folder parent, string viewType, string sortName, CancellationToken cancellationToken)
+        public UserView GetUserView(Folder parent, string viewType, string sortName)
         {
-            return _libraryManager.GetShadowView(parent, viewType, sortName, cancellationToken);
+            return _libraryManager.GetShadowView(parent, viewType, sortName);
         }
 
         public List<Tuple<BaseItem, List<BaseItem>>> GetLatestItems(LatestItemsQuery request, DtoOptions options)
@@ -246,9 +234,26 @@ namespace Emby.Server.Implementations.Library
 
             var parents = new List<BaseItem>();
 
-            if (!string.IsNullOrWhiteSpace(parentId))
+            if (!parentId.Equals(Guid.Empty))
             {
-                var parent = _libraryManager.GetItemById(parentId) as Folder;
+                var parentItem = _libraryManager.GetItemById(parentId);
+                var parentItemChannel = parentItem as Channel;
+                if (parentItemChannel != null)
+                {
+                    return _channelManager.GetLatestChannelItemsInternal(new InternalItemsQuery(user)
+                    {
+                        ChannelIds = new [] { parentId },
+                        IsPlayed = request.IsPlayed,
+                        StartIndex = request.StartIndex,
+                        Limit = request.Limit,
+                        IncludeItemTypes = request.IncludeItemTypes,
+                        EnableTotalRecordCount = false
+
+
+                    }, CancellationToken.None).Result.Items.ToList();
+                }
+
+                var parent = parentItem as Folder;
                 if (parent != null)
                 {
                     parents.Add(parent);
@@ -264,7 +269,7 @@ namespace Emby.Server.Implementations.Library
 
             if (parents.Count == 0)
             {
-                parents = user.RootFolder.GetChildren(user, true)
+                parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                     .Where(i => i is Folder)
                     .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N")))
                     .ToList();
@@ -273,6 +278,24 @@ namespace Emby.Server.Implementations.Library
             if (parents.Count == 0)
             {
                 return new List<BaseItem>();
+            }
+
+            if (includeItemTypes.Length == 0)
+            {
+                // Handle situations with the grouping setting, e.g. movies showing up in tv, etc. 
+                // Thanks to mixed content libraries included in the UserView
+                var hasCollectionType = parents.OfType<UserView>().ToArray();
+                if (hasCollectionType.Length > 0)
+                {
+                    if (hasCollectionType.All(i => string.Equals(i.CollectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        includeItemTypes = new string[] { "Movie" };
+                    }
+                    else if (hasCollectionType.All(i => string.Equals(i.CollectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        includeItemTypes = new string[] { "Episode" };
+                    }
+                }
             }
 
             var mediaTypes = new List<string>();
@@ -285,6 +308,7 @@ namespace Emby.Server.Implementations.Library
                     {
                         case CollectionType.Books:
                             mediaTypes.Add(MediaType.Book);
+                            mediaTypes.Add(MediaType.Audio);
                             break;
                         case CollectionType.Games:
                             mediaTypes.Add(MediaType.Game);
@@ -318,12 +342,12 @@ namespace Emby.Server.Implementations.Library
                 typeof(MusicGenre).Name,
                 typeof(Genre).Name
 
-            } : new string[] { };
+            } : Array.Empty<string>();
 
             var query = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = includeItemTypes,
-                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
+                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
                 IsFolder = includeItemTypes.Length == 0 ? false : (bool?)null,
                 ExcludeItemTypes = excludeItemTypes,
                 IsVirtualItem = false,

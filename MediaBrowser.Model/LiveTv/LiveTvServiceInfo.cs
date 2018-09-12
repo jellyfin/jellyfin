@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -48,11 +48,11 @@ namespace MediaBrowser.Model.LiveTv
         /// <value><c>true</c> if this instance is visible; otherwise, <c>false</c>.</value>
         public bool IsVisible { get; set; }
 
-        public LiveTvTunerInfoDto[] Tuners { get; set; }
+        public string[] Tuners { get; set; }
 
         public LiveTvServiceInfo()
         {
-            Tuners = new LiveTvTunerInfoDto[] { };
+            Tuners = Array.Empty<string>();
         }
     }
 }

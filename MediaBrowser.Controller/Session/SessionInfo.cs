@@ -1,10 +1,11 @@
 ﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
 using System;
-using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Threading;
+using System.Linq;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Session
 {
@@ -23,11 +24,21 @@ namespace MediaBrowser.Controller.Session
 
             AdditionalUsers = new SessionUserInfo[] { };
             PlayState = new PlayerStateInfo();
+            SessionControllers = new ISessionController[] { };
         }
+
+        // This is only here to allow XmlSerialization and should not be used
+        public SessionInfo() : this(null, null) { }
 
         public PlayerStateInfo PlayState { get; set; }
 
         public SessionUserInfo[] AdditionalUsers { get; set; }
+
+        [IgnoreDataMember]
+        public QueueItem[] NowPlayingQueue { get; set; }
+
+        [IgnoreDataMember]
+        public bool HasCustomDeviceName { get; set; }
 
         public ClientCapabilities Capabilities { get; set; }
 
@@ -45,13 +56,16 @@ namespace MediaBrowser.Controller.Session
         {
             get
             {
-                if (Capabilities == null)
+                var caps = Capabilities;
+                if (caps == null)
                 {
-                    return new string[] { };
+                    return Array.Empty<string>();
                 }
-                return Capabilities.PlayableMediaTypes;
+                return caps.PlayableMediaTypes;
             }
         }
+
+        public string PlaylistItemId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -59,17 +73,21 @@ namespace MediaBrowser.Controller.Session
         /// <value>The id.</value>
         public string Id { get; set; }
 
+        public string ServerId { get; set; }
+
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
-        public Guid? UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the username.
         /// </summary>
         /// <value>The username.</value>
         public string UserName { get; set; }
+
+        public string UserPrimaryImageTag { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the client.
@@ -87,6 +105,7 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the last playback check in.
         /// </summary>
         /// <value>The last playback check in.</value>
+        [IgnoreDataMember]
         public DateTime LastPlaybackCheckIn { get; set; }
 
         /// <summary>
@@ -95,11 +114,7 @@ namespace MediaBrowser.Controller.Session
         /// <value>The name of the device.</value>
         public string DeviceName { get; set; }
 
-        /// <summary>
-        /// Gets or sets the name of the now viewing item.
-        /// </summary>
-        /// <value>The name of the now viewing item.</value>
-        public BaseItemDto NowViewingItem { get; set; }
+        public string DeviceType { get; set; }
 
         /// <summary>
         /// Gets or sets the now playing item.
@@ -107,6 +122,7 @@ namespace MediaBrowser.Controller.Session
         /// <value>The now playing item.</value>
         public BaseItemDto NowPlayingItem { get; set; }
 
+        [IgnoreDataMember]
         public BaseItem FullNowPlayingItem { get; set; }
 
         /// <summary>
@@ -125,13 +141,21 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the session controller.
         /// </summary>
         /// <value>The session controller.</value>
-        public ISessionController SessionController { get; set; }
+        [IgnoreDataMember]
+        public ISessionController[] SessionControllers { get; set; }
 
         /// <summary>
         /// Gets or sets the application icon URL.
         /// </summary>
         /// <value>The application icon URL.</value>
-        public string AppIconUrl { get; set; }
+        public string AppIconUrl
+        {
+            get
+            {
+                var caps = Capabilities;
+                return caps == null ? null : caps.IconUrl;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the supported commands.
@@ -141,11 +165,12 @@ namespace MediaBrowser.Controller.Session
         {
             get
             {
-                if (Capabilities == null)
+                var caps = Capabilities;
+                if (caps == null)
                 {
-                    return new string[] { };
+                    return Array.Empty<string>();
                 }
-                return Capabilities.SupportedCommands;
+                return caps.SupportedCommands;
             }
         }
 
@@ -155,52 +180,87 @@ namespace MediaBrowser.Controller.Session
         /// Gets a value indicating whether this instance is active.
         /// </summary>
         /// <value><c>true</c> if this instance is active; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public bool IsActive
         {
             get
             {
-                if (SessionController != null)
+                var controllers = SessionControllers;
+                foreach (var controller in controllers)
                 {
-                    return SessionController.IsSessionActive;
+                    if (controller.IsSessionActive)
+                    {
+                        return true;
+                    }
                 }
-
-                return (DateTime.UtcNow - LastActivityDate).TotalMinutes <= 10;
-            }
-        }
-
-        public bool SupportsMediaControl
-        {
-            get
-            {
-                if (Capabilities == null || !Capabilities.SupportsMediaControl)
+                if (controllers.Length > 0)
                 {
                     return false;
                 }
 
-                if (SessionController != null)
+                return true;
+            }
+        }
+
+        public bool SupportsRemoteControl
+        {
+            get
+            {
+                var caps = Capabilities;
+                if (caps == null || !caps.SupportsMediaControl)
                 {
-                    return SessionController.SupportsMediaControl;
+                    return false;
+                }
+
+                var controllers = SessionControllers;
+                foreach (var controller in controllers)
+                {
+                    if (controller.SupportsMediaControl)
+                    {
+                        return true;
+                    }
                 }
 
                 return false;
             }
         }
 
-        public bool ContainsUser(string userId)
+        public Tuple<ISessionController, bool> EnsureController<T>(Func<SessionInfo, ISessionController> factory)
         {
-            return ContainsUser(new Guid(userId));
+            var controllers = SessionControllers.ToList();
+            foreach (var controller in controllers)
+            {
+                if (controller is T)
+                {
+                    return new Tuple<ISessionController, bool>(controller, false);
+                }
+            }
+
+            var newController = factory(this);
+            _logger.Debug("Creating new {0}", newController.GetType().Name);
+            controllers.Add(newController);
+
+            SessionControllers = controllers.ToArray();
+            return new Tuple<ISessionController, bool>(newController, true);
+        }
+
+        public void AddController(ISessionController controller)
+        {
+            var controllers = SessionControllers.ToList();
+            controllers.Add(controller);
+            SessionControllers = controllers.ToArray();
         }
 
         public bool ContainsUser(Guid userId)
         {
-            if ((UserId ?? Guid.Empty) == userId)
+            if (UserId.Equals(userId))
             {
                 return true;
             }
 
             foreach (var additionalUser in AdditionalUsers)
             {
-                if (userId == new Guid(additionalUser.UserId))
+                if (userId.Equals(additionalUser.UserId))
                 {
                     return true;
                 }
@@ -302,8 +362,30 @@ namespace MediaBrowser.Controller.Session
             _disposed = true;
 
             StopAutomaticProgress();
+
+            var controllers = SessionControllers.ToList();
+            SessionControllers = new ISessionController[] { };
+
+            foreach (var controller in controllers)
+            {
+                var disposable = controller as IDisposable;
+
+                if (disposable != null)
+                {
+                    _logger.Debug("Disposing session controller {0}", disposable.GetType().Name);
+
+                    try
+                    {
+                        disposable.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error disposing session controller", ex);
+                    }
+                }
+            }
+
             _sessionManager = null;
-            GC.SuppressFinalize(this);
         }
     }
 }

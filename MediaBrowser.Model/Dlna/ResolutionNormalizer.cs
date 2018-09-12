@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -18,6 +16,8 @@ namespace MediaBrowser.Model.Dlna
             };
 
         public static ResolutionOptions Normalize(int? inputBitrate,
+            int? inputWidth,
+            int? inputHeight,
 			int outputBitrate,
 			string inputCodec,
             string outputCodec,
@@ -43,11 +43,24 @@ namespace MediaBrowser.Model.Dlna
                 var originvalValue = maxWidth;
 
                 maxWidth = Math.Min(resolutionConfig.MaxWidth, maxWidth ?? resolutionConfig.MaxWidth);
+
                 if (!originvalValue.HasValue || originvalValue.Value != maxWidth.Value)
                 {
                     maxHeight = null;
                 }
             }
+
+            //if (maxWidth.HasValue && inputWidth.HasValue && maxWidth >= inputWidth.Value)
+            //{
+            //    maxWidth = null;
+            //    maxHeight = null;
+            //}
+
+            //if (maxHeight.HasValue && inputHeight.HasValue && maxHeight >= inputHeight.Value)
+            //{
+            //    maxWidth = null;
+            //    maxHeight = null;
+            //}
 
             return new ResolutionOptions
             {
@@ -71,27 +84,6 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return null;
-        }
-
-        private static double GetVideoBitrateScaleFactor(string codec)
-        {
-            if (StringHelper.EqualsIgnoreCase(codec, "h265") ||
-                StringHelper.EqualsIgnoreCase(codec, "hevc") ||
-                StringHelper.EqualsIgnoreCase(codec, "vp9"))
-            {
-                return .5;
-            }
-            return 1;
-        }
-
-        public static int ScaleBitrate(int bitrate, string inputVideoCodec, string outputVideoCodec)
-        {
-            var inputScaleFactor = GetVideoBitrateScaleFactor(inputVideoCodec);
-            var outputScaleFactor = GetVideoBitrateScaleFactor(outputVideoCodec);
-            var scaleFactor = outputScaleFactor/inputScaleFactor;
-            var newBitrate = scaleFactor*bitrate;
-
-            return Convert.ToInt32(newBitrate);
         }
     }
 }

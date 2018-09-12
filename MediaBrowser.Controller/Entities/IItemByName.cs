@@ -5,9 +5,9 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Marker interface
     /// </summary>
-    public interface IItemByName : IHasMetadata
+    public interface IItemByName
     {
-        IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query);
+        IList<BaseItem> GetTaggedItems(InternalItemsQuery query);
     }
 
     public interface IHasDualAccess : IItemByName

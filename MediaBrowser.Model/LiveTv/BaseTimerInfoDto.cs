@@ -28,7 +28,7 @@ namespace MediaBrowser.Model.LiveTv
         /// <summary>
         /// ChannelId of the recording.
         /// </summary>
-        public string ChannelId { get; set; }
+        public Guid ChannelId { get; set; }
 
         /// <summary>
         /// Gets or sets the external channel identifier.

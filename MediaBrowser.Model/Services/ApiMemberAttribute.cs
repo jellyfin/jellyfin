@@ -51,11 +51,13 @@ namespace MediaBrowser.Model.Services
         /// <summary>
         /// Gets or sets route to which applies attribute, matches using StartsWith. By default applies to all routes. 
         /// </summary>
+        [Obsolete("This is not used for API documentation and is otherwise unused as well.")]
         public string Route { get; set; }
 
         /// <summary>
         /// Whether to exclude this property from being included in the ModelSchema
         /// </summary>
+        [Obsolete("This is not used for API documentation and is otherwise unused as well.")]
         public bool ExcludeInSchema { get; set; }
     }
 }

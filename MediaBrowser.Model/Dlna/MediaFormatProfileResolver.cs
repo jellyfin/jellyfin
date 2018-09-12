@@ -2,17 +2,25 @@
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
 {
     public class MediaFormatProfileResolver
     {
-        public MediaFormatProfile[] ResolveVideoFormat(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
+        public string[] ResolveVideoFormat(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
+        {
+            return ResolveVideoFormatInternal(container, videoCodec, audioCodec, width, height, timestampType)
+                .Select(i => i.ToString())
+                .ToArray();
+        }
+
+        private MediaFormatProfile[] ResolveVideoFormatInternal(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
         {
             if (StringHelper.EqualsIgnoreCase(container, "asf"))
             {
                 MediaFormatProfile? val = ResolveVideoASFFormat(videoCodec, audioCodec, width, height);
-                return val.HasValue ? new MediaFormatProfile[] { val.Value } : new MediaFormatProfile[]{};
+                return val.HasValue ? new MediaFormatProfile[] { val.Value } : new MediaFormatProfile[] { };
             }
 
             if (StringHelper.EqualsIgnoreCase(container, "mp4"))

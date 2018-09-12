@@ -9,6 +9,7 @@ namespace MediaBrowser.Controller.Entities
     {
         public string Path { get; set; }
         public LinkedChildType Type { get; set; }
+        public string LibraryItemId { get; set; }
 
         [IgnoreDataMember]
         public string Id { get; set; }
@@ -20,11 +21,18 @@ namespace MediaBrowser.Controller.Entities
 
         public static LinkedChild Create(BaseItem item)
         {
-            return new LinkedChild
+            var child = new LinkedChild
             {
                 Path = item.Path,
                 Type = LinkedChildType.Manual
             };
+
+            if (string.IsNullOrEmpty(child.Path))
+            {
+                child.LibraryItemId = item.Id.ToString("N");
+            }
+
+            return child;
         }
 
         public LinkedChild()
@@ -59,7 +67,7 @@ namespace MediaBrowser.Controller.Entities
 
         public int GetHashCode(LinkedChild obj)
         {
-            return (obj.Path + obj.Type).GetHashCode();
+            return ((obj.Path ?? string.Empty) + (obj.LibraryItemId ?? string.Empty) + obj.Type).GetHashCode();
         }
     }
 }

@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Entities
     {
         public AggregateFolder()
         {
-            PhysicalLocationsList = EmptyStringArray;
+            PhysicalLocationsList = Array.Empty<string>();
         }
 
         [IgnoreDataMember]
@@ -118,11 +118,11 @@ namespace MediaBrowser.Controller.Entities
             return changed;
         }
 
-        public override bool BeforeMetadataRefresh()
+        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
         {
             ClearCache();
 
-            var changed = base.BeforeMetadataRefresh() || _requiresRefresh;
+            var changed = base.BeforeMetadataRefresh(replaceAllMetdata) || _requiresRefresh;
             _requiresRefresh = false;
             return changed;
         }
@@ -136,26 +136,20 @@ namespace MediaBrowser.Controller.Entities
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, directoryService)
             {
                 FileInfo = FileSystem.GetDirectoryInfo(path),
-                Path = path,
-                Parent = GetParent() as Folder
+                Path = path
             };
 
             // Gather child folder and files
             if (args.IsDirectory)
             {
-                var isPhysicalRoot = args.IsPhysicalRoot;
-
                 // When resolving the root, we need it's grandchildren (children of user views)
-                var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
+                var flattenFolderDepth = 2;
 
-                var files = FileData.GetFilteredFileSystemEntries(directoryService, args.Path, FileSystem, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
+                var files = FileData.GetFilteredFileSystemEntries(directoryService, args.Path, FileSystem, CollectionFolder.ApplicationHost, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: true);
 
                 // Need to remove subpaths that may have been resolved from shortcuts
                 // Example: if \\server\movies exists, then strip out \\server\movies\action
-                if (isPhysicalRoot)
-                {
-                    files = LibraryManager.NormalizeRootPathList(files).ToArray();
-                }
+                files = LibraryManager.NormalizeRootPathList(files).ToArray();
 
                 args.FileSystemChildren = files;
             }
@@ -207,7 +201,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="System.ArgumentNullException">id</exception>
         public BaseItem FindVirtualChild(Guid id)
         {
-            if (id == Guid.Empty)
+            if (id.Equals(Guid.Empty))
             {
                 throw new ArgumentNullException("id");
             }

@@ -57,7 +57,7 @@ namespace MediaBrowser.Providers.People
 
             var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-            var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
+            var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
 
             if (!string.IsNullOrEmpty(tmdbId))
             {
@@ -89,7 +89,7 @@ namespace MediaBrowser.Providers.People
                 return new List<RemoteSearchResult>();
             }
 
-            var url = string.Format(@"https://api.themoviedb.org/3/search/person?api_key={1}&query={0}", WebUtility.UrlEncode(searchInfo.Name), MovieDbProvider.ApiKey);
+            var url = string.Format(MovieDbProvider.BaseMovieDbUrl + @"3/search/person?api_key={1}&query={0}", WebUtility.UrlEncode(searchInfo.Name), MovieDbProvider.ApiKey);
 
             using (var response = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
@@ -101,7 +101,7 @@ namespace MediaBrowser.Providers.People
             {
                 using (var json = response.Content)
                 {
-                    var result = _jsonSerializer.DeserializeFromStream<PersonSearchResults>(json) ??
+                    var result = await _jsonSerializer.DeserializeFromStreamAsync<PersonSearchResults>(json).ConfigureAwait(false) ??
                                  new PersonSearchResults();
 
                     return result.Results.Select(i => GetSearchResult(i, tmdbImageUrl));
@@ -164,7 +164,7 @@ namespace MediaBrowser.Providers.People
                 // TODO: This should go in PersonMetadataService, not each person provider
                 item.Name = id.Name;
 
-                item.HomePageUrl = info.homepage;
+                //item.HomePageUrl = info.homepage;
 
                 if (!string.IsNullOrWhiteSpace(info.place_of_birth))
                 {
@@ -219,12 +219,12 @@ namespace MediaBrowser.Providers.People
 
             var fileInfo = _fileSystem.GetFileSystemInfo(dataFilePath);
 
-            if (fileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 3)
+            if (fileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
             {
                 return;
             }
 
-            var url = string.Format(@"https://api.themoviedb.org/3/person/{1}?api_key={0}&append_to_response=credits,images,external_ids", MovieDbProvider.ApiKey, id);
+            var url = string.Format(MovieDbProvider.BaseMovieDbUrl + @"3/person/{1}?api_key={0}&append_to_response=credits,images,external_ids", MovieDbProvider.ApiKey, id);
 
             using (var response = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {

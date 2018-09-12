@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Extensions;
-using System.Diagnostics;
 using MediaBrowser.Model.MediaInfo;
+using System.Globalization;
 
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
     /// Class MediaStream
     /// </summary>
-    [DebuggerDisplay("StreamType = {Type}")]
     public class MediaStream
     {
         /// <summary>
@@ -24,12 +23,16 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The codec tag.</value>
         public string CodecTag { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the language.
         /// </summary>
         /// <value>The language.</value>
         public string Language { get; set; }
+
+        public string ColorTransfer { get; set; }
+        public string ColorPrimaries { get; set; }
+        public string ColorSpace { get; set; }
 
         /// <summary>
         /// Gets or sets the comment.
@@ -41,6 +44,26 @@ namespace MediaBrowser.Model.Entities
         public string CodecTimeBase { get; set; }
 
         public string Title { get; set; }
+
+        public string VideoRange
+        {
+            get
+            {
+                if (Type != MediaStreamType.Video)
+                {
+                    return null;
+                }
+
+                var colorTransfer = ColorTransfer;
+
+                if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "HDR";
+                }
+
+                return "SDR";
+            }
+        }
 
         public string DisplayTitle
         {
@@ -62,7 +85,7 @@ namespace MediaBrowser.Model.Entities
                     if (!string.IsNullOrEmpty(Codec) && !StringHelper.EqualsIgnoreCase(Codec, "dca"))
                     {
                         attributes.Add(AudioCodec.GetFriendlyName(Codec));
-                    } 
+                    }
                     else if (!string.IsNullOrEmpty(Profile) && !StringHelper.EqualsIgnoreCase(Profile, "lc"))
                     {
                         attributes.Add(Profile);
@@ -74,7 +97,7 @@ namespace MediaBrowser.Model.Entities
                     }
                     else if (Channels.HasValue)
                     {
-                        attributes.Add(StringHelper.ToStringCultureInvariant(Channels.Value) + " ch");
+                        attributes.Add(Channels.Value.ToString(CultureInfo.InvariantCulture) + " ch");
                     }
                     if (IsDefault)
                     {
@@ -149,13 +172,16 @@ namespace MediaBrowser.Model.Entities
         {
             var i = this;
 
-            if (i.Width.HasValue)
+            if (i.Width.HasValue && i.Height.HasValue)
             {
-                if (i.Width >= 3800)
+                var width = i.Width.Value;
+                var height = i.Height.Value;
+
+                if (width >= 3800 || height >= 2000)
                 {
                     return "4K";
                 }
-                if (i.Width >= 2500)
+                if (width >= 2500)
                 {
                     if (i.IsInterlaced)
                     {
@@ -163,7 +189,7 @@ namespace MediaBrowser.Model.Entities
                     }
                     return "1440P";
                 }
-                if (i.Width >= 1900)
+                if (width >= 1900 || height >= 1000)
                 {
                     if (i.IsInterlaced)
                     {
@@ -171,7 +197,7 @@ namespace MediaBrowser.Model.Entities
                     }
                     return "1080P";
                 }
-                if (i.Width >= 1260)
+                if (width >= 1260 || height >= 700)
                 {
                     if (i.IsInterlaced)
                     {
@@ -179,7 +205,7 @@ namespace MediaBrowser.Model.Entities
                     }
                     return "720P";
                 }
-                if (i.Width >= 700)
+                if (width >= 700 || height >= 440)
                 {
 
                     if (i.IsInterlaced)
@@ -189,13 +215,14 @@ namespace MediaBrowser.Model.Entities
                     return "480P";
                 }
 
+                return "SD";
             }
             return null;
         }
 
         private string AddLanguageIfNeeded(string title)
         {
-            if (!string.IsNullOrEmpty(Language) && 
+            if (!string.IsNullOrEmpty(Language) &&
                 !string.Equals(Language, "und", StringComparison.OrdinalIgnoreCase) &&
                 !IsLanguageInTitle(title, Language))
             {
@@ -254,7 +281,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The length of the packet.</value>
         public int? PacketLength { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the channels.
         /// </summary>
@@ -376,9 +403,9 @@ namespace MediaBrowser.Model.Entities
 
             // sub = external .sub file
 
-            return StringHelper.IndexOfIgnoreCase(codec, "pgs") == -1 &&
-                   StringHelper.IndexOfIgnoreCase(codec, "dvd") == -1 &&
-                   StringHelper.IndexOfIgnoreCase(codec, "dvbsub") == -1 &&
+            return codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) == -1 &&
+                   codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) == -1 &&
+                   codec.IndexOf("dvbsub", StringComparison.OrdinalIgnoreCase) == -1 &&
                    !StringHelper.EqualsIgnoreCase(codec, "sub") &&
                    !StringHelper.EqualsIgnoreCase(codec, "dvb_subtitle");
         }
@@ -426,12 +453,6 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The filename.</value>
         public string Path { get; set; }
-
-        /// <summary>
-        /// Gets or sets the external identifier.
-        /// </summary>
-        /// <value>The external identifier.</value>
-        public string ExternalId { get; set; }
 
         /// <summary>
         /// Gets or sets the pixel format.

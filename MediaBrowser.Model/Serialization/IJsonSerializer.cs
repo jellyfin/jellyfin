@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Model.Serialization
 {
@@ -49,6 +50,8 @@ namespace MediaBrowser.Model.Serialization
         /// <exception cref="System.ArgumentNullException">stream</exception>
         T DeserializeFromStream<T>(Stream stream);
 
+        Task<T> DeserializeFromStreamAsync<T>(Stream stream);
+
         /// <summary>
         /// Deserializes from string.
         /// </summary>
@@ -66,6 +69,8 @@ namespace MediaBrowser.Model.Serialization
         /// <returns>System.Object.</returns>
         /// <exception cref="System.ArgumentNullException">stream</exception>
         object DeserializeFromStream(Stream stream, Type type);
+
+        Task<object> DeserializeFromStreamAsync(Stream stream, Type type);
 
         /// <summary>
         /// Deserializes from string.

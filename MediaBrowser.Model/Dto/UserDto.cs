@@ -2,7 +2,6 @@
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Users;
 using System;
-using System.Diagnostics;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.Dto
@@ -10,7 +9,6 @@ namespace MediaBrowser.Model.Dto
     /// <summary>
     /// Class UserDto
     /// </summary>
-    [DebuggerDisplay("Name = {Name}, ID = {Id}, HasPassword = {HasPassword}")]
     public class UserDto : IItemDto, IHasServerId
     {
         /// <summary>
@@ -52,7 +50,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        public string Id { get; set; }
+        public Guid Id { get; set; }
         
         /// <summary>
         /// Gets or sets the primary image tag.

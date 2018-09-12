@@ -6,10 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Emby.Server.Implementations;
-using Emby.Server.Implementations.FFMpeg;
 
 namespace Emby.Server.Implementations.FFMpeg
 {
@@ -32,7 +28,7 @@ namespace Emby.Server.Implementations.FFMpeg
             _ffmpegInstallInfo = ffmpegInstallInfo;
         }
 
-        public async Task<FFMpegInfo> GetFFMpegInfo(StartupOptions options, IProgress<double> progress)
+        public FFMpegInfo GetFFMpegInfo(StartupOptions options)
         {
             var customffMpegPath = options.GetOption("-ffmpeg");
             var customffProbePath = options.GetOption("-ffprobe");
@@ -49,8 +45,9 @@ namespace Emby.Server.Implementations.FFMpeg
 
             var downloadInfo = _ffmpegInstallInfo;
 
-            var prebuiltffmpeg = Path.Combine(_appPaths.ProgramSystemPath, downloadInfo.FFMpegFilename);
-            var prebuiltffprobe = Path.Combine(_appPaths.ProgramSystemPath, downloadInfo.FFProbeFilename);
+            var prebuiltFolder = _appPaths.ProgramSystemPath;
+            var prebuiltffmpeg = Path.Combine(prebuiltFolder, downloadInfo.FFMpegFilename);
+            var prebuiltffprobe = Path.Combine(prebuiltFolder, downloadInfo.FFProbeFilename);
             if (_fileSystem.FileExists(prebuiltffmpeg) && _fileSystem.FileExists(prebuiltffprobe))
             {
                 return new FFMpegInfo
@@ -90,11 +87,7 @@ namespace Emby.Server.Implementations.FFMpeg
                 // No older version. Need to download and block until complete
                 if (existingVersion == null)
                 {
-                    var success = await DownloadFFMpeg(downloadInfo, versionedDirectoryPath, progress).ConfigureAwait(false);
-                    if (!success)
-                    {
-                        return new FFMpegInfo();
-                    }
+                    return new FFMpegInfo();
                 }
                 else
                 {
@@ -144,99 +137,5 @@ namespace Emby.Server.Implementations.FFMpeg
 
             return null;
         }
-
-        private async Task<bool> DownloadFFMpeg(FFMpegInstallInfo downloadinfo, string directory, IProgress<double> progress)
-        {
-            foreach (var url in downloadinfo.DownloadUrls)
-            {
-                progress.Report(0);
-
-                try
-                {
-                    var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
-                    {
-                        Url = url,
-                        CancellationToken = CancellationToken.None,
-                        Progress = progress
-
-                    }).ConfigureAwait(false);
-
-                    ExtractFFMpeg(downloadinfo, tempFile, directory);
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error downloading {0}", ex, url);
-                }
-            }
-            return false;
-        }
-
-        private void ExtractFFMpeg(FFMpegInstallInfo downloadinfo, string tempFile, string targetFolder)
-        {
-            _logger.Info("Extracting ffmpeg from {0}", tempFile);
-
-            var tempFolder = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString());
-
-            _fileSystem.CreateDirectory(tempFolder);
-
-            try
-            {
-                ExtractArchive(downloadinfo, tempFile, tempFolder);
-
-                var files = _fileSystem.GetFilePaths(tempFolder, true)
-                    .ToList();
-
-                foreach (var file in files.Where(i =>
-                    {
-                        var filename = Path.GetFileName(i);
-
-                        return
-                            string.Equals(filename, downloadinfo.FFProbeFilename, StringComparison.OrdinalIgnoreCase) ||
-                            string.Equals(filename, downloadinfo.FFMpegFilename, StringComparison.OrdinalIgnoreCase);
-                    }))
-                {
-                    var targetFile = Path.Combine(targetFolder, Path.GetFileName(file));
-                    _fileSystem.CopyFile(file, targetFile, true);
-                    SetFilePermissions(targetFile);
-                }
-            }
-            finally
-            {
-                DeleteFile(tempFile);
-            }
-        }
-
-        private void SetFilePermissions(string path)
-        {
-            _fileSystem.SetExecutable(path);
-        }
-
-        private void ExtractArchive(FFMpegInstallInfo downloadinfo, string archivePath, string targetPath)
-        {
-            _logger.Info("Extracting {0} to {1}", archivePath, targetPath);
-
-            if (string.Equals(downloadinfo.ArchiveType, "7z", StringComparison.OrdinalIgnoreCase))
-            {
-                _zipClient.ExtractAllFrom7z(archivePath, targetPath, true);
-            }
-            else if (string.Equals(downloadinfo.ArchiveType, "gz", StringComparison.OrdinalIgnoreCase))
-            {
-                _zipClient.ExtractAllFromTar(archivePath, targetPath, true);
-            }
-        }
-
-        private void DeleteFile(string path)
-        {
-            try
-            {
-                _fileSystem.DeleteFile(path);
-            }
-            catch (IOException ex)
-            {
-                _logger.ErrorException("Error deleting temp file {0}", ex, path);
-            }
-        }
-
     }
 }

@@ -14,22 +14,10 @@ namespace MediaBrowser.Model.Plugins
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the configuration date last modified.
-        /// </summary>
-        /// <value>The configuration date last modified.</value>
-        public DateTime ConfigurationDateLastModified { get; set; }
-
-        /// <summary>
         /// Gets or sets the version.
         /// </summary>
         /// <value>The version.</value>
         public string Version { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the assembly file.
-        /// </summary>
-        /// <value>The name of the assembly file.</value>
-        public string AssemblyFileName { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the configuration file.

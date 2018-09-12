@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -139,6 +140,29 @@ namespace MediaBrowser.Providers.Music
         public bool Supports(IHasProviderIds item)
         {
             return item is Audio;
+        }
+    }
+
+    public class ImvdbId : IExternalId
+    {
+        public string Name
+        {
+            get { return "IMVDb"; }
+        }
+
+        public string Key
+        {
+            get { return "IMVDb"; }
+        }
+
+        public string UrlFormatString
+        {
+            get { return null; }
+        }
+
+        public bool Supports(IHasProviderIds item)
+        {
+            return item is MusicVideo;
         }
     }
 }

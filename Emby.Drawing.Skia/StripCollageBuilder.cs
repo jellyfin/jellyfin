@@ -3,6 +3,7 @@ using MediaBrowser.Common.Configuration;
 using System;
 using System.IO;
 using MediaBrowser.Model.IO;
+using System.Collections.Generic;
 
 namespace Emby.Drawing.Skia
 {
@@ -82,9 +83,17 @@ namespace Emby.Drawing.Skia
 
                 for (int i = 0; i < 4; i++)
                 {
-                    SKCodecOrigin origin;
-                    using (var currentBitmap = SkiaEncoder.Decode(paths[imageIndex], false, _fileSystem, out origin))
+                    int newIndex;
+
+                    using (var currentBitmap = GetNextValidImage(paths, imageIndex, out newIndex))
                     {
+                        imageIndex = newIndex;
+
+                        if (currentBitmap == null)
+                        {
+                            continue;
+                        }
+
                         // resize to the same aspect as the original
                         int iWidth = (int)Math.Abs(iHeight * currentBitmap.Width / currentBitmap.Height);
                         using (var resizeBitmap = new SKBitmap(iWidth, iHeight, currentBitmap.ColorType, currentBitmap.AlphaType))
@@ -98,7 +107,12 @@ namespace Emby.Drawing.Skia
                                 using (var subset = image.Subset(SKRectI.Create(ix, 0, iSlice, iHeight)))
                                 {
                                     // draw image onto canvas
-                                    canvas.DrawImage(subset, (horizontalImagePadding * (i + 1)) + (iSlice * i), verticalSpacing);
+                                    canvas.DrawImage(subset ?? image, (horizontalImagePadding * (i + 1)) + (iSlice * i), verticalSpacing);
+
+                                    if (subset == null)
+                                    {
+                                        continue;
+                                    }
 
                                     using (var croppedBitmap = SKBitmap.FromImage(subset))
                                     {
@@ -140,14 +154,38 @@ namespace Emby.Drawing.Skia
                             }
                         }
                     }
-
-                    imageIndex++;
-
-                    if (imageIndex >= paths.Length)
-                        imageIndex = 0;
                 }
             }
 
+            return bitmap;
+        }
+
+        private SKBitmap GetNextValidImage(string[] paths, int currentIndex, out int newIndex)
+        {
+            Dictionary<int, int> imagesTested = new Dictionary<int, int>();
+            SKBitmap bitmap = null;
+
+            while (imagesTested.Count < paths.Length)
+            {
+                if (currentIndex >= paths.Length)
+                {
+                    currentIndex = 0;
+                }
+
+                SKCodecOrigin origin;
+                bitmap = SkiaEncoder.Decode(paths[currentIndex], false, _fileSystem, null, out origin);
+
+                imagesTested[currentIndex] = 0;
+
+                currentIndex++;
+
+                if (bitmap != null)
+                {
+                    break;
+                }
+            }
+
+            newIndex = currentIndex;
             return bitmap;
         }
 
@@ -165,8 +203,17 @@ namespace Emby.Drawing.Skia
                     for (var y = 0; y < 2; y++)
                     {
                         SKCodecOrigin origin;
-                        using (var currentBitmap = SkiaEncoder.Decode(paths[imageIndex], false, _fileSystem, out origin))
+                        int newIndex;
+
+                        using (var currentBitmap = GetNextValidImage(paths, imageIndex, out newIndex))
                         {
+                            imageIndex = newIndex;
+
+                            if (currentBitmap == null)
+                            {
+                                continue;
+                            }
+
                             using (var resizedBitmap = new SKBitmap(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType))
                             {
                                 // scale image
@@ -178,10 +225,6 @@ namespace Emby.Drawing.Skia
                                 canvas.DrawBitmap(resizedBitmap, xPos, yPos);
                             }
                         }
-                        imageIndex++;
-
-                        if (imageIndex >= paths.Length)
-                            imageIndex = 0;
                     }
                 }
             }

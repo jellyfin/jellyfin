@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.Services
             return type.IsGenericParameter ? "'" + typeName : typeName;
         }
 
-        public static string LeftPart(string strVal, string needle)
+        private static string LeftPart(string strVal, string needle)
         {
             if (strVal == null) return null;
             var pos = strVal.IndexOf(needle, StringComparison.OrdinalIgnoreCase);

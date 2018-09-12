@@ -56,10 +56,10 @@ namespace MediaBrowser.Api.UserLibrary
         {
             BaseItem parentItem;
 
-            if (!string.IsNullOrWhiteSpace(request.UserId))
+            if (!request.UserId.Equals(Guid.Empty))
             {
                 var user = UserManager.GetUserById(request.UserId);
-                parentItem = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : LibraryManager.GetItemById(request.ParentId);
+                parentItem = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.GetUserRootFolder() : LibraryManager.GetItemById(request.ParentId);
             }
             else
             {
@@ -73,16 +73,10 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var parent = GetParentItem(request);
 
-            var collectionFolder = parent as ICollectionFolder;
+            var collectionFolder = parent as IHasCollectionType;
             if (collectionFolder != null)
             {
                 return collectionFolder.CollectionType;
-            }
-
-            var view = parent as UserView;
-            if (view != null)
-            {
-                return view.ViewType;
             }
 
             return null;
@@ -95,10 +89,10 @@ namespace MediaBrowser.Api.UserLibrary
             User user = null;
             BaseItem parentItem;
 
-            if (!string.IsNullOrWhiteSpace(request.UserId))
+            if (!request.UserId.Equals(Guid.Empty))
             {
                 user = UserManager.GetUserById(request.UserId);
-                parentItem = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : LibraryManager.GetItemById(request.ParentId);
+                parentItem = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.GetUserRootFolder() : LibraryManager.GetItemById(request.ParentId);
             }
             else
             {
@@ -123,25 +117,27 @@ namespace MediaBrowser.Api.UserLibrary
                 Tags = request.GetTags(),
                 OfficialRatings = request.GetOfficialRatings(),
                 Genres = request.GetGenres(),
-                GenreIds = request.GetGenreIds(),
-                StudioIds = request.GetStudioIds(),
+                GenreIds = GetGuids(request.GenreIds),
+                StudioIds = GetGuids(request.StudioIds),
                 Person = request.Person,
-                PersonIds = request.GetPersonIds(),
+                PersonIds = GetGuids(request.PersonIds),
                 PersonTypes = request.GetPersonTypes(),
                 Years = request.GetYears(),
                 MinCommunityRating = request.MinCommunityRating,
-                DtoOptions = dtoOptions
+                DtoOptions = dtoOptions,
+                SearchTerm = request.SearchTerm,
+                EnableTotalRecordCount = request.EnableTotalRecordCount
             };
 
             if (!string.IsNullOrWhiteSpace(request.ParentId))
             {
                 if (parentItem is Folder)
                 {
-                    query.AncestorIds = new[] { request.ParentId };
+                    query.AncestorIds = new[] { new Guid(request.ParentId) };
                 }
                 else
                 {
-                    query.ItemIds = new[] { request.ParentId };
+                    query.ItemIds = new[] { new Guid(request.ParentId) };
                 }
             }
 
@@ -158,7 +154,7 @@ namespace MediaBrowser.Api.UserLibrary
                     {
                         return null;
                     }
-                }).Where(i => i != null).Select(i => i.Id.ToString("N")).ToArray();
+                }).Where(i => i != null).Select(i => i.Id).ToArray();
             }
 
             foreach (var filter in request.GetFilters())
@@ -197,10 +193,9 @@ namespace MediaBrowser.Api.UserLibrary
 
             var result = GetItems(request, query);
 
-            var syncProgess = DtoService.GetSyncedItemProgress(dtoOptions);
             var dtos = result.Items.Select(i =>
             {
-                var dto = DtoService.GetItemByNameDto(i.Item1, dtoOptions, null, syncProgess, user);
+                var dto = DtoService.GetItemByNameDto(i.Item1, dtoOptions, null, user);
 
                 if (!string.IsNullOrWhiteSpace(request.IncludeItemTypes))
                 {
@@ -247,10 +242,10 @@ namespace MediaBrowser.Api.UserLibrary
             User user = null;
             BaseItem parentItem;
 
-            if (!string.IsNullOrWhiteSpace(request.UserId))
+            if (!request.UserId.Equals(Guid.Empty))
             {
                 user = UserManager.GetUserById(request.UserId);
-                parentItem = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : LibraryManager.GetItemById(request.ParentId);
+                parentItem = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.GetUserRootFolder() : LibraryManager.GetItemById(request.ParentId);
             }
             else
             {
@@ -277,7 +272,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var folder = (Folder)parentItem;
 
-                if (!string.IsNullOrWhiteSpace(request.UserId))
+                if (!request.UserId.Equals(Guid.Empty))
                 {
                     items = request.Recursive ?
                         folder.GetRecursiveChildren(user, query).ToList() :
@@ -297,9 +292,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var extractedItems = GetAllItems(request, items);
 
-            var filteredItems = FilterItems(request, extractedItems, user);
-
-            filteredItems = LibraryManager.Sort(filteredItems, user, request.GetOrderBy());
+            var filteredItems = LibraryManager.Sort(extractedItems, user, request.GetOrderBy());
 
             var ibnItemsArray = filteredItems.ToList();
 
@@ -326,132 +319,12 @@ namespace MediaBrowser.Api.UserLibrary
 
             var tuples = ibnItems.Select(i => new Tuple<BaseItem, List<BaseItem>>(i, new List<BaseItem>()));
 
-            var syncProgess = DtoService.GetSyncedItemProgress(dtoOptions);
-            var dtos = tuples.Select(i => DtoService.GetItemByNameDto(i.Item1, dtoOptions, i.Item2, syncProgess, user));
+            var dtos = tuples.Select(i => DtoService.GetItemByNameDto(i.Item1, dtoOptions, i.Item2, user));
 
             result.Items = dtos.Where(i => i != null).ToArray();
 
             return result;
         }
-
-        /// <summary>
-        /// Filters the items.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="items">The items.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{`0}.</returns>
-        private IEnumerable<BaseItem> FilterItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
-        {
-            if (!string.IsNullOrEmpty(request.NameStartsWithOrGreater))
-            {
-                items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
-            }
-            if (!string.IsNullOrEmpty(request.NameStartsWith))
-            {
-                items = items.Where(i => string.Compare(request.NameStartsWith, i.SortName.Substring(0, 1), StringComparison.CurrentCultureIgnoreCase) == 0);
-            }
-
-            if (!string.IsNullOrEmpty(request.NameLessThan))
-            {
-                items = items.Where(i => string.Compare(request.NameLessThan, i.SortName, StringComparison.CurrentCultureIgnoreCase) == 1);
-            }
-
-            var imageTypes = request.GetImageTypes();
-            if (imageTypes.Length > 0)
-            {
-                items = items.Where(item => imageTypes.Any(item.HasImage));
-            }
-
-            var filters = request.GetFilters();
-
-            if (filters.Contains(ItemFilter.Dislikes))
-            {
-                items = items.Where(i =>
-                    {
-                        var userdata = UserDataRepository.GetUserData(user, i);
-
-                        return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
-                    });
-            }
-
-            if (filters.Contains(ItemFilter.Likes))
-            {
-                items = items.Where(i =>
-                {
-                    var userdata = UserDataRepository.GetUserData(user, i);
-
-                    return userdata != null && userdata.Likes.HasValue && userdata.Likes.Value;
-                });
-            }
-
-            if (filters.Contains(ItemFilter.IsFavoriteOrLikes))
-            {
-                items = items.Where(i =>
-                {
-                    var userdata = UserDataRepository.GetUserData(user, i);
-
-                    var likes = userdata.Likes ?? false;
-                    var favorite = userdata.IsFavorite;
-
-                    return likes || favorite;
-                });
-            }
-
-            if (filters.Contains(ItemFilter.IsFavorite))
-            {
-                items = items.Where(i =>
-                {
-                    var userdata = UserDataRepository.GetUserData(user, i);
-
-                    return userdata != null && userdata.IsFavorite;
-                });
-            }
-
-            // Avoid implicitly captured closure
-            var currentRequest = request;
-            return items.Where(i => ApplyAdditionalFilters(currentRequest, i, user, false));
-        }
-
-        private bool ApplyAdditionalFilters(BaseItemsRequest request, BaseItem i, User user, bool isPreFiltered)
-        {
-            if (!isPreFiltered)
-            {
-                // Apply tag filter
-                var tags = request.GetTags();
-                if (tags.Length > 0)
-                {
-                    if (!tags.Any(v => i.Tags.Contains(v, StringComparer.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-
-                // Apply official rating filter
-                var officialRatings = request.GetOfficialRatings();
-                if (officialRatings.Length > 0 && !officialRatings.Contains(i.OfficialRating ?? string.Empty))
-                {
-                    return false;
-                }
-
-                // Apply genre filter
-                var genres = request.GetGenres();
-                if (genres.Length > 0 && !genres.Any(v => i.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)))
-                {
-                    return false;
-                }
-
-                // Apply year filter
-                var years = request.GetYears();
-                if (years.Length > 0 && !(i.ProductionYear.HasValue && years.Contains(i.ProductionYear.Value)))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
 
         /// <summary>
         /// Filters the items.

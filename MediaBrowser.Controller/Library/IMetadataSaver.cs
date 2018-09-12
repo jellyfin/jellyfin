@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
         /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
-        bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType);
+        bool IsEnabledFor(BaseItem item, ItemUpdateType updateType);
 
         /// <summary>
         /// Saves the specified item.
@@ -28,6 +28,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        void Save(IHasMetadata item, CancellationToken cancellationToken);
+        void Save(BaseItem item, CancellationToken cancellationToken);
     }
 }

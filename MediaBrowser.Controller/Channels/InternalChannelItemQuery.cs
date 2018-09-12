@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Channels;
+using System;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -6,7 +7,7 @@ namespace MediaBrowser.Controller.Channels
     {
         public string FolderId { get; set; }
 
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         public int? StartIndex { get; set; }
 

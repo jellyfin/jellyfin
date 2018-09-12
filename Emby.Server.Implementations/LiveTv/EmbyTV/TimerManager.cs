@@ -13,6 +13,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Threading;
+using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -23,12 +24,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public event EventHandler<GenericEventArgs<TimerInfo>> TimerFired;
         private readonly ITimerFactory _timerFactory;
+        private readonly IPowerManagement _powerManagement;
 
-        public TimerManager(IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, string dataPath, ILogger logger1, ITimerFactory timerFactory)
+        public TimerManager(IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, string dataPath, ILogger logger1, ITimerFactory timerFactory, IPowerManagement powerManagement)
             : base(fileSystem, jsonSerializer, logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
             _logger = logger1;
             _timerFactory = timerFactory;
+            _powerManagement = powerManagement;
         }
 
         public void RestartTimers()
@@ -37,7 +40,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             foreach (var item in GetAll().ToList())
             {
-                AddOrUpdateSystemTimer(item);
+                AddOrUpdateSystemTimer(item, false);
             }
         }
 
@@ -60,7 +63,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         public override void Update(TimerInfo item)
         {
             base.Update(item);
-            AddOrUpdateSystemTimer(item);
+            AddOrUpdateSystemTimer(item, false);
         }
 
         public void AddOrUpdate(TimerInfo item, bool resetTimer)
@@ -85,13 +88,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public override void Add(TimerInfo item)
         {
-            if (string.IsNullOrWhiteSpace(item.Id))
+            if (string.IsNullOrEmpty(item.Id))
             {
                 throw new ArgumentException("TimerInfo.Id cannot be null or empty.");
             }
 
             base.Add(item);
-            AddOrUpdateSystemTimer(item);
+            AddOrUpdateSystemTimer(item, true);
         }
 
         private bool ShouldStartTimer(TimerInfo item)
@@ -105,7 +108,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return true;
         }
 
-        private void AddOrUpdateSystemTimer(TimerInfo item)
+        private void AddOrUpdateSystemTimer(TimerInfo item, bool scheduleSystemWakeTimer)
         {
             StopTimer(item);
 
@@ -125,6 +128,23 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var dueTime = startDate - now;
             StartTimer(item, dueTime);
+
+            if (scheduleSystemWakeTimer && dueTime >= TimeSpan.FromMinutes(15))
+            {
+                ScheduleSystemWakeTimer(startDate, item.Name);
+            }
+        }
+
+        private void ScheduleSystemWakeTimer(DateTime startDate, string displayName)
+        {
+            try
+            {
+                _powerManagement.ScheduleWake(startDate.AddMinutes(-5), displayName);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error scheduling wake timer", ex);
+            }
         }
 
         private void StartTimer(TimerInfo item, TimeSpan dueTime)

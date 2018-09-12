@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Model.Configuration
 {
     /// <summary>
@@ -36,6 +37,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] OrderedViews { get; set; }
 
         public string[] LatestItemsExcludes { get; set; }
+        public string[] MyMediaExcludes { get; set; }
 
         public bool HidePlayedInLatest { get; set; }
 
@@ -55,10 +57,10 @@ namespace MediaBrowser.Model.Configuration
             HidePlayedInLatest = true;
             PlayDefaultAudioTrack = true;
 
-            LatestItemsExcludes = new string[] { };
-            OrderedViews = new string[] { };
-
-            GroupedFolders = new string[] { };
+            LatestItemsExcludes = Array.Empty<string>();
+            OrderedViews = Array.Empty<string>();
+            MyMediaExcludes = Array.Empty<string>();
+            GroupedFolders = Array.Empty<string>();
         }
     }
 }

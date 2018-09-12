@@ -2,24 +2,11 @@
 using System;
 using System.Globalization;
 using MediaBrowser.Model.Services;
-using SocketHttpListener.Net;
 
 namespace Emby.Server.Implementations.HttpServer
 {
     public static class LoggerUtils
     {
-        /// <summary>
-        /// Logs the request.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="request">The request.</param>
-        public static void LogRequest(ILogger logger, HttpListenerRequest request)
-        {
-            var url = request.Url.ToString();
-
-            logger.Info("{0} {1}. UserAgent: {2}", request.IsWebSocketRequest ? "WS" : "HTTP " + request.HttpMethod, url, request.UserAgent ?? string.Empty);
-        }
-
         public static void LogRequest(ILogger logger, string url, string method, string userAgent, QueryParamCollection headers)
         {
             if (headers == null)

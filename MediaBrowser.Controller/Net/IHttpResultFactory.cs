@@ -16,52 +16,17 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// Gets the result.
         /// </summary>
-        /// <param name="content">The content.</param>
-        /// <param name="contentType">Type of the content.</param>
-        /// <param name="responseHeaders">The response headers.</param>
-        /// <returns>System.Object.</returns>
-        object GetResult(object content, string contentType, IDictionary<string,string> responseHeaders = null);
+        object GetResult(IRequest requestContext, byte[] content, string contentType, IDictionary<string,string> responseHeaders = null);
+
+        object GetResult(IRequest requestContext, Stream content, string contentType, IDictionary<string, string> responseHeaders = null);
+
+        object GetResult(string content, string contentType, IDictionary<string, string> responseHeaders = null);
+
+        object GetResult(IRequest requestContext, string content, string contentType, IDictionary<string, string> responseHeaders = null);
 
         object GetRedirectResult(string url);
 
-        /// <summary>
-        /// Gets the optimized result.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="requestContext">The request context.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="responseHeaders">The response headers.</param>
-        /// <returns>System.Object.</returns>
-        object GetOptimizedResult<T>(IRequest requestContext, T result, IDictionary<string, string> responseHeaders = null)
-            where T : class;
-
-        /// <summary>
-        /// Gets the optimized result using cache.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="requestContext">The request context.</param>
-        /// <param name="cacheKey">The cache key.</param>
-        /// <param name="lastDateModified">The last date modified.</param>
-        /// <param name="cacheDuration">Duration of the cache.</param>
-        /// <param name="factoryFn">The factory function that creates the response object.</param>
-        /// <param name="responseHeaders">The response headers.</param>
-        /// <returns>System.Object.</returns>
-        object GetOptimizedResultUsingCache<T>(IRequest requestContext, Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, IDictionary<string, string> responseHeaders = null)
-            where T : class;
-
-        /// <summary>
-        /// Gets the cached result.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="requestContext">The request context.</param>
-        /// <param name="cacheKey">The cache key.</param>
-        /// <param name="lastDateModified">The last date modified.</param>
-        /// <param name="cacheDuration">Duration of the cache.</param>
-        /// <param name="factoryFn">The factory fn.</param>
-        /// <param name="contentType">Type of the content.</param>
-        /// <param name="responseHeaders">The response headers.</param>
-        /// <returns>System.Object.</returns>
-        object GetCachedResult<T>(IRequest requestContext, Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType, IDictionary<string, string> responseHeaders = null)
+        object GetResult<T>(IRequest requestContext, T result, IDictionary<string, string> responseHeaders = null)
             where T : class;
 
         /// <summary>

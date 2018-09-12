@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.Movies
 
                 var tmdbSettings = await GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-                var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
+                var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
 
                 var remoteResult = new RemoteSearchResult
                 {
@@ -156,15 +156,17 @@ namespace MediaBrowser.Providers.Movies
             {
                 using (var json = response.Content)
                 {
-                    _tmdbSettings = _jsonSerializer.DeserializeFromStream<TmdbSettingsResult>(json);
+                    _tmdbSettings = await _jsonSerializer.DeserializeFromStreamAsync<TmdbSettingsResult>(json).ConfigureAwait(false);
 
                     return _tmdbSettings;
                 }
             }
         }
 
-        private const string TmdbConfigUrl = "https://api.themoviedb.org/3/configuration?api_key={0}";
-        private const string GetMovieInfo3 = @"https://api.themoviedb.org/3/movie/{0}?api_key={1}&append_to_response=casts,releases,images,keywords,trailers";
+        public const string BaseMovieDbUrl = "https://api.themoviedb.org/";
+
+        private const string TmdbConfigUrl = BaseMovieDbUrl + "3/configuration?api_key={0}";
+        private const string GetMovieInfo3 = BaseMovieDbUrl + @"3/movie/{0}?api_key={1}&append_to_response=casts,releases,images,keywords,trailers";
 
         internal static string ApiKey = "f6bd687ffa63cd282b6ff2c6877f2669";
         internal static string AcceptHeader = "application/json,image/*";
@@ -209,7 +211,6 @@ namespace MediaBrowser.Providers.Movies
             _jsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
 
-        private readonly Task _cachedTask = Task.FromResult(true);
         internal Task EnsureMovieInfo(string tmdbId, string language, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(tmdbId))
@@ -224,9 +225,9 @@ namespace MediaBrowser.Providers.Movies
             if (fileInfo.Exists)
             {
                 // If it's recent or automatic updates are enabled, don't re-download
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 3)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
                 {
-                    return _cachedTask;
+                    return Task.CompletedTask;
                 }
             }
 
@@ -354,7 +355,7 @@ namespace MediaBrowser.Providers.Movies
                 {
                     using (var json = response.Content)
                     {
-                        mainResult = _jsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
+                        mainResult = await _jsonSerializer.DeserializeFromStreamAsync<CompleteMovieData>(json).ConfigureAwait(false);
                     }
                 }
             }
@@ -399,7 +400,7 @@ namespace MediaBrowser.Providers.Movies
                 {
                     using (var json = response.Content)
                     {
-                        var englishResult = _jsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
+                        var englishResult = await _jsonSerializer.DeserializeFromStreamAsync<CompleteMovieData>(json).ConfigureAwait(false);
 
                         mainResult.overview = englishResult.overview;
                     }
@@ -638,7 +639,7 @@ namespace MediaBrowser.Providers.Movies
         {
             get
             {
-                return 0;
+                return 1;
             }
         }
 

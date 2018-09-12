@@ -9,18 +9,72 @@ using MediaBrowser.Model.Serialization;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
+using System.Threading;
 
 namespace MediaBrowser.Controller.Playlists
 {
     public class Playlist : Folder, IHasShares
     {
-        public string OwnerUserId { get; set; }
+        public static string[] SupportedExtensions = new string[] {
 
-        public List<Share> Shares { get; set; }
+            ".m3u",
+            ".m3u8",
+            ".pls",
+            ".wpl",
+            ".zpl"
+        };
+
+        public Guid OwnerUserId { get; set; }
+
+        public Share[] Shares { get; set; }
 
         public Playlist()
         {
-            Shares = new List<Share>();
+            Shares = Array.Empty<Share>();
+        }
+
+        [IgnoreDataMember]
+        public bool IsFile
+        {
+            get
+            {
+                return IsPlaylistFile(Path);
+            }
+        }
+
+        [IgnoreDataMember]
+        public override string FileNameWithoutExtension
+        {
+            get
+            {
+                if (IsPlaylistFile(Path))
+                {
+                    return System.IO.Path.GetFileNameWithoutExtension(Path);
+                }
+
+                return base.FileNameWithoutExtension;
+            }
+        }
+
+        public static bool IsPlaylistFile(string path)
+        {
+            return System.IO.Path.HasExtension(path);
+        }
+
+        [IgnoreDataMember]
+        public override string ContainingFolderPath
+        {
+            get
+            {
+                var path = Path;
+
+                if (IsPlaylistFile(path))
+                {
+                    return FileSystem.GetDirectoryName(path);
+                }
+
+                return path;
+            }
         }
 
         [IgnoreDataMember]
@@ -68,7 +122,7 @@ namespace MediaBrowser.Controller.Playlists
             }
         }
 
-        public override double? GetDefaultPrimaryImageAspectRatio()
+        public override double GetDefaultPrimaryImageAspectRatio()
         {
             return 1;
         }
@@ -89,9 +143,14 @@ namespace MediaBrowser.Controller.Playlists
             return new List<BaseItem>();
         }
 
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
-            return GetPlayableItems(user, new DtoOptions(true));
+            return Task.CompletedTask;
+        }
+
+        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        {
+            return GetPlayableItems(user, query);
         }
 
         protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
@@ -101,14 +160,7 @@ namespace MediaBrowser.Controller.Playlists
 
         public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
-            var items = GetPlayableItems(user, query.DtoOptions);
-
-            if (query != null)
-            {
-                items = items.Where(i => UserViewBuilder.FilterItem(i, query)).ToList();
-            }
-
-            return items;
+            return GetPlayableItems(user, query);
         }
 
         public IEnumerable<Tuple<LinkedChild, BaseItem>> GetManageableItems()
@@ -116,9 +168,16 @@ namespace MediaBrowser.Controller.Playlists
             return GetLinkedChildrenInfos();
         }
 
-        private List<BaseItem> GetPlayableItems(User user, DtoOptions options)
+        private List<BaseItem> GetPlayableItems(User user, InternalItemsQuery query)
         {
-            return GetPlaylistItems(MediaType, base.GetChildren(user, true), user, options);
+            if (query == null)
+            {
+                query = new InternalItemsQuery(user);
+            }
+
+            query.IsFolder = false;
+
+            return base.GetChildren(user, true, query);
         }
 
         public static List<BaseItem> GetPlaylistItems(string playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
@@ -148,8 +207,8 @@ namespace MediaBrowser.Controller.Playlists
                 {
                     Recursive = true,
                     IncludeItemTypes = new[] { typeof(Audio).Name },
-                    GenreIds = new[] { musicGenre.Id.ToString("N") },
-                    OrderBy = new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                    GenreIds = new[] { musicGenre.Id },
+                    OrderBy = new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
                     DtoOptions = options
                 });
             }
@@ -161,8 +220,8 @@ namespace MediaBrowser.Controller.Playlists
                 {
                     Recursive = true,
                     IncludeItemTypes = new[] { typeof(Audio).Name },
-                    ArtistIds = new[] { musicArtist.Id.ToString("N") },
-                    OrderBy = new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                    ArtistIds = new[] { musicArtist.Id },
+                    OrderBy = new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
                     DtoOptions = options
                 });
             }
@@ -174,7 +233,7 @@ namespace MediaBrowser.Controller.Playlists
                 {
                     Recursive = true,
                     IsFolder = false,
-                    OrderBy = new[] { ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                    OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
                     MediaTypes = new[] { mediaType },
                     EnableTotalRecordCount = false,
                     DtoOptions = options
@@ -211,16 +270,59 @@ namespace MediaBrowser.Controller.Playlists
             PlaylistMediaType = value;
         }
 
+        [IgnoreDataMember]
+        private bool IsSharedItem
+        {
+            get
+            {
+                var path = Path;
+
+                if (string.IsNullOrEmpty(path))
+                {
+                    return false;
+                }
+
+                return FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, path);
+            }
+        }
+
         public override bool IsVisible(User user)
         {
-            var userId = user.Id.ToString("N");
+            if (!IsSharedItem)
+            {
+                return base.IsVisible(user);
+            }
 
-            return Shares.Any(i => string.Equals(userId, i.UserId, StringComparison.OrdinalIgnoreCase)) ||
-                string.Equals(OwnerUserId, userId, StringComparison.OrdinalIgnoreCase);
+            if (user.Id == OwnerUserId)
+            {
+                return true;
+            }
+
+            var shares = Shares;
+            if (shares.Length == 0)
+            {
+                return base.IsVisible(user);
+            }
+
+            var userId = user.Id.ToString("N");
+            foreach (var share in shares)
+            {
+                if (string.Equals(share.UserId, userId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public override bool IsVisibleStandalone(User user)
         {
+            if (!IsSharedItem)
+            {
+                return base.IsVisibleStandalone(user);
+            }
+
             return IsVisible(user);
         }
     }

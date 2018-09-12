@@ -26,6 +26,7 @@ namespace MediaBrowser.Controller.Net
         public bool AllowBeforeStartupWizard { get; set; }
 
         public bool AllowLocal { get; set; }
+        public bool AllowLocalOnly { get; set; }
 
         /// <summary>
         /// The request filter is executed before the service.
@@ -60,6 +61,7 @@ namespace MediaBrowser.Controller.Net
         bool EscapeParentalControl { get; }
         bool AllowBeforeStartupWizard { get; }
         bool AllowLocal { get; }
+        bool AllowLocalOnly { get; }
 
         string[] GetRoles();
     }

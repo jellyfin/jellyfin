@@ -18,14 +18,12 @@ namespace Emby.Server.Implementations.Data
     /// </summary>
     public class SqliteDisplayPreferencesRepository : BaseSqliteRepository, IDisplayPreferencesRepository
     {
-        private readonly IMemoryStreamFactory _memoryStreamProvider;
         protected IFileSystem FileSystem { get; private set; }
 
-        public SqliteDisplayPreferencesRepository(ILogger logger, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, IMemoryStreamFactory memoryStreamProvider, IFileSystem fileSystem)
+        public SqliteDisplayPreferencesRepository(ILogger logger, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, IFileSystem fileSystem)
             : base(logger)
         {
             _jsonSerializer = jsonSerializer;
-            _memoryStreamProvider = memoryStreamProvider;
             FileSystem = fileSystem;
             DbFilePath = Path.Combine(appPaths.DataPath, "displaypreferences.db");
         }
@@ -98,7 +96,7 @@ namespace Emby.Server.Implementations.Data
             {
                 throw new ArgumentNullException("displayPreferences");
             }
-            if (string.IsNullOrWhiteSpace(displayPreferences.Id))
+            if (string.IsNullOrEmpty(displayPreferences.Id))
             {
                 throw new ArgumentNullException("displayPreferences.Id");
             }
@@ -119,7 +117,7 @@ namespace Emby.Server.Implementations.Data
 
         private void SaveDisplayPreferences(DisplayPreferences displayPreferences, Guid userId, string client, IDatabaseConnection connection)
         {
-            var serialized = _jsonSerializer.SerializeToBytes(displayPreferences, _memoryStreamProvider);
+            var serialized = _jsonSerializer.SerializeToBytes(displayPreferences);
 
             using (var statement = connection.PrepareStatement("replace into userdisplaypreferences (id, userid, client, data) values (@id, @userId, @client, @data)"))
             {
@@ -174,7 +172,7 @@ namespace Emby.Server.Implementations.Data
         /// <exception cref="System.ArgumentNullException">item</exception>
         public DisplayPreferences GetDisplayPreferences(string displayPreferencesId, Guid userId, string client)
         {
-            if (string.IsNullOrWhiteSpace(displayPreferencesId))
+            if (string.IsNullOrEmpty(displayPreferencesId))
             {
                 throw new ArgumentNullException("displayPreferencesId");
             }
@@ -236,7 +234,7 @@ namespace Emby.Server.Implementations.Data
 
         private DisplayPreferences Get(IReadOnlyList<IResultSetValue> row)
         {
-            using (var stream = _memoryStreamProvider.CreateNew(row[0].ToBlob()))
+            using (var stream = new MemoryStream(row[0].ToBlob()))
             {
                 stream.Position = 0;
                 return _jsonSerializer.DeserializeFromStream<DisplayPreferences>(stream);

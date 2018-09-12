@@ -57,7 +57,7 @@ namespace MediaBrowser.Model.Services
 
         QueryParamCollection QueryString { get; }
 
-        QueryParamCollection FormData { get; }
+        Task<QueryParamCollection> GetFormData();
 
         string RawUrl { get; }
 
@@ -129,6 +129,8 @@ namespace MediaBrowser.Model.Services
         void AddHeader(string name, string value);
 
         string GetHeader(string name);
+
+        bool SendChunked { get; set; }
 
         void Redirect(string url);
 

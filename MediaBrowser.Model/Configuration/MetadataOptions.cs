@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
-using System.Collections.Generic;
+﻿using MediaBrowser.Model.Extensions;
+using System;
+using System.Linq;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -11,8 +11,6 @@ namespace MediaBrowser.Model.Configuration
     {
         public string ItemType { get; set; }
 
-        public ImageOption[] ImageOptions { get; set; }
-
         public string[] DisabledMetadataSavers { get; set; }
         public string[] LocalMetadataReaderOrder { get; set; }
 
@@ -21,71 +19,21 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] DisabledImageFetchers { get; set; }
         public string[] ImageFetcherOrder { get; set; }
-        
+
         public MetadataOptions()
-            : this(3, 1280)
         {
-        }
+            DisabledMetadataSavers = Array.Empty<string>();
+            LocalMetadataReaderOrder = Array.Empty<string>();
 
-        public MetadataOptions(int backdropLimit, int minBackdropWidth)
-        {
-            ImageOptions = new[]
-            {
-                new ImageOption
-                {
-                    Limit = backdropLimit,
-                    MinWidth = minBackdropWidth,
-                    Type = ImageType.Backdrop
-                }
-            };
-
-            DisabledMetadataSavers = new string[] { };
-            LocalMetadataReaderOrder = new string[] { };
-
-            DisabledMetadataFetchers = new string[] { };
-            MetadataFetcherOrder = new string[] { };
-            DisabledImageFetchers = new string[] { };
-            ImageFetcherOrder = new string[] { };
-        }
-
-        public int GetLimit(ImageType type)
-        {
-            ImageOption option = null;
-            foreach (ImageOption i in ImageOptions)
-            {
-                if (i.Type == type)
-                {
-                    option = i;
-                    break;
-                }
-            }
-
-            return option == null ? 1 : option.Limit;
-        }
-
-        public int GetMinWidth(ImageType type)
-        {
-            ImageOption option = null;
-            foreach (ImageOption i in ImageOptions)
-            {
-                if (i.Type == type)
-                {
-                    option = i;
-                    break;
-                }
-            }
-
-            return option == null ? 0 : option.MinWidth;
-        }
-
-        public bool IsEnabled(ImageType type)
-        {
-            return GetLimit(type) > 0;
+            DisabledMetadataFetchers = Array.Empty<string>();
+            MetadataFetcherOrder = Array.Empty<string>();
+            DisabledImageFetchers = Array.Empty<string>();
+            ImageFetcherOrder = Array.Empty<string>();
         }
 
         public bool IsMetadataSaverEnabled(string name)
         {
-            return !ListHelper.ContainsIgnoreCase(DisabledMetadataSavers, name);
+            return !DisabledMetadataSavers.Contains(name, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

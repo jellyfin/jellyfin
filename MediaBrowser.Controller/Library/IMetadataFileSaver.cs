@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        string GetSavePath(IHasMetadata item);
+        string GetSavePath(BaseItem item);
     }
 
     public interface IConfigurableProvider

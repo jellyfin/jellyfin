@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
+using System.Net.WebSockets;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -40,7 +41,7 @@ namespace MediaBrowser.Controller.Net
         /// Gets or sets the receive action.
         /// </summary>
         /// <value>The receive action.</value>
-        Action<WebSocketMessageInfo> OnReceive { get; set; }
+        Func<WebSocketMessageInfo, Task> OnReceive { get; set; }
 
         /// <summary>
         /// Gets the state.

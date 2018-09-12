@@ -4,7 +4,7 @@ namespace MediaBrowser.Controller.Entities
 {
     public interface IHasShares
     {
-        List<Share> Shares { get; set; }
+        Share[] Shares { get; set; }
     }
 
     public class Share

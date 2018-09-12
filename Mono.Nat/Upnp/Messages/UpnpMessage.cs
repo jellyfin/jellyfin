@@ -37,7 +37,6 @@ namespace Mono.Nat.Upnp
 {
     internal abstract class MessageBase
     {
-        internal static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
         protected UpnpNatDevice device;
 
         protected MessageBase(UpnpNatDevice device)
@@ -48,7 +47,6 @@ namespace Mono.Nat.Upnp
         protected HttpRequestOptions CreateRequest(string upnpMethod, string methodParameters)
         {
             string ss = "http://" + this.device.HostEndPoint.ToString() + this.device.ControlUrl;
-            NatUtility.Log("Initiating request to: {0}", ss);
 
             var req = new HttpRequestOptions();
             req.LogErrors = false;
@@ -84,14 +82,14 @@ namespace Mono.Nat.Upnp
             get { return "POST"; }
         }
 
-        internal static void WriteFullElement(XmlWriter writer, string element, string value)
+        protected void WriteFullElement(XmlWriter writer, string element, string value)
         {
             writer.WriteStartElement(element);
             writer.WriteString(value);
             writer.WriteEndElement();
         }
 
-        internal static XmlWriter CreateWriter(StringBuilder sb)
+        protected XmlWriter CreateWriter(StringBuilder sb)
         {
             XmlWriterSettings settings = new XmlWriterSettings();
             settings.ConformanceLevel = ConformanceLevel.Fragment;

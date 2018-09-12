@@ -57,5 +57,7 @@ namespace MediaBrowser.Model.Globalization
         string NormalizeFormKD(string text);
 
         bool HasUnicodeCategory(string value, UnicodeCategory category);
+
+        CultureDto FindLanguageInfo(string language);
     }
 }

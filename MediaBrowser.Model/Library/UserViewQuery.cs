@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Model.Library
 {
     public class UserViewQuery
@@ -7,7 +8,7 @@ namespace MediaBrowser.Model.Library
         /// Gets or sets the user identifier.
         /// </summary>
         /// <value>The user identifier.</value>
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [include external content].
@@ -26,7 +27,7 @@ namespace MediaBrowser.Model.Library
         public UserViewQuery()
         {
             IncludeExternalContent = true;
-            PresetViews = new string[] { };
+            PresetViews = Array.Empty<string>();
         }
     }
 }

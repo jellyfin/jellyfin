@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Globalization;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Model.Extensions
 {
@@ -19,81 +17,6 @@ namespace MediaBrowser.Model.Extensions
         public static bool EqualsIgnoreCase(string str1, string str2)
         {
             return string.Equals(str1, str2, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Indexes the of ignore case.
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <param name="value">The value.</param>
-        /// <returns>System.Int32.</returns>
-        public static int IndexOfIgnoreCase(string str, string value)
-        {
-            return str.IndexOf(value, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// To the string culture invariant.
-        /// </summary>
-        /// <param name="val">The value.</param>
-        /// <returns>System.String.</returns>
-        public static string ToStringCultureInvariant(int val)
-        {
-            return val.ToString(CultureInfo.InvariantCulture);
-        }
-
-        /// <summary>
-        /// To the string culture invariant.
-        /// </summary>
-        /// <param name="val">The value.</param>
-        /// <returns>System.String.</returns>
-        public static string ToStringCultureInvariant(long val)
-        {
-            return val.ToString(CultureInfo.InvariantCulture);
-        }
-
-        /// <summary>
-        /// To the string culture invariant.
-        /// </summary>
-        /// <param name="val">The value.</param>
-        /// <returns>System.String.</returns>
-        public static string ToStringCultureInvariant(double val)
-        {
-            return val.ToString(CultureInfo.InvariantCulture);
-        }
-
-        /// <summary>
-        /// Trims the start.
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <param name="c">The c.</param>
-        /// <returns>System.String.</returns>
-        public static string TrimStart(string str, char c)
-        {
-            return str.TrimStart(c);
-        }
-
-        /// <summary>
-        /// Splits the specified string.
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <param name="term">The term.</param>
-        /// <returns>System.String[].</returns>
-        public static string[] RegexSplit(string str, string term)
-        {
-            return Regex.Split(str, term, RegexOptions.IgnoreCase);
-        }
-
-        /// <summary>
-        /// Splits the specified string.
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <param name="term">The term.</param>
-        /// <param name="limit">The limit.</param>
-        /// <returns>System.String[].</returns>
-        public static string[] RegexSplit(string str, string term, int limit)
-        {
-            return new Regex(term).Split(str, limit);
         }
 
         /// <summary>

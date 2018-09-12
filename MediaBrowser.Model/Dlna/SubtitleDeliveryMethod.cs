@@ -3,19 +3,19 @@ namespace MediaBrowser.Model.Dlna
     public enum SubtitleDeliveryMethod
     {
         /// <summary>
-        /// The encode
+        /// Burn-in subtitles into the video.
         /// </summary>
         Encode = 0,
         /// <summary>
-        /// The embed
+        /// Multiplex subtitles into the media stream.
         /// </summary>
         Embed = 1,
         /// <summary>
-        /// The external
+        /// Deliver subtitles as separate file or stream.
         /// </summary>
         External = 2,
         /// <summary>
-        /// The HLS
+        /// Deliver subtitles via HLS.
         /// </summary>
         Hls = 3
     }

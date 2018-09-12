@@ -7,6 +7,8 @@ using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
 using System.Globalization;
 using MediaBrowser.Model.Serialization;
+using System;
+using System.Linq;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -29,19 +31,6 @@ namespace MediaBrowser.Controller.LiveTv
             return UnratedItem.LiveTvChannel;
         }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance is owned item.
-        /// </summary>
-        /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public override bool IsOwnedItem
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         [IgnoreDataMember]
         public override bool SupportsPositionTicksResume
         {
@@ -50,6 +39,13 @@ namespace MediaBrowser.Controller.LiveTv
                 return false;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the name of the service.
+        /// </summary>
+        /// <value>The name of the service.</value>
+        [IgnoreDataMember]
+        public string ServiceName { get; set; }
 
         [IgnoreDataMember]
         public override SourceType SourceType
@@ -122,16 +118,14 @@ namespace MediaBrowser.Controller.LiveTv
             return new List<BaseItem>();
         }
 
-        public List<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
+        public override List<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
         {
             var list = new List<MediaSourceInfo>();
-
-            var locationType = LocationType;
 
             var info = new MediaSourceInfo
             {
                 Id = Id.ToString("N"),
-                Protocol = locationType == LocationType.Remote ? MediaProtocol.Http : MediaProtocol.File,
+                Protocol = PathProtocol ?? MediaProtocol.File,
                 MediaStreams = new List<MediaStream>(),
                 Name = Name,
                 Path = Path,
@@ -145,7 +139,7 @@ namespace MediaBrowser.Controller.LiveTv
             return list;
         }
 
-        public List<MediaStream> GetMediaStreams()
+        public override List<MediaStream> GetMediaStreams()
         {
             return new List<MediaStream>();
         }
@@ -178,13 +172,6 @@ namespace MediaBrowser.Controller.LiveTv
         public bool IsSeries { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is live.
-        /// </summary>
-        /// <value><c>true</c> if this instance is live; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool IsLive { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is news.
         /// </summary>
         /// <value><c>true</c> if this instance is news; otherwise, <c>false</c>.</value>
@@ -196,10 +183,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is kids; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public bool IsKids { get; set; }
-
-        [IgnoreDataMember]
-        public bool IsPremiere { get; set; }
+        public bool IsKids
+        {
+            get
+            {
+                return Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
+            }
+        }
 
         [IgnoreDataMember]
         public bool IsRepeat { get; set; }

@@ -1,13 +1,9 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Model.Devices
 {
     public class DeviceQuery
     {
-        /// <summary>
-        /// Gets or sets a value indicating whether [supports unique identifier].
-        /// </summary>
-        /// <value><c>null</c> if [supports unique identifier] contains no value, <c>true</c> if [supports unique identifier]; otherwise, <c>false</c>.</value>
-        public bool? SupportsPersistentIdentifier { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether [supports synchronize].
         /// </summary>
@@ -17,6 +13,6 @@ namespace MediaBrowser.Model.Devices
         /// Gets or sets the user identifier.
         /// </summary>
         /// <value>The user identifier.</value>
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿
+﻿using global::System;
+
 namespace MediaBrowser.Model.Globalization
 {
     /// <summary>
@@ -28,6 +29,24 @@ namespace MediaBrowser.Model.Globalization
         /// Gets or sets the name of the three letter ISO language.
         /// </summary>
         /// <value>The name of the three letter ISO language.</value>
-        public string ThreeLetterISOLanguageName { get; set; }
+        public string ThreeLetterISOLanguageName
+        {
+            get
+            {
+                var vals = ThreeLetterISOLanguageNames;
+                if (vals.Length > 0)
+                {
+                    return vals[0];
+                }
+                return null;
+            }
+        }
+
+        public string[] ThreeLetterISOLanguageNames { get; set; }
+
+        public CultureDto()
+        {
+            ThreeLetterISOLanguageNames = Array.Empty<string>();
+        }
     }
 }

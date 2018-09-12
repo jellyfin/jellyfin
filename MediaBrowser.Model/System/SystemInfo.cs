@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Updates;
 using System.Collections.Generic;
+using System;
 
 namespace MediaBrowser.Model.System
 {
@@ -16,12 +17,6 @@ namespace MediaBrowser.Model.System
         /// <value>The display name of the operating system.</value>
         public string OperatingSystemDisplayName { get; set; }
 
-        /// <summary>
-        /// Gets or sets the mac address.
-        /// </summary>
-        /// <value>The mac address.</value>
-        public string MacAddress { get; set; }
-
         public string PackageName { get; set; }
         
         /// <summary>
@@ -37,12 +32,6 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value><c>true</c> if [supports library monitor]; otherwise, <c>false</c>.</value>
         public bool SupportsLibraryMonitor { get; set; }
-
-        /// <summary>
-        /// Gets or sets the in progress installations.
-        /// </summary>
-        /// <value>The in progress installations.</value>
-        public InstallationInfo[] InProgressInstallations { get; set; }
 
         /// <summary>
         /// Gets or sets the web socket port number.
@@ -69,12 +58,6 @@ namespace MediaBrowser.Model.System
         public bool CanSelfUpdate { get; set; }
 
         public bool CanLaunchWebBrowser { get; set; }
-
-        /// <summary>
-        /// Gets or sets plugin assemblies that failed to load.
-        /// </summary>
-        /// <value>The failed assembly loads.</value>
-        public string[] FailedPluginAssemblies { get; set; }
 
         /// <summary>
         /// Gets or sets the program data path.
@@ -151,11 +134,7 @@ namespace MediaBrowser.Model.System
         /// </summary>
         public SystemInfo()
         {
-            InProgressInstallations = new InstallationInfo[] { };
-
             CompletedInstallations = new InstallationInfo[] { };
-
-            FailedPluginAssemblies = new string[] { };
         }
     }
 }

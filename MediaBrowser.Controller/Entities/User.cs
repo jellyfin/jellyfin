@@ -16,7 +16,6 @@ namespace MediaBrowser.Controller.Entities
     public class User : BaseItem
     {
         public static IUserManager UserManager { get; set; }
-        public static IXmlSerializer XmlSerializer { get; set; }
 
         /// <summary>
         /// From now on all user paths will be Id-based. 
@@ -49,6 +48,9 @@ namespace MediaBrowser.Controller.Entities
                 base.ImageInfos = value;
             }
         }
+
+        [IgnoreDataMember]
+        public long InternalId { get; set; }
 
         /// <summary>
         /// Gets or sets the path.
@@ -99,19 +101,6 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 return Path;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is owned item.
-        /// </summary>
-        /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public override bool IsOwnedItem
-        {
-            get
-            {
-                return false;
             }
         }
 
@@ -228,7 +217,7 @@ namespace MediaBrowser.Controller.Entities
             return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(Logger, FileSystem))
             {
                 ReplaceAllMetadata = true,
-                ImageRefreshMode = ImageRefreshMode.FullRefresh,
+                ImageRefreshMode = MetadataRefreshMode.FullRefresh,
                 MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                 ForceSave = true
 
@@ -253,7 +242,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override double? GetDefaultPrimaryImageAspectRatio()
+        public override double GetDefaultPrimaryImageAspectRatio()
         {
             return 1;
         }

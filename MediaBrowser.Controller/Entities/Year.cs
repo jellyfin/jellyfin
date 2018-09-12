@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override double? GetDefaultPrimaryImageAspectRatio()
+        public override double GetDefaultPrimaryImageAspectRatio()
         {
             double value = 2;
             value /= 3;
@@ -54,25 +54,12 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance is owned item.
-        /// </summary>
-        /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public override bool IsOwnedItem
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         public override bool IsSaveLocalMetadataEnabled()
         {
             return true;
         }
 
-        public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
             int year;
 
@@ -122,39 +109,6 @@ namespace MediaBrowser.Controller.Entities
                 name;
 
             return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.YearPath, validName);
-        }
-
-        private string GetRebasedPath()
-        {
-            return GetPath(System.IO.Path.GetFileName(Path), false);
-        }
-
-        public override bool RequiresRefresh()
-        {
-            var newPath = GetRebasedPath();
-            if (!string.Equals(Path, newPath, StringComparison.Ordinal))
-            {
-                Logger.Debug("{0} path has changed from {1} to {2}", GetType().Name, Path, newPath);
-                return true;
-            }
-            return base.RequiresRefresh();
-        }
-
-        /// <summary>
-        /// This is called before any metadata refresh and returns true or false indicating if changes were made
-        /// </summary>
-        public override bool BeforeMetadataRefresh()
-        {
-            var hasChanges = base.BeforeMetadataRefresh();
-
-            var newPath = GetRebasedPath();
-            if (!string.Equals(Path, newPath, StringComparison.Ordinal))
-            {
-                Path = newPath;
-                hasChanges = true;
-            }
-
-            return hasChanges;
         }
     }
 }

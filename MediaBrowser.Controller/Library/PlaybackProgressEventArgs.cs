@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Controller.Session;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -23,7 +24,8 @@ namespace MediaBrowser.Controller.Library
         public string ClientName { get; set; }
 
         public string PlaySessionId { get; set; }
-      
+        public SessionInfo Session { get; set; }
+
         public PlaybackProgressEventArgs()
         {
             Users = new List<User>();

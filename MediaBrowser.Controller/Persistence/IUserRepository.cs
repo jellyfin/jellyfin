@@ -12,23 +12,19 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Deletes the user.
         /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        void DeleteUser(User user, CancellationToken cancellationToken);
+        void DeleteUser(User user);
 
         /// <summary>
         /// Saves the user.
         /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        void SaveUser(User user, CancellationToken cancellationToken);
+        void CreateUser(User user);
+
+        void UpdateUser(User user);
 
         /// <summary>
         /// Retrieves all users.
         /// </summary>
         /// <returns>IEnumerable{User}.</returns>
-        IEnumerable<User> RetrieveAllUsers();
+        List<User> RetrieveAllUsers();
     }
 }

@@ -1,9 +1,13 @@
+using System;
+
 namespace MediaBrowser.Controller.Providers
 {
     public class RemoteSearchQuery<T>
         where T : ItemLookupInfo
     {
         public T SearchInfo { get; set; }
+
+        public Guid ItemId { get; set; }
 
         /// <summary>
         /// If set will only search within the given provider

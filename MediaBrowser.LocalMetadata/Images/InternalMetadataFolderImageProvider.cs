@@ -26,7 +26,7 @@ namespace MediaBrowser.LocalMetadata.Images
             get { return "Internal Images"; }
         }
 
-        public bool Supports(IHasMetadata item)
+        public bool Supports(BaseItem item)
         {
             if (item is Photo)
             {
@@ -61,7 +61,7 @@ namespace MediaBrowser.LocalMetadata.Images
             }
         }
 
-        public List<LocalImageInfo> GetImages(IHasMetadata item, IDirectoryService directoryService)
+        public List<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
         {
             var path = item.GetInternalMetadataPath();
 

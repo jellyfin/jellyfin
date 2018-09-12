@@ -35,6 +35,7 @@ namespace MediaBrowser.Api.System
     }
 
     [Route("/System/Ping", "POST")]
+    [Route("/System/Ping", "GET")]
     public class PingSystem : IReturnVoid
     {
 
@@ -79,6 +80,13 @@ namespace MediaBrowser.Api.System
         public string Name { get; set; }
     }
 
+    [Route("/System/WakeOnLanInfo", "GET", Summary = "Gets wake on lan information")]
+    [Authenticated]
+    public class GetWakeOnLanInfo : IReturn<WakeOnLanInfo[]>
+    {
+
+    }
+
     /// <summary>
     /// Class SystemInfoService
     /// </summary>
@@ -114,6 +122,13 @@ namespace MediaBrowser.Api.System
         public object Post(PingSystem request)
         {
             return _appHost.Name;
+        }
+
+        public object Get(GetWakeOnLanInfo request)
+        {
+            var result = _appHost.GetWakeOnLanInfo();
+
+            return ToOptimizedResult(result);
         }
 
         public object Get(GetServerLogs request)

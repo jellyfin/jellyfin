@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -42,7 +43,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         public GameSystemSummary()
         {
-            GameFileExtensions = new string[] { };
+            GameFileExtensions = Array.Empty<string>();
         }
     }
 }

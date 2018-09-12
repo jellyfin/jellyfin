@@ -17,5 +17,16 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The value.</value>
         public int Value { get; set; }
+
+        public ParentalRating()
+        {
+
+        }
+
+        public ParentalRating(string name, int value)
+        {
+            Name = name;
+            Value = value;
+        }
     }
 }

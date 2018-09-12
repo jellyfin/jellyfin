@@ -1,4 +1,9 @@
-﻿<h1>Xml TV</h1>
+﻿<div class="verticalSection">
+    <div class="sectionTitleContainer flex align-items-center">
+        <h1 class="sectionTitle">Xml TV</h1>
+        <a is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV">${Help}</a>
+    </div>
+</div>
 
 <form class="xmltvForm">
     <div>
@@ -32,6 +37,12 @@
             <input is="emby-input" class="txtSports" label="${LabelSportsCategories}" autocomplete="off" />
             <div class="fieldDescription">${XmlTvSportsCategoriesHelp}</div>
         </div>
+
+        <div class="inputContainer fldUserAgent">
+            <input is="emby-input" type="text" class="txtUserAgent" label="${LabelUserAgent}" autocomplete="off" />
+            <div class="fieldDescription">${UserAgentHelp}</div>
+        </div>
+
     </div>
     <div>
         <label class="checkboxContainer">

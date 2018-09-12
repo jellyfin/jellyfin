@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Providers
     }
 
     public interface IMetadataProvider<TItemType> : IMetadataProvider
-           where TItemType : IHasMetadata
+           where TItemType : BaseItem
     {
     }
 }

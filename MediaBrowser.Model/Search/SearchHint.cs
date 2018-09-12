@@ -11,8 +11,10 @@ namespace MediaBrowser.Model.Search
         /// Gets or sets the item id.
         /// </summary>
         /// <value>The item id.</value>
-        public string ItemId { get; set; }
+        public Guid ItemId { get; set; }
 
+        public Guid Id { get; set; }
+ 
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -79,6 +81,8 @@ namespace MediaBrowser.Model.Search
         /// <value>The type.</value>
         public string Type { get; set; }
 
+        public bool? IsFolder { get; set; }
+  
         /// <summary>
         /// Gets or sets the run time ticks.
         /// </summary>
@@ -107,7 +111,7 @@ namespace MediaBrowser.Model.Search
         /// </summary>
         /// <value>The album.</value>
         public string Album { get; set; }
-        public string AlbumId { get; set; }
+        public Guid AlbumId { get; set; }
 
         /// <summary>
         /// Gets or sets the album artist.
@@ -137,7 +141,7 @@ namespace MediaBrowser.Model.Search
         /// Gets or sets the channel identifier.
         /// </summary>
         /// <value>The channel identifier.</value>
-        public string ChannelId { get; set; }
+        public Guid ChannelId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the channel.

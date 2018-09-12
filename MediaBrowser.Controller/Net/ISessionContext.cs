@@ -7,10 +7,10 @@ namespace MediaBrowser.Controller.Net
 {
     public interface ISessionContext 
     {
-        Task<SessionInfo> GetSession(object requestContext);
-        Task<User> GetUser(object requestContext);
+        SessionInfo GetSession(object requestContext);
+        User GetUser(object requestContext);
 
-        Task<SessionInfo> GetSession(IRequest requestContext);
-        Task<User> GetUser(IRequest requestContext);
+        SessionInfo GetSession(IRequest requestContext);
+        User GetUser(IRequest requestContext);
     }
 }

@@ -24,11 +24,13 @@ namespace MediaBrowser.Controller.Entities
     public class CollectionFolder : Folder, ICollectionFolder
     {
         public static IXmlSerializer XmlSerializer { get; set; }
+        public static IJsonSerializer JsonSerializer { get; set; }
+        public static IServerApplicationHost ApplicationHost { get; set; }
 
         public CollectionFolder()
         {
-            PhysicalLocationsList = EmptyStringArray;
-            PhysicalFolderIds = EmptyGuidArray;
+            PhysicalLocationsList = Array.Empty<string>();
+            PhysicalFolderIds = Array.Empty<Guid>();
         }
 
         //public override double? GetDefaultPrimaryImageAspectRatio()
@@ -81,6 +83,14 @@ namespace MediaBrowser.Controller.Entities
                     return new LibraryOptions();
                 }
 
+                foreach (var mediaPath in result.PathInfos)
+                {
+                    if (!string.IsNullOrEmpty(mediaPath.Path))
+                    {
+                        mediaPath.Path = ApplicationHost.ExpandVirtualPath(mediaPath.Path);
+                    }
+                }
+
                 return result;
             }
             catch (FileNotFoundException)
@@ -130,7 +140,24 @@ namespace MediaBrowser.Controller.Entities
             {
                 LibraryOptions[path] = options;
 
-                XmlSerializer.SerializeToFile(options, GetLibraryOptionsPath(path));
+                var clone = JsonSerializer.DeserializeFromString<LibraryOptions>(JsonSerializer.SerializeToString(options));
+                foreach (var mediaPath in clone.PathInfos)
+                {
+                    if (!string.IsNullOrEmpty(mediaPath.Path))
+                    {
+                        mediaPath.Path = ApplicationHost.ReverseVirtualPath(mediaPath.Path);
+                    }
+                }
+
+                XmlSerializer.SerializeToFile(clone, GetLibraryOptionsPath(path));
+            }
+        }
+
+        public static void OnCollectionFolderChange()
+        {
+            lock (LibraryOptions)
+            {
+                LibraryOptions.Clear();
             }
         }
 
@@ -201,9 +228,9 @@ namespace MediaBrowser.Controller.Entities
             return changed;
         }
 
-        public override bool BeforeMetadataRefresh()
+        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
         {
-            var changed = base.BeforeMetadataRefresh() || _requiresRefresh;
+            var changed = base.BeforeMetadataRefresh(replaceAllMetdata) || _requiresRefresh;
             _requiresRefresh = false;
             return changed;
         }
@@ -280,24 +307,15 @@ namespace MediaBrowser.Controller.Entities
             // Gather child folder and files
             if (args.IsDirectory)
             {
-                var isPhysicalRoot = args.IsPhysicalRoot;
+                var flattenFolderDepth = 0;
 
-                // When resolving the root, we need it's grandchildren (children of user views)
-                var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
-
-                var files = FileData.GetFilteredFileSystemEntries(directoryService, args.Path, FileSystem, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
-
-                // Need to remove subpaths that may have been resolved from shortcuts
-                // Example: if \\server\movies exists, then strip out \\server\movies\action
-                if (isPhysicalRoot)
-                {
-                    files = LibraryManager.NormalizeRootPathList(files).ToArray();
-                }
+                var files = FileData.GetFilteredFileSystemEntries(directoryService, args.Path, FileSystem, ApplicationHost, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: true);
 
                 args.FileSystemChildren = files;
             }
 
             _requiresRefresh = _requiresRefresh || !args.PhysicalLocations.SequenceEqual(PhysicalLocations);
+
             if (setPhysicalLocations)
             {
                 PhysicalLocationsList = args.PhysicalLocations;
@@ -319,7 +337,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         /// <summary>

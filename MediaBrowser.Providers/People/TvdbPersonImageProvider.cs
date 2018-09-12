@@ -48,12 +48,12 @@ namespace MediaBrowser.Providers.People
             get { return "TheTVDB"; }
         }
 
-        public bool Supports(IHasMetadata item)
+        public bool Supports(BaseItem item)
         {
             return item is Person;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
+        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType>
             {
@@ -61,12 +61,12 @@ namespace MediaBrowser.Providers.People
             };
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var seriesWithPerson = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
-                PersonIds = new[] { item.Id.ToString("N") },
+                PersonIds = new[] { item.Id },
                 DtoOptions = new DtoOptions(false)
                 {
                     EnableImages = false

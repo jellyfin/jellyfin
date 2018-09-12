@@ -13,7 +13,9 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
 using SocketHttpListener.Primitives;
+using System.Security.Authentication;
 
+using System.Threading;
 namespace SocketHttpListener.Net
 {
     sealed class HttpConnection
@@ -22,7 +24,7 @@ namespace SocketHttpListener.Net
         const int BufferSize = 8192;
         Socket _socket;
         Stream _stream;
-        EndPointListener _epl;
+        HttpEndPointListener _epl;
         MemoryStream _memoryStream;
         byte[] _buffer;
         HttpListenerContext _context;
@@ -34,21 +36,21 @@ namespace SocketHttpListener.Net
         int _reuses;
         bool _contextBound;
         bool secure;
-        int _timeout = 300000; // 90k ms for first request, 15k ms from then on
+        int _timeout = 90000; // 90k ms for first request, 15k ms from then on
+        private Timer _timer;
         IPEndPoint local_ep;
         HttpListener _lastListener;
-        int[] client_cert_errors;
         X509Certificate cert;
         SslStream ssl_stream;
 
         private readonly ILogger _logger;
         private readonly ICryptoProvider _cryptoProvider;
-        private readonly IMemoryStreamFactory _memoryStreamFactory;
+        private readonly IStreamHelper _streamHelper;
         private readonly ITextEncoding _textEncoding;
         private readonly IFileSystem _fileSystem;
         private readonly IEnvironmentInfo _environment;
 
-        private HttpConnection(ILogger logger, Socket socket, EndPointListener epl, bool secure, X509Certificate cert, ICryptoProvider cryptoProvider, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IEnvironmentInfo environment)
+        public HttpConnection(ILogger logger, Socket socket, HttpEndPointListener epl, bool secure, X509Certificate cert, ICryptoProvider cryptoProvider, IStreamHelper streamHelper, ITextEncoding textEncoding, IFileSystem fileSystem, IEnvironmentInfo environment)
         {
             _logger = logger;
             this._socket = socket;
@@ -56,47 +58,37 @@ namespace SocketHttpListener.Net
             this.secure = secure;
             this.cert = cert;
             _cryptoProvider = cryptoProvider;
-            _memoryStreamFactory = memoryStreamFactory;
+            _streamHelper = streamHelper;
             _textEncoding = textEncoding;
             _fileSystem = fileSystem;
             _environment = environment;
-        }
 
-        private async Task InitStream()
-        {
             if (secure == false)
             {
                 _stream = new SocketStream(_socket, false);
             }
             else
             {
-                //ssl_stream = _epl.Listener.CreateSslStream(new NetworkStream(_socket, false), false, (t, c, ch, e) =>
-                //{
-                //    if (c == null)
-                //        return true;
-                //    var c2 = c as X509Certificate2;
-                //    if (c2 == null)
-                //        c2 = new X509Certificate2(c.GetRawCertData());
-                //    client_cert = c2;
-                //    client_cert_errors = new int[] { (int)e };
-                //    return true;
-                //});
-                //_stream = ssl_stream.AuthenticatedStream;
+                ssl_stream = new SslStream(new SocketStream(_socket, false), false, (t, c, ch, e) =>
+                {
+                    if (c == null)
+                    {
+                        return true;
+                    }
 
-                ssl_stream = new SslStream(new SocketStream(_socket, false), false);
-                await ssl_stream.AuthenticateAsServerAsync(cert).ConfigureAwait(false);
+                    //var c2 = c as X509Certificate2;
+                    //if (c2 == null)
+                    //{
+                    //    c2 = new X509Certificate2(c.GetRawCertData());
+                    //}
+
+                    //_clientCert = c2;
+                    //_clientCertErrors = new int[] { (int)e };
+                    return true;
+                });
+
                 _stream = ssl_stream;
             }
-            Init();
-        }
-
-        public static async Task<HttpConnection> Create(ILogger logger, Socket sock, EndPointListener epl, bool secure, X509Certificate cert, ICryptoProvider cryptoProvider, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem, IEnvironmentInfo environment)
-        {
-            var connection = new HttpConnection(logger, sock, epl, secure, cert, cryptoProvider, memoryStreamFactory, textEncoding, fileSystem, environment);
-
-            await connection.InitStream().ConfigureAwait(false);
-
-            return connection;
         }
 
         public Stream Stream
@@ -107,12 +99,27 @@ namespace SocketHttpListener.Net
             }
         }
 
-        internal int[] ClientCertificateErrors
+        public async Task Init()
         {
-            get { return client_cert_errors; }
+            _timer = new Timer(OnTimeout, null, Timeout.Infinite, Timeout.Infinite);
+
+            if (ssl_stream != null)
+            {
+                var enableAsync = true;
+                if (enableAsync)
+                {
+                    await ssl_stream.AuthenticateAsServerAsync(cert, false, (SslProtocols)ServicePointManager.SecurityProtocol, false).ConfigureAwait(false);
+                }
+                else
+                {
+                    ssl_stream.AuthenticateAsServer(cert, false, (SslProtocols)ServicePointManager.SecurityProtocol, false);
+                }
+            }
+
+            InitInternal();
         }
 
-        void Init()
+        private void InitInternal()
         {
             _contextBound = false;
             _requestStream = null;
@@ -123,7 +130,7 @@ namespace SocketHttpListener.Net
             _position = 0;
             _inputState = InputState.RequestLine;
             _lineState = LineState.None;
-            _context = new HttpListenerContext(this, _logger, _cryptoProvider, _memoryStreamFactory, _textEncoding, _fileSystem);
+            _context = new HttpListenerContext(this, _textEncoding);
         }
 
         public bool IsClosed
@@ -162,6 +169,13 @@ namespace SocketHttpListener.Net
         {
             get { return _prefix; }
             set { _prefix = value; }
+        }
+
+        private void OnTimeout(object unused)
+        {
+            //_logger.Info("HttpConnection timer fired");
+            CloseSocket();
+            Unbind();
         }
 
         public void BeginReadRequest()
@@ -211,7 +225,7 @@ namespace SocketHttpListener.Net
             {
                 var supportsDirectSocketAccess = !_context.Response.SendChunked && !isExpect100Continue && !secure;
 
-                _responseStream = new HttpResponseStream(_stream, _context.Response, false, _memoryStreamFactory, _socket, supportsDirectSocketAccess, _environment, _fileSystem, _logger);
+                _responseStream = new HttpResponseStream(_stream, _context.Response, false, _streamHelper, _socket, supportsDirectSocketAccess, _environment, _fileSystem, _logger);
             }
             return _responseStream;
         }
@@ -503,14 +517,14 @@ namespace SocketHttpListener.Net
                         // Don't close. Keep working.
                         _reuses++;
                         Unbind();
-                        Init();
+                        InitInternal();
                         BeginReadRequest();
                         return;
                     }
 
                     _reuses++;
                     Unbind();
-                    Init();
+                    InitInternal();
                     BeginReadRequest();
                     return;
                 }

@@ -12,7 +12,7 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public class LiveTvProgram : BaseItem, IHasLookupInfo<LiveTvProgramLookupInfo>, IHasStartDate, IHasProgramAttributes
+    public class LiveTvProgram : BaseItem, IHasLookupInfo<ItemLookupInfo>, IHasStartDate, IHasProgramAttributes, IHasSeriesName
     {
         public LiveTvProgram()
         {
@@ -26,18 +26,18 @@ namespace MediaBrowser.Controller.LiveTv
             if (!IsSeries)
             {
                 var key = this.GetProviderId(MetadataProviders.Imdb);
-                if (!string.IsNullOrWhiteSpace(key))
+                if (!string.IsNullOrEmpty(key))
                 {
                     list.Insert(0, key);
                 }
 
                 key = this.GetProviderId(MetadataProviders.Tmdb);
-                if (!string.IsNullOrWhiteSpace(key))
+                if (!string.IsNullOrEmpty(key))
                 {
                     list.Insert(0, key);
                 }
             }
-            else if (!string.IsNullOrWhiteSpace(EpisodeTitle))
+            else if (!string.IsNullOrEmpty(EpisodeTitle))
             {
                 var name = GetClientTypeName();
 
@@ -47,57 +47,30 @@ namespace MediaBrowser.Controller.LiveTv
             return list;
         }
 
-        public static double? GetDefaultPrimaryImageAspectRatio(IHasProgramAttributes item)
-        {
-            var serviceName = item.ServiceName;
+        //private static string EmbyServiceName = "Emby";
+        //public override double GetDefaultPrimaryImageAspectRatio()
+        //{
+        //    var serviceName = ServiceName;
 
-            if (item.IsMovie)
-            {
-                if (string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase) || string.Equals(serviceName, "Next Pvr", StringComparison.OrdinalIgnoreCase))
-                {
-                    double value = 2;
-                    value /= 3;
+        //    if (string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase))
+        //    {
+        //        double value = 2;
+        //        value /= 3;
 
-                    return value;
-                }
-                else
-                {
-                    double value = 16;
-                    value /= 9;
+        //        return value;
+        //    }
 
-                    return value;
-                }
-            }
-            else
-            {
-                if (string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase) || string.Equals(serviceName, "Next Pvr", StringComparison.OrdinalIgnoreCase))
-                {
-                    double value = 2;
-                    value /= 3;
-
-                    return value;
-                }
-                else
-                {
-                    double value = 16;
-                    value /= 9;
-
-                    return value;
-                }
-            }
-        }
-
-        private static string EmbyServiceName = "Emby";
-        public override double? GetDefaultPrimaryImageAspectRatio()
-        {
-            return GetDefaultPrimaryImageAspectRatio(this);
-        }
+        //    return 0;
+        //}
 
         [IgnoreDataMember]
         public override SourceType SourceType
         {
             get { return SourceType.LiveTV; }
         }
+
+        [IgnoreDataMember]
+        public string SeriesName { get; set; }
 
         /// <summary>
         /// The start date of the program, in UTC.
@@ -134,7 +107,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is sports; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public bool IsSports { get; set; }
+        public bool IsSports
+        {
+            get
+            {
+                return Tags.Contains("Sports", StringComparer.OrdinalIgnoreCase);
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is series.
@@ -148,28 +127,52 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is live; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public bool IsLive { get; set; }
+        public bool IsLive
+        {
+            get
+            {
+                return Tags.Contains("Live", StringComparer.OrdinalIgnoreCase);
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is news.
         /// </summary>
         /// <value><c>true</c> if this instance is news; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public bool IsNews { get; set; }
+        public bool IsNews
+        {
+            get
+            {
+                return Tags.Contains("News", StringComparer.OrdinalIgnoreCase);
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is kids.
         /// </summary>
         /// <value><c>true</c> if this instance is kids; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public bool IsKids { get; set; }
+        public bool IsKids
+        {
+            get
+            {
+                return Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is premiere.
         /// </summary>
         /// <value><c>true</c> if this instance is premiere; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public bool IsPremiere { get; set; }
+        public bool IsPremiere
+        {
+            get
+            {
+                return Tags.Contains("Premiere", StringComparer.OrdinalIgnoreCase);
+            }
+        }
 
         /// <summary>
         /// Returns the folder containing the item.
@@ -182,19 +185,6 @@ namespace MediaBrowser.Controller.LiveTv
             get
             {
                 return Path;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is owned item.
-        /// </summary>
-        /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public override bool IsOwnedItem
-        {
-            get
-            {
-                return false;
             }
         }
 
@@ -249,18 +239,6 @@ namespace MediaBrowser.Controller.LiveTv
             return false;
         }
 
-        public override bool IsInternetMetadataEnabled()
-        {
-            return false;
-        }
-
-        public LiveTvProgramLookupInfo GetLookupInfo()
-        {
-            var info = GetItemLookupInfo<LiveTvProgramLookupInfo>();
-            info.IsMovie = IsMovie;
-            return info;
-        }
-
         [IgnoreDataMember]
         public override bool SupportsPeople
         {
@@ -285,46 +263,12 @@ namespace MediaBrowser.Controller.LiveTv
             }
         }
 
-        private LiveTvOptions GetConfiguration()
-        {
-            return ConfigurationManager.GetConfiguration<LiveTvOptions>("livetv");
-        }
-
-        private ListingsProviderInfo GetListingsProviderInfo()
-        {
-            if (string.Equals(ServiceName, "Emby", StringComparison.OrdinalIgnoreCase))
-            {
-                var config = GetConfiguration();
-
-                return config.ListingProviders.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.MoviePrefix));
-            }
-
-            return null;
-        }
-
-        protected override string GetNameForMetadataLookup()
-        {
-            var name = base.GetNameForMetadataLookup();
-
-            var listings = GetListingsProviderInfo();
-
-            if (listings != null)
-            {
-                if (!string.IsNullOrWhiteSpace(listings.MoviePrefix) && name.StartsWith(listings.MoviePrefix, StringComparison.OrdinalIgnoreCase))
-                {
-                    name = name.Substring(listings.MoviePrefix.Length).Trim();
-                }
-            }
-
-            return name;
-        }
-
         public override List<ExternalUrl> GetRelatedUrls()
         {
             var list = base.GetRelatedUrls();
 
             var imdbId = this.GetProviderId(MetadataProviders.Imdb);
-            if (!string.IsNullOrWhiteSpace(imdbId))
+            if (!string.IsNullOrEmpty(imdbId))
             {
                 if (IsMovie)
                 {

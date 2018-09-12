@@ -10,438 +10,46 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Text;
 using SocketHttpListener.Primitives;
+using System.Collections.Generic;
+using SocketHttpListener.Net.WebSockets;
 
 namespace SocketHttpListener.Net
 {
-    public sealed class HttpListenerRequest
+    public sealed unsafe partial class HttpListenerRequest
     {
-        string[] accept_types;
-        Encoding content_encoding;
-        long content_length;
-        bool cl_set;
-        CookieCollection cookies;
-        WebHeaderCollection headers;
-        string method;
-        Stream input_stream;
-        Version version;
-        QueryParamCollection query_string; // check if null is ok, check if read-only, check case-sensitiveness
-        string raw_url;
-        Uri url;
-        Uri referrer;
-        string[] user_languages;
-        HttpListenerContext context;
-        bool is_chunked;
-        bool ka_set;
-        bool? _keepAlive;
+        private CookieCollection _cookies;
+        private bool? _keepAlive;
+        private string _rawUrl;
+        private Uri _requestUri;
+        private Version _version;
 
-        private readonly ITextEncoding _textEncoding;
+        public string[] AcceptTypes => Helpers.ParseMultivalueHeader(Headers[HttpKnownHeaderNames.Accept]);
 
-        internal HttpListenerRequest(HttpListenerContext context, ITextEncoding textEncoding)
+        public string[] UserLanguages => Helpers.ParseMultivalueHeader(Headers[HttpKnownHeaderNames.AcceptLanguage]);
+
+        private CookieCollection ParseCookies(Uri uri, string setCookieHeader)
         {
-            this.context = context;
-            _textEncoding = textEncoding;
-            headers = new WebHeaderCollection();
-            version = HttpVersion.Version10;
+            CookieCollection cookies = new CookieCollection();
+            return cookies;
         }
 
-        static char[] separators = new char[] { ' ' };
-
-        internal void SetRequestLine(string req)
-        {
-            string[] parts = req.Split(separators, 3);
-            if (parts.Length != 3)
-            {
-                context.ErrorMessage = "Invalid request line (parts).";
-                return;
-            }
-
-            method = parts[0];
-            foreach (char c in method)
-            {
-                int ic = (int)c;
-
-                if ((ic >= 'A' && ic <= 'Z') ||
-                    (ic > 32 && c < 127 && c != '(' && c != ')' && c != '<' &&
-                     c != '<' && c != '>' && c != '@' && c != ',' && c != ';' &&
-                     c != ':' && c != '\\' && c != '"' && c != '/' && c != '[' &&
-                     c != ']' && c != '?' && c != '=' && c != '{' && c != '}'))
-                    continue;
-
-                context.ErrorMessage = "(Invalid verb)";
-                return;
-            }
-
-            raw_url = parts[1];
-            if (parts[2].Length != 8 || !parts[2].StartsWith("HTTP/"))
-            {
-                context.ErrorMessage = "Invalid request line (version).";
-                return;
-            }
-
-            try
-            {
-                version = new Version(parts[2].Substring(5));
-                if (version.Major < 1)
-                    throw new Exception();
-            }
-            catch
-            {
-                context.ErrorMessage = "Invalid request line (version).";
-                return;
-            }
-        }
-
-        void CreateQueryString(string query)
-        {
-            if (query == null || query.Length == 0)
-            {
-                query_string = new QueryParamCollection();
-                return;
-            }
-
-            query_string = new QueryParamCollection();
-            if (query[0] == '?')
-                query = query.Substring(1);
-            string[] components = query.Split('&');
-            foreach (string kv in components)
-            {
-                int pos = kv.IndexOf('=');
-                if (pos == -1)
-                {
-                    query_string.Add(null, WebUtility.UrlDecode(kv));
-                }
-                else
-                {
-                    string key = WebUtility.UrlDecode(kv.Substring(0, pos));
-                    string val = WebUtility.UrlDecode(kv.Substring(pos + 1));
-
-                    query_string.Add(key, val);
-                }
-            }
-        }
-
-        internal void FinishInitialization()
-        {
-            string host = UserHostName;
-            if (version > HttpVersion.Version10 && (host == null || host.Length == 0))
-            {
-                context.ErrorMessage = "Invalid host name";
-                return;
-            }
-
-            string path;
-            Uri raw_uri = null;
-            if (MaybeUri(raw_url.ToLowerInvariant()) && Uri.TryCreate(raw_url, UriKind.Absolute, out raw_uri))
-                path = raw_uri.PathAndQuery;
-            else
-                path = raw_url;
-
-            if ((host == null || host.Length == 0))
-                host = UserHostAddress;
-
-            if (raw_uri != null)
-                host = raw_uri.Host;
-
-            int colon = host.LastIndexOf(':');
-            if (colon >= 0)
-                host = host.Substring(0, colon);
-
-            string base_uri = String.Format("{0}://{1}:{2}",
-                (IsSecureConnection) ? (IsWebSocketRequest ? "wss" : "https") : (IsWebSocketRequest ? "ws" : "http"),
-                                host, LocalEndPoint.Port);
-
-            if (!Uri.TryCreate(base_uri + path, UriKind.Absolute, out url))
-            {
-                context.ErrorMessage = WebUtility.HtmlEncode("Invalid url: " + base_uri + path);
-                return; return;
-            }
-
-            CreateQueryString(url.Query);
-
-            if (version >= HttpVersion.Version11)
-            {
-                string t_encoding = Headers["Transfer-Encoding"];
-                is_chunked = (t_encoding != null && String.Compare(t_encoding, "chunked", StringComparison.OrdinalIgnoreCase) == 0);
-                // 'identity' is not valid!
-                if (t_encoding != null && !is_chunked)
-                {
-                    context.Connection.SendError(null, 501);
-                    return;
-                }
-            }
-
-            if (!is_chunked && !cl_set)
-            {
-                if (String.Compare(method, "POST", StringComparison.OrdinalIgnoreCase) == 0 ||
-                    String.Compare(method, "PUT", StringComparison.OrdinalIgnoreCase) == 0)
-                {
-                    context.Connection.SendError(null, 411);
-                    return;
-                }
-            }
-
-            if (String.Compare(Headers["Expect"], "100-continue", StringComparison.OrdinalIgnoreCase) == 0)
-            {
-                var output = (HttpResponseStream)context.Connection.GetResponseStream(true);
-
-                var _100continue = _textEncoding.GetASCIIEncoding().GetBytes("HTTP/1.1 100 Continue\r\n\r\n");
-
-                output.InternalWrite(_100continue, 0, _100continue.Length);
-            }
-        }
-
-        static bool MaybeUri(string s)
-        {
-            int p = s.IndexOf(':');
-            if (p == -1)
-                return false;
-
-            if (p >= 10)
-                return false;
-
-            return IsPredefinedScheme(s.Substring(0, p));
-        }
-
-        //
-        // Using a simple block of if's is twice as slow as the compiler generated
-        // switch statement.   But using this tuned code is faster than the
-        // compiler generated code, with a million loops on x86-64:
-        //
-        // With "http": .10 vs .51 (first check)
-        // with "https": .16 vs .51 (second check)
-        // with "foo": .22 vs .31 (never found)
-        // with "mailto": .12 vs .51  (last check)
-        //
-        //
-        static bool IsPredefinedScheme(string scheme)
-        {
-            if (scheme == null || scheme.Length < 3)
-                return false;
-
-            char c = scheme[0];
-            if (c == 'h')
-                return (scheme == "http" || scheme == "https");
-            if (c == 'f')
-                return (scheme == "file" || scheme == "ftp");
-
-            if (c == 'n')
-            {
-                c = scheme[1];
-                if (c == 'e')
-                    return (scheme == "news" || scheme == "net.pipe" || scheme == "net.tcp");
-                if (scheme == "nntp")
-                    return true;
-                return false;
-            }
-            if ((c == 'g' && scheme == "gopher") || (c == 'm' && scheme == "mailto"))
-                return true;
-
-            return false;
-        }
-
-        internal static string Unquote(String str)
-        {
-            int start = str.IndexOf('\"');
-            int end = str.LastIndexOf('\"');
-            if (start >= 0 && end >= 0)
-                str = str.Substring(start + 1, end - 1);
-            return str.Trim();
-        }
-
-        internal void AddHeader(string header)
-        {
-            int colon = header.IndexOf(':');
-            if (colon == -1 || colon == 0)
-            {
-                context.ErrorMessage = "Bad Request";
-                context.ErrorStatus = 400;
-                return;
-            }
-
-            string name = header.Substring(0, colon).Trim();
-            string val = header.Substring(colon + 1).Trim();
-            string lower = name.ToLowerInvariant();
-            headers.SetInternal(name, val);
-            switch (lower)
-            {
-                case "accept-language":
-                    user_languages = val.Split(','); // yes, only split with a ','
-                    break;
-                case "accept":
-                    accept_types = val.Split(','); // yes, only split with a ','
-                    break;
-                case "content-length":
-                    try
-                    {
-                        //TODO: max. content_length?
-                        content_length = Int64.Parse(val.Trim());
-                        if (content_length < 0)
-                            context.ErrorMessage = "Invalid Content-Length.";
-                        cl_set = true;
-                    }
-                    catch
-                    {
-                        context.ErrorMessage = "Invalid Content-Length.";
-                    }
-
-                    break;
-                case "content-type":
-                    {
-                        var contents = val.Split(';');
-                        foreach (var content in contents)
-                        {
-                            var tmp = content.Trim();
-                            if (tmp.StartsWith("charset"))
-                            {
-                                var charset = tmp.GetValue("=");
-                                if (charset != null && charset.Length > 0)
-                                {
-                                    try
-                                    {
-
-                                        // Support upnp/dlna devices - CONTENT-TYPE: text/xml ; charset="utf-8"\r\n
-                                        charset = charset.Trim('"');
-                                        var index = charset.IndexOf('"');
-                                        if (index != -1) charset = charset.Substring(0, index);
-
-                                        content_encoding = Encoding.GetEncoding(charset);
-                                    }
-                                    catch
-                                    {
-                                        context.ErrorMessage = "Invalid Content-Type header: " + charset;
-                                    }
-                                }
-
-                                break;
-                            }
-                        }
-                    }
-                    break;
-                case "referer":
-                    try
-                    {
-                        referrer = new Uri(val);
-                    }
-                    catch
-                    {
-                        referrer = new Uri("http://someone.is.screwing.with.the.headers.com/");
-                    }
-                    break;
-                case "cookie":
-                    if (cookies == null)
-                        cookies = new CookieCollection();
-
-                    string[] cookieStrings = val.Split(new char[] { ',', ';' });
-                    Cookie current = null;
-                    int version = 0;
-                    foreach (string cookieString in cookieStrings)
-                    {
-                        string str = cookieString.Trim();
-                        if (str.Length == 0)
-                            continue;
-                        if (str.StartsWith("$Version"))
-                        {
-                            version = Int32.Parse(Unquote(str.Substring(str.IndexOf('=') + 1)));
-                        }
-                        else if (str.StartsWith("$Path"))
-                        {
-                            if (current != null)
-                                current.Path = str.Substring(str.IndexOf('=') + 1).Trim();
-                        }
-                        else if (str.StartsWith("$Domain"))
-                        {
-                            if (current != null)
-                                current.Domain = str.Substring(str.IndexOf('=') + 1).Trim();
-                        }
-                        else if (str.StartsWith("$Port"))
-                        {
-                            if (current != null)
-                                current.Port = str.Substring(str.IndexOf('=') + 1).Trim();
-                        }
-                        else
-                        {
-                            if (current != null)
-                            {
-                                cookies.Add(current);
-                            }
-                            current = new Cookie();
-                            int idx = str.IndexOf('=');
-                            if (idx > 0)
-                            {
-                                current.Name = str.Substring(0, idx).Trim();
-                                current.Value = str.Substring(idx + 1).Trim();
-                            }
-                            else
-                            {
-                                current.Name = str.Trim();
-                                current.Value = String.Empty;
-                            }
-                            current.Version = version;
-                        }
-                    }
-                    if (current != null)
-                    {
-                        cookies.Add(current);
-                    }
-                    break;
-            }
-        }
-
-        // returns true is the stream could be reused.
-        internal bool FlushInput()
-        {
-            if (!HasEntityBody)
-                return true;
-
-            int length = 2048;
-            if (content_length > 0)
-                length = (int)Math.Min(content_length, (long)length);
-
-            byte[] bytes = new byte[length];
-            while (true)
-            {
-                // TODO: test if MS has a timeout when doing this
-                try
-                {
-                    var task = InputStream.ReadAsync(bytes, 0, length);
-                    var result = Task.WaitAll(new [] { task }, 1000);
-                    if (!result)
-                    {
-                        return false;
-                    }
-                    if (task.Result <= 0)
-                    {
-                        return true;
-                    }
-                }
-                catch (ObjectDisposedException e)
-                {
-                    input_stream = null;
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-        }
-
-        public string[] AcceptTypes
-        {
-            get { return accept_types; }
-        }
-
-        public int ClientCertificateError
+        public CookieCollection Cookies
         {
             get
             {
-                HttpConnection cnc = context.Connection;
-                //if (cnc.ClientCertificate == null)
-                //    throw new InvalidOperationException("No client certificate");
-                //int[] errors = cnc.ClientCertificateErrors;
-                //if (errors != null && errors.Length > 0)
-                //    return errors[0];
-                return 0;
+                if (_cookies == null)
+                {
+                    string cookieString = Headers[HttpKnownHeaderNames.Cookie];
+                    if (!string.IsNullOrEmpty(cookieString))
+                    {
+                        _cookies = ParseCookies(RequestUri, cookieString);
+                    }
+                    if (_cookies == null)
+                    {
+                        _cookies = new CookieCollection();
+                    }
+                }
+                return _cookies;
             }
         }
 
@@ -449,84 +57,84 @@ namespace SocketHttpListener.Net
         {
             get
             {
-                if (content_encoding == null)
-                    content_encoding = _textEncoding.GetDefaultEncoding();
-                return content_encoding;
-            }
-        }
-
-        public long ContentLength64
-        {
-            get { return is_chunked ? -1 : content_length; }
-        }
-
-        public string ContentType
-        {
-            get { return headers["content-type"]; }
-        }
-
-        public CookieCollection Cookies
-        {
-            get
-            {
-                // TODO: check if the collection is read-only
-                if (cookies == null)
-                    cookies = new CookieCollection();
-                return cookies;
-            }
-        }
-
-        public bool HasEntityBody
-        {
-            get { return (content_length > 0 || is_chunked); }
-        }
-
-        public QueryParamCollection Headers
-        {
-            get { return headers; }
-        }
-
-        public string HttpMethod
-        {
-            get { return method; }
-        }
-
-        public Stream InputStream
-        {
-            get
-            {
-                if (input_stream == null)
+                if (UserAgent != null && CultureInfo.InvariantCulture.CompareInfo.IsPrefix(UserAgent, "UP"))
                 {
-                    if (is_chunked || content_length > 0)
-                        input_stream = context.Connection.GetRequestStream(is_chunked, content_length);
-                    else
-                        input_stream = Stream.Null;
+                    string postDataCharset = Headers["x-up-devcap-post-charset"];
+                    if (postDataCharset != null && postDataCharset.Length > 0)
+                    {
+                        try
+                        {
+                            return Encoding.GetEncoding(postDataCharset);
+                        }
+                        catch (ArgumentException)
+                        {
+                        }
+                    }
+                }
+                if (HasEntityBody)
+                {
+                    if (ContentType != null)
+                    {
+                        string charSet = Helpers.GetCharSetValueFromHeader(ContentType);
+                        if (charSet != null)
+                        {
+                            try
+                            {
+                                return Encoding.GetEncoding(charSet);
+                            }
+                            catch (ArgumentException)
+                            {
+                            }
+                        }
+                    }
+                }
+                return TextEncodingExtensions.GetDefaultEncoding();
+            }
+        }
+
+        public string ContentType => Headers[HttpKnownHeaderNames.ContentType];
+
+        public bool IsLocal => LocalEndPoint.Address.Equals(RemoteEndPoint.Address);
+
+        public bool IsWebSocketRequest
+        {
+            get
+            {
+                if (!SupportsWebSockets)
+                {
+                    return false;
                 }
 
-                return input_stream;
+                bool foundConnectionUpgradeHeader = false;
+                if (string.IsNullOrEmpty(Headers[HttpKnownHeaderNames.Connection]) || string.IsNullOrEmpty(Headers[HttpKnownHeaderNames.Upgrade]))
+                {
+                    return false;
+                }
+
+                foreach (string connection in Headers.GetValues(HttpKnownHeaderNames.Connection))
+                {
+                    if (string.Equals(connection, HttpKnownHeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase))
+                    {
+                        foundConnectionUpgradeHeader = true;
+                        break;
+                    }
+                }
+
+                if (!foundConnectionUpgradeHeader)
+                {
+                    return false;
+                }
+
+                foreach (string upgrade in Headers.GetValues(HttpKnownHeaderNames.Upgrade))
+                {
+                    if (string.Equals(upgrade, HttpWebSocket.WebSocketUpgradeToken, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
             }
-        }
-
-        public bool IsAuthenticated
-        {
-            get { return false; }
-        }
-
-        public bool IsLocal
-        {
-            get
-            {
-                var remoteEndPoint = RemoteEndPoint;
-
-                return remoteEndPoint.Address.Equals(IPAddress.Loopback) ||
-                       remoteEndPoint.Address.Equals(IPAddress.IPv6Loopback) || 
-                        LocalEndPoint.Address.Equals(remoteEndPoint.Address);
-            }
-        }
-
-        public bool IsSecureConnection
-        {
-            get { return context.Connection.IsSecure; }
         }
 
         public bool KeepAlive
@@ -535,10 +143,10 @@ namespace SocketHttpListener.Net
             {
                 if (!_keepAlive.HasValue)
                 {
-                    string header = Headers["Proxy-Connection"];
+                    string header = Headers[HttpKnownHeaderNames.ProxyConnection];
                     if (string.IsNullOrEmpty(header))
                     {
-                        header = Headers["Connection"];
+                        header = Headers[HttpKnownHeaderNames.Connection];
                     }
                     if (string.IsNullOrEmpty(header))
                     {
@@ -548,7 +156,7 @@ namespace SocketHttpListener.Net
                         }
                         else
                         {
-                            header = Headers["Keep-Alive"];
+                            header = Headers[HttpKnownHeaderNames.KeepAlive];
                             _keepAlive = !string.IsNullOrEmpty(header);
                         }
                     }
@@ -565,98 +173,371 @@ namespace SocketHttpListener.Net
             }
         }
 
-        public IPEndPoint LocalEndPoint
-        {
-            get { return context.Connection.LocalEndPoint; }
-        }
-
-        public Version ProtocolVersion
-        {
-            get { return version; }
-        }
-
         public QueryParamCollection QueryString
-        {
-            get { return query_string; }
-        }
-
-        public string RawUrl
-        {
-            get { return raw_url; }
-        }
-
-        public IPEndPoint RemoteEndPoint
-        {
-            get { return context.Connection.RemoteEndPoint; }
-        }
-
-        public Guid RequestTraceIdentifier
-        {
-            get { return Guid.Empty; }
-        }
-
-        public Uri Url
-        {
-            get { return url; }
-        }
-
-        public Uri UrlReferrer
-        {
-            get { return referrer; }
-        }
-
-        public string UserAgent
-        {
-            get { return headers["user-agent"]; }
-        }
-
-        public string UserHostAddress
-        {
-            get { return LocalEndPoint.ToString(); }
-        }
-
-        public string UserHostName
-        {
-            get { return headers["host"]; }
-        }
-
-        public string[] UserLanguages
-        {
-            get { return user_languages; }
-        }
-
-        public string ServiceName
         {
             get
             {
-                return null;
+                QueryParamCollection queryString = new QueryParamCollection();
+                Helpers.FillFromString(queryString, Url.Query, true, ContentEncoding);
+                return queryString;
             }
         }
 
-        private bool _websocketRequestWasSet;
-        private bool _websocketRequest;
+        public string RawUrl => _rawUrl;
 
-        /// <summary>
-        /// Gets a value indicating whether the request is a WebSocket connection request.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if the request is a WebSocket connection request; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsWebSocketRequest
+        private string RequestScheme => IsSecureConnection ? UriScheme.Https : UriScheme.Http;
+
+        public string UserAgent => Headers[HttpKnownHeaderNames.UserAgent];
+
+        public string UserHostAddress => LocalEndPoint.ToString();
+
+        public string UserHostName => Headers[HttpKnownHeaderNames.Host];
+
+        public Uri UrlReferrer
         {
             get
             {
-                if (!_websocketRequestWasSet)
+                string referrer = Headers[HttpKnownHeaderNames.Referer];
+                if (referrer == null)
                 {
-                    _websocketRequest = method == "GET" &&
-                                        version > HttpVersion.Version10 &&
-                                        headers.Contains("Upgrade", "websocket") &&
-                                        headers.Contains("Connection", "Upgrade");
-
-                    _websocketRequestWasSet = true;
+                    return null;
                 }
 
-                return _websocketRequest;
+                bool success = Uri.TryCreate(referrer, UriKind.RelativeOrAbsolute, out Uri urlReferrer);
+                return success ? urlReferrer : null;
+            }
+        }
+
+        public Uri Url => RequestUri;
+
+        public Version ProtocolVersion => _version;
+
+        private static class Helpers
+        {
+            //
+            // Get attribute off header value
+            //
+            internal static string GetCharSetValueFromHeader(string headerValue)
+            {
+                const string AttrName = "charset";
+
+                if (headerValue == null)
+                    return null;
+
+                int l = headerValue.Length;
+                int k = AttrName.Length;
+
+                // find properly separated attribute name
+                int i = 1; // start searching from 1
+
+                while (i < l)
+                {
+                    i = CultureInfo.InvariantCulture.CompareInfo.IndexOf(headerValue, AttrName, i, CompareOptions.IgnoreCase);
+                    if (i < 0)
+                        break;
+                    if (i + k >= l)
+                        break;
+
+                    char chPrev = headerValue[i - 1];
+                    char chNext = headerValue[i + k];
+                    if ((chPrev == ';' || chPrev == ',' || char.IsWhiteSpace(chPrev)) && (chNext == '=' || char.IsWhiteSpace(chNext)))
+                        break;
+
+                    i += k;
+                }
+
+                if (i < 0 || i >= l)
+                    return null;
+
+                // skip to '=' and the following whitespace
+                i += k;
+                while (i < l && char.IsWhiteSpace(headerValue[i]))
+                    i++;
+                if (i >= l || headerValue[i] != '=')
+                    return null;
+                i++;
+                while (i < l && char.IsWhiteSpace(headerValue[i]))
+                    i++;
+                if (i >= l)
+                    return null;
+
+                // parse the value
+                string attrValue = null;
+
+                int j;
+
+                if (i < l && headerValue[i] == '"')
+                {
+                    if (i == l - 1)
+                        return null;
+                    j = headerValue.IndexOf('"', i + 1);
+                    if (j < 0 || j == i + 1)
+                        return null;
+
+                    attrValue = headerValue.Substring(i + 1, j - i - 1).Trim();
+                }
+                else
+                {
+                    for (j = i; j < l; j++)
+                    {
+                        if (headerValue[j] == ';')
+                            break;
+                    }
+
+                    if (j == i)
+                        return null;
+
+                    attrValue = headerValue.Substring(i, j - i).Trim();
+                }
+
+                return attrValue;
+            }
+
+            internal static string[] ParseMultivalueHeader(string s)
+            {
+                if (s == null)
+                    return null;
+
+                int l = s.Length;
+
+                // collect comma-separated values into list
+
+                List<string> values = new List<string>();
+                int i = 0;
+
+                while (i < l)
+                {
+                    // find next ,
+                    int ci = s.IndexOf(',', i);
+                    if (ci < 0)
+                        ci = l;
+
+                    // append corresponding server value
+                    values.Add(s.Substring(i, ci - i));
+
+                    // move to next
+                    i = ci + 1;
+
+                    // skip leading space
+                    if (i < l && s[i] == ' ')
+                        i++;
+                }
+
+                // return list as array of strings
+
+                int n = values.Count;
+                string[] strings;
+
+                // if n is 0 that means s was empty string
+
+                if (n == 0)
+                {
+                    strings = new string[1];
+                    strings[0] = string.Empty;
+                }
+                else
+                {
+                    strings = new string[n];
+                    values.CopyTo(0, strings, 0, n);
+                }
+                return strings;
+            }
+
+
+            private static string UrlDecodeStringFromStringInternal(string s, Encoding e)
+            {
+                int count = s.Length;
+                UrlDecoder helper = new UrlDecoder(count, e);
+
+                // go through the string's chars collapsing %XX and %uXXXX and
+                // appending each char as char, with exception of %XX constructs
+                // that are appended as bytes
+
+                for (int pos = 0; pos < count; pos++)
+                {
+                    char ch = s[pos];
+
+                    if (ch == '+')
+                    {
+                        ch = ' ';
+                    }
+                    else if (ch == '%' && pos < count - 2)
+                    {
+                        if (s[pos + 1] == 'u' && pos < count - 5)
+                        {
+                            int h1 = HexToInt(s[pos + 2]);
+                            int h2 = HexToInt(s[pos + 3]);
+                            int h3 = HexToInt(s[pos + 4]);
+                            int h4 = HexToInt(s[pos + 5]);
+
+                            if (h1 >= 0 && h2 >= 0 && h3 >= 0 && h4 >= 0)
+                            {   // valid 4 hex chars
+                                ch = (char)((h1 << 12) | (h2 << 8) | (h3 << 4) | h4);
+                                pos += 5;
+
+                                // only add as char
+                                helper.AddChar(ch);
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            int h1 = HexToInt(s[pos + 1]);
+                            int h2 = HexToInt(s[pos + 2]);
+
+                            if (h1 >= 0 && h2 >= 0)
+                            {     // valid 2 hex chars
+                                byte b = (byte)((h1 << 4) | h2);
+                                pos += 2;
+
+                                // don't add as char
+                                helper.AddByte(b);
+                                continue;
+                            }
+                        }
+                    }
+
+                    if ((ch & 0xFF80) == 0)
+                        helper.AddByte((byte)ch); // 7 bit have to go as bytes because of Unicode
+                    else
+                        helper.AddChar(ch);
+                }
+
+                return helper.GetString();
+            }
+
+            private static int HexToInt(char h)
+            {
+                return (h >= '0' && h <= '9') ? h - '0' :
+                (h >= 'a' && h <= 'f') ? h - 'a' + 10 :
+                (h >= 'A' && h <= 'F') ? h - 'A' + 10 :
+                -1;
+            }
+
+            private class UrlDecoder
+            {
+                private int _bufferSize;
+
+                // Accumulate characters in a special array
+                private int _numChars;
+                private char[] _charBuffer;
+
+                // Accumulate bytes for decoding into characters in a special array
+                private int _numBytes;
+                private byte[] _byteBuffer;
+
+                // Encoding to convert chars to bytes
+                private Encoding _encoding;
+
+                private void FlushBytes()
+                {
+                    if (_numBytes > 0)
+                    {
+                        _numChars += _encoding.GetChars(_byteBuffer, 0, _numBytes, _charBuffer, _numChars);
+                        _numBytes = 0;
+                    }
+                }
+
+                internal UrlDecoder(int bufferSize, Encoding encoding)
+                {
+                    _bufferSize = bufferSize;
+                    _encoding = encoding;
+
+                    _charBuffer = new char[bufferSize];
+                    // byte buffer created on demand
+                }
+
+                internal void AddChar(char ch)
+                {
+                    if (_numBytes > 0)
+                        FlushBytes();
+
+                    _charBuffer[_numChars++] = ch;
+                }
+
+                internal void AddByte(byte b)
+                {
+                    {
+                        if (_byteBuffer == null)
+                            _byteBuffer = new byte[_bufferSize];
+
+                        _byteBuffer[_numBytes++] = b;
+                    }
+                }
+
+                internal string GetString()
+                {
+                    if (_numBytes > 0)
+                        FlushBytes();
+
+                    if (_numChars > 0)
+                        return new string(_charBuffer, 0, _numChars);
+                    else
+                        return string.Empty;
+                }
+            }
+
+
+            internal static void FillFromString(QueryParamCollection nvc, string s, bool urlencoded, Encoding encoding)
+            {
+                int l = (s != null) ? s.Length : 0;
+                int i = (s.Length > 0 && s[0] == '?') ? 1 : 0;
+
+                while (i < l)
+                {
+                    // find next & while noting first = on the way (and if there are more)
+
+                    int si = i;
+                    int ti = -1;
+
+                    while (i < l)
+                    {
+                        char ch = s[i];
+
+                        if (ch == '=')
+                        {
+                            if (ti < 0)
+                                ti = i;
+                        }
+                        else if (ch == '&')
+                        {
+                            break;
+                        }
+
+                        i++;
+                    }
+
+                    // extract the name / value pair
+
+                    string name = null;
+                    string value = null;
+
+                    if (ti >= 0)
+                    {
+                        name = s.Substring(si, ti - si);
+                        value = s.Substring(ti + 1, i - ti - 1);
+                    }
+                    else
+                    {
+                        value = s.Substring(si, i - si);
+                    }
+
+                    // add name / value pair to the collection
+
+                    if (urlencoded)
+                        nvc.Add(
+                           name == null ? null : UrlDecodeStringFromStringInternal(name, encoding),
+                           UrlDecodeStringFromStringInternal(value, encoding));
+                    else
+                        nvc.Add(name, value);
+
+                    // trailing '&'
+
+                    if (i == l - 1 && s[i] == '&')
+                        nvc.Add(null, "");
+
+                    i++;
+                }
             }
         }
     }

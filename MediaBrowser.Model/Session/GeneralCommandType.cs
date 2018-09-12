@@ -40,6 +40,7 @@
         SetMaxStreamingBitrate = 31,
         Guide = 32,
         ToggleStats = 33,
-        PlayMediaSource = 34
+        PlayMediaSource = 34,
+        PlayTrailers = 35
     }
 }

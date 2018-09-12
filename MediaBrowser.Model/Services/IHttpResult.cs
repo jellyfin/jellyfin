@@ -24,11 +24,6 @@ namespace MediaBrowser.Model.Services
         string ContentType { get; set; }
 
         /// <summary>
-        /// Additional HTTP Cookies
-        /// </summary>
-        List<Cookie> Cookies { get; }
-
-        /// <summary>
         /// Response DTO
         /// </summary>
         object Response { get; set; }

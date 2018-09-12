@@ -49,6 +49,7 @@ namespace MediaBrowser.Model.Session
         VideoLevelNotSupported = 18,
         VideoProfileNotSupported = 19,
         AudioBitDepthNotSupported = 20,
-        SubtitleCodecNotSupported = 21
+        SubtitleCodecNotSupported = 21,
+        DirectPlayError = 22
     }
 }

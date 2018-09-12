@@ -3,7 +3,7 @@ using System.Xml.Serialization;
 
 namespace Emby.Dlna.Profiles
 {
-    [XmlRoot("Profile")]
+    [System.Xml.Serialization.XmlRoot("Profile")]
     public class SamsungSmartTvProfile : DefaultProfile
     {
         public SamsungSmartTvProfile()
@@ -42,7 +42,7 @@ namespace Emby.Dlna.Profiles
                },
                new TranscodingProfile
                {
-                   Container = "ts,mpegts",
+                   Container = "ts",
                    AudioCodec = "ac3",
                    VideoCodec = "h264",
                    Type = DlnaProfileType.Video,

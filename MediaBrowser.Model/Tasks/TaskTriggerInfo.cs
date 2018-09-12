@@ -38,10 +38,10 @@ namespace MediaBrowser.Model.Tasks
         public DayOfWeek? DayOfWeek { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum runtime ms.
+        /// Gets or sets the maximum runtime ticks.
         /// </summary>
-        /// <value>The maximum runtime ms.</value>
-        public int? MaxRuntimeMs { get; set; }
+        /// <value>The maximum runtime ticks.</value>
+        public long? MaxRuntimeTicks { get; set; }
 
         public const string TriggerDaily = "DailyTrigger";
         public const string TriggerWeekly = "WeeklyTrigger";

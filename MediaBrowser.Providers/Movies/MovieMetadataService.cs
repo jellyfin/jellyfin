@@ -65,7 +65,7 @@ namespace MediaBrowser.Providers.Movies
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
-            if (replaceData || target.Item.TrailerTypes.Count == 0)
+            if (replaceData || target.Item.TrailerTypes.Length == 0)
             {
                 target.Item.TrailerTypes = source.Item.TrailerTypes;
             }

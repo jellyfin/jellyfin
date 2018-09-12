@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
+using System;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -18,19 +19,13 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the user identifier.
         /// </summary>
         /// <value>The user identifier.</value>
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the identifier.
         /// </summary>
         /// <value>The identifier.</value>
         public string Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the group identifier.
-        /// </summary>
-        /// <value>The group identifier.</value>
-        public string GroupId { get; set; }
 
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.

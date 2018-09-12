@@ -16,56 +16,19 @@ namespace MediaBrowser.Controller.Connect
         /// <summary>
         /// Links the user.
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
-        /// <param name="connectUsername">The connect username.</param>
-        /// <returns>Task.</returns>
-        Task<UserLinkResult> LinkUser(string userId, string connectUsername);
+        Task<UserLinkResult> LinkUser(User user, string connectUsername);
 
         /// <summary>
         /// Removes the link.
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
-        /// <returns>Task.</returns>
-        Task RemoveConnect(string userId);
+        Task RemoveConnect(User user);
 
-        /// <summary>
-        /// Invites the user.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>Task&lt;UserLinkResult&gt;.</returns>
-        Task<UserLinkResult> InviteUser(ConnectAuthorizationRequest request);
-
-        /// <summary>
-        /// Gets the pending guests.
-        /// </summary>
-        /// <returns>Task&lt;List&lt;ConnectAuthorization&gt;&gt;.</returns>
-        Task<List<ConnectAuthorization>> GetPendingGuests();
-
-        /// <summary>
-        /// Gets the user from exchange token.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <returns>User.</returns>
         User GetUserFromExchangeToken(string token);
-
-        /// <summary>
-        /// Cancels the authorization.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns>Task.</returns>
-        Task CancelAuthorization(string id);
 
         /// <summary>
         /// Authenticates the specified username.
         /// </summary>
-        Task<ConnectAuthenticationResult> Authenticate(string username, string password, string passwordMd5);
-
-        /// <summary>
-        /// Gets the local user.
-        /// </summary>
-        /// <param name="connectUserId">The connect user identifier.</param>
-        /// <returns>Task&lt;User&gt;.</returns>
-        Task<User> GetLocalUser(string connectUserId);
+        Task<ConnectAuthenticationResult> Authenticate(string username, string password);
 
         /// <summary>
         /// Determines whether [is authorization token valid] [the specified token].

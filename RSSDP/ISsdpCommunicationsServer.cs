@@ -38,11 +38,6 @@ namespace Rssdp.Infrastructure
         void StopListeningForBroadcasts();
 
         /// <summary>
-        /// Stops listening for search responses on the local, unicast socket.
-        /// </summary>
-        void StopListeningForResponses();
-
-        /// <summary>
         /// Sends a message to a particular address (uni or multicast) and port.
         /// </summary>
         Task SendMessage(byte[] messageData, IpEndPointInfo destination, IpAddressInfo fromLocalIpAddress, CancellationToken cancellationToken);
@@ -51,6 +46,7 @@ namespace Rssdp.Infrastructure
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
         Task SendMulticastMessage(string message, CancellationToken cancellationToken);
+        Task SendMulticastMessage(string message, int sendCount, CancellationToken cancellationToken);
 
         #endregion
 

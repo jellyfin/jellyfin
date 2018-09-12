@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Services;
+using System;
 
 namespace MediaBrowser.Model.Session
 {
@@ -12,7 +13,7 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The item ids.</value>
         [ApiMember(Name = "ItemIds", Description = "The ids of the items to play, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
-        public string[] ItemIds { get; set; }
+        public Guid[] ItemIds { get; set; }
 
         /// <summary>
         /// Gets or sets the start position ticks that the first item should be played at
@@ -32,7 +33,7 @@ namespace MediaBrowser.Model.Session
         /// Gets or sets the controlling user identifier.
         /// </summary>
         /// <value>The controlling user identifier.</value>
-        public string ControllingUserId { get; set; }
+        public Guid ControllingUserId { get; set; }
 
         public int? SubtitleStreamIndex { get; set; }
         public int? AudioStreamIndex { get; set; }

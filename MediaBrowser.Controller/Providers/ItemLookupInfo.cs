@@ -6,7 +6,7 @@ namespace MediaBrowser.Controller.Providers
 {
     public class ItemLookupInfo : IHasProviderIds
     {
-        protected static string[] EmptyStringArray = new string[] { };
+        protected static string[] EmptyStringArray = Array.Empty<string>();
         
         /// <summary>
         /// Gets or sets the name.

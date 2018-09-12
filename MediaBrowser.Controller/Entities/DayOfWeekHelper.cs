@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.Entities
                 list.Add(DayOfWeek.Monday);
             }
 
-            if (days.Contains(DynamicDayOfWeek.Monday) ||
+            if (days.Contains(DynamicDayOfWeek.Tuesday) ||
                 days.Contains(DynamicDayOfWeek.Weekday) ||
                 days.Contains(DynamicDayOfWeek.Everyday))
             {

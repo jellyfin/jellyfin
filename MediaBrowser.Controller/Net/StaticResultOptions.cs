@@ -24,6 +24,7 @@ namespace MediaBrowser.Controller.Net
         public Action OnError { get; set; }
 
         public string Path { get; set; }
+        public long? ContentLength { get; set; }
 
         public FileShareMode FileShare { get; set; }
 

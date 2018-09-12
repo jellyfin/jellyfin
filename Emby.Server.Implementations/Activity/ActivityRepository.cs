@@ -48,20 +48,76 @@ namespace Emby.Server.Implementations.Activity
             {
                 RunDefaultInitialization(connection);
 
-                string[] queries = {
-                    "create table if not exists ActivityLogEntries (Id GUID PRIMARY KEY NOT NULL, Name TEXT NOT NULL, Overview TEXT, ShortOverview TEXT, Type TEXT NOT NULL, ItemId TEXT, UserId TEXT, DateCreated DATETIME NOT NULL, LogSeverity TEXT NOT NULL)",
-                    "create index if not exists idx_ActivityLogEntries on ActivityLogEntries(Id)"
-                               };
+                connection.RunQueries(new[]
+                {
+                    "create table if not exists ActivityLog (Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Overview TEXT, ShortOverview TEXT, Type TEXT NOT NULL, ItemId TEXT, UserId TEXT, DateCreated DATETIME NOT NULL, LogSeverity TEXT NOT NULL)",
+                    "drop index if exists idx_ActivityLogEntries"
+                });
 
-                connection.RunQueries(queries);
+                TryMigrate(connection);
             }
         }
 
-        private const string BaseActivitySelectText = "select Id, Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity from ActivityLogEntries";
+        private void TryMigrate(ManagedConnection connection)
+        {
+            try
+            {
+                if (TableExists(connection, "ActivityLogEntries"))
+                {
+                    connection.RunQueries(new[]
+                    {
+                        "INSERT INTO ActivityLog (Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity) SELECT Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity FROM ActivityLogEntries",
+                        "drop table if exists ActivityLogEntries"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error migrating activity log database", ex);
+            }
+        }
+
+        private const string BaseActivitySelectText = "select Id, Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity from ActivityLog";
 
         public void Create(ActivityLogEntry entry)
         {
-            Update(entry);
+            if (entry == null)
+            {
+                throw new ArgumentNullException("entry");
+            }
+
+            using (WriteLock.Write())
+            {
+                using (var connection = CreateConnection())
+                {
+                    connection.RunInTransaction(db =>
+                    {
+                        using (var statement = db.PrepareStatement("insert into ActivityLog (Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity) values (@Name, @Overview, @ShortOverview, @Type, @ItemId, @UserId, @DateCreated, @LogSeverity)"))
+                        {
+                            statement.TryBind("@Name", entry.Name);
+
+                            statement.TryBind("@Overview", entry.Overview);
+                            statement.TryBind("@ShortOverview", entry.ShortOverview);
+                            statement.TryBind("@Type", entry.Type);
+                            statement.TryBind("@ItemId", entry.ItemId);
+
+                            if (entry.UserId.Equals(Guid.Empty))
+                            {
+                                statement.TryBindNull("@UserId");
+                            }
+                            else
+                            {
+                                statement.TryBind("@UserId", entry.UserId.ToString("N"));
+                            }
+
+                            statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
+                            statement.TryBind("@LogSeverity", entry.Severity.ToString());
+
+                            statement.MoveNext();
+                        }
+                    }, TransactionMode);
+                }
+            }
         }
 
         public void Update(ActivityLogEntry entry)
@@ -77,16 +133,25 @@ namespace Emby.Server.Implementations.Activity
                 {
                     connection.RunInTransaction(db =>
                     {
-                        using (var statement = db.PrepareStatement("replace into ActivityLogEntries (Id, Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity) values (@Id, @Name, @Overview, @ShortOverview, @Type, @ItemId, @UserId, @DateCreated, @LogSeverity)"))
+                        using (var statement = db.PrepareStatement("Update ActivityLog set Name=@Name,Overview=@Overview,ShortOverview=@ShortOverview,Type=@Type,ItemId=@ItemId,UserId=@UserId,DateCreated=@DateCreated,LogSeverity=@LogSeverity where Id=@Id"))
                         {
-                            statement.TryBind("@Id", entry.Id.ToGuidBlob());
-                            statement.TryBind("@Name", entry.Name);
+                            statement.TryBind("@Id", entry.Id);
 
+                            statement.TryBind("@Name", entry.Name);
                             statement.TryBind("@Overview", entry.Overview);
                             statement.TryBind("@ShortOverview", entry.ShortOverview);
                             statement.TryBind("@Type", entry.Type);
                             statement.TryBind("@ItemId", entry.ItemId);
-                            statement.TryBind("@UserId", entry.UserId);
+
+                            if (entry.UserId.Equals(Guid.Empty))
+                            {
+                                statement.TryBindNull("@UserId");
+                            }
+                            else
+                            {
+                                statement.TryBind("@UserId", entry.UserId.ToString("N"));
+                            }
+
                             statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
                             statement.TryBind("@LogSeverity", entry.Severity.ToString());
 
@@ -97,7 +162,7 @@ namespace Emby.Server.Implementations.Activity
             }
         }
 
-        public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit)
+        public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit)
         {
             using (WriteLock.Read())
             {
@@ -110,6 +175,17 @@ namespace Emby.Server.Implementations.Activity
                     {
                         whereClauses.Add("DateCreated>=@DateCreated");
                     }
+                    if (hasUserId.HasValue)
+                    {
+                        if (hasUserId.Value)
+                        {
+                            whereClauses.Add("UserId not null");
+                        }
+                        else
+                        {
+                            whereClauses.Add("UserId is null");
+                        }
+                    }
 
                     var whereTextWithoutPaging = whereClauses.Count == 0 ?
                       string.Empty :
@@ -121,7 +197,7 @@ namespace Emby.Server.Implementations.Activity
                             string.Empty :
                             " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
 
-                        whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM ActivityLogEntries {0} ORDER BY DateCreated DESC LIMIT {1})",
+                        whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM ActivityLog {0} ORDER BY DateCreated DESC LIMIT {1})",
                             pagingWhereText,
                             startIndex.Value.ToString(_usCulture)));
                     }
@@ -141,7 +217,7 @@ namespace Emby.Server.Implementations.Activity
 
                     var statementTexts = new List<string>();
                     statementTexts.Add(commandText);
-                    statementTexts.Add("select count (Id) from ActivityLogEntries" + whereTextWithoutPaging);
+                    statementTexts.Add("select count (Id) from ActivityLog" + whereTextWithoutPaging);
 
                     return connection.RunInTransaction(db =>
                     {
@@ -187,7 +263,7 @@ namespace Emby.Server.Implementations.Activity
 
             var info = new ActivityLogEntry
             {
-                Id = reader[index].ReadGuidFromBlob().ToString("N")
+                Id = reader[index].ToInt64()
             };
 
             index++;
@@ -223,7 +299,7 @@ namespace Emby.Server.Implementations.Activity
             index++;
             if (reader[index].SQLiteType != SQLiteType.Null)
             {
-                info.UserId = reader[index].ToString();
+                info.UserId = new Guid(reader[index].ToString());
             }
 
             index++;

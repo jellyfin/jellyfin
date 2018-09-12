@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using MediaBrowser.Model.Configuration;
+using System;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -33,7 +34,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public VirtualFolderInfo()
         {
-            Locations = new string[] { };
+            Locations = Array.Empty<string>();
         }
 
         /// <summary>

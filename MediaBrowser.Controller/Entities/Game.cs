@@ -5,27 +5,29 @@ using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
+using System;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Game : BaseItem, IHasTrailers, IHasScreenshots, ISupportsPlaceHolders, IHasLookupInfo<GameInfo>
+    public class Game : BaseItem, IHasScreenshots, ISupportsPlaceHolders, IHasLookupInfo<GameInfo>
     {
         public Game()
         {
-            MultiPartGameFiles = EmptyStringArray;
-            RemoteTrailers = EmptyMediaUrlArray;
-            LocalTrailerIds = EmptyGuidArray;
-            RemoteTrailerIds = EmptyGuidArray;
+            MultiPartGameFiles = Array.Empty<string>();
         }
-
-        public Guid[] LocalTrailerIds { get; set; }
-        public Guid[] RemoteTrailerIds { get; set; }
 
         public override bool CanDownload()
         {
-            var locationType = LocationType;
-            return locationType != LocationType.Remote &&
-                   locationType != LocationType.Virtual;
+            return CanDownloadAsSingleMedia();
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsExternalTransfer
+        {
+            get
+            {
+                return CanDownloadAsSingleMedia();
+            }
         }
 
         [IgnoreDataMember]
@@ -40,11 +42,11 @@ namespace MediaBrowser.Controller.Entities
             get { return false; }
         }
 
-        /// <summary>
-        /// Gets or sets the remote trailers.
-        /// </summary>
-        /// <value>The remote trailers.</value>
-        public MediaUrl[] RemoteTrailers { get; set; }
+        [IgnoreDataMember]
+        public override bool SupportsLocalTrailers
+        {
+            get { return true; }
+        }
 
         /// <summary>
         /// Gets the type of the media.

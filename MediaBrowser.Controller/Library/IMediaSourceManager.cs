@@ -41,28 +41,17 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the playack media sources.
         /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="userId">The user identifier.</param>
-        /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
-        /// <param name="supportedLiveMediaTypes">The supported live media types.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>IEnumerable&lt;MediaSourceInfo&gt;.</returns>
-        Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, string userId, bool enablePathSubstitution, string[] supportedLiveMediaTypes, CancellationToken cancellationToken);
+        Task<List<MediaSourceInfo>> GetPlayackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the static media sources.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable&lt;MediaSourceInfo&gt;.</returns>
-        List<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution, User user = null);
+        List<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null);
 
         /// <summary>
         /// Gets the static media source.
         /// </summary>
-        /// <returns>MediaSourceInfo.</returns>
-        Task<MediaSourceInfo> GetMediaSource(IHasMediaSources item, string mediaSourceId, string liveStreamId, bool enablePathSubstitution, CancellationToken cancellationToken);
+        Task<MediaSourceInfo> GetMediaSource(BaseItem item, string mediaSourceId, string liveStreamId, bool enablePathSubstitution, CancellationToken cancellationToken);
 
         /// <summary>
         /// Opens the media source.
@@ -71,6 +60,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
         Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken);
+
+        Task<Tuple<LiveStreamResponse, IDirectStreamProvider>> OpenLiveStreamInternal(LiveStreamRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the live stream.
@@ -88,6 +79,18 @@ namespace MediaBrowser.Controller.Library
         /// <param name="id">The live stream identifier.</param>
         /// <returns>Task.</returns>
         Task CloseLiveStream(string id);
+
+        Task<MediaSourceInfo> GetLiveStreamMediaInfo(string id, CancellationToken cancellationToken);
+
+        bool SupportsDirectStream(string path, MediaProtocol protocol);
+
+        MediaProtocol GetPathProtocol(string path);
+
+        void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user);
+
+        Task AddMediaInfoWithProbe(MediaSourceInfo mediaSource, bool isAudio, string cacheKey, bool addProbeDelay, bool isLiveStream, CancellationToken cancellationToken);
+
+        Task<IDirectStreamProvider> GetDirectStreamProviderByUniqueId(string uniqueId, CancellationToken cancellationToken);
     }
 
     public interface IDirectStreamProvider

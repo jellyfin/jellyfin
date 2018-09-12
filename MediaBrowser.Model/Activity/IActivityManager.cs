@@ -10,6 +10,8 @@ namespace MediaBrowser.Model.Activity
 
         void Create(ActivityLogEntry entry);
 
+        QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit);
+
         QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit);
     }
 }

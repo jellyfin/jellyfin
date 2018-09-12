@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Subtitles
 {
@@ -45,35 +46,26 @@ namespace MediaBrowser.Controller.Subtitles
         /// <summary>
         /// Downloads the subtitles.
         /// </summary>
-        /// <param name="video">The video.</param>
-        /// <param name="subtitleId">The subtitle identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task DownloadSubtitles(Video video,
-            string subtitleId,
-            CancellationToken cancellationToken);
+        Task DownloadSubtitles(Video video, string subtitleId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Downloads the subtitles.
+        /// </summary>
+        Task DownloadSubtitles(Video video, LibraryOptions libraryOptions, string subtitleId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the remote subtitles.
         /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{SubtitleResponse}.</returns>
         Task<SubtitleResponse> GetRemoteSubtitles(string id, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes the subtitles.
         /// </summary>
-        /// <param name="itemId">The item identifier.</param>
-        /// <param name="index">The index.</param>
-        /// <returns>Task.</returns>
-        Task DeleteSubtitles(string itemId, int index);
+        Task DeleteSubtitles(BaseItem item, int index);
 
         /// <summary>
         /// Gets the providers.
         /// </summary>
-        /// <param name="itemId">The item identifier.</param>
-        /// <returns>IEnumerable{SubtitleProviderInfo}.</returns>
-        SubtitleProviderInfo[] GetProviders(string itemId);
+        SubtitleProviderInfo[] GetSupportedProviders(BaseItem item);
     }
 }

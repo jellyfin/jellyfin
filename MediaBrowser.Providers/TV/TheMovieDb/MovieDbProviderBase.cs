@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.TV
 {
     public abstract class MovieDbProviderBase
     {
-        private const string EpisodeUrlPattern = @"https://api.themoviedb.org/3/tv/{0}/season/{1}/episode/{2}?api_key={3}&append_to_response=images,external_ids,credits,videos";
+        private const string EpisodeUrlPattern = MovieDbProvider.BaseMovieDbUrl + @"3/tv/{0}/season/{1}/episode/{2}?api_key={3}&append_to_response=images,external_ids,credits,videos";
         private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IJsonSerializer _jsonSerializer;
@@ -70,9 +70,9 @@ namespace MediaBrowser.Providers.TV
             if (fileInfo.Exists)
             {
                 // If it's recent or automatic updates are enabled, don't re-download
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 3)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
                 {
-                    return Task.FromResult(true);
+                    return Task.CompletedTask;
                 }
             }
 
@@ -135,7 +135,7 @@ namespace MediaBrowser.Providers.TV
             {
                 using (var json = response.Content)
                 {
-                    return _jsonSerializer.DeserializeFromStream<RootObject>(json);
+                    return await _jsonSerializer.DeserializeFromStreamAsync<RootObject>(json).ConfigureAwait(false);
                 }
             }
         }

@@ -43,35 +43,5 @@ namespace MediaBrowser.Controller.Providers
             }
             People.Clear();
         }
-
-        public UserItemData GetOrAddUserData(string userId)
-        {
-            if (UserDataList == null)
-            {
-                UserDataList = new List<UserItemData>();
-            }
-
-            UserItemData userData = null;
-
-            foreach (var i in UserDataList)
-            {
-                if (string.Equals(userId, i.UserId.ToString("N"), StringComparison.OrdinalIgnoreCase))
-                {
-                    userData = i;
-                }
-            }
-
-            if (userData == null)
-            {
-                userData = new UserItemData()
-                {
-                    UserId = new Guid(userId)
-                };
-
-                UserDataList.Add(userData);
-            }
-
-            return userData;
-        }
     }
 }

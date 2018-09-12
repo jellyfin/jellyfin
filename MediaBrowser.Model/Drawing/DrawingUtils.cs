@@ -8,104 +8,49 @@
         /// <summary>
         /// Resizes a set of dimensions
         /// </summary>
-        /// <param name="currentWidth">Width of the current.</param>
-        /// <param name="currentHeight">Height of the current.</param>
-        /// <param name="scaleFactor">The scale factor.</param>
-        /// <returns>ImageSize.</returns>
-        public static ImageSize Scale(double currentWidth, double currentHeight, double scaleFactor)
-        {
-            return Scale(new ImageSize
-            {
-                Width = currentWidth, 
-                Height = currentHeight
-
-            }, scaleFactor);
-        }
-
-        /// <summary>
-        /// Resizes a set of dimensions
-        /// </summary>
-        /// <param name="size">The size.</param>
-        /// <param name="scaleFactor">The scale factor.</param>
-        /// <returns>ImageSize.</returns>
-        public static ImageSize Scale(ImageSize size, double scaleFactor)
-        {
-            double newWidth = size.Width * scaleFactor;
-
-            return Resize(size.Width, size.Height, newWidth, null, null, null);
-        }
-
-        /// <summary>
-        /// Resizes a set of dimensions
-        /// </summary>
-        /// <param name="currentWidth">Width of the current.</param>
-        /// <param name="currentHeight">Height of the current.</param>
-        /// <param name="width">The width.</param>
-        /// <param name="height">The height.</param>
-        /// <param name="maxWidth">A max fixed width, if desired</param>
-        /// <param name="maxHeight">A max fixed height, if desired</param>
-        /// <returns>ImageSize.</returns>
-        public static ImageSize Resize(double currentWidth, 
-            double currentHeight, 
-            double? width, 
-            double? height, 
-            double? maxWidth,
-            double? maxHeight)
-        {
-            return Resize(new ImageSize
-            {
-                Width = currentWidth, 
-                Height = currentHeight
-
-            }, width, height, maxWidth, maxHeight);
-        }
-
-        /// <summary>
-        /// Resizes a set of dimensions
-        /// </summary>
         /// <param name="size">The original size object</param>
         /// <param name="width">A new fixed width, if desired</param>
         /// <param name="height">A new fixed height, if desired</param>
         /// <param name="maxWidth">A max fixed width, if desired</param>
         /// <param name="maxHeight">A max fixed height, if desired</param>
         /// <returns>A new size object</returns>
-        public static ImageSize Resize(ImageSize size, 
-            double? width, 
-            double? height, 
-            double? maxWidth, 
-            double? maxHeight)
+        public static ImageSize Resize(ImageSize size,
+            double width,
+            double height,
+            double maxWidth,
+            double maxHeight)
         {
             double newWidth = size.Width;
             double newHeight = size.Height;
 
-            if (width.HasValue && height.HasValue)
+            if (width > 0 && height > 0)
             {
-                newWidth = width.Value;
-                newHeight = height.Value;
+                newWidth = width;
+                newHeight = height;
             }
 
-            else if (height.HasValue)
+            else if (height > 0)
             {
-                newWidth = GetNewWidth(newHeight, newWidth, height.Value);
-                newHeight = height.Value;
+                newWidth = GetNewWidth(newHeight, newWidth, height);
+                newHeight = height;
             }
 
-            else if (width.HasValue)
+            else if (width > 0)
             {
-                newHeight = GetNewHeight(newHeight, newWidth, width.Value);
-                newWidth = width.Value;
+                newHeight = GetNewHeight(newHeight, newWidth, width);
+                newWidth = width;
             }
 
-            if (maxHeight.HasValue && maxHeight.Value < newHeight)
+            if (maxHeight > 0 && maxHeight < newHeight)
             {
-                newWidth = GetNewWidth(newHeight, newWidth, maxHeight.Value);
-                newHeight = maxHeight.Value;
+                newWidth = GetNewWidth(newHeight, newWidth, maxHeight);
+                newHeight = maxHeight;
             }
 
-            if (maxWidth.HasValue && maxWidth.Value < newWidth)
+            if (maxWidth > 0 && maxWidth < newWidth)
             {
-                newHeight = GetNewHeight(newHeight, newWidth, maxWidth.Value);
-                newWidth = maxWidth.Value;
+                newHeight = GetNewHeight(newHeight, newWidth, maxWidth);
+                newWidth = maxWidth;
             }
 
             return new ImageSize { Width = newWidth, Height = newHeight };

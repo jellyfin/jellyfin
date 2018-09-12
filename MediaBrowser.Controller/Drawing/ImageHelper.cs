@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Drawing
             if (originalImageSize.HasValue)
             {
                 // Determine the output size based on incoming parameters
-                var newSize = DrawingUtils.Resize(originalImageSize.Value, options.Width, options.Height, options.MaxWidth, options.MaxHeight);
+                var newSize = DrawingUtils.Resize(originalImageSize.Value, options.Width ?? 0, options.Height ?? 0, options.MaxWidth ?? 0, options.MaxHeight ?? 0);
 
                 return newSize;
             }
@@ -43,7 +43,7 @@ namespace MediaBrowser.Controller.Drawing
             return new ImageSize(widthValue, height);
         }
 
-        private static double GetEstimatedAspectRatio(ImageType type, IHasMetadata item)
+        private static double GetEstimatedAspectRatio(ImageType type, BaseItem item)
         {
             switch (type)
             {
@@ -63,7 +63,8 @@ namespace MediaBrowser.Controller.Drawing
                 case ImageType.Logo:
                     return 2.58;
                 case ImageType.Primary:
-                    return item.GetDefaultPrimaryImageAspectRatio() ?? .667;
+                    var prim = item.GetDefaultPrimaryImageAspectRatio();
+                    return prim > 0 ? prim : .667;
                 default:
                     return 1;
             }

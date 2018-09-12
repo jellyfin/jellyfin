@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -11,12 +12,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Gets the subtitles.
         /// </summary>
         /// <returns>Task{Stream}.</returns>
-        Task<Stream> GetSubtitles(string itemId,
+        Task<Stream> GetSubtitles(BaseItem item,
             string mediaSourceId,
             int subtitleStreamIndex,
             string outputFormat,
             long startTimeTicks,
-            long? endTimeTicks,
+            long endTimeTicks,
             bool preserveOriginalTimestamps,
             CancellationToken cancellationToken);
 

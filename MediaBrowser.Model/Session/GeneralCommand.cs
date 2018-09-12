@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Session
 {
@@ -6,7 +7,7 @@ namespace MediaBrowser.Model.Session
     {
         public string Name { get; set; }
 
-        public string ControllingUserId { get; set; }
+        public Guid ControllingUserId { get; set; }
 
         public Dictionary<string, string> Arguments { get; set; }
 

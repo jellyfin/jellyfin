@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Model.Search
 {
     public class SearchQuery
@@ -7,7 +8,7 @@ namespace MediaBrowser.Model.Search
         /// The user to localize search results for
         /// </summary>
         /// <value>The user id.</value>
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the search term.
@@ -56,9 +57,9 @@ namespace MediaBrowser.Model.Search
             IncludePeople = true;
             IncludeStudios = true;
 
-            MediaTypes = new string[] { };
-            IncludeItemTypes = new string[] { };
-            ExcludeItemTypes = new string[] { };
+            MediaTypes = Array.Empty<string>();
+            IncludeItemTypes = Array.Empty<string>();
+            ExcludeItemTypes = Array.Empty<string>();
         }
     }
 }

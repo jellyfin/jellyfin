@@ -24,6 +24,8 @@ namespace MediaBrowser.Common.Configuration
         /// <value>The data directory.</value>
         string DataPath { get; }
 
+        string VirtualDataPath { get; }
+
         /// <summary>
         /// Gets the image cache path.
         /// </summary>

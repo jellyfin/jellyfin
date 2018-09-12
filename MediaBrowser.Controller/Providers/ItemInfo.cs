@@ -6,7 +6,7 @@ namespace MediaBrowser.Controller.Providers
 {
     public class ItemInfo
     {
-        public ItemInfo(IHasMetadata item)
+        public ItemInfo(BaseItem item)
         {
             Path = item.Path;
             ContainingFolderPath = item.ContainingFolderPath;

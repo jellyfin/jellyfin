@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -25,7 +26,7 @@ namespace MediaBrowser.Model.LiveTv
         public LiveTvInfo()
         {
             Services = new LiveTvServiceInfo[] { };
-            EnabledUsers = new string[] { };
+            EnabledUsers = Array.Empty<string>();
         }
     }
 }

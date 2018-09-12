@@ -1,4 +1,6 @@
-﻿namespace MediaBrowser.Model.Session
+﻿using System;
+
+namespace MediaBrowser.Model.Session
 {
     /// <summary>
     /// Class SessionUserInfo.
@@ -9,7 +11,7 @@
         /// Gets or sets the user identifier.
         /// </summary>
         /// <value>The user identifier.</value>
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
         /// <summary>
         /// Gets or sets the name of the user.
         /// </summary>

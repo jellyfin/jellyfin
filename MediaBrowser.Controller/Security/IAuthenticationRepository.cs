@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Model.Querying;
-using System.Threading;
+using MediaBrowser.Model.Devices;
 
 namespace MediaBrowser.Controller.Security
 {
@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Security
         /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        void Create(AuthenticationInfo info, CancellationToken cancellationToken);
+        void Create(AuthenticationInfo info);
 
         /// <summary>
         /// Updates the specified information.
@@ -19,7 +19,9 @@ namespace MediaBrowser.Controller.Security
         /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        void Update(AuthenticationInfo info, CancellationToken cancellationToken);
+        void Update(AuthenticationInfo info);
+
+        void Delete(AuthenticationInfo existing);
 
         /// <summary>
         /// Gets the specified query.
@@ -28,11 +30,8 @@ namespace MediaBrowser.Controller.Security
         /// <returns>QueryResult{AuthenticationInfo}.</returns>
         QueryResult<AuthenticationInfo> Get(AuthenticationInfoQuery query);
 
-        /// <summary>
-        /// Gets the specified identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns>AuthenticationInfo.</returns>
-        AuthenticationInfo Get(string id);
+        DeviceOptions GetDeviceOptions(string deviceId);
+
+        void UpdateDeviceOptions(string deviceId, DeviceOptions options);
     }
 }

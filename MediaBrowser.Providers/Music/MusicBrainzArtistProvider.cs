@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Music
                 // They seem to throw bad request failures on any term with a slash
                 var nameToSearch = searchInfo.Name.Replace('/', ' ');
 
-                var url = String.Format("/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
+                var url = String.Format("/ws/2/artist/?query=\"{0}\"&dismax=true", UrlEncode(nameToSearch));
 
                 using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
                 {

@@ -10,6 +10,7 @@ namespace MediaBrowser.Model.Configuration
         ImageSaver,
         LocalMetadataProvider,
         MetadataFetcher,
-        MetadataSaver
+        MetadataSaver,
+        SubtitleFetcher
     }
 }

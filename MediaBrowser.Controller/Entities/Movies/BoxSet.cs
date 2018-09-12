@@ -7,24 +7,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
     /// <summary>
     /// Class BoxSet
     /// </summary>
-    public class BoxSet : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>, IHasShares
+    public class BoxSet : Folder, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>
     {
-        public List<Share> Shares { get; set; }
-
         public BoxSet()
         {
-            RemoteTrailers = EmptyMediaUrlArray;
-            LocalTrailerIds = EmptyGuidArray;
-            RemoteTrailerIds = EmptyGuidArray;
-
             DisplayOrder = ItemSortBy.PremiereDate;
-            Shares = new List<Share>();
         }
 
         [IgnoreDataMember]
@@ -34,6 +28,12 @@ namespace MediaBrowser.Controller.Entities.Movies
             {
                 return true;
             }
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsLocalTrailers
+        {
+            get { return true; }
         }
 
         [IgnoreDataMember]
@@ -51,15 +51,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             get { return true; }
         }
 
-        public Guid[] LocalTrailerIds { get; set; }
-        public Guid[] RemoteTrailerIds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the remote trailers.
-        /// </summary>
-        /// <value>The remote trailers.</value>
-        public MediaUrl[] RemoteTrailers { get; set; }
-
         /// <summary>
         /// Gets or sets the display order.
         /// </summary>
@@ -71,7 +62,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return config.BlockUnratedItems.Contains(UnratedItem.Movie);
         }
 
-        public override double? GetDefaultPrimaryImageAspectRatio()
+        public override double GetDefaultPrimaryImageAspectRatio()
         {
             double value = 2;
             value /= 3;
@@ -109,7 +100,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(Path))
+                if (string.IsNullOrEmpty(Path))
                 {
                     return false;
                 }
@@ -142,32 +133,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             return true;
         }
 
-        /// <summary>
-        /// Updates the official rating based on content and returns true or false indicating if it changed.
-        /// </summary>
-        /// <returns></returns>
-        public bool UpdateRatingToContent()
+        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
-            var currentOfficialRating = OfficialRating;
-
-            // Gather all possible ratings
-            var ratings = GetLinkedChildren()
-                .Select(i => i.OfficialRating)
-                .Where(i => !string.IsNullOrEmpty(i))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(i => new Tuple<string, int?>(i, LocalizationManager.GetRatingLevel(i)))
-                .OrderBy(i => i.Item2 ?? 1000)
-                .Select(i => i.Item1);
-
-            OfficialRating = ratings.FirstOrDefault() ?? currentOfficialRating;
-
-            return !string.Equals(currentOfficialRating ?? string.Empty, OfficialRating ?? string.Empty,
-                StringComparison.OrdinalIgnoreCase);
-        }
-
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
-        {
-            var children = base.GetChildren(user, includeLinkedChildren);
+            var children = base.GetChildren(user, includeLinkedChildren, query);
 
             if (string.Equals(DisplayOrder, ItemSortBy.SortName, StringComparison.OrdinalIgnoreCase))
             {
@@ -185,6 +153,19 @@ namespace MediaBrowser.Controller.Entities.Movies
             return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending).ToList();
         }
 
+        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        {
+            var children = base.GetRecursiveChildren(user, query);
+
+            if (string.Equals(DisplayOrder, ItemSortBy.PremiereDate, StringComparison.OrdinalIgnoreCase))
+            {
+                // Sort by release date
+                return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending).ToList();
+            }
+
+            return children;
+        }
+
         public BoxSetInfo GetLookupInfo()
         {
             return GetItemLookupInfo<BoxSetInfo>();
@@ -192,17 +173,27 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public override bool IsVisible(User user)
         {
-            var userId = user.Id.ToString("N");
-
-            // Need to check Count > 0 for boxsets created prior to the introduction of Shares
-            if (Shares.Count > 0 && Shares.Any(i => string.Equals(userId, i.UserId, StringComparison.OrdinalIgnoreCase)))
+            if (IsLegacyBoxSet)
             {
-                return true;
+                return base.IsVisible(user);
             }
 
             if (base.IsVisible(user))
             {
-                return base.GetChildren(user, true).Count > 0;
+                if (LinkedChildren.Length == 0)
+                {
+                    return true;
+                }
+
+                var userLibraryFolderIds = GetLibraryFolderIds(user);
+                var libraryFolderIds = LibraryFolderIds ?? GetLibraryFolderIds();
+
+                if (libraryFolderIds.Length == 0)
+                {
+                    return true;
+                }
+
+                return userLibraryFolderIds.Any(i => libraryFolderIds.Contains(i));
             }
 
             return false;
@@ -210,7 +201,56 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public override bool IsVisibleStandalone(User user)
         {
+            if (IsLegacyBoxSet)
+            {
+                return base.IsVisibleStandalone(user);
+            }
+
             return IsVisible(user);
+        }
+
+        public Guid[] LibraryFolderIds { get; set; }
+
+        private Guid[] GetLibraryFolderIds(User user)
+        {
+            return LibraryManager.GetUserRootFolder().GetChildren(user, true)
+                .Select(i => i.Id)
+                .ToArray();
+        }
+
+        public Guid[] GetLibraryFolderIds()
+        {
+            var expandedFolders = new List<Guid>() { };
+
+            return FlattenItems(this, expandedFolders)
+                .SelectMany(i => LibraryManager.GetCollectionFolders(i))
+                .Select(i => i.Id)
+                .Distinct()
+                .ToArray();
+        }
+
+        private IEnumerable<BaseItem> FlattenItems(IEnumerable<BaseItem> items, List<Guid> expandedFolders)
+        {
+            return items
+                .SelectMany(i => FlattenItems(i, expandedFolders));
+        }
+
+        private IEnumerable<BaseItem> FlattenItems(BaseItem item, List<Guid> expandedFolders)
+        {
+            var boxset = item as BoxSet;
+            if (boxset != null)
+            {
+                if (!expandedFolders.Contains(item.Id))
+                {
+                    expandedFolders.Add(item.Id);
+
+                    return FlattenItems(boxset.GetLinkedChildren(), expandedFolders);
+                }
+
+                return Array.Empty<BaseItem>();
+            }
+
+            return new[] { item };
         }
     }
 }

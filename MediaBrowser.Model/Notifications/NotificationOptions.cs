@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Users;
+using System;
 
 namespace MediaBrowser.Model.Notifications
 {
@@ -98,12 +99,12 @@ namespace MediaBrowser.Model.Notifications
                    !ListHelper.ContainsIgnoreCase(opt.DisabledServices, service);
         }
 
-        public bool IsEnabledToMonitorUser(string type, string userId)
+        public bool IsEnabledToMonitorUser(string type, Guid userId)
         {
             NotificationOption opt = GetOptions(type);
 
             return opt != null && opt.Enabled &&
-                   !ListHelper.ContainsIgnoreCase(opt.DisabledMonitorUsers, userId);
+                   !ListHelper.ContainsIgnoreCase(opt.DisabledMonitorUsers, userId.ToString("N"));
         }
 
         public bool IsEnabledToSendToUser(string type, string userId, UserPolicy userPolicy)

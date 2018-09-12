@@ -1,12 +1,13 @@
 ﻿using MediaBrowser.Model.Dlna;
+using System;
 
 namespace MediaBrowser.Model.MediaInfo
 {
     public class PlaybackInfoRequest
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         public long? MaxStreamingBitrate { get; set; }
 
@@ -21,7 +22,7 @@ namespace MediaBrowser.Model.MediaInfo
         public string MediaSourceId { get; set; }
 
         public string LiveStreamId { get; set; }
-        
+
         public DeviceProfile DeviceProfile { get; set; }
 
         public bool EnableDirectPlay { get; set; }
@@ -29,8 +30,10 @@ namespace MediaBrowser.Model.MediaInfo
         public bool EnableTranscoding { get; set; }
         public bool AllowVideoStreamCopy { get; set; }
         public bool AllowAudioStreamCopy { get; set; }
+        public bool IsPlayback { get; set; }
         public bool AutoOpenLiveStream { get; set; }
-        public bool EnableMediaProbe { get; set; }
+
+        public MediaProtocol[] DirectPlayProtocols { get; set; }
 
         public PlaybackInfoRequest()
         {
@@ -39,7 +42,8 @@ namespace MediaBrowser.Model.MediaInfo
             EnableTranscoding = true;
             AllowVideoStreamCopy = true;
             AllowAudioStreamCopy = true;
-            EnableMediaProbe = true;
+            IsPlayback = true;
+            DirectPlayProtocols = new MediaProtocol[] { MediaProtocol.Http };
         }
     }
 }

@@ -1,26 +1,9 @@
-﻿using MediaBrowser.Model.Session;
-using System;
+﻿using System;
 
 namespace MediaBrowser.Model.Devices
 {
     public class DeviceInfo
     {
-        /// <summary>
-        /// Gets or sets the name of the reported.
-        /// </summary>
-        /// <value>The name of the reported.</value>
-        public string ReportedName { get; set; }
-        /// <summary>
-        /// Gets or sets the name of the custom.
-        /// </summary>
-        /// <value>The name of the custom.</value>
-        public string CustomName { get; set; }
-        /// <summary>
-        /// Gets or sets the camera upload path.
-        /// </summary>
-        /// <value>The camera upload path.</value>
-        public string CameraUploadPath { get; set; }
-
         public string Name { get; set; }
 
         /// <summary>
@@ -47,21 +30,9 @@ namespace MediaBrowser.Model.Devices
         /// Gets or sets the last user identifier.
         /// </summary>
         /// <value>The last user identifier.</value>
-        public string LastUserId { get; set; }
-        /// <summary>
-        /// Gets or sets the date last modified.
-        /// </summary>
-        /// <value>The date last modified.</value>
-        public DateTime DateLastModified { get; set; }
-        /// <summary>
-        /// Gets or sets the capabilities.
-        /// </summary>
-        /// <value>The capabilities.</value>
-        public ClientCapabilities Capabilities { get; set; }
+        public Guid LastUserId { get; set; }
+        public DateTime DateLastActivity { get; set; }
 
-        public DeviceInfo()
-        {
-            Capabilities = new ClientCapabilities();
-        }
+        public string IconUrl { get; set; }
     }
 }

@@ -14,11 +14,6 @@ namespace MediaBrowser.Model.Net
 
         public IpAddressInfo(string address, IpAddressFamily addressFamily)
         {
-            if (string.IsNullOrWhiteSpace(address))
-            {
-                throw new ArgumentNullException("address");
-            }
-
             Address = address;
             AddressFamily = addressFamily;
         }

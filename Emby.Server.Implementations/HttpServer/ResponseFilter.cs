@@ -2,7 +2,6 @@
 using System;
 using System.Globalization;
 using System.Text;
-using Emby.Server.Implementations.HttpServer.SocketSharp;
 using MediaBrowser.Model.Services;
 
 namespace Emby.Server.Implementations.HttpServer
@@ -47,7 +46,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             var hasHeaders = dto as IHasHeaders;
-            var sharpResponse = res as WebSocketSharpResponse;
 
             if (hasHeaders != null)
             {
@@ -67,7 +65,7 @@ namespace Emby.Server.Implementations.HttpServer
                     if (length > 0)
                     {
                         res.SetContentLength(length);
-                        
+
                         //var listenerResponse = res.OriginalResponse as HttpListenerResponse;
 
                         //if (listenerResponse != null)
@@ -78,10 +76,7 @@ namespace Emby.Server.Implementations.HttpServer
                         //    return;
                         //}
 
-                        if (sharpResponse != null)
-                        {
-                            sharpResponse.SendChunked = false;
-                        }
+                        res.SendChunked = false;
                     }
                 }
             }

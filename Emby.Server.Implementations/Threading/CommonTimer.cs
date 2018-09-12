@@ -31,7 +31,6 @@ namespace Emby.Server.Implementations.Threading
         public void Dispose()
         {
             _timer.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }

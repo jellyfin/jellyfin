@@ -69,5 +69,6 @@ namespace MediaBrowser.Controller.LiveTv
         public bool? IsHD { get; set; }
         public string AudioCodec { get; set; }
         public string VideoCodec { get; set; }
+        public string[] Tags { get; set; }
     }
 }

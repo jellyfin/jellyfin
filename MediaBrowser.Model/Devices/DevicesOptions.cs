@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Model.Devices
 {
     public class DevicesOptions
@@ -9,7 +10,12 @@ namespace MediaBrowser.Model.Devices
 
         public DevicesOptions()
         {
-            EnabledCameraUploadDevices = new string[] { };
+            EnabledCameraUploadDevices = Array.Empty<string>();
         }
+    }
+
+    public class DeviceOptions
+    {
+        public string CustomName { get; set; }
     }
 }

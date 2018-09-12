@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System;
 
 namespace MediaBrowser.Model.Channels
 {
@@ -61,7 +62,7 @@ namespace MediaBrowser.Model.Channels
         /// </summary>
         /// <value><c>true</c> if [supports latest media]; otherwise, <c>false</c>.</value>
         public bool SupportsLatestMedia { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance can filter.
         /// </summary>
@@ -76,10 +77,10 @@ namespace MediaBrowser.Model.Channels
 
         public ChannelFeatures()
         {
-            MediaTypes = new ChannelMediaType[] { };
-            ContentTypes = new ChannelMediaContentType[] { };
+            MediaTypes = Array.Empty<ChannelMediaType>();
+            ContentTypes = Array.Empty<ChannelMediaContentType>();
 
-            DefaultSortFields = new ChannelItemSortField[] { };
+            DefaultSortFields = Array.Empty<ChannelItemSortField>();
         }
     }
 }

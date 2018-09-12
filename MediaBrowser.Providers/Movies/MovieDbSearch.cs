@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.Movies
     public class MovieDbSearch
     {
         private static readonly CultureInfo EnUs = new CultureInfo("en-US");
-        private const string Search3 = @"https://api.themoviedb.org/3/search/{3}?api_key={1}&query={0}&language={2}";
+        private const string Search3 = MovieDbProvider.BaseMovieDbUrl + @"3/search/{3}?api_key={1}&query={0}&language={2}";
 
         internal static string ApiKey = "f6bd687ffa63cd282b6ff2c6877f2669";
         internal static string AcceptHeader = "application/json,image/*";
@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.Movies
 
             var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-            var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
+            var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
 
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -164,7 +164,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 using (var json = response.Content)
                 {
-                    var searchResults = _json.DeserializeFromStream<TmdbMovieSearchResults>(json);
+                    var searchResults = await _json.DeserializeFromStreamAsync<TmdbMovieSearchResults>(json).ConfigureAwait(false);
 
                     var results = searchResults.results ?? new List<TmdbMovieSearchResult>();
 
@@ -219,7 +219,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 using (var json = response.Content)
                 {
-                    var searchResults = _json.DeserializeFromStream<TmdbTvSearchResults>(json);
+                    var searchResults = await _json.DeserializeFromStreamAsync<TmdbTvSearchResults>(json).ConfigureAwait(false);
 
                     var results = searchResults.results ?? new List<TvResult>();
 

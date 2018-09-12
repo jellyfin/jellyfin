@@ -25,17 +25,6 @@ namespace Rssdp
 		{
 		}
 
-		/// <summary>
-		/// Deserialisation constructor.
-		/// </summary>
-		/// <param name="deviceDescriptionXml">A UPnP device description XML document.</param>
-		/// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="deviceDescriptionXml"/> argument is null.</exception>
-		/// <exception cref="System.ArgumentException">Thrown if the <paramref name="deviceDescriptionXml"/> argument is empty.</exception>
-		public SsdpEmbeddedDevice(string deviceDescriptionXml)
-			: base(deviceDescriptionXml)
-		{
-		}
-
 		#endregion
 
 		#region Public Properties

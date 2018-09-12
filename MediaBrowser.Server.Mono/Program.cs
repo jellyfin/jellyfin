@@ -23,6 +23,7 @@ using MediaBrowser.Model.System;
 using Mono.Unix.Native;
 using ILogger = MediaBrowser.Model.Logging.ILogger;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
+using System.Threading;
 
 namespace MediaBrowser.Server.Mono
 {
@@ -54,7 +55,8 @@ namespace MediaBrowser.Server.Mono
             {
                 _logManager = logManager;
 
-                logManager.ReloadLogger(LogSeverity.Info);
+                var task = logManager.ReloadLogger(LogSeverity.Debug, CancellationToken.None);
+                Task.WaitAll(task);
                 logManager.AddConsoleOutput();
 
                 var logger = _logger = logManager.GetLogger("Main");
@@ -76,7 +78,9 @@ namespace MediaBrowser.Server.Mono
 
         private static void SetSqliteProvider()
         {
-            SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
+            // SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
+            //SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
+            SQLitePCL.Batteries_V2.Init();
         }
 
         private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, string programDataPath)
@@ -98,7 +102,7 @@ namespace MediaBrowser.Server.Mono
 
             var environmentInfo = GetEnvironmentInfo();
 
-            var fileSystem = new MonoFileSystem(logManager.GetLogger("FileSystem"), environmentInfo, appPaths.TempDirectory);
+            var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), environmentInfo, null, appPaths.TempDirectory, true);
 
             FileSystem = fileSystem;
 
@@ -107,11 +111,11 @@ namespace MediaBrowser.Server.Mono
                 options,
                 fileSystem,
                 new PowerManagement(),
-                "emby.mono.zip",
+                "embyserver-mono_{version}.zip",
                 environmentInfo,
                 new NullImageEncoder(),
                 new SystemEvents(logManager.GetLogger("SystemEvents")),
-                new NetworkManager(logManager.GetLogger("NetworkManager"))))
+                new NetworkManager(logManager.GetLogger("NetworkManager"), environmentInfo)))
             {
                 if (options.ContainsOption("-v"))
                 {
@@ -121,17 +125,13 @@ namespace MediaBrowser.Server.Mono
 
                 Console.WriteLine("appHost.Init");
 
-                var initProgress = new Progress<double>();
-
-                var task = appHost.Init(initProgress);
-
-                Task.WaitAll(task);
+                appHost.Init();
 
                 appHost.ImageProcessor.ImageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo, appHost.LocalizationManager);
 
                 Console.WriteLine("Running startup tasks");
 
-                task = appHost.RunStartupTasks();
+                var task = appHost.RunStartupTasks();
                 Task.WaitAll(task);
 
                 task = ApplicationTaskCompletionSource.Task;
@@ -293,19 +293,20 @@ namespace MediaBrowser.Server.Mono
         }
     }
 
-    class NoCheckCertificatePolicy : ICertificatePolicy
-    {
-        public bool CheckValidationResult(ServicePoint srvPoint, X509Certificate certificate, WebRequest request, int certificateProblem)
-        {
-            return true;
-        }
-    }
-
+    // class NoCheckCertificatePolicy : ICertificatePolicy
+    // {
+    //     public bool CheckValidationResult(ServicePoint srvPoint, X509Certificate certificate, WebRequest request, int certificateProblem)
+    //     {
+    //         return true;
+    //     }
+    // }
+    
     public class MonoEnvironmentInfo : EnvironmentInfo
     {
-        public override string GetUserId()
-        {
-            return Syscall.getuid().ToString(CultureInfo.InvariantCulture);
-        }
+        
+        //public override string GetUserId()
+        //{
+        //    return Syscall.getuid().ToString(CultureInfo.InvariantCulture);
+        //}
     }
 }

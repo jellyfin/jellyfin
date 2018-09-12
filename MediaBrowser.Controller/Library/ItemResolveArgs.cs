@@ -177,7 +177,7 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                var paths = string.IsNullOrWhiteSpace(Path) ? new string[] { } : new[] { Path };
+                var paths = string.IsNullOrEmpty(Path) ? Array.Empty<string>() : new[] { Path };
                 return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations).ToArray();
             }
         }

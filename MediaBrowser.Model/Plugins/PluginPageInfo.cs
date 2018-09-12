@@ -9,5 +9,9 @@
         public string EmbeddedResourcePath { get; set; }
 
         public bool EnableInMainMenu { get; set; }
+
+        public string MenuSection { get; set; }
+
+        public string MenuIcon { get; set; }
     }
 }

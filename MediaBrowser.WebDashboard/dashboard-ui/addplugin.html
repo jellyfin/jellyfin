@@ -1,72 +1,76 @@
-﻿<div id="addPluginPage" data-role="page" class="page type-interior pluginConfigurationPage" data-backbutton="true" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="emby-select,emby-collapse,emby-linkbutton">
+﻿<div id="addPluginPage" data-role="page" class="page type-interior pluginConfigurationPage" data-backbutton="true" data-require="emby-select,emby-collapse,emby-linkbutton">
 
     <div>
         <div class="content-primary">
+
             <div class="readOnlyContent">
 
-                <h1 class="pluginName"></h1>
-                <p id="tagline" style="font-style: italic;"></p>
-                <p id="pPreviewImage"></p>
+                <div class="verticalSection">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h1 class="sectionTitle pluginName"></h1>
+                        <a is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Plugins">${Help}</a>
+                    </div>
 
-                <p id="overview"></p>
+                    <p id="tagline" style="font-style: italic;"></p>
+                    <p id="pPreviewImage"></p>
 
-                <div style="margin-top: 2em;">
-                    <h1>${HeaderInstall}</h1>
+                    <p id="overview"></p>
 
-                    <div>
-                        <form class="addPluginForm">
-                            <p id="pCurrentVersion"></p>
-                            <div id="pSelectVersion" class="hide selectContainer">
-                                <select id="selectVersion" name="selectVersion" is="emby-select" label="${LabelSelectVersionToInstall}"></select>
-                            </div>
+                </div>
 
-                            <p id="btnInstallDiv" class="hide">
-                                <button is="emby-button" type="submit" id="btnInstall" class="raised button-submit block">
-                                    <span>${Install}</span>
-                                </button>
-                                <div class="fieldDescription">${ServerRestartNeededAfterPluginInstall}</div>
-                            </p>
-                            <p id="nonServerMsg"></p>
-                        </form>
+                <div class="verticalSection">
+                    <h2 class="sectionTitle">${HeaderInstall}</h2>
 
-                        <div class="premiumPackage" style="display: none; margin-top: 1.5em;">
-                            <div>
-                                <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
-                                    <p id="regStatus">
+                    <form class="addPluginForm">
+                        <p id="pCurrentVersion"></p>
+                        <div id="pSelectVersion" class="hide selectContainer">
+                            <select id="selectVersion" name="selectVersion" is="emby-select" label="${LabelSelectVersionToInstall}"></select>
+                        </div>
+
+                        <p id="btnInstallDiv" class="hide">
+                            <button is="emby-button" type="submit" id="btnInstall" class="raised button-submit block">
+                                <span>${Install}</span>
+                            </button>
+                            <div class="fieldDescription">${ServerRestartNeededAfterPluginInstall}</div>
+                        </p>
+                        <p id="nonServerMsg"></p>
+                    </form>
+
+                    <div class="premiumPackage" style="display: none; margin-top: 1.5em;">
+                        <div>
+                            <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+                                <p id="regStatus">
+                                </p>
+                                <div class="supporterDescription">
+
+                                    <p>${MessagePluginRequiresSubscription}</p>
+
+                                    <p><a is="emby-linkbutton" class="button-link" href="https://emby.media/premiere" target="_blank">${LinkLearnMoreAboutSubscription}</a></p>
+
+                                </div>
+                                <div class="premiumDescription">
+
+                                    <p>${MessagePremiumPluginRequiresMembership}</p>
+
+                                    <p><a is="emby-linkbutton" class="button-link" href="https://emby.media/premiere" target="_blank">${LinkLearnMoreAboutSubscription}</a></p>
+                                </div>
+                                <div class="premiumHasPrice" style="display: none">
+                                    <p id="regPrice">
                                     </p>
-                                    <p id="regInfo">
-                                    </p>
-                                    <div class="supporterDescription">
+                                    <input type="hidden" name="cmd" value="_xclick">
+                                    <input type="hidden" id="payPalEmail" name="business" value="mb_1358534950_biz@reedsplace.com">
+                                    <input type="hidden" name="currency_code" value="USD">
+                                    <input type="hidden" id="featureName" name="item_name" value="">
+                                    <input type="hidden" id="amount" name="amount" value="10">
+                                    <input type="hidden" id="featureId" name="item_number" value="">
+                                    <input type="hidden" name="notify_url" value="https://mb3admin.com/admin/service/services/ppipn.php">
+                                    <input type="hidden" name="return" id="paypalReturnUrl" value="#">
+                                    <button is="emby-button" type="submit" id="ppButton" class="raised block button-submit" style="background-color: #179BD7;color:#fff;">
+                                        <span>${RegisterWithPayPal}</span>
+                                    </button>
 
-                                        <p>${MessagePluginRequiresSubscription}</p>
-
-                                        <p><a is="emby-linkbutton" class="button-link" href="https://emby.media/premiere" target="_blank">${LinkLearnMoreAboutSubscription}</a></p>
-
-                                    </div>
-                                    <div class="premiumDescription">
-
-                                        <p>${MessagePremiumPluginRequiresMembership}</p>
-
-                                        <p><a is="emby-linkbutton" class="button-link" href="https://emby.media/premiere" target="_blank">${LinkLearnMoreAboutSubscription}</a></p>
-                                    </div>
-                                    <div class="premiumHasPrice" style="display: none">
-                                        <p id="regPrice">
-                                        </p>
-                                        <input type="hidden" name="cmd" value="_xclick">
-                                        <input type="hidden" id="payPalEmail" name="business" value="mb_1358534950_biz@reedsplace.com">
-                                        <input type="hidden" name="currency_code" value="USD">
-                                        <input type="hidden" id="featureName" name="item_name" value="">
-                                        <input type="hidden" id="amount" name="amount" value="10">
-                                        <input type="hidden" id="featureId" name="item_number" value="">
-                                        <input type="hidden" name="notify_url" value="https://mb3admin.com/admin/service/services/ppipn.php">
-                                        <input type="hidden" name="return" id="paypalReturnUrl" value="#">
-                                        <button is="emby-button" type="submit" id="ppButton" class="raised block button-submit" style="background-color: #179BD7;color:#fff;">
-                                            <span>${RegisterWithPayPal}</span>
-                                        </button>
-
-                                    </div>
-                                </form>
-                            </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>

@@ -3,6 +3,7 @@ using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -13,6 +14,8 @@ namespace MediaBrowser.Controller.Channels
         public string SeriesName { get; set; }
 
         public string Id { get; set; }
+
+        public DateTime DateModified { get; set; }
 
         public ChannelItemType Type { get; set; }
 
@@ -31,6 +34,7 @@ namespace MediaBrowser.Controller.Channels
         public long? RunTimeTicks { get; set; }
 
         public string ImageUrl { get; set; }
+        public string OriginalTitle { get; set; }
 
         public ChannelMediaType MediaType { get; set; }
         public ChannelFolderType FolderType { get; set; }
@@ -46,22 +50,25 @@ namespace MediaBrowser.Controller.Channels
 
         public DateTime? DateCreated { get; set; }
 
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+
         public int? IndexNumber { get; set; }
         public int? ParentIndexNumber { get; set; }
 
-        public List<ChannelMediaInfo> MediaSources { get; set; }
-
-        public bool IsInfiniteStream { get; set; }
+        public List<MediaSourceInfo> MediaSources { get; set; }
 
         public string HomePageUrl { get; set; }
 
         public List<string> Artists { get; set; }
 
         public List<string> AlbumArtists { get; set; }
+        public bool IsLiveStream { get; set; }
+        public string Etag { get; set; }
 
         public ChannelItemInfo()
         {
-            MediaSources = new List<ChannelMediaInfo>();
+            MediaSources = new List<MediaSourceInfo>();
             TrailerTypes = new List<TrailerType>();
             Genres = new List<string>();
             Studios = new List<string>();

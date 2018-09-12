@@ -33,26 +33,13 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentNullException("path");
-            }
-
             FileSystemMetadata[] entries;
 
             if (!_cache.TryGetValue(path, out entries))
             {
                 //_logger.Debug("Getting files for " + path);
 
-                try
-                {
-                    // using EnumerateFileSystemInfos doesn't handle reparse points (symlinks)
-                    entries = _fileSystem.GetFileSystemEntries(path).ToArray();
-                }
-                catch (IOException)
-                {
-                    entries = new FileSystemMetadata[] { };
-                }
+                entries = _fileSystem.GetFileSystemEntries(path).ToArray();
 
                 //_cache.TryAdd(path, entries);
                 _cache[path] = entries;

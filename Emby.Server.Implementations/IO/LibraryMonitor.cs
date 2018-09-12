@@ -266,7 +266,7 @@ namespace Emby.Server.Implementations.IO
         /// <exception cref="System.ArgumentNullException">path</exception>
         private static bool ContainsParentFolder(IEnumerable<string> lst, string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException("path");
             }
@@ -304,6 +304,12 @@ namespace Emby.Server.Implementations.IO
                 }
             }
 
+            if (_environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Android)
+            {
+                // causing crashing
+                return;
+            }
+
             // Already being watched
             if (_fileSystemWatchers.ContainsKey(path))
             {
@@ -320,11 +326,7 @@ namespace Emby.Server.Implementations.IO
                         IncludeSubdirectories = true
                     };
 
-                    if (_environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows ||
-                    _environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.OSX)
-                    {
-                        newWatcher.InternalBufferSize = 32767;
-                    }
+                    newWatcher.InternalBufferSize = 65536;
 
                     newWatcher.NotifyFilter = NotifyFilters.CreationTime |
                         NotifyFilters.DirectoryName |
@@ -337,7 +339,6 @@ namespace Emby.Server.Implementations.IO
                     newWatcher.Deleted += watcher_Changed;
                     newWatcher.Renamed += watcher_Changed;
                     newWatcher.Changed += watcher_Changed;
-
                     newWatcher.Error += watcher_Error;
 
                     if (_fileSystemWatchers.TryAdd(path, newWatcher))
@@ -347,7 +348,7 @@ namespace Emby.Server.Implementations.IO
                     }
                     else
                     {
-                        newWatcher.Dispose();
+                        DisposeWatcher(newWatcher, false);
                     }
 
                 }
@@ -368,15 +369,14 @@ namespace Emby.Server.Implementations.IO
 
             if (_fileSystemWatchers.TryGetValue(path, out watcher))
             {
-                DisposeWatcher(watcher);
+                DisposeWatcher(watcher, true);
             }
         }
 
         /// <summary>
         /// Disposes the watcher.
         /// </summary>
-        /// <param name="watcher">The watcher.</param>
-        private void DisposeWatcher(FileSystemWatcher watcher)
+        private void DisposeWatcher(FileSystemWatcher watcher, bool removeFromList)
         {
             try
             {
@@ -384,8 +384,26 @@ namespace Emby.Server.Implementations.IO
                 {
                     Logger.Info("Stopping directory watching for path {0}", watcher.Path);
 
-                    watcher.EnableRaisingEvents = false;
+                    watcher.Created -= watcher_Changed;
+                    watcher.Deleted -= watcher_Changed;
+                    watcher.Renamed -= watcher_Changed;
+                    watcher.Changed -= watcher_Changed;
+                    watcher.Error -= watcher_Error;
+
+                    try
+                    {
+                        watcher.EnableRaisingEvents = false;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // Seeing this under mono on linux sometimes
+                        // Collection was modified; enumeration operation may not execute.
+                    }
                 }
+            }
+            catch (NotImplementedException)
+            {
+                // the dispose method on FileSystemWatcher is sometimes throwing NotImplementedException on Xamarin Android
             }
             catch
             {
@@ -393,7 +411,10 @@ namespace Emby.Server.Implementations.IO
             }
             finally
             {
-                RemoveWatcherFromList(watcher);
+                if (removeFromList)
+                {
+                    RemoveWatcherFromList(watcher);
+                }
             }
         }
 
@@ -420,7 +441,7 @@ namespace Emby.Server.Implementations.IO
 
             Logger.ErrorException("Error in Directory watcher for: " + dw.Path, ex);
 
-            DisposeWatcher(dw);
+            DisposeWatcher(dw, true);
         }
 
         /// <summary>
@@ -452,7 +473,7 @@ namespace Emby.Server.Implementations.IO
             }
 
             var filename = Path.GetFileName(path);
-            
+
             var monitorPath = !string.IsNullOrEmpty(filename) &&
                 !_alwaysIgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase) &&
                 !_alwaysIgnoreExtensions.Contains(Path.GetExtension(path) ?? string.Empty, StringComparer.OrdinalIgnoreCase) &&
@@ -466,13 +487,13 @@ namespace Emby.Server.Implementations.IO
             {
                 if (_fileSystem.AreEqual(i, path))
                 {
-                    Logger.Debug("Ignoring change to {0}", path);
+                    //Logger.Debug("Ignoring change to {0}", path);
                     return true;
                 }
 
                 if (_fileSystem.ContainsSubPath(i, path))
                 {
-                    Logger.Debug("Ignoring change to {0}", path);
+                    //Logger.Debug("Ignoring change to {0}", path);
                     return true;
                 }
 
@@ -482,7 +503,7 @@ namespace Emby.Server.Implementations.IO
                 {
                     if (_fileSystem.AreEqual(parent, path))
                     {
-                        Logger.Debug("Ignoring change to {0}", path);
+                        //Logger.Debug("Ignoring change to {0}", path);
                         return true;
                     }
                 }
@@ -561,22 +582,7 @@ namespace Emby.Server.Implementations.IO
 
             foreach (var watcher in _fileSystemWatchers.Values.ToList())
             {
-                watcher.Created -= watcher_Changed;
-                watcher.Deleted -= watcher_Changed;
-                watcher.Renamed -= watcher_Changed;
-                watcher.Changed -= watcher_Changed;
-
-                try
-                {
-                    watcher.EnableRaisingEvents = false;
-                }
-                catch (InvalidOperationException)
-                {
-                    // Seeing this under mono on linux sometimes
-                    // Collection was modified; enumeration operation may not execute.
-                }
-
-                watcher.Dispose();
+                DisposeWatcher(watcher, false);
             }
 
             _fileSystemWatchers.Clear();
@@ -612,7 +618,6 @@ namespace Emby.Server.Implementations.IO
         {
             _disposed = true;
             Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -644,7 +649,6 @@ namespace Emby.Server.Implementations.IO
 
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
         }
     }
 }

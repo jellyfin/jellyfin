@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Controller.Security
 {
     public class AuthenticationInfoQuery
@@ -13,19 +14,13 @@ namespace MediaBrowser.Controller.Security
         /// Gets or sets the user identifier.
         /// </summary>
         /// <value>The user identifier.</value>
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the access token.
         /// </summary>
         /// <value>The access token.</value>
         public string AccessToken { get; set; }
-        
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is active.
-        /// </summary>
-        /// <value><c>null</c> if [is active] contains no value, <c>true</c> if [is active]; otherwise, <c>false</c>.</value>
-        public bool? IsActive { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has user.

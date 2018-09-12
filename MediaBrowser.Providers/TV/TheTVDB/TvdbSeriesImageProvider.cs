@@ -49,12 +49,12 @@ namespace MediaBrowser.Providers.TV
             get { return "TheTVDB"; }
         }
 
-        public bool Supports(IHasMetadata item)
+        public bool Supports(BaseItem item)
         {
             return item is Series;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
+        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType>
             {
@@ -64,13 +64,18 @@ namespace MediaBrowser.Providers.TV
             };
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             if (TvdbSeriesProvider.IsValidSeries(item.ProviderIds))
             {
                 var language = item.GetPreferredMetadataLanguage();
 
                 var seriesDataPath = await TvdbSeriesProvider.Current.EnsureSeriesInfo(item.ProviderIds, item.Name, item.ProductionYear, language, cancellationToken).ConfigureAwait(false);
+
+                if (string.IsNullOrEmpty(seriesDataPath))
+                {
+                    return new RemoteImageInfo[] { };
+                }
 
                 var path = Path.Combine(seriesDataPath, "banners.xml");
 

@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.LiveTv
@@ -9,7 +8,6 @@ namespace MediaBrowser.Model.LiveTv
     /// <summary>
     /// Class SeriesTimerInfoDto.
     /// </summary>
-    [DebuggerDisplay("Name = {Name}")]
     public class SeriesTimerInfoDto : BaseTimerInfoDto
     {
         public SeriesTimerInfoDto()

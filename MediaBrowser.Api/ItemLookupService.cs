@@ -29,7 +29,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
+        public Guid Id { get; set; }
     }
 
     [Route("/Items/RemoteSearch/Movie", "POST")]
@@ -44,9 +44,9 @@ namespace MediaBrowser.Api
     {
     }
 
-    [Route("/Items/RemoteSearch/AdultVideo", "POST")]
+    [Route("/Items/RemoteSearch/MusicVideo", "POST")]
     [Authenticated]
-    public class GetAdultVideoRemoteSearchResults : RemoteSearchQuery<ItemLookupInfo>, IReturn<List<RemoteSearchResult>>
+    public class GetMusicVideoRemoteSearchResults : RemoteSearchQuery<MusicVideoInfo>, IReturn<List<RemoteSearchResult>>
     {
     }
 
@@ -186,6 +186,13 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(result);
         }
 
+        public async Task<object> Post(GetMusicVideoRemoteSearchResults request)
+        {
+            var result = await _providerManager.GetRemoteSearchResults<MusicVideo, MusicVideoInfo>(request, CancellationToken.None).ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
+        }
+
         public async Task<object> Post(GetPersonRemoteSearchResults request)
         {
             var result = await _providerManager.GetRemoteSearchResults<Person, PersonLookupInfo>(request, CancellationToken.None).ConfigureAwait(false);
@@ -212,7 +219,7 @@ namespace MediaBrowser.Api
             return GetRemoteImage(request);
         }
 
-        public void Post(ApplySearchCriteria request)
+        public Task Post(ApplySearchCriteria request)
         {
             var item = _libraryManager.GetItemById(new Guid(request.Id));
 
@@ -232,17 +239,15 @@ namespace MediaBrowser.Api
             //item.ProductionYear = request.ProductionYear;
             //item.Name = request.Name;
 
-            var task = _providerManager.RefreshFullItem(item, new MetadataRefreshOptions(_fileSystem)
+            return _providerManager.RefreshFullItem(item, new MetadataRefreshOptions(_fileSystem)
             {
                 MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                ImageRefreshMode = ImageRefreshMode.FullRefresh,
+                ImageRefreshMode = MetadataRefreshMode.FullRefresh,
                 ReplaceAllMetadata = true,
                 ReplaceAllImages = request.ReplaceAllImages,
-                SearchResult = request,
-                ForceEnableInternetMetadata = true
+                SearchResult = request
 
             }, CancellationToken.None);
-            Task.WaitAll(task);
         }
 
         /// <summary>

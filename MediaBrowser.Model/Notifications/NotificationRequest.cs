@@ -13,7 +13,7 @@ namespace MediaBrowser.Model.Notifications
 
         public NotificationLevel Level { get; set; }
 
-        public List<string> UserIds { get; set; }
+        public Guid[] UserIds { get; set; }
 
         public DateTime Date { get; set; }
 
@@ -22,16 +22,12 @@ namespace MediaBrowser.Model.Notifications
         /// </summary>
         public string NotificationType { get; set; }
 
-        public Dictionary<string, string> Variables { get; set; }
-
         public SendToUserType? SendToUserMode { get; set; }
 
         public NotificationRequest()
         {
-            UserIds = new List<string>();
+            UserIds = Array.Empty<Guid>();
             Date = DateTime.UtcNow;
-
-            Variables = new Dictionary<string, string>();
         }
     }
 }

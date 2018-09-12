@@ -18,7 +18,7 @@ namespace Emby.Dlna.PlayTo
             {
                 StreamInfo = new StreamInfo
                 {
-                    ItemId = item.Id.ToString("N"),
+                    ItemId = item.Id,
                     MediaType = DlnaProfileType.Photo,
                     DeviceProfile = profile
                 },

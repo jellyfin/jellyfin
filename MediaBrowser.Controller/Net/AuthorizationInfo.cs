@@ -1,4 +1,6 @@
-﻿
+﻿using System;
+using MediaBrowser.Controller.Entities;
+
 namespace MediaBrowser.Controller.Net
 {
     public class AuthorizationInfo
@@ -7,7 +9,10 @@ namespace MediaBrowser.Controller.Net
         /// Gets or sets the user identifier.
         /// </summary>
         /// <value>The user identifier.</value>
-        public string UserId { get; set; }
+        public Guid UserId { get { return User == null ? Guid.Empty : User.Id; } }
+
+        public User User { get; set; }
+
         /// <summary>
         /// Gets or sets the device identifier.
         /// </summary>

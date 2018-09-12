@@ -21,7 +21,7 @@ namespace SocketHttpListener.Net
         internal ISocketFactory SocketFactory { get; private set; }
         internal IFileSystem FileSystem { get; private set; }
         internal ITextEncoding TextEncoding { get; private set; }
-        internal IMemoryStreamFactory MemoryStreamFactory { get; private set; }
+        internal IStreamHelper StreamHelper { get; private set; }
         internal INetworkManager NetworkManager { get; private set; }
         internal IEnvironmentInfo EnvironmentInfo { get; private set; }
 
@@ -42,14 +42,14 @@ namespace SocketHttpListener.Net
 
         public Action<HttpListenerContext> OnContext { get; set; }
 
-        public HttpListener(ILogger logger, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
+        public HttpListener(ILogger logger, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IStreamHelper streamHelper, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
         {
             _logger = logger;
             CryptoProvider = cryptoProvider;
             SocketFactory = socketFactory;
             NetworkManager = networkManager;
             TextEncoding = textEncoding;
-            MemoryStreamFactory = memoryStreamFactory;
+            StreamHelper = streamHelper;
             FileSystem = fileSystem;
             EnvironmentInfo = environmentInfo;
             prefixes = new HttpListenerPrefixCollection(logger, this);
@@ -58,13 +58,13 @@ namespace SocketHttpListener.Net
             auth_schemes = AuthenticationSchemes.Anonymous;
         }
 
-        public HttpListener(X509Certificate certificate, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
-            :this(new NullLogger(), certificate, cryptoProvider, socketFactory, networkManager, textEncoding, memoryStreamFactory, fileSystem, environmentInfo)
+        public HttpListener(X509Certificate certificate, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IStreamHelper streamHelper, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
+            :this(new NullLogger(), certificate, cryptoProvider, socketFactory, networkManager, textEncoding, streamHelper, fileSystem, environmentInfo)
         {
         }
 
-        public HttpListener(ILogger logger, X509Certificate certificate, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IMemoryStreamFactory memoryStreamFactory, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
-            : this(logger, cryptoProvider, socketFactory, networkManager, textEncoding, memoryStreamFactory, fileSystem, environmentInfo)
+        public HttpListener(ILogger logger, X509Certificate certificate, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IStreamHelper streamHelper, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
+            : this(logger, cryptoProvider, socketFactory, networkManager, textEncoding, streamHelper, fileSystem, environmentInfo)
         {
             _certificate = certificate;
         }
@@ -185,7 +185,7 @@ namespace SocketHttpListener.Net
         void Close(bool force)
         {
             CheckDisposed();
-            EndPointManager.RemoveListener(_logger, this);
+            HttpEndPointManager.RemoveListener(_logger, this);
             Cleanup(force);
         }
 
@@ -230,7 +230,7 @@ namespace SocketHttpListener.Net
             if (listening)
                 return;
 
-            EndPointManager.AddListener(_logger, this);
+            HttpEndPointManager.AddListener(_logger, this);
             listening = true;
         }
 
@@ -248,7 +248,6 @@ namespace SocketHttpListener.Net
 
             Close(true); //TODO: Should we force here or not?
             disposed = true;
-            GC.SuppressFinalize(this);
         }
 
         internal void CheckDisposed()

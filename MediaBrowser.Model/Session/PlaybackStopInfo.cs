@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Dto;
+using System;
 
 namespace MediaBrowser.Model.Session
 {
@@ -7,6 +8,10 @@ namespace MediaBrowser.Model.Session
     /// </summary>
     public class PlaybackStopInfo
     {
+        public QueueItem[] NowPlayingQueue { get; set; }
+
+        public string PlaylistItemId { get; set; }
+
         /// <summary>
         /// Gets or sets the item.
         /// </summary>
@@ -16,7 +21,7 @@ namespace MediaBrowser.Model.Session
         /// Gets or sets the item identifier.
         /// </summary>
         /// <value>The item identifier.</value>
-        public string ItemId { get; set; }
+        public Guid ItemId { get; set; }
         /// <summary>
         /// Gets or sets the session id.
         /// </summary>

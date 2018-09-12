@@ -24,9 +24,4 @@ namespace MediaBrowser.Controller.Sync
         /// <returns>IEnumerable&lt;SyncTarget&gt;.</returns>
         List<SyncTarget> GetAllSyncTargets();
     }
-
-    public interface IHasUniqueTargetIds
-    {
-
-    }
 }

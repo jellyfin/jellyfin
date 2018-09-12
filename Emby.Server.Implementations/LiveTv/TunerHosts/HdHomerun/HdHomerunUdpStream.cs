@@ -9,23 +9,25 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.LiveTv;
+using System.Collections.Generic;
+using System.Net.Sockets;
+using System.Net;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
     public class HdHomerunUdpStream : LiveStream, IDirectStreamProvider
     {
         private readonly IServerApplicationHost _appHost;
-        private readonly ISocketFactory _socketFactory;
+        private readonly MediaBrowser.Model.Net.ISocketFactory _socketFactory;
 
         private readonly IHdHomerunChannelCommands _channelCommands;
         private readonly int _numTuners;
         private readonly INetworkManager _networkManager;
 
-        public HdHomerunUdpStream(MediaSourceInfo mediaSource, TunerHostInfo tunerHostInfo, string originalStreamId, IHdHomerunChannelCommands channelCommands, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager, IEnvironmentInfo environment)
-            : base(mediaSource, tunerHostInfo, environment, fileSystem, logger, appPaths)
+        public HdHomerunUdpStream(MediaSourceInfo mediaSource, TunerHostInfo tunerHostInfo, string originalStreamId, IHdHomerunChannelCommands channelCommands, int numTuners, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, MediaBrowser.Model.Net.ISocketFactory socketFactory, INetworkManager networkManager)
+            : base(mediaSource, tunerHostInfo, fileSystem, logger, appPaths)
         {
             _appHost = appHost;
             _socketFactory = socketFactory;
@@ -34,6 +36,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _channelCommands = channelCommands;
             _numTuners = numTuners;
             EnableStreamSharing = true;
+        }
+
+        private Socket CreateSocket(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
+        {
+            var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+            return socket;
         }
 
         public override async Task Open(CancellationToken openCancellationToken)
@@ -49,14 +58,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             Logger.Info("Opening HDHR UDP Live stream from {0}", uri.Host);
 
-            var remoteAddress = _networkManager.ParseIpAddress(uri.Host);
-            IpAddressInfo localAddress = null;
-            using (var tcpSocket = _socketFactory.CreateSocket(remoteAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp, false))
+            var remoteAddress = IPAddress.Parse(uri.Host);
+            var embyRemoteAddress = _networkManager.ParseIpAddress(uri.Host);
+            IPAddress localAddress = null;
+            using (var tcpSocket = CreateSocket(remoteAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp))
             {
                 try
                 {
-                    tcpSocket.Connect(new IpEndPointInfo(remoteAddress, HdHomerunManager.HdHomeRunPort));
-                    localAddress = tcpSocket.LocalEndPoint.IpAddress;
+                    tcpSocket.Connect(new IPEndPoint(remoteAddress, HdHomerunManager.HdHomeRunPort));
+                    localAddress = ((IPEndPoint)tcpSocket.LocalEndPoint).Address;
                     tcpSocket.Close();
                 }
                 catch (Exception)
@@ -72,7 +82,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             try
             {
                 // send url to start streaming
-                await hdHomerunManager.StartStreaming(remoteAddress, localAddress, localPort, _channelCommands, _numTuners, openCancellationToken).ConfigureAwait(false);
+                await hdHomerunManager.StartStreaming(embyRemoteAddress, localAddress, localPort, _channelCommands, _numTuners, openCancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -91,14 +101,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
-            StartStreaming(udpClient, hdHomerunManager, remoteAddress, localAddress, localPort, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
+            StartStreaming(udpClient, hdHomerunManager, remoteAddress, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
 
             //OpenedMediaSource.Protocol = MediaProtocol.File;
             //OpenedMediaSource.Path = tempFile;
             //OpenedMediaSource.ReadAtNativeFramerate = true;
 
-            OpenedMediaSource.Path = _appHost.GetLocalApiUrl("127.0.0.1") + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
-            OpenedMediaSource.Protocol = MediaProtocol.Http;
+            MediaSource.Path = _appHost.GetLocalApiUrl("127.0.0.1") + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Protocol = MediaProtocol.Http;
             //OpenedMediaSource.SupportsDirectPlay = false;
             //OpenedMediaSource.SupportsDirectStream = true;
             //OpenedMediaSource.SupportsTranscoding = true;
@@ -107,12 +117,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             await taskCompletionSource.Task.ConfigureAwait(false);
         }
 
-        protected override void CloseInternal()
-        {
-            LiveStreamCancellationTokenSource.Cancel();
-        }
-
-        private Task StartStreaming(ISocket udpClient, HdHomerunManager hdHomerunManager, IpAddressInfo remoteAddress, IpAddressInfo localAddress, int localPort, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        private Task StartStreaming(MediaBrowser.Model.Net.ISocket udpClient, HdHomerunManager hdHomerunManager, IPAddress remoteAddress, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
             return Task.Run(async () =>
             {
@@ -136,19 +141,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         }
 
                         EnableStreamSharing = false;
-
-                        try
-                        {
-                            await hdHomerunManager.StopStreaming().ConfigureAwait(false);
-                        }
-                        catch
-                        {
-
-                        }
                     }
                 }
 
-                await DeleteTempFile(TempFilePath).ConfigureAwait(false);
+                await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);
             });
         }
 
@@ -161,7 +157,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         }
 
         private static int RtpHeaderBytes = 12;
-        private async Task CopyTo(ISocket udpClient, string file, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        private async Task CopyTo(MediaBrowser.Model.Net.ISocket udpClient, string file, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
             var bufferSize = 81920;
 
@@ -191,6 +187,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         if (!resolved)
                         {
                             resolved = true;
+                            DateOpened = DateTime.UtcNow;
                             Resolve(openTaskCompletionSource);
                         }
                     }
@@ -202,10 +199,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             private static int RtpHeaderBytes = 12;
             private static int PacketSize = 1316;
-            private readonly ISocket _udpClient;
+            private readonly MediaBrowser.Model.Net.ISocket _udpClient;
             bool disposed;
 
-            public UdpClientStream(ISocket udpClient) : base()
+            public UdpClientStream(MediaBrowser.Model.Net.ISocket udpClient) : base()
             {
                 _udpClient = udpClient;
             }

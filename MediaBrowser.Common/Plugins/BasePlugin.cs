@@ -6,36 +6,13 @@ using System.IO;
 
 namespace MediaBrowser.Common.Plugins
 {
-    /// <summary>
-    /// Provides a common base class for all plugins
-    /// </summary>
-    /// <typeparam name="TConfigurationType">The type of the T configuration type.</typeparam>
-    public abstract class BasePlugin<TConfigurationType> : IPlugin, IPluginAssembly
-        where TConfigurationType : BasePluginConfiguration
+    public abstract class BasePlugin : IPlugin, IPluginAssembly
     {
-        /// <summary>
-        /// Gets the application paths.
-        /// </summary>
-        /// <value>The application paths.</value>
-        protected IApplicationPaths ApplicationPaths { get; private set; }
-
-        /// <summary>
-        /// Gets the XML serializer.
-        /// </summary>
-        /// <value>The XML serializer.</value>
-        protected IXmlSerializer XmlSerializer { get; private set; }
-
         /// <summary>
         /// Gets the name of the plugin
         /// </summary>
         /// <value>The name.</value>
         public abstract string Name { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is first run.
-        /// </summary>
-        /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
-        public bool IsFirstRun { get; private set; }
 
         /// <summary>
         /// Gets the description.
@@ -44,38 +21,6 @@ namespace MediaBrowser.Common.Plugins
         public virtual string Description
         {
             get { return string.Empty; }
-        }
-
-        /// <summary>
-        /// Gets the type of configuration this plugin uses
-        /// </summary>
-        /// <value>The type of the configuration.</value>
-        public Type ConfigurationType
-        {
-            get { return typeof(TConfigurationType); }
-        }
-
-        public void SetAttributes(string assemblyFilePath, string assemblyFileName, Version assemblyVersion)
-        {
-            AssemblyFilePath = assemblyFilePath;
-            AssemblyFileName = assemblyFileName;
-            Version = assemblyVersion;
-        }
-
-        public void SetId(Guid assemblyId)
-        {
-            Id = assemblyId;
-        }
-
-        private Func<string, DateTime> _dateModifiedFn;
-        private Action<string> _directoryCreateFn;
-        public void SetStartupInfo(bool isFirstRun, Func<string, DateTime> dateModifiedFn, Action<string> directoryCreateFn)
-        {
-            IsFirstRun = isFirstRun;
-
-            // hack alert, until the .net core transition is complete
-            _dateModifiedFn = dateModifiedFn;
-            _directoryCreateFn = directoryCreateFn;
         }
 
         /// <summary>
@@ -91,31 +36,107 @@ namespace MediaBrowser.Common.Plugins
         public Version Version { get; private set; }
 
         /// <summary>
-        /// Gets the name the assembly file
-        /// </summary>
-        /// <value>The name of the assembly file.</value>
-        protected string AssemblyFileName { get; private set; }
-
-        /// <summary>
-        /// Gets the last date modified of the configuration
-        /// </summary>
-        /// <value>The configuration date last modified.</value>
-        public DateTime ConfigurationDateLastModified
-        {
-            get
-            {
-                // Ensure it's been lazy loaded
-                var config = Configuration;
-
-                return _dateModifiedFn(ConfigurationFilePath);
-            }
-        }
-
-        /// <summary>
         /// Gets the path to the assembly file
         /// </summary>
         /// <value>The assembly file path.</value>
         public string AssemblyFilePath { get; private set; }
+
+        /// <summary>
+        /// Gets the plugin info.
+        /// </summary>
+        /// <returns>PluginInfo.</returns>
+        public virtual PluginInfo GetPluginInfo()
+        {
+            var info = new PluginInfo
+            {
+                Name = Name,
+                Version = Version.ToString(),
+                Description = Description,
+                Id = Id.ToString()
+            };
+
+            return info;
+        }
+
+        /// <summary>
+        /// Called when just before the plugin is uninstalled from the server.
+        /// </summary>
+        public virtual void OnUninstalling()
+        {
+
+        }
+
+        public void SetAttributes(string assemblyFilePath, string dataFolderPath, Version assemblyVersion)
+        {
+            AssemblyFilePath = assemblyFilePath;
+            DataFolderPath = dataFolderPath;
+            Version = assemblyVersion;
+        }
+
+        public void SetId(Guid assemblyId)
+        {
+            Id = assemblyId;
+        }
+
+        /// <summary>
+        /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed
+        /// </summary>
+        /// <value>The data folder path.</value>
+        public string DataFolderPath { get; private set; }
+    }
+
+    /// <summary>
+    /// Provides a common base class for all plugins
+    /// </summary>
+    /// <typeparam name="TConfigurationType">The type of the T configuration type.</typeparam>
+    public abstract class BasePlugin<TConfigurationType> : BasePlugin, IHasPluginConfiguration
+        where TConfigurationType : BasePluginConfiguration
+    {
+        /// <summary>
+        /// Gets the application paths.
+        /// </summary>
+        /// <value>The application paths.</value>
+        protected IApplicationPaths ApplicationPaths { get; private set; }
+
+        /// <summary>
+        /// Gets the XML serializer.
+        /// </summary>
+        /// <value>The XML serializer.</value>
+        protected IXmlSerializer XmlSerializer { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is first run.
+        /// </summary>
+        /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
+        public bool IsFirstRun { get; private set; }
+
+        /// <summary>
+        /// Gets the type of configuration this plugin uses
+        /// </summary>
+        /// <value>The type of the configuration.</value>
+        public Type ConfigurationType
+        {
+            get { return typeof(TConfigurationType); }
+        }
+
+        private Action<string> _directoryCreateFn;
+        public void SetStartupInfo(Action<string> directoryCreateFn)
+        {
+            // hack alert, until the .net core transition is complete
+            _directoryCreateFn = directoryCreateFn;
+        }
+
+        /// <summary>
+        /// Gets the name the assembly file
+        /// </summary>
+        /// <value>The name of the assembly file.</value>
+        protected string AssemblyFileName
+        {
+            get
+            {
+                return Path.GetFileName(AssemblyFilePath);
+            }
+        }
 
         /// <summary>
         /// The _configuration sync lock
@@ -143,7 +164,7 @@ namespace MediaBrowser.Common.Plugins
                             _configuration = LoadConfiguration();
                         }
                     }
-                } 
+                }
                 return _configuration;
             }
             protected set
@@ -188,20 +209,6 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <summary>
-        /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed
-        /// </summary>
-        /// <value>The data folder path.</value>
-        public string DataFolderPath
-        {
-            get
-            {
-                // Give the folder name the same name as the config file name
-                // We can always make this configurable if/when needed
-                return Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(ConfigurationFileName));
-            }
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="BasePlugin{TConfigurationType}" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
@@ -225,7 +232,7 @@ namespace MediaBrowser.Common.Plugins
             lock (_configurationSaveLock)
             {
                 _directoryCreateFn(Path.GetDirectoryName(ConfigurationFilePath));
-                
+
                 XmlSerializer.SerializeToFile(Configuration, ConfigurationFilePath);
             }
         }
@@ -249,46 +256,27 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <summary>
-        /// Gets the plugin info.
-        /// </summary>
-        /// <returns>PluginInfo.</returns>
-        public PluginInfo GetPluginInfo()
-        {
-            var info = new PluginInfo
-            {
-                Name = Name,
-                Version = Version.ToString(),
-                AssemblyFileName = AssemblyFileName,
-                ConfigurationDateLastModified = ConfigurationDateLastModified,
-                Description = Description,
-                Id = Id.ToString(),
-                ConfigurationFileName = ConfigurationFileName
-            };
-
-            return info;
-        }
-
-        /// <summary>
-        /// Called when just before the plugin is uninstalled from the server.
-        /// </summary>
-        public virtual void OnUninstalling()
-        {
-
-        }
-
-        /// <summary>
         /// Gets the plugin's configuration
         /// </summary>
         /// <value>The configuration.</value>
-        BasePluginConfiguration IPlugin.Configuration
+        BasePluginConfiguration IHasPluginConfiguration.Configuration
         {
             get { return Configuration; }
+        }
+
+        public override PluginInfo GetPluginInfo()
+        {
+            var info = base.GetPluginInfo();
+
+            info.ConfigurationFileName = ConfigurationFileName;
+
+            return info;
         }
     }
 
     public interface IPluginAssembly
     {
-        void SetAttributes(string assemblyFilePath, string assemblyFileName, Version assemblyVersion);
+        void SetAttributes(string assemblyFilePath, string dataFolderPath, Version assemblyVersion);
         void SetId(Guid assemblyId);
     }
 }

@@ -4,6 +4,7 @@ using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
+using System;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -13,6 +14,9 @@ namespace MediaBrowser.Model.Dto
         public string Id { get; set; }
 
         public string Path { get; set; }
+
+        public string EncoderPath { get; set; }
+        public MediaProtocol? EncoderProtocol { get; set; }
 
         public MediaSourceType Type { get; set; }
 
@@ -39,11 +43,12 @@ namespace MediaBrowser.Model.Dto
         public bool RequiresOpening { get; set; }
         public string OpenToken { get; set; }
         public bool RequiresClosing { get; set; }
-        public bool SupportsProbing { get; set; }
         public string LiveStreamId { get; set; }
         public int? BufferMs { get; set; }
 
         public bool RequiresLooping { get; set; }
+
+        public bool SupportsProbing { get; set; }
 
         public VideoType? VideoType { get; set; }
 
@@ -68,7 +73,7 @@ namespace MediaBrowser.Model.Dto
 
         public MediaSourceInfo()
         {
-            Formats = new string[] { };
+            Formats = Array.Empty<string>();
             MediaStreams = new List<MediaStream>();
             RequiredHttpHeaders = new Dictionary<string, string>();
             SupportsTranscoding = true;
@@ -105,7 +110,7 @@ namespace MediaBrowser.Model.Dto
         }
 
         [IgnoreDataMember]
-        public List<TranscodeReason> TranscodeReasons { get; set; }
+        public TranscodeReason[] TranscodeReasons { get; set; }
 
         public int? DefaultAudioStreamIndex { get; set; }
         public int? DefaultSubtitleStreamIndex { get; set; }
@@ -204,22 +209,39 @@ namespace MediaBrowser.Model.Dto
 
         public bool? IsSecondaryAudio(MediaStream stream)
         {
-            // Look for the first audio track marked as default
-            foreach (MediaStream currentStream in MediaStreams)
-            {
-                if (currentStream.Type == MediaStreamType.Audio && currentStream.IsDefault)
-                {
-                    return currentStream.Index != stream.Index;
-                }
-            }
-
-            // Look for the first audio track
+            var audioStreams = new List<MediaStream>();
             foreach (MediaStream currentStream in MediaStreams)
             {
                 if (currentStream.Type == MediaStreamType.Audio)
                 {
-                    return currentStream.Index != stream.Index;
+                    audioStreams.Add(currentStream);
                 }
+            }
+
+            // Don't consider it secondary if there's only one audio track.
+            if (audioStreams.Count < 2)
+            {
+                return false;
+            }
+
+            // Look for the first audio track marked as default
+            foreach (MediaStream currentStream in audioStreams)
+            {
+                if (currentStream.IsDefault)
+                {
+                    if (currentStream.Index != stream.Index)
+                    {
+                        return true;
+                    }
+
+                    break;
+                }
+            }
+
+            // Look for the first audio track
+            foreach (MediaStream currentStream in audioStreams)
+            {
+                return currentStream.Index != stream.Index;
             }
 
             return null;

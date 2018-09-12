@@ -56,7 +56,7 @@ namespace MediaBrowser.Model.Services
 
         public virtual void Set(string key, string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrEmpty(value))
             {
                 var parameters = GetItems(key);
 

@@ -2,14 +2,14 @@
 {
     public class DlnaMaps
     {
-        public static readonly string DefaultStreaming =
+        private static readonly string DefaultStreaming =
              FlagsToString(DlnaFlags.StreamingTransferMode |
                            DlnaFlags.BackgroundTransferMode |
                            DlnaFlags.ConnectionStall |
                            DlnaFlags.ByteBasedSeek |
                            DlnaFlags.DlnaV15);
 
-        public static readonly string DefaultInteractive =
+        private static readonly string DefaultInteractive =
           FlagsToString(DlnaFlags.InteractiveTransferMode |
                         DlnaFlags.BackgroundTransferMode |
                         DlnaFlags.ConnectionStall |
@@ -48,7 +48,7 @@
             orgOp += "0";
 
             // Byte-based seeking only possible when not transcoding
-            orgOp += "0";
+            orgOp += "1";
 
             return orgOp;
         }

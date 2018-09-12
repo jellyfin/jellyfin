@@ -11,12 +11,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
-
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.LiveTv;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -86,7 +85,7 @@ namespace MediaBrowser.Controller.Entities
 
         public void SetPrimaryVersionId(string id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (string.IsNullOrEmpty(id))
             {
                 PrimaryVersionId = null;
             }
@@ -100,21 +99,12 @@ namespace MediaBrowser.Controller.Entities
 
         public override string CreatePresentationUniqueKey()
         {
-            if (!string.IsNullOrWhiteSpace(PrimaryVersionId))
+            if (!string.IsNullOrEmpty(PrimaryVersionId))
             {
                 return PrimaryVersionId;
             }
 
             return base.CreatePresentationUniqueKey();
-        }
-
-        [IgnoreDataMember]
-        public override bool EnableRefreshOnDateModifiedChange
-        {
-            get
-            {
-                return VideoType == VideoType.VideoFile || VideoType == VideoType.Iso;
-            }
         }
 
         [IgnoreDataMember]
@@ -142,8 +132,6 @@ namespace MediaBrowser.Controller.Entities
         public bool HasSubtitles { get; set; }
 
         public bool IsPlaceHolder { get; set; }
-        public bool IsShortcut { get; set; }
-        public string ShortcutPath { get; set; }
 
         /// <summary>
         /// Gets or sets the default index of the video stream.
@@ -169,7 +157,7 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The video3 D format.</value>
         public Video3DFormat? Video3DFormat { get; set; }
 
-        public string[] GetPlayableStreamFileNames()
+        public string[] GetPlayableStreamFileNames(IMediaEncoder mediaEncoder)
         {
             var videoType = VideoType;
 
@@ -183,9 +171,9 @@ namespace MediaBrowser.Controller.Entities
             }
             else
             {
-                return new string[] { };
+                return Array.Empty<string>();
             }
-            return MediaEncoder.GetPlayableStreamFileNames(Path, videoType);
+            return mediaEncoder.GetPlayableStreamFileNames(Path, videoType);
         }
 
         /// <summary>
@@ -196,22 +184,30 @@ namespace MediaBrowser.Controller.Entities
 
         public Video()
         {
-            AdditionalParts = EmptyStringArray;
-            LocalAlternateVersions = EmptyStringArray;
-            SubtitleFiles = EmptyStringArray;
-            LinkedAlternateVersions = EmptyLinkedChildArray;
+            AdditionalParts = Array.Empty<string>();
+            LocalAlternateVersions = Array.Empty<string>();
+            SubtitleFiles = Array.Empty<string>();
+            LinkedAlternateVersions = Array.Empty<LinkedChild>();
         }
 
         public override bool CanDownload()
         {
-            if (VideoType == VideoType.Dvd || VideoType == VideoType.BluRay)
+            var videoType = VideoType;
+            if (videoType == VideoType.Dvd || videoType == VideoType.BluRay)
             {
                 return false;
             }
 
-            var locationType = LocationType;
-            return locationType != LocationType.Remote &&
-                   locationType != LocationType.Virtual;
+            return CanDownloadAsSingleMedia();
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsExternalTransfer
+        {
+            get
+            {
+                return CanDownload();
+            }
         }
 
         [IgnoreDataMember]
@@ -225,7 +221,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(PrimaryVersionId))
+                if (!string.IsNullOrEmpty(PrimaryVersionId))
                 {
                     var item = LibraryManager.GetItemById(PrimaryVersionId) as Video;
                     if (item != null)
@@ -244,7 +240,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public bool HasLocalAlternateVersions
+        public override bool HasLocalAlternateVersions
         {
             get { return LocalAlternateVersions.Length > 0; }
         }
@@ -258,6 +254,8 @@ namespace MediaBrowser.Controller.Entities
         {
             return LocalAlternateVersions.Select(i => LibraryManager.GetNewItemId(i, typeof(Video)));
         }
+
+        public static ILiveTvManager LiveTvManager { get; set; }
 
         [IgnoreDataMember]
         public override SourceType SourceType
@@ -273,7 +271,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        protected bool IsActiveRecording()
+        protected override bool IsActiveRecording()
         {
             return LiveTvManager.GetActiveRecordingInfo(Path) != null;
         }
@@ -291,7 +289,34 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public bool IsCompleteMedia
         {
-            get { return !IsActiveRecording(); }
+            get
+            {
+                if (SourceType == SourceType.Channel)
+                {
+                    return !Tags.Contains("livestream", StringComparer.OrdinalIgnoreCase);
+                }
+
+                return !IsActiveRecording();
+            }
+        }
+
+        public override long GetRunTimeTicksForPlayState()
+        {
+            var recordingInfo = LiveTvManager.GetActiveRecordingInfo(Path);
+
+            if (recordingInfo != null)
+            {
+                var timer = recordingInfo.Timer;
+                if (timer != null)
+                {
+                    var startDate = timer.StartDate.AddSeconds(0 - timer.PrePaddingSeconds);
+                    var endDate = timer.EndDate.AddSeconds(timer.PostPaddingSeconds);
+
+                    return (endDate - startDate).Ticks;
+                }
+            }
+
+            return base.GetRunTimeTicksForPlayState();
         }
 
         [IgnoreDataMember]
@@ -312,13 +337,13 @@ namespace MediaBrowser.Controller.Entities
                 if (ExtraType.HasValue)
                 {
                     var key = this.GetProviderId(MetadataProviders.Tmdb);
-                    if (!string.IsNullOrWhiteSpace(key))
+                    if (!string.IsNullOrEmpty(key))
                     {
                         list.Insert(0, GetUserDataKey(key));
                     }
 
                     key = this.GetProviderId(MetadataProviders.Imdb);
-                    if (!string.IsNullOrWhiteSpace(key))
+                    if (!string.IsNullOrEmpty(key))
                     {
                         list.Insert(0, GetUserDataKey(key));
                     }
@@ -326,13 +351,13 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     var key = this.GetProviderId(MetadataProviders.Imdb);
-                    if (!string.IsNullOrWhiteSpace(key))
+                    if (!string.IsNullOrEmpty(key))
                     {
                         list.Insert(0, key);
                     }
 
                     key = this.GetProviderId(MetadataProviders.Tmdb);
-                    if (!string.IsNullOrWhiteSpace(key))
+                    if (!string.IsNullOrEmpty(key))
                     {
                         list.Insert(0, key);
                     }
@@ -404,7 +429,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (LocationType == LocationType.FileSystem)
+                if (IsFileProtocol)
                 {
                     if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd)
                     {
@@ -465,7 +490,7 @@ namespace MediaBrowser.Controller.Entities
                     .Select(i => i.FullName)
                     .ToArray();
             }
-            return new string[] { };
+            return Array.Empty<string>();
         }
 
         /// <summary>
@@ -506,7 +531,7 @@ namespace MediaBrowser.Controller.Entities
             // Must have a parent to have additional parts or alternate versions
             // In other words, it must be part of the Parent/Child tree
             // The additional parts won't have additional parts themselves
-            if (LocationType == LocationType.FileSystem && GetParent() != null)
+            if (IsFileProtocol && SupportsOwnedItems)
             {
                 if (!IsStacked)
                 {
@@ -527,7 +552,7 @@ namespace MediaBrowser.Controller.Entities
             foreach (var child in LinkedAlternateVersions)
             {
                 // Reset the cached value
-                if (child.ItemId.HasValue && child.ItemId.Value == Guid.Empty)
+                if (child.ItemId.HasValue && child.ItemId.Value.Equals(Guid.Empty))
                 {
                     child.ItemId = null;
                 }
@@ -573,14 +598,6 @@ namespace MediaBrowser.Controller.Entities
             return base.GetDeletePaths();
         }
 
-        public List<MediaStream> GetMediaStreams()
-        {
-            return MediaSourceManager.GetMediaStreams(new MediaStreamQuery
-            {
-                ItemId = Id
-            });
-        }
-
         public virtual MediaStream GetDefaultVideoStream()
         {
             if (!DefaultVideoStreamIndex.HasValue)
@@ -596,210 +613,37 @@ namespace MediaBrowser.Controller.Entities
             }).FirstOrDefault();
         }
 
-        private List<Tuple<Video, MediaSourceType>> GetAllVideosForMediaSources()
+        protected override List<Tuple<BaseItem, MediaSourceType>> GetAllItemsForMediaSources()
         {
-            var list = new List<Tuple<Video, MediaSourceType>>();
+            var list = new List<Tuple<BaseItem, MediaSourceType>>();
 
-            list.Add(new Tuple<Video, MediaSourceType>(this, MediaSourceType.Default));
-            list.AddRange(GetLinkedAlternateVersions().Select(i => new Tuple<Video, MediaSourceType>(i, MediaSourceType.Grouping)));
+            list.Add(new Tuple<BaseItem, MediaSourceType>(this, MediaSourceType.Default));
+            list.AddRange(GetLinkedAlternateVersions().Select(i => new Tuple<BaseItem, MediaSourceType>(i, MediaSourceType.Grouping)));
 
-            if (!string.IsNullOrWhiteSpace(PrimaryVersionId))
+            if (!string.IsNullOrEmpty(PrimaryVersionId))
             {
                 var primary = LibraryManager.GetItemById(PrimaryVersionId) as Video;
                 if (primary != null)
                 {
                     var existingIds = list.Select(i => i.Item1.Id).ToList();
-                    list.Add(new Tuple<Video, MediaSourceType>(primary, MediaSourceType.Grouping));
-                    list.AddRange(primary.GetLinkedAlternateVersions().Where(i => !existingIds.Contains(i.Id)).Select(i => new Tuple<Video, MediaSourceType>(i, MediaSourceType.Grouping)));
+                    list.Add(new Tuple<BaseItem, MediaSourceType>(primary, MediaSourceType.Grouping));
+                    list.AddRange(primary.GetLinkedAlternateVersions().Where(i => !existingIds.Contains(i.Id)).Select(i => new Tuple<BaseItem, MediaSourceType>(i, MediaSourceType.Grouping)));
                 }
             }
 
             var localAlternates = list
-                .SelectMany(i => i.Item1.GetLocalAlternateVersionIds())
+                .SelectMany(i =>
+                {
+                    var video = i.Item1 as Video;
+                    return video == null ? new List<Guid>() : video.GetLocalAlternateVersionIds();
+                })
                 .Select(LibraryManager.GetItemById)
                 .Where(i => i != null)
-                .OfType<Video>()
                 .ToList();
 
-            list.AddRange(localAlternates.Select(i => new Tuple<Video, MediaSourceType>(i, MediaSourceType.Default)));
+            list.AddRange(localAlternates.Select(i => new Tuple<BaseItem, MediaSourceType>(i, MediaSourceType.Default)));
 
             return list;
-        }
-
-        public virtual List<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
-        {
-            if (SourceType == SourceType.Channel)
-            {
-                var sources = ChannelManager.GetStaticMediaSources(this, CancellationToken.None)
-                           .ToList();
-
-                if (sources.Count > 0)
-                {
-                    return sources;
-                }
-
-                return new List<MediaSourceInfo>
-                {
-                    GetVersionInfo(enablePathSubstitution, this, MediaSourceType.Placeholder)
-                };
-            }
-
-            var list = GetAllVideosForMediaSources();
-            var result = list.Select(i => GetVersionInfo(enablePathSubstitution, i.Item1, i.Item2)).ToList();
-
-            if (IsActiveRecording())
-            {
-                foreach (var mediaSource in result)
-                {
-                    mediaSource.Type = MediaSourceType.Placeholder;
-                }
-            }
-
-            return result.OrderBy(i =>
-            {
-                if (i.VideoType == VideoType.VideoFile)
-                {
-                    return 0;
-                }
-
-                return 1;
-
-            }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
-            .ThenByDescending(i =>
-            {
-                var stream = i.VideoStream;
-
-                return stream == null || stream.Width == null ? 0 : stream.Width.Value;
-            })
-            .ToList();
-        }
-
-        private static MediaSourceInfo GetVersionInfo(bool enablePathSubstitution, Video media, MediaSourceType type)
-        {
-            if (media == null)
-            {
-                throw new ArgumentNullException("media");
-            }
-
-            var locationType = media.LocationType;
-
-            var info = new MediaSourceInfo
-            {
-                Id = media.Id.ToString("N"),
-                IsoType = media.IsoType,
-                Protocol = locationType == LocationType.Remote ? MediaProtocol.Http : MediaProtocol.File,
-                MediaStreams = MediaSourceManager.GetMediaStreams(media.Id),
-                Name = GetMediaSourceName(media),
-                Path = enablePathSubstitution ? GetMappedPath(media, media.Path, locationType) : media.Path,
-                RunTimeTicks = media.RunTimeTicks,
-                Video3DFormat = media.Video3DFormat,
-                VideoType = media.VideoType,
-                Container = media.Container,
-                Size = media.Size,
-                Timestamp = media.Timestamp,
-                Type = type,
-                SupportsDirectStream = media.VideoType == VideoType.VideoFile,
-                IsRemote = media.IsShortcut
-            };
-
-            if (info.Protocol == MediaProtocol.File)
-            {
-                info.ETag = media.DateModified.Ticks.ToString(CultureInfo.InvariantCulture).GetMD5().ToString("N");
-            }
-
-            if (media.IsShortcut)
-            {
-                info.Path = media.ShortcutPath;
-
-                if (!string.IsNullOrWhiteSpace(info.Path))
-                {
-                    if (info.Path.StartsWith("Http", StringComparison.OrdinalIgnoreCase))
-                    {
-                        info.Protocol = MediaProtocol.Http;
-                        info.SupportsDirectStream = false;
-                    }
-                    else if (info.Path.StartsWith("Rtmp", StringComparison.OrdinalIgnoreCase))
-                    {
-                        info.Protocol = MediaProtocol.Rtmp;
-                        info.SupportsDirectStream = false;
-                    }
-                    else if (info.Path.StartsWith("Rtsp", StringComparison.OrdinalIgnoreCase))
-                    {
-                        info.Protocol = MediaProtocol.Rtsp;
-                        info.SupportsDirectStream = false;
-                    }
-                    else
-                    {
-                        info.Protocol = MediaProtocol.File;
-                    }
-                }
-            }
-
-            if (string.IsNullOrEmpty(info.Container))
-            {
-                if (media.VideoType == VideoType.VideoFile || media.VideoType == VideoType.Iso)
-                {
-                    if (!string.IsNullOrWhiteSpace(media.Path) && locationType != LocationType.Remote && locationType != LocationType.Virtual)
-                    {
-                        info.Container = System.IO.Path.GetExtension(media.Path).TrimStart('.');
-                    }
-                }
-            }
-
-            info.Bitrate = media.TotalBitrate;
-            info.InferTotalBitrate();
-
-            return info;
-        }
-
-        private static string GetMediaSourceName(Video video)
-        {
-            var terms = new List<string>();
-
-            var locationType = video.LocationType;
-            var path = video.Path;
-            if ((locationType == LocationType.FileSystem || locationType == LocationType.Offline) && !string.IsNullOrWhiteSpace(path))
-            {
-                terms.Add(System.IO.Path.GetFileName(path));
-            }
-            else
-            {
-                terms.Add(video.Name);
-            }
-
-            if (video.Video3DFormat.HasValue)
-            {
-                terms.Add("3D");
-            }
-
-            if (video.VideoType == VideoType.BluRay)
-            {
-                terms.Add("Bluray");
-            }
-            else if (video.VideoType == VideoType.Dvd)
-            {
-                terms.Add("DVD");
-            }
-            else if (video.VideoType == VideoType.Iso)
-            {
-                if (video.IsoType.HasValue)
-                {
-                    if (video.IsoType.Value == Model.Entities.IsoType.BluRay)
-                    {
-                        terms.Add("Bluray");
-                    }
-                    else if (video.IsoType.Value == Model.Entities.IsoType.Dvd)
-                    {
-                        terms.Add("DVD");
-                    }
-                }
-                else
-                {
-                    terms.Add("ISO");
-                }
-            }
-
-            return string.Join("/", terms.ToArray(terms.Count));
         }
 
     }

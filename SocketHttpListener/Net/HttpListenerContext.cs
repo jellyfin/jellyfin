@@ -7,145 +7,39 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Text;
 using SocketHttpListener.Net.WebSockets;
 using SocketHttpListener.Primitives;
+using System.Threading.Tasks;
 
 namespace SocketHttpListener.Net
 {
-    public sealed class HttpListenerContext
+    public sealed unsafe partial class HttpListenerContext
     {
-        HttpListenerRequest request;
-        HttpListenerResponse response;
-        IPrincipal user;
-        HttpConnection cnc;
-        string error;
-        int err_status = 400;
-        private readonly ICryptoProvider _cryptoProvider;
-        private readonly IMemoryStreamFactory _memoryStreamFactory;
-        private readonly ITextEncoding _textEncoding;
+        internal HttpListener _listener;
+        private HttpListenerResponse _response;
+        private IPrincipal _user;
 
-        internal HttpListenerContext(HttpConnection cnc, ILogger logger, ICryptoProvider cryptoProvider, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding, IFileSystem fileSystem)
-        {
-            this.cnc = cnc;
-            _cryptoProvider = cryptoProvider;
-            _memoryStreamFactory = memoryStreamFactory;
-            _textEncoding = textEncoding;
-            request = new HttpListenerRequest(this, _textEncoding);
-            response = new HttpListenerResponse(this, _textEncoding);
-        }
+        public HttpListenerRequest Request { get; }
 
-        internal int ErrorStatus
-        {
-            get { return err_status; }
-            set { err_status = value; }
-        }
+        public IPrincipal User => _user;
 
-        internal string ErrorMessage
-        {
-            get { return error; }
-            set { error = value; }
-        }
-
-        internal bool HaveError
-        {
-            get { return (error != null); }
-        }
-
-        internal HttpConnection Connection
-        {
-            get { return cnc; }
-        }
-
-        public HttpListenerRequest Request
-        {
-            get { return request; }
-        }
+        // This can be used to cache the results of HttpListener.AuthenticationSchemeSelectorDelegate.
+        internal AuthenticationSchemes AuthenticationSchemes { get; set; }
 
         public HttpListenerResponse Response
         {
-            get { return response; }
-        }
-
-        public IPrincipal User
-        {
-            get { return user; }
-        }
-
-        internal void ParseAuthentication(AuthenticationSchemes expectedSchemes)
-        {
-            if (expectedSchemes == AuthenticationSchemes.Anonymous)
-                return;
-
-            // TODO: Handle NTLM/Digest modes
-            string header = request.Headers["Authorization"];
-            if (header == null || header.Length < 2)
-                return;
-
-            string[] authenticationData = header.Split(new char[] { ' ' }, 2);
-            if (string.Equals(authenticationData[0], "basic", StringComparison.OrdinalIgnoreCase))
+            get
             {
-                user = ParseBasicAuthentication(authenticationData[1]);
-            }
-            // TODO: throw if malformed -> 400 bad request
-        }
-
-        internal IPrincipal ParseBasicAuthentication(string authData)
-        {
-            try
-            {
-                // Basic AUTH Data is a formatted Base64 String
-                //string domain = null;
-                string user = null;
-                string password = null;
-                int pos = -1;
-                var authDataBytes = Convert.FromBase64String(authData);
-                string authString = _textEncoding.GetDefaultEncoding().GetString(authDataBytes, 0, authDataBytes.Length);
-
-                // The format is DOMAIN\username:password
-                // Domain is optional
-
-                pos = authString.IndexOf(':');
-
-                // parse the password off the end
-                password = authString.Substring(pos + 1);
-
-                // discard the password
-                authString = authString.Substring(0, pos);
-
-                // check if there is a domain
-                pos = authString.IndexOf('\\');
-
-                if (pos > 0)
-                {
-                    //domain = authString.Substring (0, pos);
-                    user = authString.Substring(pos);
-                }
-                else
-                {
-                    user = authString;
-                }
-
-                HttpListenerBasicIdentity identity = new HttpListenerBasicIdentity(user, password);
-                // TODO: What are the roles MS sets
-                return new GenericPrincipal(identity, new string[0]);
-            }
-            catch (Exception)
-            {
-                // Invalid auth data is swallowed silently
-                return null;
+                return _response;
             }
         }
 
-        public HttpListenerWebSocketContext AcceptWebSocket(string protocol)
+        public Task<HttpListenerWebSocketContext> AcceptWebSocketAsync(string subProtocol)
         {
-            if (protocol != null)
-            {
-                if (protocol.Length == 0)
-                    throw new ArgumentException("An empty string.", "protocol");
+            return AcceptWebSocketAsync(subProtocol, HttpWebSocket.DefaultReceiveBufferSize, WebSocket.DefaultKeepAliveInterval);
+        }
 
-                if (!protocol.IsToken())
-                    throw new ArgumentException("Contains an invalid character.", "protocol");
-            }
-
-            return new HttpListenerWebSocketContext(this, protocol, _cryptoProvider, _memoryStreamFactory);
+        public Task<HttpListenerWebSocketContext> AcceptWebSocketAsync(string subProtocol, TimeSpan keepAliveInterval)
+        {
+            return AcceptWebSocketAsync(subProtocol, HttpWebSocket.DefaultReceiveBufferSize, keepAliveInterval);
         }
     }
 

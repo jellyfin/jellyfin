@@ -1,14 +1,19 @@
-﻿<div id="appServicesPage" data-role="page" class="page type-interior appServicesPage withTabs fullWidthContent" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Sync" data-require="scripts/appservices">
+﻿<div id="appServicesPage" data-role="page" class="page type-interior appServicesPage withTabs fullWidthContent" data-require="scripts/appservices">
 
     <div>
         <div class="content-primary">
 
             <div class="verticalSection">
-                <h2 class="detailSectionHeader sectionTitle">${HeaderInstalledServices}</h2>
+
+                <div class="sectionTitleContainer sectionTitleContainer-cards flex align-items-center">
+                    <h2 class="sectionTitle sectionTitle-cards">${HeaderInstalledServices}</h2>
+                    <a is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Plugins">${Help}</a>
+                </div>
+
                 <div class="installedPlugins"></div>
             </div>
             <div class="verticalSection">
-                <h2 class="detailSectionHeader sectionTitle">${HeaderAvailableServices}</h2>
+                <h2 class="sectionTitle sectionTitle-cards">${HeaderAvailableServices}</h2>
                 <div class="catalog"></div>
             </div>
         </div>

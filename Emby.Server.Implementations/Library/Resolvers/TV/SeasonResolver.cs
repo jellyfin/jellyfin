@@ -50,24 +50,29 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
                 var path = args.Path;
 
+                var seasonParserResult = new SeasonPathParser(namingOptions).Parse(path, true, true);
+
                 var season = new Season
                 {
-                    IndexNumber = new SeasonPathParser(namingOptions, new RegexProvider()).Parse(path, true, true).SeasonNumber,
+                    IndexNumber = seasonParserResult.SeasonNumber,
                     SeriesId = series.Id,
                     SeriesName = series.Name
                 };
 
-                if (season.IndexNumber.HasValue)
+                if (!season.IndexNumber.HasValue || !seasonParserResult.IsSeasonFolder)
                 {
                     var resolver = new Emby.Naming.TV.EpisodeResolver(namingOptions);
 
-                    var episodeInfo = resolver.Resolve(path, true);
+                    var folderName = System.IO.Path.GetFileName(path);
+                    var testPath = "\\\\test\\" + folderName;
+
+                    var episodeInfo = resolver.Resolve(testPath, true);
 
                     if (episodeInfo != null)
                     {
                         if (episodeInfo.EpisodeNumber.HasValue && episodeInfo.SeasonNumber.HasValue)
                         {
-                            _logger.Info("Found folder underneath series with episode number: {0}. Season {1}. Episode {2}", 
+                            _logger.Debug("Found folder underneath series with episode number: {0}. Season {1}. Episode {2}",
                                 path,
                                 episodeInfo.SeasonNumber.Value,
                                 episodeInfo.EpisodeNumber.Value);
@@ -75,7 +80,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                             return null;
                         }
                     }
+                }
 
+                if (season.IndexNumber.HasValue)
+                {
                     var seasonNumber = season.IndexNumber.Value;
 
                     season.Name = seasonNumber == 0 ?

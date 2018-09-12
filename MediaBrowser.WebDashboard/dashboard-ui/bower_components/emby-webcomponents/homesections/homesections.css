@@ -1,1 +1,1 @@
-@media all and (orientation:portrait) and (min-width:540px) and (max-width:1000px){.overflowHomeLibraryCard{width:30vw!important}}
+.homeLibraryButton{min-width:18%;margin:.5em!important}@media all and (max-width:50em){.homeLibraryButton{width:46%!important}}

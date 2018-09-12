@@ -35,8 +35,6 @@ namespace SocketHttpListener.Net
 		};
 
         static readonly Dictionary<string, HeaderInfo> headers;
-        HeaderInfo? headerRestriction;
-        HeaderInfo? headerConsistency;
 
         static WebHeaderCollection()
         {
@@ -108,7 +106,6 @@ namespace SocketHttpListener.Net
             if (name == null)
                 throw new ArgumentNullException("name");
 
-            ThrowIfRestricted(name);
             this.AddWithoutValidate(name, value);
         }
 
@@ -237,7 +234,6 @@ namespace SocketHttpListener.Net
             if (!IsHeaderValue(value))
                 throw new ArgumentException("invalid header value");
 
-            ThrowIfRestricted(name);
             base.Set(name, value);
         }
 
@@ -315,27 +311,6 @@ namespace SocketHttpListener.Net
                 base.Remove(name);
                 base.Set(name, value);
             }
-        }
-
-        // Private Methods
-
-        public override int Remove(string name)
-        {
-            ThrowIfRestricted(name);
-            return base.Remove(name);
-        }
-
-        protected void ThrowIfRestricted(string headerName)
-        {
-            if (!headerRestriction.HasValue)
-                return;
-
-            HeaderInfo info;
-            if (!headers.TryGetValue(headerName, out info))
-                return;
-
-            if ((info & headerRestriction.Value) != 0)
-                throw new ArgumentException("This header must be modified with the appropriate property.");
         }
 
         internal static bool IsMultiValue(string headerName)

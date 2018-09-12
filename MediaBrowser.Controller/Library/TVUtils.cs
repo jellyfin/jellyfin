@@ -12,10 +12,11 @@ namespace MediaBrowser.Controller.Library
         /// The TVDB API key
         /// </summary>
         public static readonly string TvdbApiKey = "B89CE93890E9419B";
+        public static readonly string TvdbBaseUrl = "https://www.thetvdb.com/";
         /// <summary>
         /// The banner URL
         /// </summary>
-        public static readonly string BannerUrl = "https://www.thetvdb.com/banners/";
+        public static readonly string BannerUrl = TvdbBaseUrl + "banners/";
 
         /// <summary>
         /// Gets the air days.
@@ -24,9 +25,9 @@ namespace MediaBrowser.Controller.Library
         /// <returns>List{DayOfWeek}.</returns>
         public static DayOfWeek[] GetAirDays(string day)
         {
-            if (!string.IsNullOrWhiteSpace(day))
+            if (!string.IsNullOrEmpty(day))
             {
-                if (day.Equals("Daily", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(day, "Daily", StringComparison.OrdinalIgnoreCase))
                 {
                     return new DayOfWeek[]
                                {

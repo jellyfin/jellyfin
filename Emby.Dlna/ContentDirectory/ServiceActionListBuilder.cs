@@ -7,7 +7,7 @@ namespace Emby.Dlna.ContentDirectory
     {
         public IEnumerable<ServiceAction> GetActions()
         {
-            var list = new List<ServiceAction>
+            return new []
             {
                 GetSearchCapabilitiesAction(),
                 GetSortCapabilitiesAction(),
@@ -18,8 +18,6 @@ namespace Emby.Dlna.ContentDirectory
                 GetXSetBookmarkAction(),
                 GetBrowseByLetterAction()
             };
-
-            return list;
         }
 
         private ServiceAction GetGetSystemUpdateIDAction()

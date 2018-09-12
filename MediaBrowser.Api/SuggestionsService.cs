@@ -14,11 +14,11 @@ using MediaBrowser.Model.Extensions;
 namespace MediaBrowser.Api
 {
     [Route("/Users/{UserId}/Suggestions", "GET", Summary = "Gets items based on a query.")]
-    public class GetSuggestedItems : IReturn<QueryResult<BaseItem>>
+    public class GetSuggestedItems : IReturn<QueryResult<BaseItemDto>>
     {
         public string MediaType { get; set; }
         public string Type { get; set; }
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
         public bool EnableTotalRecordCount { get; set; }
         public int? StartIndex { get; set; }
         public int? Limit { get; set; }
@@ -51,14 +51,12 @@ namespace MediaBrowser.Api
 
         public object Get(GetSuggestedItems request)
         {
-            var result = GetResultItems(request);
-
-            return ToOptimizedResult(result);
+            return GetResultItems(request);
         }
 
         private QueryResult<BaseItemDto> GetResultItems(GetSuggestedItems request)
         {
-            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
+            var user = !request.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(request.UserId) : null;
 
             var dtoOptions = GetDtoOptions(_authContext, request);
             var result = GetItems(request, user, dtoOptions);
@@ -81,7 +79,7 @@ namespace MediaBrowser.Api
         {
             return _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
-                OrderBy = new[] { ItemSortBy.Random }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
+                OrderBy = new[] { ItemSortBy.Random }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
                 MediaTypes = request.GetMediaTypes(),
                 IncludeItemTypes = request.GetIncludeItemTypes(),
                 IsVirtualItem = false,

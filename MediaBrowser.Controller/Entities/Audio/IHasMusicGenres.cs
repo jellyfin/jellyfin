@@ -4,6 +4,6 @@ namespace MediaBrowser.Controller.Entities.Audio
 {
     public interface IHasMusicGenres
     {
-        List<string> Genres { get; }
+        string[] Genres { get; }
     }
 }

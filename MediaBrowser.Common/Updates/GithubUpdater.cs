@@ -44,7 +44,7 @@ namespace MediaBrowser.Common.Updates
             {
                 using (var stream = response.Content)
                 {
-                    var obj = _jsonSerializer.DeserializeFromStream<RootObject[]>(stream);
+                    var obj = await _jsonSerializer.DeserializeFromStreamAsync<RootObject[]>(stream).ConfigureAwait(false);
 
                     return CheckForUpdateResult(obj, minVersion, updateLevel, assetFilename, packageName, targetFilename);
                 }
@@ -117,7 +117,7 @@ namespace MediaBrowser.Common.Updates
             {
                 using (var stream = response.Content)
                 {
-                    var obj = _jsonSerializer.DeserializeFromStream<RootObject[]>(stream);
+                    var obj = await _jsonSerializer.DeserializeFromStreamAsync<RootObject[]>(stream).ConfigureAwait(false);
 
                     obj = obj.Where(i => (i.assets ?? new List<Asset>()).Any(a => IsAsset(a, assetFilename, i.tag_name))).ToArray();
 

@@ -113,7 +113,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>System.String.</returns>
         string EscapeSubtitleFilterPath(string path);
 
-        Task Init();
+        void Init();
 
         void UpdateEncoderPath(string path, string pathType);
         bool SupportsEncoder(string encoder);

@@ -13,7 +13,7 @@ namespace Emby.Server.Implementations.Browser
         /// </summary>
         /// <param name="page">The page.</param>
         /// <param name="appHost">The app host.</param>
-        public static void OpenDashboardPage(string page, IServerApplicationHost appHost)
+        private static void OpenDashboardPage(string page, IServerApplicationHost appHost)
         {
             var url = appHost.GetLocalApiUrl("localhost") + "/web/" + page;
 
@@ -21,34 +21,12 @@ namespace Emby.Server.Implementations.Browser
         }
 
         /// <summary>
-        /// Opens the community.
-        /// </summary>
-        public static void OpenCommunity(IServerApplicationHost appHost)
-        {
-            OpenUrl(appHost, "http://emby.media/community");
-        }
-
-        public static void OpenEmbyPremiere(IServerApplicationHost appHost)
-        {
-            OpenDashboardPage("supporterkey.html", appHost);
-        }
-
-        /// <summary>
         /// Opens the web client.
         /// </summary>
         /// <param name="appHost">The app host.</param>
-        public static void OpenWebClient(IServerApplicationHost appHost)
+        public static void OpenWebApp(IServerApplicationHost appHost)
         {
             OpenDashboardPage("index.html", appHost);
-        }
-
-        /// <summary>
-        /// Opens the dashboard.
-        /// </summary>
-        /// <param name="appHost">The app host.</param>
-        public static void OpenDashboard(IServerApplicationHost appHost)
-        {
-            OpenDashboardPage("dashboard.html", appHost);
         }
 
         /// <summary>

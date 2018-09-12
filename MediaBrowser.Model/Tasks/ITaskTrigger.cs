@@ -12,7 +12,12 @@ namespace MediaBrowser.Model.Tasks
         /// <summary>
         /// Fires when the trigger condition is satisfied and the task should run
         /// </summary>
-        event EventHandler<GenericEventArgs<TaskExecutionOptions>> Triggered;
+        event EventHandler<EventArgs> Triggered;
+
+        /// <summary>
+        /// Gets or sets the options of this task.
+        /// </summary>
+        TaskOptions TaskOptions { get; set; }
 
         /// <summary>
         /// Stars waiting for the trigger action
@@ -23,13 +28,5 @@ namespace MediaBrowser.Model.Tasks
         /// Stops waiting for the trigger action
         /// </summary>
         void Stop();
-
-        /// <summary>
-        /// Gets or sets the execution properties of this task.
-        /// </summary>
-        /// <value>
-        /// The execution properties of this task.
-        /// </value>
-        TaskExecutionOptions TaskOptions { get; set; }
     }
 }

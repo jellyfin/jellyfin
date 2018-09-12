@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Dto;
+using System;
 
 namespace MediaBrowser.Model.Session
 {
@@ -19,11 +20,15 @@ namespace MediaBrowser.Model.Session
         /// <value>The item.</value>
         public BaseItemDto Item { get; set; }
 
+        public QueueItem[] NowPlayingQueue { get; set; }
+
+        public string PlaylistItemId { get; set; }
+
         /// <summary>
         /// Gets or sets the item identifier.
         /// </summary>
         /// <value>The item identifier.</value>
-        public string ItemId { get; set; }
+        public Guid ItemId { get; set; }
         
         /// <summary>
         /// Gets or sets the session id.
@@ -99,6 +104,12 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The repeat mode.</value>
         public RepeatMode RepeatMode { get; set; }
+    }
+
+    public class QueueItem
+    {
+        public Guid Id { get; set; }
+        public string PlaylistItemId { get; set; }
     }
 
     public enum RepeatMode

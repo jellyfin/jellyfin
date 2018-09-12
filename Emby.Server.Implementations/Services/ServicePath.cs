@@ -48,6 +48,8 @@ namespace Emby.Server.Implementations.Services
 
         public Type RequestType { get; private set; }
 
+        public Type ServiceType { get; private set; }
+
         public string Path { get { return this.restPath; } }
 
         public string Summary { get; private set; }
@@ -55,6 +57,11 @@ namespace Emby.Server.Implementations.Services
         public bool IsHidden { get; private set; }
 
         public int Priority { get; set; } //passed back to RouteAttribute
+
+        public IEnumerable<string> PathVariables
+        {
+            get { return this.variablesNames.Where(e => !string.IsNullOrWhiteSpace(e)); }
+        }
 
         public static string[] GetPathPartsForMatching(string pathInfo)
         {
@@ -93,9 +100,10 @@ namespace Emby.Server.Implementations.Services
             return list;
         }
 
-        public RestPath(Func<Type, object> createInstanceFn, Func<Type, Func<string, object>> getParseFn, Type requestType, string path, string verbs, bool isHidden = false, string summary = null, string description = null)
+        public RestPath(Func<Type, object> createInstanceFn, Func<Type, Func<string, object>> getParseFn, Type requestType, Type serviceType, string path, string verbs, bool isHidden = false, string summary = null, string description = null)
         {
             this.RequestType = requestType;
+            this.ServiceType = serviceType;
             this.Summary = summary;
             this.IsHidden = isHidden;
             this.Description = description;
@@ -557,6 +565,13 @@ namespace Emby.Server.Implementations.Services
             }
 
             return this.typeDeserializer.PopulateFromMap(fromInstance, requestKeyValuesMap);
+        }
+
+        public class RestPathMap : SortedDictionary<string, List<RestPath>>
+        {
+            public RestPathMap() : base(StringComparer.OrdinalIgnoreCase)
+            {
+            }
         }
     }
 }
