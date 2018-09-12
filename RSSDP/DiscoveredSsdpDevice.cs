@@ -20,8 +20,6 @@ namespace Rssdp
 		private SsdpRootDevice _Device;
 		private DateTimeOffset _AsAt;
 
-		private static HttpClient s_DefaultHttpClient;
-
 		#endregion
 
 		#region Public Properties
@@ -80,47 +78,6 @@ namespace Rssdp
 			return this.CacheLifetime == TimeSpan.Zero || this.AsAt.Add(this.CacheLifetime) <= DateTimeOffset.Now;
 		}
 
-		/// <summary>
-		/// Retrieves the device description document specified by the <see cref="DescriptionLocation"/> property.
-		/// </summary>
-		/// <remarks>
-		/// <para>This method may choose to cache (or return cached) information if called multiple times within the <see cref="CacheLifetime"/> period.</para>
-		/// </remarks>
-		/// <returns>An <see cref="SsdpDevice"/> instance describing the full device details.</returns>
-		public async Task<SsdpDevice> GetDeviceInfo()
-		{
-			var device = _Device;
-			if (device == null || this.IsExpired())
-				return await GetDeviceInfo(GetDefaultClient());
-			else
-				return device;
-		}
-
-		/// <summary>
-		/// Retrieves the device description document specified by the <see cref="DescriptionLocation"/> property using the provided <see cref="System.Net.Http.HttpClient"/> instance.
-		/// </summary>
-		/// <remarks>
-		/// <para>This method may choose to cache (or return cached) information if called multiple times within the <see cref="CacheLifetime"/> period.</para>
-		/// <para>This method performs no error handling, if an exception occurs downloading or parsing the document it will be thrown to the calling code. Ensure you setup correct error handling for these scenarios.</para>
-		/// </remarks>
-		/// <param name="downloadHttpClient">A <see cref="System.Net.Http.HttpClient"/> to use when downloading the document data.</param>
-		/// <returns>An <see cref="SsdpDevice"/> instance describing the full device details.</returns>
-		public async Task<SsdpRootDevice> GetDeviceInfo(HttpClient downloadHttpClient)
-		{
-			if (_Device == null || this.IsExpired())
-			{
-				var rawDescriptionDocument = await downloadHttpClient.GetAsync(this.DescriptionLocation);
-				rawDescriptionDocument.EnsureSuccessStatusCode();
-
-				// Not using ReadAsStringAsync() here as some devices return the content type as utf-8 not UTF-8,
-				// which causes an (unneccesary) exception.
-				var data = await rawDescriptionDocument.Content.ReadAsByteArrayAsync();
-				_Device = new SsdpRootDevice(this.DescriptionLocation, this.CacheLifetime, System.Text.UTF8Encoding.UTF8.GetString(data, 0, data.Length));
-			}
-
-			return _Device;
-		}
-
 		#endregion
 
 		#region Overrides
@@ -135,36 +92,5 @@ namespace Rssdp
 		}
 
 		#endregion
-
-		#region Private Methods
-
-
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Can't call dispose on the handler since we pass it to the HttpClient, which outlives the scope of this method.")]
-		private static HttpClient GetDefaultClient()
-		{
-			if (s_DefaultHttpClient == null)
-			{
-				var handler = new System.Net.Http.HttpClientHandler();
-				try
-				{
-					if (handler.SupportsAutomaticDecompression)
-						handler.AutomaticDecompression = System.Net.DecompressionMethods.Deflate | System.Net.DecompressionMethods.GZip;
-
-					s_DefaultHttpClient = new HttpClient(handler);
-				}
-				catch
-				{
-					if (handler != null)
-						handler.Dispose();
-
-					throw;
-				}
-			}
-
-			return s_DefaultHttpClient;
-		}
-
-		#endregion
-
 	}
 }

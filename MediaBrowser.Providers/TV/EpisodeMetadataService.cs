@@ -35,14 +35,14 @@ namespace MediaBrowser.Providers.TV
             }
 
             var seriesId = item.FindSeriesId();
-            if (item.SeriesId != seriesId)
+            if (!item.SeriesId.Equals(seriesId))
             {
                 item.SeriesId = seriesId;
                 updateType |= ItemUpdateType.MetadataImport;
             }
 
             var seasonId = item.FindSeasonId();
-            if (item.SeasonId != seasonId)
+            if (!item.SeasonId.Equals(seasonId))
             {
                 item.SeasonId = seasonId;
                 updateType |= ItemUpdateType.MetadataImport;
@@ -78,21 +78,6 @@ namespace MediaBrowser.Providers.TV
             if (replaceData || !targetItem.AirsBeforeEpisodeNumber.HasValue)
             {
                 targetItem.AirsBeforeEpisodeNumber = sourceItem.AirsBeforeEpisodeNumber;
-            }
-
-            if (replaceData || !targetItem.DvdSeasonNumber.HasValue)
-            {
-                targetItem.DvdSeasonNumber = sourceItem.DvdSeasonNumber;
-            }
-
-            if (replaceData || !targetItem.DvdEpisodeNumber.HasValue)
-            {
-                targetItem.DvdEpisodeNumber = sourceItem.DvdEpisodeNumber;
-            }
-
-            if (replaceData || !targetItem.AbsoluteEpisodeNumber.HasValue)
-            {
-                targetItem.AbsoluteEpisodeNumber = sourceItem.AbsoluteEpisodeNumber;
             }
 
             if (replaceData || !targetItem.IndexNumberEnd.HasValue)

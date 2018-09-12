@@ -4,14 +4,11 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
-using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Services;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
@@ -59,27 +56,13 @@ namespace MediaBrowser.Api
 
     }
 
-    [Route("/System/Configuration/MetadataPlugins", "GET", Summary = "Gets all available metadata plugins")]
-    [Authenticated(Roles = "Admin")]
-    public class GetMetadataPlugins : IReturn<MetadataPluginSummary[]>
-    {
-
-    }
-
-    [Route("/System/Configuration/MetadataPlugins/Autoset", "POST")]
-    [Authenticated(Roles = "Admin", AllowBeforeStartupWizard = true)]
-    public class AutoSetMetadataOptions : IReturnVoid
-    {
-
-    }
-
     [Route("/System/MediaEncoder/Path", "POST", Summary = "Updates the path to the media encoder")]
     [Authenticated(Roles = "Admin", AllowBeforeStartupWizard = true)]
     public class UpdateMediaEncoderPath : IReturnVoid
     {
-        [ApiMember(Name = "Path", Description = "Path", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "Path", Description = "Path", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Path { get; set; }
-        [ApiMember(Name = "PathType", Description = "PathType", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "PathType", Description = "PathType", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string PathType { get; set; }
     }
 
@@ -132,10 +115,6 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(result);
         }
 
-        public void Post(AutoSetMetadataOptions request)
-        {
-        }
-
         /// <summary>
         /// Posts the specified configuraiton.
         /// </summary>
@@ -150,24 +129,19 @@ namespace MediaBrowser.Api
             _configurationManager.ReplaceConfiguration(config);
         }
 
-        public void Post(UpdateNamedConfiguration request)
+        public async Task Post(UpdateNamedConfiguration request)
         {
             var key = GetPathValue(2);
 
             var configurationType = _configurationManager.GetConfigurationType(key);
-            var configuration = _jsonSerializer.DeserializeFromStream(request.RequestStream, configurationType);
+            var configuration = await _jsonSerializer.DeserializeFromStreamAsync(request.RequestStream, configurationType).ConfigureAwait(false);
 
             _configurationManager.SaveConfiguration(key, configuration);
         }
 
         public object Get(GetDefaultMetadataOptions request)
         {
-            return ToOptimizedSerializedResultUsingCache(new MetadataOptions());
-        }
-
-        public object Get(GetMetadataPlugins request)
-        {
-            return ToOptimizedSerializedResultUsingCache(_providerManager.GetAllMetadataPlugins());
+            return ToOptimizedResult(new MetadataOptions());
         }
     }
 }

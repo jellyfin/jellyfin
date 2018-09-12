@@ -85,7 +85,7 @@ namespace Emby.Dlna.Eventing
 
                 int val;
 
-                if (int.TryParse(header, NumberStyles.Any, _usCulture, out val))
+                if (int.TryParse(header, NumberStyles.Integer, _usCulture, out val))
                 {
                     return val;
                 }
@@ -118,7 +118,7 @@ namespace Emby.Dlna.Eventing
             };
 
             response.Headers["SID"] = subscriptionId;
-            response.Headers["TIMEOUT"] = string.IsNullOrWhiteSpace(requestedTimeoutString) ? ("SECOND-" + timeoutSeconds.ToString(_usCulture)) : requestedTimeoutString;
+            response.Headers["TIMEOUT"] = string.IsNullOrEmpty(requestedTimeoutString) ? ("SECOND-" + timeoutSeconds.ToString(_usCulture)) : requestedTimeoutString;
 
             return response;
         }

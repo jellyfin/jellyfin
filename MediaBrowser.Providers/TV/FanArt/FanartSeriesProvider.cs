@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -59,12 +60,12 @@ namespace MediaBrowser.Providers.TV
             get { return "FanArt"; }
         }
 
-        public bool Supports(IHasMetadata item)
+        public bool Supports(BaseItem item)
         {
             return item is Series;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
+        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType>
             {
@@ -77,7 +78,7 @@ namespace MediaBrowser.Providers.TV
             };
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var list = new List<RemoteImageInfo>();
 
@@ -165,7 +166,6 @@ namespace MediaBrowser.Providers.TV
             PopulateImages(list, obj.tvposter, ImageType.Primary, 1000, 1426);
         }
 
-        private Regex _regex_http = new Regex("^http://");
         private void PopulateImages(List<RemoteImageInfo> list,
             List<Image> images,
             ImageType type,
@@ -198,11 +198,11 @@ namespace MediaBrowser.Providers.TV
                         Width = width,
                         Height = height,
                         ProviderName = Name,
-                        Url = _regex_http.Replace(url, "https://", 1),
+                        Url = url.Replace("http://", "https://", StringComparison.OrdinalIgnoreCase),
                         Language = i.lang
                     };
 
-                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Any, _usCulture, out likes))
+                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Integer, _usCulture, out likes))
                     {
                         info.CommunityRating = likes;
                     }
@@ -273,7 +273,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (fileInfo.Exists)
                 {
-                    if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 3)
+                    if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
                     {
                         return;
                     }
@@ -379,7 +379,7 @@ namespace MediaBrowser.Providers.TV
     {
         public IEnumerable<ConfigurationStore> GetConfigurations()
         {
-            return new List<ConfigurationStore>
+            return new ConfigurationStore[]
             {
                 new ConfigurationStore
                 {

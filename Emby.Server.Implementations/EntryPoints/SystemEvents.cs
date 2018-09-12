@@ -34,7 +34,6 @@ namespace Emby.Server.Implementations.EntryPoints
         public void Dispose()
         {
             _systemEvents.SystemShutdown -= _systemEvents_SystemShutdown;
-            GC.SuppressFinalize(this);
         }
     }
 }

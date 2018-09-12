@@ -9,11 +9,11 @@
     </Headers>
   </Identification>
   <Manufacturer>Emby</Manufacturer>
-  <ManufacturerUrl>http://emby.media/</ManufacturerUrl>
+  <ManufacturerUrl>https://emby.media</ManufacturerUrl>
   <ModelName>Emby Server</ModelName>
-  <ModelDescription>Emby</ModelDescription>
-  <ModelNumber>Emby</ModelNumber>
-  <ModelUrl>http://emby.media/</ModelUrl>
+  <ModelDescription>UPnP/AV 1.0 Compliant Media Server</ModelDescription>
+  <ModelNumber>01</ModelNumber>
+  <ModelUrl>https://emby.media</ModelUrl>
   <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
   <EnableSingleAlbumArtLimit>false</EnableSingleAlbumArtLimit>
   <EnableSingleSubtitleLimit>false</EnableSingleSubtitleLimit>
@@ -23,11 +23,10 @@
   <MaxAlbumArtHeight>480</MaxAlbumArtHeight>
   <MaxIconWidth>48</MaxIconWidth>
   <MaxIconHeight>48</MaxIconHeight>
-  <MaxStreamingBitrate>40000000</MaxStreamingBitrate>
-  <MaxStaticBitrate>40000000</MaxStaticBitrate>
+  <MaxStreamingBitrate>140000000</MaxStreamingBitrate>
+  <MaxStaticBitrate>140000000</MaxStaticBitrate>
   <MusicStreamingTranscodingBitrate>192000</MusicStreamingTranscodingBitrate>
   <MaxStaticMusicBitrate xsi:nil="true" />
-  <XDlnaDoc>DMS-1.50</XDlnaDoc>
   <ProtocolInfo>http-get:*:video/mp2t:*,http-get:*:video/MP1S:*,http-get:*:video/mpeg2:*,http-get:*:video/mp4:*,http-get:*:video/x-matroska:*,http-get:*:audio/mpeg:*,http-get:*:audio/mpeg3:*,http-get:*:audio/mp3:*,http-get:*:audio/mp4:*,http-get:*:audio/mp4a-latm:*,http-get:*:image/jpeg:*</ProtocolInfo>
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>

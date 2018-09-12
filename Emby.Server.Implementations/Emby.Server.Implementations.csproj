@@ -1,679 +1,44 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Emby.Naming\Emby.Naming.csproj" />
+    <ProjectReference Include="..\Emby.Notifications\Emby.Notifications.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj" />
+    <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj" />
+    <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
+    <ProjectReference Include="..\SocketHttpListener\SocketHttpListener.csproj" />
+    <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
+    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj" />
+    <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj" />
+    <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj" />
+    <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
+    <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Emby.XmlTv" Version="1.0.18" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="5.2.0" />
+    <PackageReference Include="sharpcompress" Version="0.22.0" />
+    <PackageReference Include="SimpleInjector" Version="4.3.0" />
+    <PackageReference Include="SQLitePCL.pretty.core" Version="1.1.8" />
+    <PackageReference Include="SQLitePCLRaw.core" Version="1.1.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\SharedVersion.cs" />
+  </ItemGroup>
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E383961B-9356-4D5D-8233-9A1079D03055}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Emby.Server.Implementations</RootNamespace>
-    <AssemblyName>Emby.Server.Implementations</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="..\SharedVersion.cs">
-      <Link>Properties\SharedVersion.cs</Link>
-    </Compile>
-    <Compile Include="Activity\ActivityLogEntryPoint.cs" />
-    <Compile Include="Activity\ActivityManager.cs" />
-    <Compile Include="Activity\ActivityRepository.cs" />
-    <Compile Include="AppBase\BaseApplicationPaths.cs" />
-    <Compile Include="AppBase\BaseConfigurationManager.cs" />
-    <Compile Include="AppBase\ConfigurationHelper.cs" />
-    <Compile Include="ApplicationHost.cs" />
-    <Compile Include="Archiving\ZipClient.cs" />
-    <Compile Include="Branding\BrandingConfigurationFactory.cs" />
-    <Compile Include="Browser\BrowserLauncher.cs" />
-    <Compile Include="Channels\ChannelConfigurations.cs" />
-    <Compile Include="Channels\ChannelDynamicMediaSourceProvider.cs" />
-    <Compile Include="Channels\ChannelImageProvider.cs" />
-    <Compile Include="Channels\ChannelManager.cs" />
-    <Compile Include="Channels\ChannelPostScanTask.cs" />
-    <Compile Include="Channels\RefreshChannelsScheduledTask.cs" />
-    <Compile Include="Collections\CollectionImageProvider.cs" />
-    <Compile Include="Collections\CollectionManager.cs" />
-    <Compile Include="Collections\CollectionsDynamicFolder.cs" />
-    <Compile Include="Configuration\ServerConfigurationManager.cs" />
-    <Compile Include="Cryptography\CryptographyProvider.cs" />
-    <Compile Include="Data\ManagedConnection.cs" />
-    <Compile Include="Data\SqliteDisplayPreferencesRepository.cs" />
-    <Compile Include="Data\SqliteItemRepository.cs" />
-    <Compile Include="Data\SqliteUserDataRepository.cs" />
-    <Compile Include="Data\SqliteUserRepository.cs" />
-    <Compile Include="Data\TypeMapper.cs" />
-    <Compile Include="Devices\CameraUploadsDynamicFolder.cs" />
-    <Compile Include="Devices\CameraUploadsFolder.cs" />
-    <Compile Include="Devices\DeviceId.cs" />
-    <Compile Include="Devices\DeviceManager.cs" />
-    <Compile Include="Devices\SqliteDeviceRepository.cs" />
-    <Compile Include="Diagnostics\CommonProcess.cs" />
-    <Compile Include="Diagnostics\ProcessFactory.cs" />
-    <Compile Include="Dto\DtoService.cs" />
-    <Compile Include="EntryPoints\AutomaticRestartEntryPoint.cs" />
-    <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
-    <Compile Include="EntryPoints\KeepServerAwake.cs" />
-    <Compile Include="EntryPoints\LibraryChangedNotifier.cs" />
-    <Compile Include="EntryPoints\LoadRegistrations.cs" />
-    <Compile Include="EntryPoints\RecordingNotifier.cs" />
-    <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
-    <Compile Include="EntryPoints\ServerEventNotifier.cs" />
-    <Compile Include="EntryPoints\StartupWizard.cs" />
-    <Compile Include="EntryPoints\SystemEvents.cs" />
-    <Compile Include="EntryPoints\UdpServerEntryPoint.cs" />
-    <Compile Include="EntryPoints\UsageEntryPoint.cs" />
-    <Compile Include="EntryPoints\UsageReporter.cs" />
-    <Compile Include="EntryPoints\UserDataChangeNotifier.cs" />
-    <Compile Include="EnvironmentInfo\EnvironmentInfo.cs" />
-    <Compile Include="FFMpeg\FFMpegInfo.cs" />
-    <Compile Include="FFMpeg\FFMpegInstallInfo.cs" />
-    <Compile Include="FFMpeg\FFMpegLoader.cs" />
-    <Compile Include="HttpClientManager\HttpClientInfo.cs" />
-    <Compile Include="HttpClientManager\HttpClientManager.cs" />
-    <Compile Include="HttpServerFactory.cs" />
-    <Compile Include="HttpServer\FileWriter.cs" />
-    <Compile Include="HttpServer\HttpListenerHost.cs" />
-    <Compile Include="HttpServer\HttpResultFactory.cs" />
-    <Compile Include="HttpServer\LoggerUtils.cs" />
-    <Compile Include="HttpServer\RangeRequestWriter.cs" />
-    <Compile Include="HttpServer\ResponseFilter.cs" />
-    <Compile Include="HttpServer\SocketSharp\Extensions.cs" />
-    <Compile Include="HttpServer\SocketSharp\HttpUtility.cs" />
-    <Compile Include="HttpServer\IHttpListener.cs" />
-    <Compile Include="HttpServer\Security\AuthorizationContext.cs" />
-    <Compile Include="HttpServer\Security\AuthService.cs" />
-    <Compile Include="HttpServer\Security\SessionContext.cs" />
-    <Compile Include="HttpServer\SocketSharp\RequestMono.cs" />
-    <Compile Include="HttpServer\SocketSharp\SharpWebSocket.cs" />
-    <Compile Include="HttpServer\SocketSharp\WebSocketSharpListener.cs" />
-    <Compile Include="HttpServer\SocketSharp\WebSocketSharpRequest.cs" />
-    <Compile Include="HttpServer\SocketSharp\WebSocketSharpResponse.cs" />
-    <Compile Include="HttpServer\StreamWriter.cs" />
-    <Compile Include="Images\BaseDynamicImageProvider.cs" />
-    <Compile Include="IO\FileRefresher.cs" />
-    <Compile Include="IO\IsoManager.cs" />
-    <Compile Include="IO\LibraryMonitor.cs" />
-    <Compile Include="IO\ManagedFileSystem.cs" />
-    <Compile Include="IO\MbLinkShortcutHandler.cs" />
-    <Compile Include="IO\MemoryStreamProvider.cs" />
-    <Compile Include="IO\SharpCifsFileSystem.cs" />
-    <Compile Include="IO\SharpCifs\Config.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcBind.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcBinding.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcConstants.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcError.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcException.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcHandle.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcMessage.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcPipeHandle.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\DcerpcSecurityProvider.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\LsaPolicyHandle.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\Lsarpc.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\LsarSidArrayX.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcDfsRootEnum.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcEnumerateAliasesInDomain.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcGetMembersInAlias.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcLookupSids.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcLsarOpenPolicy2.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcQueryInformationPolicy.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcSamrConnect2.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcSamrConnect4.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcSamrOpenAlias.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcSamrOpenDomain.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcShareEnum.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\MsrpcShareGetInfo.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\Netdfs.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\Samr.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\SamrAliasHandle.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\SamrDomainHandle.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\SamrPolicyHandle.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Msrpc\Srvsvc.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Ndr\NdrBuffer.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Ndr\NdrException.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Ndr\NdrHyper.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Ndr\NdrLong.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Ndr\NdrObject.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Ndr\NdrShort.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Ndr\NdrSmall.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\Rpc.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\UnicodeString.cs" />
-    <Compile Include="IO\SharpCifs\Dcerpc\UUID.cs" />
-    <Compile Include="IO\SharpCifs\Netbios\Lmhosts.cs" />
-    <Compile Include="IO\SharpCifs\Netbios\Name.cs" />
-    <Compile Include="IO\SharpCifs\Netbios\NameQueryRequest.cs" />
-    <Compile Include="IO\SharpCifs\Netbios\NameQueryResponse.cs" />
-    <Compile Include="IO\SharpCifs\Netbios\NameServiceClient.cs" />
-    <Compile Include="IO\SharpCifs\Netbios\NameServicePacket.cs" />
-    <Compile Include="IO\SharpCifs\Netbios\NbtAddress.cs" />
-    <Compile Include="IO\SharpCifs\Netbios\NbtException.cs" />
-    <Compile Include="IO\SharpCifs\Netbios\NodeStatusRequest.cs" />
-    <Compile Include="IO\SharpCifs\Netbios\NodeStatusResponse.cs" />
-    <Compile Include="IO\SharpCifs\Netbios\SessionRequestPacket.cs" />
-    <Compile Include="IO\SharpCifs\Netbios\SessionRetargetResponsePacket.cs" />
-    <Compile Include="IO\SharpCifs\Netbios\SessionServicePacket.cs" />
-    <Compile Include="IO\SharpCifs\Ntlmssp\NtlmFlags.cs" />
-    <Compile Include="IO\SharpCifs\Ntlmssp\NtlmMessage.cs" />
-    <Compile Include="IO\SharpCifs\Ntlmssp\Type1Message.cs" />
-    <Compile Include="IO\SharpCifs\Ntlmssp\Type2Message.cs" />
-    <Compile Include="IO\SharpCifs\Ntlmssp\Type3Message.cs" />
-    <Compile Include="IO\SharpCifs\Smb\ACE.cs" />
-    <Compile Include="IO\SharpCifs\Smb\AllocInfo.cs" />
-    <Compile Include="IO\SharpCifs\Smb\AndXServerMessageBlock.cs" />
-    <Compile Include="IO\SharpCifs\Smb\BufferCache.cs" />
-    <Compile Include="IO\SharpCifs\Smb\Dfs.cs" />
-    <Compile Include="IO\SharpCifs\Smb\DfsReferral.cs" />
-    <Compile Include="IO\SharpCifs\Smb\DosError.cs" />
-    <Compile Include="IO\SharpCifs\Smb\DosFileFilter.cs" />
-    <Compile Include="IO\SharpCifs\Smb\FileEntry.cs" />
-    <Compile Include="IO\SharpCifs\Smb\IInfo.cs" />
-    <Compile Include="IO\SharpCifs\Smb\NetServerEnum2.cs" />
-    <Compile Include="IO\SharpCifs\Smb\NetServerEnum2Response.cs" />
-    <Compile Include="IO\SharpCifs\Smb\NetShareEnum.cs" />
-    <Compile Include="IO\SharpCifs\Smb\NetShareEnumResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\NtlmAuthenticator.cs" />
-    <Compile Include="IO\SharpCifs\Smb\NtlmChallenge.cs" />
-    <Compile Include="IO\SharpCifs\Smb\NtlmContext.cs" />
-    <Compile Include="IO\SharpCifs\Smb\NtlmPasswordAuthentication.cs" />
-    <Compile Include="IO\SharpCifs\Smb\NtStatus.cs" />
-    <Compile Include="IO\SharpCifs\Smb\NtTransQuerySecurityDesc.cs" />
-    <Compile Include="IO\SharpCifs\Smb\NtTransQuerySecurityDescResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\Principal.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SecurityDescriptor.cs" />
-    <Compile Include="IO\SharpCifs\Smb\ServerMessageBlock.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SID.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SigningDigest.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbAuthException.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComBlankResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComClose.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComCreateDirectory.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComDelete.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComDeleteDirectory.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComFindClose2.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComLogoffAndX.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComNegotiate.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComNegotiateResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComNTCreateAndX.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComNTCreateAndXResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComNtTransaction.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComNtTransactionResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComOpenAndX.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComOpenAndXResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComQueryInformation.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComQueryInformationResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComReadAndX.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComReadAndXResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComRename.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComSessionSetupAndX.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComSessionSetupAndXResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComTransaction.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComTransactionResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComTreeConnectAndX.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComTreeConnectAndXResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComTreeDisconnect.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComWrite.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComWriteAndX.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComWriteAndXResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbComWriteResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbConstants.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbException.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbFile.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbFileExtensions.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbFileFilter.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbFileInputStream.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbFilenameFilter.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbFileOutputStream.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbNamedPipe.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbRandomAccessFile.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbSession.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbShareInfo.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbTransport.cs" />
-    <Compile Include="IO\SharpCifs\Smb\SmbTree.cs" />
-    <Compile Include="IO\SharpCifs\Smb\Trans2FindFirst2.cs" />
-    <Compile Include="IO\SharpCifs\Smb\Trans2FindFirst2Response.cs" />
-    <Compile Include="IO\SharpCifs\Smb\Trans2FindNext2.cs" />
-    <Compile Include="IO\SharpCifs\Smb\Trans2GetDfsReferral.cs" />
-    <Compile Include="IO\SharpCifs\Smb\Trans2GetDfsReferralResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\Trans2QueryFSInformation.cs" />
-    <Compile Include="IO\SharpCifs\Smb\Trans2QueryFSInformationResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\Trans2QueryPathInformation.cs" />
-    <Compile Include="IO\SharpCifs\Smb\Trans2QueryPathInformationResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\Trans2SetFileInformation.cs" />
-    <Compile Include="IO\SharpCifs\Smb\Trans2SetFileInformationResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\TransactNamedPipeInputStream.cs" />
-    <Compile Include="IO\SharpCifs\Smb\TransactNamedPipeOutputStream.cs" />
-    <Compile Include="IO\SharpCifs\Smb\TransCallNamedPipe.cs" />
-    <Compile Include="IO\SharpCifs\Smb\TransCallNamedPipeResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\TransPeekNamedPipe.cs" />
-    <Compile Include="IO\SharpCifs\Smb\TransPeekNamedPipeResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\TransTransactNamedPipe.cs" />
-    <Compile Include="IO\SharpCifs\Smb\TransTransactNamedPipeResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\TransWaitNamedPipe.cs" />
-    <Compile Include="IO\SharpCifs\Smb\TransWaitNamedPipeResponse.cs" />
-    <Compile Include="IO\SharpCifs\Smb\WinError.cs" />
-    <Compile Include="IO\SharpCifs\UniAddress.cs" />
-    <Compile Include="IO\SharpCifs\Util\Base64.cs" />
-    <Compile Include="IO\SharpCifs\Util\DES.cs" />
-    <Compile Include="IO\SharpCifs\Util\Encdec.cs" />
-    <Compile Include="IO\SharpCifs\Util\Hexdump.cs" />
-    <Compile Include="IO\SharpCifs\Util\HMACT64.cs" />
-    <Compile Include="IO\SharpCifs\Util\LogStream.cs" />
-    <Compile Include="IO\SharpCifs\Util\MD4.cs" />
-    <Compile Include="IO\SharpCifs\Util\RC4.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\AbstractMap.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\Arrays.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\BufferedReader.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\BufferedWriter.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\CharBuffer.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\CharSequence.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\Collections.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\ConcurrentHashMap.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\DateFormat.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\EnumeratorWrapper.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\Exceptions.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\Extensions.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\FileInputStream.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\FileOutputStream.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\FilePath.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\FileReader.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\FileWriter.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\FilterInputStream.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\FilterOutputStream.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\Hashtable.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\HttpURLConnection.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\ICallable.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\IConcurrentMap.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\IExecutor.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\IFilenameFilter.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\IFuture.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\InputStream.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\InputStreamReader.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\IPrivilegedAction.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\IRunnable.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\Iterator.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\LinkageError.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\Matcher.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\MD5.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\MD5Managed.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\MessageDigest.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\NetworkStream.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\ObjectInputStream.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\ObjectOutputStream.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\OutputStream.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\OutputStreamWriter.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\PipedInputStream.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\PipedOutputStream.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\PrintWriter.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\Properties.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\RandomAccessFile.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\ReentrantLock.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\Reference.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\Runtime.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\SimpleDateFormat.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\SocketEx.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\StringTokenizer.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\SynchronizedList.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\Thread.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\ThreadFactory.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\ThreadPoolExecutor.cs" />
-    <Compile Include="IO\SharpCifs\Util\Sharpen\WrappedSystemStream.cs" />
-    <Compile Include="IO\SharpCifs\Util\Transport\Request.cs" />
-    <Compile Include="IO\SharpCifs\Util\Transport\Response.cs" />
-    <Compile Include="IO\SharpCifs\Util\Transport\Transport.cs" />
-    <Compile Include="IO\SharpCifs\Util\Transport\TransportException.cs" />
-    <Compile Include="IO\ThrottledStream.cs" />
-    <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
-    <Compile Include="Library\LibraryManager.cs" />
-    <Compile Include="Library\LocalTrailerPostScanTask.cs" />
-    <Compile Include="Library\MediaSourceManager.cs" />
-    <Compile Include="Library\MusicManager.cs" />
-    <Compile Include="Library\PathExtensions.cs" />
-    <Compile Include="Library\ResolverHelper.cs" />
-    <Compile Include="Library\Resolvers\Audio\AudioResolver.cs" />
-    <Compile Include="Library\Resolvers\Audio\MusicAlbumResolver.cs" />
-    <Compile Include="Library\Resolvers\Audio\MusicArtistResolver.cs" />
-    <Compile Include="Library\Resolvers\BaseVideoResolver.cs" />
-    <Compile Include="Library\Resolvers\Books\BookResolver.cs" />
-    <Compile Include="Library\Resolvers\FolderResolver.cs" />
-    <Compile Include="Library\Resolvers\ItemResolver.cs" />
-    <Compile Include="Library\Resolvers\Movies\BoxSetResolver.cs" />
-    <Compile Include="Library\Resolvers\Movies\MovieResolver.cs" />
-    <Compile Include="Library\Resolvers\PhotoAlbumResolver.cs" />
-    <Compile Include="Library\Resolvers\PhotoResolver.cs" />
-    <Compile Include="Library\Resolvers\PlaylistResolver.cs" />
-    <Compile Include="Library\Resolvers\SpecialFolderResolver.cs" />
-    <Compile Include="Library\Resolvers\TV\EpisodeResolver.cs" />
-    <Compile Include="Library\Resolvers\TV\SeasonResolver.cs" />
-    <Compile Include="Library\Resolvers\TV\SeriesResolver.cs" />
-    <Compile Include="Library\Resolvers\VideoResolver.cs" />
-    <Compile Include="Library\SearchEngine.cs" />
-    <Compile Include="Library\UserDataManager.cs" />
-    <Compile Include="Library\UserManager.cs" />
-    <Compile Include="Library\UserViewManager.cs" />
-    <Compile Include="Library\Validators\ArtistsPostScanTask.cs" />
-    <Compile Include="Library\Validators\ArtistsValidator.cs" />
-    <Compile Include="Library\Validators\GameGenresPostScanTask.cs" />
-    <Compile Include="Library\Validators\GameGenresValidator.cs" />
-    <Compile Include="Library\Validators\GenresPostScanTask.cs" />
-    <Compile Include="Library\Validators\GenresValidator.cs" />
-    <Compile Include="Library\Validators\MusicGenresPostScanTask.cs" />
-    <Compile Include="Library\Validators\MusicGenresValidator.cs" />
-    <Compile Include="Library\Validators\PeopleValidator.cs" />
-    <Compile Include="Library\Validators\StudiosPostScanTask.cs" />
-    <Compile Include="Library\Validators\StudiosValidator.cs" />
-    <Compile Include="LiveTv\ChannelImageProvider.cs" />
-    <Compile Include="LiveTv\EmbyTV\DirectRecorder.cs" />
-    <Compile Include="LiveTv\EmbyTV\EmbyTV.cs" />
-    <Compile Include="LiveTv\EmbyTV\EmbyTVRegistration.cs" />
-    <Compile Include="LiveTv\EmbyTV\EncodedRecorder.cs" />
-    <Compile Include="LiveTv\EmbyTV\EntryPoint.cs" />
-    <Compile Include="LiveTv\EmbyTV\IRecorder.cs" />
-    <Compile Include="LiveTv\EmbyTV\ItemDataProvider.cs" />
-    <Compile Include="LiveTv\EmbyTV\RecordingHelper.cs" />
-    <Compile Include="LiveTv\EmbyTV\SeriesTimerManager.cs" />
-    <Compile Include="LiveTv\EmbyTV\TimerManager.cs" />
-    <Compile Include="LiveTv\Listings\SchedulesDirect.cs" />
-    <Compile Include="LiveTv\Listings\XmlTvListingsProvider.cs" />
-    <Compile Include="LiveTv\LiveStreamHelper.cs" />
-    <Compile Include="LiveTv\LiveTvConfigurationFactory.cs" />
-    <Compile Include="LiveTv\LiveTvDtoService.cs" />
-    <Compile Include="LiveTv\LiveTvManager.cs" />
-    <Compile Include="LiveTv\LiveTvMediaSourceProvider.cs" />
-    <Compile Include="LiveTv\RecordingImageProvider.cs" />
-    <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
-    <Compile Include="LiveTv\TunerHosts\BaseTunerHost.cs" />
-    <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunManager.cs" />
-    <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunHost.cs" />
-    <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunUdpStream.cs" />
-    <Compile Include="LiveTv\TunerHosts\LiveStream.cs" />
-    <Compile Include="LiveTv\TunerHosts\M3uParser.cs" />
-    <Compile Include="LiveTv\TunerHosts\M3UTunerHost.cs" />
-    <Compile Include="LiveTv\TunerHosts\SharedHttpStream.cs" />
-    <Compile Include="Localization\LocalizationManager.cs" />
-    <Compile Include="Localization\TextLocalizer.cs" />
-    <Compile Include="Logging\ConsoleLogger.cs" />
-    <Compile Include="Logging\SimpleLogManager.cs" />
-    <Compile Include="Logging\UnhandledExceptionWriter.cs" />
-    <Compile Include="MediaEncoder\EncodingManager.cs" />
-    <Compile Include="Migrations\IVersionMigration.cs" />
-    <Compile Include="Networking\NetworkManager.cs" />
-    <Compile Include="Net\DisposableManagedObjectBase.cs" />
-    <Compile Include="Net\NetAcceptSocket.cs" />
-    <Compile Include="Net\SocketFactory.cs" />
-    <Compile Include="Net\UdpSocket.cs" />
-    <Compile Include="News\NewsEntryPoint.cs" />
-    <Compile Include="News\NewsService.cs" />
-    <Compile Include="Notifications\CoreNotificationTypes.cs" />
-    <Compile Include="Notifications\IConfigurableNotificationService.cs" />
-    <Compile Include="Notifications\InternalNotificationService.cs" />
-    <Compile Include="Notifications\NotificationConfigurationFactory.cs" />
-    <Compile Include="Notifications\NotificationManager.cs" />
-    <Compile Include="Notifications\Notifications.cs" />
-    <Compile Include="Notifications\SqliteNotificationsRepository.cs" />
-    <Compile Include="Notifications\WebSocketNotifier.cs" />
-    <Compile Include="Data\BaseSqliteRepository.cs" />
-    <Compile Include="Data\CleanDatabaseScheduledTask.cs" />
-    <Compile Include="Data\SqliteExtensions.cs" />
-    <Compile Include="Playlists\ManualPlaylistsFolder.cs" />
-    <Compile Include="Playlists\PlaylistImageProvider.cs" />
-    <Compile Include="Playlists\PlaylistManager.cs" />
-    <Compile Include="Playlists\PlaylistsDynamicFolder.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Reflection\AssemblyInfo.cs" />
-    <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
-    <Compile Include="ScheduledTasks\DailyTrigger.cs" />
-    <Compile Include="ScheduledTasks\IntervalTrigger.cs" />
-    <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
-    <Compile Include="ScheduledTasks\PluginUpdateTask.cs" />
-    <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
-    <Compile Include="ScheduledTasks\ScheduledTaskWorker.cs" />
-    <Compile Include="ScheduledTasks\StartupTrigger.cs" />
-    <Compile Include="ScheduledTasks\SystemEventTrigger.cs" />
-    <Compile Include="ScheduledTasks\SystemUpdateTask.cs" />
-    <Compile Include="ScheduledTasks\TaskManager.cs" />
-    <Compile Include="ScheduledTasks\Tasks\DeleteCacheFileTask.cs" />
-    <Compile Include="ScheduledTasks\Tasks\DeleteLogFileTask.cs" />
-    <Compile Include="ScheduledTasks\Tasks\ReloadLoggerFileTask.cs" />
-    <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />
-    <Compile Include="Security\AuthenticationRepository.cs" />
-    <Compile Include="Security\EncryptionManager.cs" />
-    <Compile Include="Security\MBLicenseFile.cs" />
-    <Compile Include="Security\PluginSecurityManager.cs" />
-    <Compile Include="Security\RegRecord.cs" />
-    <Compile Include="Serialization\JsonSerializer.cs" />
-    <Compile Include="Serialization\XmlSerializer.cs" />
-    <Compile Include="ServerApplicationPaths.cs" />
-    <Compile Include="ServerManager\ServerManager.cs" />
-    <Compile Include="ServerManager\WebSocketConnection.cs" />
-    <Compile Include="Services\ServicePath.cs" />
-    <Compile Include="Services\ServiceMethod.cs" />
-    <Compile Include="Services\ResponseHelper.cs" />
-    <Compile Include="Services\HttpResult.cs" />
-    <Compile Include="Services\RequestHelper.cs" />
-    <Compile Include="Services\ServiceHandler.cs" />
-    <Compile Include="Services\ServiceController.cs" />
-    <Compile Include="Services\ServiceExec.cs" />
-    <Compile Include="Services\StringMapTypeDeserializer.cs" />
-    <Compile Include="Services\SwaggerService.cs" />
-    <Compile Include="Services\UrlExtensions.cs" />
-    <Compile Include="Session\HttpSessionController.cs" />
-    <Compile Include="Session\SessionManager.cs" />
-    <Compile Include="Session\SessionWebSocketListener.cs" />
-    <Compile Include="Session\WebSocketController.cs" />
-    <Compile Include="Social\SharingManager.cs" />
-    <Compile Include="Social\SharingRepository.cs" />
-    <Compile Include="Sorting\AiredEpisodeOrderComparer.cs" />
-    <Compile Include="Sorting\AlbumArtistComparer.cs" />
-    <Compile Include="Sorting\AlbumComparer.cs" />
-    <Compile Include="Sorting\AlphanumComparator.cs" />
-    <Compile Include="Sorting\ArtistComparer.cs" />
-    <Compile Include="Sorting\CommunityRatingComparer.cs" />
-    <Compile Include="Sorting\CriticRatingComparer.cs" />
-    <Compile Include="Sorting\DateCreatedComparer.cs" />
-    <Compile Include="Sorting\DateLastMediaAddedComparer.cs" />
-    <Compile Include="Sorting\DatePlayedComparer.cs" />
-    <Compile Include="Sorting\GameSystemComparer.cs" />
-    <Compile Include="Sorting\IsFavoriteOrLikeComparer.cs" />
-    <Compile Include="Sorting\IsFolderComparer.cs" />
-    <Compile Include="Sorting\IsPlayedComparer.cs" />
-    <Compile Include="Sorting\IsUnplayedComparer.cs" />
-    <Compile Include="Sorting\NameComparer.cs" />
-    <Compile Include="Sorting\OfficialRatingComparer.cs" />
-    <Compile Include="Sorting\PlayCountComparer.cs" />
-    <Compile Include="Sorting\PlayersComparer.cs" />
-    <Compile Include="Sorting\PremiereDateComparer.cs" />
-    <Compile Include="Sorting\ProductionYearComparer.cs" />
-    <Compile Include="Sorting\RandomComparer.cs" />
-    <Compile Include="Sorting\RuntimeComparer.cs" />
-    <Compile Include="Sorting\SeriesSortNameComparer.cs" />
-    <Compile Include="Sorting\SortNameComparer.cs" />
-    <Compile Include="Sorting\StartDateComparer.cs" />
-    <Compile Include="Sorting\StudioComparer.cs" />
-    <Compile Include="StartupOptions.cs" />
-    <Compile Include="SystemEvents.cs" />
-    <Compile Include="TextEncoding\NLangDetect\Detector.cs" />
-    <Compile Include="TextEncoding\NLangDetect\DetectorFactory.cs" />
-    <Compile Include="TextEncoding\NLangDetect\ErrorCode.cs" />
-    <Compile Include="TextEncoding\NLangDetect\Extensions\CharExtensions.cs" />
-    <Compile Include="TextEncoding\NLangDetect\Extensions\RandomExtensions.cs" />
-    <Compile Include="TextEncoding\NLangDetect\Extensions\StringExtensions.cs" />
-    <Compile Include="TextEncoding\NLangDetect\Extensions\UnicodeBlock.cs" />
-    <Compile Include="TextEncoding\NLangDetect\GenProfile.cs" />
-    <Compile Include="TextEncoding\NLangDetect\InternalException.cs" />
-    <Compile Include="TextEncoding\NLangDetect\Language.cs" />
-    <Compile Include="TextEncoding\NLangDetect\LanguageDetector.cs" />
-    <Compile Include="TextEncoding\NLangDetect\NLangDetectException.cs" />
-    <Compile Include="TextEncoding\NLangDetect\ProbVector.cs" />
-    <Compile Include="TextEncoding\NLangDetect\Utils\LangProfile.cs" />
-    <Compile Include="TextEncoding\NLangDetect\Utils\Messages.cs" />
-    <Compile Include="TextEncoding\NLangDetect\Utils\NGram.cs" />
-    <Compile Include="TextEncoding\NLangDetect\Utils\TagExtractor.cs" />
-    <Compile Include="TextEncoding\TextEncoding.cs" />
-    <Compile Include="TextEncoding\TextEncodingDetect.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\CharsetDetector.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\Big5Prober.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\BitPackage.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\CharDistributionAnalyser.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\CharsetProber.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\Charsets.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\CodingStateMachine.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\EscCharsetProber.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\EscSM.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\EUCJPProber.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\EUCKRProber.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\EUCTWProber.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\GB18030Prober.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\HebrewProber.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\JapaneseContextAnalyser.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\LangBulgarianModel.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\LangCyrillicModel.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\LangGreekModel.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\LangHebrewModel.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\LangHungarianModel.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\LangThaiModel.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\Latin1Prober.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\MBCSGroupProber.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\MBCSSM.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\SBCharsetProber.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\SBCSGroupProber.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\SequenceModel.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\SJISProber.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\SMModel.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\UniversalDetector.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\Core\UTF8Prober.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\DetectionConfidence.cs" />
-    <Compile Include="TextEncoding\UniversalDetector\ICharsetDetector.cs" />
-    <Compile Include="Threading\CommonTimer.cs" />
-    <Compile Include="Threading\TimerFactory.cs" />
-    <Compile Include="TV\SeriesPostScanTask.cs" />
-    <Compile Include="TV\TVSeriesManager.cs" />
-    <Compile Include="Udp\UdpServer.cs" />
-    <Compile Include="Updates\InstallationManager.cs" />
-    <Compile Include="UserViews\CollectionFolderImageProvider.cs" />
-    <Compile Include="UserViews\DynamicImageProvider.cs" />
-    <Compile Include="UserViews\FolderImageProvider.cs" />
-    <Compile Include="Xml\XmlReaderSettingsFactory.cs" />
-  </ItemGroup>
-  <ItemGroup>
+
+ <ItemGroup>
     <EmbeddedResource Include="Localization\iso6392.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj">
-      <Project>{805844ab-e92f-45e6-9d99-4f6d48d129a5}</Project>
-      <Name>Emby.Dlna</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj">
-      <Project>{08fff49b-f175-4807-a2b5-73b0ebd9f716}</Project>
-      <Name>Emby.Drawing</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj">
-      <Project>{89ab4548-770d-41fd-a891-8daff44f452c}</Project>
-      <Name>Emby.Photos</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj">
-      <Project>{4fd51ac5-2c16-4308-a993-c3a84f3b4582}</Project>
-      <Name>MediaBrowser.Api</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
-      <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
-      <Name>MediaBrowser.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
-      <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
-      <Name>MediaBrowser.Controller</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj">
-      <Project>{7ef9f3e0-697d-42f3-a08f-19deb5f84392}</Project>
-      <Name>MediaBrowser.LocalMetadata</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
-      <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
-      <Name>MediaBrowser.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
-      <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
-      <Name>MediaBrowser.Providers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj">
-      <Project>{5624b7b5-b5a7-41d8-9f10-cc5611109619}</Project>
-      <Name>MediaBrowser.WebDashboard</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj">
-      <Project>{23499896-b135-4527-8574-c26e926ea99e}</Project>
-      <Name>MediaBrowser.XbmcMetadata</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj">
-      <Project>{cb7f2326-6497-4a3d-ba03-48513b17a7be}</Project>
-      <Name>Mono.Nat</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj">
-      <Project>{4a4402d4-e910-443b-b8fc-2c18286a2ca0}</Project>
-      <Name>OpenSubtitlesHandler</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SocketHttpListener\SocketHttpListener.csproj">
-      <Project>{1d74413b-e7cf-455b-b021-f52bdf881542}</Project>
-      <Name>SocketHttpListener</Name>
-    </ProjectReference>
-    <Reference Include="Emby.Naming">
-      <HintPath>..\ThirdParty\emby\Emby.Naming.dll</HintPath>
-    </Reference>
-    <Reference Include="Emby.Server.MediaEncoding">
-      <HintPath>..\ThirdParty\emby\Emby.Server.MediaEncoding.dll</HintPath>
-    </Reference>
-    <Reference Include="Emby.XmlTv, Version=1.0.6387.29335, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Emby.XmlTv.1.0.10\lib\portable-net45+netstandard2.0+win8\Emby.XmlTv.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Text, Version=4.5.8.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ServiceStack.Text.4.5.8\lib\net45\ServiceStack.Text.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SharpCompress, Version=0.18.2.0, Culture=neutral, PublicKeyToken=afb0a02973931d96, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpCompress.0.18.2\lib\net45\SharpCompress.dll</HintPath>
-    </Reference>
-    <Reference Include="SimpleInjector, Version=4.0.12.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
-      <HintPath>..\packages\SimpleInjector.4.0.12\lib\net45\SimpleInjector.dll</HintPath>
-    </Reference>
-    <Reference Include="SQLitePCL.pretty, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCL.pretty.1.1.0\lib\portable-net45+netcore45+wpa81+wp8\SQLitePCL.pretty.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="SQLitePCLRaw.core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.core.1.1.8\lib\net45\SQLitePCLRaw.core.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Localization\countries.json" />
     <EmbeddedResource Include="Localization\Core\ar.json" />
     <EmbeddedResource Include="Localization\Core\bg-BG.json" />
@@ -710,128 +75,113 @@
     <EmbeddedResource Include="Localization\Core\en-US.json" />
     <EmbeddedResource Include="Localization\Core\el.json" />
     <EmbeddedResource Include="Localization\Core\gsw.json" />
-    <None Include="packages.config" />
-    <None Include="TextEncoding\NLangDetect\Profiles\afr" />
-    <None Include="TextEncoding\NLangDetect\Profiles\ara" />
-    <None Include="TextEncoding\NLangDetect\Profiles\ben" />
-    <None Include="TextEncoding\NLangDetect\Profiles\bul" />
-    <None Include="TextEncoding\NLangDetect\Profiles\ces" />
-    <None Include="TextEncoding\NLangDetect\Profiles\dan" />
-    <None Include="TextEncoding\NLangDetect\Profiles\deu" />
-    <None Include="TextEncoding\NLangDetect\Profiles\ell" />
-    <None Include="TextEncoding\NLangDetect\Profiles\eng" />
-    <None Include="TextEncoding\NLangDetect\Profiles\est" />
-    <None Include="TextEncoding\NLangDetect\Profiles\fas" />
-    <None Include="TextEncoding\NLangDetect\Profiles\fin" />
-    <None Include="TextEncoding\NLangDetect\Profiles\fra" />
-    <None Include="TextEncoding\NLangDetect\Profiles\guj" />
-    <None Include="TextEncoding\NLangDetect\Profiles\heb" />
-    <None Include="TextEncoding\NLangDetect\Profiles\hin" />
-    <None Include="TextEncoding\NLangDetect\Profiles\hrv" />
-    <None Include="TextEncoding\NLangDetect\Profiles\hun" />
-    <None Include="TextEncoding\NLangDetect\Profiles\ind" />
-    <None Include="TextEncoding\NLangDetect\Profiles\ita" />
-    <None Include="TextEncoding\NLangDetect\Profiles\jpn" />
-    <None Include="TextEncoding\NLangDetect\Profiles\kan" />
-    <None Include="TextEncoding\NLangDetect\Profiles\kor" />
-    <None Include="TextEncoding\NLangDetect\Profiles\lav" />
-    <None Include="TextEncoding\NLangDetect\Profiles\lit" />
-    <None Include="TextEncoding\NLangDetect\Profiles\mal" />
-    <None Include="TextEncoding\NLangDetect\Profiles\mar" />
-    <None Include="TextEncoding\NLangDetect\Profiles\mkd" />
-    <None Include="TextEncoding\NLangDetect\Profiles\nep" />
-    <None Include="TextEncoding\NLangDetect\Profiles\nld" />
-    <None Include="TextEncoding\NLangDetect\Profiles\nor" />
-    <None Include="TextEncoding\NLangDetect\Profiles\pan" />
-    <None Include="TextEncoding\NLangDetect\Profiles\pol" />
-    <None Include="TextEncoding\NLangDetect\Profiles\por" />
-    <None Include="TextEncoding\NLangDetect\Profiles\ron" />
-    <None Include="TextEncoding\NLangDetect\Profiles\rus" />
-    <None Include="TextEncoding\NLangDetect\Profiles\slk" />
-    <None Include="TextEncoding\NLangDetect\Profiles\slv" />
-    <None Include="TextEncoding\NLangDetect\Profiles\som" />
-    <None Include="TextEncoding\NLangDetect\Profiles\spa" />
-    <None Include="TextEncoding\NLangDetect\Profiles\sqi" />
-    <None Include="TextEncoding\NLangDetect\Profiles\swa" />
-    <None Include="TextEncoding\NLangDetect\Profiles\swe" />
-    <None Include="TextEncoding\NLangDetect\Profiles\tam" />
-    <None Include="TextEncoding\NLangDetect\Profiles\tel" />
-    <None Include="TextEncoding\NLangDetect\Profiles\tgl" />
-    <None Include="TextEncoding\NLangDetect\Profiles\tha" />
-    <None Include="TextEncoding\NLangDetect\Profiles\tur" />
-    <None Include="TextEncoding\NLangDetect\Profiles\ukr" />
-    <None Include="TextEncoding\NLangDetect\Profiles\urd" />
-    <None Include="TextEncoding\NLangDetect\Profiles\vie" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\afr" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\ara" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\ben" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\bul" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\ces" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\dan" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\deu" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\ell" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\eng" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\est" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\fas" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\fin" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\fra" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\guj" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\heb" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\hin" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\hrv" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\hun" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\ind" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\ita" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\jpn" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\kan" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\kor" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\lav" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\lit" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\mal" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\mar" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\mkd" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\nep" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\nld" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\nor" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\pan" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\pol" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\por" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\ron" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\rus" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\slk" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\slv" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\som" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\spa" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\sqi" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\swa" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\swe" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\tam" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\tel" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\tgl" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\tha" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\tur" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\ukr" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\urd" />
+    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\vie" />
     <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\zh-cn" />
     <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\zh-tw" />
     <EmbeddedResource Include="TextEncoding\NLangDetect\Utils\messages.properties" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\au.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\be.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\br.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\ca.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\co.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\de.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\dk.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\fr.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\gb.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\ie.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\jp.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\kz.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\mx.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\nl.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\nz.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\ru.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\us.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\uk.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\es.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\ro.txt" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\br.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\ca.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\co.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\dk.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\fr.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\gb.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\ie.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\jp.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\kz.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\mx.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\nl.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\nz.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\us.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\uk.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\es.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <EmbeddedResource Include="Localization\Ratings\ro.txt" />
+ </ItemGroup>
+ <ItemGroup>
+   <Reference Include="Emby.Server.MediaEncoding">
+     <HintPath>..\ThirdParty\emby\Emby.Server.MediaEncoding.dll</HintPath>
+   </Reference>
+ </ItemGroup>
+ 
 </Project>

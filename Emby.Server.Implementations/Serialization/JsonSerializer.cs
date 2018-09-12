@@ -3,6 +3,7 @@ using System.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using System.Threading.Tasks;
 
 namespace Emby.Common.Implementations.Serialization
 {
@@ -60,7 +61,7 @@ namespace Emby.Common.Implementations.Serialization
                 throw new ArgumentNullException("file");
             }
 
-			using (Stream stream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+            using (Stream stream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
             {
                 SerializeToStream(obj, stream);
             }
@@ -68,7 +69,7 @@ namespace Emby.Common.Implementations.Serialization
 
         private Stream OpenFile(string path)
         {
-            _logger.Debug("Deserializing file {0}", path);
+            //_logger.Debug("Deserializing file {0}", path);
             return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131072);
         }
 
@@ -135,6 +136,21 @@ namespace Emby.Common.Implementations.Serialization
             return ServiceStack.Text.JsonSerializer.DeserializeFromStream<T>(stream);
         }
 
+        public async Task<T> DeserializeFromStreamAsync<T>(Stream stream)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException("stream");
+            }
+
+            using (var reader = new StreamReader(stream))
+            {
+                var json = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                return ServiceStack.Text.JsonSerializer.DeserializeFromString<T>(json);
+            }
+        }
+
         /// <summary>
         /// Deserializes from string.
         /// </summary>
@@ -174,6 +190,26 @@ namespace Emby.Common.Implementations.Serialization
             return ServiceStack.Text.JsonSerializer.DeserializeFromStream(type, stream);
         }
 
+        public async Task<object> DeserializeFromStreamAsync(Stream stream, Type type)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException("stream");
+            }
+
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            using (var reader = new StreamReader(stream))
+            {
+                var json = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                return ServiceStack.Text.JsonSerializer.DeserializeFromString(json, type);
+            }
+        }
+
         /// <summary>
         /// Configures this instance.
         /// </summary>
@@ -184,6 +220,18 @@ namespace Emby.Common.Implementations.Serialization
             ServiceStack.Text.JsConfig.IncludeNullValues = false;
             ServiceStack.Text.JsConfig.AlwaysUseUtc = true;
             ServiceStack.Text.JsConfig.AssumeUtc = true;
+
+            ServiceStack.Text.JsConfig<Guid>.SerializeFn = SerializeGuid;
+        }
+
+        private string SerializeGuid(Guid guid)
+        {
+            if (guid.Equals(Guid.Empty))
+            {
+                return null;
+            }
+
+            return guid.ToString("N");
         }
 
         /// <summary>

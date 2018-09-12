@@ -57,9 +57,13 @@ namespace Emby.Drawing.Skia
                     "pkm",
                     "wbmp",
 
+                    // TODO
+                    // Are all of these supported? https://github.com/google/skia/blob/master/infra/bots/recipes/test.py#L454
+
                     // working on windows at least
                     "cr2",
-                    "nef"
+                    "nef",
+                    "arw"
                 };
             }
         }
@@ -68,7 +72,7 @@ namespace Emby.Drawing.Skia
         {
             get
             {
-                return new[] { ImageFormat.Webp, ImageFormat.Gif, ImageFormat.Jpg, ImageFormat.Png, ImageFormat.Bmp };
+                return new[] { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png };
             }
         }
 
@@ -224,13 +228,42 @@ namespace Emby.Drawing.Skia
 
             var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path) ?? string.Empty);
 
+            fileSystem.CreateDirectory(fileSystem.GetDirectoryName(tempPath));
             fileSystem.CopyFile(path, tempPath, true);
 
             return tempPath;
         }
 
+        private static SKCodecOrigin GetSKCodecOrigin(ImageOrientation? orientation)
+        {
+            if (!orientation.HasValue)
+            {
+                return SKCodecOrigin.TopLeft;
+            }
+
+            switch (orientation.Value)
+            {
+                case ImageOrientation.TopRight:
+                    return SKCodecOrigin.TopRight;
+                case ImageOrientation.RightTop:
+                    return SKCodecOrigin.RightTop;
+                case ImageOrientation.RightBottom:
+                    return SKCodecOrigin.RightBottom;
+                case ImageOrientation.LeftTop:
+                    return SKCodecOrigin.LeftTop;
+                case ImageOrientation.LeftBottom:
+                    return SKCodecOrigin.LeftBottom;
+                case ImageOrientation.BottomRight:
+                    return SKCodecOrigin.BottomRight;
+                case ImageOrientation.BottomLeft:
+                    return SKCodecOrigin.BottomLeft;
+                default:
+                    return SKCodecOrigin.TopLeft;
+            }
+        }
+
         private static string[] TransparentImageTypes = new string[] { ".png", ".gif", ".webp" };
-        internal static SKBitmap Decode(string path, bool forceCleanBitmap, IFileSystem fileSystem, out SKCodecOrigin origin)
+        internal static SKBitmap Decode(string path, bool forceCleanBitmap, IFileSystem fileSystem, ImageOrientation? orientation, out SKCodecOrigin origin)
         {
             if (!fileSystem.FileExists(path))
             {
@@ -247,7 +280,7 @@ namespace Emby.Drawing.Skia
                     {
                         if (codec == null)
                         {
-                            origin = SKCodecOrigin.TopLeft;
+                            origin = GetSKCodecOrigin(orientation);
                             return null;
                         }
 
@@ -258,12 +291,12 @@ namespace Emby.Drawing.Skia
                         {
                             // decode
                             codec.GetPixels(bitmap.Info, bitmap.GetPixels());
-
+                            
                             origin = codec.Origin;
                         }
                         else
                         {
-                            origin = SKCodecOrigin.TopLeft;
+                            origin = GetSKCodecOrigin(orientation);
                         }
 
                         return bitmap;
@@ -275,7 +308,7 @@ namespace Emby.Drawing.Skia
 
             if (resultBitmap == null)
             {
-                return Decode(path, true, fileSystem, out origin);
+                return Decode(path, true, fileSystem, orientation, out origin);
             }
 
             // If we have to resize these they often end up distorted
@@ -283,7 +316,7 @@ namespace Emby.Drawing.Skia
             {
                 using (resultBitmap)
                 {
-                    return Decode(path, true, fileSystem, out origin);
+                    return Decode(path, true, fileSystem, orientation, out origin);
                 }
             }
 
@@ -291,26 +324,26 @@ namespace Emby.Drawing.Skia
             return resultBitmap;
         }
 
-        private SKBitmap GetBitmap(string path, bool cropWhitespace, bool forceAnalyzeBitmap, out SKCodecOrigin origin)
+        private SKBitmap GetBitmap(string path, bool cropWhitespace, bool forceAnalyzeBitmap, ImageOrientation? orientation, out SKCodecOrigin origin)
         {
             if (cropWhitespace)
             {
-                using (var bitmap = Decode(path, forceAnalyzeBitmap, _fileSystem, out origin))
+                using (var bitmap = Decode(path, forceAnalyzeBitmap, _fileSystem, orientation, out origin))
                 {
                     return CropWhiteSpace(bitmap);
                 }
             }
 
-            return Decode(path, forceAnalyzeBitmap, _fileSystem, out origin);
+            return Decode(path, forceAnalyzeBitmap, _fileSystem, orientation, out origin);
         }
 
-        private SKBitmap GetBitmap(string path, bool cropWhitespace, bool autoOrient)
+        private SKBitmap GetBitmap(string path, bool cropWhitespace, bool autoOrient, ImageOrientation? orientation)
         {
             SKCodecOrigin origin;
 
             if (autoOrient)
             {
-                var bitmap = GetBitmap(path, cropWhitespace, true, out origin);
+                var bitmap = GetBitmap(path, cropWhitespace, true, orientation, out origin);
 
                 if (bitmap != null)
                 {
@@ -326,7 +359,7 @@ namespace Emby.Drawing.Skia
                 return bitmap;
             }
 
-            return GetBitmap(path, cropWhitespace, false, out origin);
+            return GetBitmap(path, cropWhitespace, false, orientation, out origin);
         }
 
         private SKBitmap OrientImage(SKBitmap bitmap, SKCodecOrigin origin)
@@ -496,7 +529,7 @@ namespace Emby.Drawing.Skia
             var blur = options.Blur ?? 0;
             var hasIndicator = options.AddPlayedIndicator || options.UnplayedCount.HasValue || !options.PercentPlayed.Equals(0);
 
-            using (var bitmap = GetBitmap(inputPath, options.CropWhiteSpace, autoOrient))
+            using (var bitmap = GetBitmap(inputPath, options.CropWhiteSpace, autoOrient, orientation))
             {
                 if (bitmap == null)
                 {
@@ -621,8 +654,7 @@ namespace Emby.Drawing.Skia
 
                 if (options.AddPlayedIndicator)
                 {
-                    var task = new PlayedIndicatorDrawer(_appPaths, _httpClientFactory(), _fileSystem).DrawPlayedIndicator(canvas, currentImageSize);
-                    Task.WaitAll(task);
+                    new PlayedIndicatorDrawer(_appPaths, _httpClientFactory(), _fileSystem).DrawPlayedIndicator(canvas, currentImageSize);
                 }
                 else if (options.UnplayedCount.HasValue)
                 {

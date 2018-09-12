@@ -27,7 +27,7 @@ namespace MediaBrowser.Providers.TV
 {
     public class MovieDbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
-        private const string GetTvInfo3 = @"https://api.themoviedb.org/3/tv/{0}?api_key={1}&append_to_response=credits,images,keywords,external_ids,videos,content_ratings";
+        private const string GetTvInfo3 = MovieDbProvider.BaseMovieDbUrl + @"3/tv/{0}?api_key={1}&append_to_response=credits,images,keywords,external_ids,videos,content_ratings";
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         internal static MovieDbSeriesProvider Current { get; private set; }
@@ -72,7 +72,7 @@ namespace MediaBrowser.Providers.TV
                 var obj = _jsonSerializer.DeserializeFromFile<RootObject>(dataFilePath);
 
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-                var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
+                var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
 
                 var remoteResult = new RemoteSearchResult
                 {
@@ -208,13 +208,17 @@ namespace MediaBrowser.Providers.TV
             result.Item = new Series();
             result.ResultLanguage = seriesInfo.ResultLanguage;
 
-            ProcessMainInfo(result.Item, seriesInfo, preferredCountryCode);
+            var settings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
+
+            ProcessMainInfo(result, seriesInfo, preferredCountryCode, settings);
 
             return result;
         }
 
-        private void ProcessMainInfo(Series series, RootObject seriesInfo, string preferredCountryCode)
+        private void ProcessMainInfo(MetadataResult<Series> seriesResult, RootObject seriesInfo, string preferredCountryCode, TmdbSettingsResult settings)
         {
+            var series = seriesResult.Item;
+
             series.Name = seriesInfo.name;
             series.SetProviderId(MetadataProviders.Tmdb, seriesInfo.id.ToString(_usCulture));
 
@@ -237,10 +241,10 @@ namespace MediaBrowser.Providers.TV
 
             if (seriesInfo.genres != null)
             {
-                series.Genres = seriesInfo.genres.Select(i => i.name).ToList();
+                series.Genres = seriesInfo.genres.Select(i => i.name).ToArray();
             }
 
-            series.HomePageUrl = seriesInfo.homepage;
+            //series.HomePageUrl = seriesInfo.homepage;
 
             series.RunTimeTicks = seriesInfo.episode_run_time.Select(i => TimeSpan.FromMinutes(i).Ticks).FirstOrDefault();
 
@@ -307,6 +311,35 @@ namespace MediaBrowser.Providers.TV
                     }
                 }
             }
+
+            seriesResult.ResetPeople();
+            var tmdbImageUrl = settings.images.GetImageUrl("original");
+
+            if (seriesInfo.credits != null && seriesInfo.credits.cast != null)
+            {
+                foreach (var actor in seriesInfo.credits.cast.OrderBy(a => a.order))
+                {
+                    var personInfo = new PersonInfo
+                    {
+                        Name = actor.name.Trim(),
+                        Role = actor.character,
+                        Type = PersonType.Actor,
+                        SortOrder = actor.order
+                    };
+
+                    if (!string.IsNullOrWhiteSpace(actor.profile_path))
+                    {
+                        personInfo.ImageUrl = tmdbImageUrl + actor.profile_path;
+                    }
+
+                    if (actor.id > 0)
+                    {
+                        personInfo.SetProviderId(MetadataProviders.Tmdb, actor.id.ToString(CultureInfo.InvariantCulture));
+                    }
+
+                    seriesResult.AddPerson(personInfo);
+                }
+            }
         }
 
         internal static string GetSeriesDataPath(IApplicationPaths appPaths, string tmdbId)
@@ -362,7 +395,7 @@ namespace MediaBrowser.Providers.TV
             {
                 using (var json = response.Content)
                 {
-                    mainResult = _jsonSerializer.DeserializeFromStream<RootObject>(json);
+                    mainResult = await _jsonSerializer.DeserializeFromStreamAsync<RootObject>(json).ConfigureAwait(false);
 
                     if (!string.IsNullOrEmpty(language))
                     {
@@ -399,7 +432,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     using (var json = response.Content)
                     {
-                        var englishResult = _jsonSerializer.DeserializeFromStream<RootObject>(json);
+                        var englishResult = await _jsonSerializer.DeserializeFromStreamAsync<RootObject>(json).ConfigureAwait(false);
 
                         mainResult.overview = englishResult.overview;
                         mainResult.ResultLanguage = "en";
@@ -410,7 +443,6 @@ namespace MediaBrowser.Providers.TV
             return mainResult;
         }
 
-        private readonly Task _cachedTask = Task.FromResult(true);
         internal Task EnsureSeriesInfo(string tmdbId, string language, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(tmdbId))
@@ -425,9 +457,9 @@ namespace MediaBrowser.Providers.TV
             if (fileInfo.Exists)
             {
                 // If it's recent or automatic updates are enabled, don't re-download
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 3)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
                 {
-                    return _cachedTask;
+                    return Task.CompletedTask;
                 }
             }
 
@@ -450,7 +482,7 @@ namespace MediaBrowser.Providers.TV
 
         private async Task<RemoteSearchResult> FindByExternalId(string id, string externalSource, CancellationToken cancellationToken)
         {
-            var url = string.Format("https://api.themoviedb.org/3/find/{0}?api_key={1}&external_source={2}",
+            var url = string.Format(MovieDbProvider.BaseMovieDbUrl + @"3/find/{0}?api_key={1}&external_source={2}",
                 id,
                 MovieDbProvider.ApiKey,
                 externalSource);
@@ -465,7 +497,7 @@ namespace MediaBrowser.Providers.TV
             {
                 using (var json = response.Content)
                 {
-                    var result = _jsonSerializer.DeserializeFromStream<MovieDbSearch.ExternalIdLookupResult>(json);
+                    var result = await _jsonSerializer.DeserializeFromStreamAsync<MovieDbSearch.ExternalIdLookupResult>(json).ConfigureAwait(false);
 
                     if (result != null && result.tv_results != null)
                     {
@@ -474,7 +506,7 @@ namespace MediaBrowser.Providers.TV
                         if (tv != null)
                         {
                             var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-                            var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
+                            var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
 
                             var remoteResult = new RemoteSearchResult
                             {
@@ -656,8 +688,8 @@ namespace MediaBrowser.Providers.TV
         {
             get
             {
-                // After Omdb and Tvdb
-                return 2;
+                // After Tvdb
+                return 1;
             }
         }
 

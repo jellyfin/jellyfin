@@ -24,17 +24,4 @@ namespace MediaBrowser.Providers.Folders
         {
         }
     }
-
-    public class ManualCollectionsFolderMetadataService : MetadataService<ManualCollectionsFolder, ItemLookupInfo>
-    {
-        protected override void MergeData(MetadataResult<ManualCollectionsFolder> source, MetadataResult<ManualCollectionsFolder> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
-        {
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
-        }
-
-        public ManualCollectionsFolderMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
-        {
-        }
-    }
-
 }

@@ -3,6 +3,7 @@ using MediaBrowser.Model.IO;
 using SharpCompress.Archives.Rar;
 using SharpCompress.Archives.SevenZip;
 using SharpCompress.Archives.Tar;
+using SharpCompress.Common;
 using SharpCompress.Readers;
 using SharpCompress.Readers.GZip;
 using SharpCompress.Readers.Zip;
@@ -170,45 +171,6 @@ namespace Emby.Server.Implementations.Archiving
         public void ExtractAllFromTar(Stream source, string targetPath, bool overwriteExistingFiles)
         {
             using (var archive = TarArchive.Open(source))
-            {
-                using (var reader = archive.ExtractAllEntries())
-                {
-                    var options = new ExtractionOptions();
-                    options.ExtractFullPath = true;
-
-                    if (overwriteExistingFiles)
-                    {
-                        options.Overwrite = true;
-                    }
-
-                    reader.WriteAllToDirectory(targetPath, options);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Extracts all from rar.
-        /// </summary>
-        /// <param name="sourceFile">The source file.</param>
-        /// <param name="targetPath">The target path.</param>
-        /// <param name="overwriteExistingFiles">if set to <c>true</c> [overwrite existing files].</param>
-        public void ExtractAllFromRar(string sourceFile, string targetPath, bool overwriteExistingFiles)
-        {
-			using (var fileStream = _fileSystem.OpenRead(sourceFile))
-            {
-                ExtractAllFromRar(fileStream, targetPath, overwriteExistingFiles);
-            }
-        }
-
-        /// <summary>
-        /// Extracts all from rar.
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="targetPath">The target path.</param>
-        /// <param name="overwriteExistingFiles">if set to <c>true</c> [overwrite existing files].</param>
-        public void ExtractAllFromRar(Stream source, string targetPath, bool overwriteExistingFiles)
-        {
-            using (var archive = RarArchive.Open(source))
             {
                 using (var reader = archive.ExtractAllEntries())
                 {

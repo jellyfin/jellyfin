@@ -12,6 +12,8 @@ namespace MediaBrowser.WebDashboard.Api
         /// <value>The name.</value>
         public string Name { get; set; }
         public bool EnableInMainMenu { get; set; }
+        public string MenuSection { get; set; }
+        public string MenuIcon { get; set; }
 
         public string DisplayName { get; set; }
 
@@ -45,6 +47,8 @@ namespace MediaBrowser.WebDashboard.Api
         {
             Name = page.Name;
             EnableInMainMenu = page.EnableInMainMenu;
+            MenuSection = page.MenuSection;
+            MenuIcon = page.MenuIcon;
             DisplayName = string.IsNullOrWhiteSpace(page.DisplayName) ? plugin.Name : page.DisplayName;
 
             // Don't use "N" because it needs to match Plugin.Id

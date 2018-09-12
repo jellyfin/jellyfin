@@ -31,7 +31,7 @@ namespace Emby.Server.Implementations.Logging
             return new NamedLogger(name, this);
         }
 
-        public void ReloadLogger(LogSeverity severity)
+        public async Task ReloadLogger(LogSeverity severity, CancellationToken cancellationToken)
         {
             LogSeverity = severity;
 
@@ -39,25 +39,65 @@ namespace Emby.Server.Implementations.Logging
             if (logger != null)
             {
                 logger.Dispose();
+                await TryMoveToArchive(logger.Path, cancellationToken).ConfigureAwait(false);
             }
 
-            var path = Path.Combine(LogDirectory, LogFilePrefix + "-" + decimal.Floor(DateTime.Now.Ticks / 10000000) + ".txt");
+            var newPath = Path.Combine(LogDirectory, LogFilePrefix + ".txt");
 
-            _fileLogger = new FileLogger(path);
+            if (File.Exists(newPath))
+            {
+                newPath = await TryMoveToArchive(newPath, cancellationToken).ConfigureAwait(false);
+            }
+
+            _fileLogger = new FileLogger(newPath);
 
             if (LoggerLoaded != null)
             {
                 try
                 {
-
                     LoggerLoaded(this, EventArgs.Empty);
-
                 }
                 catch (Exception ex)
                 {
                     GetLogger("Logger").ErrorException("Error in LoggerLoaded event", ex);
                 }
             }
+        }
+
+        private async Task<string> TryMoveToArchive(string file, CancellationToken cancellationToken, int retryCount = 0)
+        {
+            var archivePath = GetArchiveFilePath();
+
+            try
+            {
+                File.Move(file, archivePath);
+
+                return file;
+            }
+            catch (FileNotFoundException)
+            {
+                return file;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return file;
+            }
+            catch
+            {
+                if (retryCount >= 50)
+                {
+                    return GetArchiveFilePath();
+                }
+
+                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+
+                return await TryMoveToArchive(file, cancellationToken, retryCount + 1).ConfigureAwait(false);
+            }
+        }
+
+        private string GetArchiveFilePath()
+        {
+            return Path.Combine(LogDirectory, LogFilePrefix + "-" + decimal.Floor(DateTime.Now.Ticks / 10000000) + ".txt");
         }
 
         public event EventHandler LoggerLoaded;
@@ -104,10 +144,12 @@ namespace Emby.Server.Implementations.Logging
             if (logger != null)
             {
                 logger.Dispose();
+
+                var task = TryMoveToArchive(logger.Path, CancellationToken.None);
+                Task.WaitAll(task);
             }
 
             _fileLogger = null;
-            GC.SuppressFinalize(this);
         }
     }
 
@@ -119,9 +161,13 @@ namespace Emby.Server.Implementations.Logging
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly BlockingCollection<string> _queue = new BlockingCollection<string>();
 
+        public string Path { get; set; }
+
         public FileLogger(string path)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            Path = path;
+
+            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path));
 
             _fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, 32768);
             _cancellationTokenSource = new CancellationTokenSource();
@@ -144,6 +190,10 @@ namespace Emby.Server.Implementations.Logging
                         }
 
                         _fileStream.Write(bytes, 0, bytes.Length);
+                        if (_disposed)
+                        {
+                            return;
+                        }
 
                         _fileStream.Flush(true);
                     }
@@ -177,13 +227,22 @@ namespace Emby.Server.Implementations.Logging
 
         public void Dispose()
         {
-            _cancellationTokenSource.Cancel();
-
-            Flush();
+            if (_disposed)
+            {
+                return;
+            }
 
             _disposed = true;
-            _fileStream.Dispose();
-            GC.SuppressFinalize(this);
+            _cancellationTokenSource.Cancel();
+
+            var stream = _fileStream;
+            if (stream != null)
+            {
+                using (stream)
+                {
+                    stream.Flush(true);
+                }
+            }
         }
     }
 

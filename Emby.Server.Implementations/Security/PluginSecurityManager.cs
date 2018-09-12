@@ -26,30 +26,11 @@ namespace Emby.Server.Implementations.Security
         private const string MBValidateUrl = "https://mb3admin.com/admin/service/registration/validate";
         private const string AppstoreRegUrl = /*MbAdmin.HttpsUrl*/ "https://mb3admin.com/admin/service/appstore/register";
 
-        /// <summary>
-        /// The _is MB supporter
-        /// </summary>
-        private bool? _isMbSupporter;
-        /// <summary>
-        /// The _is MB supporter initialized
-        /// </summary>
-        private bool _isMbSupporterInitialized;
-        /// <summary>
-        /// The _is MB supporter sync lock
-        /// </summary>
-        private object _isMbSupporterSyncLock = new object();
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is MB supporter.
-        /// </summary>
-        /// <value><c>true</c> if this instance is MB supporter; otherwise, <c>false</c>.</value>
-        public bool IsMBSupporter
+        public async Task<bool> IsSupporter()
         {
-            get
-            {
-                LazyInitializer.EnsureInitialized(ref _isMbSupporter, ref _isMbSupporterInitialized, ref _isMbSupporterSyncLock, () => GetSupporterRegistrationStatus().Result.IsRegistered);
-                return _isMbSupporter.Value;
-            }
+            var result = await GetRegistrationStatusInternal("MBSupporter", false, _appHost.ApplicationVersion.ToString(), CancellationToken.None).ConfigureAwait(false);
+
+            return result.IsRegistered;
         }
 
         private MBLicenseFile _licenseFile;
@@ -65,15 +46,6 @@ namespace Emby.Server.Implementations.Security
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly ICryptoProvider _cryptographyProvider;
-
-        private IEnumerable<IRequiresRegistration> _registeredEntities;
-        protected IEnumerable<IRequiresRegistration> RegisteredEntities
-        {
-            get
-            {
-                return _registeredEntities ?? (_registeredEntities = _appHost.GetExports<IRequiresRegistration>());
-            }
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginSecurityManager" /> class.
@@ -96,45 +68,12 @@ namespace Emby.Server.Implementations.Security
         }
 
         /// <summary>
-        /// Load all registration info for all entities that require registration
-        /// </summary>
-        /// <returns></returns>
-        public async Task LoadAllRegistrationInfo()
-        {
-            var tasks = new List<Task>();
-
-            ResetSupporterInfo();
-            tasks.AddRange(RegisteredEntities.Select(i => i.LoadRegistrationInfoAsync()));
-            await Task.WhenAll(tasks);
-        }
-
-        /// <summary>
         /// Gets the registration status.
         /// This overload supports existing plug-ins.
         /// </summary>
-        /// <param name="feature">The feature.</param>
-        /// <param name="mb2Equivalent">The MB2 equivalent.</param>
-        /// <returns>Task{MBRegistrationRecord}.</returns>
-        public Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent = null)
+        public Task<MBRegistrationRecord> GetRegistrationStatus(string feature)
         {
-            return GetRegistrationStatusInternal(feature, mb2Equivalent);
-        }
-
-        /// <summary>
-        /// Gets the registration status.
-        /// </summary>
-        /// <param name="feature">The feature.</param>
-        /// <param name="mb2Equivalent">The MB2 equivalent.</param>
-        /// <param name="version">The version of this feature</param>
-        /// <returns>Task{MBRegistrationRecord}.</returns>
-        public Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent, string version)
-        {
-            return GetRegistrationStatusInternal(feature, mb2Equivalent, version);
-        }
-
-        private Task<MBRegistrationRecord> GetSupporterRegistrationStatus()
-        {
-            return GetRegistrationStatusInternal("MBSupporter", null, _appHost.ApplicationVersion.ToString());
+            return GetRegistrationStatusInternal(feature, false, null, CancellationToken.None);
         }
 
         /// <summary>
@@ -149,20 +88,24 @@ namespace Emby.Server.Implementations.Security
             }
             set
             {
-                var newValue = value;
-                if (newValue != null)
-                {
-                    newValue = newValue.Trim();
-                }
+                throw new Exception("Please call UpdateSupporterKey");
+            }
+        }
 
-                if (newValue != LicenseFile.RegKey)
-                {
-                    LicenseFile.RegKey = newValue;
-                    LicenseFile.Save();
+        public async Task UpdateSupporterKey(string newValue)
+        {
+            if (newValue != null)
+            {
+                newValue = newValue.Trim();
+            }
 
-                    // re-load registration info
-                    Task.Run(() => LoadAllRegistrationInfo());
-                }
+            if (!string.Equals(newValue, LicenseFile.RegKey, StringComparison.Ordinal))
+            {
+                LicenseFile.RegKey = newValue;
+                LicenseFile.Save();
+
+                // Reset this
+                await GetRegistrationStatusInternal("MBSupporter", true, _appHost.ApplicationVersion.ToString(), CancellationToken.None).ConfigureAwait(false);
             }
         }
 
@@ -187,7 +130,7 @@ namespace Emby.Server.Implementations.Security
             {
                 using (var response = await _httpClient.Post(options).ConfigureAwait(false))
                 {
-                    var reg = _jsonSerializer.DeserializeFromStream<RegRecord>(response.Content);
+                    var reg = await _jsonSerializer.DeserializeFromStreamAsync<RegRecord>(response.Content).ConfigureAwait(false);
 
                     if (reg == null)
                     {
@@ -197,7 +140,7 @@ namespace Emby.Server.Implementations.Security
                     }
                     if (!String.IsNullOrEmpty(reg.key))
                     {
-                        SupporterKey = reg.key;
+                        await UpdateSupporterKey(reg.key).ConfigureAwait(false);
                     }
                 }
 
@@ -241,97 +184,113 @@ namespace Emby.Server.Implementations.Security
             }
         }
 
-        private async Task<MBRegistrationRecord> GetRegistrationStatusInternal(string feature,
-            string mb2Equivalent = null,
-            string version = null)
+        private SemaphoreSlim _regCheckLock = new SemaphoreSlim(1, 1);
+
+        private async Task<MBRegistrationRecord> GetRegistrationStatusInternal(string feature, bool forceCallToServer, string version, CancellationToken cancellationToken)
         {
-            var regInfo = LicenseFile.GetRegInfo(feature);
-            var lastChecked = regInfo == null ? DateTime.MinValue : regInfo.LastChecked;
-            var expDate = regInfo == null ? DateTime.MinValue : regInfo.ExpirationDate;
+            await _regCheckLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            var maxCacheDays = 14;
-            var nextCheckDate = new [] { expDate, lastChecked.AddDays(maxCacheDays) }.Min();
-
-            if (nextCheckDate > DateTime.UtcNow.AddDays(maxCacheDays))
+            try
             {
-                nextCheckDate = DateTime.MinValue;
-            }
+                var regInfo = LicenseFile.GetRegInfo(feature);
+                var lastChecked = regInfo == null ? DateTime.MinValue : regInfo.LastChecked;
+                var expDate = regInfo == null ? DateTime.MinValue : regInfo.ExpirationDate;
 
-            //check the reg file first to alleviate strain on the MB admin server - must actually check in every 30 days tho
-            var reg = new RegRecord
-            {
-                // Cache the result for up to a week
-                registered = regInfo != null && nextCheckDate >= DateTime.UtcNow && expDate >= DateTime.UtcNow,
-                expDate = expDate
-            };
+                var maxCacheDays = 14;
+                var nextCheckDate = new[] { expDate, lastChecked.AddDays(maxCacheDays) }.Min();
 
-            var success = reg.registered;
-
-            if (!(lastChecked > DateTime.UtcNow.AddDays(-1)) || !reg.registered)
-            {
-                var data = new Dictionary<string, string>
+                if (nextCheckDate > DateTime.UtcNow.AddDays(maxCacheDays))
                 {
-                    { "feature", feature }, 
-                    { "key", SupporterKey }, 
-                    { "mac", _appHost.SystemId }, 
-                    { "systemid", _appHost.SystemId }, 
-                    { "mb2equiv", mb2Equivalent }, 
-                    { "ver", version }, 
+                    nextCheckDate = DateTime.MinValue;
+                }
+
+                //check the reg file first to alleviate strain on the MB admin server - must actually check in every 30 days tho
+                var reg = new RegRecord
+                {
+                    // Cache the result for up to a week
+                    registered = regInfo != null && nextCheckDate >= DateTime.UtcNow && expDate >= DateTime.UtcNow,
+                    expDate = expDate
+                };
+
+                var key = SupporterKey;
+
+                if (!forceCallToServer && string.IsNullOrWhiteSpace(key))
+                {
+                    return new MBRegistrationRecord();
+                }
+
+                var success = reg.registered;
+
+                if (!(lastChecked > DateTime.UtcNow.AddDays(-1)) || (!reg.registered))
+                {
+                    var data = new Dictionary<string, string>
+                {
+                    { "feature", feature },
+                    { "key", key },
+                    { "mac", _appHost.SystemId },
+                    { "systemid", _appHost.SystemId },
+                    { "ver", version },
                     { "platform", _appHost.OperatingSystemDisplayName }
                 };
 
-                try
-                {
-                    var options = new HttpRequestOptions
+                    try
                     {
-                        Url = MBValidateUrl,
-
-                        // Seeing block length errors
-                        EnableHttpCompression = false,
-                        BufferContent = false
-                    };
-
-                    options.SetPostData(data);
-
-                    using (var response = (await _httpClient.Post(options).ConfigureAwait(false)))
-                    {
-                        using (var json = response.Content)
+                        var options = new HttpRequestOptions
                         {
-                            reg = _jsonSerializer.DeserializeFromStream<RegRecord>(json);
-                            success = true;
+                            Url = MBValidateUrl,
+
+                            // Seeing block length errors
+                            EnableHttpCompression = false,
+                            BufferContent = false,
+                            CancellationToken = cancellationToken
+                        };
+
+                        options.SetPostData(data);
+
+                        using (var response = (await _httpClient.Post(options).ConfigureAwait(false)))
+                        {
+                            using (var json = response.Content)
+                            {
+                                reg = await _jsonSerializer.DeserializeFromStreamAsync<RegRecord>(json).ConfigureAwait(false);
+                                success = true;
+                            }
                         }
-                    }
 
-                    if (reg.registered)
-                    {
-                        _logger.Info("Registered for feature {0}", feature);
-                        LicenseFile.AddRegCheck(feature, reg.expDate);
-                    }
-                    else
-                    {
-                        _logger.Info("Not registered for feature {0}", feature);
-                        LicenseFile.RemoveRegCheck(feature);
-                    }
+                        if (reg.registered)
+                        {
+                            _logger.Info("Registered for feature {0}", feature);
+                            LicenseFile.AddRegCheck(feature, reg.expDate);
+                        }
+                        else
+                        {
+                            _logger.Info("Not registered for feature {0}", feature);
+                            LicenseFile.RemoveRegCheck(feature);
+                        }
 
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.ErrorException("Error checking registration status of {0}", e, feature);
+                    }
                 }
-                catch (Exception e)
+
+                var record = new MBRegistrationRecord
                 {
-                    _logger.ErrorException("Error checking registration status of {0}", e, feature);
-                }
+                    IsRegistered = reg.registered,
+                    ExpirationDate = reg.expDate,
+                    RegChecked = true,
+                    RegError = !success
+                };
+
+                record.TrialVersion = IsInTrial(reg.expDate, record.RegChecked, record.IsRegistered);
+                record.IsValid = !record.RegChecked || record.IsRegistered || record.TrialVersion;
+
+                return record;
             }
-
-            var record = new MBRegistrationRecord
+            finally
             {
-                IsRegistered = reg.registered,
-                ExpirationDate = reg.expDate,
-                RegChecked = true,
-                RegError = !success
-            };
-
-            record.TrialVersion = IsInTrial(reg.expDate, record.RegChecked, record.IsRegistered);
-            record.IsValid = !record.RegChecked || record.IsRegistered || record.TrialVersion;
-
-            return record;
+                _regCheckLock.Release();
+            }
         }
 
         private bool IsInTrial(DateTime expirationDate, bool regChecked, bool isRegistered)
@@ -345,15 +304,6 @@ namespace Emby.Server.Implementations.Security
             var isInTrial = expirationDate > DateTime.UtcNow;
 
             return isInTrial && !isRegistered;
-        }
-
-        /// <summary>
-        /// Resets the supporter info.
-        /// </summary>
-        private void ResetSupporterInfo()
-        {
-            _isMbSupporter = null;
-            _isMbSupporterInitialized = false;
         }
     }
 }

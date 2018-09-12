@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
+  </ItemGroup>
+
+</Project>

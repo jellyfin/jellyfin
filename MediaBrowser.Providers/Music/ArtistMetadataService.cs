@@ -10,41 +10,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Providers.Music
 {
     public class ArtistMetadataService : MetadataService<MusicArtist, ArtistInfo>
     {
-        protected override ItemUpdateType BeforeSaveInternal(MusicArtist item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected override IList<BaseItem> GetChildrenForMetadataUpdates(MusicArtist item)
         {
-            var updateType = base.BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
-
-            if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
-            {
-                if (!item.IsLocked && !item.LockedFields.Contains(MetadataFields.Genres))
+            return item.IsAccessedByName ?
+                item.GetTaggedItems(new Controller.Entities.InternalItemsQuery
                 {
-                    var taggedItems = item.IsAccessedByName ?
-                        item.GetTaggedItems(new Controller.Entities.InternalItemsQuery()
-                        {
-                            Recursive = true,
-                            IsFolder = false
-                        }) :
-                        item.GetRecursiveChildren(i => i is IHasArtist && !i.IsFolder);
+                    Recursive = true,
+                    IsFolder = false
+                }) :
+                item.GetRecursiveChildren(i => i is IHasArtist && !i.IsFolder);
+        }
 
-                    var currentList = item.Genres;
-
-                    item.Genres = taggedItems.SelectMany(i => i.Genres)
-                        .DistinctNames()
-                        .ToList();
-
-                    if (currentList.Count != item.Genres.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
-                    {
-                        updateType = updateType | ItemUpdateType.MetadataEdit;
-                    }
-                }
+        protected override bool EnableUpdatingGenresFromChildren
+        {
+            get
+            {
+                return true;
             }
-
-            return updateType;
         }
 
         protected override void MergeData(MetadataResult<MusicArtist> source, MetadataResult<MusicArtist> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)

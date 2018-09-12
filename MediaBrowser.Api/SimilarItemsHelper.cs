@@ -49,7 +49,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// The maximum number of items to return
@@ -73,10 +73,10 @@ namespace MediaBrowser.Api
     {
         internal static QueryResult<BaseItemDto> GetSimilarItemsResult(DtoOptions dtoOptions, IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, ILogger logger, BaseGetSimilarItemsFromItem request, Type[] includeTypes, Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
         {
-            var user = !string.IsNullOrWhiteSpace(request.UserId) ? userManager.GetUserById(request.UserId) : null;
+            var user = !request.UserId.Equals(Guid.Empty) ? userManager.GetUserById(request.UserId) : null;
 
             var item = string.IsNullOrEmpty(request.Id) ?
-                (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
+                (!request.UserId.Equals(Guid.Empty) ? libraryManager.GetUserRootFolder() :
                 libraryManager.RootFolder) : libraryManager.GetItemById(request.Id);
 
             var query = new InternalItemsQuery(user)
@@ -89,7 +89,7 @@ namespace MediaBrowser.Api
             // ExcludeArtistIds
             if (!string.IsNullOrEmpty(request.ExcludeArtistIds))
             {
-                query.ExcludeArtistIds = request.ExcludeArtistIds.Split('|');
+                query.ExcludeArtistIds = BaseApiService.GetGuids(request.ExcludeArtistIds);
             }
 
             var inputItems = libraryManager.GetItemList(query);

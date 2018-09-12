@@ -22,11 +22,6 @@ namespace Emby.Server.Implementations.EntryPoints
     public class ServerEventNotifier : IServerEntryPoint
     {
         /// <summary>
-        /// The _server manager
-        /// </summary>
-        private readonly IServerManager _serverManager;
-
-        /// <summary>
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
@@ -47,23 +42,21 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly ITaskManager _taskManager;
 
         private readonly ISessionManager _sessionManager;
-        private readonly ISyncManager _syncManager;
 
-        public ServerEventNotifier(IServerManager serverManager, IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, ISessionManager sessionManager, ISyncManager syncManager)
+        public ServerEventNotifier(IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, ISessionManager sessionManager)
         {
-            _serverManager = serverManager;
             _userManager = userManager;
             _installationManager = installationManager;
             _appHost = appHost;
             _taskManager = taskManager;
             _sessionManager = sessionManager;
-            _syncManager = syncManager;
         }
 
         public void Run()
         {
             _userManager.UserDeleted += userManager_UserDeleted;
             _userManager.UserUpdated += userManager_UserUpdated;
+            _userManager.UserPolicyUpdated += _userManager_UserPolicyUpdated;
             _userManager.UserConfigurationUpdated += _userManager_UserConfigurationUpdated;
 
             _appHost.HasPendingRestartChanged += kernel_HasPendingRestartChanged;
@@ -75,43 +68,31 @@ namespace Emby.Server.Implementations.EntryPoints
             _installationManager.PackageInstallationFailed += _installationManager_PackageInstallationFailed;
 
             _taskManager.TaskCompleted += _taskManager_TaskCompleted;
-            _syncManager.SyncJobCreated += _syncManager_SyncJobCreated;
-            _syncManager.SyncJobCancelled += _syncManager_SyncJobCancelled;
-        }
-
-        void _syncManager_SyncJobCancelled(object sender, GenericEventArgs<SyncJob> e)
-        {
-            _sessionManager.SendMessageToUserDeviceSessions(e.Argument.TargetId, "SyncJobCancelled", e.Argument, CancellationToken.None);
-        }
-
-        void _syncManager_SyncJobCreated(object sender, GenericEventArgs<SyncJobCreationResult> e)
-        {
-            _sessionManager.SendMessageToUserDeviceSessions(e.Argument.Job.TargetId, "SyncJobCreated", e.Argument, CancellationToken.None);
         }
 
         void _installationManager_PackageInstalling(object sender, InstallationEventArgs e)
         {
-            _serverManager.SendWebSocketMessage("PackageInstalling", e.InstallationInfo);
+            SendMessageToAdminSessions("PackageInstalling", e.InstallationInfo);
         }
 
         void _installationManager_PackageInstallationCancelled(object sender, InstallationEventArgs e)
         {
-            _serverManager.SendWebSocketMessage("PackageInstallationCancelled", e.InstallationInfo);
+            SendMessageToAdminSessions("PackageInstallationCancelled", e.InstallationInfo);
         }
 
         void _installationManager_PackageInstallationCompleted(object sender, InstallationEventArgs e)
         {
-            _serverManager.SendWebSocketMessage("PackageInstallationCompleted", e.InstallationInfo);
+            SendMessageToAdminSessions("PackageInstallationCompleted", e.InstallationInfo);
         }
 
         void _installationManager_PackageInstallationFailed(object sender, InstallationFailedEventArgs e)
         {
-            _serverManager.SendWebSocketMessage("PackageInstallationFailed", e.InstallationInfo);
+            SendMessageToAdminSessions("PackageInstallationFailed", e.InstallationInfo);
         }
 
         void _taskManager_TaskCompleted(object sender, TaskCompletionEventArgs e)
         {
-            _serverManager.SendWebSocketMessage("ScheduledTaskEnded", e.Result);
+            SendMessageToAdminSessions("ScheduledTaskEnded", e.Result);
         }
 
         /// <summary>
@@ -121,7 +102,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="e">The e.</param>
         void InstallationManager_PluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
         {
-            _serverManager.SendWebSocketMessage("PluginUninstalled", e.Argument.GetPluginInfo());
+            SendMessageToAdminSessions("PluginUninstalled", e.Argument.GetPluginInfo());
         }
 
         /// <summary>
@@ -156,6 +137,13 @@ namespace Emby.Server.Implementations.EntryPoints
             SendMessageToUserSession(e.Argument, "UserDeleted", e.Argument.Id.ToString("N"));
         }
 
+        void _userManager_UserPolicyUpdated(object sender, GenericEventArgs<User> e)
+        {
+            var dto = _userManager.GetUserDto(e.Argument);
+
+            SendMessageToUserSession(e.Argument, "UserPolicyUpdated", dto);
+        }
+
         void _userManager_UserConfigurationUpdated(object sender, GenericEventArgs<User> e)
         {
             var dto = _userManager.GetUserDto(e.Argument);
@@ -163,9 +151,36 @@ namespace Emby.Server.Implementations.EntryPoints
             SendMessageToUserSession(e.Argument, "UserConfigurationUpdated", dto);
         }
 
+        private async void SendMessageToAdminSessions<T>(string name, T data)
+        {
+            try
+            {
+                await _sessionManager.SendMessageToAdminSessions(name, data, CancellationToken.None);
+            }
+            catch (ObjectDisposedException)
+            {
+
+            }
+            catch (Exception)
+            {
+                //Logger.ErrorException("Error sending message", ex);
+            }
+        }
+
         private async void SendMessageToUserSession<T>(User user, string name, T data)
         {
-            await _sessionManager.SendMessageToUserSessions(new List<string> { user.Id.ToString("N") }, name, data, CancellationToken.None);
+            try
+            {
+                await _sessionManager.SendMessageToUserSessions(new List<Guid> { user.Id }, name, data, CancellationToken.None);
+            }
+            catch (ObjectDisposedException)
+            {
+
+            }
+            catch (Exception)
+            {
+                //Logger.ErrorException("Error sending message", ex);
+            }
         }
 
         /// <summary>
@@ -174,7 +189,6 @@ namespace Emby.Server.Implementations.EntryPoints
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -187,6 +201,7 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 _userManager.UserDeleted -= userManager_UserDeleted;
                 _userManager.UserUpdated -= userManager_UserUpdated;
+                _userManager.UserPolicyUpdated -= _userManager_UserPolicyUpdated;
                 _userManager.UserConfigurationUpdated -= _userManager_UserConfigurationUpdated;
 
                 _installationManager.PluginUninstalled -= InstallationManager_PluginUninstalled;
@@ -196,8 +211,6 @@ namespace Emby.Server.Implementations.EntryPoints
                 _installationManager.PackageInstallationFailed -= _installationManager_PackageInstallationFailed;
 
                 _appHost.HasPendingRestartChanged -= kernel_HasPendingRestartChanged;
-                _syncManager.SyncJobCreated -= _syncManager_SyncJobCreated;
-                _syncManager.SyncJobCancelled -= _syncManager_SyncJobCancelled;
             }
         }
     }

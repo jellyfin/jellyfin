@@ -207,7 +207,7 @@ namespace MediaBrowser.Api.ScheduledTasks
                 }
             }
 
-            TaskManager.Execute(task);
+            TaskManager.Execute(task, new TaskOptions());
         }
 
         /// <summary>

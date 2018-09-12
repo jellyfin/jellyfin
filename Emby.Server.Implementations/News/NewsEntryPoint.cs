@@ -82,7 +82,7 @@ namespace Emby.Server.Implementations.News
 
             var requestOptions = new HttpRequestOptions
             {
-                Url = "http://emby.media/community/index.php?/blog/rss/1-media-browser-developers-blog",
+                Url = "https://emby.media/community/index.php?/blog/rss/1-media-browser-developers-blog",
                 Progress = new SimpleProgress<double>(),
                 UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.42 Safari/537.36",
                 BufferContent = false
@@ -118,7 +118,7 @@ namespace Emby.Server.Implementations.News
                 Name = i.Title,
                 Description = i.Description,
                 Url = i.Link,
-                UserIds = _userManager.Users.Select(u => u.Id.ToString("N")).ToList()
+                UserIds = _userManager.Users.Select(u => u.Id).ToArray()
 
             }, cancellationToken));
 
@@ -274,7 +274,6 @@ namespace Emby.Server.Implementations.News
                 _timer.Dispose();
                 _timer = null;
             }
-            GC.SuppressFinalize(this);
         }
     }
 }

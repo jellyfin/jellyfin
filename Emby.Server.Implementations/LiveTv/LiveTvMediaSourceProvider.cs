@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Common.Configuration;
 
 namespace Emby.Server.Implementations.LiveTv
 {
@@ -26,8 +27,9 @@ namespace Emby.Server.Implementations.LiveTv
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerApplicationHost _appHost;
+        private IApplicationPaths _appPaths;
 
-        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, IJsonSerializer jsonSerializer, ILogManager logManager, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, IServerApplicationHost appHost)
+        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, IServerApplicationHost appHost)
         {
             _liveTvManager = liveTvManager;
             _jsonSerializer = jsonSerializer;
@@ -35,9 +37,10 @@ namespace Emby.Server.Implementations.LiveTv
             _mediaEncoder = mediaEncoder;
             _appHost = appHost;
             _logger = logManager.GetLogger(GetType().Name);
+            _appPaths = appPaths;
         }
 
-        public Task<IEnumerable<MediaSourceInfo>> GetMediaSources(IHasMediaSources item, CancellationToken cancellationToken)
+        public Task<IEnumerable<MediaSourceInfo>> GetMediaSources(BaseItem item, CancellationToken cancellationToken)
         {
             var baseItem = (BaseItem)item;
 
@@ -45,20 +48,20 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 var activeRecordingInfo = _liveTvManager.GetActiveRecordingInfo(item.Path);
 
-                if (string.IsNullOrWhiteSpace(baseItem.Path) || activeRecordingInfo != null)
+                if (string.IsNullOrEmpty(baseItem.Path) || activeRecordingInfo != null)
                 {
                     return GetMediaSourcesInternal(item, activeRecordingInfo, cancellationToken);
                 }
             }
 
-            return Task.FromResult<IEnumerable<MediaSourceInfo>>(new List<MediaSourceInfo>());
+            return Task.FromResult<IEnumerable<MediaSourceInfo>>(Array.Empty<MediaSourceInfo>());
         }
 
         // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
         private const char StreamIdDelimeter = '_';
         private const string StreamIdDelimeterString = "_";
 
-        private async Task<IEnumerable<MediaSourceInfo>> GetMediaSourcesInternal(IHasMediaSources item, ActiveRecordingInfo activeRecordingInfo, CancellationToken cancellationToken)
+        private async Task<IEnumerable<MediaSourceInfo>> GetMediaSourcesInternal(BaseItem item, ActiveRecordingInfo activeRecordingInfo, CancellationToken cancellationToken)
         {
             IEnumerable<MediaSourceInfo> sources;
 
@@ -66,30 +69,20 @@ namespace Emby.Server.Implementations.LiveTv
 
             try
             {
-                if (item is ILiveTvRecording)
+                if (activeRecordingInfo != null)
                 {
-                    sources = await _liveTvManager.GetRecordingMediaSources(item, cancellationToken)
+                    sources = await EmbyTV.EmbyTV.Current.GetRecordingStreamMediaSources(activeRecordingInfo, cancellationToken)
                         .ConfigureAwait(false);
                 }
                 else
                 {
-                    if (activeRecordingInfo != null)
-                    {
-                        sources = await EmbyTV.EmbyTV.Current.GetRecordingStreamMediaSources(activeRecordingInfo, cancellationToken)
-                            .ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        sources = await _liveTvManager.GetChannelMediaSources(item, cancellationToken)
-                            .ConfigureAwait(false);
-                    }
+                    sources = await _liveTvManager.GetChannelMediaSources(item, cancellationToken)
+                        .ConfigureAwait(false);
                 }
             }
             catch (NotImplementedException)
             {
-                var hasMediaSources = (IHasMediaSources)item;
-
-                sources = _mediaSourceManager.GetStaticMediaSources(hasMediaSources, false);
+                sources = _mediaSourceManager.GetStaticMediaSources(item, false);
 
                 forceRequireOpening = true;
             }
@@ -128,102 +121,15 @@ namespace Emby.Server.Implementations.LiveTv
             return list;
         }
 
-        public async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> OpenMediaSource(string openToken, bool allowLiveStreamProbe, CancellationToken cancellationToken)
+        public async Task<ILiveStream> OpenMediaSource(string openToken, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
-            MediaSourceInfo stream = null;
-            const bool isAudio = false;
-
             var keys = openToken.Split(new[] { StreamIdDelimeter }, 3);
             var mediaSourceId = keys.Length >= 3 ? keys[2] : null;
-            IDirectStreamProvider directStreamProvider = null;
 
-            if (string.Equals(keys[0], typeof(LiveTvChannel).Name, StringComparison.OrdinalIgnoreCase))
-            {
-                var info = await _liveTvManager.GetChannelStream(keys[1], mediaSourceId, cancellationToken).ConfigureAwait(false);
-                stream = info.Item1;
-                directStreamProvider = info.Item2;
+            var info = await _liveTvManager.GetChannelStream(keys[1], mediaSourceId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
+            var liveStream = info.Item2;
 
-                //allowLiveStreamProbe = false;
-            }
-            else
-            {
-                stream = await _liveTvManager.GetRecordingStream(keys[1], cancellationToken).ConfigureAwait(false);
-            }
-
-            try
-            {
-                if (!allowLiveStreamProbe || !stream.SupportsProbing || stream.MediaStreams.Any(i => i.Index != -1))
-                {
-                    AddMediaInfo(stream, isAudio, cancellationToken);
-                }
-                else
-                {
-                    await new LiveStreamHelper(_mediaEncoder, _logger).AddMediaInfoWithProbe(stream, isAudio, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error probing live tv stream", ex);
-            }
-
-            _logger.Info("Live stream info: {0}", _jsonSerializer.SerializeToString(stream));
-            return new Tuple<MediaSourceInfo, IDirectStreamProvider>(stream, directStreamProvider);
-        }
-
-        private void AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
-        {
-            mediaSource.DefaultSubtitleStreamIndex = null;
-
-            // Null this out so that it will be treated like a live stream
-            mediaSource.RunTimeTicks = null;
-
-            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Audio);
-
-            if (audioStream == null || audioStream.Index == -1)
-            {
-                mediaSource.DefaultAudioStreamIndex = null;
-            }
-            else
-            {
-                mediaSource.DefaultAudioStreamIndex = audioStream.Index;
-            }
-
-            var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Video);
-            if (videoStream != null)
-            {
-                if (!videoStream.BitRate.HasValue)
-                {
-                    var width = videoStream.Width ?? 1920;
-
-                    if (width >= 3000)
-                    {
-                        videoStream.BitRate = 30000000;
-                    }
-
-                    else if (width >= 1900)
-                    {
-                        videoStream.BitRate = 20000000;
-                    }
-
-                    else if (width >= 1200)
-                    {
-                        videoStream.BitRate = 8000000;
-                    }
-
-                    else if (width >= 700)
-                    {
-                        videoStream.BitRate = 2000000;
-                    }
-                }
-            }
-
-            // Try to estimate this
-            mediaSource.InferTotalBitrate();
-        }
-
-        public Task CloseMediaSource(string liveStreamId)
-        {
-            return _liveTvManager.CloseLiveStream(liveStreamId);
+            return liveStream;
         }
     }
 }

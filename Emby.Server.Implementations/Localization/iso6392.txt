@@ -403,7 +403,7 @@ sot||st|Sotho, Southern|sotho du Sud
 spa||es|Spanish; Castilian|espagnol; castillan
 srd||sc|Sardinian|sarde
 srn|||Sranan Tongo|sranan tongo
-srp||sr|Serbian|serbe
+srp|scc|sr|Serbian|serbe
 srr|||Serer|sérère
 ssa|||Nilo-Saharan languages|nilo-sahariennes, langues
 ssw||ss|Swati|swati

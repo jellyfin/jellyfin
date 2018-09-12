@@ -24,10 +24,11 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
-        [ApiMember(Name = "IncludeExternalContent", Description = "Whether or not to include external views such as channels or live tv", IsRequired = true, DataType = "boolean", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "IncludeExternalContent", Description = "Whether or not to include external views such as channels or live tv", IsRequired = true, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? IncludeExternalContent { get; set; }
+        public bool IncludeHidden { get; set; }
 
         public string PresetViews { get; set; }
     }
@@ -40,7 +41,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
     }
 
     public class UserViewsService : BaseApiService
@@ -49,16 +50,18 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly IUserViewManager _userViewManager;
         private readonly IDtoService _dtoService;
         private readonly IAuthorizationContext _authContext;
+        private readonly ILibraryManager _libraryManager;
 
-        public UserViewsService(IUserManager userManager, IUserViewManager userViewManager, IDtoService dtoService, IAuthorizationContext authContext)
+        public UserViewsService(IUserManager userManager, IUserViewManager userViewManager, IDtoService dtoService, IAuthorizationContext authContext, ILibraryManager libraryManager)
         {
             _userManager = userManager;
             _userViewManager = userViewManager;
             _dtoService = dtoService;
             _authContext = authContext;
+            _libraryManager = libraryManager;
         }
 
-        public async Task<object> Get(GetUserViews request)
+        public object Get(GetUserViews request)
         {
             var query = new UserViewQuery
             {
@@ -69,6 +72,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 query.IncludeExternalContent = request.IncludeExternalContent.Value;
             }
+            query.IncludeHidden = request.IncludeHidden;
 
             if (!string.IsNullOrWhiteSpace(request.PresetViews))
             {
@@ -78,18 +82,16 @@ namespace MediaBrowser.Api.UserLibrary
             var app = _authContext.GetAuthorizationInfo(Request).Client ?? string.Empty;
             if (app.IndexOf("emby rt", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                query.PresetViews = new[] { CollectionType.Music, CollectionType.Movies, CollectionType.TvShows };
+                query.PresetViews = new[] { CollectionType.Movies, CollectionType.TvShows };
             }
-            //query.PresetViews = new[] { CollectionType.Music, CollectionType.Movies, CollectionType.TvShows };
 
-            var folders = await _userViewManager.GetUserViews(query, CancellationToken.None).ConfigureAwait(false);
+            var folders = _userViewManager.GetUserViews(query);
 
             var dtoOptions = GetDtoOptions(_authContext, request);
             var fields = dtoOptions.Fields.ToList();
 
             fields.Add(ItemFields.PrimaryImageAspectRatio);
             fields.Add(ItemFields.DisplayPreferencesId);
-            fields.Remove(ItemFields.SyncInfo);
             fields.Remove(ItemFields.BasicSyncInfo);
             dtoOptions.Fields = fields.ToArray(fields.Count);
 
@@ -111,7 +113,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var list = user.RootFolder
+            var list = _libraryManager.GetUserRootFolder()
                 .GetChildren(user, true)
                 .OfType<Folder>()
                 .Where(UserView.IsEligibleForGrouping)

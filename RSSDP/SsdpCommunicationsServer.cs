@@ -124,7 +124,16 @@ namespace Rssdp.Infrastructure
                 lock (_BroadcastListenSocketSynchroniser)
                 {
                     if (_BroadcastListenSocket == null)
-                        _BroadcastListenSocket = ListenForBroadcastsAsync();
+                    {
+                        try
+                        {
+                            _BroadcastListenSocket = ListenForBroadcastsAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error in BeginListeningForBroadcasts", ex);
+                        }
+                    }
                 }
             }
         }
@@ -135,12 +144,11 @@ namespace Rssdp.Infrastructure
         /// <exception cref="System.ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
         public void StopListeningForBroadcasts()
         {
-            ThrowIfDisposed();
-
             lock (_BroadcastListenSocketSynchroniser)
             {
                 if (_BroadcastListenSocket != null)
                 {
+                    _logger.Info("{0} disposing _BroadcastListenSocket.", GetType().Name);
                     _BroadcastListenSocket.Dispose();
                     _BroadcastListenSocket = null;
                 }
@@ -227,10 +235,15 @@ namespace Rssdp.Infrastructure
             }
         }
 
+        public Task SendMulticastMessage(string message, CancellationToken cancellationToken)
+        {
+            return SendMulticastMessage(message, SsdpConstants.UdpResendCount, cancellationToken);
+        }
+
         /// <summary>
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
-        public async Task SendMulticastMessage(string message, CancellationToken cancellationToken)
+        public async Task SendMulticastMessage(string message, int sendCount, CancellationToken cancellationToken)
         {
             if (message == null) throw new ArgumentNullException("messageData");
 
@@ -243,7 +256,7 @@ namespace Rssdp.Infrastructure
             EnsureSendSocketCreated();
 
             // SSDP spec recommends sending messages multiple times (not more than 3) to account for possible packet loss over UDP.
-            for (var i = 0; i < SsdpConstants.UdpResendCount; i++)
+            for (var i = 0; i < sendCount; i++)
             {
                 await SendMessageIfSocketNotDisposed(messageData, new IpEndPointInfo
                 {
@@ -262,8 +275,6 @@ namespace Rssdp.Infrastructure
         /// <exception cref="System.ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
         public void StopListeningForResponses()
         {
-            ThrowIfDisposed();
-
             lock (_SendSocketSynchroniser)
             {
                 if (_sendSockets != null)
@@ -271,8 +282,11 @@ namespace Rssdp.Infrastructure
                     var sockets = _sendSockets.ToList();
                     _sendSockets = null;
 
+                    _logger.Info("{0} Disposing {1} sendSockets", GetType().Name, sockets.Count);
+
                     foreach (var socket in sockets)
                     {
+                        _logger.Info("{0} disposing sendSocket from {1}", GetType().Name, socket.LocalIPAddress);
                         socket.Dispose();
                     }
                 }
@@ -307,25 +321,9 @@ namespace Rssdp.Infrastructure
         {
             if (disposing)
             {
-                lock (_BroadcastListenSocketSynchroniser)
-                {
-                    if (_BroadcastListenSocket != null)
-                        _BroadcastListenSocket.Dispose();
-                }
+                StopListeningForBroadcasts();
 
-                lock (_SendSocketSynchroniser)
-                {
-                    if (_sendSockets != null)
-                    {
-                        var sockets = _sendSockets.ToList();
-                        _sendSockets = null;
-
-                        foreach (var socket in sockets)
-                        {
-                            socket.Dispose();
-                        }
-                    }
-                }
+                StopListeningForResponses();
             }
         }
 
@@ -333,18 +331,18 @@ namespace Rssdp.Infrastructure
 
         #region Private Methods
 
-        private async Task SendMessageIfSocketNotDisposed(byte[] messageData, IpEndPointInfo destination, CancellationToken cancellationToken)
+        private Task SendMessageIfSocketNotDisposed(byte[] messageData, IpEndPointInfo destination, CancellationToken cancellationToken)
         {
             var sockets = _sendSockets;
             if (sockets != null)
             {
                 sockets = sockets.ToList();
 
-                foreach (var socket in sockets)
-                {
-                    await SendFromSocket(socket, messageData, destination, cancellationToken).ConfigureAwait(false);
-                }
+                var tasks = sockets.Select(s => SendFromSocket(s, messageData, destination, cancellationToken));
+                return Task.WhenAll(tasks);
             }
+
+            return Task.CompletedTask;
         }
 
         private ISocket ListenForBroadcastsAsync()
@@ -395,35 +393,37 @@ namespace Rssdp.Infrastructure
         private void ListenToSocket(ISocket socket)
         {
             // Tasks are captured to local variables even if we don't use them just to avoid compiler warnings.
-            var t = Task.Run(async () =>
+            var t = Task.Run(() => ListenToSocketInternal(socket));
+        }
+
+        private async Task ListenToSocketInternal(ISocket socket)
+        {
+            var cancelled = false;
+            var receiveBuffer = new byte[8192];
+
+            while (!cancelled && !IsDisposed)
             {
-                var cancelled = false;
-                var receiveBuffer = new byte[8192];
-
-                while (!cancelled)
+                try
                 {
-                    try
-                    {
-                        var result = await socket.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, CancellationToken.None).ConfigureAwait(false);
+                    var result = await socket.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, CancellationToken.None).ConfigureAwait(false);
 
-                        if (result.ReceivedBytes > 0)
-                        {
-                            // Strange cannot convert compiler error here if I don't explicitly
-                            // assign or cast to Action first. Assignment is easier to read,
-                            // so went with that.
-                            ProcessMessage(System.Text.UTF8Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.RemoteEndPoint, result.LocalIPAddress);
-                        }
-                    }
-                    catch (ObjectDisposedException)
+                    if (result.ReceivedBytes > 0)
                     {
-                        cancelled = true;
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        cancelled = true;
+                        // Strange cannot convert compiler error here if I don't explicitly
+                        // assign or cast to Action first. Assignment is easier to read,
+                        // so went with that.
+                        ProcessMessage(System.Text.UTF8Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.RemoteEndPoint, result.LocalIPAddress);
                     }
                 }
-            });
+                catch (ObjectDisposedException)
+                {
+                    cancelled = true;
+                }
+                catch (TaskCanceledException)
+                {
+                    cancelled = true;
+                }
+            }
         }
 
         private void EnsureSendSocketCreated()
@@ -445,7 +445,7 @@ namespace Rssdp.Infrastructure
             //Responses start with the HTTP version, prefixed with HTTP/ while
             //requests start with a method which can vary and might be one we haven't 
             //seen/don't know. We'll check if this message is a request or a response
-            //by checking for the static HTTP/ prefix on the start of the message.
+            //by checking for the HTTP/ prefix on the start of the message.
             if (data.StartsWith("HTTP/", StringComparison.OrdinalIgnoreCase))
             {
                 HttpResponseMessage responseMessage = null;
@@ -453,7 +453,7 @@ namespace Rssdp.Infrastructure
                 {
                     responseMessage = _ResponseParser.Parse(data);
                 }
-                catch (ArgumentException ex)
+                catch (ArgumentException)
                 {
                     // Ignore invalid packets.
                 }
@@ -468,7 +468,7 @@ namespace Rssdp.Infrastructure
                 {
                     requestMessage = _RequestParser.Parse(data);
                 }
-                catch (ArgumentException ex)
+                catch (ArgumentException)
                 {
                     // Ignore invalid packets.
                 }

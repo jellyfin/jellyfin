@@ -67,19 +67,19 @@ namespace Emby.Server.Implementations.Library
             {
                 try
                 {
-                    return _libraryManager.GetMusicGenre(i).Id.ToString("N");
+                    return _libraryManager.GetMusicGenre(i).Id;
                 }
                 catch
                 {
-                    return null;
+                    return Guid.Empty;
                 }
 
-            }).Where(i => i != null);
+            }).Where(i => !i.Equals(Guid.Empty)).ToArray();
 
             return GetInstantMixFromGenreIds(genreIds, user, dtoOptions);
         }
 
-        public List<BaseItem> GetInstantMixFromGenreIds(IEnumerable<string> genreIds, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromGenreIds(Guid[] genreIds, User user, DtoOptions dtoOptions)
         {
             return _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
@@ -89,7 +89,7 @@ namespace Emby.Server.Implementations.Library
 
                 Limit = 200,
 
-                OrderBy = new [] { new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending) },
+                OrderBy = new [] { new ValueTuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending) },
 
                 DtoOptions = dtoOptions
 
@@ -101,7 +101,7 @@ namespace Emby.Server.Implementations.Library
             var genre = item as MusicGenre;
             if (genre != null)
             {
-                return GetInstantMixFromGenreIds(new[] { item.Id.ToString("N") }, user, dtoOptions);
+                return GetInstantMixFromGenreIds(new[] { item.Id }, user, dtoOptions);
             }
 
             var playlist = item as Playlist;

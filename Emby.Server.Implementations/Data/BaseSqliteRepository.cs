@@ -189,6 +189,26 @@ namespace Emby.Server.Implementations.Data
             return sql.Select(connection.PrepareStatement).ToList();
         }
 
+        protected bool TableExists(ManagedConnection connection, string name)
+        {
+            return connection.RunInTransaction(db =>
+            {
+                using (var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master"))
+                {
+                    foreach (var row in statement.ExecuteQuery())
+                    {
+                        if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+
+            }, ReadTransactionMode);
+        }
+
         protected void RunDefaultInitialization(ManagedConnection db)
         {
             var queries = new List<string>
@@ -264,7 +284,6 @@ namespace Emby.Server.Implementations.Data
         {
             _disposed = true;
             Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         private readonly object _disposeLock = new object();

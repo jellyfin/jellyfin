@@ -102,8 +102,6 @@ namespace Emby.Server.Implementations.Configuration
             }
 
             ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = metadataPath;
-
-            ((ServerApplicationPaths)ApplicationPaths).ItemsByNamePath = ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath;
         }
 
         private string GetInternalMetadataPath()
@@ -234,6 +232,18 @@ namespace Emby.Server.Implementations.Configuration
             if (!config.EnableNewOmdbSupport)
             {
                 config.EnableNewOmdbSupport = true;
+                changed = true;
+            }
+
+            if (!config.CameraUploadUpgraded)
+            {
+                config.CameraUploadUpgraded = true;
+                changed = true;
+            }
+
+            if (!config.CollectionsUpgraded)
+            {
+                config.CollectionsUpgraded = true;
                 changed = true;
             }
 

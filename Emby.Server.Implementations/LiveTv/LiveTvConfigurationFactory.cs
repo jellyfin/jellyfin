@@ -8,7 +8,7 @@ namespace Emby.Server.Implementations.LiveTv
     {
         public IEnumerable<ConfigurationStore> GetConfigurations()
         {
-            return new List<ConfigurationStore>
+            return new ConfigurationStore[]
             {
                 new ConfigurationStore
                 {

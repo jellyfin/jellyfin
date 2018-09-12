@@ -1,15 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Emby.Server.CinemaMode;
+using System.Threading;
+using System.Threading.Tasks;
+//using Emby.Server.CinemaMode;
 using Emby.Server.Connect;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.HttpServer;
+using Emby.Server.Implementations.Net;
 using Emby.Server.Sync;
 using MediaBrowser.Controller.Connect;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 
 namespace MediaBrowser.Server.Mono
@@ -34,10 +40,10 @@ namespace MediaBrowser.Server.Mono
             return new ConnectManager();
         }
 
-        protected override ISyncManager CreateSyncManager()
-        {
-            return new SyncManager();
-        }
+        //protected override ISyncManager CreateSyncManager()
+        //{
+        //    return new SyncManager();
+        //}
 
         protected override void RestartInternal()
         {
@@ -49,19 +55,8 @@ namespace MediaBrowser.Server.Mono
             var list = new List<Assembly>();
 
             list.Add(GetType().Assembly);
-            list.AddRange(GetLinuxAssemblies());
-
-            return list;
-        }
-
-        private IEnumerable<Assembly> GetLinuxAssemblies()
-        {
-            var list = new List<Assembly>();
-
-            list.Add(typeof(DefaultIntroProvider).Assembly);
             list.Add(typeof(ConnectManager).Assembly);
-            list.Add(typeof(SyncManager).Assembly);
-            list.Add(typeof(LinuxIsoManager).Assembly);
+            list.Add(typeof(Emby.Server.Sync.SyncManager).Assembly);
 
             return list;
         }
@@ -96,5 +91,20 @@ namespace MediaBrowser.Server.Mono
 
             return new Version(1, 0);
         }
+
+        protected override IHttpListener CreateHttpListener()
+        {
+            return new EmbyServer.SocketSharp.WebSocketSharpListener(LogManager.GetLogger("HttpServer"),
+                Certificate,
+                StreamHelper,
+                TextEncoding,
+                NetworkManager,
+                SocketFactory,
+                CryptographyProvider,
+                SupportsDualModeSockets,
+                FileSystemManager,
+                EnvironmentInfo);
+        }
+
     }
 }

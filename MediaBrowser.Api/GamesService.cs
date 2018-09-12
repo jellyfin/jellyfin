@@ -17,14 +17,6 @@ using MediaBrowser.Model.Extensions;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class GetSimilarGames
-    /// </summary>
-    [Route("/Games/{Id}/Similar", "GET", Summary = "Finds games similar to a given game.")]
-    public class GetSimilarGames : BaseGetSimilarItemsFromItem
-    {
-    }
-
-    /// <summary>
     /// Class GetGameSystemSummaries
     /// </summary>
     [Route("/Games/SystemSummaries", "GET", Summary = "Finds games similar to a given game.")]
@@ -35,7 +27,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
     }
 
     /// <summary>
@@ -109,10 +101,8 @@ namespace MediaBrowser.Api
                 .Select(i => GetSummary(i, user))
                 .ToArray();
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
-
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         /// <summary>
         /// Gets the summary.
@@ -150,52 +140,6 @@ namespace MediaBrowser.Api
                 .ToArray();
 
             return summary;
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetSimilarGames request)
-        {
-            var result = GetSimilarItemsResult(request);
-
-            return ToOptimizedSerializedResultUsingCache(result);
-        }
-
-        private QueryResult<BaseItemDto> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request)
-        {
-            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
-
-            var item = string.IsNullOrEmpty(request.Id) ?
-                (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
-                _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
-
-            var dtoOptions = GetDtoOptions(_authContext, request);
-
-            var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
-            {
-                Limit = request.Limit,
-                IncludeItemTypes = new[]
-                {
-                        typeof(Game).Name
-                },
-                SimilarTo = item,
-                DtoOptions = dtoOptions
-
-            });
-
-            var returnList = _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user);
-
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = returnList,
-
-                TotalRecordCount = itemsResult.Count
-            };
-
-            return result;
         }
     }
 }

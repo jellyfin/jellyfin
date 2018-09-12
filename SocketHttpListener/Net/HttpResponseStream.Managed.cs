@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 
 namespace SocketHttpListener.Net
@@ -50,18 +49,18 @@ namespace SocketHttpListener.Net
         private bool _ignore_errors;
         private bool _trailer_sent;
         private Stream _stream;
-        private readonly IMemoryStreamFactory _memoryStreamFactory;
+        private readonly IStreamHelper _streamHelper;
         private readonly Socket _socket;
         private readonly bool _supportsDirectSocketAccess;
         private readonly IEnvironmentInfo _environment;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
 
-        internal HttpResponseStream(Stream stream, HttpListenerResponse response, bool ignore_errors, IMemoryStreamFactory memoryStreamFactory, Socket socket, bool supportsDirectSocketAccess, IEnvironmentInfo environment, IFileSystem fileSystem, ILogger logger)
+        internal HttpResponseStream(Stream stream, HttpListenerResponse response, bool ignore_errors, IStreamHelper streamHelper, Socket socket, bool supportsDirectSocketAccess, IEnvironmentInfo environment, IFileSystem fileSystem, ILogger logger)
         {
             _response = response;
             _ignore_errors = ignore_errors;
-            _memoryStreamFactory = memoryStreamFactory;
+            _streamHelper = streamHelper;
             _socket = socket;
             _supportsDirectSocketAccess = supportsDirectSocketAccess;
             _environment = environment;
@@ -136,7 +135,7 @@ namespace SocketHttpListener.Net
             //{
             //    if (_response.HeadersSent)
             //        return null;
-            //    var ms = _memoryStreamFactory.CreateNew();
+            //    var ms = CreateNew();
             //    _response.SendHeaders(closing, ms);
             //    return ms;
             //}
@@ -287,62 +286,7 @@ namespace SocketHttpListener.Net
 
         public Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
         {
-            //if (_supportsDirectSocketAccess && offset == 0 && count == 0 && !_response.SendChunked)
-            //{
-            //    return TransmitFileOverSocket(path, offset, count, fileShareMode, cancellationToken);
-            //}
-
             return TransmitFileManaged(path, offset, count, fileShareMode, cancellationToken);
-        }
-
-        private readonly byte[] _emptyBuffer = new byte[] { };
-        private Task TransmitFileOverSocket(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
-        {
-            var ms = GetHeaders(false);
-
-            byte[] preBuffer;
-            if (ms != null)
-            {
-                using (var msCopy = new MemoryStream())
-                {
-                    ms.CopyTo(msCopy);
-                    preBuffer = msCopy.ToArray();
-                }
-            }
-            else
-            {
-                return TransmitFileManaged(path, offset, count, fileShareMode, cancellationToken);
-            }
-
-            _stream.Flush();
-
-            _logger.Info("Socket sending file {0}", path);
-
-            var taskCompletion = new TaskCompletionSource<bool>();
-
-            Action<IAsyncResult> callback = callbackResult =>
-            {
-                try
-                {
-                    _socket.EndSendFile(callbackResult);
-                    taskCompletion.TrySetResult(true);
-                }
-                catch (Exception ex)
-                {
-                    taskCompletion.TrySetException(ex);
-                }
-            };
-
-            var result = _socket.BeginSendFile(path, preBuffer, _emptyBuffer, TransmitFileOptions.UseDefaultWorkerThread, new AsyncCallback(callback), null);
-
-            if (result.CompletedSynchronously)
-            {
-                callback(result);
-            }
-
-            cancellationToken.Register(() => taskCompletion.TrySetCanceled());
-
-            return taskCompletion.Task;
         }
 
         const int StreamCopyToBufferSize = 81920;
@@ -375,71 +319,11 @@ namespace SocketHttpListener.Net
 
                 if (count > 0)
                 {
-                    if (allowAsync)
-                    {
-                        await CopyToInternalAsync(fs, targetStream, count, cancellationToken).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        await CopyToInternalAsyncWithSyncRead(fs, targetStream, count, cancellationToken).ConfigureAwait(false);
-                    }
+                    await _streamHelper.CopyToAsync(fs, targetStream, count, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    if (allowAsync)
-                    {
-                        await fs.CopyToAsync(targetStream, StreamCopyToBufferSize, cancellationToken).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        fs.CopyTo(targetStream, StreamCopyToBufferSize);
-                    }
-                }
-            }
-        }
-
-        private static async Task CopyToInternalAsyncWithSyncRead(Stream source, Stream destination, long copyLength, CancellationToken cancellationToken)
-        {
-            var array = new byte[StreamCopyToBufferSize];
-            int bytesRead;
-
-            while ((bytesRead = source.Read(array, 0, array.Length)) != 0)
-            {
-                var bytesToWrite = Math.Min(bytesRead, copyLength);
-
-                if (bytesToWrite > 0)
-                {
-                    await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToWrite), cancellationToken).ConfigureAwait(false);
-                }
-
-                copyLength -= bytesToWrite;
-
-                if (copyLength <= 0)
-                {
-                    break;
-                }
-            }
-        }
-
-        private static async Task CopyToInternalAsync(Stream source, Stream destination, long copyLength, CancellationToken cancellationToken)
-        {
-            var array = new byte[StreamCopyToBufferSize];
-            int bytesRead;
-
-            while ((bytesRead = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
-            {
-                var bytesToWrite = Math.Min(bytesRead, copyLength);
-
-                if (bytesToWrite > 0)
-                {
-                    await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToWrite), cancellationToken).ConfigureAwait(false);
-                }
-
-                copyLength -= bytesToWrite;
-
-                if (copyLength <= 0)
-                {
-                    break;
+                    await fs.CopyToAsync(targetStream, StreamCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                 }
             }
         }

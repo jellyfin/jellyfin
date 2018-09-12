@@ -101,13 +101,15 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
             if (LibraryManager.IsAudioFile(args.Path, libraryOptions))
             {
-                if (string.Equals(Path.GetExtension(args.Path), ".cue", StringComparison.OrdinalIgnoreCase))
+                var extension = Path.GetExtension(args.Path);
+
+                if (string.Equals(extension, ".cue", StringComparison.OrdinalIgnoreCase))
                 {
                     // if audio file exists of same name, return null
                     return null;
                 }
 
-                var isMixedCollectionType = string.IsNullOrWhiteSpace(collectionType);
+                var isMixedCollectionType = string.IsNullOrEmpty(collectionType);
 
                 // For conflicting extensions, give priority to videos
                 if (isMixedCollectionType && LibraryManager.IsVideoFile(args.Path, libraryOptions))
@@ -134,6 +136,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
                 if (item != null)
                 {
+                    item.IsShortcut = string.Equals(extension, ".strm", StringComparison.OrdinalIgnoreCase);
+
                     item.IsInMixedFolder = true;
                 }
 

@@ -81,33 +81,27 @@ namespace Emby.Server.Implementations.Library.Validators
                 progress.Report(percent);
             }
 
-            names = names.Select(i => i.RemoveDiacritics()).DistinctNames().ToList();
-
-            var artistEntities = _libraryManager.GetItemList(new InternalItemsQuery
+            var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(MusicArtist).Name }
-
+                IncludeItemTypes = new[] { typeof(MusicArtist).Name },
+                IsDeadArtist = true,
+                IsLocked = false
             }).Cast<MusicArtist>().ToList();
 
-            foreach (var artist in artistEntities)
+            foreach (var item in deadEntities)
             {
-                if (!artist.IsAccessedByName)
+                if (!item.IsAccessedByName)
                 {
                     continue;
                 }
+                
+                _logger.Info("Deleting dead {2} {0} {1}.", item.Id.ToString("N"), item.Name, item.GetType().Name);
 
-                var name = (artist.Name ?? string.Empty).RemoveDiacritics();
-
-                if (!names.Contains(name, StringComparer.OrdinalIgnoreCase))
+                _libraryManager.DeleteItem(item, new DeleteOptions
                 {
-                    _logger.Info("Deleting dead artist {0} {1}.", artist.Id.ToString("N"), artist.Name);
+                    DeleteFileLocation = false
 
-                    await _libraryManager.DeleteItem(artist, new DeleteOptions
-                    {
-                        DeleteFileLocation = false
-
-                    }).ConfigureAwait(false);
-                }
+                }, false);
             }
 
             progress.Report(100);

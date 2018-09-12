@@ -26,13 +26,38 @@ namespace Emby.Dlna.Ssdp
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
 
-        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscovered;
+        private event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscoveredInternal;
+
+        private int _listenerCount;
+        private object _syncLock = new object();
+        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscovered
+        {
+            add
+            {
+                lock (_syncLock)
+                {
+                    _listenerCount++;
+                    DeviceDiscoveredInternal += value;
+                }
+                StartInternal();
+            }
+            remove
+            {
+                lock (_syncLock)
+                {
+                    _listenerCount--;
+                    DeviceDiscoveredInternal -= value;
+                }
+            }
+        }
+
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
 
         private SsdpDeviceLocator _deviceLocator;
 
         private readonly ITimerFactory _timerFactory;
         private readonly ISocketFactory _socketFactory;
+        private ISsdpCommunicationsServer _commsServer;
 
         public DeviceDiscovery(ILogger logger, IServerConfigurationManager config, ISocketFactory socketFactory, ITimerFactory timerFactory)
         {
@@ -45,21 +70,34 @@ namespace Emby.Dlna.Ssdp
         // Call this method from somewhere in your code to start the search.
         public void Start(ISsdpCommunicationsServer communicationsServer)
         {
-            _deviceLocator = new SsdpDeviceLocator(communicationsServer, _timerFactory);
+            _commsServer = communicationsServer;
 
-            // (Optional) Set the filter so we only see notifications for devices we care about 
-            // (can be any search target value i.e device type, uuid value etc - any value that appears in the 
-            // DiscoverdSsdpDevice.NotificationType property or that is used with the searchTarget parameter of the Search method).
-            //_DeviceLocator.NotificationFilter = "upnp:rootdevice";
+            StartInternal();
+        }
 
-            // Connect our event handler so we process devices as they are found
-            _deviceLocator.DeviceAvailable += deviceLocator_DeviceAvailable;
-            _deviceLocator.DeviceUnavailable += _DeviceLocator_DeviceUnavailable;
+        private void StartInternal()
+        {
+            lock (_syncLock)
+            {
+                if (_listenerCount > 0 && _deviceLocator == null)
+                {
+                    _deviceLocator = new SsdpDeviceLocator(_commsServer, _timerFactory);
 
-            var dueTime = TimeSpan.FromSeconds(5);
-            var interval = TimeSpan.FromSeconds(_config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds);
+                    // (Optional) Set the filter so we only see notifications for devices we care about 
+                    // (can be any search target value i.e device type, uuid value etc - any value that appears in the 
+                    // DiscoverdSsdpDevice.NotificationType property or that is used with the searchTarget parameter of the Search method).
+                    //_DeviceLocator.NotificationFilter = "upnp:rootdevice";
 
-            _deviceLocator.RestartBroadcastTimer(dueTime, interval);
+                    // Connect our event handler so we process devices as they are found
+                    _deviceLocator.DeviceAvailable += deviceLocator_DeviceAvailable;
+                    _deviceLocator.DeviceUnavailable += _DeviceLocator_DeviceUnavailable;
+
+                    var dueTime = TimeSpan.FromSeconds(5);
+                    var interval = TimeSpan.FromSeconds(_config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds);
+
+                    _deviceLocator.RestartBroadcastTimer(dueTime, interval);
+                }
+            }
         }
 
         // Process each found device in the event handler
@@ -81,7 +119,7 @@ namespace Emby.Dlna.Ssdp
                 }
             };
 
-            EventHelper.FireEventIfNotNull(DeviceDiscovered, this, args, _logger);
+            EventHelper.FireEventIfNotNull(DeviceDiscoveredInternal, this, args, _logger);
         }
 
         private void _DeviceLocator_DeviceUnavailable(object sender, DeviceUnavailableEventArgs e)

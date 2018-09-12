@@ -22,7 +22,7 @@ using MediaBrowser.Model.Net;
 namespace Emby.Server.Implementations.Images
 {
     public abstract class BaseDynamicImageProvider<T> : IHasItemChangeMonitor, IForcedProvider, ICustomMetadataProvider<T>, IHasOrder
-        where T : IHasMetadata
+        where T : BaseItem
     {
         protected IFileSystem FileSystem { get; private set; }
         protected IProviderManager ProviderManager { get; private set; }
@@ -37,12 +37,12 @@ namespace Emby.Server.Implementations.Images
             ImageProcessor = imageProcessor;
         }
 
-        protected virtual bool Supports(IHasMetadata item)
+        protected virtual bool Supports(BaseItem item)
         {
             return true;
         }
 
-        public virtual ImageType[] GetSupportedImages(IHasMetadata item)
+        public virtual ImageType[] GetSupportedImages(BaseItem item)
         {
             return new ImageType[]
             {
@@ -75,7 +75,7 @@ namespace Emby.Server.Implementations.Images
             return updateType;
         }
 
-        protected async Task<ItemUpdateType> FetchAsync(IHasMetadata item, ImageType imageType, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        protected Task<ItemUpdateType> FetchAsync(BaseItem item, ImageType imageType, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var image = item.GetImageInfo(imageType, 0);
 
@@ -83,21 +83,21 @@ namespace Emby.Server.Implementations.Images
             {
                 if (!image.IsLocalFile)
                 {
-                    return ItemUpdateType.None;
+                    return Task.FromResult(ItemUpdateType.None);
                 }
 
                 if (!FileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path))
                 {
-                    return ItemUpdateType.None;
+                    return Task.FromResult(ItemUpdateType.None);
                 }
             }
 
             var items = GetItemsWithImages(item);
 
-            return await FetchToFileInternal(item, items, imageType, cancellationToken).ConfigureAwait(false);
+            return FetchToFileInternal(item, items, imageType, cancellationToken);
         }
 
-        protected async Task<ItemUpdateType> FetchToFileInternal(IHasMetadata item,
+        protected async Task<ItemUpdateType> FetchToFileInternal(BaseItem item,
             List<BaseItem> itemsWithImages,
             ImageType imageType,
             CancellationToken cancellationToken)
@@ -106,7 +106,7 @@ namespace Emby.Server.Implementations.Images
             FileSystem.CreateDirectory(FileSystem.GetDirectoryName(outputPathWithoutExtension));
             string outputPath = CreateImage(item, itemsWithImages, outputPathWithoutExtension, imageType, 0);
 
-            if (string.IsNullOrWhiteSpace(outputPath))
+            if (string.IsNullOrEmpty(outputPath))
             {
                 return ItemUpdateType.None;
             }
@@ -123,14 +123,14 @@ namespace Emby.Server.Implementations.Images
             return ItemUpdateType.ImageUpdate;
         }
 
-        protected abstract List<BaseItem> GetItemsWithImages(IHasMetadata item);
+        protected abstract List<BaseItem> GetItemsWithImages(BaseItem item);
 
-        protected string CreateThumbCollage(IHasMetadata primaryItem, List<BaseItem> items, string outputPath)
+        protected string CreateThumbCollage(BaseItem primaryItem, List<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 640, 360);
         }
 
-        protected virtual IEnumerable<string> GetStripCollageImagePaths(IHasMetadata primaryItem, IEnumerable<BaseItem> items)
+        protected virtual IEnumerable<string> GetStripCollageImagePaths(BaseItem primaryItem, IEnumerable<BaseItem> items)
         {
             return items
                 .Select(i =>
@@ -149,25 +149,25 @@ namespace Emby.Server.Implementations.Images
                     }
                     return null;
                 })
-                .Where(i => !string.IsNullOrWhiteSpace(i));
+                .Where(i => !string.IsNullOrEmpty(i));
         }
 
-        protected string CreatePosterCollage(IHasMetadata primaryItem, List<BaseItem> items, string outputPath)
+        protected string CreatePosterCollage(BaseItem primaryItem, List<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 400, 600);
         }
 
-        protected string CreateSquareCollage(IHasMetadata primaryItem, List<BaseItem> items, string outputPath)
+        protected string CreateSquareCollage(BaseItem primaryItem, List<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 600, 600);
         }
 
-        protected string CreateThumbCollage(IHasMetadata primaryItem, List<BaseItem> items, string outputPath, int width, int height)
+        protected string CreateThumbCollage(BaseItem primaryItem, List<BaseItem> items, string outputPath, int width, int height)
         {
             return CreateCollage(primaryItem, items, outputPath, width, height);
         }
 
-        private string CreateCollage(IHasMetadata primaryItem, List<BaseItem> items, string outputPath, int width, int height)
+        private string CreateCollage(BaseItem primaryItem, List<BaseItem> items, string outputPath, int width, int height)
         {
             FileSystem.CreateDirectory(FileSystem.GetDirectoryName(outputPath));
 
@@ -198,7 +198,7 @@ namespace Emby.Server.Implementations.Images
             get { return "Dynamic Image Provider"; }
         }
 
-        protected virtual string CreateImage(IHasMetadata item,
+        protected virtual string CreateImage(BaseItem item,
             List<BaseItem> itemsWithImages,
             string outputPathWithoutExtension,
             ImageType imageType,
@@ -237,7 +237,7 @@ namespace Emby.Server.Implementations.Images
             get { return 7; }
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryServicee)
+        public bool HasChanged(BaseItem item, IDirectoryService directoryServicee)
         {
             if (!Supports(item))
             {
@@ -258,7 +258,7 @@ namespace Emby.Server.Implementations.Images
             return false;
         }
 
-        protected bool HasChanged(IHasMetadata item, ImageType type)
+        protected bool HasChanged(BaseItem item, ImageType type)
         {
             var image = item.GetImageInfo(type, 0);
 
@@ -283,7 +283,7 @@ namespace Emby.Server.Implementations.Images
             return true;
         }
 
-        protected virtual bool HasChangedByDate(IHasMetadata item, ItemImageInfo image)
+        protected virtual bool HasChangedByDate(BaseItem item, ItemImageInfo image)
         {
             var age = DateTime.UtcNow - image.DateModified;
             if (age.TotalDays <= MaxImageAgeDays)
@@ -291,19 +291,6 @@ namespace Emby.Server.Implementations.Images
                 return false;
             }
             return true;
-        }
-
-        protected List<BaseItem> GetFinalItems(IEnumerable<BaseItem> items)
-        {
-            return GetFinalItems(items, 4);
-        }
-
-        protected virtual List<BaseItem> GetFinalItems(IEnumerable<BaseItem> items, int limit)
-        {
-            return items
-                .OrderBy(i => Guid.NewGuid())
-                .Take(limit)
-                .ToList();
         }
 
         public int Order
@@ -322,7 +309,7 @@ namespace Emby.Server.Implementations.Images
                 .Select(i => i.GetImagePath(imageType))
                 .FirstOrDefault();
 
-            if (string.IsNullOrWhiteSpace(image))
+            if (string.IsNullOrEmpty(image))
             {
                 return null;
             }

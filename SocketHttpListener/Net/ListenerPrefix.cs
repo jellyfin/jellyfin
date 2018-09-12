@@ -4,50 +4,50 @@ using MediaBrowser.Model.Net;
 
 namespace SocketHttpListener.Net
 {
-    sealed class ListenerPrefix
+    internal sealed class ListenerPrefix
     {
-        string original;
-        string host;
-        ushort port;
-        string path;
-        bool secure;
-        IPAddress[] addresses;
-        public HttpListener Listener;
+        private string _original;
+        private string _host;
+        private ushort _port;
+        private string _path;
+        private bool _secure;
+        private IPAddress[] _addresses;
+        internal HttpListener _listener;
 
         public ListenerPrefix(string prefix)
         {
-            this.original = prefix;
+            _original = prefix;
             Parse(prefix);
         }
 
         public override string ToString()
         {
-            return original;
+            return _original;
         }
 
         public IPAddress[] Addresses
         {
-            get { return addresses; }
-            set { addresses = value; }
+            get { return _addresses; }
+            set { _addresses = value; }
         }
         public bool Secure
         {
-            get { return secure; }
+            get { return _secure; }
         }
 
         public string Host
         {
-            get { return host; }
+            get { return _host; }
         }
 
         public int Port
         {
-            get { return (int)port; }
+            get { return _port; }
         }
 
         public string Path
         {
-            get { return path; }
+            get { return _path; }
         }
 
         // Equals and GetHashCode are required to detect duplicates in HttpListenerPrefixCollection.
@@ -57,92 +57,46 @@ namespace SocketHttpListener.Net
             if (other == null)
                 return false;
 
-            return (original == other.original);
+            return (_original == other._original);
         }
 
         public override int GetHashCode()
         {
-            return original.GetHashCode();
+            return _original.GetHashCode();
         }
 
-        void Parse(string uri)
+        private void Parse(string uri)
         {
             ushort default_port = 80;
             if (uri.StartsWith("https://"))
             {
                 default_port = 443;
-                secure = true;
+                _secure = true;
             }
 
             int length = uri.Length;
             int start_host = uri.IndexOf(':') + 3;
             if (start_host >= length)
-                throw new ArgumentException("No host specified.");
+                throw new ArgumentException("net_listener_host");
 
             int colon = uri.IndexOf(':', start_host, length - start_host);
             int root;
             if (colon > 0)
             {
-                host = uri.Substring(start_host, colon - start_host);
+                _host = uri.Substring(start_host, colon - start_host);
                 root = uri.IndexOf('/', colon, length - colon);
-                port = (ushort)Int32.Parse(uri.Substring(colon + 1, root - colon - 1));
-                path = uri.Substring(root);
+                _port = (ushort)int.Parse(uri.Substring(colon + 1, root - colon - 1));
+                _path = uri.Substring(root);
             }
             else
             {
                 root = uri.IndexOf('/', start_host, length - start_host);
-                host = uri.Substring(start_host, root - start_host);
-                port = default_port;
-                path = uri.Substring(root);
+                _host = uri.Substring(start_host, root - start_host);
+                _port = default_port;
+                _path = uri.Substring(root);
             }
-            if (path.Length != 1)
-                path = path.Substring(0, path.Length - 1);
-        }
-
-        public static void CheckUri(string uri)
-        {
-            if (uri == null)
-                throw new ArgumentNullException("uriPrefix");
-
-            if (!uri.StartsWith("http://") && !uri.StartsWith("https://"))
-                throw new ArgumentException("Only 'http' and 'https' schemes are supported.");
-
-            int length = uri.Length;
-            int start_host = uri.IndexOf(':') + 3;
-            if (start_host >= length)
-                throw new ArgumentException("No host specified.");
-
-            int colon = uri.IndexOf(':', start_host, length - start_host);
-            if (start_host == colon)
-                throw new ArgumentException("No host specified.");
-
-            int root;
-            if (colon > 0)
-            {
-                root = uri.IndexOf('/', colon, length - colon);
-                if (root == -1)
-                    throw new ArgumentException("No path specified.");
-
-                try
-                {
-                    int p = Int32.Parse(uri.Substring(colon + 1, root - colon - 1));
-                    if (p <= 0 || p >= 65536)
-                        throw new Exception();
-                }
-                catch
-                {
-                    throw new ArgumentException("Invalid port.");
-                }
-            }
-            else
-            {
-                root = uri.IndexOf('/', start_host, length - start_host);
-                if (root == -1)
-                    throw new ArgumentException("No path specified.");
-            }
-
-            if (uri[uri.Length - 1] != '/')
-                throw new ArgumentException("The prefix must end with '/'");
+            if (_path.Length != 1)
+                _path = _path.Substring(0, _path.Length - 1);
         }
     }
 }

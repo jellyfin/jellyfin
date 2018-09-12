@@ -3,7 +3,7 @@ using System.Xml.Serialization;
 
 namespace Emby.Dlna.Profiles
 {
-    [XmlRoot("Profile")]
+    [System.Xml.Serialization.XmlRoot("Profile")]
     public class SonyBlurayPlayerProfile : DefaultProfile
     {
         public SonyBlurayPlayerProfile()

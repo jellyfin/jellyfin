@@ -84,7 +84,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrEmpty(result.strGenre))
             {
-                item.Genres = new List<string> { result.strGenre };
+                item.Genres = new [] { result.strGenre };
             }
 
             item.SetProviderId(MetadataProviders.AudioDbArtist, result.idArtist);
@@ -133,7 +133,6 @@ namespace MediaBrowser.Providers.Music
             get { return "TheAudioDB"; }
         }
 
-        private readonly Task _cachedTask = Task.FromResult(true);
         internal Task EnsureInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
         {
             var xmlPath = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
@@ -142,9 +141,9 @@ namespace MediaBrowser.Providers.Music
 
             if (fileInfo.Exists)
             {
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 3)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
                 {
-                    return _cachedTask;
+                    return Task.CompletedTask;
                 }
             }
 

@@ -28,7 +28,7 @@ namespace MediaBrowser.Providers.Music
         public static AudioDbArtistProvider Current;
 
         private const string ApiKey = "49jhsf8248yfahka89724011";
-        public const string BaseUrl = "http://www.theaudiodb.com/api/v1/json/" + ApiKey;
+        public const string BaseUrl = "https://www.theaudiodb.com/api/v1/json/" + ApiKey;
 
         public AudioDbArtistProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClient httpClient, IJsonSerializer json)
         {
@@ -71,11 +71,11 @@ namespace MediaBrowser.Providers.Music
 
         private void ProcessResult(MusicArtist item, Artist result, string preferredLanguage)
         {
-            item.HomePageUrl = result.strWebsite;
+            //item.HomePageUrl = result.strWebsite;
 
             if (!string.IsNullOrEmpty(result.strGenre))
             {
-                item.Genres = new List<string> { result.strGenre };
+                item.Genres = new[] { result.strGenre };
             }
 
             item.SetProviderId(MetadataProviders.AudioDbArtist, result.idArtist);
@@ -121,7 +121,6 @@ namespace MediaBrowser.Providers.Music
             get { return "TheAudioDB"; }
         }
 
-        private readonly Task _cachedTask = Task.FromResult(true);
         internal Task EnsureArtistInfo(string musicBrainzId, CancellationToken cancellationToken)
         {
             var xmlPath = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
@@ -130,9 +129,9 @@ namespace MediaBrowser.Providers.Music
 
             if (fileInfo.Exists)
             {
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
                 {
-                    return _cachedTask;
+                    return Task.CompletedTask;
                 }
             }
 

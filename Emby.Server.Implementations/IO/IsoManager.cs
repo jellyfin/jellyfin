@@ -70,7 +70,6 @@ namespace Emby.Server.Implementations.IO
             {
                 mounter.Dispose();
             }
-            GC.SuppressFinalize(this);
         }
     }
 }

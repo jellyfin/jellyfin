@@ -19,12 +19,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public SystemEvent SystemEvent { get; set; }
 
         /// <summary>
-        /// Gets the execution properties of this task.
+        /// Gets or sets the options of this task.
         /// </summary>
-        /// <value>
-        /// The execution properties of this task.
-        /// </value>
-        public TaskExecutionOptions TaskOptions { get; set; }
+        public TaskOptions TaskOptions { get; set; }
 
         private readonly ISystemEvents _systemEvents;
 
@@ -70,7 +67,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Occurs when [triggered].
         /// </summary>
-        public event EventHandler<GenericEventArgs<TaskExecutionOptions>> Triggered;
+        public event EventHandler<EventArgs> Triggered;
 
         /// <summary>
         /// Called when [triggered].
@@ -79,7 +76,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             if (Triggered != null)
             {
-                Triggered(this, new GenericEventArgs<TaskExecutionOptions>(TaskOptions));
+                Triggered(this, EventArgs.Empty);
             }
         }
     }

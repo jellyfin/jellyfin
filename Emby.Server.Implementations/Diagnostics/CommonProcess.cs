@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Diagnostics;
+using System.Threading;
 
 namespace Emby.Server.Implementations.Diagnostics
 {
@@ -48,8 +49,32 @@ namespace Emby.Server.Implementations.Diagnostics
             }
         }
 
+        private bool _hasExited;
+        private bool HasExited
+        {
+            get
+            {
+                if (_hasExited)
+                {
+                    return true;
+                }
+
+                try
+                {
+                    _hasExited = _process.HasExited;
+                }
+                catch (InvalidOperationException)
+                {
+                    _hasExited = true;
+                }
+
+                return _hasExited;
+            }
+        }
+
         private void _process_Exited(object sender, EventArgs e)
         {
+            _hasExited = true;
             if (Exited != null)
             {
                 Exited(this, e);
@@ -98,13 +123,33 @@ namespace Emby.Server.Implementations.Diagnostics
 
         public Task<bool> WaitForExitAsync(int timeMs)
         {
-            return Task.FromResult(_process.WaitForExit(timeMs));
+            //if (_process.WaitForExit(100))
+            //{
+            //    return Task.FromResult(true);
+            //}
+
+            //timeMs -= 100;
+            timeMs = Math.Max(0, timeMs);
+
+            var tcs = new TaskCompletionSource<bool>();
+
+            var cancellationToken = new CancellationTokenSource(timeMs).Token;
+
+            if (HasExited)
+            {
+                return Task.FromResult(true);
+            }
+
+            _process.Exited += (sender, args) => tcs.TrySetResult(true);
+
+            cancellationToken.Register(() => tcs.TrySetResult(HasExited));
+
+            return tcs.Task;
         }
 
         public void Dispose()
         {
             _process.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }

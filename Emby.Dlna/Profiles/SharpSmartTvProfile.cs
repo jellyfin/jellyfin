@@ -3,7 +3,7 @@ using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Profiles
 {
-    [XmlRoot("Profile")]
+    [System.Xml.Serialization.XmlRoot("Profile")]
     public class SharpSmartTvProfile : DefaultProfile
     {
         public SharpSmartTvProfile()

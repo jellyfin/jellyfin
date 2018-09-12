@@ -12,7 +12,7 @@ namespace Emby.Server.Implementations.Services
 {
     public static class ResponseHelper
     {
-        public static async Task WriteToResponse(IResponse response, IRequest request, object result, CancellationToken cancellationToken)
+        public static Task WriteToResponse(IResponse response, IRequest request, object result, CancellationToken cancellationToken)
         {
             if (result == null)
             {
@@ -22,7 +22,7 @@ namespace Emby.Server.Implementations.Services
                 }
 
                 response.SetContentLength(0);
-                return;
+                return Task.CompletedTask;
             }
 
             var httpResult = result as IHttpResult;
@@ -46,18 +46,6 @@ namespace Emby.Server.Implementations.Services
                 //    httpResult.ContentType = defaultContentType;
                 //}
                 //response.ContentType = httpResult.ContentType;
-
-                if (httpResult.Cookies != null)
-                {
-                    var httpRes = response as IHttpResponse;
-                    if (httpRes != null)
-                    {
-                        foreach (var cookie in httpResult.Cookies)
-                        {
-                            httpRes.SetCookie(cookie);
-                        }
-                    }
-                }
             }
 
             var responseOptions = result as IHasHeaders;
@@ -90,32 +78,26 @@ namespace Emby.Server.Implementations.Services
             var asyncStreamWriter = result as IAsyncStreamWriter;
             if (asyncStreamWriter != null)
             {
-                await asyncStreamWriter.WriteToAsync(response.OutputStream, cancellationToken).ConfigureAwait(false);
-                return;
+                return asyncStreamWriter.WriteToAsync(response.OutputStream, cancellationToken);
             }
 
             var streamWriter = result as IStreamWriter;
             if (streamWriter != null)
             {
                 streamWriter.WriteTo(response.OutputStream);
-                return;
+                return Task.CompletedTask;
             }
 
             var fileWriter = result as FileWriter;
             if (fileWriter != null)
             {
-                await fileWriter.WriteToAsync(response, cancellationToken).ConfigureAwait(false);
-                return;
+                return fileWriter.WriteToAsync(response, cancellationToken);
             }
 
             var stream = result as Stream;
             if (stream != null)
             {
-                using (stream)
-                {
-                    await stream.CopyToAsync(response.OutputStream).ConfigureAwait(false);
-                    return;
-                }
+                return CopyStream(stream, response.OutputStream);
             }
 
             var bytes = result as byte[];
@@ -126,9 +108,9 @@ namespace Emby.Server.Implementations.Services
 
                 if (bytes.Length > 0)
                 {
-                    await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
+                    return response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
                 }
-                return;
+                return Task.CompletedTask;
             }
 
             var responseText = result as string;
@@ -138,12 +120,20 @@ namespace Emby.Server.Implementations.Services
                 response.SetContentLength(bytes.Length);
                 if (bytes.Length > 0)
                 {
-                    await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
+                    return response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
                 }
-                return;
+                return Task.CompletedTask;
             }
 
-            await WriteObject(request, result, response).ConfigureAwait(false);
+            return WriteObject(request, result, response);
+        }
+
+        private static async Task CopyStream(Stream src, Stream dest)
+        {
+            using (src)
+            {
+                await src.CopyToAsync(dest).ConfigureAwait(false);
+            }
         }
 
         public static async Task WriteObject(IRequest request, object result, IResponse response)

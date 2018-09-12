@@ -58,11 +58,9 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
             progress.Report(0);
 
-            LogManager.ReloadLogger(ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging
+            return LogManager.ReloadLogger(ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging
                                         ? LogSeverity.Debug
-                                        : LogSeverity.Info);
-
-            return Task.FromResult(true);
+                                        : LogSeverity.Info, cancellationToken);
         }
 
         /// <summary>
@@ -71,7 +69,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <value>The name.</value>
         public string Name
         {
-            get { return "Start new log file"; }
+            get { return "Rotate log file"; }
         }
 
         public string Key { get; }
@@ -96,7 +94,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
         public bool IsHidden
         {
-            get { return true; }
+            get { return false; }
         }
 
         public bool IsEnabled

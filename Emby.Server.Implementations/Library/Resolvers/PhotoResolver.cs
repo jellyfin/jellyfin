@@ -94,7 +94,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
             "backdrop",
             "poster",
             "cover",
-            "logo"
+            "logo",
+            "default"
         };
 
         internal static bool IsImageFile(string path, IImageProcessor imageProcessor)

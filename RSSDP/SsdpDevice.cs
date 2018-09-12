@@ -25,8 +25,6 @@ namespace Rssdp
         private string _DeviceType;
         private string _DeviceTypeNamespace;
         private int _DeviceVersion;
-        private SsdpDevicePropertiesCollection _CustomProperties;
-        private CustomHttpHeadersCollection _CustomResponseHeaders;
 
         private IList<SsdpDevice> _Devices;
 
@@ -61,36 +59,23 @@ namespace Rssdp
             _DeviceType = SsdpConstants.UpnpDeviceTypeBasicDevice;
             _DeviceVersion = 1;
 
-            this.Icons = new List<SsdpDeviceIcon>();
             _Devices = new List<SsdpDevice>();
             this.Devices = new ReadOnlyCollection<SsdpDevice>(_Devices);
-            _CustomResponseHeaders = new CustomHttpHeadersCollection();
-            _CustomProperties = new SsdpDevicePropertiesCollection();
-        }
-
-        /// <summary>
-        /// Deserialisation constructor.
-        /// </summary>
-        /// <remarks><para>Uses the provided XML string and parent device properties to set the properties of the object. The XML provided must be a valid UPnP device description document.</para></remarks>
-        /// <param name="deviceDescriptionXml">A UPnP device description XML document.</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="deviceDescriptionXml"/> argument is null.</exception>
-        /// <exception cref="System.ArgumentException">Thrown if the <paramref name="deviceDescriptionXml"/> argument is empty.</exception>
-        protected SsdpDevice(string deviceDescriptionXml)
-            : this()
-        {
-            if (deviceDescriptionXml == null) throw new ArgumentNullException("deviceDescriptionXml");
-            if (deviceDescriptionXml.Length == 0) throw new ArgumentException("deviceDescriptionXml cannot be an empty string.", "deviceDescriptionXml");
-
-            using (var ms = new System.IO.MemoryStream(System.Text.UTF8Encoding.UTF8.GetBytes(deviceDescriptionXml)))
-            {
-                var reader = XmlReader.Create(ms);
-
-                LoadDeviceProperties(reader, this);
-            }
         }
 
         #endregion
 
+        public SsdpRootDevice ToRootDevice()
+        {
+            var device = this;
+
+            var rootDevice = device as SsdpRootDevice;
+            if (rootDevice == null)
+                rootDevice = ((SsdpEmbeddedDevice)device).RootDevice;
+
+            return rootDevice;
+        }
+        
         #region Public Properties
 
         #region UPnP Device Description Properties
@@ -269,15 +254,6 @@ namespace Rssdp
         #endregion
 
         /// <summary>
-        /// Returns a list of icons (images) that can be used to display this device. Optional, but recommended you provide at least one at 48x48 pixels.
-        /// </summary>
-        public IList<SsdpDeviceIcon> Icons
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
         /// Returns a read-only enumerable set of <see cref="SsdpDevice"/> objects representing children of this device. Child devices are optional.
         /// </summary>
         /// <seealso cref="AddDevice"/>
@@ -286,32 +262,6 @@ namespace Rssdp
         {
             get;
             private set;
-        }
-
-        /// <summary>
-        /// Returns a dictionary of <see cref="SsdpDeviceProperty"/> objects keyed by <see cref="SsdpDeviceProperty.FullName"/>. Each value represents a custom property in the device description document.
-        /// </summary>
-        public SsdpDevicePropertiesCollection CustomProperties
-        {
-            get
-            {
-                return _CustomProperties;
-            }
-        }
-
-        /// <summary>
-        /// Provides a list of additional information to provide about this device in search response and notification messages.
-        /// </summary>
-        /// <remarks>
-        /// <para>The headers included here are included in the (HTTP headers) for search response and alive notifications sent in relation to this device.</para>
-        /// <para>Only values specified directly on this <see cref="SsdpDevice"/> instance will be included, headers from ancestors are not automatically included.</para>
-        /// </remarks>
-        public CustomHttpHeadersCollection CustomResponseHeaders
-        {
-            get
-            {
-                return _CustomResponseHeaders;
-            }
         }
 
         #endregion
@@ -400,389 +350,6 @@ namespace Rssdp
             if (handlers != null)
                 handlers(this, new DeviceEventArgs(device));
         }
-
-        /// <summary>
-        /// Writes this device to the specified <see cref="System.Xml.XmlWriter"/> as a device node and it's content.
-        /// </summary>
-        /// <param name="writer">The <see cref="System.Xml.XmlWriter"/> to output to.</param>
-        /// <param name="device">The <see cref="SsdpDevice"/> to write out.</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="writer"/> or <paramref name="device"/> argument is null.</exception>
-        protected virtual void WriteDeviceDescriptionXml(XmlWriter writer, SsdpDevice device)
-        {
-            if (writer == null) throw new ArgumentNullException("writer");
-            if (device == null) throw new ArgumentNullException("device");
-
-            writer.WriteStartElement("device");
-
-            if (!String.IsNullOrEmpty(device.FullDeviceType))
-                WriteNodeIfNotEmpty(writer, "deviceType", device.FullDeviceType);
-
-            WriteNodeIfNotEmpty(writer, "friendlyName", device.FriendlyName);
-            WriteNodeIfNotEmpty(writer, "manufacturer", device.Manufacturer);
-            WriteNodeIfNotEmpty(writer, "manufacturerURL", device.ManufacturerUrl);
-            WriteNodeIfNotEmpty(writer, "modelDescription", device.ModelDescription);
-            WriteNodeIfNotEmpty(writer, "modelName", device.ModelName);
-            WriteNodeIfNotEmpty(writer, "modelNumber", device.ModelNumber);
-            WriteNodeIfNotEmpty(writer, "modelURL", device.ModelUrl);
-            WriteNodeIfNotEmpty(writer, "presentationURL", device.PresentationUrl);
-            WriteNodeIfNotEmpty(writer, "serialNumber", device.SerialNumber);
-            WriteNodeIfNotEmpty(writer, "UDN", device.Udn);
-            WriteNodeIfNotEmpty(writer, "UPC", device.Upc);
-
-            WriteCustomProperties(writer, device);
-            WriteIcons(writer, device);
-            WriteChildDevices(writer, device);
-
-            writer.WriteEndElement();
-        }
-
-        /// <summary>
-        /// Converts a string to a <see cref="Uri"/>, or returns null if the string provided is null.
-        /// </summary>
-        /// <param name="value">The string value to convert.</param>
-        /// <returns>A <see cref="Uri"/>.</returns>
-        protected static Uri StringToUri(string value)
-        {
-            if (!String.IsNullOrEmpty(value))
-                return new Uri(value, UriKind.RelativeOrAbsolute);
-
-            return null;
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        #region Serialisation Methods
-
-        private static void WriteCustomProperties(XmlWriter writer, SsdpDevice device)
-        {
-            foreach (var prop in device.CustomProperties)
-            {
-                writer.WriteElementString(prop.Namespace, prop.Name, SsdpConstants.SsdpDeviceDescriptionXmlNamespace, prop.Value);
-            }
-        }
-
-        private static void WriteIcons(XmlWriter writer, SsdpDevice device)
-        {
-            if (device.Icons.Count > 0)
-            {
-                writer.WriteStartElement("iconList");
-
-                foreach (var icon in device.Icons)
-                {
-                    writer.WriteStartElement("icon");
-
-                    writer.WriteElementString("mimetype", icon.MimeType);
-                    writer.WriteElementString("width", icon.Width.ToString());
-                    writer.WriteElementString("height", icon.Height.ToString());
-                    writer.WriteElementString("depth", icon.ColorDepth.ToString());
-                    writer.WriteElementString("url", icon.Url.ToString());
-
-                    writer.WriteEndElement();
-                }
-
-                writer.WriteEndElement();
-            }
-        }
-
-        private void WriteChildDevices(XmlWriter writer, SsdpDevice parentDevice)
-        {
-            if (parentDevice.Devices.Count > 0)
-            {
-                writer.WriteStartElement("deviceList");
-
-                foreach (var device in parentDevice.Devices)
-                {
-                    WriteDeviceDescriptionXml(writer, device);
-                }
-
-                writer.WriteEndElement();
-            }
-        }
-
-        private static void WriteNodeIfNotEmpty(XmlWriter writer, string nodeName, string value)
-        {
-            if (!String.IsNullOrEmpty(value))
-                writer.WriteElementString(nodeName, value);
-        }
-
-        private static void WriteNodeIfNotEmpty(XmlWriter writer, string nodeName, Uri value)
-        {
-            if (value != null)
-                writer.WriteElementString(nodeName, value.ToString());
-        }
-
-        #endregion
-
-        #region Deserialisation Methods
-
-        private void LoadDeviceProperties(XmlReader reader, SsdpDevice device)
-        {
-            ReadUntilDeviceNode(reader);
-
-            while (!reader.EOF)
-            {
-                if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "device")
-                {
-                    reader.Read();
-                    break;
-                }
-
-                if (!SetPropertyFromReader(reader, device))
-                    reader.Read();
-            }
-        }
-
-        private static void ReadUntilDeviceNode(XmlReader reader)
-        {
-            while (!reader.EOF && (reader.LocalName != "device" || reader.NodeType != XmlNodeType.Element))
-            {
-                reader.Read();
-            }
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "Yes, there is a large switch statement, not it's not really complex and doesn't really need to be rewritten at this point.")]
-        private bool SetPropertyFromReader(XmlReader reader, SsdpDevice device)
-        {
-            switch (reader.LocalName)
-            {
-                case "friendlyName":
-                    device.FriendlyName = reader.ReadElementContentAsString();
-                    break;
-
-                case "manufacturer":
-                    device.Manufacturer = reader.ReadElementContentAsString();
-                    break;
-
-                case "manufacturerURL":
-                    device.ManufacturerUrl = StringToUri(reader.ReadElementContentAsString());
-                    break;
-
-                case "modelDescription":
-                    device.ModelDescription = reader.ReadElementContentAsString();
-                    break;
-
-                case "modelName":
-                    device.ModelName = reader.ReadElementContentAsString();
-                    break;
-
-                case "modelNumber":
-                    device.ModelNumber = reader.ReadElementContentAsString();
-                    break;
-
-                case "modelURL":
-                    device.ModelUrl = StringToUri(reader.ReadElementContentAsString());
-                    break;
-
-                case "presentationURL":
-                    device.PresentationUrl = StringToUri(reader.ReadElementContentAsString());
-                    break;
-
-                case "serialNumber":
-                    device.SerialNumber = reader.ReadElementContentAsString();
-                    break;
-
-                case "UDN":
-                    device.Udn = reader.ReadElementContentAsString();
-                    SetUuidFromUdn(device);
-                    break;
-
-                case "UPC":
-                    device.Upc = reader.ReadElementContentAsString();
-                    break;
-
-                case "deviceType":
-                    SetDeviceTypePropertiesFromFullDeviceType(device, reader.ReadElementContentAsString());
-                    break;
-
-                case "iconList":
-                    reader.Read();
-                    LoadIcons(reader, device);
-                    break;
-
-                case "deviceList":
-                    reader.Read();
-                    LoadChildDevices(reader, device);
-                    break;
-
-                case "serviceList":
-                    reader.Skip();
-                    break;
-
-                default:
-                    if (reader.NodeType == XmlNodeType.Element && reader.Name != "device" && reader.Name != "icon")
-                    {
-                        AddCustomProperty(reader, device);
-                        break;
-                    }
-                    else
-                        return false;
-            }
-            return true;
-        }
-
-        private static void SetDeviceTypePropertiesFromFullDeviceType(SsdpDevice device, string value)
-        {
-            if (String.IsNullOrEmpty(value) || !value.Contains(":"))
-                device.DeviceType = value;
-            else
-            {
-                var parts = value.Split(':');
-                if (parts.Length == 5)
-                {
-                    int deviceVersion = 1;
-                    if (Int32.TryParse(parts[4], out deviceVersion))
-                    {
-                        device.DeviceTypeNamespace = parts[1];
-                        device.DeviceType = parts[3];
-                        device.DeviceVersion = deviceVersion;
-                    }
-                    else
-                        device.DeviceType = value;
-                }
-                else
-                    device.DeviceType = value;
-            }
-        }
-
-        private static void SetUuidFromUdn(SsdpDevice device)
-        {
-            if (device.Udn != null && device.Udn.StartsWith("uuid:", StringComparison.OrdinalIgnoreCase))
-                device.Uuid = device.Udn.Substring(5).Trim();
-            else
-                device.Uuid = device.Udn;
-        }
-
-        private static void LoadIcons(XmlReader reader, SsdpDevice device)
-        {
-            while (!reader.EOF)
-            {
-                while (!reader.EOF && reader.NodeType != XmlNodeType.Element)
-                {
-                    reader.Read();
-                }
-
-                if (reader.LocalName != "icon") break;
-
-                while (reader.Name == "icon")
-                {
-                    var icon = new SsdpDeviceIcon();
-                    LoadIconProperties(reader, icon);
-                    device.Icons.Add(icon);
-
-                    reader.Read();
-                }
-            }
-        }
-
-        private static void LoadIconProperties(XmlReader reader, SsdpDeviceIcon icon)
-        {
-            while (!reader.EOF)
-            {
-                if (reader.NodeType != XmlNodeType.Element)
-                {
-                    if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "icon") break;
-
-                    reader.Read();
-                    continue;
-                }
-
-                switch (reader.LocalName)
-                {
-                    case "depth":
-                        icon.ColorDepth = reader.ReadElementContentAsInt();
-                        break;
-
-                    case "height":
-                        icon.Height = reader.ReadElementContentAsInt();
-                        break;
-
-                    case "width":
-                        icon.Width = reader.ReadElementContentAsInt();
-                        break;
-
-                    case "mimetype":
-                        icon.MimeType = reader.ReadElementContentAsString();
-                        break;
-
-                    case "url":
-                        icon.Url = StringToUri(reader.ReadElementContentAsString());
-                        break;
-
-                }
-
-                reader.Read();
-            }
-        }
-
-        private void LoadChildDevices(XmlReader reader, SsdpDevice device)
-        {
-            while (!reader.EOF && reader.NodeType != XmlNodeType.Element)
-            {
-                reader.Read();
-            }
-
-            while (!reader.EOF)
-            {
-                while (!reader.EOF && reader.NodeType != XmlNodeType.Element)
-                {
-                    reader.Read();
-                }
-
-                if (reader.LocalName == "device")
-                {
-                    var childDevice = new SsdpEmbeddedDevice();
-                    LoadDeviceProperties(reader, childDevice);
-                    device.AddDevice(childDevice);
-                }
-                else
-                    break;
-            }
-        }
-
-        private static void AddCustomProperty(XmlReader reader, SsdpDevice device)
-        {
-            // If the property is an empty element, there is no value to read
-            // Advance the reader and return
-            if (reader.IsEmptyElement)
-            {
-                reader.Read();
-                return;
-            }
-
-            var newProp = new SsdpDeviceProperty() { Namespace = reader.Prefix, Name = reader.LocalName };
-            int depth = reader.Depth;
-            reader.Read();
-            while (reader.NodeType == XmlNodeType.Whitespace || reader.NodeType == XmlNodeType.Comment)
-            {
-                reader.Read();
-            }
-
-            if (reader.NodeType != XmlNodeType.CDATA && reader.NodeType != XmlNodeType.Text)
-            {
-                while (!reader.EOF && (reader.NodeType != XmlNodeType.EndElement || reader.Name != newProp.Name || reader.Prefix != newProp.Namespace || reader.Depth != depth))
-                {
-                    reader.Read();
-                }
-                if (!reader.EOF)
-                    reader.Read();
-                return;
-            }
-
-            newProp.Value = reader.Value;
-
-            // We don't support complex nested types or repeat/multi-value properties
-            if (!device.CustomProperties.Contains(newProp.FullName))
-                device.CustomProperties.Add(newProp);
-        }
-
-        #endregion
-
-        //private bool ChildDeviceExists(SsdpDevice device)
-        //{
-        //	return (from d in _Devices where device.Uuid == d.Uuid select d).Any();
-        //}
 
         #endregion
 

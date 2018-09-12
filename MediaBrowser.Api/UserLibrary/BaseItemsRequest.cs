@@ -58,6 +58,8 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "IsHD", Description = "Optional filter by items that are HD or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsHD { get; set; }
 
+        public bool? Is4K { get; set; }
+
         [ApiMember(Name = "LocationTypes", Description = "Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string LocationTypes { get; set; }
 
@@ -103,9 +105,7 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "HasTvdbId", Description = "Optional filter by items that have a tvdb id or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? HasTvdbId { get; set; }
 
-        [ApiMember(Name = "IsInBoxSet", Description = "Optional filter by items that are in boxsets, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public bool? IsInBoxSet { get; set; }
-
+        [ApiMember(Name = "ExcludeItemIds", Description = "Optional. If specified, results will be filtered by exxcluding item ids. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string ExcludeItemIds { get; set; }
 
         public bool EnableTotalRecordCount { get; set; }
@@ -130,6 +130,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value><c>true</c> if recursive; otherwise, <c>false</c>.</value>
         [ApiMember(Name = "Recursive", Description = "When searching within folders, this determines whether or not the search will be recursive. true/false", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool Recursive { get; set; }
+
+        public string SearchTerm { get; set; }
 
         /// <summary>
         /// Gets or sets the sort order.
@@ -277,6 +279,10 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "ArtistIds", Description = "Optional. If specified, results will be filtered based on artist. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string ArtistIds { get; set; }
 
+        public string AlbumArtistIds { get; set; }
+
+        public string ContributingArtistIds { get; set; }
+
         [ApiMember(Name = "Albums", Description = "Optional. If specified, results will be filtered based on album. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Albums { get; set; }
 
@@ -300,8 +306,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the min offical rating.
@@ -321,6 +327,12 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "CollapseBoxSetItems", Description = "Whether or not to hide items behind their boxsets.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? CollapseBoxSetItems { get; set; }
+
+        public int? MinWidth { get; set; }
+        public int? MinHeight { get; set; }
+        public int? MaxWidth { get; set; }
+        public int? MaxHeight { get; set; }
+
         /// <summary>
         /// Gets or sets the video formats.
         /// </summary>
@@ -369,11 +381,6 @@ namespace MediaBrowser.Api.UserLibrary
             return (IncludeItemTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        public string[] GetExcludeItemIds()
-        {
-            return (ExcludeItemIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-        }
-
         public string[] GetExcludeItemTypes()
         {
             return (ExcludeItemTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -389,34 +396,9 @@ namespace MediaBrowser.Api.UserLibrary
             return (Studios ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        public string[] GetArtistIds()
-        {
-            return (ArtistIds ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-        }
-
-        public string[] GetStudioIds()
-        {
-            return (StudioIds ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-        }
-
-        public string[] GetGenreIds()
-        {
-            return (GenreIds ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-        }
-
         public string[] GetPersonTypes()
         {
             return (PersonTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-        }
-
-        public string[] GetPersonIds()
-        {
-            return (PersonIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-        }
-
-        public string[] GetItemIds()
-        {
-            return (Ids ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public VideoType[] GetVideoTypes()
@@ -467,18 +449,18 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets the order by.
         /// </summary>
         /// <returns>IEnumerable{ItemSortBy}.</returns>
-        public Tuple<string, SortOrder>[] GetOrderBy()
+        public ValueTuple<string, SortOrder>[] GetOrderBy()
         {
             return GetOrderBy(SortBy, SortOrder);
         }
 
-        public static Tuple<string, SortOrder>[] GetOrderBy(string sortBy, string requestedSortOrder)
+        public static ValueTuple<string, SortOrder>[] GetOrderBy(string sortBy, string requestedSortOrder)
         {
             var val = sortBy;
 
             if (string.IsNullOrEmpty(val))
             {
-                return new Tuple<string, Model.Entities.SortOrder>[] { };
+                return Array.Empty<ValueTuple<string, Model.Entities.SortOrder>>();
             }
 
             var vals = val.Split(',');
@@ -489,7 +471,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var sortOrders = requestedSortOrder.Split(',');
 
-            var result = new Tuple<string, Model.Entities.SortOrder>[vals.Length];
+            var result = new ValueTuple<string, Model.Entities.SortOrder>[vals.Length];
 
             for (var i = 0; i < vals.Length; i++)
             {
@@ -498,7 +480,7 @@ namespace MediaBrowser.Api.UserLibrary
                 var sortOrderValue = sortOrders.Length > sortOrderIndex ? sortOrders[sortOrderIndex] : null;
                 var sortOrder = string.Equals(sortOrderValue, "Descending", StringComparison.OrdinalIgnoreCase) ? MediaBrowser.Model.Entities.SortOrder.Descending : MediaBrowser.Model.Entities.SortOrder.Ascending;
 
-                result[i] = new Tuple<string, Model.Entities.SortOrder>(vals[i], sortOrder);
+                result[i] = new ValueTuple<string, Model.Entities.SortOrder>(vals[i], sortOrder);
             }
 
             return result;

@@ -29,41 +29,6 @@ namespace Emby.Server.Implementations.Net
             _logger = logger;
         }
 
-        public IAcceptSocket CreateSocket(IpAddressFamily family, MediaBrowser.Model.Net.SocketType socketType, MediaBrowser.Model.Net.ProtocolType protocolType, bool dualMode)
-        {
-            try
-            {
-                var addressFamily = family == IpAddressFamily.InterNetwork
-                    ? AddressFamily.InterNetwork
-                    : AddressFamily.InterNetworkV6;
-
-                var socket = new Socket(addressFamily, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
-
-                if (dualMode)
-                {
-                    socket.DualMode = true;
-                }
-
-                return new NetAcceptSocket(socket, _logger, dualMode);
-            }
-            catch (SocketException ex)
-            {
-                throw new SocketCreateException(ex.SocketErrorCode.ToString(), ex);
-            }
-            catch (ArgumentException ex)
-            {
-                if (dualMode)
-                {
-                    // Mono for BSD incorrectly throws ArgumentException instead of SocketException
-                    throw new SocketCreateException("AddressFamilyNotSupported", ex);
-                }
-                else
-                {
-                    throw;
-                }
-            }
-        }
-
         public ISocket CreateTcpSocket(IpAddressInfo remoteAddress, int remotePort)
         {
             if (remotePort < 0) throw new ArgumentException("remotePort cannot be less than zero.", "remotePort");

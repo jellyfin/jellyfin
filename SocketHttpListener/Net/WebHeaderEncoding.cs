@@ -83,48 +83,5 @@ namespace SocketHttpListener.Net
             }
             return bytes;
         }
-
-        // The normal client header parser just casts bytes to chars (see GetString).
-        // Check if those bytes were actually utf-8 instead of ASCII.
-        // If not, just return the input value.
-        internal static string DecodeUtf8FromString(string input)
-        {
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                return input;
-            }
-
-            bool possibleUtf8 = false;
-            for (int i = 0; i < input.Length; i++)
-            {
-                if (input[i] > (char)255)
-                {
-                    return input; // This couldn't have come from the wire, someone assigned it directly.
-                }
-                else if (input[i] > (char)127)
-                {
-                    possibleUtf8 = true;
-                    break;
-                }
-            }
-            if (possibleUtf8)
-            {
-                byte[] rawBytes = new byte[input.Length];
-                for (int i = 0; i < input.Length; i++)
-                {
-                    if (input[i] > (char)255)
-                    {
-                        return input; // This couldn't have come from the wire, someone assigned it directly.
-                    }
-                    rawBytes[i] = (byte)input[i];
-                }
-                try
-                {
-                    return s_utf8Decoder.GetString(rawBytes);
-                }
-                catch (ArgumentException) { } // Not actually Utf-8
-            }
-            return input;
-        }
     }
 }

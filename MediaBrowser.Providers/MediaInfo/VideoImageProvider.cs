@@ -29,12 +29,12 @@ namespace MediaBrowser.Providers.MediaInfo
             _fileSystem = fileSystem;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
+        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType> { ImageType.Primary };
         }
 
-        public Task<DynamicImageResponse> GetImage(IHasMetadata item, ImageType type, CancellationToken cancellationToken)
+        public Task<DynamicImageResponse> GetImage(BaseItem item, ImageType type, CancellationToken cancellationToken)
         {
             var video = (Video)item;
 
@@ -62,11 +62,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public async Task<DynamicImageResponse> GetVideoImage(Video item, CancellationToken cancellationToken)
         {
-            var protocol = item.LocationType == LocationType.Remote
-                ? MediaProtocol.Http
-                : MediaProtocol.File;
+            var protocol = item.PathProtocol ?? MediaProtocol.File;
 
-            var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, item.Path, protocol, null, item.GetPlayableStreamFileNames());
+            var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, item.Path, protocol, null, item.GetPlayableStreamFileNames(_mediaEncoder));
 
             var mediaStreams =
                 item.GetMediaStreams();
@@ -129,11 +127,20 @@ namespace MediaBrowser.Providers.MediaInfo
             get { return "Screen Grabber"; }
         }
 
-        public bool Supports(IHasMetadata item)
+        public bool Supports(BaseItem item)
         {
+            if (item.IsShortcut)
+            {
+                return false;
+            }
+            if (!item.IsFileProtocol)
+            {
+                return false;
+            }
+
             var video = item as Video;
 
-            if (item.LocationType == LocationType.FileSystem && video != null && !video.IsPlaceHolder && !video.IsShortcut && video.IsCompleteMedia)
+            if (video != null && !video.IsPlaceHolder && video.IsCompleteMedia)
             {
                 return true;
             }

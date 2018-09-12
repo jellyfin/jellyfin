@@ -21,7 +21,7 @@ namespace MediaBrowser.LocalMetadata.Images
             get { return "Collection Folder Images"; }
         }
 
-        public bool Supports(IHasMetadata item)
+        public bool Supports(BaseItem item)
         {
             return item is CollectionFolder && item.SupportsLocalMetadata;
         }
@@ -35,7 +35,7 @@ namespace MediaBrowser.LocalMetadata.Images
             }
         }
 
-        public List<LocalImageInfo> GetImages(IHasMetadata item, IDirectoryService directoryService)
+        public List<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
         {
             var collectionFolder = (CollectionFolder)item;
 

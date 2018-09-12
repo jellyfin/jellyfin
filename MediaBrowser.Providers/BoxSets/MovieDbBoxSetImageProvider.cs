@@ -33,12 +33,12 @@ namespace MediaBrowser.Providers.BoxSets
             get { return "TheMovieDb"; }
         }
 
-        public bool Supports(IHasMetadata item)
+        public bool Supports(BaseItem item)
         {
             return item is BoxSet;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
+        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType>
             {
@@ -47,7 +47,7 @@ namespace MediaBrowser.Providers.BoxSets
             };
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
 
@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.BoxSets
                 {
                     var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-                    var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
+                    var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
 
                     return GetImages(mainResult, language, tmdbImageUrl);
                 }

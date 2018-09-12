@@ -11,72 +11,69 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Providers.Music
 {
     public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
     {
-        protected override ItemUpdateType BeforeSaveInternal(MusicAlbum item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected override IList<BaseItem> GetChildrenForMetadataUpdates(MusicAlbum item)
         {
-            var updateType = base.BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
+            return item.GetRecursiveChildren(i => i is Audio)
+                        .ToList();
+        }
+
+        protected override ItemUpdateType UpdateMetadataFromChildren(MusicAlbum item, IList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        {
+            var updateType = base.UpdateMetadataFromChildren(item, children, isFullRefresh, currentUpdateType);
 
             if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
             {
-                if (!item.IsLocked)
+                if (!item.LockedFields.Contains(MetadataFields.Name))
                 {
-                    var songs = item.GetRecursiveChildren(i => i is Audio)
-                        .Cast<Audio>()
-                        .ToList();
+                    var name = children.Select(i => i.Album).FirstOrDefault(i => !string.IsNullOrEmpty(i));
 
-                    if (!item.LockedFields.Contains(MetadataFields.Genres))
+                    if (!string.IsNullOrEmpty(name))
                     {
-                        var currentList = item.Genres.ToList();
-
-                        item.Genres = songs.SelectMany(i => i.Genres)
-                            .Distinct(StringComparer.OrdinalIgnoreCase)
-                            .ToList();
-
-                        if (currentList.Count != item.Genres.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
+                        if (!string.Equals(item.Name, name, StringComparison.Ordinal))
                         {
+                            item.Name = name;
                             updateType = updateType | ItemUpdateType.MetadataEdit;
                         }
                     }
-
-                    if (!item.LockedFields.Contains(MetadataFields.Studios))
-                    {
-                        var currentList = item.Studios;
-
-                        item.Studios = songs.SelectMany(i => i.Studios)
-                            .Distinct(StringComparer.OrdinalIgnoreCase)
-                            .ToArray();
-
-                        if (currentList.Length != item.Studios.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Studios.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
-                        {
-                            updateType = updateType | ItemUpdateType.MetadataEdit;
-                        }
-                    }
-
-                    if (!item.LockedFields.Contains(MetadataFields.Name))
-                    {
-                        var name = songs.Select(i => i.Album).FirstOrDefault(i => !string.IsNullOrEmpty(i));
-
-                        if (!string.IsNullOrEmpty(name))
-                        {
-                            if (!string.Equals(item.Name, name, StringComparison.Ordinal))
-                            {
-                                item.Name = name;
-                                updateType = updateType | ItemUpdateType.MetadataEdit;
-                            }
-                        }
-                    }
-
-                    updateType = updateType | SetAlbumArtistFromSongs(item, songs);
-                    updateType = updateType | SetArtistsFromSongs(item, songs);
-                    updateType = updateType | SetDateFromSongs(item, songs);
                 }
+
+                var songs = children.Cast<Audio>().ToArray();
+
+                updateType = updateType | SetAlbumArtistFromSongs(item, songs);
+                updateType = updateType | SetArtistsFromSongs(item, songs);
             }
 
             return updateType;
+        }
+
+        protected override bool EnableUpdatingPremiereDateFromChildren
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        protected override bool EnableUpdatingGenresFromChildren
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        protected override bool EnableUpdatingStudiosFromChildren
+        {
+            get
+            {
+                return true;
+            }
         }
 
         private ItemUpdateType SetAlbumArtistFromSongs(MusicAlbum item, IEnumerable<Audio> songs)
@@ -111,40 +108,6 @@ namespace MediaBrowser.Providers.Music
             if (!item.Artists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
             {
                 item.Artists = artists;
-                updateType = updateType | ItemUpdateType.MetadataEdit;
-            }
-
-            return updateType;
-        }
-
-        private ItemUpdateType SetDateFromSongs(MusicAlbum item, List<Audio> songs)
-        {
-            var updateType = ItemUpdateType.None;
-
-            var date = songs.Select(i => i.PremiereDate)
-                            .FirstOrDefault(i => i.HasValue);
-
-            var originalPremiereDate = item.PremiereDate;
-            var originalProductionYear = item.ProductionYear;
-
-            if (date.HasValue)
-            {
-                item.PremiereDate = date.Value;
-                item.ProductionYear = date.Value.Year;
-            }
-            else
-            {
-                var year = songs.Select(i => i.ProductionYear ?? 1800).FirstOrDefault(i => i != 1800);
-
-                if (year != 1800)
-                {
-                    item.ProductionYear = year;
-                }
-            }
-
-            if ((originalPremiereDate ?? DateTime.MinValue) != (item.PremiereDate ?? DateTime.MinValue) ||
-                (originalProductionYear ?? -1) != (item.ProductionYear ?? -1))
-            {
                 updateType = updateType | ItemUpdateType.MetadataEdit;
             }
 

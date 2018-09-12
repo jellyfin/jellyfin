@@ -21,7 +21,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Configuration;
+using Emby.Dlna.Configuration;
 using MediaBrowser.Model.Globalization;
 
 namespace Emby.Dlna.Didl
@@ -62,6 +62,11 @@ namespace Emby.Dlna.Didl
             _user = user;
         }
 
+        public static string NormalizeDlnaMediaUrl(string url)
+        {
+            return url + "&dlnaheaders=true";
+        }
+
         public string GetItemDidl(DlnaOptions options, BaseItem item, User user, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
         {
             var settings = new XmlWriterSettings
@@ -72,28 +77,29 @@ namespace Emby.Dlna.Didl
                 ConformanceLevel = ConformanceLevel.Fragment
             };
 
-            StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8);
-
-            using (XmlWriter writer = XmlWriter.Create(builder, settings))
+            using (StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8))
             {
-                //writer.WriteStartDocument();
+                using (XmlWriter writer = XmlWriter.Create(builder, settings))
+                {
+                    //writer.WriteStartDocument();
 
-                writer.WriteStartElement(string.Empty, "DIDL-Lite", NS_DIDL);
+                    writer.WriteStartElement(string.Empty, "DIDL-Lite", NS_DIDL);
 
-                writer.WriteAttributeString("xmlns", "dc", null, NS_DC);
-                writer.WriteAttributeString("xmlns", "dlna", null, NS_DLNA);
-                writer.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
-                //didl.SetAttribute("xmlns:sec", NS_SEC);
+                    writer.WriteAttributeString("xmlns", "dc", null, NS_DC);
+                    writer.WriteAttributeString("xmlns", "dlna", null, NS_DLNA);
+                    writer.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
+                    //didl.SetAttribute("xmlns:sec", NS_SEC);
 
-                WriteXmlRootAttributes(_profile, writer);
+                    WriteXmlRootAttributes(_profile, writer);
 
-                WriteItemElement(options, writer, item, user, context, null, deviceId, filter, streamInfo);
+                    WriteItemElement(options, writer, item, user, context, null, deviceId, filter, streamInfo);
 
-                writer.WriteFullEndElement();
-                //writer.WriteEndDocument();
+                    writer.WriteFullEndElement();
+                    //writer.WriteEndDocument();
+                }
+
+                return builder.ToString();
             }
-
-            return builder.ToString();
         }
 
         public static void WriteXmlRootAttributes(DeviceProfile profile, XmlWriter writer)
@@ -136,9 +142,9 @@ namespace Emby.Dlna.Didl
             else
             {
                 var parent = item.DisplayParentId;
-                if (parent.HasValue)
+                if (!parent.Equals(Guid.Empty))
                 {
-                    writer.WriteAttributeString("parentID", GetClientId(parent.Value, null));
+                    writer.WriteAttributeString("parentID", GetClientId(parent, null));
                 }
             }
 
@@ -155,11 +161,11 @@ namespace Emby.Dlna.Didl
             {
                 if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
                 {
-                    AddAudioResource(options, writer, hasMediaSources, deviceId, filter, streamInfo);
+                    AddAudioResource(options, writer, item, deviceId, filter, streamInfo);
                 }
                 else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
                 {
-                    AddVideoResource(options, writer, hasMediaSources, deviceId, filter, streamInfo);
+                    AddVideoResource(options, writer, item, deviceId, filter, streamInfo);
                 }
             }
 
@@ -181,6 +187,7 @@ namespace Emby.Dlna.Didl
         {
             var mime = MimeTypes.GetMimeType(input);
 
+            // TODO: Instead of being hard-coded here, this should probably be moved into all of the existing profiles
             if (string.Equals(mime, "video/mp2t", StringComparison.OrdinalIgnoreCase))
             {
                 mime = "video/mpeg";
@@ -189,7 +196,7 @@ namespace Emby.Dlna.Didl
             return mime;
         }
 
-        private void AddVideoResource(DlnaOptions options, XmlWriter writer, IHasMediaSources video, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        private void AddVideoResource(DlnaOptions options, XmlWriter writer, BaseItem video, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             if (streamInfo == null)
             {
@@ -197,8 +204,8 @@ namespace Emby.Dlna.Didl
 
                 streamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger(options)).BuildVideoItem(new VideoOptions
                 {
-                    ItemId = GetClientId(video),
-                    MediaSources = sources.ToArray(sources.Count),
+                    ItemId = video.Id,
+                    MediaSources = sources.ToArray(),
                     Profile = _profile,
                     DeviceId = deviceId,
                     MaxBitrate = _profile.MaxStreamingBitrate
@@ -217,10 +224,10 @@ namespace Emby.Dlna.Didl
                 streamInfo.TargetVideoBitrate,
                 streamInfo.TargetTimestamp,
                 streamInfo.IsDirectStream,
-                streamInfo.RunTimeTicks,
+                streamInfo.RunTimeTicks ?? 0,
                 streamInfo.TargetVideoProfile,
                 streamInfo.TargetVideoLevel,
-                streamInfo.TargetFramerate,
+                streamInfo.TargetFramerate ?? 0,
                 streamInfo.TargetPacketLength,
                 streamInfo.TranscodeSeekInfo,
                 streamInfo.IsTargetAnamorphic,
@@ -296,11 +303,11 @@ namespace Emby.Dlna.Didl
             return true;
         }
 
-        private void AddVideoResource(XmlWriter writer, IHasMediaSources video, string deviceId, Filter filter, string contentFeatures, StreamInfo streamInfo)
+        private void AddVideoResource(XmlWriter writer, BaseItem video, string deviceId, Filter filter, string contentFeatures, StreamInfo streamInfo)
         {
             writer.WriteStartElement(string.Empty, "res", NS_DIDL);
 
-            var url = streamInfo.ToDlnaUrl(_serverAddress, _accessToken);
+            var url = NormalizeDlnaMediaUrl(streamInfo.ToUrl(_serverAddress, _accessToken));
 
             var mediaSource = streamInfo.MediaSource;
 
@@ -361,7 +368,7 @@ namespace Emby.Dlna.Didl
                 streamInfo.TargetVideoBitDepth,
                 streamInfo.TargetVideoProfile,
                 streamInfo.TargetVideoLevel,
-                streamInfo.TargetFramerate,
+                streamInfo.TargetFramerate ?? 0,
                 streamInfo.TargetPacketLength,
                 streamInfo.TargetTimestamp,
                 streamInfo.IsTargetAnamorphic,
@@ -494,7 +501,7 @@ namespace Emby.Dlna.Didl
             return item.Name;
         }
 
-        private void AddAudioResource(DlnaOptions options, XmlWriter writer, IHasMediaSources audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        private void AddAudioResource(DlnaOptions options, XmlWriter writer, BaseItem audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             writer.WriteStartElement(string.Empty, "res", NS_DIDL);
 
@@ -504,14 +511,14 @@ namespace Emby.Dlna.Didl
 
                 streamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger(options)).BuildAudioItem(new AudioOptions
                 {
-                    ItemId = GetClientId(audio),
+                    ItemId = audio.Id,
                     MediaSources = sources.ToArray(sources.Count),
                     Profile = _profile,
                     DeviceId = deviceId
                 });
             }
 
-            var url = streamInfo.ToDlnaUrl(_serverAddress, _accessToken);
+            var url = NormalizeDlnaMediaUrl(streamInfo.ToUrl(_serverAddress, _accessToken));
 
             var mediaSource = streamInfo.MediaSource;
 
@@ -573,7 +580,7 @@ namespace Emby.Dlna.Didl
                 targetChannels,
                 targetAudioBitDepth,
                 streamInfo.IsDirectStream,
-                streamInfo.RunTimeTicks,
+                streamInfo.RunTimeTicks ?? 0,
                 streamInfo.TranscodeSeekInfo);
 
             writer.WriteAttributeString("protocolInfo", String.Format(
@@ -606,7 +613,7 @@ namespace Emby.Dlna.Didl
         {
             writer.WriteStartElement(string.Empty, "container", NS_DIDL);
 
-            writer.WriteAttributeString("restricted", "0");
+            writer.WriteAttributeString("restricted", "1");
             writer.WriteAttributeString("searchable", "1");
             writer.WriteAttributeString("childCount", childCount.ToString(_usCulture));
 
@@ -628,13 +635,13 @@ namespace Emby.Dlna.Didl
                 else
                 {
                     var parent = folder.DisplayParentId;
-                    if (!parent.HasValue)
+                    if (parent.Equals(Guid.Empty))
                     {
                         writer.WriteAttributeString("parentID", "0");
                     }
                     else
                     {
-                        writer.WriteAttributeString("parentID", GetClientId(parent.Value, null));
+                        writer.WriteAttributeString("parentID", GetClientId(parent, null));
                     }
                 }
             }
@@ -669,7 +676,7 @@ namespace Emby.Dlna.Didl
                 return;
             }
 
-            var userdata = _userDataManager.GetUserData(user.Id, item);
+            var userdata = _userDataManager.GetUserData(user, item);
 
             if (userdata.PlaybackPositionTicks > 0)
             {
@@ -713,21 +720,24 @@ namespace Emby.Dlna.Didl
                 AddValue(writer, "upnp", "publisher", studio, NS_UPNP);
             }
 
-            if (filter.Contains("dc:description"))
+            if (!(item is Folder))
             {
-                var desc = item.Overview;
+                if (filter.Contains("dc:description"))
+                {
+                    var desc = item.Overview;
 
-                if (!string.IsNullOrWhiteSpace(desc))
-                {
-                    AddValue(writer, "dc", "description", desc, NS_DC);
+                    if (!string.IsNullOrWhiteSpace(desc))
+                    {
+                        AddValue(writer, "dc", "description", desc, NS_DC);
+                    }
                 }
-            }
-            if (filter.Contains("upnp:longDescription"))
-            {
-                if (!string.IsNullOrWhiteSpace(item.Overview))
-                {
-                    AddValue(writer, "upnp", "longDescription", item.Overview, NS_UPNP);
-                }
+                //if (filter.Contains("upnp:longDescription"))
+                //{
+                //    if (!string.IsNullOrWhiteSpace(item.Overview))
+                //    {
+                //        AddValue(writer, "upnp", "longDescription", item.Overview, NS_UPNP);
+                //    }
+                //}
             }
 
             if (!string.IsNullOrEmpty(item.OfficialRating))
@@ -823,37 +833,37 @@ namespace Emby.Dlna.Didl
 
         private void AddPeople(BaseItem item, XmlWriter writer)
         {
-            var types = new[]
-            {
-                PersonType.Director,
-                PersonType.Writer,
-                PersonType.Producer,
-                PersonType.Composer,
-                "Creator"
-            };
+            //var types = new[]
+            //{
+            //    PersonType.Director,
+            //    PersonType.Writer,
+            //    PersonType.Producer,
+            //    PersonType.Composer,
+            //    "Creator"
+            //};
 
-            var people = _libraryManager.GetPeople(item);
+            //var people = _libraryManager.GetPeople(item);
 
-            var index = 0;
+            //var index = 0;
 
-            // Seeing some LG models locking up due content with large lists of people
-            // The actual issue might just be due to processing a more metadata than it can handle
-            var limit = 6;
+            //// Seeing some LG models locking up due content with large lists of people
+            //// The actual issue might just be due to processing a more metadata than it can handle
+            //var limit = 6;
 
-            foreach (var actor in people)
-            {
-                var type = types.FirstOrDefault(i => string.Equals(i, actor.Type, StringComparison.OrdinalIgnoreCase) || string.Equals(i, actor.Role, StringComparison.OrdinalIgnoreCase))
-                    ?? PersonType.Actor;
+            //foreach (var actor in people)
+            //{
+            //    var type = types.FirstOrDefault(i => string.Equals(i, actor.Type, StringComparison.OrdinalIgnoreCase) || string.Equals(i, actor.Role, StringComparison.OrdinalIgnoreCase))
+            //        ?? PersonType.Actor;
 
-                AddValue(writer, "upnp", type.ToLower(), actor.Name, NS_UPNP);
+            //    AddValue(writer, "upnp", type.ToLower(), actor.Name, NS_UPNP);
 
-                index++;
+            //    index++;
 
-                if (index >= limit)
-                {
-                    break;
-                }
-            }
+            //    if (index >= limit)
+            //    {
+            //        break;
+            //    }
+            //}
         }
 
         private void AddGeneralProperties(BaseItem item, StubType? itemStubType, BaseItem context, XmlWriter writer, Filter filter)
@@ -935,19 +945,6 @@ namespace Emby.Dlna.Didl
         {
             ImageDownloadInfo imageInfo = null;
 
-            if (context is UserView)
-            {
-                var episode = item as Episode;
-                if (episode != null)
-                {
-                    var parent = episode.Series;
-                    if (parent != null)
-                    {
-                        imageInfo = GetImageInfo(parent);
-                    }
-                }
-            }
-
             // Finally, just use the image from the item
             if (imageInfo == null)
             {
@@ -959,34 +956,7 @@ namespace Emby.Dlna.Didl
                 return;
             }
 
-            var playbackPercentage = 0;
-            var unplayedCount = 0;
-
-            if (item is Video)
-            {
-                var userData = _userDataManager.GetUserDataDto(item, _user);
-
-                playbackPercentage = Convert.ToInt32(userData.PlayedPercentage ?? 0);
-                if (playbackPercentage >= 100 || userData.Played)
-                {
-                    playbackPercentage = 100;
-                }
-            }
-            else if (item is Series || item is Season || item is BoxSet)
-            {
-                var userData = _userDataManager.GetUserDataDto(item, _user);
-
-                if (userData.Played)
-                {
-                    playbackPercentage = 100;
-                }
-                else
-                {
-                    unplayedCount = userData.UnplayedItemCount ?? 0;
-                }
-            }
-
-            var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight, playbackPercentage, unplayedCount, "jpg");
+            var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight, "jpg");
 
             writer.WriteStartElement("upnp", "albumArtURI", NS_UPNP);
             writer.WriteAttributeString("dlna", "profileID", NS_DLNA, _profile.AlbumArtPn);
@@ -994,7 +964,7 @@ namespace Emby.Dlna.Didl
             writer.WriteFullEndElement();
 
             // TOOD: Remove these default values
-            var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth ?? 48, _profile.MaxIconHeight ?? 48, playbackPercentage, unplayedCount, "jpg");
+            var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth ?? 48, _profile.MaxIconHeight ?? 48, "jpg");
             writer.WriteElementString("upnp", "icon", NS_UPNP, iconUrlInfo.Url);
 
             if (!_profile.EnableAlbumArtInDidl)
@@ -1009,15 +979,15 @@ namespace Emby.Dlna.Didl
                 }
             }
 
-            AddImageResElement(item, writer, 160, 160, playbackPercentage, unplayedCount, "jpg", "JPEG_TN");
+            AddImageResElement(item, writer, 160, 160, "jpg", "JPEG_TN");
 
-            if (!_profile.EnableSingleAlbumArtLimit)
+            if (!_profile.EnableSingleAlbumArtLimit || string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase))
             {
-                AddImageResElement(item, writer, 4096, 4096, playbackPercentage, unplayedCount, "jpg", "JPEG_LRG");
-                AddImageResElement(item, writer, 1024, 768, playbackPercentage, unplayedCount, "jpg", "JPEG_MED");
-                AddImageResElement(item, writer, 640, 480, playbackPercentage, unplayedCount, "jpg", "JPEG_SM");
-                AddImageResElement(item, writer, 4096, 4096, playbackPercentage, unplayedCount, "png", "PNG_LRG");
-                AddImageResElement(item, writer, 160, 160, playbackPercentage, unplayedCount, "png", "PNG_TN");
+                AddImageResElement(item, writer, 4096, 4096, "jpg", "JPEG_LRG");
+                AddImageResElement(item, writer, 1024, 768, "jpg", "JPEG_MED");
+                AddImageResElement(item, writer, 640, 480, "jpg", "JPEG_SM");
+                AddImageResElement(item, writer, 4096, 4096, "png", "PNG_LRG");
+                AddImageResElement(item, writer, 160, 160, "png", "PNG_TN");
             }
         }
 
@@ -1035,8 +1005,6 @@ namespace Emby.Dlna.Didl
             XmlWriter writer,
             int maxWidth,
             int maxHeight,
-            int playbackPercentage,
-            int unplayedCount,
             string format,
             string org_Pn)
         {
@@ -1047,7 +1015,7 @@ namespace Emby.Dlna.Didl
                 return;
             }
 
-            var albumartUrlInfo = GetImageUrl(imageInfo, maxWidth, maxHeight, playbackPercentage, unplayedCount, format);
+            var albumartUrlInfo = GetImageUrl(imageInfo, maxWidth, maxHeight, format);
 
             writer.WriteStartElement(string.Empty, "res", NS_DIDL);
 
@@ -1151,7 +1119,7 @@ namespace Emby.Dlna.Didl
 
             return new ImageDownloadInfo
             {
-                ItemId = item.Id.ToString("N"),
+                ItemId = item.Id,
                 Type = type,
                 ImageTag = tag,
                 Width = width,
@@ -1163,7 +1131,7 @@ namespace Emby.Dlna.Didl
 
         class ImageDownloadInfo
         {
-            internal string ItemId;
+            internal Guid ItemId;
             internal string ImageTag;
             internal ImageType Type;
 
@@ -1202,25 +1170,16 @@ namespace Emby.Dlna.Didl
             return id;
         }
 
-        public static string GetClientId(IHasMediaSources item)
+        private ImageUrlInfo GetImageUrl(ImageDownloadInfo info, int maxWidth, int maxHeight, string format)
         {
-            var id = item.Id.ToString("N");
-
-            return id;
-        }
-
-        private ImageUrlInfo GetImageUrl(ImageDownloadInfo info, int maxWidth, int maxHeight, int playbackPercentage, int unplayedCount, string format)
-        {
-            var url = string.Format("{0}/Items/{1}/Images/{2}/0/{3}/{4}/{5}/{6}/{7}/{8}",
+            var url = string.Format("{0}/Items/{1}/Images/{2}/0/{3}/{4}/{5}/{6}/0/0",
                 _serverAddress,
-                info.ItemId,
+                info.ItemId.ToString("N"),
                 info.Type,
                 info.ImageTag,
                 format,
                 maxWidth.ToString(CultureInfo.InvariantCulture),
-                maxHeight.ToString(CultureInfo.InvariantCulture),
-                playbackPercentage.ToString(CultureInfo.InvariantCulture),
-                unplayedCount.ToString(CultureInfo.InvariantCulture)
+                maxHeight.ToString(CultureInfo.InvariantCulture)
                 );
 
             var width = info.Width;
@@ -1235,7 +1194,7 @@ namespace Emby.Dlna.Didl
                     Height = height.Value,
                     Width = width.Value
 
-                }, null, null, maxWidth, maxHeight);
+                }, 0, 0, maxWidth, maxHeight);
 
                 width = Convert.ToInt32(newSize.Width);
                 height = Convert.ToInt32(newSize.Height);
@@ -1248,6 +1207,9 @@ namespace Emby.Dlna.Didl
                     info.IsDirectStream = maxWidth >= width.Value && maxHeight >= height.Value;
                 }
             }
+
+            // just lie
+            info.IsDirectStream = true;
 
             return new ImageUrlInfo
             {

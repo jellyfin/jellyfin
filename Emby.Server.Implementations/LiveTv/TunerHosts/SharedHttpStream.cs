@@ -15,6 +15,7 @@ using MediaBrowser.Model.System;
 using System.Globalization;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.LiveTv;
+using System.Collections.Generic;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
@@ -23,8 +24,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
 
-        public SharedHttpStream(MediaSourceInfo mediaSource, TunerHostInfo tunerHostInfo, string originalStreamId, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost, IEnvironmentInfo environment)
-            : base(mediaSource, tunerHostInfo, environment, fileSystem, logger, appPaths)
+        public SharedHttpStream(MediaSourceInfo mediaSource, TunerHostInfo tunerHostInfo, string originalStreamId, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost)
+            : base(mediaSource, tunerHostInfo, fileSystem, logger, appPaths)
         {
             _httpClient = httpClient;
             _appHost = appHost;
@@ -45,7 +46,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var typeName = GetType().Name;
             Logger.Info("Opening " + typeName + " Live stream from {0}", url);
 
-            var response = await _httpClient.SendAsync(new HttpRequestOptions
+            var httpRequestOptions = new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = CancellationToken.None,
@@ -58,8 +59,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                 LogResponse = true,
                 LogResponseHeaders = true
+            };
 
-            }, "GET").ConfigureAwait(false);
+            foreach (var header in mediaSource.RequiredHttpHeaders)
+            {
+                httpRequestOptions.RequestHeaders[header.Key] = header.Value;
+            }
+
+            var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false);
 
             var extension = "ts";
             var requiresRemux = false;
@@ -98,8 +105,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             //OpenedMediaSource.Path = tempFile;
             //OpenedMediaSource.ReadAtNativeFramerate = true;
 
-            OpenedMediaSource.Path = _appHost.GetLocalApiUrl("127.0.0.1") + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
-            OpenedMediaSource.Protocol = MediaProtocol.Http;
+            MediaSource.Path = _appHost.GetLocalApiUrl("127.0.0.1") + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Protocol = MediaProtocol.Http;
 
             //OpenedMediaSource.Path = TempFilePath;
             //OpenedMediaSource.Protocol = MediaProtocol.File;
@@ -110,25 +117,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             //OpenedMediaSource.SupportsDirectStream = true;
             //OpenedMediaSource.SupportsTranscoding = true;
             await taskCompletionSource.Task.ConfigureAwait(false);
-
-            if (OpenedMediaSource.SupportsProbing)
-            {
-                var elapsed = (DateTime.UtcNow - now).TotalMilliseconds;
-
-                var delay = Convert.ToInt32(3000 - elapsed);
-
-                if (delay > 0)
-                {
-                    Logger.Info("Delaying shared stream by {0}ms to allow the buffer to build.", delay);
-
-                    await Task.Delay(delay).ConfigureAwait(false);
-                }
-            }
-        }
-
-        protected override void CloseInternal()
-        {
-            LiveStreamCancellationTokenSource.Cancel();
         }
 
         private Task StartStreaming(HttpResponseInfo response, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
@@ -145,7 +133,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                             using (var fileStream = FileSystem.GetFileStream(TempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
                             {
-                                StreamHelper.CopyTo(stream, fileStream, 81920, () => Resolve(openTaskCompletionSource), cancellationToken);
+                                await ApplicationHost.StreamHelper.CopyToAsync(stream, fileStream, 81920, () => Resolve(openTaskCompletionSource), cancellationToken).ConfigureAwait(false);
                             }
                         }
                     }
@@ -158,12 +146,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     Logger.ErrorException("Error copying live stream.", ex);
                 }
                 EnableStreamSharing = false;
-                await DeleteTempFile(TempFilePath).ConfigureAwait(false);
+                await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);
             });
         }
 
         private void Resolve(TaskCompletionSource<bool> openTaskCompletionSource)
         {
+            DateOpened = DateTime.UtcNow;
             openTaskCompletionSource.TrySetResult(true);
         }
     }

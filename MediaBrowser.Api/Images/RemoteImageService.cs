@@ -73,13 +73,13 @@ namespace MediaBrowser.Api.Images
 
     public class BaseDownloadRemoteImage : IReturnVoid
     {
-        [ApiMember(Name = "Type", Description = "The image type", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "Type", Description = "The image type", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
         public ImageType Type { get; set; }
 
-        [ApiMember(Name = "ProviderName", Description = "The image provider", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "ProviderName", Description = "The image provider", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
         public string ProviderName { get; set; }
 
-        [ApiMember(Name = "ImageUrl", Description = "The image url", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "ImageUrl", Description = "The image url", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
         public string ImageUrl { get; set; }
     }
 
@@ -91,7 +91,7 @@ namespace MediaBrowser.Api.Images
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
     }
 
@@ -129,7 +129,7 @@ namespace MediaBrowser.Api.Images
 
             var result = GetImageProviders(item);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         private List<ImageProviderInfo> GetImageProviders(BaseItem item)
@@ -188,13 +188,11 @@ namespace MediaBrowser.Api.Images
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(DownloadRemoteImage request)
+        public Task Post(DownloadRemoteImage request)
         {
             var item = _libraryManager.GetItemById(request.Id);
 
-            var task = DownloadRemoteImage(item, request);
-
-            Task.WaitAll(task);
+            return DownloadRemoteImage(item, request);
         }
 
         /// <summary>
@@ -215,12 +213,7 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetRemoteImage request)
-        {
-            return GetAsync(request).Result;
-        }
-
-        public async Task<object> GetAsync(GetRemoteImage request)
+        public async Task<object> Get(GetRemoteImage request)
         {
             var urlHash = request.ImageUrl.GetMD5();
             var pointerCachePath = GetFullCachePath(urlHash.ToString());

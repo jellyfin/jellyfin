@@ -1,136 +1,17 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4FD51AC5-2C16-4308-A993-C3A84F3B4582}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MediaBrowser.Api</RootNamespace>
-    <AssemblyName>MediaBrowser.Api</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <RunPostBuildEvent>Always</RunPostBuildEvent>
-  </PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <ItemGroup>
-    <Compile Include="..\SharedVersion.cs">
-      <Link>Properties\SharedVersion.cs</Link>
-    </Compile>
-    <Compile Include="BrandingService.cs" />
-    <Compile Include="ChannelService.cs" />
-    <Compile Include="Devices\DeviceService.cs" />
-    <Compile Include="Dlna\DlnaServerService.cs" />
-    <Compile Include="Dlna\DlnaService.cs" />
-    <Compile Include="FilterService.cs" />
-    <Compile Include="IHasDtoOptions.cs" />
-    <Compile Include="LiveTv\ProgressiveFileCopier.cs" />
-    <Compile Include="PlaylistService.cs" />
-    <Compile Include="Social\SharingService.cs" />
-    <Compile Include="StartupWizardService.cs" />
-    <Compile Include="Subtitles\SubtitleService.cs" />
-    <Compile Include="Movies\CollectionService.cs" />
-    <Compile Include="Music\AlbumsService.cs" />
-    <Compile Include="BaseApiService.cs" />
-    <Compile Include="ConfigurationService.cs" />
-    <Compile Include="DisplayPreferencesService.cs" />
-    <Compile Include="EnvironmentService.cs" />
-    <Compile Include="GamesService.cs" />
-    <Compile Include="IHasItemFields.cs" />
-    <Compile Include="Images\ImageByNameService.cs" />
-    <Compile Include="Images\ImageRequest.cs" />
-    <Compile Include="Images\ImageService.cs" />
-    <Compile Include="Music\InstantMixService.cs" />
-    <Compile Include="ItemLookupService.cs" />
-    <Compile Include="ItemRefreshService.cs" />
-    <Compile Include="ItemUpdateService.cs" />
-    <Compile Include="Library\LibraryService.cs" />
-    <Compile Include="Library\LibraryStructureService.cs" />
-    <Compile Include="LiveTv\LiveTvService.cs" />
-    <Compile Include="LocalizationService.cs" />
-    <Compile Include="Movies\MoviesService.cs" />
-    <Compile Include="NewsService.cs" />
-    <Compile Include="NotificationsService.cs" />
-    <Compile Include="PackageService.cs" />
-    <Compile Include="PluginService.cs" />
-    <Compile Include="Images\RemoteImageService.cs" />
-    <Compile Include="ScheduledTasks\ScheduledTaskService.cs" />
-    <Compile Include="ScheduledTasks\ScheduledTasksWebSocketListener.cs" />
-    <Compile Include="ApiEntryPoint.cs" />
-    <Compile Include="SearchService.cs" />
-    <Compile Include="Session\SessionsService.cs" />
-    <Compile Include="SimilarItemsHelper.cs" />
-    <Compile Include="SuggestionsService.cs" />
-    <Compile Include="System\ActivityLogService.cs" />
-    <Compile Include="System\ActivityLogWebSocketListener.cs" />
-    <Compile Include="System\SystemService.cs" />
-    <Compile Include="Movies\TrailersService.cs" />
-    <Compile Include="TvShowsService.cs" />
-    <Compile Include="UserLibrary\ArtistsService.cs" />
-    <Compile Include="UserLibrary\BaseItemsByNameService.cs" />
-    <Compile Include="UserLibrary\BaseItemsRequest.cs" />
-    <Compile Include="UserLibrary\GameGenresService.cs" />
-    <Compile Include="UserLibrary\GenresService.cs" />
-    <Compile Include="UserLibrary\ItemsService.cs" />
-    <Compile Include="UserLibrary\MusicGenresService.cs" />
-    <Compile Include="UserLibrary\PersonsService.cs" />
-    <Compile Include="UserLibrary\StudiosService.cs" />
-    <Compile Include="UserLibrary\UserLibraryService.cs" />
-    <Compile Include="UserLibrary\UserViewsService.cs" />
-    <Compile Include="UserLibrary\YearsService.cs" />
-    <Compile Include="UserService.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VideosService.cs" />
-    <Compile Include="Session\SessionInfoWebSocketListener.cs" />
-    <Compile Include="System\SystemInfoWebSocketListener.cs" />
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
-      <Project>{9142EEFA-7570-41E1-BFCC-468BB571AF2F}</Project>
-      <Name>MediaBrowser.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
-      <Project>{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}</Project>
-      <Name>MediaBrowser.Controller</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
-      <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
-      <Name>MediaBrowser.Model</Name>
-    </ProjectReference>
+    <Compile Include="..\SharedVersion.cs"/>
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

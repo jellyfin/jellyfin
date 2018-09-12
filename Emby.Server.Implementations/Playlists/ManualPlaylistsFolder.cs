@@ -50,8 +50,16 @@ namespace Emby.Server.Implementations.Playlists
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
-            query.Recursive = false;
-            return base.GetItemsInternal(query);
+            if (query.User == null)
+            {
+                query.Recursive = false;
+                return base.GetItemsInternal(query);
+            }
+
+            query.Recursive = true;
+            query.IncludeItemTypes = new string[] { "Playlist" };
+            query.Parent = null;
+            return LibraryManager.GetItemsResult(query);
         }
     }
 }

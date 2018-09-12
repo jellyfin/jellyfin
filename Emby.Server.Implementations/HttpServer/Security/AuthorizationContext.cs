@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using MediaBrowser.Model.Services;
 using System.Linq;
 using System.Threading;
+using MediaBrowser.Controller.Library;
 
 namespace Emby.Server.Implementations.HttpServer.Security
 {
@@ -13,11 +14,13 @@ namespace Emby.Server.Implementations.HttpServer.Security
     {
         private readonly IAuthenticationRepository _authRepo;
         private readonly IConnectManager _connectManager;
+        private readonly IUserManager _userManager;
 
-        public AuthorizationContext(IAuthenticationRepository authRepo, IConnectManager connectManager)
+        public AuthorizationContext(IAuthenticationRepository authRepo, IConnectManager connectManager, IUserManager userManager)
         {
             _authRepo = authRepo;
             _connectManager = connectManager;
+            _userManager = userManager;
         }
 
         public AuthorizationInfo GetAuthorizationInfo(object requestContext)
@@ -60,16 +63,16 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 auth.TryGetValue("Token", out token);
             }
 
-            if (string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrEmpty(token))
             {
                 token = httpReq.Headers["X-Emby-Token"];
             }
 
-            if (string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrEmpty(token))
             {
                 token = httpReq.Headers["X-MediaBrowser-Token"];
             }
-            if (string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrEmpty(token))
             {
                 token = httpReq.QueryString["api_key"];
             }
@@ -94,8 +97,6 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
                 if (tokenInfo != null)
                 {
-                    info.UserId = tokenInfo.UserId;
-
                     var updateToken = false;
 
                     // TODO: Remove these checks for IsNullOrWhiteSpace
@@ -109,15 +110,21 @@ namespace Emby.Server.Implementations.HttpServer.Security
                         info.DeviceId = tokenInfo.DeviceId;
                     }
 
+                    // Temporary. TODO - allow clients to specify that the token has been shared with a casting device
+                    var allowTokenInfoUpdate = info.Client == null || info.Client.IndexOf("chromecast", StringComparison.OrdinalIgnoreCase) == -1;
 
                     if (string.IsNullOrWhiteSpace(info.Device))
                     {
                         info.Device = tokenInfo.DeviceName;
                     }
+                    
                     else if (!string.Equals(info.Device, tokenInfo.DeviceName, StringComparison.OrdinalIgnoreCase))
                     {
-                        updateToken = true;
-                        tokenInfo.DeviceName = info.Device;
+                        if (allowTokenInfoUpdate)
+                        {
+                            updateToken = true;
+                            tokenInfo.DeviceName = info.Device;
+                        }
                     }
 
                     if (string.IsNullOrWhiteSpace(info.Version))
@@ -126,22 +133,38 @@ namespace Emby.Server.Implementations.HttpServer.Security
                     }
                     else if (!string.Equals(info.Version, tokenInfo.AppVersion, StringComparison.OrdinalIgnoreCase))
                     {
+                        if (allowTokenInfoUpdate)
+                        {
+                            updateToken = true;
+                            tokenInfo.AppVersion = info.Version;
+                        }
+                    }
+
+                    if ((DateTime.UtcNow - tokenInfo.DateLastActivity).TotalMinutes > 3)
+                    {
+                        tokenInfo.DateLastActivity = DateTime.UtcNow;
                         updateToken = true;
-                        tokenInfo.AppVersion = info.Version;
+                    }
+
+                    if (!tokenInfo.UserId.Equals(Guid.Empty))
+                    {
+                        info.User = _userManager.GetUserById(tokenInfo.UserId);
+
+                        if (info.User != null && !string.Equals(info.User.Name, tokenInfo.UserName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            tokenInfo.UserName = info.User.Name;
+                            updateToken = true;
+                        }
                     }
 
                     if (updateToken)
                     {
-                        _authRepo.Update(tokenInfo, CancellationToken.None);
+                        _authRepo.Update(tokenInfo);
                     }
                 }
                 else
                 {
-                    var user = _connectManager.GetUserFromExchangeToken(token);
-                    if (user != null)
-                    {
-                        info.UserId = user.Id.ToString("N");
-                    }
+                    info.User = _connectManager.GetUserFromExchangeToken(token);
                 }
                 httpReq.Items["OriginalAuthenticationInfo"] = tokenInfo;
             }
@@ -160,7 +183,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         {
             var auth = httpReq.Headers["X-Emby-Authorization"];
 
-            if (string.IsNullOrWhiteSpace(auth))
+            if (string.IsNullOrEmpty(auth))
             {
                 auth = httpReq.Headers["Authorization"];
             }
@@ -212,7 +235,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         private string NormalizeValue(string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrEmpty(value))
             {
                 return value;
             }

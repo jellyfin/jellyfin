@@ -954,7 +954,7 @@ namespace BDInfo
             }
         }
 
-        public static int CompareVideoStreams(
+        public int CompareVideoStreams(
             TSVideoStream x, 
             TSVideoStream y)
         {
@@ -995,7 +995,7 @@ namespace BDInfo
             }
         }
 
-        public static int CompareAudioStreams(
+        public int CompareAudioStreams(
             TSAudioStream x, 
             TSAudioStream y)
         {
@@ -1067,7 +1067,7 @@ namespace BDInfo
             }
         }
 
-        public static int CompareTextStreams(
+        public int CompareTextStreams(
             TSTextStream x,
             TSTextStream y)
         {
@@ -1123,7 +1123,7 @@ namespace BDInfo
             }
         }
 
-        private static int CompareGraphicsStreams(
+        private int CompareGraphicsStreams(
             TSGraphicsStream x,
             TSGraphicsStream y)
         {
@@ -1189,7 +1189,7 @@ namespace BDInfo
             }
         }
 
-        private static int GetStreamTypeSortIndex(TSStreamType streamType)
+        private int GetStreamTypeSortIndex(TSStreamType streamType)
         {
             switch (streamType)
             {

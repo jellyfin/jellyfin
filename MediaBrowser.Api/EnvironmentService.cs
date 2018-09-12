@@ -36,18 +36,6 @@ namespace MediaBrowser.Api
         /// <value><c>true</c> if [include directories]; otherwise, <c>false</c>.</value>
         [ApiMember(Name = "IncludeDirectories", Description = "An optional filter to include or exclude folders from the results. true/false", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool IncludeDirectories { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [include hidden].
-        /// </summary>
-        /// <value><c>true</c> if [include hidden]; otherwise, <c>false</c>.</value>
-        [ApiMember(Name = "IncludeHidden", Description = "An optional filter to include or exclude hidden files and folders. true/false", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
-        public bool IncludeHidden { get; set; }
-
-        public GetDirectoryContents()
-        {
-            IncludeHidden = true;
-        }
     }
 
     [Route("/Environment/ValidatePath", "POST", Summary = "Gets the contents of a given directory in the file system")]
@@ -189,18 +177,7 @@ namespace MediaBrowser.Api
         {
             var result = new DefaultDirectoryBrowserInfo();
 
-            try
-            {
-                var qnap = "/share/CACHEDEV1_DATA";
-                if (_fileSystem.DirectoryExists(qnap))
-                {
-                    result.Path = qnap;
-                }
-            }
-            catch
-            {
-
-            }
+            result.Path = _fileSystem.DefaultDirectory;
 
             return ToOptimizedResult(result);
         }
@@ -223,10 +200,10 @@ namespace MediaBrowser.Api
 
             if (path.StartsWith(networkPrefix, StringComparison.OrdinalIgnoreCase) && path.LastIndexOf(UncSeparator) == 1)
             {
-                return ToOptimizedSerializedResultUsingCache(GetNetworkShares(path).OrderBy(i => i.Path).ToList());
+                return ToOptimizedResult(GetNetworkShares(path).OrderBy(i => i.Path).ToList());
             }
 
-            return ToOptimizedSerializedResultUsingCache(GetFileSystemEntries(request).ToList());
+            return ToOptimizedResult(GetFileSystemEntries(request).ToList());
         }
 
         public object Get(GetNetworkShares request)
@@ -235,7 +212,7 @@ namespace MediaBrowser.Api
 
             var shares = GetNetworkShares(path).OrderBy(i => i.Path).ToList();
 
-            return ToOptimizedSerializedResultUsingCache(shares);
+            return ToOptimizedResult(shares);
         }
 
         /// <summary>
@@ -247,7 +224,7 @@ namespace MediaBrowser.Api
         {
             var result = GetDrives().ToList();
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -273,7 +250,7 @@ namespace MediaBrowser.Api
         {
             var result = _networkManager.GetNetworkDevices().ToList();
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -300,11 +277,6 @@ namespace MediaBrowser.Api
         {
             var entries = _fileSystem.GetFileSystemEntries(request.Path).OrderBy(i => i.FullName).Where(i =>
             {
-                if (!request.IncludeHidden && i.IsHidden)
-                {
-                    return false;
-                }
-
                 var isDirectory = i.IsDirectory;
 
                 if (!request.IncludeFiles && !isDirectory)

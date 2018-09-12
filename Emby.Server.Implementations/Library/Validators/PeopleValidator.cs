@@ -1,18 +1,11 @@
-﻿using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Validators
@@ -73,7 +66,7 @@ namespace Emby.Server.Implementations.Library.Validators
 
                     var options = new MetadataRefreshOptions(_fileSystem)
                     {
-                        ImageRefreshMode = ImageRefreshMode.ValidationOnly,
+                        ImageRefreshMode = MetadataRefreshMode.ValidationOnly,
                         MetadataRefreshMode = MetadataRefreshMode.ValidationOnly
                     };
 
@@ -94,6 +87,23 @@ namespace Emby.Server.Implementations.Library.Validators
                 percent /= numPeople;
 
                 progress.Report(100 * percent);
+            }
+
+            var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Person).Name },
+                IsDeadPerson = true,
+                IsLocked = false
+            });
+
+            foreach (var item in deadEntities)
+            {
+                _logger.Info("Deleting dead {2} {0} {1}.", item.Id.ToString("N"), item.Name, item.GetType().Name);
+
+                _libraryManager.DeleteItem(item, new DeleteOptions
+                {
+                    DeleteFileLocation = false
+                }, false);
             }
 
             progress.Report(100);

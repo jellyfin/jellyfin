@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="source">The source.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="logger">The logger.</param>
-        public StreamWriter(byte[] source, string contentType, ILogger logger)
+        public StreamWriter(byte[] source, string contentType, int contentLength, ILogger logger)
         {
             if (string.IsNullOrEmpty(contentType))
             {
@@ -85,7 +85,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             Headers["Content-Type"] = contentType;
 
-            Headers["Content-Length"] = source.Length.ToString(UsCulture);
+            Headers["Content-Length"] = contentLength.ToString(UsCulture);
         }
 
         public async Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken)
@@ -106,10 +106,8 @@ namespace Emby.Server.Implementations.HttpServer
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Logger.ErrorException("Error streaming data", ex);
-
                 if (OnError != null)
                 {
                     OnError();

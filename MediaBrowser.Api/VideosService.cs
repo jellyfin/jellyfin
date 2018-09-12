@@ -22,7 +22,7 @@ namespace MediaBrowser.Api
     public class GetAdditionalParts : IReturn<QueryResult<BaseItemDto>>
     {
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -76,11 +76,11 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetAdditionalParts request)
         {
-            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
+            var user = !request.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(request.UserId) : null;
 
             var item = string.IsNullOrEmpty(request.Id)
-                           ? (!string.IsNullOrWhiteSpace(request.UserId)
-                                  ? user.RootFolder
+                           ? (!request.UserId.Equals(Guid.Empty)
+                                  ? _libraryManager.GetUserRootFolder()
                                   : _libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
@@ -105,7 +105,7 @@ namespace MediaBrowser.Api
                 TotalRecordCount = items.Length
             };
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         public void Delete(DeleteAlternateSources request)
@@ -115,12 +115,12 @@ namespace MediaBrowser.Api
             foreach (var link in video.GetLinkedAlternateVersions())
             {
                 link.SetPrimaryVersionId(null);
-                link.LinkedAlternateVersions = Video.EmptyLinkedChildArray;
+                link.LinkedAlternateVersions = Array.Empty<LinkedChild>();
 
                 link.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
             }
 
-            video.LinkedAlternateVersions = Video.EmptyLinkedChildArray;
+            video.LinkedAlternateVersions = Array.Empty<LinkedChild>();
             video.SetPrimaryVersionId(null);
             video.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
         }
@@ -139,11 +139,6 @@ namespace MediaBrowser.Api
 
             var videosWithVersions = items.Where(i => i.MediaSourceCount > 1)
                 .ToList();
-
-            if (videosWithVersions.Count > 1)
-            {
-                throw new ArgumentException("Videos with sub-versions cannot be merged.");
-            }
 
             var primaryVersion = videosWithVersions.FirstOrDefault();
 
@@ -185,10 +180,23 @@ namespace MediaBrowser.Api
                     Path = item.Path,
                     ItemId = item.Id
                 });
+
+                foreach (var linkedItem in item.LinkedAlternateVersions)
+                {
+                    if (!list.Any(i => string.Equals(i.Path, linkedItem.Path, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        list.Add(linkedItem);
+                    }
+                }
+
+                if (item.LinkedAlternateVersions.Length > 0)
+                {
+                    item.LinkedAlternateVersions = Array.Empty<LinkedChild>();
+                    item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+                }
             }
 
             primaryVersion.LinkedAlternateVersions = list.ToArray();
-
             primaryVersion.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
         }
     }

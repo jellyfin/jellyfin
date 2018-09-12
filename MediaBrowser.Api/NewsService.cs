@@ -40,7 +40,7 @@ namespace MediaBrowser.Api
 
             });
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
     }
 }

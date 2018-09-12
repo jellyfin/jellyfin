@@ -33,11 +33,6 @@ namespace MediaBrowser.Providers.Chapters
             _itemRepo = itemRepo;
         }
 
-        public List<ChapterInfo> GetChapters(string itemId)
-        {
-            return _itemRepo.GetChapters(new Guid(itemId));
-        }
-
         public void SaveChapters(string itemId, List<ChapterInfo> chapters)
         {
             _itemRepo.SaveChapters(new Guid(itemId), chapters);

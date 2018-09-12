@@ -54,7 +54,7 @@ namespace Emby.Server.Implementations.IO
 
         private void AddAffectedPath(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException("path");
             }
@@ -67,7 +67,7 @@ namespace Emby.Server.Implementations.IO
 
         public void AddPath(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException("path");
             }
@@ -113,7 +113,7 @@ namespace Emby.Server.Implementations.IO
                 Path = path;
                 AddAffectedPath(path);
 
-                if (!string.IsNullOrWhiteSpace(affectedFile))
+                if (!string.IsNullOrEmpty(affectedFile))
                 {
                     AddAffectedPath(affectedFile);
                 }
@@ -202,7 +202,7 @@ namespace Emby.Server.Implementations.IO
                 // If the item has been deleted find the first valid parent that still exists
                 while (!_fileSystem.DirectoryExists(item.Path) && !_fileSystem.FileExists(item.Path))
                 {
-                    item = item.IsOwnedItem ? item.GetOwner() : item.GetParent();
+                    item = item.GetOwner() ?? item.GetParent();
 
                     if (item == null)
                     {
@@ -231,7 +231,6 @@ namespace Emby.Server.Implementations.IO
         {
             _disposed = true;
             DisposeTimer();
-            GC.SuppressFinalize(this);
         }
     }
 }

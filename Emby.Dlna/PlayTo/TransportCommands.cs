@@ -91,7 +91,7 @@ namespace Emby.Dlna.PlayTo
             };
         }
 
-        public static StateVariable FromXml(XElement container)
+        private static StateVariable FromXml(XElement container)
         {
             var allowedValues = new List<string>();
             var element = container.Descendants(uPnpNamespaces.svc + "allowedValueList")
@@ -108,7 +108,7 @@ namespace Emby.Dlna.PlayTo
             {
                 Name = container.GetValue(uPnpNamespaces.svc + "name"),
                 DataType = container.GetValue(uPnpNamespaces.svc + "dataType"),
-                AllowedValues = allowedValues
+                AllowedValues = allowedValues.ToArray()
             };
         }
 

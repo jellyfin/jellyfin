@@ -70,7 +70,7 @@ namespace MediaBrowser.Api
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                return new string[] { };
+                return Array.Empty<string>();
             }
 
             if (removeEmpty)
@@ -88,7 +88,6 @@ namespace MediaBrowser.Api
 
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.Music
 
         public string UrlFormatString
         {
-            get { return "http://www.theaudiodb.com/album/{0}"; }
+            get { return "https://www.theaudiodb.com/album/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -41,7 +41,7 @@ namespace MediaBrowser.Providers.Music
 
         public string UrlFormatString
         {
-            get { return "http://www.theaudiodb.com/album/{0}"; }
+            get { return "https://www.theaudiodb.com/album/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -64,7 +64,7 @@ namespace MediaBrowser.Providers.Music
 
         public string UrlFormatString
         {
-            get { return "http://www.theaudiodb.com/artist/{0}"; }
+            get { return "https://www.theaudiodb.com/artist/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -87,7 +87,7 @@ namespace MediaBrowser.Providers.Music
 
         public string UrlFormatString
         {
-            get { return "http://www.theaudiodb.com/artist/{0}"; }
+            get { return "https://www.theaudiodb.com/artist/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)

@@ -87,18 +87,14 @@ namespace MediaBrowser.Api.Images
         /// Gets or sets the type of the image.
         /// </summary>
         /// <value>The type of the image.</value>
-        [ApiMember(Name = "Type", Description = "Image Type", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        [ApiMember(Name = "Type", Description = "Image Type", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        [ApiMember(Name = "Type", Description = "Image Type", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        [ApiMember(Name = "Type", Description = "Image Type", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET,POST,DELETE")]
         public ImageType Type { get; set; }
 
         /// <summary>
         /// Gets or sets the index.
         /// </summary>
         /// <value>The index.</value>
-        [ApiMember(Name = "Index", Description = "Image Index", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        [ApiMember(Name = "Index", Description = "Image Index", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
-        [ApiMember(Name = "Index", Description = "Image Index", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "DELETE")]
+        [ApiMember(Name = "Index", Description = "Image Index", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET,POST,DELETE")]
         public int? Index { get; set; }
     }
 }

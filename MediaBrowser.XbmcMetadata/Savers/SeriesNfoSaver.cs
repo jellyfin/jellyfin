@@ -17,17 +17,17 @@ namespace MediaBrowser.XbmcMetadata.Savers
 {
     public class SeriesNfoSaver : BaseNfoSaver
     {
-        protected override string GetLocalSavePath(IHasMetadata item)
+        protected override string GetLocalSavePath(BaseItem item)
         {
             return Path.Combine(item.Path, "tvshow.nfo");
         }
 
-        protected override string GetRootElementName(IHasMetadata item)
+        protected override string GetRootElementName(BaseItem item)
         {
             return "tvshow";
         }
 
-        public override bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
+        public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
         {
             if (!item.SupportsLocalMetadata)
             {
@@ -37,7 +37,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             return item is Series && updateType >= MinimumUpdateType;
         }
 
-        protected override void WriteCustomElements(IHasMetadata item, XmlWriter writer)
+        protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
             var series = (Series)item;
 
@@ -71,7 +71,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
-        protected override List<string> GetTagsUsed(IHasMetadata item)
+        protected override List<string> GetTagsUsed(BaseItem item)
         {
             var list = base.GetTagsUsed(item);
             list.AddRange(new string[]
@@ -80,7 +80,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 "episodeguide",
                 "season",
                 "episode",
-                "status"
+                "status",
+                "displayorder"
             });
             return list;
         }

@@ -12,5 +12,10 @@ namespace SocketHttpListener.Primitives
         {
             return Encoding.UTF8;
         }
+
+        public static Encoding GetDefaultEncoding()
+        {
+            return Encoding.UTF8;
+        }
     }
 }

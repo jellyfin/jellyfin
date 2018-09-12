@@ -1,5 +1,4 @@
-﻿using System;
-using Emby.Server.Implementations.Browser;
+﻿using Emby.Server.Implementations.Browser;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
@@ -40,17 +39,17 @@ namespace Emby.Server.Implementations.EntryPoints
                 return;
             }
 
-            if (_appHost.IsFirstRun)
+            if (!_config.Configuration.IsStartupWizardCompleted)
             {
-                BrowserLauncher.OpenDashboardPage("wizardstart.html", _appHost);
+                BrowserLauncher.OpenWebApp(_appHost);
             }
-            else if (_config.Configuration.IsStartupWizardCompleted && _config.Configuration.AutoRunWebApp)
+            else if (_config.Configuration.AutoRunWebApp)
             {
                 var options = ((ApplicationHost)_appHost).StartupOptions;
 
                 if (!options.ContainsOption("-noautorunwebapp"))
                 {
-                    BrowserLauncher.OpenDashboardPage("index.html", _appHost);
+                    BrowserLauncher.OpenWebApp(_appHost);
                 }
             }
         }
@@ -60,7 +59,6 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
         }
     }
 }

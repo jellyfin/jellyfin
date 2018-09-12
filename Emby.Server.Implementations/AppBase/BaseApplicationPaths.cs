@@ -49,6 +49,15 @@ namespace Emby.Server.Implementations.AppBase
             }
         }
 
+        private const string _virtualDataPath = "%AppDataPath%";
+        public string VirtualDataPath
+        {
+            get
+            {
+                return _virtualDataPath;
+            }
+        }
+
         /// <summary>
         /// Gets the image cache path.
         /// </summary>

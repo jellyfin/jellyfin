@@ -234,7 +234,6 @@ namespace Emby.Server.Implementations.Udp
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         /// <summary>
