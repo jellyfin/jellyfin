@@ -72,7 +72,7 @@ namespace Emby.Dlna.Service
                 builder.Append("<name>" + DescriptionXmlBuilder.Escape(item.Name ?? string.Empty) + "</name>");
                 builder.Append("<dataType>" + DescriptionXmlBuilder.Escape(item.DataType ?? string.Empty) + "</dataType>");
 
-                if (item.AllowedValues.Count > 0)
+                if (item.AllowedValues.Length > 0)
                 {
                     builder.Append("<allowedValueList>");
                     foreach (var allowedValue in item.AllowedValues)

@@ -1,25 +1,10 @@
 ﻿<div id="syncActivityPage" data-role="page" class="page type-interior syncConfigurationPage syncActivityPage withTabs fullWidthContent" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Sync">
 
-    <style>
-        .status-text-icon {
-            font-size: 94%;
-            background-color: #444;
-            display: inline-flex;
-            align-items: center;
-            text-align: center;
-            justify-content: center;
-        }
-
-        .zeroProgressStatus {
-            background-color: #444;
-        }
-    </style>
     <div>
         <div class="content-primary">
 
             <div style="text-align:right;">
                 <button is="emby-button" type="button" class="raised btnSync subdued">
-                    <i class="md-icon">sync</i>
                     <span>${ButtonConvertMedia}</span>
                 </button>
                 <progress max="100" min="0" style="width:100px;display:none;" class="syncProgress"></progress>

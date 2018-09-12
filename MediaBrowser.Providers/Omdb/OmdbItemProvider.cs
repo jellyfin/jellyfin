@@ -18,6 +18,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
 
 namespace MediaBrowser.Providers.Omdb
 {
@@ -30,8 +31,9 @@ namespace MediaBrowser.Providers.Omdb
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
+        private readonly IApplicationHost _appHost;
 
-        public OmdbItemProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogger logger, ILibraryManager libraryManager, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
+        public OmdbItemProvider(IJsonSerializer jsonSerializer, IApplicationHost appHost, IHttpClient httpClient, ILogger logger, ILibraryManager libraryManager, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
@@ -39,6 +41,7 @@ namespace MediaBrowser.Providers.Omdb
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
+            _appHost = appHost;
         }
 
         public int Order
@@ -46,7 +49,7 @@ namespace MediaBrowser.Providers.Omdb
             get
             {
                 // After primary option
-                return 1;
+                return 2;
             }
         }
 
@@ -124,7 +127,7 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            var url =  OmdbProvider.GetOmdbUrl(urlQuery, cancellationToken);
+            var url =  OmdbProvider.GetOmdbUrl(urlQuery, _appHost, cancellationToken);
 
             using (var response = await OmdbProvider.GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
@@ -134,7 +137,7 @@ namespace MediaBrowser.Providers.Omdb
 
                     if (isSearch)
                     {
-                        var searchResultList = _jsonSerializer.DeserializeFromStream<SearchResultList>(stream);
+                        var searchResultList = await _jsonSerializer.DeserializeFromStreamAsync<SearchResultList>(stream).ConfigureAwait(false);
                         if (searchResultList != null && searchResultList.Search != null)
                         {
                             resultList.AddRange(searchResultList.Search);
@@ -142,7 +145,7 @@ namespace MediaBrowser.Providers.Omdb
                     }
                     else
                     {
-                        var result = _jsonSerializer.DeserializeFromStream<SearchResult>(stream);
+                        var result = await _jsonSerializer.DeserializeFromStreamAsync<SearchResult>(stream).ConfigureAwait(false);
                         if (string.Equals(result.Response, "true", StringComparison.OrdinalIgnoreCase))
                         {
                             resultList.Add(result);
@@ -168,7 +171,7 @@ namespace MediaBrowser.Providers.Omdb
 
                         int parsedYear;
                         if (result.Year.Length > 0
-                            && int.TryParse(result.Year.Substring(0, Math.Min(result.Year.Length, 4)), NumberStyles.Any, CultureInfo.InvariantCulture, out parsedYear))
+                            && int.TryParse(result.Year.Substring(0, Math.Min(result.Year.Length, 4)), NumberStyles.Integer, CultureInfo.InvariantCulture, out parsedYear))
                         {
                             item.ProductionYear = parsedYear;
                         }
@@ -226,7 +229,7 @@ namespace MediaBrowser.Providers.Omdb
                 result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
                 result.HasMetadata = true;
 
-                await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _configurationManager).Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _appHost, _configurationManager).Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
             }
 
             return result;
@@ -258,7 +261,7 @@ namespace MediaBrowser.Providers.Omdb
                 result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
                 result.HasMetadata = true;
 
-                await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _configurationManager).Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _appHost, _configurationManager).Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
             }
 
             return result;

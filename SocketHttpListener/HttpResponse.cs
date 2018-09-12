@@ -7,6 +7,7 @@ using HttpStatusCode = SocketHttpListener.Net.HttpStatusCode;
 using HttpVersion = SocketHttpListener.Net.HttpVersion;
 using System.Linq;
 using MediaBrowser.Model.Services;
+using SocketHttpListener.Net;
 
 namespace SocketHttpListener
 {
@@ -51,8 +52,16 @@ namespace SocketHttpListener
         {
             get
             {
-                return Headers.GetCookies(true);
+                return GetCookies(Headers, true);
             }
+        }
+
+        private CookieCollection GetCookies(QueryParamCollection headers, bool response)
+        {
+            var name = response ? "Set-Cookie" : "Cookie";
+            return headers == null || !headers.Contains(name)
+                   ? new CookieCollection()
+                   : CookieHelper.Parse(headers[name], response);
         }
 
         public bool IsProxyAuthenticationRequired
@@ -107,17 +116,6 @@ namespace SocketHttpListener
         {
             var res = new HttpResponse(code);
             res.Headers["Connection"] = "close";
-
-            return res;
-        }
-
-        internal static HttpResponse CreateWebSocketResponse()
-        {
-            var res = new HttpResponse(HttpStatusCode.SwitchingProtocols);
-
-            var headers = res.Headers;
-            headers["Upgrade"] = "websocket";
-            headers["Connection"] = "Upgrade";
 
             return res;
         }

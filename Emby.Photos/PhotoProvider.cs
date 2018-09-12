@@ -14,10 +14,11 @@ using TagLib;
 using TagLib.IFD;
 using TagLib.IFD.Entries;
 using TagLib.IFD.Tags;
+using MediaBrowser.Model.MediaInfo;
 
 namespace Emby.Photos
 {
-    public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider
+    public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IHasItemChangeMonitor
     {
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
@@ -30,8 +31,22 @@ namespace Emby.Photos
             _imageProcessor = imageProcessor;
         }
 
+        public bool HasChanged(BaseItem item, IDirectoryService directoryService)
+        {
+            if (item.IsFileProtocol)
+            {
+                var file = directoryService.GetFile(item.Path);
+                if (file != null && file.LastWriteTimeUtc != item.DateModified)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         // These are causing taglib to hang
-        private string[] _includextensions = new string[] { ".jpg", ".jpeg", ".png", ".tiff" };
+        private string[] _includextensions = new string[] { ".jpg", ".jpeg", ".png", ".tiff", ".cr2" };
 
         public Task<ItemUpdateType> FetchAsync(Photo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
@@ -108,7 +123,10 @@ namespace Emby.Photos
 
                                 if (!string.IsNullOrWhiteSpace(image.ImageTag.Title))
                                 {
-                                    item.Name = image.ImageTag.Title;
+                                    if (!item.LockedFields.Contains(MetadataFields.Name))
+                                    {
+                                        item.Name = image.ImageTag.Title;
+                                    }
                                 }
 
                                 var dateTaken = image.ImageTag.DateTime;
@@ -119,7 +137,7 @@ namespace Emby.Photos
                                     item.ProductionYear = dateTaken.Value.Year;
                                 }
 
-                                item.Genres = image.ImageTag.Genres.ToList();
+                                item.Genres = image.ImageTag.Genres;
                                 item.Tags = image.ImageTag.Keywords;
                                 item.Software = image.ImageTag.Software;
 
@@ -161,15 +179,23 @@ namespace Emby.Photos
                 }
             }
 
-            if (!item.Width.HasValue || !item.Height.HasValue)
+            if (item.Width <= 0 || item.Height <= 0)
             {
                 var img = item.GetImageInfo(ImageType.Primary, 0);
-                var size = _imageProcessor.GetImageSize(item, img, false, false);
 
-                if (size.Width > 0 && size.Height > 0)
+                try
                 {
-                    item.Width = Convert.ToInt32(size.Width);
-                    item.Height = Convert.ToInt32(size.Height);
+                    var size = _imageProcessor.GetImageSize(item, img, false, false);
+
+                    if (size.Width > 0 && size.Height > 0)
+                    {
+                        item.Width = Convert.ToInt32(size.Width);
+                        item.Height = Convert.ToInt32(size.Height);
+                    }
+                }
+                catch (ArgumentException)
+                {
+                    // format not supported
                 }
             }
 

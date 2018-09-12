@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Api
 {
@@ -36,7 +37,7 @@ namespace MediaBrowser.Api
     public class UpdateItemContentType : IReturnVoid
     {
         [ApiMember(Name = "ItemId", Description = "The id of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string ItemId { get; set; }
+        public Guid ItemId { get; set; }
 
         [ApiMember(Name = "ContentType", Description = "The content type of the item", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string ContentType { get; set; }
@@ -49,13 +50,15 @@ namespace MediaBrowser.Api
         private readonly IProviderManager _providerManager;
         private readonly ILocalizationManager _localizationManager;
         private readonly IServerConfigurationManager _config;
+        private readonly IFileSystem _fileSystem;
 
-        public ItemUpdateService(ILibraryManager libraryManager, IProviderManager providerManager, ILocalizationManager localizationManager, IServerConfigurationManager config)
+        public ItemUpdateService(IFileSystem fileSystem, ILibraryManager libraryManager, IProviderManager providerManager, ILocalizationManager localizationManager, IServerConfigurationManager config)
         {
             _libraryManager = libraryManager;
             _providerManager = providerManager;
             _localizationManager = localizationManager;
             _config = config;
+            _fileSystem = fileSystem;
         }
 
         public object Get(GetMetadataEditorInfo request)
@@ -199,6 +202,9 @@ namespace MediaBrowser.Api
             var newLockData = request.LockData ?? false;
             var isLockedChanged = item.IsLocked != newLockData;
 
+            var series = item as Series;
+            var displayOrderChanged = series != null && !string.Equals(series.DisplayOrder ?? string.Empty, request.DisplayOrder ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+
             // Do this first so that metadata savers can pull the updates from the database.
             if (request.People != null)
             {
@@ -221,6 +227,17 @@ namespace MediaBrowser.Api
                     child.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
                 }
             }
+
+            if (displayOrderChanged)
+            {
+                _providerManager.QueueRefresh(series.Id, new MetadataRefreshOptions(_fileSystem)
+                {
+                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ReplaceAllMetadata = true
+
+                }, RefreshPriority.High);
+            }
         }
 
         private DateTime NormalizeDateTime(DateTime val)
@@ -238,7 +255,6 @@ namespace MediaBrowser.Api
             item.CriticRating = request.CriticRating;
 
             item.CommunityRating = request.CommunityRating;
-            item.HomePageUrl = request.HomePageUrl;
             item.IndexNumber = request.IndexNumber;
             item.ParentIndexNumber = request.ParentIndexNumber;
             item.Overview = request.Overview;
@@ -247,12 +263,9 @@ namespace MediaBrowser.Api
             var episode = item as Episode;
             if (episode != null)
             {
-                episode.DvdSeasonNumber = request.DvdSeasonNumber;
-                episode.DvdEpisodeNumber = request.DvdEpisodeNumber;
                 episode.AirsAfterSeasonNumber = request.AirsAfterSeasonNumber;
                 episode.AirsBeforeEpisodeNumber = request.AirsBeforeEpisodeNumber;
                 episode.AirsBeforeSeasonNumber = request.AirsBeforeSeasonNumber;
-                episode.AbsoluteEpisodeNumber = request.AbsoluteEpisodeNumber;
             }
 
             item.Tags = request.Tags;

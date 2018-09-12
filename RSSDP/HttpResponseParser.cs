@@ -16,7 +16,7 @@ namespace Rssdp.Infrastructure
 
 		#region Fields & Constants
 
-		private static readonly string[] ContentHeaderNames = new string[]
+		private readonly string[] ContentHeaderNames = new string[]
 				{
 					"Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
 				};
@@ -37,7 +37,7 @@ namespace Rssdp.Infrastructure
 			{
 				retVal = new System.Net.Http.HttpResponseMessage();
 
-				retVal.Content = Parse(retVal, retVal.Headers, data);
+				Parse(retVal, retVal.Headers, data);
 
 				return retVal;
 			}

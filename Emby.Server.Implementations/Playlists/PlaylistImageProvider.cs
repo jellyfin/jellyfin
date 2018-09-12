@@ -28,11 +28,11 @@ namespace Emby.Server.Implementations.Playlists
         {
         }
 
-        protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
+        protected override List<BaseItem> GetItemsWithImages(BaseItem item)
         {
             var playlist = (Playlist)item;
 
-            var items = playlist.GetManageableItems()
+            return playlist.GetManageableItems()
                 .Select(i =>
                 {
                     var subItem = i.Item2;
@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Playlists
                         return subItem;
                     }
 
-                    var parent = subItem.IsOwnedItem ? subItem.GetOwner() : subItem.GetParent();
+                    var parent = subItem.GetOwner() ?? subItem.GetParent();
 
                     if (parent != null && parent.HasImage(ImageType.Primary))
                     {
@@ -66,9 +66,9 @@ namespace Emby.Server.Implementations.Playlists
                     return null;
                 })
                 .Where(i => i != null)
-                .DistinctBy(i => i.Id);
-
-            return GetFinalItems(items);
+                .OrderBy(i => Guid.NewGuid())
+                .DistinctBy(i => i.Id)
+                .ToList();
         }
     }
 
@@ -81,27 +81,20 @@ namespace Emby.Server.Implementations.Playlists
             _libraryManager = libraryManager;
         }
 
-        protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
+        protected override List<BaseItem> GetItemsWithImages(BaseItem item)
         {
-            var items = _libraryManager.GetItemList(new InternalItemsQuery
+            return _libraryManager.GetItemList(new InternalItemsQuery
             {
                 Genres = new[] { item.Name },
                 IncludeItemTypes = new[] { typeof(MusicAlbum).Name, typeof(MusicVideo).Name, typeof(Audio).Name },
-                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending) },
+                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending) },
                 Limit = 4,
                 Recursive = true,
                 ImageTypes = new[] { ImageType.Primary },
                 DtoOptions = new DtoOptions(false)
 
             });
-
-            return GetFinalItems(items);
         }
-
-        //protected override Task<string> CreateImage(IHasMetadata item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
-        //{
-        //    return CreateSingleImage(itemsWithImages, outputPathWithoutExtension, ImageType.Primary);
-        //}
     }
 
     public class GenreImageProvider : BaseDynamicImageProvider<Genre>
@@ -113,21 +106,18 @@ namespace Emby.Server.Implementations.Playlists
             _libraryManager = libraryManager;
         }
 
-        protected override List<BaseItem> GetItemsWithImages(IHasMetadata item)
+        protected override List<BaseItem> GetItemsWithImages(BaseItem item)
         {
-            var items = _libraryManager.GetItemList(new InternalItemsQuery
+            return _libraryManager.GetItemList(new InternalItemsQuery
             {
                 Genres = new[] { item.Name },
                 IncludeItemTypes = new[] { typeof(Series).Name, typeof(Movie).Name },
-                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending) },
+                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending) },
                 Limit = 4,
                 Recursive = true,
                 ImageTypes = new[] { ImageType.Primary },
                 DtoOptions = new DtoOptions(false)
-
             });
-
-            return GetFinalItems(items);
         }
 
         //protected override Task<string> CreateImage(IHasMetadata item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)

@@ -16,17 +16,17 @@ namespace MediaBrowser.XbmcMetadata.Savers
 {
     public class SeasonNfoSaver : BaseNfoSaver
     {
-        protected override string GetLocalSavePath(IHasMetadata item)
+        protected override string GetLocalSavePath(BaseItem item)
         {
             return Path.Combine(item.Path, "season.nfo");
         }
 
-        protected override string GetRootElementName(IHasMetadata item)
+        protected override string GetRootElementName(BaseItem item)
         {
             return "season";
         }
 
-        public override bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
+        public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
         {
             if (!item.SupportsLocalMetadata)
             {
@@ -41,7 +41,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 			return updateType >= MinimumUpdateType || (updateType >= ItemUpdateType.MetadataImport && FileSystem.FileExists(GetSavePath(item)));
         }
 
-        protected override void WriteCustomElements(IHasMetadata item, XmlWriter writer)
+        protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
             var season = (Season)item;
 
@@ -51,7 +51,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
-        protected override List<string> GetTagsUsed(IHasMetadata item)
+        protected override List<string> GetTagsUsed(BaseItem item)
         {
             var list = base.GetTagsUsed(item);
             list.AddRange(new string[]

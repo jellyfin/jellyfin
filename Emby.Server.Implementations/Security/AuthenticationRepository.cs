@@ -11,19 +11,21 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using SQLitePCL.pretty;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Devices;
 
 namespace Emby.Server.Implementations.Security
 {
     public class AuthenticationRepository : BaseSqliteRepository, IAuthenticationRepository
     {
-        private readonly IServerApplicationPaths _appPaths;
+        private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public AuthenticationRepository(ILogger logger, IServerApplicationPaths appPaths)
+        public AuthenticationRepository(ILogger logger, IServerConfigurationManager config)
             : base(logger)
         {
-            _appPaths = appPaths;
-            DbFilePath = Path.Combine(appPaths.DataPath, "authentication.db");
+            _config = config;
+            DbFilePath = Path.Combine(config.ApplicationPaths.DataPath, "authentication.db");
         }
 
         public void Initialize()
@@ -32,39 +34,65 @@ namespace Emby.Server.Implementations.Security
             {
                 RunDefaultInitialization(connection);
 
+                var tableNewlyCreated = !TableExists(connection, "Tokens");
+
                 string[] queries = {
 
-                               "create table if not exists AccessTokens (Id GUID PRIMARY KEY NOT NULL, AccessToken TEXT NOT NULL, DeviceId TEXT NOT NULL, AppName TEXT NOT NULL, AppVersion TEXT NOT NULL, DeviceName TEXT NOT NULL, UserId TEXT, IsActive BIT NOT NULL, DateCreated DATETIME NOT NULL, DateRevoked DATETIME)",
-                                "create index if not exists idx_AccessTokens on AccessTokens(Id)"
+                                "create table if not exists Tokens (Id INTEGER PRIMARY KEY, AccessToken TEXT NOT NULL, DeviceId TEXT NOT NULL, AppName TEXT NOT NULL, AppVersion TEXT NOT NULL, DeviceName TEXT NOT NULL, UserId TEXT, UserName TEXT, IsActive BIT NOT NULL, DateCreated DATETIME NOT NULL, DateLastActivity DATETIME NOT NULL)",
+                                "create table if not exists Devices (Id TEXT NOT NULL PRIMARY KEY, CustomName TEXT, Capabilities TEXT)",
+
+                                "drop index if exists idx_AccessTokens",
+                                "drop index if exists Tokens1",
+                                "drop index if exists Tokens2",
+                                "create index if not exists Tokens3 on Tokens (AccessToken, DateLastActivity)",
+                                "create index if not exists Tokens4 on Tokens (Id, DateLastActivity)",
+                                "create index if not exists Devices1 on Devices (Id)"
                                };
 
                 connection.RunQueries(queries);
 
-                connection.RunInTransaction(db =>
-                {
-                    var existingColumnNames = GetColumnNames(db, "AccessTokens");
-
-                    AddColumn(db, "AccessTokens", "AppVersion", "TEXT", existingColumnNames);
-
-                }, TransactionMode);
+                TryMigrate(connection, tableNewlyCreated);
             }
         }
 
-        public void Create(AuthenticationInfo info, CancellationToken cancellationToken)
+        private void TryMigrate(ManagedConnection connection, bool tableNewlyCreated)
         {
-            info.Id = Guid.NewGuid().ToString("N");
+            try
+            {
+                if (tableNewlyCreated && TableExists(connection, "AccessTokens"))
+                {
+                    connection.RunInTransaction(db =>
+                    {
+                        var existingColumnNames = GetColumnNames(db, "AccessTokens");
 
-            Update(info, cancellationToken);
+                        AddColumn(db, "AccessTokens", "UserName", "TEXT", existingColumnNames);
+                        AddColumn(db, "AccessTokens", "DateLastActivity", "DATETIME", existingColumnNames);
+                        AddColumn(db, "AccessTokens", "AppVersion", "TEXT", existingColumnNames);
+
+                    }, TransactionMode);
+
+                    connection.RunQueries(new[]
+                    {
+                        "update accesstokens set DateLastActivity=DateCreated where DateLastActivity is null",
+                        "update accesstokens set DeviceName='Unknown' where DeviceName is null",
+                        "update accesstokens set AppName='Unknown' where AppName is null",
+                        "update accesstokens set AppVersion='1' where AppVersion is null",
+                        "INSERT INTO Tokens (AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, UserName, IsActive, DateCreated, DateLastActivity) SELECT AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, UserName, IsActive, DateCreated, DateLastActivity FROM AccessTokens where deviceid not null and devicename not null and appname not null and isactive=1"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error migrating authentication database", ex);
+            }
         }
 
-        public void Update(AuthenticationInfo info, CancellationToken cancellationToken)
+        public void Create(AuthenticationInfo info)
         {
             if (info == null)
             {
                 throw new ArgumentNullException("info");
             }
-
-            cancellationToken.ThrowIfCancellationRequested();
 
             using (WriteLock.Write())
             {
@@ -72,27 +100,19 @@ namespace Emby.Server.Implementations.Security
                 {
                     connection.RunInTransaction(db =>
                     {
-                        using (var statement = db.PrepareStatement("replace into AccessTokens (Id, AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, IsActive, DateCreated, DateRevoked) values (@Id, @AccessToken, @DeviceId, @AppName, @AppVersion, @DeviceName, @UserId, @IsActive, @DateCreated, @DateRevoked)"))
+                        using (var statement = db.PrepareStatement("insert into Tokens (AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, UserName, IsActive, DateCreated, DateLastActivity) values (@AccessToken, @DeviceId, @AppName, @AppVersion, @DeviceName, @UserId, @UserName, @IsActive, @DateCreated, @DateLastActivity)"))
                         {
-                            statement.TryBind("@Id", info.Id.ToGuidBlob());
                             statement.TryBind("@AccessToken", info.AccessToken);
 
                             statement.TryBind("@DeviceId", info.DeviceId);
                             statement.TryBind("@AppName", info.AppName);
                             statement.TryBind("@AppVersion", info.AppVersion);
                             statement.TryBind("@DeviceName", info.DeviceName);
-                            statement.TryBind("@UserId", info.UserId);
-                            statement.TryBind("@IsActive", info.IsActive);
+                            statement.TryBind("@UserId", (info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N")));
+                            statement.TryBind("@UserName", info.UserName);
+                            statement.TryBind("@IsActive", true);
                             statement.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
-
-                            if (info.DateRevoked.HasValue)
-                            {
-                                statement.TryBind("@DateRevoked", info.DateRevoked.Value.ToDateTimeParamValue());
-                            }
-                            else
-                            {
-                                statement.TryBindNull("@DateRevoked");
-                            }
+                            statement.TryBind("@DateLastActivity", info.DateLastActivity.ToDateTimeParamValue());
 
                             statement.MoveNext();
                         }
@@ -102,28 +122,82 @@ namespace Emby.Server.Implementations.Security
             }
         }
 
-        private const string BaseSelectText = "select Id, AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, IsActive, DateCreated, DateRevoked from AccessTokens";
+        public void Update(AuthenticationInfo info)
+        {
+            if (info == null)
+            {
+                throw new ArgumentNullException("entry");
+            }
+
+            using (WriteLock.Write())
+            {
+                using (var connection = CreateConnection())
+                {
+                    connection.RunInTransaction(db =>
+                    {
+                        using (var statement = db.PrepareStatement("Update Tokens set AccessToken=@AccessToken, DeviceId=@DeviceId, AppName=@AppName, AppVersion=@AppVersion, DeviceName=@DeviceName, UserId=@UserId, UserName=@UserName, DateCreated=@DateCreated, DateLastActivity=@DateLastActivity where Id=@Id"))
+                        {
+                            statement.TryBind("@Id", info.Id);
+
+                            statement.TryBind("@AccessToken", info.AccessToken);
+
+                            statement.TryBind("@DeviceId", info.DeviceId);
+                            statement.TryBind("@AppName", info.AppName);
+                            statement.TryBind("@AppVersion", info.AppVersion);
+                            statement.TryBind("@DeviceName", info.DeviceName);
+                            statement.TryBind("@UserId", (info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N")));
+                            statement.TryBind("@UserName", info.UserName);
+                            statement.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
+                            statement.TryBind("@DateLastActivity", info.DateLastActivity.ToDateTimeParamValue());
+
+                            statement.MoveNext();
+                        }
+                    }, TransactionMode);
+                }
+            }
+        }
+
+        public void Delete(AuthenticationInfo info)
+        {
+            if (info == null)
+            {
+                throw new ArgumentNullException("entry");
+            }
+
+            using (WriteLock.Write())
+            {
+                using (var connection = CreateConnection())
+                {
+                    connection.RunInTransaction(db =>
+                    {
+                        using (var statement = db.PrepareStatement("Delete from Tokens where Id=@Id"))
+                        {
+                            statement.TryBind("@Id", info.Id);
+
+                            statement.MoveNext();
+                        }
+                    }, TransactionMode);
+                }
+            }
+        }
+
+        private const string BaseSelectText = "select Tokens.Id, AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, UserName, DateCreated, DateLastActivity, Devices.CustomName from Tokens left join Devices on Tokens.DeviceId=Devices.Id";
 
         private void BindAuthenticationQueryParams(AuthenticationInfoQuery query, IStatement statement)
         {
-            if (!string.IsNullOrWhiteSpace(query.AccessToken))
+            if (!string.IsNullOrEmpty(query.AccessToken))
             {
                 statement.TryBind("@AccessToken", query.AccessToken);
             }
 
-            if (!string.IsNullOrWhiteSpace(query.UserId))
+            if (!query.UserId.Equals(Guid.Empty))
             {
-                statement.TryBind("@UserId", query.UserId);
+                statement.TryBind("@UserId", query.UserId.ToString("N"));
             }
 
-            if (!string.IsNullOrWhiteSpace(query.DeviceId))
+            if (!string.IsNullOrEmpty(query.DeviceId))
             {
                 statement.TryBind("@DeviceId", query.DeviceId);
-            }
-
-            if (query.IsActive.HasValue)
-            {
-                statement.TryBind("@IsActive", query.IsActive.Value);
             }
         }
 
@@ -138,26 +212,19 @@ namespace Emby.Server.Implementations.Security
 
             var whereClauses = new List<string>();
 
-            var startIndex = query.StartIndex ?? 0;
-
-            if (!string.IsNullOrWhiteSpace(query.AccessToken))
+            if (!string.IsNullOrEmpty(query.AccessToken))
             {
                 whereClauses.Add("AccessToken=@AccessToken");
             }
 
-            if (!string.IsNullOrWhiteSpace(query.UserId))
-            {
-                whereClauses.Add("UserId=@UserId");
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.DeviceId))
+            if (!string.IsNullOrEmpty(query.DeviceId))
             {
                 whereClauses.Add("DeviceId=@DeviceId");
             }
 
-            if (query.IsActive.HasValue)
+            if (!query.UserId.Equals(Guid.Empty))
             {
-                whereClauses.Add("IsActive=@IsActive");
+                whereClauses.Add("UserId=@UserId");
             }
 
             if (query.HasUser.HasValue)
@@ -176,28 +243,23 @@ namespace Emby.Server.Implementations.Security
               string.Empty :
               " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
 
-            if (startIndex > 0)
+            commandText += whereTextWithoutPaging;
+
+            commandText += " ORDER BY DateLastActivity desc";
+
+            if (query.Limit.HasValue || query.StartIndex.HasValue)
             {
-                var pagingWhereText = whereClauses.Count == 0 ?
-                    string.Empty :
-                    " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
+                var offset = query.StartIndex ?? 0;
 
-                whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM AccessTokens {0} ORDER BY DateCreated LIMIT {1})",
-                    pagingWhereText,
-                    startIndex.ToString(_usCulture)));
-            }
+                if (query.Limit.HasValue || offset > 0)
+                {
+                    commandText += " LIMIT " + (query.Limit ?? int.MaxValue).ToString(CultureInfo.InvariantCulture);
+                }
 
-            var whereText = whereClauses.Count == 0 ?
-                string.Empty :
-                " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
-
-            commandText += whereText;
-
-            commandText += " ORDER BY DateCreated";
-
-            if (query.Limit.HasValue)
-            {
-                commandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
+                if (offset > 0)
+                {
+                    commandText += " OFFSET " + offset.ToString(CultureInfo.InvariantCulture);
+                }
             }
 
             var list = new List<AuthenticationInfo>();
@@ -212,7 +274,7 @@ namespace Emby.Server.Implementations.Security
 
                         var statementTexts = new List<string>();
                         statementTexts.Add(commandText);
-                        statementTexts.Add("select count (Id) from AccessTokens" + whereTextWithoutPaging);
+                        statementTexts.Add("select count (Id) from Tokens" + whereTextWithoutPaging);
 
                         var statements = PrepareAllSafe(db, statementTexts)
                             .ToList();
@@ -244,38 +306,11 @@ namespace Emby.Server.Implementations.Security
             }
         }
 
-        public AuthenticationInfo Get(string id)
-        {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException("id");
-            }
-
-            using (WriteLock.Read())
-            {
-                using (var connection = CreateConnection(true))
-                {
-                    var commandText = BaseSelectText + " where Id=@Id";
-
-                    using (var statement = connection.PrepareStatement(commandText))
-                    {
-                        statement.BindParameters["@Id"].Bind(id.ToGuidBlob());
-
-                        foreach (var row in statement.ExecuteQuery())
-                        {
-                            return Get(row);
-                        }
-                        return null;
-                    }
-                }
-            }
-        }
-
         private AuthenticationInfo Get(IReadOnlyList<IResultSetValue> reader)
         {
             var info = new AuthenticationInfo
             {
-                Id = reader[0].ReadGuidFromBlob().ToString("N"),
+                Id = reader[0].ToInt64(),
                 AccessToken = reader[1].ToString()
             };
 
@@ -301,18 +336,95 @@ namespace Emby.Server.Implementations.Security
 
             if (reader[6].SQLiteType != SQLiteType.Null)
             {
-                info.UserId = reader[6].ToString();
+                info.UserId = new Guid(reader[6].ToString());
             }
 
-            info.IsActive = reader[7].ToBool();
+            if (reader[7].SQLiteType != SQLiteType.Null)
+            {
+                info.UserName = reader[7].ToString();
+            }
+
             info.DateCreated = reader[8].ReadDateTime();
 
             if (reader[9].SQLiteType != SQLiteType.Null)
             {
-                info.DateRevoked = reader[9].ReadDateTime();
+                info.DateLastActivity = reader[9].ReadDateTime();
+            }
+            else
+            {
+                info.DateLastActivity = info.DateCreated;
+            }
+
+            if (reader[10].SQLiteType != SQLiteType.Null)
+            {
+                info.DeviceName = reader[10].ToString();
             }
 
             return info;
+        }
+
+        public DeviceOptions GetDeviceOptions(string deviceId)
+        {
+            using (WriteLock.Read())
+            {
+                using (var connection = CreateConnection(true))
+                {
+                    return connection.RunInTransaction(db =>
+                    {
+                        using (var statement = PrepareStatementSafe(db, "select CustomName from Devices where Id=@DeviceId"))
+                        {
+                            statement.TryBind("@DeviceId", deviceId);
+
+                            var result = new DeviceOptions();
+
+                            foreach (var row in statement.ExecuteQuery())
+                            {
+                                if (row[0].SQLiteType != SQLiteType.Null)
+                                {
+                                    result.CustomName = row[0].ToString();
+                                }
+                            }
+
+                            return result;
+                        }
+
+                    }, ReadTransactionMode);
+                }
+            }
+        }
+
+        public void UpdateDeviceOptions(string deviceId, DeviceOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            using (WriteLock.Write())
+            {
+                using (var connection = CreateConnection())
+                {
+                    connection.RunInTransaction(db =>
+                    {
+                        using (var statement = db.PrepareStatement("replace into devices (Id, CustomName, Capabilities) VALUES (@Id, @CustomName, (Select Capabilities from Devices where Id=@Id))"))
+                        {
+                            statement.TryBind("@Id", deviceId);
+
+                            if (string.IsNullOrWhiteSpace(options.CustomName))
+                            {
+                                statement.TryBindNull("@CustomName");
+                            }
+                            else
+                            {
+                                statement.TryBind("@CustomName", options.CustomName);
+                            }
+
+                            statement.MoveNext();
+                        }
+
+                    }, TransactionMode);
+                }
+            }
         }
     }
 }

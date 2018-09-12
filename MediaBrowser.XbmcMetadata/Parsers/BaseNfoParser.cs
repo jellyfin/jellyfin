@@ -187,18 +187,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         return;
                     }
 
-                    using (var ms = new MemoryStream())
+                    // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
+                    try
                     {
-                        var bytes = Encoding.UTF8.GetBytes(xml);
-
-                        ms.Write(bytes, 0, bytes.Length);
-                        ms.Position = 0;
-
-                        // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
-                        try
+                        using (var stringReader = new StringReader(xml))
                         {
                             // Use XmlReader for best performance
-                            using (var reader = XmlReader.Create(ms, settings))
+                            using (var reader = XmlReader.Create(stringReader, settings))
                             {
                                 reader.MoveToContent();
                                 reader.Read();
@@ -219,10 +214,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 }
                             }
                         }
-                        catch (XmlException)
-                        {
+                    }
+                    catch (XmlException)
+                    {
 
-                        }
                     }
                 }
             }
@@ -251,7 +246,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 var tmdbId = xml.Substring(index + srch.Length).TrimEnd('/').Split('-')[0];
                 int value;
-                if (!string.IsNullOrWhiteSpace(tmdbId) && int.TryParse(tmdbId, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+                if (!string.IsNullOrWhiteSpace(tmdbId) && int.TryParse(tmdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
                 {
                     item.SetProviderId(MetadataProviders.Tmdb, value.ToString(_usCulture));
                 }
@@ -267,7 +262,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 {
                     var tvdbId = xml.Substring(index + srch.Length).TrimEnd('/');
                     int value;
-                    if (!string.IsNullOrWhiteSpace(tvdbId) && int.TryParse(tvdbId, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+                    if (!string.IsNullOrWhiteSpace(tvdbId) && int.TryParse(tvdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
                     {
                         item.SetProviderId(MetadataProviders.Tvdb, value.ToString(_usCulture));
                     }
@@ -376,18 +371,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var val = reader.ReadElementContentAsString();
 
                         item.PreferredMetadataCountryCode = val;
-
-                        break;
-                    }
-
-                case "website":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.HomePageUrl = val;
-                        }
 
                         break;
                     }
@@ -592,15 +575,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasTrailer = item as IHasTrailers;
-                        if (hasTrailer != null)
+                        if (!string.IsNullOrWhiteSpace(val))
                         {
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                val = val.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", "https://www.youtube.com/watch?v=", StringComparison.OrdinalIgnoreCase);
+                            val = val.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", BaseNfoSaver.YouTubeWatchUrl, StringComparison.OrdinalIgnoreCase);
 
-                                hasTrailer.AddTrailerUrl(val);
-                            }
+                            item.AddTrailerUrl(val);
                         }
                         break;
                     }
@@ -977,7 +956,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             value = value.Trim().Trim(separator);
 
-            return string.IsNullOrWhiteSpace(value) ? new string[] { } : Split(value, separator, StringSplitOptions.RemoveEmptyEntries);
+            return string.IsNullOrWhiteSpace(value) ? Array.Empty<string>() : Split(value, separator, StringSplitOptions.RemoveEmptyEntries);
         }
 
         /// <summary>
@@ -987,7 +966,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="separators">The separators.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String[][].</returns>
-        private static string[] Split(string val, char[] separators, StringSplitOptions options)
+        private string[] Split(string val, char[] separators, StringSplitOptions options)
         {
             return val.Split(separators, options);
         }

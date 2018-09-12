@@ -1,31 +1,18 @@
-﻿<div id="userProfilesPage" data-role="page" class="page type-interior userProfilesPage fullWidthContent" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userprofilespage,emby-button">
+﻿<div id="userProfilesPage" data-role="page" class="page type-interior userProfilesPage fullWidthContent" data-require="scripts/userprofilespage,emby-button">
 
     <div>
         <div class="content-primary">
-            <div class="verticalSection" style="margin-bottom:3em;">
-                <div class="sectionTitleContainer">
-                    <h2 class="sectionTitle">
+            <div class="verticalSection verticalSection-extrabottompadding">
+                <div class="sectionTitleContainer sectionTitleContainer-cards">
+                    <h2 class="sectionTitle sectionTitle-cards">
                         <span>${HeaderUsers}</span>
                     </h2>
-                    <button is="emby-button" type="button" class="raised btnAddUser submit raised-mini sectionTitleButton" style="margin-left:1em;" title="${ButtonAddUser}">
+                    <button is="emby-button" type="button" class="fab btnAddUser submit sectionTitleButton" style="margin-left:1em;" title="${ButtonAddUser}">
                         <i class="md-icon">&#xE145;</i>
-                        <span>${ButtonAdd}</span>
                     </button>
+                    <a style="margin-left:2em!important;" is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Users">${Help}</a>
                 </div>
                 <div class="localUsers itemsContainer vertical-wrap" style="margin-top: .5em;"></div>
-            </div>
-
-            <div class="verticalSection" style="margin-bottom:3em;">
-                <div class="sectionTitleContainer">
-                    <h2 class="sectionTitle">
-                        ${HeaderGuests}
-                    </h2>
-                    <button is="emby-button" type="button" class="raised btnInvite submit raised-mini" style="margin-left:1em;" title="${ButtonInviteUser}">
-                        <i class="md-icon">&#xE145;</i>
-                        <span>${ButtonAdd}</span>
-                    </button>
-                </div>
-                <div class="connectUsers itemsContainer vertical-wrap" style="margin-top:.5em;"></div>
             </div>
 
             <div class="sectionPendingGuests verticalSection hide">

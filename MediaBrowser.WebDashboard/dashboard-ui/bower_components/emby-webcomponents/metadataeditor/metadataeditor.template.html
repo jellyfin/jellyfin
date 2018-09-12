@@ -3,13 +3,13 @@
     <h3 class="formDialogHeaderTitle">
         ${Edit}
     </h3>
-    <div style="margin-left: auto; display: flex; align-items: center; justify-content: center;">
+    <div style="margin-left: auto;" class="flex align-items-center justify-content-center">
         <button is="emby-button" type="button" class="btnHeaderSave button-accent-flat button-flat hide" tabindex="-1">
             <i class="md-icon">check</i>
             <span>${Save}</span>
         </button>
         <button is="paper-icon-button-light" class="btnMore autoSize" tabindex="-1">
-            <i class="md-icon">more_vert</i>
+            <i class="md-icon">more_horiz</i>
         </button>
     </div>
 </div>
@@ -24,7 +24,11 @@
                     <select is="emby-select" id="selectContentType" label="${LabelContentType}"></select>
                 </div>
                 <div id="fldPath" class="inputContainer">
-                    <input is="emby-input" id="txtPath" type="text" label="${LabelPath}" readonly />
+                    <div class="align-items-center flex">
+                        <div class="flex-grow">
+                            <input is="emby-input" id="txtPath" type="text" label="${LabelPath}" class="flex-grow" readonly />
+                        </div>
+                    </div>
                 </div>
                 <div class="inputContainer">
                     <input is="emby-input" id="txtName" type="text" label="${LabelTitle}" required="required" />
@@ -64,9 +68,6 @@
                 </div>
                 <div id="fldCriticRating" class="hide inputContainer">
                     <input is="emby-input" id="txtCriticRating" type="number" step=".1" label="${LabelCriticRating}" />
-                </div>
-                <div class="inputContainer websiteFieldContainer hide">
-                    <input is="emby-input" id="txtHomePageUrl" type="text" label="${LabelWebsite}" />
                 </div>
                 <div id="fldTagline" class="hide inputContainer">
                     <input is="emby-input" id="txtTagline" type="text" label="${LabelTagline}" />
@@ -147,21 +148,12 @@
                         <option value="MVC">MVC</option>
                     </select>
                 </div>
-            </div>
 
-            <div class="detailSection hide" id="collapsibleDvdEpisodeInfo">
-                <h2>
-                    ${HeaderAlternateEpisodeNumbers}
-                </h2>
-                <div class="inputContainer">
-                    <input is="emby-input" id="txtDvdSeasonNumber" type="number" pattern="[0-9]*" label="${LabelDvdSeasonNumber}" />
+                <div id="fldDisplayOrder" class="fldDisplaySetting selectContainer hide">
+                    <select is="emby-select" id="selectDisplayOrder" label="${LabelDisplayOrder}"></select>
+                    <div class="fieldDescription seriesDisplayOrderDescription">${SeriesDisplayOrderHelp}</div>
                 </div>
-                <div class="inputContainer">
-                    <input is="emby-input" id="txtDvdEpisodeNumber" type="number" pattern="[0-9]*" label="${LabelDvdEpisodeNumber}" />
-                </div>
-                <div class="inputContainer">
-                    <input is="emby-input" id="txtAbsoluteEpisodeNumber" type="number" pattern="[0-9]*" label="${LabelAbsoluteEpisodeNumber}" />
-                </div>
+
             </div>
 
             <div class="detailSection hide" id="collapsibleSpecialEpisodeInfo">
@@ -187,22 +179,12 @@
                 </div>
             </div>
 
-            <div class="detailSection hide" id="collapsibleDisplaySettings">
-                <h2>
-                    ${HeaderDisplaySettings}
-                </h2>
-                <div id="fldDisplayOrder" class="fldDisplaySetting selectContainer">
-                    <select is="emby-select" id="selectDisplayOrder" label="${LabelDisplayOrder}"></select>
-                </div>
-            </div>
-
             <div id="genresCollapsible" class="editableListviewContainer hide" style="margin-top: 3em;">
                 <h2 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                     ${Genres}
                 </h2>
-                <button is="emby-button" type="button" class="raised raised-mini btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
+                <button is="emby-button" type="button" class="fab btnAddTextItem submit" style="margin-left:1em;" title="${Add}">
                     <i class="md-icon">&#xE145;</i>
-                    <span>${Add}</span>
                 </button>
                 <div class="paperList" id="listGenres"></div>
             </div>
@@ -210,9 +192,8 @@
                 <h2 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                     ${People}
                 </h2>
-                <button is="emby-button" type="button" id="btnAddPerson" class="raised raised-mini btnAddPerson submit mini" style="margin-left:1em;" title="${Add}">
+                <button is="emby-button" type="button" id="btnAddPerson" class="fab btnAddPerson" style="margin-left:1em;" title="${Add}">
                     <i class="md-icon">&#xE145;</i>
-                    <span>${Add}</span>
                 </button>
                 <div id="peopleList" class="paperList">
                 </div>
@@ -221,9 +202,8 @@
                 <h2 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                     ${Studios}
                 </h2>
-                <button is="emby-button" type="button" class="raised raised-mini btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
+                <button is="emby-button" type="button" class="fab btnAddTextItem submit" style="margin-left:1em;" title="${Add}">
                     <i class="md-icon">&#xE145;</i>
-                    <span>${Add}</span>
                 </button>
                 <div class="paperList" id="listStudios"></div>
             </div>
@@ -231,9 +211,8 @@
                 <h2 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                     ${Tags}
                 </h2>
-                <button is="emby-button" type="button" class="raised raised-mini btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
+                <button is="emby-button" type="button" class="fab btnAddTextItem submit" style="margin-left:1em;" title="${Add}">
                     <i class="md-icon">&#xE145;</i>
-                    <span>${Add}</span>
                 </button>
                 <div class="paperList" id="listTags"></div>
             </div>

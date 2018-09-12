@@ -14,7 +14,7 @@ namespace MediaBrowser.Api.Session
     /// <summary>
     /// Class SessionInfoWebSocketListener
     /// </summary>
-    class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfoDto>, WebSocketListenerState>
+    class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfo>, WebSocketListenerState>
     {
         /// <summary>
         /// Gets the name.
@@ -33,8 +33,8 @@ namespace MediaBrowser.Api.Session
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionInfoWebSocketListener"/> class.
         /// </summary>
-        public SessionInfoWebSocketListener(ILogger logger, ISessionManager sessionManager, ITimerFactory timerFactory)
-            : base(logger, timerFactory)
+        public SessionInfoWebSocketListener(ILogger logger, ISessionManager sessionManager)
+            : base(logger)
         {
             _sessionManager = sessionManager;
 
@@ -87,17 +87,9 @@ namespace MediaBrowser.Api.Session
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>Task{SystemInfo}.</returns>
-        protected override Task<IEnumerable<SessionInfoDto>> GetDataToSend(WebSocketListenerState state, CancellationToken cancellationToken)
+        protected override Task<IEnumerable<SessionInfo>> GetDataToSend(WebSocketListenerState state, CancellationToken cancellationToken)
         {
-            return Task.FromResult(_sessionManager.Sessions.Where(i => i.IsActive).Select(_sessionManager.GetSessionInfoDto));
-        }
-
-        protected override bool SendOnTimer
-        {
-            get
-            {
-                return false;
-            }
+            return Task.FromResult(_sessionManager.Sessions);
         }
 
         protected override void Dispose(bool dispose)

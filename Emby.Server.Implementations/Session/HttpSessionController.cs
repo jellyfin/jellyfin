@@ -36,10 +36,6 @@ namespace Emby.Server.Implementations.Session
             _sessionManager = sessionManager;
         }
 
-        public void OnActivity()
-        {
-        }
-
         private string PostUrl
         {
             get
@@ -52,7 +48,7 @@ namespace Emby.Server.Implementations.Session
         {
             get
             {
-                return (DateTime.UtcNow - Session.LastActivityDate).TotalMinutes <= 10;
+                return (DateTime.UtcNow - Session.LastActivityDate).TotalMinutes <= 5;
             }
         }
 
@@ -61,49 +57,29 @@ namespace Emby.Server.Implementations.Session
             get { return true; }
         }
 
-        private Task SendMessage(string name, CancellationToken cancellationToken)
+        private Task SendMessage(string name, string messageId, CancellationToken cancellationToken)
         {
-            return SendMessage(name, new Dictionary<string, string>(), cancellationToken);
+            return SendMessage(name, messageId, new Dictionary<string, string>(), cancellationToken);
         }
 
-        private async Task SendMessage(string name,
-            Dictionary<string, string> args,
-            CancellationToken cancellationToken)
+        private Task SendMessage(string name, string messageId, Dictionary<string, string> args, CancellationToken cancellationToken)
         {
+            args["messageId"] = messageId;
             var url = PostUrl + "/" + name + ToQueryString(args);
 
-            using ((await _httpClient.Post(new HttpRequestOptions
+            return SendRequest(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
                 BufferContent = false
-
-            }).ConfigureAwait(false)))
-            {
-
-            }
+            });
         }
 
-        public Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(true);
-        }
-
-        public Task SendPlaybackStartNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(true);
-        }
-
-        public Task SendPlaybackStoppedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(true);
-        }
-
-        public Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
+        private Task SendPlayCommand(PlayRequest command, string messageId, CancellationToken cancellationToken)
         {
             var dict = new Dictionary<string, string>();
 
-            dict["ItemIds"] = string.Join(",", command.ItemIds);
+            dict["ItemIds"] = string.Join(",", command.ItemIds.Select(i => i.ToString("N")).ToArray());
 
             if (command.StartPositionTicks.HasValue)
             {
@@ -121,15 +97,15 @@ namespace Emby.Server.Implementations.Session
             {
                 dict["StartIndex"] = command.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
             }
-            if (!string.IsNullOrWhiteSpace(command.MediaSourceId))
+            if (!string.IsNullOrEmpty(command.MediaSourceId))
             {
                 dict["MediaSourceId"] = command.MediaSourceId;
             }
 
-            return SendMessage(command.PlayCommand.ToString(), dict, cancellationToken);
+            return SendMessage(command.PlayCommand.ToString(), messageId, dict, cancellationToken);
         }
 
-        public Task SendPlaystateCommand(PlaystateRequest command, CancellationToken cancellationToken)
+        private Task SendPlaystateCommand(PlaystateRequest command, string messageId, CancellationToken cancellationToken)
         {
             var args = new Dictionary<string, string>();
 
@@ -143,60 +119,74 @@ namespace Emby.Server.Implementations.Session
                 args["SeekPositionTicks"] = command.SeekPositionTicks.Value.ToString(CultureInfo.InvariantCulture);
             }
 
-            return SendMessage(command.Command.ToString(), args, cancellationToken);
+            return SendMessage(command.Command.ToString(), messageId, args, cancellationToken);
         }
 
-        public Task SendLibraryUpdateInfo(LibraryUpdateInfo info, CancellationToken cancellationToken)
+        private string[] _supportedMessages = new string[] {  };
+        public Task SendMessage<T>(string name, string messageId, T data, ISessionController[] allControllers, CancellationToken cancellationToken)
         {
-            return SendMessage("LibraryChanged", info, cancellationToken);
+            if (!IsSessionActive)
+            {
+                return Task.CompletedTask;
+            }
+
+            if (string.Equals(name, "Play", StringComparison.OrdinalIgnoreCase))
+            {
+                return SendPlayCommand(data as PlayRequest, messageId, cancellationToken);
+            }
+            if (string.Equals(name, "PlayState", StringComparison.OrdinalIgnoreCase))
+            {
+                return SendPlaystateCommand(data as PlaystateRequest, messageId, cancellationToken);
+            }
+            if (string.Equals(name, "GeneralCommand", StringComparison.OrdinalIgnoreCase))
+            {
+                var command = data as GeneralCommand;
+                return SendMessage(command.Name, messageId, command.Arguments, cancellationToken);
+            }
+
+            if (!_supportedMessages.Contains(name, StringComparer.OrdinalIgnoreCase))
+            {
+                return Task.CompletedTask;
+            }
+
+            var url = PostUrl + "/" + name;
+
+            url += "?messageId=" + messageId;
+
+            var options = new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                BufferContent = false
+            };
+
+            if (data != null)
+            {
+                if (typeof(T) == typeof(string))
+                {
+                    var str = data as String;
+                    if (!string.IsNullOrEmpty(str))
+                    {
+                        options.RequestContent = str;
+                        options.RequestContentType = "application/json";
+                    }
+                }
+                else
+                {
+                    options.RequestContent = _json.SerializeToString(data);
+                    options.RequestContentType = "application/json";
+                }
+            }
+
+            return SendRequest(options);
         }
 
-        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
+        private async Task SendRequest(HttpRequestOptions options)
         {
-            return SendMessage("RestartRequired", cancellationToken);
-        }
+            using (var response = await _httpClient.Post(options).ConfigureAwait(false))
+            {
 
-        public Task SendUserDataChangeInfo(UserDataChangeInfo info, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(true);
-        }
-
-        public Task SendServerShutdownNotification(CancellationToken cancellationToken)
-        {
-            return SendMessage("ServerShuttingDown", cancellationToken);
-        }
-
-        public Task SendServerRestartNotification(CancellationToken cancellationToken)
-        {
-            return SendMessage("ServerRestarting", cancellationToken);
-        }
-
-        public Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
-        {
-            return SendMessage(command.Name, command.Arguments, cancellationToken);
-        }
-
-        public Task SendMessage<T>(string name, T data, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(true);
-            //var url = PostUrl + "/" + name;
-
-            //var options = new HttpRequestOptions
-            //{
-            //    Url = url,
-            //    CancellationToken = cancellationToken,
-            //    BufferContent = false
-            //};
-
-            //options.RequestContent = _json.SerializeToString(data);
-            //options.RequestContentType = "application/json";
-
-            //return _httpClient.Post(new HttpRequestOptions
-            //{
-            //    Url = url,
-            //    CancellationToken = cancellationToken,
-            //    BufferContent = false
-            //});
+            }
         }
 
         private string ToQueryString(Dictionary<string, string> nvc)

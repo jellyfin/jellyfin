@@ -1,0 +1,17 @@
+#!/bin/bash -e
+
+pushd ../..
+
+echo "dotnet: cleaning build folder"
+dotnet clean --configuration Release --runtime linux-x64 MediaBrowser.sln
+
+echo "dotnet: building..."
+dotnet publish --configuration Release --runtime linux-x64 MediaBrowser.sln
+echo "dotnet: building done"
+
+popd
+
+echo ""
+echo "========================================"
+echo "                 Done"
+echo "========================================"

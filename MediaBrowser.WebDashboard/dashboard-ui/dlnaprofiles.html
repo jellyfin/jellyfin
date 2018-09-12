@@ -1,30 +1,32 @@
-﻿<div id="dlnaProfilesPage" data-role="page" class="page type-interior dlnaPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20profiles" data-require="scripts/dlnaprofiles,emby-button">
+﻿<div id="dlnaProfilesPage" data-role="page" class="page type-interior dlnaPage withTabs" data-require="scripts/dlnaprofiles,emby-button">
 
     <div>
         <div class="content-primary">
 
             <div class="readOnlyContent">
 
-                <div style="position: relative;">
-                    <h2>${HeaderCustomDlnaProfiles}</h2>
-                    <div style="position: absolute; right: 0; top: -12px;">
-                        <a is="emby-linkbutton" href="dlnaprofile.html" class="raised submit raised-mini">
-                            <i class="md-icon">add</i>
-                            <span>${ButtonNew}</span>
+                <div class="verticalSection verticalSection-extrabottompadding">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h2 class="sectionTitle">${HeaderCustomDlnaProfiles}</h2>
+                        <a is="emby-linkbutton" href="dlnaprofile.html" class="fab submit" style="margin:0 0 0 1em">
+                            <i class="md-icon">&#xE145;</i>
                         </a>
+                        <a style="margin-left:2em!important;" is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20profiles">${Help}</a>
                     </div>
+
+                    <p>${CustomDlnaProfilesHelp}</p>
+                    <div class="customProfiles"></div>
                 </div>
 
-                <p>${CustomDlnaProfilesHelp}</p>
 
-                <div class="customProfiles"></div>
+                <div class="verticalSection">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h2 class="sectionTitle">${HeaderSystemDlnaProfiles}</h2>
+                    </div>
 
-                <br />
-                <h2>${HeaderSystemDlnaProfiles}</h2>
-
-                <p>${SystemDlnaProfilesHelp}</p>
-
-                <div class="systemProfiles"></div>
+                    <p>${SystemDlnaProfilesHelp}</p>
+                    <div class="systemProfiles"></div>
+                </div>
             </div>
         </div>
     </div>

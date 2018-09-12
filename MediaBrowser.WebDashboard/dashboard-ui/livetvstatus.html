@@ -1,57 +1,43 @@
-﻿<div id="liveTvStatusPage" data-role="page" class="page type-interior liveTvSettingsPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvstatus,emby-button">
+﻿<div id="liveTvStatusPage" data-role="page" class="page type-interior liveTvSettingsPage withTabs" data-require="scripts/livetvstatus,emby-button">
 
     <div>
         <div class="content-primary">
 
 
-            <div class="liveTvStatusContent" style="display: none;">
+            <div class="verticalSection verticalSection-extrabottompadding">
 
-                <div class="flex align-items-center" style="margin:1.25em 0;">
-                    <h2 style="margin:0;">${HeaderTunerDevices}</h2>
-                    <button is="emby-button" type="button" class="raised btnAddDevice submit raised-mini" style="margin-left:1em;" title="${ButtonAdd}">
-                        <i class="md-icon">&#xE145;</i>
-                        <span>${ButtonAdd}</span>
-                    </button>
-                </div>
-                <div is="emby-itemscontainer" class="devicesList vertical-wrap" data-hovermenu="false" data-multiselect="false">
-                </div>
-
-                <div class="readOnlyContent">
-                    <div>
-                        <br />
-                        <div class="flex align-items-center" style="margin:1.25em 0;">
-                            <h2 style="margin:0;">${HeaderGuideProviders}</h2>
-                            <button is="emby-button" type="button" class="raised btnAddProvider submit raised-mini" style="margin-left:1em;" title="${ButtonAdd}">
-                                <i class="md-icon">&#xE145;</i>
-                                <span>${ButtonAdd}</span>
-                            </button>
-                        </div>
-
-                        <p>${AddGuideProviderHelp}</p>
-                        <div class="providerList">
-                        </div>
-                        <div>
-
-                            <button is="emby-button" type="button" class="raised btnRefresh block button-cancel">
-                                <span>${ButtonRefreshGuideData}</span>
-                            </button>
-                            <progress max="100" min="0" style="width: 100%;" class="refreshGuideProgress"></progress>
-                        </div>
+                <div class="verticalSection verticalSection-extrabottompadding">
+                    <div class="sectionTitleContainer sectionTitleContainer-cards">
+                        <h2 class="sectionTitle sectionTitle-cards">
+                            <span>${HeaderTunerDevices}</span>
+                        </h2>
+                        <button is="emby-button" type="button" class="fab btnAddDevice submit sectionTitleButton" style="margin-left:1em;" title="${ButtonAdd}">
+                            <i class="md-icon">&#xE145;</i>
+                        </button>
+                        <a style="margin-left:2em!important;" is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV">${Help}</a>
                     </div>
-                    <br />
-                    <div class="tunerSection hide">
-                        <h2>${HeaderTvTuners}</h2>
-
-                        <div class="tunerList">
-                        </div>
-                    </div>
+                    <div class="devicesList itemsContainer vertical-wrap" data-hovermenu="false" data-multiselect="false" style="margin-top: .5em;"></div>
                 </div>
             </div>
 
-            <div class="servicesSection readOnlyContent" style="display:none;">
-                <br />
-                <h2>${HeaderExternalServices}</h2>
-                <div class="servicesList">
+            <div class="readOnlyContent">
+                <div class="verticalSection">
+                    <div class="sectionTitleContainer">
+                        <h2 class="sectionTitle">${HeaderGuideProviders}</h2>
+                        <button is="emby-button" type="button" class="fab btnAddProvider submit" style="margin-left:1em;" title="${ButtonAdd}">
+                            <i class="md-icon">&#xE145;</i>
+                        </button>
+                    </div>
+
+                    <div class="providerList">
+                    </div>
+                    <div>
+
+                        <button is="emby-button" type="button" class="raised btnRefresh block button-cancel">
+                            <span>${ButtonRefreshGuideData}</span>
+                        </button>
+                        <progress max="100" min="0" style="width: 100%;" class="refreshGuideProgress"></progress>
+                    </div>
                 </div>
             </div>
         </div>

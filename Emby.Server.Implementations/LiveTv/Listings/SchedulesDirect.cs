@@ -16,6 +16,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.LiveTv.Listings
 {
@@ -63,7 +66,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(channelId))
+            if (string.IsNullOrEmpty(channelId))
             {
                 throw new ArgumentNullException("channelId");
             }
@@ -75,7 +78,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
-            if (string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrEmpty(token))
             {
                 _logger.Warn("SchedulesDirect token is empty, returning empty program list");
                 return programsInfo;
@@ -246,8 +249,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             DateTime endAt = startAt.AddSeconds(programInfo.duration);
             ProgramAudio audioType = ProgramAudio.Stereo;
 
-            bool repeat = programInfo.@new == null;
-
             var programId = programInfo.programID ?? string.Empty;
 
             string newID = programId + "T" + startAt.Ticks + "C" + channelId;
@@ -293,14 +294,17 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 CommunityRating = null,
                 EpisodeTitle = episodeTitle,
                 Audio = audioType,
-                IsRepeat = repeat,
+                //IsNew = programInfo.@new ?? false,
+                IsRepeat = programInfo.@new == null,
                 IsSeries = string.Equals(details.entityType, "episode", StringComparison.OrdinalIgnoreCase),
                 ImageUrl = details.primaryImage,
                 ThumbImageUrl = details.thumbImage,
                 IsKids = string.Equals(details.audience, "children", StringComparison.OrdinalIgnoreCase),
                 IsSports = string.Equals(details.entityType, "sports", StringComparison.OrdinalIgnoreCase),
                 IsMovie = IsMovie(details),
-                Etag = programInfo.md5
+                Etag = programInfo.md5,
+                IsLive = string.Equals(programInfo.liveTapeDelay, "live", StringComparison.OrdinalIgnoreCase),
+                IsPremiere = programInfo.premiere || (programInfo.isPremiereOrFinale ?? string.Empty).IndexOf("premiere", StringComparison.OrdinalIgnoreCase) != -1
             };
 
             var showId = programId;
@@ -356,6 +360,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 info.SeriesId = programId.Substring(0, 10);
 
+                info.SeriesProviderIds[MetadataProviders.Zap2It.ToString()] = info.SeriesId;
+
                 if (details.metadata != null)
                 {
                     foreach (var metadataProgram in details.metadata)
@@ -376,10 +382,19 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(details.originalAirDate) && (!info.IsSeries || info.IsRepeat))
+            if (!string.IsNullOrWhiteSpace(details.originalAirDate))
             {
                 info.OriginalAirDate = DateTime.Parse(details.originalAirDate);
                 info.ProductionYear = info.OriginalAirDate.Value.Year;
+            }
+
+            if (details.movie != null)
+            {
+                int year;
+                if (!string.IsNullOrEmpty(details.movie.year) && int.TryParse(details.movie.year, out year))
+                {
+                    info.ProductionYear = year;
+                }
             }
 
             if (details.genres != null)
@@ -506,8 +521,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 using (var innerResponse2 = await Post(httpOptions, true, info).ConfigureAwait(false))
                 {
-                    return _jsonSerializer.DeserializeFromStream<List<ScheduleDirect.ShowImages>>(
-                        innerResponse2.Content);
+                    return await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.ShowImages>>(
+                        innerResponse2.Content).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -545,7 +560,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 {
                     using (Stream responce = httpResponse.Content)
                     {
-                        var root = _jsonSerializer.DeserializeFromStream<List<ScheduleDirect.Headends>>(responce);
+                        var root = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Headends>>(responce).ConfigureAwait(false);
 
                         if (root != null)
                         {
@@ -589,7 +604,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
 
             var password = info.Password;
-            if (string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrEmpty(password))
             {
                 return null;
             }
@@ -607,7 +622,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 _tokens.TryAdd(username, savedToken);
             }
 
-            if (!string.IsNullOrWhiteSpace(savedToken.Name) && !string.IsNullOrWhiteSpace(savedToken.Value))
+            if (!string.IsNullOrEmpty(savedToken.Name) && !string.IsNullOrEmpty(savedToken.Value))
             {
                 long ticks;
                 if (long.TryParse(savedToken.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out ticks))
@@ -740,7 +755,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             using (var responce = await Post(httpOptions, false, null).ConfigureAwait(false))
             {
-                var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Token>(responce.Content);
+                var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Token>(responce.Content).ConfigureAwait(false);
                 if (root.message == "OK")
                 {
                     _logger.Info("Authenticated with Schedules Direct token: " + root.token);
@@ -755,12 +770,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             var token = await GetToken(info, cancellationToken);
 
-            if (string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrEmpty(token))
             {
                 throw new ArgumentException("Authentication required.");
             }
 
-            if (string.IsNullOrWhiteSpace(info.ListingsId))
+            if (string.IsNullOrEmpty(info.ListingsId))
             {
                 throw new ArgumentException("Listings Id required");
             }
@@ -796,14 +811,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private async Task<bool> HasLineup(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(info.ListingsId))
+            if (string.IsNullOrEmpty(info.ListingsId))
             {
                 throw new ArgumentException("Listings Id required");
             }
 
             var token = await GetToken(info, cancellationToken);
 
-            if (string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrEmpty(token))
             {
                 throw new Exception("token required");
             }
@@ -826,7 +841,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 {
                     using (var response = httpResponse.Content)
                     {
-                        var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Lineups>(response);
+                        var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Lineups>(response).ConfigureAwait(false);
 
                         return root.lineups.Any(i => string.Equals(info.ListingsId, i.lineup, StringComparison.OrdinalIgnoreCase));
                     }
@@ -848,18 +863,18 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             if (validateLogin)
             {
-                if (string.IsNullOrWhiteSpace(info.Username))
+                if (string.IsNullOrEmpty(info.Username))
                 {
                     throw new ArgumentException("Username is required");
                 }
-                if (string.IsNullOrWhiteSpace(info.Password))
+                if (string.IsNullOrEmpty(info.Password))
                 {
                     throw new ArgumentException("Password is required");
                 }
             }
             if (validateListings)
             {
-                if (string.IsNullOrWhiteSpace(info.ListingsId))
+                if (string.IsNullOrEmpty(info.ListingsId))
                 {
                     throw new ArgumentException("Listings Id required");
                 }
@@ -881,14 +896,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
             var listingsId = info.ListingsId;
-            if (string.IsNullOrWhiteSpace(listingsId))
+            if (string.IsNullOrEmpty(listingsId))
             {
                 throw new Exception("ListingsId required");
             }
 
             var token = await GetToken(info, cancellationToken);
 
-            if (string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrEmpty(token))
             {
                 throw new Exception("token required");
             }
@@ -911,7 +926,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 using (var response = httpResponse.Content)
                 {
-                    var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Channel>(response);
+                    var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Channel>(response).ConfigureAwait(false);
                     _logger.Info("Found " + root.map.Count + " channels on the lineup on ScheduleDirect");
                     _logger.Info("Mapping Stations to Channel");
 
@@ -951,7 +966,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                             if (station.logo != null)
                             {
                                 channelInfo.ImageUrl = station.logo.URL;
-                                channelInfo.HasImage = true;
                             }
                         }
 
@@ -1112,6 +1126,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 public List<Rating> ratings { get; set; }
                 public bool? @new { get; set; }
                 public Multipart multipart { get; set; }
+                public string liveTapeDelay { get; set; }
+                public bool premiere { get; set; }
+                public bool repeat { get; set; }
+                public string isPremiereOrFinale { get; set; }
             }
 
 

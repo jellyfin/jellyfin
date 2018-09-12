@@ -24,7 +24,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             Fetch(item, metadataFile, cancellationToken);
         }
 
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        private readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         protected override void Fetch(MetadataResult<Episode> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
@@ -44,18 +44,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         xml = xml.Substring(0, index + srch.Length);
                     }
 
-                    using (var ms = new MemoryStream())
+                    // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
+                    try
                     {
-                        var bytes = Encoding.UTF8.GetBytes(xml);
-
-                        ms.Write(bytes, 0, bytes.Length);
-                        ms.Position = 0;
-
-                        // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
-                        try
+                        using (var stringReader = new StringReader(xml))
                         {
                             // Use XmlReader for best performance
-                            using (var reader = XmlReader.Create(ms, settings))
+                            using (var reader = XmlReader.Create(stringReader, settings))
                             {
                                 reader.MoveToContent();
                                 reader.Read();
@@ -76,10 +71,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 }
                             }
                         }
-                        catch (XmlException)
-                        {
+                    }
+                    catch (XmlException)
+                    {
 
-                        }
                     }
                 }
             }
@@ -139,55 +134,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             if (int.TryParse(number, out num))
                             {
                                 item.IndexNumberEnd = num;
-                            }
-                        }
-                        break;
-                    }
-
-                case "absolute_number":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            int rval;
-
-                            // int.TryParse is local aware, so it can be probamatic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
-                            {
-                                item.AbsoluteEpisodeNumber = rval;
-                            }
-                        }
-
-                        break;
-                    }
-                case "DVD_episodenumber":
-                    {
-                        var number = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(number))
-                        {
-                            float num;
-
-                            if (float.TryParse(number, NumberStyles.Any, UsCulture, out num))
-                            {
-                                item.DvdEpisodeNumber = num;
-                            }
-                        }
-                        break;
-                    }
-
-                case "DVD_season":
-                    {
-                        var number = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(number))
-                        {
-                            float num;
-
-                            if (float.TryParse(number, NumberStyles.Any, UsCulture, out num))
-                            {
-                                item.DvdSeasonNumber = Convert.ToInt32(num);
                             }
                         }
                         break;

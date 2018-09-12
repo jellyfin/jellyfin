@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Session;
 using System;
 using System.Linq;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Common.Net;
 
 namespace Emby.Server.Implementations.HttpServer.Security
 {
@@ -16,21 +17,21 @@ namespace Emby.Server.Implementations.HttpServer.Security
     {
         private readonly IServerConfigurationManager _config;
 
-        public AuthService(IUserManager userManager, IAuthorizationContext authorizationContext, IServerConfigurationManager config, IConnectManager connectManager, ISessionManager sessionManager, IDeviceManager deviceManager)
+        public AuthService(IUserManager userManager, IAuthorizationContext authorizationContext, IServerConfigurationManager config, IConnectManager connectManager, ISessionManager sessionManager, INetworkManager networkManager)
         {
             AuthorizationContext = authorizationContext;
             _config = config;
-            DeviceManager = deviceManager;
             SessionManager = sessionManager;
             ConnectManager = connectManager;
             UserManager = userManager;
+            NetworkManager = networkManager;
         }
 
         public IUserManager UserManager { get; private set; }
         public IAuthorizationContext AuthorizationContext { get; private set; }
         public IConnectManager ConnectManager { get; private set; }
         public ISessionManager SessionManager { get; private set; }
-        public IDeviceManager DeviceManager { get; private set; }
+        public INetworkManager NetworkManager { get; private set; }
 
         /// <summary>
         /// Redirect the client to a specific URL if authentication failed.
@@ -38,14 +39,12 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         public string HtmlRedirect { get; set; }
 
-        public void Authenticate(IRequest request,
-            IAuthenticationAttributes authAttribtues)
+        public void Authenticate(IRequest request, IAuthenticationAttributes authAttribtues)
         {
             ValidateUser(request, authAttribtues);
         }
 
-        private void ValidateUser(IRequest request,
-            IAuthenticationAttributes authAttribtues)
+        private void ValidateUser(IRequest request, IAuthenticationAttributes authAttribtues)
         {
             // This code is executed before the service
             var auth = AuthorizationContext.GetAuthorizationInfo(request);
@@ -60,11 +59,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 }
             }
 
-            var user = string.IsNullOrWhiteSpace(auth.UserId)
-                ? null
-                : UserManager.GetUserById(auth.UserId);
+            if (authAttribtues.AllowLocalOnly && !request.IsLocal)
+            {
+                throw new SecurityException("Operation not found.");
+            }
 
-            if (user == null & !string.IsNullOrWhiteSpace(auth.UserId))
+            var user = auth.User;
+
+            if (user == null & !auth.UserId.Equals(Guid.Empty))
             {
                 throw new SecurityException("User with Id " + auth.UserId + " not found");
             }
@@ -83,9 +85,9 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 ValidateRoles(roles, user);
             }
 
-            if (!string.IsNullOrWhiteSpace(auth.DeviceId) &&
-                !string.IsNullOrWhiteSpace(auth.Client) &&
-                !string.IsNullOrWhiteSpace(auth.Device))
+            if (!string.IsNullOrEmpty(auth.DeviceId) &&
+                !string.IsNullOrEmpty(auth.Client) &&
+                !string.IsNullOrEmpty(auth.Device))
             {
                 SessionManager.LogSessionActivity(auth.Client,
                     auth.Version,
@@ -108,6 +110,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 };
             }
 
+            if (!user.Policy.EnableRemoteAccess && !NetworkManager.IsInLocalNetwork(request.RemoteIp))
+            {
+                throw new SecurityException("User account has been disabled.")
+                {
+                    SecurityExceptionType = SecurityExceptionType.Unauthenticated
+                };
+            }
+
             if (!user.Policy.IsAdministrator &&
                 !authAttribtues.EscapeParentalControl &&
                 !user.IsParentalScheduleAllowed())
@@ -119,17 +129,6 @@ namespace Emby.Server.Implementations.HttpServer.Security
                     SecurityExceptionType = SecurityExceptionType.ParentalControl
                 };
             }
-
-            if (!string.IsNullOrWhiteSpace(auth.DeviceId))
-            {
-                if (!DeviceManager.CanAccessDevice(user.Id.ToString("N"), auth.DeviceId))
-                {
-                    throw new SecurityException("User is not allowed access from this device.")
-                    {
-                        SecurityExceptionType = SecurityExceptionType.ParentalControl
-                    };
-                }
-            }
         }
 
         private bool IsExemptFromAuthenticationToken(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues, IRequest request)
@@ -140,6 +139,10 @@ namespace Emby.Server.Implementations.HttpServer.Security
             }
 
             if (authAttribtues.AllowLocal && request.IsLocal)
+            {
+                return true;
+            }
+            if (authAttribtues.AllowLocalOnly && request.IsLocal)
             {
                 return true;
             }
@@ -159,12 +162,17 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 return true;
             }
 
-            if (string.IsNullOrWhiteSpace(auth.Token))
+            if (authAttribtues.AllowLocalOnly && request.IsLocal)
             {
                 return true;
             }
 
-            if (tokenInfo != null && string.IsNullOrWhiteSpace(tokenInfo.UserId))
+            if (string.IsNullOrEmpty(auth.Token))
+            {
+                return true;
+            }
+
+            if (tokenInfo != null && tokenInfo.UserId.Equals(Guid.Empty))
             {
                 return true;
             }
@@ -225,7 +233,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         private void ValidateSecurityToken(IRequest request, string token)
         {
-            if (string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrEmpty(token))
             {
                 throw new SecurityException("Access token is required.");
             }
@@ -237,12 +245,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 throw new SecurityException("Access token is invalid or expired.");
             }
 
-            if (!info.IsActive)
-            {
-                throw new SecurityException("Access token has expired.");
-            }
-
-            //if (!string.IsNullOrWhiteSpace(info.UserId))
+            //if (!string.IsNullOrEmpty(info.UserId))
             //{
             //    var user = _userManager.GetUserById(info.UserId);
 

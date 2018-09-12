@@ -63,18 +63,12 @@
 
                     <div class="mainDetailButtons">
 
-                        <button is="emby-button" type="button" class="button-flat btnResume btnPlaySimple hide detailButton-mobile" data-mode="resume">
-                            <div class="detailButton-mobile-content">
-                                <i class="md-icon detailButton-mobile-icon">&#xE037;</i>
-                                <div class="detailButton-mobile-text">${ButtonResume}</div>
-                            </div>
+                        <button is="emby-button" type="button" class="raised btnResume hide detailButton" data-mode="resume">
+                            <span>${ButtonResume}</span>
                         </button>
 
-                        <button is="emby-button" type="button" class="button-flat btnPlay btnPlaySimple hide detailButton-mobile" data-mode="play">
-                            <div class="detailButton-mobile-content">
-                                <i class="md-icon detailButton-mobile-icon">&#xE037;</i>
-                                <div class="detailButton-mobile-text">${ButtonPlay}</div>
-                            </div>
+                        <button is="emby-button" type="button" class="raised btnPlay hide detailButton" data-mode="play">
+                            <span>${ButtonPlay}</span>
                         </button>
 
                         <button is="emby-button" type="button" class="button-flat btnPlayTrailer hide detailButton-mobile">
@@ -84,11 +78,19 @@
                             </div>
                         </button>
 
+                        <button is="emby-button" type="button" class="raised btnPlayTrailer hide detailButton">
+                            <span>${ButtonTrailer}</span>
+                        </button>
+
                         <button is="emby-button" type="button" class="button-flat btnInstantMix hide detailButton-mobile">
                             <div class="detailButton-mobile-content">
                                 <i class="md-icon detailButton-mobile-icon">&#xE043;</i>
                                 <div class="detailButton-mobile-text">${HeaderInstantMix}</div>
                             </div>
+                        </button>
+
+                        <button is="emby-button" type="button" class="raised btnInstantMix hide detailButton">
+                            <span>${HeaderInstantMix}</span>
                         </button>
 
                         <button is="emby-button" type="button" class="button-flat btnShuffle hide detailButton-mobile">
@@ -98,11 +100,20 @@
                             </div>
                         </button>
 
+                        <button is="emby-button" type="button" class="raised btnShuffle hide detailButton">
+                            <span>${ButtonShuffle}</span>
+                        </button>
+
                         <button is="emby-downloadbutton" type="button" class="button-flat btnSyncDownload hide detailButton-mobile">
                             <div class="detailButton-mobile-content">
                                 <i class="md-icon detailButton-mobile-icon">&#xE2C4;</i>
                                 <div class="detailButton-mobile-text emby-downloadbutton-downloadtext">${ButtonDownload}</div>
                             </div>
+                        </button>
+
+                        <button is="emby-downloadbutton" type="button" class="raised btnSyncDownload hide detailButton">
+                            <i class="md-icon">&#xE2C4;</i>
+                            <span class="emby-downloadbutton-downloadtext">${ButtonDownload}</span>
                         </button>
 
                         <button is="emby-button" type="button" class="button-flat btnCancelSeriesTimer hide detailButton-mobile">
@@ -112,11 +123,19 @@
                             </div>
                         </button>
 
+                        <button is="emby-button" type="button" class="raised btnCancelSeriesTimer hide detailButton">
+                            <span>${CancelSeries}</span>
+                        </button>
+
                         <button is="emby-button" type="button" class="button-flat btnCancelTimer hide detailButton-mobile">
                             <div class="detailButton-mobile-content">
                                 <i class="md-icon detailButton-mobile-icon">&#xE047;</i>
                                 <div class="detailButton-mobile-text">${StopRecording}</div>
                             </div>
+                        </button>
+
+                        <button is="emby-button" type="button" class="raised btnCancelTimer hide detailButton">
+                            <span>${StopRecording}</span>
                         </button>
 
                         <button is="emby-button" type="button" class="button-flat btnDeleteItem hide detailButton-mobile">
@@ -126,25 +145,41 @@
                             </div>
                         </button>
 
+                        <button is="emby-button" type="button" class="fab btnDeleteItem hide detailButton">
+                            <i class="md-icon">&#xE872;</i>
+                        </button>
+
                         <button is="emby-playstatebutton" type="button" class="button-flat btnPlaystate hide detailButton-mobile">
                             <div class="detailButton-mobile-content">
-                                <i class="md-icon detailButton-mobile-icon always notext">&#xE5CA;</i>
-                                <div class="detailButton-mobile-text texthide button-text"></div>
+                                <i class="md-icon detailButton-mobile-icon">&#xE5CA;</i>
+                                <div class="detailButton-mobile-text button-text"></div>
                             </div>
+                        </button>
+
+                        <button is="emby-playstatebutton" type="button" class="fab btnPlaystate hide detailButton">
+                            <i class="md-icon">&#xE5CA;</i>
                         </button>
 
                         <button is="emby-ratingbutton" type="button" class="button-flat btnUserRating hide detailButton-mobile">
                             <div class="detailButton-mobile-content">
-                                <i class="md-icon detailButton-mobile-icon always notext">&#xE87D;</i>
-                                <div class="detailButton-mobile-text texthide button-text">${Rate}</div>
+                                <i class="md-icon detailButton-mobile-icon">&#xE87D;</i>
+                                <div class="detailButton-mobile-text button-text">${Rate}</div>
                             </div>
+                        </button>
+
+                        <button is="emby-ratingbutton" type="button" class="fab btnUserRating hide detailButton">
+                            <i class="md-icon">&#xE87D;</i>
                         </button>
 
                         <button is="emby-button" type="button" class="button-flat btnMoreCommands hide detailButton-mobile">
                             <div class="detailButton-mobile-content">
-                                <i class="md-icon detailButton-mobile-icon always notext"></i>
-                                <div class="detailButton-mobile-text texthide">${ButtonMore}</div>
+                                <i class="md-icon detailButton-mobile-icon"></i>
+                                <div class="detailButton-mobile-text">${ButtonMore}</div>
                             </div>
+                        </button>
+
+                        <button is="emby-button" type="button" class="fab btnMoreCommands hide detailButton">
+                            <i class="md-icon">&#xE5D3;</i>
                         </button>
                     </div>
 
@@ -216,10 +251,17 @@
                 </div>
             </div>
         </div>
-        <div class="verticalSection itemVerticalSection moreFromArtistSection padded-left padded-right hide">
-            <h2 class="sectionTitle sectionTitle-cards"></h2>
-            <div is="emby-itemscontainer" class="itemsContainer vertical-wrap focuscontainer-x"></div>
+        <div class="verticalSection itemVerticalSection moreFromArtistSection hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left padded-right"></h2>
+
+            <div is="emby-scroller" class="emby-scroller" data-mousewheel="false" data-centerfocus="true" data-horizontal="true">
+
+                <div class="scrollerframe padded-top-focusscale padded-bottom-focusscale">
+                    <div is="emby-itemscontainer" class="scrollSlider focuscontainer-x itemsContainer padded-left padded-right"></div>
+                </div>
+            </div>
         </div>
+
         <div id="castCollapsible" class="verticalSection detailVerticalSection hide">
             <h2 id="peopleHeader" class="sectionTitle sectionTitle-cards padded-left">
                 ${HeaderCastCrew}
@@ -230,17 +272,11 @@
             </div>
         </div>
         <div id="seriesScheduleSection" class="verticalSection detailVerticalSection hide">
-            <h1>
+            <h2 class="sectionTitle padded-left padded-right">
                 ${HeaderUpcomingOnTV}
-            </h1>
-            <div id="seriesScheduleList" is="emby-itemscontainer" class="itemsContainer vertical-list padded-left padded-right"></div>
-        </div>
-
-        <div class="verticalSection detailVerticalSection photoInfo hide">
-            <h2 class="sectionTitle padded-left">
-                ${HeaderPhotoInfo}
             </h2>
-            <div class="photoInfoContent padded-left padded-right"></div>
+            <div id="seriesScheduleList" is="emby-itemscontainer" class="itemsContainer vertical-list padded-left padded-right"></div>
+            <br />
         </div>
 
         <div id="specialsCollapsible" class="verticalSection detailVerticalSection hide">
@@ -255,39 +291,27 @@
             </h2>
             <div id="musicVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right"></div>
         </div>
-        <div id="similarCollapsible" class="verticalSection verticalSection-extrabottompadding detailVerticalSection hide">
-            <h2 class="sectionTitle sectionTitle-cards padded-left">
-                ${HeaderMoreLikeThis}
-            </h2>
-            <div class="similarContent"></div>
-        </div>
-        <div id="criticReviewsCollapsible" class="verticalSection detailVerticalSection hide">
-            <h2 class="sectionTitle padded-left">
-                ${HeaderAwardsAndReviews}
-            </h2>
-            <div class="padded-left padded-right">
-                <div id="criticReviewsContent"></div>
+
+        <div id="scenesCollapsible" class="verticalSection itemVerticalSection verticalSection-extrabottompadding hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left padded-right">${HeaderScenes}</h2>
+
+            <div is="emby-scroller" class="emby-scroller" data-mousewheel="false" data-centerfocus="true" data-horizontal="true">
+
+                <div class="scrollerframe padded-top-focusscale padded-bottom-focusscale">
+                    <div id="scenesContent" is="emby-itemscontainer" class="scrollSlider focuscontainer-x itemsContainer padded-left padded-right"></div>
+                </div>
             </div>
         </div>
 
-        <div id="scenesCollapsible" class="verticalSection verticalSection-extrabottompadding hide">
-            <h2 class="sectionTitle sectionTitle-cards padded-left">
-                ${HeaderScenes}
-            </h2>
-            <div is="emby-itemscontainer" id="scenesContent" class="itemsContainer padded-left padded-right"></div>
-        </div>
-        <div id="themeSongsCollapsible" class="verticalSection detailVerticalSection hide">
-            <h2 class="sectionTitle padded-left">
-                ${HeaderThemeSongs}
-            </h2>
-            <div id="themeSongsContent" is="emby-itemscontainer" class="padded-left padded-right"></div>
-        </div>
+        <div id="similarCollapsible" class="verticalSection itemVerticalSection verticalSection-extrabottompadding hide">
+            <h2 class="sectionTitle sectionTitle-cards padded-left padded-right">${HeaderMoreLikeThis}</h2>
 
-        <div id="themeVideosCollapsible" class="verticalSection detailVerticalSection hide">
-            <h2 class="sectionTitle sectionTitle-cards padded-left">
-                ${HeaderThemeVideos}
-            </h2>
-            <div id="themeVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap padded-left padded-right"></div>
+            <div is="emby-scroller" class="emby-scroller" data-mousewheel="false" data-centerfocus="true" data-horizontal="true">
+
+                <div class="scrollerframe padded-top-focusscale padded-bottom-focusscale">
+                    <div is="emby-itemscontainer" class="scrollSlider focuscontainer-x itemsContainer padded-left padded-right similarContent"></div>
+                </div>
+            </div>
         </div>
 
         <div class="verticalSection detailVerticalSection audioVideoMediaInfo hide">

@@ -13,6 +13,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.Collections
 {
@@ -23,36 +29,84 @@ namespace Emby.Server.Implementations.Collections
         private readonly ILibraryMonitor _iLibraryMonitor;
         private readonly ILogger _logger;
         private readonly IProviderManager _providerManager;
+        private readonly ILocalizationManager _localizationManager;
+        private IApplicationPaths _appPaths;
 
         public event EventHandler<CollectionCreatedEventArgs> CollectionCreated;
         public event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
         public event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
 
-        public CollectionManager(ILibraryManager libraryManager, IFileSystem fileSystem, ILibraryMonitor iLibraryMonitor, ILogger logger, IProviderManager providerManager)
+        public CollectionManager(ILibraryManager libraryManager, IApplicationPaths appPaths, ILocalizationManager localizationManager, IFileSystem fileSystem, ILibraryMonitor iLibraryMonitor, ILogger logger, IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
             _logger = logger;
             _providerManager = providerManager;
+            _localizationManager = localizationManager;
+            _appPaths = appPaths;
         }
 
-        public Folder GetCollectionsFolder(string userId)
+        private IEnumerable<Folder> FindFolders(string path)
         {
-            return _libraryManager.RootFolder.Children.OfType<ManualCollectionsFolder>()
-                .FirstOrDefault() ?? _libraryManager.GetUserRootFolder().Children.OfType<ManualCollectionsFolder>()
-                .FirstOrDefault();
+            return _libraryManager
+                .RootFolder
+                .Children
+                .OfType<Folder>()
+                .Where(i => _fileSystem.AreEqual(path, i.Path) || _fileSystem.ContainsSubPath(i.Path, path));
         }
 
-        public IEnumerable<BoxSet> GetCollections(User user)
+        internal async Task<Folder> EnsureLibraryFolder(string path, bool createIfNeeded)
         {
-            var folder = GetCollectionsFolder(user.Id.ToString("N"));
+            var existingFolders = FindFolders(path)
+                .ToList();
+
+            if (existingFolders.Count > 0)
+            {
+                return existingFolders[0];
+            }
+
+            if (!createIfNeeded)
+            {
+                return null;
+            }
+
+            _fileSystem.CreateDirectory(path);
+
+            var libraryOptions = new LibraryOptions
+            {
+                PathInfos = new[] { new MediaPathInfo { Path = path } },
+                EnableRealtimeMonitor = false,
+                SaveLocalMetadata = true
+            };
+
+            var name = _localizationManager.GetLocalizedString("Collections");
+
+            await _libraryManager.AddVirtualFolder(name, CollectionType.BoxSets, libraryOptions, true).ConfigureAwait(false);
+
+            return FindFolders(path).First();
+        }
+
+        internal string GetCollectionsFolderPath()
+        {
+            return Path.Combine(_appPaths.DataPath, "collections");
+        }
+
+        private Task<Folder> GetCollectionsFolder(bool createIfNeeded)
+        {
+            return EnsureLibraryFolder(GetCollectionsFolderPath(), createIfNeeded);
+        }
+
+        private IEnumerable<BoxSet> GetCollections(User user)
+        {
+            var folder = GetCollectionsFolder(false).Result;
+
             return folder == null ?
                 new List<BoxSet>() :
                 folder.GetChildren(user, true).OfType<BoxSet>();
         }
 
-        public async Task<BoxSet> CreateCollection(CollectionCreationOptions options)
+        public BoxSet CreateCollection(CollectionCreationOptions options)
         {
             var name = options.Name;
 
@@ -61,7 +115,7 @@ namespace Emby.Server.Implementations.Collections
             // This could cause it to get re-resolved as a plain folder
             var folderName = _fileSystem.GetValidFilename(name) + " [boxset]";
 
-            var parentFolder = GetParentFolder(options.ParentId);
+            var parentFolder = GetCollectionsFolder(true).Result;
 
             if (parentFolder == null)
             {
@@ -82,19 +136,14 @@ namespace Emby.Server.Implementations.Collections
                     Path = path,
                     IsLocked = options.IsLocked,
                     ProviderIds = options.ProviderIds,
-                    Shares = options.UserIds.Select(i => new Share
-                    {
-                        UserId = i,
-                        CanEdit = true
-
-                    }).ToList()
+                    DateCreated = DateTime.UtcNow
                 };
 
                 parentFolder.AddChild(collection, CancellationToken.None);
 
                 if (options.ItemIdList.Length > 0)
                 {
-                    await AddToCollection(collection.Id, options.ItemIdList, false, new MetadataRefreshOptions(_fileSystem)
+                    AddToCollection(collection.Id, options.ItemIdList, false, new MetadataRefreshOptions(_fileSystem)
                     {
                         // The initial adding of items is going to create a local metadata file
                         // This will cause internet metadata to be skipped as a result
@@ -122,44 +171,17 @@ namespace Emby.Server.Implementations.Collections
             }
         }
 
-        private Folder GetParentFolder(Guid? parentId)
+        public void AddToCollection(Guid collectionId, IEnumerable<string> ids)
         {
-            if (parentId.HasValue)
-            {
-                if (parentId.Value == Guid.Empty)
-                {
-                    throw new ArgumentNullException("parentId");
-                }
-
-                var folder = _libraryManager.GetItemById(parentId.Value) as Folder;
-
-                // Find an actual physical folder
-                if (folder is CollectionFolder)
-                {
-                    var child = _libraryManager.RootFolder.Children.OfType<Folder>()
-                        .FirstOrDefault(i => folder.PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase));
-
-                    if (child != null)
-                    {
-                        return child;
-                    }
-                }
-            }
-
-            return GetCollectionsFolder(string.Empty);
+            AddToCollection(collectionId, ids, true, new MetadataRefreshOptions(_fileSystem));
         }
 
-        public Task AddToCollection(Guid collectionId, IEnumerable<string> ids)
+        public void AddToCollection(Guid collectionId, IEnumerable<Guid> ids)
         {
-            return AddToCollection(collectionId, ids, true, new MetadataRefreshOptions(_fileSystem));
+            AddToCollection(collectionId, ids.Select(i => i.ToString("N")), true, new MetadataRefreshOptions(_fileSystem));
         }
 
-        public Task AddToCollection(Guid collectionId, IEnumerable<Guid> ids)
-        {
-            return AddToCollection(collectionId, ids.Select(i => i.ToString("N")), true, new MetadataRefreshOptions(_fileSystem));
-        }
-
-        private async Task AddToCollection(Guid collectionId, IEnumerable<string> ids, bool fireEvent, MetadataRefreshOptions refreshOptions)
+        private void AddToCollection(Guid collectionId, IEnumerable<string> ids, bool fireEvent, MetadataRefreshOptions refreshOptions)
         {
             var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
 
@@ -170,28 +192,26 @@ namespace Emby.Server.Implementations.Collections
 
             var list = new List<LinkedChild>();
             var itemList = new List<BaseItem>();
-            var currentLinkedChildrenIds = collection.GetLinkedChildren().Select(i => i.Id).ToList();
+
+            var linkedChildrenList = collection.GetLinkedChildren();
+            var currentLinkedChildrenIds = linkedChildrenList.Select(i => i.Id).ToList();
 
             foreach (var id in ids)
             {
                 var guidId = new Guid(id);
                 var item = _libraryManager.GetItemById(guidId);
 
-                if (string.IsNullOrWhiteSpace(item.Path))
-                {
-                    continue;
-                }
-
                 if (item == null)
                 {
                     throw new ArgumentException("No item exists with the supplied Id");
                 }
 
-                itemList.Add(item);
-
                 if (!currentLinkedChildrenIds.Contains(guidId))
                 {
+                    itemList.Add(item);
+
                     list.Add(LinkedChild.Create(item));
+                    linkedChildrenList.Add(item);
                 }
             }
 
@@ -201,10 +221,11 @@ namespace Emby.Server.Implementations.Collections
                 newList.AddRange(list);
                 collection.LinkedChildren = newList.ToArray(newList.Count);
 
-                collection.UpdateRatingToContent();
+                collection.UpdateRatingToItems(linkedChildrenList);
 
                 collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
 
+                refreshOptions.ForceSave = true;
                 _providerManager.QueueRefresh(collection.Id, refreshOptions, RefreshPriority.High);
 
                 if (fireEvent)
@@ -219,12 +240,12 @@ namespace Emby.Server.Implementations.Collections
             }
         }
 
-        public Task RemoveFromCollection(Guid collectionId, IEnumerable<string> itemIds)
+        public void RemoveFromCollection(Guid collectionId, IEnumerable<string> itemIds)
         {
-            return RemoveFromCollection(collectionId, itemIds.Select(i => new Guid(i)));
+            RemoveFromCollection(collectionId, itemIds.Select(i => new Guid(i)));
         }
 
-        public async Task RemoveFromCollection(Guid collectionId, IEnumerable<Guid> itemIds)
+        public void RemoveFromCollection(Guid collectionId, IEnumerable<Guid> itemIds)
         {
             var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
 
@@ -244,7 +265,8 @@ namespace Emby.Server.Implementations.Collections
 
                 if (child == null)
                 {
-                    throw new ArgumentException("No collection title exists with the supplied Id");
+                    _logger.Warn("No collection title exists with the supplied Id");
+                    continue;
                 }
 
                 list.Add(child);
@@ -260,10 +282,11 @@ namespace Emby.Server.Implementations.Collections
                 collection.LinkedChildren = collection.LinkedChildren.Except(list).ToArray();
             }
 
-            collection.UpdateRatingToContent();
-
             collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
-            _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.High);
+            _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(_fileSystem)
+            {
+                ForceSave = true
+            }, RefreshPriority.High);
 
             EventHelper.FireEventIfNotNull(ItemsRemovedFromCollection, this, new CollectionModifiedEventArgs
             {
@@ -292,7 +315,7 @@ namespace Emby.Server.Implementations.Collections
                     var itemId = item.Id;
 
                     var currentBoxSets = allBoxsets
-                        .Where(i => i.GetLinkedChildren().Any(j => j.Id == itemId))
+                        .Where(i => i.ContainsLinkedChildByItemId(itemId))
                         .ToList();
 
                     if (currentBoxSets.Count > 0)
@@ -311,5 +334,79 @@ namespace Emby.Server.Implementations.Collections
 
             return results.Values;
         }
+    }
+
+    public class CollectionManagerEntryPoint : IServerEntryPoint
+    {
+        private readonly CollectionManager _collectionManager;
+        private readonly IServerConfigurationManager _config;
+        private readonly IFileSystem _fileSystem;
+        private ILogger _logger;
+
+        public CollectionManagerEntryPoint(ICollectionManager collectionManager, IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger)
+        {
+            _collectionManager = (CollectionManager)collectionManager;
+            _config = config;
+            _fileSystem = fileSystem;
+            _logger = logger;
+        }
+
+        public async void Run()
+        {
+            if (!_config.Configuration.CollectionsUpgraded && _config.Configuration.IsStartupWizardCompleted)
+            {
+                var path = _collectionManager.GetCollectionsFolderPath();
+
+                if (_fileSystem.DirectoryExists(path))
+                {
+                    try
+                    {
+                        await _collectionManager.EnsureLibraryFolder(path, true).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error creating camera uploads library", ex);
+                    }
+
+                    _config.Configuration.CollectionsUpgraded = true;
+                    _config.SaveConfiguration();
+                }
+            }
+        }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~CollectionManagerEntryPoint() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

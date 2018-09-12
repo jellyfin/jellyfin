@@ -2,13 +2,6 @@
 
     <div class="content-primary">
 
-        <div class="ui-bar-a welcomeMessage" style="display: none; padding: 2em; border-radius: 10px; margin: 2em 0; font-weight: normal; max-width: 800px;">
-            <h1 style="margin-top: 0;" class="tourHeader"></h1>
-            <p>
-                <button is="emby-button" class="btnTakeTour raised button-submit block" type="button"><span class="tourButtonText"></span></button>
-            </p>
-        </div>
-
         <div class="dashboardSections" style="padding-top:.5em;">
 
             <div class="dashboardColumn dashboardColumn-2-60 dashboardColumn-3-46">
@@ -20,6 +13,9 @@
                             <i class="md-icon">mode_edit</i>
                         </button>
 
+                        <div class="supporterIconContainer flex align-items-center" style="margin: 0 0 0 .5em;">
+                        </div>
+
                     </div>
                     <div class="paperList" style="padding: 1em;">
                         <p id="appVersionNumber">
@@ -28,13 +24,13 @@
                             <i class="md-icon" style="background-color: #52B54B; border-radius: .25em; color: #fff; margin-right: .5em; padding: .25em; font-size: 110%;">check</i>
                             ${ServerUpToDate}
                         </p>
-                        <div id="pUpdateNow" style="display: none;">
+                        <div id="pUpdateNow" class="hide">
                             <p>
                                 <strong>${NewServerVersionAvailable}</strong>
                             </p>
                             <p id="newVersionNumber"></p>
                             <div id="btnUpdateApplicationContainer">
-                                <button id="btnUpdateApplication" is="emby-button" type="button" class="raised block" onclick="DashboardPage.updateApplication();">
+                                <button id="btnUpdateApplication" is="emby-button" type="button" class="raised block" onclick="DashboardPage.updateApplication(this);">
                                     <span>${ButtonUpdateNow}</span>
                                 </button>
                             </div>
@@ -52,17 +48,15 @@
                         </p>
                     </div>
 
-                    <div>
-                        <button is="emby-button" type="button" class="raised btnRestartContainer hide" onclick="DashboardPage.restart();" style="margin-left:0;">
+                    <div style="margin-top:1em;">
+                        <button is="emby-button" type="button" id="btnRestartServer" class="raised hide" onclick="DashboardPage.restart(this);" style="margin-left:0;">
                             <span>${ButtonRestart}</span>
                         </button>
-                        <button is="emby-button" type="button" id="btnShutdown" class="raised" onclick="DashboardPage.shutdown();">
+                        <button is="emby-button" type="button" id="btnShutdown" class="raised" onclick="DashboardPage.shutdown(this);">
                             <span>${ButtonShutdown}</span>
                         </button>
                     </div>
 
-                    <p class="supporterIconContainer flex align-items-center" style="padding-left: .25em; margin: 1em 0 .5em;">
-                    </p>
 
                     <div style="margin-top: 2em;" class="runningTasksContainer hide">
                         <h3>${HeaderRunningTasks}</h3>
@@ -84,7 +78,11 @@
                 </div>
 
                 <div class="dashboardSection" style="padding-left: 0;">
-                    <h3>${HeaderActiveDevices}</h3>
+                    <a is="emby-linkbutton" href="devices/devices.html" style="margin-left:.8em!important;" class="button-flat sectionTitleTextButton">
+                        <h3 style="margin:0;">${HeaderActiveDevices}</h3>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </a>
+
                     <div class="activeDevices itemsContainer vertical-wrap">
                     </div>
 
@@ -93,8 +91,11 @@
 
             <div class="dashboardColumn dashboardColumn-2-40 dashboardColumn-3-27">
                 <div class="dashboardSection">
-                    <h3>${HeaderRecentActivity}</h3>
-                    <div class="paperList activityItems">
+                    <a is="emby-linkbutton" href="serveractivity.html?useractivity=true" class="button-flat sectionTitleTextButton">
+                        <h3>${HeaderActivity}</h3>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </a>
+                    <div class="paperList userActivityItems" data-activitylimit="7" data-useractivity="true">
                     </div>
                 </div>
             </div>
@@ -106,40 +107,50 @@
                     </div>
                 </div>
 
+                <div class="dashboardSection serverActivitySection hide activityContainer">
+
+                    <a is="emby-linkbutton" href="serveractivity.html?useractivity=false" class="button-flat sectionTitleTextButton">
+                        <h3>${Alerts}</h3>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </a>
+                    <div class="paperList serverActivityItems" data-activitylimit="4" data-useractivity="false">
+                    </div>
+                </div>
+
                 <div class="dashboardSection">
-                    <h3>${HeaderLatestNews}</h3>
+
+                    <a is="emby-linkbutton" href="https://emby.media/community/index.php?/blog/1-emby-blog" class="button-flat sectionTitleTextButton" target="_blank">
+                        <h3>${HeaderLatestNews}</h3>
+                        <i class="md-icon">&#xE5CC;</i>
+                    </a>
                     <div class="paperList latestNewsItems">
                     </div>
                 </div>
 
                 <div class="dashboardSection">
                     <h3>${HeaderPaths}</h3>
-                    <div class="paperList" style="padding: 1em;">
-                        <div class="listItem">
-                            <i class="md-icon listItemIcon">folder</i>
+                    <div class="paperList">
+                        <div class="listItem listItem-border">
                             <div class="listItemBody two-line">
-                                <div class="listItemBodyText secondary">${LabelCache}</div>
+                                <div class="listItemBodyText secondary" style="margin:0;">${LabelCache}</div>
                                 <div class="listItemBodyText" id="cachePath"></div>
                             </div>
                         </div>
-                        <div class="listItem">
-                            <i class="md-icon listItemIcon">folder</i>
+                        <div class="listItem listItem-border">
                             <div class="listItemBody two-line">
-                                <div class="listItemBodyText secondary">${LabelLogs}</div>
+                                <div class="listItemBodyText secondary" style="margin:0;">${LabelLogs}</div>
                                 <div class="listItemBodyText" id="logPath"></div>
                             </div>
                         </div>
-                        <div class="listItem">
-                            <i class="md-icon listItemIcon">folder</i>
+                        <div class="listItem listItem-border">
                             <div class="listItemBody two-line">
-                                <div class="listItemBodyText secondary">${LabelMetadata}</div>
+                                <div class="listItemBodyText secondary" style="margin:0;">${LabelMetadata}</div>
                                 <div class="listItemBodyText" id="metadataPath"></div>
                             </div>
                         </div>
-                        <div class="listItem">
-                            <i class="md-icon listItemIcon">folder</i>
+                        <div class="listItem listItem-border">
                             <div class="listItemBody two-line">
-                                <div class="listItemBodyText secondary">${LabelTranscodingTemporaryFiles}</div>
+                                <div class="listItemBodyText secondary" style="margin:0;">${LabelTranscodingTemporaryFiles}</div>
                                 <div class="listItemBodyText" id="transcodingTemporaryPath"></div>
                             </div>
                         </div>

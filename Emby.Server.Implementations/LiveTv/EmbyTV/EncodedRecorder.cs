@@ -22,6 +22,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Reflection;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -32,7 +33,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly IHttpClient _httpClient;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerApplicationPaths _appPaths;
-        private readonly LiveTvOptions _liveTvOptions;
         private bool _hasExited;
         private Stream _logFileStream;
         private string _targetPath;
@@ -41,37 +41,19 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly IJsonSerializer _json;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private readonly IServerConfigurationManager _config;
+        private readonly IAssemblyInfo _assemblyInfo;
 
-        public EncodedRecorder(ILogger logger, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IServerApplicationPaths appPaths, IJsonSerializer json, LiveTvOptions liveTvOptions, IHttpClient httpClient, IProcessFactory processFactory, IServerConfigurationManager config)
+        public EncodedRecorder(ILogger logger, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IServerApplicationPaths appPaths, IJsonSerializer json, IHttpClient httpClient, IProcessFactory processFactory, IServerConfigurationManager config, IAssemblyInfo assemblyInfo)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
             _json = json;
-            _liveTvOptions = liveTvOptions;
             _httpClient = httpClient;
             _processFactory = processFactory;
             _config = config;
-        }
-
-        private string OutputFormat
-        {
-            get
-            {
-                var format = _liveTvOptions.RecordingEncodingFormat;
-
-                if (string.Equals(format, "mkv", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "mkv";
-                }
-                if (string.Equals(format, "ts", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "ts";
-                }
-
-                return "mkv";
-            }
+            _assemblyInfo = assemblyInfo;
         }
 
         private bool CopySubtitles
@@ -85,20 +67,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public string GetOutputPath(MediaSourceInfo mediaSource, string targetFile)
         {
-            var extension = OutputFormat;
-
-            if (string.Equals(extension, "mpegts", StringComparison.OrdinalIgnoreCase))
-            {
-                extension = "ts";
-            }
-
-            return Path.ChangeExtension(targetFile, "." + extension);
+            return Path.ChangeExtension(targetFile, ".ts");
         }
 
         public async Task Record(IDirectStreamProvider directStreamProvider, MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
-            //var durationToken = new CancellationTokenSource(duration);
-            //cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+            // The media source is infinite so we need to handle stopping ourselves
+            var durationToken = new CancellationTokenSource(duration);
+            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
 
             await RecordFromFile(mediaSource, mediaSource.Path, targetFile, duration, onStarted, cancellationToken).ConfigureAwait(false);
 
@@ -185,6 +161,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             videoArgs += " -fflags +genpts";
 
             var durationParam = " -t " + _mediaEncoder.GetTimeParameter(duration.Ticks);
+            durationParam = string.Empty;
 
             var flags = new List<string>();
             if (mediaSource.IgnoreDts)
@@ -208,9 +185,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             var videoStream = mediaSource.VideoStream;
-            var videoDecoder = videoStream == null ? null : new EncodingHelper(_mediaEncoder, _fileSystem, null).GetVideoDecoder(VideoType.VideoFile, videoStream, GetEncodingOptions());
+            string videoDecoder = null;
 
-            if (!string.IsNullOrWhiteSpace(videoDecoder))
+            if (!string.IsNullOrEmpty(videoDecoder))
             {
                 inputModifier += " " + videoDecoder;
             }
@@ -222,7 +199,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (mediaSource.RequiresLooping)
             {
-                inputModifier += " -stream_loop -1";
+                inputModifier += " -stream_loop -1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2";
             }
 
             var analyzeDurationSeconds = 5;
@@ -255,39 +232,27 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var mediaStreams = mediaSource.MediaStreams ?? new List<MediaStream>();
             var inputAudioCodec = mediaStreams.Where(i => i.Type == MediaStreamType.Audio).Select(i => i.Codec).FirstOrDefault() ?? string.Empty;
 
-            // do not copy aac because many players have difficulty with aac_latm
-            if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings && !string.Equals(inputAudioCodec, "aac", StringComparison.OrdinalIgnoreCase))
-            {
-                return "-codec:a:0 copy";
-            }
+            return "-codec:a:0 copy";
 
-            var audioChannels = 2;
-            var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
-            if (audioStream != null)
-            {
-                audioChannels = audioStream.Channels ?? audioChannels;
-            }
-            return "-codec:a:0 aac -strict experimental -ab 320000";
+            //var audioChannels = 2;
+            //var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
+            //if (audioStream != null)
+            //{
+            //    audioChannels = audioStream.Channels ?? audioChannels;
+            //}
+            //return "-codec:a:0 aac -strict experimental -ab 320000";
         }
 
         private bool EncodeVideo(MediaSourceInfo mediaSource)
         {
-            var mediaStreams = mediaSource.MediaStreams ?? new List<MediaStream>();
-            return !mediaStreams.Any(i => i.Type == MediaStreamType.Video && string.Equals(i.Codec, "h264", StringComparison.OrdinalIgnoreCase) && !i.IsInterlaced);
+            return false;
         }
 
         protected string GetOutputSizeParam()
         {
             var filters = new List<string>();
-            
-            if (string.Equals(GetEncodingOptions().DeinterlaceMethod, "bobandweave", StringComparison.OrdinalIgnoreCase))
-            {
-                filters.Add("yadif=1:-1:0");
-            }
-            else
-            {
-                filters.Add("yadif=0:-1:0");
-            }
+
+            filters.Add("yadif=0:-1:0");
 
             var output = string.Empty;
 

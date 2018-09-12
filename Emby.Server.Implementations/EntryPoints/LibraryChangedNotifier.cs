@@ -52,7 +52,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// The library update duration
         /// </summary>
-        private const int LibraryUpdateDuration = 5000;
+        private const int LibraryUpdateDuration = 30000;
 
         private readonly IProviderManager _providerManager;
 
@@ -315,41 +315,39 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="cancellationToken">The cancellation token.</param>
         private async void SendChangeNotifications(List<BaseItem> itemsAdded, List<BaseItem> itemsUpdated, List<BaseItem> itemsRemoved, List<Folder> foldersAddedTo, List<Folder> foldersRemovedFrom, CancellationToken cancellationToken)
         {
-            foreach (var user in _userManager.Users.ToList())
+            var userIds = _sessionManager.Sessions
+                .Select(i => i.UserId)
+                .Where(i => !i.Equals(Guid.Empty))
+                .Distinct()
+                .ToArray();
+
+            foreach (var userId in userIds)
             {
-                var id = user.Id;
-                var userSessions = _sessionManager.Sessions
-                    .Where(u => u.UserId.HasValue && u.UserId.Value == id && u.SessionController != null && u.IsActive)
-                    .ToList();
+                LibraryUpdateInfo info;
 
-                if (userSessions.Count > 0)
+                try
                 {
-                    LibraryUpdateInfo info;
-
-                    try
-                    {
-                        info = GetLibraryUpdateInfo(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo,
-                                                       foldersRemovedFrom, id);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error in GetLibraryUpdateInfo", ex);
-                        return;
-                    }
-
-                    foreach (var userSession in userSessions)
-                    {
-                        try
-                        {
-                            await userSession.SessionController.SendLibraryUpdateInfo(info, cancellationToken).ConfigureAwait(false);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error sending LibraryChanged message", ex);
-                        }
-                    }
+                    info = GetLibraryUpdateInfo(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo, foldersRemovedFrom, userId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in GetLibraryUpdateInfo", ex);
+                    return;
                 }
 
+                if (info.IsEmpty)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    await _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, "LibraryChanged", info, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error sending LibraryChanged message", ex);
+                }
             }
         }
 
@@ -391,7 +389,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private bool FilterItem(BaseItem item)
         {
-            if (!item.IsFolder && item.LocationType == LocationType.Virtual)
+            if (!item.IsFolder && !item.HasPathProtocol)
             {
                 return false;
             }
@@ -440,7 +438,7 @@ namespace Emby.Server.Implementations.EntryPoints
             // If the physical root changed, return the user root
             if (item is AggregateFolder)
             {
-                return new[] { user.RootFolder as T };
+                return new[] { _libraryManager.GetUserRootFolder() as T };
             }
 
             // Return it only if it's in the user's library
@@ -458,7 +456,6 @@ namespace Emby.Server.Implementations.EntryPoints
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -474,10 +471,14 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer.Dispose();
                     LibraryUpdateTimer = null;
                 }
-
+                
                 _libraryManager.ItemAdded -= libraryManager_ItemAdded;
                 _libraryManager.ItemUpdated -= libraryManager_ItemUpdated;
                 _libraryManager.ItemRemoved -= libraryManager_ItemRemoved;
+
+                _providerManager.RefreshCompleted -= _providerManager_RefreshCompleted;
+                _providerManager.RefreshStarted -= _providerManager_RefreshStarted;
+                _providerManager.RefreshProgress -= _providerManager_RefreshProgress;
             }
         }
     }

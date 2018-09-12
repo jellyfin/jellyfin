@@ -24,6 +24,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Providers.TV;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -60,12 +61,12 @@ namespace MediaBrowser.Providers.Movies
             get { return "FanArt"; }
         }
 
-        public bool Supports(IHasMetadata item)
+        public bool Supports(BaseItem item)
         {
             return item is Movie || item is BoxSet || item is MusicVideo;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
+        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType>
             {
@@ -79,9 +80,9 @@ namespace MediaBrowser.Providers.Movies
             };
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var baseItem = (BaseItem)item;
+            var baseItem = item;
             var list = new List<RemoteImageInfo>();
 
             var movieId = baseItem.GetProviderId(MetadataProviders.Tmdb);
@@ -165,7 +166,6 @@ namespace MediaBrowser.Providers.Movies
             PopulateImages(list, obj.moviebackground, ImageType.Backdrop, 1920, 1080);
         }
 
-        private Regex _regex_http = new Regex("^http://");
         private void PopulateImages(List<RemoteImageInfo> list, List<Image> images, ImageType type, int width, int height)
         {
             if (images == null)
@@ -189,11 +189,11 @@ namespace MediaBrowser.Providers.Movies
                         Width = width,
                         Height = height,
                         ProviderName = Name,
-                        Url = _regex_http.Replace(url, "https://", 1),
+                        Url = url,
                         Language = i.lang
                     };
 
-                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Any, _usCulture, out likes))
+                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Integer, _usCulture, out likes))
                     {
                         info.CommunityRating = likes;
                     }
@@ -305,7 +305,6 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
-        private readonly Task _cachedTask = Task.FromResult(true);
         internal Task EnsureMovieJson(string id, CancellationToken cancellationToken)
         {
             var path = GetFanartJsonPath(id);
@@ -314,9 +313,9 @@ namespace MediaBrowser.Providers.Movies
 
             if (fileInfo.Exists)
             {
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 3)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
                 {
-                    return _cachedTask;
+                    return Task.CompletedTask;
                 }
             }
 

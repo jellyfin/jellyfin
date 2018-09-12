@@ -1,29 +1,37 @@
-﻿<div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage noSecondaryNavPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload" data-require="dashboard/devicesupload,emby-input,emby-checkbox,emby-button">
+﻿<div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage noSecondaryNavPage" data-require="dashboard/devicesupload,emby-input,emby-checkbox,emby-button">
 
     <div>
         <div class="content-primary">
 
             <form class="devicesUploadForm">
 
-                <p>${HeaderCameraUploadHelp}</p>
-
-                <div class="inputContainer">
-                    <div style="display: flex; align-items: center;">
-                        <div style="flex-grow:1;">
-                            <input is="emby-input" id="txtUploadPath" label="${LabelCameraUploadPath}" autocomplete="off" />
-                        </div>
-                        <button type="button" is="paper-icon-button-light" id="btnSelectUploadPath" title="${ButtonSelectDirectory}" class="emby-input-iconbutton"><i class="md-icon">search</i></button>
+                <div class="verticalSection">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h2 class="sectionTitle">${TabCameraUpload}</h2>
+                        <a is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload">${Help}</a>
                     </div>
-                    <div class="fieldDescription">${LabelCameraUploadPathHelp}</div>
+
+                    <p>${HeaderCameraUploadHelp}</p>
                 </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkSubfolder" />
-                        <span>${LabelCreateCameraUploadSubfolder}</span>
-                    </label>
-                    <div class="fieldDescription checkboxFieldDescription">${LabelCreateCameraUploadSubfolderHelp}</div>
+
+                <div class="verticalSection">
+                    <div class="inputContainer">
+                        <div style="display: flex; align-items: center;">
+                            <div style="flex-grow:1;">
+                                <input is="emby-input" id="txtUploadPath" label="${LabelCameraUploadPath}" autocomplete="off" />
+                            </div>
+                            <button type="button" is="paper-icon-button-light" id="btnSelectUploadPath" title="${ButtonSelectDirectory}" class="emby-input-iconbutton"><i class="md-icon">search</i></button>
+                        </div>
+                        <div class="fieldDescription">${DefaultCameraUploadPathHelp}</div>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkSubfolder" />
+                            <span>${LabelCreateCameraUploadSubfolder}</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">${LabelCreateCameraUploadSubfolderHelp}</div>
+                    </div>
                 </div>
-                <br />
                 <div>
                     <button is="emby-button" type="submit" class="raised button-submit block">
                         <span>${ButtonSave}</span>

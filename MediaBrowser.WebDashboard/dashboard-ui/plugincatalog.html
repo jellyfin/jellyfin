@@ -1,22 +1,25 @@
-﻿<div id="pluginCatalogPage" data-role="page" class="page type-interior pluginConfigurationPage withTabs fullWidthContent" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="scripts/plugincatalogpage,emby-checkbox,emby-select">
+﻿<div id="pluginCatalogPage" data-role="page" class="page type-interior pluginConfigurationPage withTabs fullWidthContent">
     <div>
         <div class="content-primary">
-            <div style="display: flex;align-items:center; justify-content: flex-end;">
-                <div class="selectContainer" style="margin:0;">
-                    <select is="emby-select" id="selectSystem" label="${LabelDisplayPluginsFor}">
-                        <option value="Server">${TabServer}</option>
-                        <option value="MBClassic">${PluginTabAppClassic}</option>
-                    </select>
+
+            <div class="verticalSection">
+                <div class="sectionTitleContainer flex align-items-center">
+
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selectSystem" label="${LabelDisplayPluginsFor}">
+                            <option value="Server">${HeaderEmbyServer}</option>
+                            <option value="MBClassic">${PluginTabAppClassic}</option>
+                        </select>
+                    </div>
+
+                    <a is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Plugins">${Help}</a>
                 </div>
+
             </div>
 
-            <div id="noPlugins" class="hide">
-                <br />
-                <br />
-                <div style="text-align: center; margin: 10px;">${MessageNoAvailablePlugins}</div>
-            </div>
+            <div id="noPlugins" class="hide">${MessageNoAvailablePlugins}</div>
+
             <div id="pluginTiles" style="text-align:left;"></div>
-
         </div>
     </div>
 </div>

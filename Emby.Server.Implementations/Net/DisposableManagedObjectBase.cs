@@ -54,16 +54,9 @@ namespace Emby.Server.Implementations.Net
         /// <seealso cref="IsDisposed"/>
         public void Dispose()
         {
-            try
-            {
-                IsDisposed = true;
+            IsDisposed = true;
 
-                Dispose(true);
-            }
-            finally
-            {
-                GC.SuppressFinalize(this);
-            }
+            Dispose(true);
         }
 
         #endregion

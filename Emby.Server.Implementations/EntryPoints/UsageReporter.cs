@@ -70,7 +70,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         public async Task ReportAppUsage(ClientInfo app, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(app.DeviceId))
+            if (string.IsNullOrEmpty(app.DeviceId))
             {
                 throw new ArgumentException("Client info must have a device Id");
             }

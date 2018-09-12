@@ -54,11 +54,15 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private async void SendMessage(string name, TimerEventInfo info)
         {
-            var users = _userManager.Users.Where(i => i.Policy.EnableLiveTvAccess).Select(i => i.Id.ToString("N")).ToList();
+            var users = _userManager.Users.Where(i => i.Policy.EnableLiveTvAccess).Select(i => i.Id).ToList();
 
             try
             {
                 await _sessionManager.SendMessageToUserSessions<TimerEventInfo>(users, name, info, CancellationToken.None);
+            }
+            catch (ObjectDisposedException)
+            {
+
             }
             catch (Exception ex)
             {
@@ -72,7 +76,6 @@ namespace Emby.Server.Implementations.EntryPoints
             _liveTvManager.SeriesTimerCancelled -= _liveTvManager_SeriesTimerCancelled;
             _liveTvManager.TimerCreated -= _liveTvManager_TimerCreated;
             _liveTvManager.SeriesTimerCreated -= _liveTvManager_SeriesTimerCreated;
-            GC.SuppressFinalize(this);
         }
     }
 }

@@ -1,35 +1,42 @@
-﻿<div id="newUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/usernew,emby-input,emby-button">
+﻿<div id="newUserPage" data-role="page" class="page type-interior" data-require="scripts/usernew,emby-input,emby-button">
 
     <div>
         <div class="content-primary">
 
             <form class="newUserProfileForm">
-                <div class="inputContainer">
-                    <input is="emby-input" id="txtUserName" required type="text" label="${LabelName}" />
+                <div class="verticalSection">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h2 class="sectionTitle">${HeaderAddUser}</h2>
+                        <a is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Users">${Help}</a>
+                    </div>
+
+                    <div class="inputContainer">
+                        <input is="emby-input" id="txtUserName" required type="text" label="${LabelName}" />
+                    </div>
                 </div>
 
-                <div class="folderAccessContainer">
-                    <h1>${HeaderLibraryAccess}</h1>
+                <div class="folderAccessContainer verticalSection">
+                    <h2 class="sectionTitle">${HeaderLibraryAccess}</h2>
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label>
                             <input type="checkbox" is="emby-checkbox" id="chkEnableAllFolders" />
                             <span>${OptionEnableAccessToAllLibraries}</span>
                         </label>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LibraryAccessHelp}</div>
+                        <div class="fieldDescription checkboxFieldDescription">${LibraryAccessHelp}</div>
                     </div>
                     <div class="folderAccessListContainer">
                         <div class="folderAccess">
                         </div>
                     </div>
                 </div>
-                <div class="channelAccessContainer" style="display:none;">
-                    <h1>${HeaderChannelAccess}</h1>
+                <div class="channelAccessContainer verticalSection verticalSection-extrabottompadding" style="display:none;">
+                    <h2 class="sectionTitle">${HeaderChannelAccess}</h2>
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label>
                             <input type="checkbox" is="emby-checkbox" id="chkEnableAllChannels" />
                             <span>${OptionEnableAccessToAllChannels}</span>
                         </label>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${ChannelAccessHelp}</div>
+                        <div class="fieldDescription checkboxFieldDescription">${ChannelAccessHelp}</div>
                     </div>
                     <div class="channelAccessListContainer">
                         <div class="channelAccess">
@@ -37,7 +44,6 @@
                     </div>
                 </div>
 
-                <br />
                 <div>
                     <button is="emby-button" type="submit" class="raised button-submit block">
                         <span>${ButtonSave}</span>

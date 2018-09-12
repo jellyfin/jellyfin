@@ -44,32 +44,43 @@ namespace Rssdp.Infrastructure
 			private set;
 		}
 
-		#endregion
+        #endregion
 
-		#region IDisposable Members
+        public string BuildMessage(string header, Dictionary<string, string> values)
+        {
+            var builder = new StringBuilder();
 
-		/// <summary>
-		/// Disposes this object instance and all internally managed resources.
-		/// </summary>
-		/// <remarks>
-		/// <para>Sets the <see cref="IsDisposed"/> property to true. Does not explicitly throw an exception if called multiple times, but makes no promises about behaviour of derived classes.</para>
-		/// </remarks>
-		/// <seealso cref="IsDisposed"/>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly", Justification="We do exactly as asked, but CA doesn't seem to like us also setting the IsDisposed property. Too bad, it's a good idea and shouldn't cause an exception or anything likely to interfer with the dispose process.")]
+            const string argFormat = "{0}: {1}\r\n";
+
+            builder.AppendFormat("{0}\r\n", header);
+
+            foreach (var pair in values)
+            {
+                builder.AppendFormat(argFormat, pair.Key, pair.Value);
+            }
+
+            builder.Append("\r\n");
+
+            return builder.ToString();
+        }
+        
+        #region IDisposable Members
+
+        /// <summary>
+        /// Disposes this object instance and all internally managed resources.
+        /// </summary>
+        /// <remarks>
+        /// <para>Sets the <see cref="IsDisposed"/> property to true. Does not explicitly throw an exception if called multiple times, but makes no promises about behaviour of derived classes.</para>
+        /// </remarks>
+        /// <seealso cref="IsDisposed"/>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly", Justification="We do exactly as asked, but CA doesn't seem to like us also setting the IsDisposed property. Too bad, it's a good idea and shouldn't cause an exception or anything likely to interfer with the dispose process.")]
 		public void Dispose()
 		{
-			try
-			{
-				IsDisposed = true;
+            IsDisposed = true;
 
-				Dispose(true);
-			}
-			finally
-			{
-				GC.SuppressFinalize(this);
-			}
-		}
+            Dispose(true);
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

@@ -99,7 +99,7 @@ namespace Emby.Dlna.ContentDirectory
                 DataType = "string",
                 SendsEvents = false,
 
-                AllowedValues = new List<string>
+                AllowedValues = new string[]
                 {
                     "BrowseMetadata",
                     "BrowseDirectChildren"

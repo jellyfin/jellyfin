@@ -29,7 +29,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -50,7 +50,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
     }
 
     /// <summary>
@@ -64,7 +64,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the item id.
@@ -85,14 +85,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Id { get; set; }
+        public Guid Id { get; set; }
     }
 
     /// <summary>
@@ -106,14 +106,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public string Id { get; set; }
+        public Guid Id { get; set; }
     }
 
     /// <summary>
@@ -127,14 +127,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public string Id { get; set; }
+        public Guid Id { get; set; }
     }
 
     /// <summary>
@@ -148,14 +148,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="UpdateUserItemRating" /> is likes.
@@ -176,7 +176,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -197,7 +197,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -215,13 +215,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         [ApiMember(Name = "Limit", Description = "Limit", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int Limit { get; set; }
 
         [ApiMember(Name = "ParentId", Description = "Specify this to localize the search to a specific item or folder. Omit to use the root", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ParentId { get; set; }
+        public Guid ParentId { get; set; }
 
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Fields { get; set; }
@@ -291,7 +291,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var result = GetAsync(request);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         public object Get(GetLatestMedia request)
@@ -344,43 +344,15 @@ namespace MediaBrowser.Api.UserLibrary
             var user = _userManager.GetUserById(request.UserId);
 
             var item = string.IsNullOrEmpty(request.Id) ?
-                user.RootFolder :
+                _libraryManager.GetUserRootFolder() :
                 _libraryManager.GetItemById(request.Id);
 
-            var series = item as Series;
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
-            // Get them from the child tree
-            if (series != null)
-            {
-                var dtoOptions = GetDtoOptions(_authContext, request);
+            var dtos = item.GetDisplayExtras()
+                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
-                // Avoid implicitly captured closure
-                var currentUser = user;
-
-                var dtos = series
-                    .GetEpisodes(user, dtoOptions)
-                    .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
-                    .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, currentUser));
-
-                return dtos.ToArray();
-            }
-
-            var movie = item as IHasSpecialFeatures;
-
-            // Get them from the db
-            if (movie != null)
-            {
-                var dtoOptions = GetDtoOptions(_authContext, request);
-
-                var dtos = movie.SpecialFeatureIds
-                    .Select(_libraryManager.GetItemById)
-                    .OrderBy(i => i.SortName)
-                    .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
-
-                return dtos.ToArray();
-            }
-
-            return new BaseItemDto[] { };
+            return dtos.ToArray();
         }
 
         /// <summary>
@@ -392,28 +364,15 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _libraryManager.GetItemById(request.Id);
-
-            List<Guid> trailerIds = null;
-
-            var hasTrailers = item as IHasTrailers;
-            if (hasTrailers != null)
-            {
-                trailerIds = hasTrailers.GetTrailerIds();
-            }
-            else
-            {
-                trailerIds = new List<Guid>();
-            }
+            var item = string.IsNullOrEmpty(request.Id) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(request.Id);
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var dtos = trailerIds
-                .Select(_libraryManager.GetItemById)
+            var dtos = item.GetExtras(new[] { ExtraType.Trailer })
                 .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
                 .ToArray();
 
-            return ToOptimizedSerializedResultUsingCache(dtos);
+            return ToOptimizedResult(dtos);
         }
 
         /// <summary>
@@ -425,7 +384,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _libraryManager.GetItemById(request.Id);
+            var item = string.IsNullOrEmpty(request.Id) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(request.Id);
 
             await RefreshItemOnDemandIfNeeded(item).ConfigureAwait(false);
 
@@ -433,7 +392,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var result = _dtoService.GetBaseItemDto(item, dtoOptions, user);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         private async Task RefreshItemOnDemandIfNeeded(BaseItem item)
@@ -448,7 +407,7 @@ namespace MediaBrowser.Api.UserLibrary
                     var options = new MetadataRefreshOptions(_fileSystem)
                     {
                         MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                        ImageRefreshMode = ImageRefreshMode.FullRefresh,
+                        ImageRefreshMode = MetadataRefreshMode.FullRefresh,
                         ForceSave = performFullRefresh
                     };
 
@@ -466,13 +425,13 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = user.RootFolder;
+            var item = _libraryManager.GetUserRootFolder();
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
             var result = _dtoService.GetBaseItemDto(item, dtoOptions, user);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -484,7 +443,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _libraryManager.GetItemById(request.Id);
+            var item = string.IsNullOrEmpty(request.Id) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(request.Id);
 
             var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
 
@@ -498,7 +457,7 @@ namespace MediaBrowser.Api.UserLibrary
                 TotalRecordCount = dtos.Length
             };
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -507,7 +466,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Post(MarkFavoriteItem request)
         {
-            var dto =  MarkFavorite(request.UserId, request.Id, true);
+            var dto = MarkFavorite(request.UserId, request.Id, true);
 
             return ToOptimizedResult(dto);
         }
@@ -529,11 +488,11 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
-        private UserItemDataDto MarkFavorite(string userId, string itemId, bool isFavorite)
+        private UserItemDataDto MarkFavorite(Guid userId, Guid itemId, bool isFavorite)
         {
             var user = _userManager.GetUserById(userId);
 
-            var item = string.IsNullOrEmpty(itemId) ? user.RootFolder : _libraryManager.GetItemById(itemId);
+            var item = itemId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
 
             // Get the user data for this item
             var data = _userDataRepository.GetUserData(user, item);
@@ -541,7 +500,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Set favorite status
             data.IsFavorite = isFavorite;
 
-             _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+            _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 
             return _userDataRepository.GetUserDataDto(item, user);
         }
@@ -563,7 +522,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Post(UpdateUserItemRating request)
         {
-            var dto =  UpdateUserItemRating(request.UserId, request.Id, request.Likes);
+            var dto = UpdateUserItemRating(request.UserId, request.Id, request.Likes);
 
             return ToOptimizedResult(dto);
         }
@@ -574,18 +533,18 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="likes">if set to <c>true</c> [likes].</param>
-        private UserItemDataDto UpdateUserItemRating(string userId, string itemId, bool? likes)
+        private UserItemDataDto UpdateUserItemRating(Guid userId, Guid itemId, bool? likes)
         {
             var user = _userManager.GetUserById(userId);
 
-            var item = string.IsNullOrEmpty(itemId) ? user.RootFolder : _libraryManager.GetItemById(itemId);
+            var item = itemId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
 
             // Get the user data for this item
             var data = _userDataRepository.GetUserData(user, item);
 
             data.Likes = likes;
 
-             _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+            _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 
             return _userDataRepository.GetUserDataDto(item, user);
         }

@@ -1,6 +1,32 @@
 ﻿<!DOCTYPE html>
 <html class="preload">
 <head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+
+    <meta http-equiv="X-UA-Compatibility" content="IE=Edge">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Emby">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta property="og:title" content="Emby">
+    <meta property="og:site_name" content="Emby">
+    <meta property="og:url" content="http://emby.media">
+    <meta property="og:description" content="Energize your media.">
+    <meta property="og:type" content="article">
+    <meta property="fb:app_id" content="1618309211750238">
+    <link rel="apple-touch-icon" href="touchicon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="touchicon72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="touchicon114.png">
+    <link rel="apple-touch-startup-image" href="css/images/iossplash.png">
+    <link rel="shortcut icon" href="favicon.ico">
+    <meta name="msapplication-TileImage" content="touchicon144.png">
+    <meta name="msapplication-TileColor" content="#333333">
+    <meta name="theme-color" content="#43A047">
+
     <title>Emby</title>
 
     <style>
@@ -9,7 +35,7 @@
             background-color: transparent !important;
         }
 
-        .mouseIdle, .mouseIdle button, .mouseIdle input, .mouseIdle textarea, .mouseIdle a {
+        .mouseIdle, .mouseIdle button, .mouseIdle select, .mouseIdle input, .mouseIdle textarea, .mouseIdle a, .mouseIdle label {
             cursor: none !important;
         }
 
@@ -17,7 +43,7 @@
             background-color: #000;
         }
 
-        .hide {
+        .hide, .mouseIdle .hide-mouse-idle, .mouseIdle-tv .hide-mouse-idle-tv {
             display: none !important;
         }
 

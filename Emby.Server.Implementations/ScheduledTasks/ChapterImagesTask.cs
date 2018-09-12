@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 {
                     Type = TaskTriggerInfo.TriggerDaily,
                     TimeOfDayTicks = TimeSpan.FromHours(2).Ticks,
-                    MaxRuntimeMs = Convert.ToInt32(TimeSpan.FromHours(4).TotalMilliseconds)
+                    MaxRuntimeTicks = TimeSpan.FromHours(4).Ticks
                 }
             };
         }
@@ -133,9 +133,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 try
                 {
-                    var chapters = _itemRepo.GetChapters(video.Id);
+                    var chapters = _itemRepo.GetChapters(video);
 
-                    var success = await _encodingManager.RefreshChapterImages(video, directoryService, chapters, extract, true, CancellationToken.None);
+                    var success = await _encodingManager.RefreshChapterImages(video, directoryService, chapters, extract, true, cancellationToken).ConfigureAwait(false);
 
                     if (!success)
                     {

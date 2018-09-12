@@ -32,6 +32,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Logging;
 
 namespace Mono.Nat.Pmp
 {
@@ -39,11 +40,18 @@ namespace Mono.Nat.Pmp
     {
         private IPAddress localAddress;
         private IPAddress publicAddress;
+        private ILogger _logger;
 
-        internal PmpNatDevice(IPAddress localAddress, IPAddress publicAddress)
+        internal PmpNatDevice(IPAddress localAddress, IPAddress publicAddress, ILogger logger)
         {
+            if (localAddress == null)
+            {
+                throw new ArgumentNullException("localAddress");
+            }
+
             this.localAddress = localAddress;
             this.publicAddress = publicAddress;
+            _logger = logger;
         }
 
         public override IPAddress LocalAddress
@@ -97,8 +105,7 @@ namespace Mono.Nat.Pmp
 
                     while (attempt < PmpConstants.RetryAttempts)
                     {
-                        await udpClient.SendAsync(buffer, buffer.Length,
-                                new IPEndPoint(LocalAddress, PmpConstants.ServerPort));
+                        await udpClient.SendAsync(buffer, buffer.Length, new IPEndPoint(LocalAddress, PmpConstants.ServerPort));
 
                         if (attempt == 0)
                         {
@@ -125,9 +132,8 @@ namespace Mono.Nat.Pmp
                                                mapping.Protocol,
                                                mapping.PrivatePort,
                                                e.Message);
-                NatUtility.Log(message);
-                var pmpException = e as MappingException;
-                throw new MappingException(message, pmpException);
+                _logger.Debug(message);
+                throw e;
             }
 
             return mapping;
@@ -177,7 +183,7 @@ namespace Mono.Nat.Pmp
                                      };
 
                         var errorMsg = errors[resultCode];
-                        NatUtility.Log("Error in CreatePortMapListen: " + errorMsg);
+                        _logger.Debug("Error in CreatePortMapListen: " + errorMsg);
                         return;
                     }
 
@@ -192,7 +198,7 @@ namespace Mono.Nat.Pmp
                 }
                 catch (Exception ex)
                 {
-                    NatUtility.Logger.ErrorException("Error in CreatePortMapListen", ex);
+                    _logger.ErrorException("Error in CreatePortMapListen", ex);
                     return;
                 }
             }

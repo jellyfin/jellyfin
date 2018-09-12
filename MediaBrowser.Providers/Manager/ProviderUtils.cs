@@ -63,18 +63,9 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataFields.Genres))
             {
-                if (replaceData || target.Genres.Count == 0)
+                if (replaceData || target.Genres.Length == 0)
                 {
                     target.Genres = source.Genres;
-                }
-            }
-
-            if (replaceData || string.IsNullOrEmpty(target.HomePageUrl))
-            {
-                target.HomePageUrl = source.HomePageUrl;
-                if (!string.IsNullOrWhiteSpace(target.HomePageUrl) && target.HomePageUrl.IndexOf("http", StringComparison.OrdinalIgnoreCase) != 0)
-                {
-                    target.HomePageUrl = "http://" + target.HomePageUrl;
                 }
             }
 
@@ -189,22 +180,29 @@ namespace MediaBrowser.Providers.Manager
             MergeVideoInfo(source, target, lockedFields, replaceData);
             MergeDisplayOrder(source, target, lockedFields, replaceData);
 
-            //if (!lockedFields.Contains(MetadataFields.SortName))
+            if (replaceData || string.IsNullOrEmpty(target.ForcedSortName))
             {
-                if (replaceData || string.IsNullOrEmpty(target.ForcedSortName))
-                {
-                    var forcedSortName = source.ForcedSortName;
+                var forcedSortName = source.ForcedSortName;
 
-                    if (!string.IsNullOrWhiteSpace(forcedSortName))
-                    {
-                        target.ForcedSortName = forcedSortName;
-                    }
+                if (!string.IsNullOrWhiteSpace(forcedSortName))
+                {
+                    target.ForcedSortName = forcedSortName;
                 }
             }
 
             if (mergeMetadataSettings)
             {
-                MergeMetadataSettings(source, target);
+                target.LockedFields = source.LockedFields;
+                target.IsLocked = source.IsLocked;
+
+                // Grab the value if it's there, but if not then don't overwrite the default
+                if (source.DateCreated != default(DateTime))
+                {
+                    target.DateCreated = source.DateCreated;
+                }
+
+                target.PreferredMetadataCountryCode = source.PreferredMetadataCountryCode;
+                target.PreferredMetadataLanguage = source.PreferredMetadataLanguage;
             }
         }
 
@@ -233,22 +231,6 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        public static void MergeMetadataSettings(BaseItem source,
-           BaseItem target)
-        {
-            target.LockedFields = source.LockedFields;
-            target.IsLocked = source.IsLocked;
-
-            // Grab the value if it's there, but if not then don't overwrite the default
-            if (source.DateCreated != default(DateTime))
-            {
-                target.DateCreated = source.DateCreated;
-            }
-
-            target.PreferredMetadataCountryCode = source.PreferredMetadataCountryCode;
-            target.PreferredMetadataLanguage = source.PreferredMetadataLanguage;
-        }
-
         private static void MergeDisplayOrder(BaseItem source, BaseItem target, MetadataFields[] lockedFields, bool replaceData)
         {
             var sourceHasDisplayOrder = source as IHasDisplayOrder;
@@ -256,7 +238,15 @@ namespace MediaBrowser.Providers.Manager
 
             if (sourceHasDisplayOrder != null && targetHasDisplayOrder != null)
             {
-                targetHasDisplayOrder.DisplayOrder = sourceHasDisplayOrder.DisplayOrder;
+                if (replaceData || string.IsNullOrEmpty(targetHasDisplayOrder.DisplayOrder))
+                {
+                    var displayOrder = sourceHasDisplayOrder.DisplayOrder;
+
+                    if (!string.IsNullOrWhiteSpace(displayOrder))
+                    {
+                        targetHasDisplayOrder.DisplayOrder = displayOrder;
+                    }
+                }
             }
         }
 
@@ -284,15 +274,9 @@ namespace MediaBrowser.Providers.Manager
 
         private static void MergeTrailers(BaseItem source, BaseItem target, MetadataFields[] lockedFields, bool replaceData)
         {
-            var sourceCast = source as IHasTrailers;
-            var targetCast = target as IHasTrailers;
-
-            if (sourceCast != null && targetCast != null)
+            if (replaceData || target.RemoteTrailers.Length == 0)
             {
-                if (replaceData || targetCast.RemoteTrailers.Length == 0)
-                {
-                    targetCast.RemoteTrailers = sourceCast.RemoteTrailers;
-                }
+                target.RemoteTrailers = source.RemoteTrailers;
             }
         }
 

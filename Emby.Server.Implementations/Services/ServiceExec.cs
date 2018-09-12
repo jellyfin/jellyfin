@@ -70,7 +70,7 @@ namespace Emby.Server.Implementations.Services
             }
         }
 
-        public static async Task<object> Execute(Type serviceType, IRequest request, object instance, object requestDto, string requestName)
+        public static Task<object> Execute(Type serviceType, IRequest request, object instance, object requestDto, string requestName)
         {
             var actionName = request.Verb ?? "POST";
 
@@ -82,7 +82,10 @@ namespace Emby.Server.Implementations.Services
                     foreach (var requestFilter in actionContext.RequestFilters)
                     {
                         requestFilter.RequestFilter(request, request.Response, requestDto);
-                        if (request.Response.IsClosed) return null;
+                        if (request.Response.IsClosed)
+                        {
+                            Task.FromResult<object>(null);
+                        }
                     }
                 }
 
@@ -91,15 +94,54 @@ namespace Emby.Server.Implementations.Services
                 var taskResponse = response as Task;
                 if (taskResponse != null)
                 {
-                    await taskResponse.ConfigureAwait(false);
-                    response = ServiceHandler.GetTaskResult(taskResponse);
+                    return GetTaskResult(taskResponse);
                 }
 
-                return response;
+                return Task.FromResult(response);
             }
 
             var expectedMethodName = actionName.Substring(0, 1) + actionName.Substring(1).ToLower();
             throw new NotImplementedException(string.Format("Could not find method named {1}({0}) or Any({0}) on Service {2}", requestDto.GetType().GetMethodName(), expectedMethodName, serviceType.GetMethodName()));
+        }
+
+        private static async Task<object> GetTaskResult(Task task)
+        {
+            try
+            {
+                var taskObject = task as Task<object>;
+                if (taskObject != null)
+                {
+                    return await taskObject.ConfigureAwait(false);
+                }
+
+                await task.ConfigureAwait(false);
+
+                var type = task.GetType().GetTypeInfo();
+                if (!type.IsGenericType)
+                {
+                    return null;
+                }
+
+                var resultProperty = type.GetDeclaredProperty("Result");
+                if (resultProperty == null)
+                {
+                    return null;
+                }
+
+                var result = resultProperty.GetValue(task);
+
+                // hack alert
+                if (result.GetType().Name.IndexOf("voidtaskresult", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    return null;
+                }
+
+                return result;
+            }
+            catch (TypeAccessException)
+            {
+                return null; //return null for void Task's
+            }
         }
 
         public static List<ServiceMethod> Reset(Type serviceType)

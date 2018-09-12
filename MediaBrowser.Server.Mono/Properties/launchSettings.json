@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "EmbyServer": {
+      "commandName": "Project"
+    }
+  }
+}

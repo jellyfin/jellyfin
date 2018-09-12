@@ -210,7 +210,7 @@ namespace MediaBrowser.Api.Library
         {
             var result = _libraryManager.GetVirtualFolders(true);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         public void Post(UpdateLibraryOptions request)
@@ -224,7 +224,7 @@ namespace MediaBrowser.Api.Library
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(AddVirtualFolder request)
+        public Task Post(AddVirtualFolder request)
         {
             var libraryOptions = request.LibraryOptions ?? new LibraryOptions();
 
@@ -233,7 +233,7 @@ namespace MediaBrowser.Api.Library
                 libraryOptions.PathInfos = request.Paths.Select(i => new MediaPathInfo { Path = i }).ToArray();
             }
 
-            _libraryManager.AddVirtualFolder(request.Name, request.CollectionType, libraryOptions, request.RefreshLibrary);
+            return _libraryManager.AddVirtualFolder(request.Name, request.CollectionType, libraryOptions, request.RefreshLibrary);
         }
 
         /// <summary>
@@ -264,27 +264,27 @@ namespace MediaBrowser.Api.Library
 
             if (!string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase) && _fileSystem.DirectoryExists(newPath))
             {
-                throw new ArgumentException("There is already a media collection with the name " + newPath + ".");
+                throw new ArgumentException("Media library already exists at " + newPath + ".");
             }
 
             _libraryMonitor.Stop();
 
             try
             {
-                // Only make a two-phase move when changing capitalization
+                // Changing capitalization. Handle windows case insensitivity
                 if (string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    //Create an unique name
-                    var temporaryName = Guid.NewGuid().ToString();
-                    var temporaryPath = Path.Combine(rootFolderPath, temporaryName);
-                    _fileSystem.MoveDirectory(currentPath, temporaryPath);
-                    currentPath = temporaryPath;
+                    var tempPath = Path.Combine(rootFolderPath, Guid.NewGuid().ToString("N"));
+                    _fileSystem.MoveDirectory(currentPath, tempPath);
+                    currentPath = tempPath;
                 }
 
                 _fileSystem.MoveDirectory(currentPath, newPath);
             }
             finally
             {
+                CollectionFolder.OnCollectionFolderChange();
+
                 Task.Run(() =>
                 {
                     // No need to start if scanning the library because it will handle it
@@ -309,9 +309,9 @@ namespace MediaBrowser.Api.Library
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Delete(RemoveVirtualFolder request)
+        public Task Delete(RemoveVirtualFolder request)
         {
-            _libraryManager.RemoveVirtualFolder(request.Name, request.RefreshLibrary);
+            return _libraryManager.RemoveVirtualFolder(request.Name, request.RefreshLibrary);
         }
 
         /// <summary>

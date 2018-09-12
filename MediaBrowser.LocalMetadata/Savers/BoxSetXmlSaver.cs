@@ -17,7 +17,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 {
     public class BoxSetXmlSaver : BaseXmlSaver
     {
-        public override bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
+        public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
         {
             if (!item.SupportsLocalMetadata)
             {
@@ -27,11 +27,11 @@ namespace MediaBrowser.LocalMetadata.Savers
             return item is BoxSet && updateType >= ItemUpdateType.MetadataDownload;
         }
 
-        protected override void WriteCustomElements(IHasMetadata item, XmlWriter writer)
+        protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
         }
 
-        protected override string GetLocalSavePath(IHasMetadata item)
+        protected override string GetLocalSavePath(BaseItem item)
         {
             return Path.Combine(item.Path, "collection.xml");
         }

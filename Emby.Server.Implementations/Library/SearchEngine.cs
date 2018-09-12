@@ -28,14 +28,14 @@ namespace Emby.Server.Implementations.Library
             _libraryManager = libraryManager;
             _userManager = userManager;
 
-            _logger = logManager.GetLogger("Lucene");
+            _logger = logManager.GetLogger("SearchEngine");
         }
 
-        public async Task<QueryResult<SearchHintInfo>> GetSearchHints(SearchQuery query)
+        public QueryResult<SearchHintInfo> GetSearchHints(SearchQuery query)
         {
             User user = null;
 
-            if (string.IsNullOrWhiteSpace(query.UserId))
+            if (query.UserId.Equals(Guid.Empty))
             {
             }
             else
@@ -43,26 +43,22 @@ namespace Emby.Server.Implementations.Library
                 user = _userManager.GetUserById(query.UserId);
             }
 
-            var results = await GetSearchHints(query, user).ConfigureAwait(false);
-
-            var searchResultArray = results.ToArray();
-            results = searchResultArray;
-
-            var count = searchResultArray.Length;
+            var results = GetSearchHints(query, user);
+            var totalRecordCount = results.Count;
 
             if (query.StartIndex.HasValue)
             {
-                results = results.Skip(query.StartIndex.Value);
+                results = results.Skip(query.StartIndex.Value).ToList();
             }
 
             if (query.Limit.HasValue)
             {
-                results = results.Take(query.Limit.Value);
+                results = results.Take(query.Limit.Value).ToList();
             }
 
             return new QueryResult<SearchHintInfo>
             {
-                TotalRecordCount = count,
+                TotalRecordCount = totalRecordCount,
 
                 Items = results.ToArray()
             };
@@ -83,24 +79,19 @@ namespace Emby.Server.Implementations.Library
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{SearchHintResult}.</returns>
         /// <exception cref="System.ArgumentNullException">searchTerm</exception>
-        private Task<IEnumerable<SearchHintInfo>> GetSearchHints(SearchQuery query, User user)
+        private List<SearchHintInfo> GetSearchHints(SearchQuery query, User user)
         {
             var searchTerm = query.SearchTerm;
 
-            if (searchTerm != null)
-            {
-                searchTerm = searchTerm.Trim().RemoveDiacritics();
-            }
-
-            if (string.IsNullOrWhiteSpace(searchTerm))
+            if (string.IsNullOrEmpty(searchTerm))
             {
                 throw new ArgumentNullException("searchTerm");
             }
 
-            var terms = GetWords(searchTerm);
+            searchTerm = searchTerm.Trim().RemoveDiacritics();
 
             var excludeItemTypes = query.ExcludeItemTypes.ToList();
-            var includeItemTypes = (query.IncludeItemTypes ?? new string[] { }).ToList();
+            var includeItemTypes = (query.IncludeItemTypes ?? Array.Empty<string>()).ToList();
 
             excludeItemTypes.Add(typeof(Year).Name);
             excludeItemTypes.Add(typeof(Folder).Name);
@@ -169,13 +160,13 @@ namespace Emby.Server.Implementations.Library
 
             var searchQuery = new InternalItemsQuery(user)
             {
-                NameContains = searchTerm,
+                SearchTerm = searchTerm,
                 ExcludeItemTypes = excludeItemTypes.ToArray(excludeItemTypes.Count),
                 IncludeItemTypes = includeItemTypes.ToArray(includeItemTypes.Count),
                 Limit = query.Limit,
-                IncludeItemsByName = string.IsNullOrWhiteSpace(query.ParentId),
-                ParentId = string.IsNullOrWhiteSpace(query.ParentId) ? (Guid?)null : new Guid(query.ParentId),
-                OrderBy = new[] { new Tuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) },
+                IncludeItemsByName = string.IsNullOrEmpty(query.ParentId),
+                ParentId = string.IsNullOrEmpty(query.ParentId) ? Guid.Empty : new Guid(query.ParentId),
+                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) },
                 Recursive = true,
 
                 IsKids = query.IsKids,
@@ -201,120 +192,25 @@ namespace Emby.Server.Implementations.Library
 
             if (searchQuery.IncludeItemTypes.Length == 1 && string.Equals(searchQuery.IncludeItemTypes[0], "MusicArtist", StringComparison.OrdinalIgnoreCase))
             {
-                if (searchQuery.ParentId.HasValue)
+                if (!searchQuery.ParentId.Equals(Guid.Empty))
                 {
-                    searchQuery.AncestorIds = new string[] { searchQuery.ParentId.Value.ToString("N") };
+                    searchQuery.AncestorIds = new[] { searchQuery.ParentId };
                 }
-                searchQuery.ParentId = null;
+                searchQuery.ParentId = Guid.Empty;
                 searchQuery.IncludeItemsByName = true;
-                searchQuery.IncludeItemTypes = new string[] { };
-                mediaItems = _libraryManager.GetArtists(searchQuery).Items.Select(i => i.Item1).ToList();
+                searchQuery.IncludeItemTypes = Array.Empty<string>();
+                mediaItems = _libraryManager.GetAllArtists(searchQuery).Items.Select(i => i.Item1).ToList();
             }
             else
             {
                 mediaItems = _libraryManager.GetItemList(searchQuery);
             }
 
-            var returnValue = mediaItems.Select(item =>
+            return mediaItems.Select(i => new SearchHintInfo
             {
-                var index = GetIndex(item.Name, searchTerm, terms);
+                Item = i
 
-                return new Tuple<BaseItem, string, int>(item, index.Item1, index.Item2);
-
-            }).OrderBy(i => i.Item3).ThenBy(i => i.Item1.SortName).Select(i => new SearchHintInfo
-            {
-                Item = i.Item1,
-                MatchedTerm = i.Item2
-            });
-
-            return Task.FromResult(returnValue);
-        }
-
-        /// <summary>
-        /// Gets the index.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="searchInput">The search input.</param>
-        /// <param name="searchWords">The search input.</param>
-        /// <returns>System.Int32.</returns>
-        private Tuple<string, int> GetIndex(string input, string searchInput, List<string> searchWords)
-        {
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                throw new ArgumentNullException("input");
-            }
-
-            input = input.RemoveDiacritics();
-
-            if (string.Equals(input, searchInput, StringComparison.OrdinalIgnoreCase))
-            {
-                return new Tuple<string, int>(searchInput, 0);
-            }
-
-            var index = input.IndexOf(searchInput, StringComparison.OrdinalIgnoreCase);
-
-            if (index == 0)
-            {
-                return new Tuple<string, int>(searchInput, 1);
-            }
-            if (index > 0)
-            {
-                return new Tuple<string, int>(searchInput, 2);
-            }
-
-            var items = GetWords(input);
-
-            for (var i = 0; i < searchWords.Count; i++)
-            {
-                var searchTerm = searchWords[i];
-
-                for (var j = 0; j < items.Count; j++)
-                {
-                    var item = items[j];
-
-                    if (string.Equals(item, searchTerm, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return new Tuple<string, int>(searchTerm, 3 + (i + 1) * (j + 1));
-                    }
-
-                    index = item.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase);
-
-                    if (index == 0)
-                    {
-                        return new Tuple<string, int>(searchTerm, 4 + (i + 1) * (j + 1));
-                    }
-                    if (index > 0)
-                    {
-                        return new Tuple<string, int>(searchTerm, 5 + (i + 1) * (j + 1));
-                    }
-                }
-            }
-            return new Tuple<string, int>(null, -1);
-        }
-
-        /// <summary>
-        /// Gets the words.
-        /// </summary>
-        /// <param name="term">The term.</param>
-        /// <returns>System.String[][].</returns>
-        private List<string> GetWords(string term)
-        {
-            var stoplist = GetStopList().ToList();
-
-            return term.Split()
-                .Where(i => !string.IsNullOrWhiteSpace(i) && !stoplist.Contains(i, StringComparer.OrdinalIgnoreCase))
-                .ToList();
-        }
-
-        private IEnumerable<string> GetStopList()
-        {
-            return new[]
-            {
-                "the",
-                "a",
-                "of",
-                "an"
-            };
+            }).ToList();
         }
     }
 }

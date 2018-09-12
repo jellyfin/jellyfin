@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
-using MediaBrowser.Model.Registration;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -15,6 +14,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Common.Plugins;
 
 namespace MediaBrowser.Api
 {
@@ -103,9 +103,6 @@ namespace MediaBrowser.Api
     {
         [ApiMember(Name = "Name", Description = "Feature Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
-
-        [ApiMember(Name = "Mb2Equivalent", Description = "Optional. The equivalent feature name in MB2", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string Mb2Equivalent { get; set; }
     }
 
     [Route("/Registrations/{Name}", "GET", Summary = "Gets registration status for a feature", IsHidden = true)]
@@ -114,6 +111,14 @@ namespace MediaBrowser.Api
     {
         [ApiMember(Name = "Name", Description = "Feature Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
+    }
+
+    public class RegistrationInfo
+    {
+        public string Name { get; set; }
+        public DateTime ExpirationDate { get; set; }
+        public bool IsTrial { get; set; }
+        public bool IsRegistered { get; set; }
     }
 
     [Route("/Appstore/Register", "POST", Summary = "Registers an appstore sale", IsHidden = true)]
@@ -168,7 +173,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public async Task<object> Get(GetRegistrationStatus request)
         {
-            var result = await _securityManager.GetRegistrationStatus(request.Name, request.Mb2Equivalent).ConfigureAwait(false);
+            var result = await _securityManager.GetRegistrationStatus(request.Name).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
@@ -235,7 +240,7 @@ namespace MediaBrowser.Api
                 }
             }
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -246,7 +251,7 @@ namespace MediaBrowser.Api
         public object Get(GetPluginConfiguration request)
         {
             var guid = new Guid(request.Id);
-            var plugin = _appHost.Plugins.First(p => p.Id == guid);
+            var plugin = _appHost.Plugins.First(p => p.Id == guid) as IHasPluginConfiguration;
 
             return ToOptimizedResult(plugin.Configuration);
         }
@@ -256,15 +261,15 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetPluginSecurityInfo request)
+        public async Task<object> Get(GetPluginSecurityInfo request)
         {
             var result = new PluginSecurityInfo
             {
-                IsMBSupporter = _securityManager.IsMBSupporter,
+                IsMBSupporter = await _securityManager.IsSupporter().ConfigureAwait(false),
                 SupporterKey = _securityManager.SupporterKey
             };
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -272,37 +277,38 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public void Post(RegisterAppstoreSale request)
+        public Task Post(RegisterAppstoreSale request)
         {
-            var task = _securityManager.RegisterAppStoreSale(request.Parameters);
-
-            Task.WaitAll(task);
+            return _securityManager.RegisterAppStoreSale(request.Parameters);
         }
 
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(UpdatePluginSecurityInfo request)
+        public Task Post(UpdatePluginSecurityInfo request)
         {
-            var info = request;
-
-            _securityManager.SupporterKey = info.SupporterKey;
+            return _securityManager.UpdateSupporterKey(request.SupporterKey);
         }
 
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(UpdatePluginConfiguration request)
+        public async Task Post(UpdatePluginConfiguration request)
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
             var id = new Guid(GetPathValue(1));
 
-            var plugin = _appHost.Plugins.First(p => p.Id == id);
+            var plugin = _appHost.Plugins.First(p => p.Id == id) as IHasPluginConfiguration;
 
-            var configuration = _jsonSerializer.DeserializeFromStream(request.RequestStream, plugin.ConfigurationType) as BasePluginConfiguration;
+            if (plugin == null)
+            {
+                throw new FileNotFoundException();
+            }
+
+            var configuration = (await _jsonSerializer.DeserializeFromStreamAsync(request.RequestStream, plugin.ConfigurationType).ConfigureAwait(false)) as BasePluginConfiguration;
 
             plugin.UpdateConfiguration(configuration);
         }

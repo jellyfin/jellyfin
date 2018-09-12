@@ -4,29 +4,32 @@
 
         <div class="ui-corner-all ui-shadow wizardContent">
             <form class="wizardUserForm">
-                <h1>
-                    ${TellUsAboutYourself}
-                </h1>
 
-                <p style="margin-top:2em;">${UserProfilesIntro}</p>
-                <br />
-                <div class="inputContainer">
-                    <input is="emby-input" type="text" id="txtUsername" label="${LabelYourFirstName}" required="required" />
-                    <div class="fieldDescription">${MoreUsersCanBeAddedLater}</div>
-                </div>
-                <br />
+                <div class="verticalSection">
+                    <h1 class="sectionTitle">
+                        ${TellUsAboutYourself}
+                    </h1>
 
-                <h1 style="margin-bottom:.25em;">${HeaderOptionalLinkEmbyAccount}</h1>
-                <br />
-
-                <div class="inputContainer">
-                    <input is="emby-input" type="text" id="txtConnectUserName" label="${LabelConnectUserName}" />
-                    <div class="fieldDescription">
-                        <div>${LabelConnectUserNameHelp}</div>
-                        <div style="margin-top: .7em;"><a is="emby-linkbutton" class="button-link" href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
+                    <p style="margin-top:2em;">${UserProfilesIntro}</p>
+                    <br />
+                    <div class="inputContainer">
+                        <input is="emby-input" type="text" id="txtUsername" label="${LabelYourFirstName}" required="required" />
+                        <div class="fieldDescription">${MoreUsersCanBeAddedLater}</div>
                     </div>
                 </div>
-                <br />
+
+                <div class="verticalSection verticalSection-extrabottompadding">
+                    <h2 class="sectionTitle">${HeaderOptionalLinkEmbyAccount}</h2>
+
+                    <div class="inputContainer">
+                        <input is="emby-input" type="text" id="txtConnectUserName" label="${LabelConnectUserName}" />
+                        <div class="fieldDescription">
+                            <div>${LabelConnectUserNameHelp}</div>
+                            <div style="margin-top: .7em;"><a is="emby-linkbutton" class="button-link" href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="wizardNavigation">
                     <button is="emby-button" type="button" class="raised button-cancel" onclick="history.back();"><i class="md-icon">arrow_back</i><span>${LabelPrevious}</span></button>
                     <button is="emby-button" type="submit" class="raised button-submit"><span>${LabelNext}</span><i class="md-icon">arrow_forward</i></button>

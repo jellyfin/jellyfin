@@ -27,16 +27,18 @@ namespace Emby.Drawing.Common
         /// The image format decoders
         /// </summary>
         private static readonly KeyValuePair<byte[], Func<BinaryReader, ImageSize>>[] ImageFormatDecoders = new Dictionary<byte[], Func<BinaryReader, ImageSize>>
-        { 
-            { new byte[] { 0x42, 0x4D }, DecodeBitmap }, 
-            { new byte[] { 0x47, 0x49, 0x46, 0x38, 0x37, 0x61 }, DecodeGif }, 
-            { new byte[] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 }, DecodeGif }, 
+        {
+            { new byte[] { 0x42, 0x4D }, DecodeBitmap },
+            { new byte[] { 0x47, 0x49, 0x46, 0x38, 0x37, 0x61 }, DecodeGif },
+            { new byte[] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 }, DecodeGif },
             { new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }, DecodePng },
             { new byte[] { 0xff, 0xd8 }, DecodeJfif }
 
         }.ToArray();
 
         private static readonly int MaxMagicBytesLength = ImageFormatDecoders.Select(i => i.Key.Length).OrderByDescending(i => i).First();
+
+        private static string[] SupportedExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif" };
 
         /// <summary>
         /// Gets the dimensions of an image.
@@ -48,6 +50,17 @@ namespace Emby.Drawing.Common
         /// <exception cref="ArgumentException">The image was of an unrecognised format.</exception>
         public static ImageSize GetDimensions(string path, ILogger logger, IFileSystem fileSystem)
         {
+            var extension = Path.GetExtension(path);
+
+            if (string.IsNullOrEmpty(extension))
+            {
+                throw new ArgumentException("ImageHeader doesn't support image file");
+            }
+            if (!SupportedExtensions.Contains(extension))
+            {
+                throw new ArgumentException("ImageHeader doesn't support " + extension);
+            }
+
             using (var fs = fileSystem.OpenRead(path))
             {
                 using (var binaryReader = new BinaryReader(fs))

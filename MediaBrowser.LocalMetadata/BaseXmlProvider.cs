@@ -10,11 +10,11 @@ using MediaBrowser.Model.IO;
 namespace MediaBrowser.LocalMetadata
 {
     public abstract class BaseXmlProvider<T> : ILocalMetadataProvider<T>, IHasItemChangeMonitor, IHasOrder
-        where T : IHasMetadata, new()
+        where T : BaseItem, new()
     {
         protected IFileSystem FileSystem;
 
-        public async Task<MetadataResult<T>> GetMetadata(ItemInfo info,
+        public Task<MetadataResult<T>> GetMetadata(ItemInfo info,
             IDirectoryService directoryService,
             CancellationToken cancellationToken)
         {
@@ -24,7 +24,7 @@ namespace MediaBrowser.LocalMetadata
 
             if (file == null)
             {
-                return result;
+                return Task.FromResult(result);
             }
 
             var path = file.FullName;
@@ -45,7 +45,7 @@ namespace MediaBrowser.LocalMetadata
                 result.HasMetadata = false;
             }
 
-            return result;
+            return Task.FromResult(result);
         }
 
         protected abstract void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken);
@@ -57,7 +57,7 @@ namespace MediaBrowser.LocalMetadata
 
         protected abstract FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService);
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
+        public bool HasChanged(BaseItem item, IDirectoryService directoryService)
         {
             var file = GetXmlFile(new ItemInfo(item), directoryService);
 

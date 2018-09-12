@@ -7,6 +7,8 @@ using MediaBrowser.Model.Session;
 using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Session;
 
 namespace MediaBrowser.Api.Devices
 {
@@ -14,6 +16,22 @@ namespace MediaBrowser.Api.Devices
     [Authenticated(Roles = "Admin")]
     public class GetDevices : DeviceQuery, IReturn<QueryResult<DeviceInfo>>
     {
+    }
+
+    [Route("/Devices/Info", "GET", Summary = "Gets info for a device")]
+    [Authenticated(Roles = "Admin")]
+    public class GetDeviceInfo : IReturn<DeviceInfo>
+    {
+        [ApiMember(Name = "Id", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
+    [Route("/Devices/Options", "GET", Summary = "Gets options for a device")]
+    [Authenticated(Roles = "Admin")]
+    public class GetDeviceOptions : IReturn<DeviceOptions>
+    {
+        [ApiMember(Name = "Id", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Id { get; set; }
     }
 
     [Route("/Devices", "DELETE", Summary = "Deletes a device")]
@@ -35,35 +53,19 @@ namespace MediaBrowser.Api.Devices
     [Authenticated]
     public class PostCameraUpload : IRequiresRequestStream, IReturnVoid
     {
-        [ApiMember(Name = "DeviceId", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "DeviceId", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string DeviceId { get; set; }
 
-        [ApiMember(Name = "Album", Description = "Album", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "Album", Description = "Album", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Album { get; set; }
 
-        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Name { get; set; }
 
-        [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Id { get; set; }
 
         public Stream RequestStream { get; set; }
-    }
-
-    [Route("/Devices/Info", "GET", Summary = "Gets device info")]
-    [Authenticated]
-    public class GetDeviceInfo : IReturn<DeviceInfo>
-    {
-        [ApiMember(Name = "Id", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
-        public string Id { get; set; }
-    }
-
-    [Route("/Devices/Capabilities", "GET", Summary = "Gets device capabilities")]
-    [Authenticated]
-    public class GetDeviceCapabilities : IReturn<ClientCapabilities>
-    {
-        [ApiMember(Name = "Id", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
-        public string Id { get; set; }
     }
 
     [Route("/Devices/Options", "POST", Summary = "Updates device options")]
@@ -77,34 +79,34 @@ namespace MediaBrowser.Api.Devices
     public class DeviceService : BaseApiService
     {
         private readonly IDeviceManager _deviceManager;
+        private readonly IAuthenticationRepository _authRepo;
+        private readonly ISessionManager _sessionManager;
 
-        public DeviceService(IDeviceManager deviceManager)
+        public DeviceService(IDeviceManager deviceManager, IAuthenticationRepository authRepo, ISessionManager sessionManager)
         {
             _deviceManager = deviceManager;
+            _authRepo = authRepo;
+            _sessionManager = sessionManager;
         }
 
         public void Post(PostDeviceOptions request)
         {
-            _deviceManager.UpdateDeviceInfo(request.Id, new DeviceOptions
-            {
-                CustomName = request.CustomName,
-                CameraUploadPath = request.CameraUploadPath
-            });
-        }
-
-        public object Get(GetDeviceInfo request)
-        {
-            return ToOptimizedResult(_deviceManager.GetDevice(request.Id));
-        }
-
-        public object Get(GetDeviceCapabilities request)
-        {
-            return ToOptimizedResult(_deviceManager.GetCapabilities(request.Id));
+            _deviceManager.UpdateDeviceOptions(request.Id, request);
         }
 
         public object Get(GetDevices request)
         {
             return ToOptimizedResult(_deviceManager.GetDevices(request));
+        }
+
+        public object Get(GetDeviceInfo request)
+        {
+            return _deviceManager.GetDevice(request.Id);
+        }
+
+        public object Get(GetDeviceOptions request)
+        {
+            return _deviceManager.GetDeviceOptions(request.Id);
         }
 
         public object Get(GetCameraUploads request)
@@ -114,10 +116,19 @@ namespace MediaBrowser.Api.Devices
 
         public void Delete(DeleteDevice request)
         {
-            _deviceManager.DeleteDevice(request.Id);
+            var sessions = _authRepo.Get(new AuthenticationInfoQuery
+            {
+                DeviceId = request.Id
+
+            }).Items;
+
+            foreach (var session in sessions)
+            {
+                _sessionManager.Logout(session);
+            }
         }
 
-        public void Post(PostCameraUpload request)
+        public Task Post(PostCameraUpload request)
         {
             var deviceId = Request.QueryString["DeviceId"];
             var album = Request.QueryString["Album"];
@@ -126,29 +137,25 @@ namespace MediaBrowser.Api.Devices
 
             if (Request.ContentType.IndexOf("multi", StringComparison.OrdinalIgnoreCase) == -1)
             {
-                var task = _deviceManager.AcceptCameraUpload(deviceId, request.RequestStream, new LocalFileInfo
+                return _deviceManager.AcceptCameraUpload(deviceId, request.RequestStream, new LocalFileInfo
                 {
                     MimeType = Request.ContentType,
                     Album = album,
                     Name = name,
                     Id = id
                 });
-
-                Task.WaitAll(task);
             }
             else
             {
                 var file = Request.Files.Length == 0 ? null : Request.Files[0];
 
-                var task = _deviceManager.AcceptCameraUpload(deviceId, file.InputStream, new LocalFileInfo
+                return _deviceManager.AcceptCameraUpload(deviceId, file.InputStream, new LocalFileInfo
                 {
                     MimeType = file.ContentType,
                     Album = album,
                     Name = name,
                     Id = id
                 });
-
-                Task.WaitAll(task);
             }
         }
     }

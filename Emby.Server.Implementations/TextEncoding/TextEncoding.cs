@@ -193,6 +193,8 @@ namespace Emby.Server.Implementations.TextEncoding
 
             switch (language.ToLower())
             {
+                case "tha":
+                    return "windows-874";
                 case "hun":
                     return "windows-1252";
                 case "pol":
@@ -203,6 +205,7 @@ namespace Emby.Server.Implementations.TextEncoding
                 case "hrv":
                 case "rum":
                 case "ron":
+                case "rom":
                 case "rup":
                     return "windows-1250";
                 // albanian

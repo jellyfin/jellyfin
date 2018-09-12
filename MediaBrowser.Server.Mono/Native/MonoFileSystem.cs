@@ -7,8 +7,8 @@ namespace MediaBrowser.Server.Mono.Native
 {
     public class MonoFileSystem : ManagedFileSystem
     {
-        public MonoFileSystem(ILogger logger, IEnvironmentInfo environment, string tempPath)
-            : base(logger, environment, tempPath)
+        public MonoFileSystem(ILogger logger, IEnvironmentInfo environment, string defaultDirectory, string tempPath, bool enableSeperateFileAndDirectoryQueries)
+            : base(logger, environment,defaultDirectory, tempPath, enableSeperateFileAndDirectoryQueries)
         {
         }
 

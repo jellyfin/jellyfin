@@ -11,55 +11,7 @@ namespace Emby.Server.Implementations.Services
 {
     public class ServiceHandler
     {
-        public async Task<object> HandleResponseAsync(object response)
-        {
-            var taskResponse = response as Task;
-
-            if (taskResponse == null)
-            {
-                return response;
-            }
-
-            await taskResponse.ConfigureAwait(false);
-
-            var taskResult = GetTaskResult(taskResponse);
-
-            var subTask = taskResult as Task;
-            if (subTask != null)
-            {
-                taskResult = GetTaskResult(subTask);
-            }
-
-            return taskResult;
-        }
-
-        internal static object GetTaskResult(Task task)
-        {
-            try
-            {
-                var taskObject = task as Task<object>;
-                if (taskObject != null)
-                {
-                    return taskObject.Result;
-                }
-
-                task.Wait();
-
-                var type = task.GetType().GetTypeInfo();
-                if (!type.IsGenericType)
-                {
-                    return null;
-                }
-
-                return type.GetDeclaredProperty("Result").GetValue(task);
-            }
-            catch (TypeAccessException)
-            {
-                return null; //return null for void Task's
-            }
-        }
-
-        protected static object CreateContentTypeRequest(HttpListenerHost host, IRequest httpReq, Type requestType, string contentType)
+        protected static Task<object> CreateContentTypeRequest(HttpListenerHost host, IRequest httpReq, Type requestType, string contentType)
         {
             if (!string.IsNullOrEmpty(contentType) && httpReq.ContentLength > 0)
             {
@@ -69,7 +21,7 @@ namespace Emby.Server.Implementations.Services
                     return deserializer(requestType, httpReq.InputStream);
                 }
             }
-            return host.CreateInstance(requestType); 
+            return Task.FromResult(host.CreateInstance(requestType)); 
         }
 
         public static RestPath FindMatchingRestPath(string httpMethod, string pathInfo, ILogger logger, out string contentType)
@@ -137,14 +89,11 @@ namespace Emby.Server.Implementations.Services
             if (ResponseContentType != null)
                 httpReq.ResponseContentType = ResponseContentType;
 
-            var request = httpReq.Dto = CreateRequest(appHost, httpReq, restPath, logger);
+            var request = httpReq.Dto = await CreateRequest(appHost, httpReq, restPath, logger).ConfigureAwait(false);
 
             appHost.ApplyRequestFilters(httpReq, httpRes, request);
 
-            var rawResponse = await appHost.ServiceController.Execute(appHost, request, httpReq).ConfigureAwait(false);
-
-            //var response = await HandleResponseAsync(rawResponse).ConfigureAwait(false);
-            var response = rawResponse;
+            var response = await appHost.ServiceController.Execute(appHost, request, httpReq).ConfigureAwait(false);
 
             // Apply response filters
             foreach (var responseFilter in appHost.ResponseFilters)
@@ -155,36 +104,35 @@ namespace Emby.Server.Implementations.Services
             await ResponseHelper.WriteToResponse(httpRes, httpReq, response, cancellationToken).ConfigureAwait(false);
         }
 
-        public static object CreateRequest(HttpListenerHost host, IRequest httpReq, RestPath restPath, ILogger logger)
+        public static async Task<object> CreateRequest(HttpListenerHost host, IRequest httpReq, RestPath restPath, ILogger logger)
         {
             var requestType = restPath.RequestType;
 
             if (RequireqRequestStream(requestType))
             {
                 // Used by IRequiresRequestStream
-                var request = ServiceHandler.CreateRequest(httpReq, restPath, GetRequestParams(httpReq), host.CreateInstance(requestType));
+                var requestParams = await GetRequestParams(httpReq).ConfigureAwait(false);
+                var request = ServiceHandler.CreateRequest(httpReq, restPath, requestParams, host.CreateInstance(requestType));
 
                 var rawReq = (IRequiresRequestStream)request;
                 rawReq.RequestStream = httpReq.InputStream;
                 return rawReq;
             }
+            else
+            {
+                var requestParams = await GetFlattenedRequestParams(httpReq).ConfigureAwait(false);
 
-            var requestParams = GetFlattenedRequestParams(httpReq);
-            return CreateRequest(host, httpReq, restPath, requestParams);
+                var requestDto = await CreateContentTypeRequest(host, httpReq, restPath.RequestType, httpReq.ContentType).ConfigureAwait(false);
+
+                return CreateRequest(httpReq, restPath, requestParams, requestDto);
+            }
         }
 
-        private static bool RequireqRequestStream(Type requestType)
+        public static bool RequireqRequestStream(Type requestType)
         {
             var requiresRequestStreamTypeInfo = typeof(IRequiresRequestStream).GetTypeInfo();
 
             return requiresRequestStreamTypeInfo.IsAssignableFrom(requestType.GetTypeInfo());
-        }
-
-        public static object CreateRequest(HttpListenerHost host, IRequest httpReq, RestPath restPath, Dictionary<string, string> requestParams)
-        {
-            var requestDto = CreateContentTypeRequest(host, httpReq, restPath.RequestType, httpReq.ContentType);
-
-            return CreateRequest(httpReq, restPath, requestParams, requestDto);
         }
 
         public static object CreateRequest(IRequest httpReq, RestPath restPath, Dictionary<string, string> requestParams, object requestDto)
@@ -200,7 +148,7 @@ namespace Emby.Server.Implementations.Services
         /// <summary>
         /// Duplicate Params are given a unique key by appending a #1 suffix
         /// </summary>
-        private static Dictionary<string, string> GetRequestParams(IRequest request)
+        private static async Task<Dictionary<string, string>> GetRequestParams(IRequest request)
         {
             var map = new Dictionary<string, string>();
 
@@ -224,7 +172,7 @@ namespace Emby.Server.Implementations.Services
 
             if ((IsMethod(request.Verb, "POST") || IsMethod(request.Verb, "PUT")))
             {
-                var formData = request.FormData;
+                var formData = await request.GetFormData().ConfigureAwait(false);
                 if (formData != null)
                 {
                     foreach (var name in formData.Keys)
@@ -258,7 +206,7 @@ namespace Emby.Server.Implementations.Services
         /// <summary>
         /// Duplicate params have their values joined together in a comma-delimited string
         /// </summary>
-        private static Dictionary<string, string> GetFlattenedRequestParams(IRequest request)
+        private static async Task<Dictionary<string, string>> GetFlattenedRequestParams(IRequest request)
         {
             var map = new Dictionary<string, string>();
 
@@ -270,7 +218,7 @@ namespace Emby.Server.Implementations.Services
 
             if ((IsMethod(request.Verb, "POST") || IsMethod(request.Verb, "PUT")))
             {
-                var formData = request.FormData;
+                var formData = await request.GetFormData().ConfigureAwait(false);
                 if (formData != null)
                 {
                     foreach (var name in formData.Keys)

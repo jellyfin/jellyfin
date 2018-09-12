@@ -11,6 +11,8 @@ using MediaBrowser.Model.IO;
 using SocketHttpListener.Net.WebSockets;
 using SocketHttpListener.Primitives;
 using HttpStatusCode = SocketHttpListener.Net.HttpStatusCode;
+using System.Net.Sockets;
+using WebSocketState = System.Net.WebSockets.WebSocketState;
 
 namespace SocketHttpListener
 {
@@ -30,7 +32,6 @@ namespace SocketHttpListener
         private CompressionMethod _compression;
         private WebSocketContext _context;
         private CookieCollection _cookies;
-        private string _extensions;
         private AutoResetEvent _exitReceiving;
         private object _forConn;
         private object _forEvent;
@@ -52,9 +53,6 @@ namespace SocketHttpListener
         private Stream _stream;
         private Uri _uri;
         private const string _version = "13";
-        private readonly IMemoryStreamFactory _memoryStreamFactory;
-
-        private readonly ICryptoProvider _cryptoProvider;
 
         #endregion
 
@@ -67,43 +65,29 @@ namespace SocketHttpListener
         #region Internal Constructors
 
         // As server
-        internal WebSocket(HttpListenerWebSocketContext context, string protocol, ICryptoProvider cryptoProvider, IMemoryStreamFactory memoryStreamFactory)
+        internal WebSocket(string protocol)
+        {
+            _protocol = protocol;
+        }
+
+        public void SetContext(HttpListenerWebSocketContext context, Action closeContextFn, Stream stream)
         {
             _context = context;
-            _protocol = protocol;
-            _cryptoProvider = cryptoProvider;
-            _memoryStreamFactory = memoryStreamFactory;
 
-            _closeContext = context.Close;
+            _closeContext = closeContextFn;
             _secure = context.IsSecureConnection;
-            _stream = context.Stream;
+            _stream = stream;
 
             init();
         }
 
+        public static TimeSpan DefaultKeepAliveInterval
+        {
+            // In the .NET Framework, this pulls the value from a P/Invoke.  Here we just hardcode it to a reasonable default.
+            get { return TimeSpan.FromSeconds(30); }
+        }
+
         #endregion
-
-        // As server
-        internal Func<WebSocketContext, string> CustomHandshakeRequestChecker
-        {
-            get
-            {
-                return _handshakeRequestChecker ?? (context => null);
-            }
-
-            set
-            {
-                _handshakeRequestChecker = value;
-            }
-        }
-
-        internal bool IsConnected
-        {
-            get
-            {
-                return _readyState == WebSocketState.Open || _readyState == WebSocketState.Closing;
-            }
-        }
 
         /// <summary>
         /// Gets the state of the WebSocket connection.
@@ -146,44 +130,6 @@ namespace SocketHttpListener
 
         #region Private Methods
 
-        // As server
-        private bool acceptHandshake()
-        {
-            var msg = checkIfValidHandshakeRequest(_context);
-            if (msg != null)
-            {
-                error("An error has occurred while connecting: " + msg);
-                Close(HttpStatusCode.BadRequest);
-
-                return false;
-            }
-
-            if (_protocol != null &&
-                !_context.SecWebSocketProtocols.Contains(protocol => protocol == _protocol))
-                _protocol = null;
-
-            ////var extensions = _context.Headers["Sec-WebSocket-Extensions"];
-            ////if (extensions != null && extensions.Length > 0)
-            ////    processSecWebSocketExtensionsHeader(extensions);
-
-            return sendHttpResponse(createHandshakeResponse());
-        }
-
-        // As server
-        private string checkIfValidHandshakeRequest(WebSocketContext context)
-        {
-            var headers = context.Headers;
-            return context.RequestUri == null
-                   ? "Invalid request url."
-                   : !context.IsWebSocketRequest
-                     ? "Not WebSocket connection request."
-                     : !validateSecWebSocketKeyHeader(headers["Sec-WebSocket-Key"])
-                       ? "Invalid Sec-WebSocket-Key header."
-                       : !validateSecWebSocketVersionClientHeader(headers["Sec-WebSocket-Version"])
-                         ? "Invalid Sec-WebSocket-Version header."
-                         : CustomHandshakeRequestChecker(context);
-        }
-
         private void close(CloseStatusCode code, string reason, bool wait)
         {
             close(new PayloadData(((ushort)code).Append(reason)), !code.IsReserved(), wait);
@@ -193,20 +139,19 @@ namespace SocketHttpListener
         {
             lock (_forConn)
             {
-                if (_readyState == WebSocketState.Closing || _readyState == WebSocketState.Closed)
+                if (_readyState == WebSocketState.CloseSent || _readyState == WebSocketState.Closed)
                 {
                     return;
                 }
 
-                _readyState = WebSocketState.Closing;
+                _readyState = WebSocketState.CloseSent;
             }
 
             var e = new CloseEventArgs(payload);
             e.WasClean =
               closeHandshake(
                   send ? WebSocketFrame.CreateCloseFrame(Mask.Unmask, payload).ToByteArray() : null,
-                  wait ? 1000 : 0,
-                  closeServerResources);
+                  wait ? 1000 : 0);
 
             _readyState = WebSocketState.Closed;
             try
@@ -219,14 +164,15 @@ namespace SocketHttpListener
             }
         }
 
-        private bool closeHandshake(byte[] frameAsBytes, int millisecondsTimeout, Action release)
+        private bool closeHandshake(byte[] frameAsBytes, int millisecondsTimeout)
         {
             var sent = frameAsBytes != null && writeBytes(frameAsBytes);
             var received =
               millisecondsTimeout == 0 ||
               (sent && _exitReceiving != null && _exitReceiving.WaitOne(millisecondsTimeout));
 
-            release();
+            closeServerResources();
+
             if (_receivePong != null)
             {
                 _receivePong.Dispose();
@@ -250,7 +196,15 @@ namespace SocketHttpListener
             if (_closeContext == null)
                 return;
 
-            _closeContext();
+            try
+            {
+                _closeContext();
+            }
+            catch (SocketException)
+            {
+                // it could be unable to send the handshake response
+            }
+
             _closeContext = null;
             _stream = null;
             _context = null;
@@ -321,26 +275,6 @@ namespace SocketHttpListener
             return res;
         }
 
-        // As server
-        private HttpResponse createHandshakeResponse()
-        {
-            var res = HttpResponse.CreateWebSocketResponse();
-
-            var headers = res.Headers;
-            headers["Sec-WebSocket-Accept"] = CreateResponseKey(_base64Key);
-
-            if (_protocol != null)
-                headers["Sec-WebSocket-Protocol"] = _protocol;
-
-            if (_extensions != null)
-                headers["Sec-WebSocket-Extensions"] = _extensions;
-
-            if (_cookies.Count > 0)
-                res.SetCookies(_cookies);
-
-            return res;
-        }
-
         private MessageEventArgs dequeueFromMessageEventQueue()
         {
             lock (_forMessageEventQueue)
@@ -403,7 +337,10 @@ namespace SocketHttpListener
                 {
                     try
                     {
-                        OnOpen.Emit(this, EventArgs.Empty);
+                        if (OnOpen != null)
+                        {
+                            OnOpen(this, EventArgs.Empty);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -463,7 +400,7 @@ namespace SocketHttpListener
 
         private bool processFragments(WebSocketFrame first)
         {
-            using (var buff = _memoryStreamFactory.CreateNew())
+            using (var buff = new MemoryStream())
             {
                 buff.WriteBytes(first.PayloadData.ApplicationData);
                 if (!concatenateFragmentsInto(buff))
@@ -691,23 +628,6 @@ namespace SocketHttpListener
             receive();
         }
 
-        // As server
-        private bool validateSecWebSocketKeyHeader(string value)
-        {
-            if (value == null || value.Length == 0)
-                return false;
-
-            _base64Key = value;
-            return true;
-        }
-
-        // As server
-        private bool validateSecWebSocketVersionClientHeader(string value)
-        {
-            return true;
-            //return value != null && value == _version;
-        }
-
         private bool writeBytes(byte[] data)
         {
             try
@@ -715,7 +635,7 @@ namespace SocketHttpListener
                 _stream.Write(data, 0, data.Length);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -728,9 +648,9 @@ namespace SocketHttpListener
         // As server
         internal void Close(HttpResponse response)
         {
-            _readyState = WebSocketState.Closing;
-
+            _readyState = WebSocketState.CloseSent;
             sendHttpResponse(response);
+
             closeServerResources();
 
             _readyState = WebSocketState.Closed;
@@ -747,25 +667,13 @@ namespace SocketHttpListener
         {
             try
             {
-                if (acceptHandshake())
-                {
-                    _readyState = WebSocketState.Open;
-                    open();
-                }
+                _readyState = WebSocketState.Open;
+                open();
             }
             catch (Exception ex)
             {
                 processException(ex, "An exception has occurred while connecting.");
             }
-        }
-
-        private string CreateResponseKey(string base64Key)
-        {
-            var buff = new StringBuilder(base64Key, 64);
-            buff.Append(_guid);
-            var src = _cryptoProvider.ComputeSHA1(Encoding.UTF8.GetBytes(buff.ToString()));
-
-            return Convert.ToBase64String(src);
         }
 
         #endregion
@@ -830,18 +738,20 @@ namespace SocketHttpListener
         /// <param name="data">
         /// An array of <see cref="byte"/> that represents the binary data to send.
         /// </param>
-        /// An Action&lt;bool&gt; delegate that references the method(s) called when the send is
-        /// complete. A <see cref="bool"/> passed to this delegate is <c>true</c> if the send is
-        /// complete successfully; otherwise, <c>false</c>.
         public Task SendAsync(byte[] data)
         {
-            var msg = _readyState.CheckIfOpen() ?? data.CheckIfValidSendData();
+            if (data == null)
+            {
+                throw new ArgumentNullException("data");
+            }
+
+            var msg = _readyState.CheckIfOpen();
             if (msg != null)
             {
                 throw new Exception(msg);
             }
 
-            return sendAsync(Opcode.Binary, _memoryStreamFactory.CreateNew(data));
+            return sendAsync(Opcode.Binary, new MemoryStream(data));
         }
 
         /// <summary>
@@ -853,18 +763,20 @@ namespace SocketHttpListener
         /// <param name="data">
         /// A <see cref="string"/> that represents the text data to send.
         /// </param>
-        /// An Action&lt;bool&gt; delegate that references the method(s) called when the send is
-        /// complete. A <see cref="bool"/> passed to this delegate is <c>true</c> if the send is
-        /// complete successfully; otherwise, <c>false</c>.
         public Task SendAsync(string data)
         {
-            var msg = _readyState.CheckIfOpen() ?? data.CheckIfValidSendData();
+            if (data == null)
+            {
+                throw new ArgumentNullException("data");
+            }
+
+            var msg = _readyState.CheckIfOpen();
             if (msg != null)
             {
                 throw new Exception(msg);
             }
 
-            return sendAsync(Opcode.Text, _memoryStreamFactory.CreateNew(Encoding.UTF8.GetBytes(data)));
+            return sendAsync(Opcode.Text, new MemoryStream(Encoding.UTF8.GetBytes(data)));
         }
 
         #endregion
@@ -880,7 +792,6 @@ namespace SocketHttpListener
         void IDisposable.Dispose()
         {
             Close(CloseStatusCode.Away, null);
-            GC.SuppressFinalize(this);
         }
 
         #endregion

@@ -4,7 +4,7 @@ using MediaBrowser.LocalMetadata.Parsers;
 using MediaBrowser.Model.Logging;
 using System.IO;
 using System.Threading;
-
+using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
@@ -32,7 +32,7 @@ namespace MediaBrowser.LocalMetadata.Providers
 
         protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
-            return directoryService.GetFile(Path.Combine(info.Path, "playlist.xml"));
+            return directoryService.GetFile(PlaylistXmlSaver.GetSavePath(info.Path, FileSystem));
         }
     }
 }

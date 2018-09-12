@@ -22,6 +22,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -58,12 +59,12 @@ namespace MediaBrowser.Providers.Music
             get { return "FanArt"; }
         }
 
-        public bool Supports(IHasMetadata item)
+        public bool Supports(BaseItem item)
         {
             return item is MusicArtist;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
+        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType>
             {
@@ -75,7 +76,7 @@ namespace MediaBrowser.Providers.Music
             };
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasMetadata item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var artist = (MusicArtist)item;
 
@@ -151,7 +152,6 @@ namespace MediaBrowser.Providers.Music
             PopulateImages(list, obj.musicarts, ImageType.Art, 500, 281);
         }
 
-        private Regex _regex_http = new Regex("^http://");
         private void PopulateImages(List<RemoteImageInfo> list,
             List<FanartArtistImage> images,
             ImageType type,
@@ -179,11 +179,11 @@ namespace MediaBrowser.Providers.Music
                         Width = width,
                         Height = height,
                         ProviderName = Name,
-                        Url = _regex_http.Replace(url, "https://", 1),
+                        Url = url.Replace("http://", "https://", StringComparison.OrdinalIgnoreCase),
                         Language = i.lang
                     };
 
-                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Any, _usCulture, out likes))
+                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Integer, _usCulture, out likes))
                     {
                         info.CommunityRating = likes;
                     }
@@ -209,7 +209,6 @@ namespace MediaBrowser.Providers.Music
             });
         }
 
-        private readonly Task _cachedTask = Task.FromResult(true);
         internal Task EnsureArtistJson(string musicBrainzId, CancellationToken cancellationToken)
         {
             var jsonPath = GetArtistJsonPath(_config.ApplicationPaths, musicBrainzId);
@@ -218,9 +217,9 @@ namespace MediaBrowser.Providers.Music
 
             if (fileInfo.Exists)
             {
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
                 {
-                    return _cachedTask;
+                    return Task.CompletedTask;
                 }
             }
 

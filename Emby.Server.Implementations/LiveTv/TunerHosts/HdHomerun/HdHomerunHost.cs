@@ -21,6 +21,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
+using MediaBrowser.Controller.Library;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -68,11 +69,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var id = ChannelIdPrefix + i.GuideNumber;
 
-            if (!info.EnableNewHdhrChannelIds)
-            {
-                id += '_' + (i.GuideName ?? string.Empty).GetMD5().ToString("N");
-            }
-
             return id;
         }
 
@@ -90,7 +86,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 using (var stream = response.Content)
                 {
-                    var lineup = JsonSerializer.DeserializeFromStream<List<Channels>>(stream) ?? new List<Channels>();
+                    var lineup = await JsonSerializer.DeserializeFromStreamAsync<List<Channels>>(stream).ConfigureAwait(false) ?? new List<Channels>();
 
                     if (info.ImportFavoritesOnly)
                     {
@@ -131,12 +127,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
         private async Task<DiscoverResponse> GetModelInfo(TunerHostInfo info, bool throwAllExceptions, CancellationToken cancellationToken)
         {
+            var cacheKey = info.Id;
+
             lock (_modelCache)
             {
-                DiscoverResponse response;
-                if (_modelCache.TryGetValue(info.Url, out response))
+                if (!string.IsNullOrEmpty(cacheKey))
                 {
-                    if ((DateTime.UtcNow - response.DateQueried).TotalHours <= 12)
+                    DiscoverResponse response;
+                    if (_modelCache.TryGetValue(cacheKey, out response))
                     {
                         return response;
                     }
@@ -149,20 +147,20 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     Url = string.Format("{0}/discover.json", GetApiUrl(info)),
                     CancellationToken = cancellationToken,
-                    TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds),
+                    TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(10).TotalMilliseconds),
                     BufferContent = false
 
                 }, "GET").ConfigureAwait(false))
                 {
                     using (var stream = response.Content)
                     {
-                        var discoverResponse = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
+                        var discoverResponse = await JsonSerializer.DeserializeFromStreamAsync<DiscoverResponse>(stream).ConfigureAwait(false);
 
-                        if (!string.IsNullOrWhiteSpace(info.Id))
+                        if (!string.IsNullOrEmpty(cacheKey))
                         {
                             lock (_modelCache)
                             {
-                                _modelCache[info.Id] = discoverResponse;
+                                _modelCache[cacheKey] = discoverResponse;
                             }
                         }
 
@@ -179,12 +177,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     {
                         ModelNumber = defaultValue
                     };
-                    if (!string.IsNullOrWhiteSpace(info.Id))
+                    if (!string.IsNullOrEmpty(cacheKey))
                     {
                         // HDHR4 doesn't have this api
                         lock (_modelCache)
                         {
-                            _modelCache[info.Id] = response;
+                            _modelCache[cacheKey] = response;
                         }
                     }
                     return response;
@@ -395,10 +393,18 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 videoCodec = "h264";
                 videoBitrate = 15000000;
             }
+            else if (string.Equals(profile, "internet720", StringComparison.OrdinalIgnoreCase))
+            {
+                width = 1280;
+                height = 720;
+                isInterlaced = false;
+                videoCodec = "h264";
+                videoBitrate = 8000000;
+            }
             else if (string.Equals(profile, "internet540", StringComparison.OrdinalIgnoreCase))
             {
                 width = 960;
-                height = 546;
+                height = 540;
                 isInterlaced = false;
                 videoCodec = "h264";
                 videoBitrate = 2500000;
@@ -511,8 +517,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 SupportsTranscoding = true,
                 IsInfiniteStream = true,
                 IgnoreDts = true,
-                SupportsProbing = false,
-                //AnalyzeDurationMs = 2000000
                 //IgnoreIndex = true,
                 //ReadAtNativeFramerate = true
             };
@@ -522,18 +526,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return mediaSource;
         }
 
-        protected override async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, string channelId, CancellationToken cancellationToken)
+        protected override async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, ChannelInfo channelInfo, CancellationToken cancellationToken)
         {
             var list = new List<MediaSourceInfo>();
 
-            if (!channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                return list;
-            }
+            var channelId = channelInfo.Id;
             var hdhrId = GetHdHrIdFromChannelId(channelId);
-
-            var channels = await GetChannels(info, true, CancellationToken.None).ConfigureAwait(false);
-            var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
 
             var hdHomerunChannelInfo = channelInfo as HdHomerunChannelInfo;
 
@@ -548,12 +546,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 try
                 {
                     var modelInfo = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
-                    var model = modelInfo == null ? string.Empty : (modelInfo.ModelNumber ?? string.Empty);
 
-                    if ((model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1))
+                    if (modelInfo != null && modelInfo.SupportsTranscoding)
                     {
-                        list.Add(GetMediaSource(info, hdhrId, channelInfo, "native"));
-
                         if (info.AllowHWTranscoding)
                         {
                             list.Add(GetMediaSource(info, hdhrId, channelInfo, "heavy"));
@@ -564,6 +559,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                             list.Add(GetMediaSource(info, hdhrId, channelInfo, "internet240"));
                             list.Add(GetMediaSource(info, hdhrId, channelInfo, "mobile"));
                         }
+
+                        list.Add(GetMediaSource(info, hdhrId, channelInfo, "native"));
                     }
                 }
                 catch
@@ -580,31 +577,31 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return list;
         }
 
-        protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
+        protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo info, ChannelInfo channelInfo, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
             var profile = streamId.Split('_')[0];
 
-            Logger.Info("GetChannelStream: channel id: {0}. stream id: {1} profile: {2}", channelId, streamId, profile);
+            Logger.Info("GetChannelStream: channel id: {0}. stream id: {1} profile: {2}", channelInfo.Id, streamId, profile);
 
-            var hdhrId = GetHdHrIdFromChannelId(channelId);
-
-            var channels = await GetChannels(info, true, CancellationToken.None).ConfigureAwait(false);
-            var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
+            var hdhrId = GetHdHrIdFromChannelId(channelInfo.Id);
 
             var hdhomerunChannel = channelInfo as HdHomerunChannelInfo;
 
-            var mediaSource = GetMediaSource(info, hdhrId, channelInfo, profile);
             var modelInfo = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
+
+            if (!modelInfo.SupportsTranscoding)
+            {
+                profile = "native";
+            }
+
+            var mediaSource = GetMediaSource(info, hdhrId, channelInfo, profile);
 
             if (hdhomerunChannel != null && hdhomerunChannel.IsLegacyTuner)
             {
-                return new HdHomerunUdpStream(mediaSource, info, streamId, new LegacyHdHomerunChannelCommands(hdhomerunChannel.Path), modelInfo.TunerCount, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager, _environment);
+                return new HdHomerunUdpStream(mediaSource, info, streamId, new LegacyHdHomerunChannelCommands(hdhomerunChannel.Path), modelInfo.TunerCount, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager);
             }
 
-            // The UDP method is not working reliably on OSX, and on BSD it hasn't been tested yet
-            var enableHttpStream = _environment.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.OSX 
-                || _environment.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.BSD;
-            enableHttpStream = true;
+            var enableHttpStream = true;
             if (enableHttpStream)
             {
                 mediaSource.Protocol = MediaProtocol.Http;
@@ -618,10 +615,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
                 mediaSource.Path = httpUrl;
 
-                return new SharedHttpStream(mediaSource, info, streamId, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _environment);
+                return new SharedHttpStream(mediaSource, info, streamId, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
             }
 
-            return new HdHomerunUdpStream(mediaSource, info, streamId, new HdHomerunChannelCommands(hdhomerunChannel.Number, profile), modelInfo.TunerCount, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager, _environment);
+            return new HdHomerunUdpStream(mediaSource, info, streamId, new HdHomerunChannelCommands(hdhomerunChannel.Number, profile), modelInfo.TunerCount, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _socketFactory, _networkManager);
         }
 
         public async Task Validate(TunerHostInfo info)
@@ -649,13 +646,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
         }
 
-        protected override async Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
-        {
-            var info = await GetTunerInfos(tuner, cancellationToken).ConfigureAwait(false);
-
-            return info.Any(i => i.Status == LiveTvTunerStatus.Available);
-        }
-
         public class DiscoverResponse
         {
             public string FriendlyName { get; set; }
@@ -668,16 +658,29 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             public string LineupURL { get; set; }
             public int TunerCount { get; set; }
 
-            public DateTime DateQueried { get; set; }
-
-            public DiscoverResponse()
+            public bool SupportsTranscoding
             {
-                DateQueried = DateTime.UtcNow;
+                get
+                {
+                    var model = ModelNumber ?? string.Empty;
+
+                    if ((model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1))
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
             }
         }
 
         public async Task<List<TunerHostInfo>> DiscoverDevices(int discoveryDurationMs, CancellationToken cancellationToken)
         {
+            lock (_modelCache)
+            {
+                _modelCache.Clear();
+            }
+
             cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(discoveryDurationMs).Token, cancellationToken).Token;
             var list = new List<TunerHostInfo>();
 

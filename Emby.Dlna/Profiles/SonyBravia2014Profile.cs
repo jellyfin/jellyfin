@@ -3,7 +3,7 @@ using System.Xml.Serialization;
 
 namespace Emby.Dlna.Profiles
 {
-    [XmlRoot("Profile")]
+    [System.Xml.Serialization.XmlRoot("Profile")]
     public class SonyBravia2014Profile : DefaultProfile
     {
         public SonyBravia2014Profile()

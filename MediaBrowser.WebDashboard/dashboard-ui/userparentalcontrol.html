@@ -1,7 +1,14 @@
-﻿<div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userparentalcontrol,emby-linkbutton,emby-checkbox,emby-button,emby-select">
+﻿<div id="userParentalControlPage" data-role="page" class="page type-interior" data-require="scripts/userparentalcontrol,emby-linkbutton,emby-checkbox,emby-button,emby-select">
 
     <div>
         <div class="content-primary">
+            <div class="verticalSection">
+                <div class="sectionTitleContainer flex align-items-center">
+                    <h2 class="sectionTitle username"></h2>
+                    <a is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Users">${Help}</a>
+                </div>
+            </div>
+
             <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                 <a is="emby-linkbutton" href="#" data-role="button" onclick="Dashboard.navigate('useredit.html', true);">${TabProfile}</a>
                 <a is="emby-linkbutton" href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);">${TabAccess}</a>
@@ -24,8 +31,8 @@
                 <div class="verticalSection" style="margin-bottom:2em;">
                     <div class="detailSectionHeader sectionTitleContainer">
                         <h2 class="sectionTitle">${LabelBlockContentWithTags}</h2>
-                        <button is="emby-button" type="button" class="raised btnAddBlockedTag submit raised-mini sectionTitleButton" style="margin-left:1em;" title="${ButtonAdd}">
-                            <span>${ButtonAdd}</span>
+                        <button is="emby-button" type="button" class="fab btnAddBlockedTag submit" style="margin-left:1em;" title="${ButtonAdd}">
+                            <i class="md-icon">add</i>
                         </button>
                     </div>
                     <div class="blockedTags" style="margin-top:.5em;">
@@ -36,8 +43,8 @@
                 <div class="accessScheduleSection verticalSection" style="margin-bottom:2em;">
                     <div class="sectionTitleContainer">
                         <h2 class="sectionTitle">${HeaderAccessSchedule}</h2>
-                        <button is="emby-button" type="button" class="raised btnAddSchedule submit raised-mini sectionTitleButton" style="margin-left:1em;" title="${ButtonAdd}">
-                            <span>${ButtonAdd}</span>
+                        <button is="emby-button" type="button" class="fab btnAddSchedule submit" style="margin-left:1em;" title="${ButtonAdd}">
+                            <i class="md-icon">add</i>
                         </button>
                     </div>
                     <p>${HeaderAccessScheduleHelp}</p>

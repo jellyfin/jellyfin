@@ -55,7 +55,7 @@ namespace MediaBrowser.Api
             return Request.Headers[name];
         }
 
-        private static readonly string[] EmptyStringArray = new string[] { };
+        private static readonly string[] EmptyStringArray = Array.Empty<string>();
         public static string[] SplitValue(string value, char delim)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -65,7 +65,13 @@ namespace MediaBrowser.Api
 
             return value.Split(new[] { delim }, StringSplitOptions.RemoveEmptyEntries);
         }
-        
+
+        public static Guid[] GetGuids(string value)
+        {
+            // Unfortunately filtermenu.js was using |. This can be deprecated after a while.
+            return (value ?? string.Empty).Split(new[] { ',', '|' }, StringSplitOptions.RemoveEmptyEntries).Select(i => new Guid(i)).ToArray();
+        }
+
         /// <summary>
         /// To the optimized result.
         /// </summary>
@@ -75,17 +81,17 @@ namespace MediaBrowser.Api
         protected object ToOptimizedResult<T>(T result)
             where T : class
         {
-            return ResultFactory.GetOptimizedResult(Request, result);
+            return ResultFactory.GetResult(Request, result);
         }
 
-        protected void AssertCanUpdateUser(IAuthorizationContext authContext, IUserManager userManager, string userId, bool restrictUserPreferences)
+        protected void AssertCanUpdateUser(IAuthorizationContext authContext, IUserManager userManager, Guid userId, bool restrictUserPreferences)
         {
             var auth = authContext.GetAuthorizationInfo(Request);
 
-            var authenticatedUser = userManager.GetUserById(auth.UserId);
+            var authenticatedUser = auth.User;
 
             // If they're going to update the record of another user, they must be an administrator
-            if (!string.Equals(userId, auth.UserId, StringComparison.OrdinalIgnoreCase))
+            if (!userId.Equals(auth.UserId))
             {
                 if (!authenticatedUser.Policy.IsAdministrator)
                 {
@@ -102,24 +108,12 @@ namespace MediaBrowser.Api
         }
 
         /// <summary>
-        /// To the optimized serialized result using cache.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="result">The result.</param>
-        /// <returns>System.Object.</returns>
-        protected object ToOptimizedSerializedResultUsingCache<T>(T result)
-           where T : class
-        {
-            return ToOptimizedResult(result);
-        }
-
-        /// <summary>
         /// Gets the session.
         /// </summary>
         /// <returns>SessionInfo.</returns>
-        protected async Task<SessionInfo> GetSession(ISessionContext sessionContext)
+        protected SessionInfo GetSession(ISessionContext sessionContext)
         {
-            var session = await sessionContext.GetSession(Request).ConfigureAwait(false);
+            var session = sessionContext.GetSession(Request);
 
             if (session == null)
             {
@@ -133,38 +127,37 @@ namespace MediaBrowser.Api
         {
             var options = new DtoOptions();
 
-            var authInfo = authContext.GetAuthorizationInfo(Request);
-
-            options.DeviceId = authInfo.DeviceId;
-
             var hasFields = request as IHasItemFields;
             if (hasFields != null)
             {
                 options.Fields = hasFields.GetItemFields();
             }
 
-            var client = authInfo.Client ?? string.Empty;
-            if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
-                client.IndexOf("wmc", StringComparison.OrdinalIgnoreCase) != -1 ||
-                client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
-                client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1)
+            if (!options.ContainsField(Model.Querying.ItemFields.RecursiveItemCount) || !options.ContainsField(Model.Querying.ItemFields.ChildCount))
             {
-                var list = options.Fields.ToList();
-                list.Add(Model.Querying.ItemFields.RecursiveItemCount);
-                options.Fields = list.ToArray(list.Count);
-            }
+                var client = authContext.GetAuthorizationInfo(Request).Client ?? string.Empty;
+                if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
+                    client.IndexOf("wmc", StringComparison.OrdinalIgnoreCase) != -1 ||
+                    client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
+                    client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    var list = options.Fields.ToList();
+                    list.Add(Model.Querying.ItemFields.RecursiveItemCount);
+                    options.Fields = list.ToArray(list.Count);
+                }
 
-            if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
-               client.IndexOf("wmc", StringComparison.OrdinalIgnoreCase) != -1 ||
-               client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
-               client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1 ||
-               client.IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1 ||
-               client.IndexOf("samsung", StringComparison.OrdinalIgnoreCase) != -1 ||
-               client.IndexOf("androidtv", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                var list = options.Fields.ToList();
-                list.Add(Model.Querying.ItemFields.ChildCount);
-                options.Fields = list.ToArray(list.Count);
+                if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
+                   client.IndexOf("wmc", StringComparison.OrdinalIgnoreCase) != -1 ||
+                   client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
+                   client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1 ||
+                   client.IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1 ||
+                   client.IndexOf("samsung", StringComparison.OrdinalIgnoreCase) != -1 ||
+                   client.IndexOf("androidtv", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    var list = options.Fields.ToList();
+                    list.Add(Model.Querying.ItemFields.ChildCount);
+                    options.Fields = list.ToArray(list.Count);
+                }
             }
 
             var hasDtoOptions = request as IHasDtoOptions;
@@ -289,7 +282,7 @@ namespace MediaBrowser.Api
                 IncludeItemTypes = new[] { typeof(T).Name },
                 DtoOptions = dtoOptions
 
-            }).OfType<Person>().FirstOrDefault();
+            }).OfType<T>().FirstOrDefault();
 
             if (result == null)
             {
@@ -299,7 +292,7 @@ namespace MediaBrowser.Api
                     IncludeItemTypes = new[] { typeof(T).Name },
                     DtoOptions = dtoOptions
 
-                }).OfType<Person>().FirstOrDefault();
+                }).OfType<T>().FirstOrDefault();
             }
 
             if (result == null)
@@ -310,10 +303,10 @@ namespace MediaBrowser.Api
                     IncludeItemTypes = new[] { typeof(T).Name },
                     DtoOptions = dtoOptions
 
-                }).OfType<Person>().FirstOrDefault();
+                }).OfType<T>().FirstOrDefault();
             }
 
-            return result as T;
+            return result;
         }
 
         protected string GetPathValue(int index)
@@ -331,7 +324,7 @@ namespace MediaBrowser.Api
             return pathInfo[index];
         }
 
-        private static List<string> Parse(string pathUri)
+        private List<string> Parse(string pathUri)
         {
             var actionParts = pathUri.Split(new[] { "://" }, StringSplitOptions.None);
 

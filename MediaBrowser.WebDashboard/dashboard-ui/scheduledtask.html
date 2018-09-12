@@ -1,26 +1,30 @@
-﻿<div id="scheduledTaskPage" data-role="page" class="page type-interior scheduledTasksConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Scheduled%20tasks">
+﻿<div id="scheduledTaskPage" data-role="page" class="page type-interior scheduledTasksConfigurationPage">
     <div>
         <div class="content-primary">
 
-            <div class="readOnlyContent">
-                <h1 class="taskName"></h1>
+            <div class="verticalSection">
+                <div class="sectionTitleContainer flex align-items-center">
+                    <h2 class="sectionTitle taskName"></h2>
+                    <a is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Scheduled%20tasks">${Help}</a>
+                </div>
                 <p id="pTaskDescription"></p>
+            </div>
+
+            <div class="readOnlyContent">
                 <div>
-                    <br />
-                    <h2 style="margin: .6em 0; vertical-align: middle; display: inline-block;">
+                    <h2 style="vertical-align: middle; display: inline-block;">
                         ${HeaderTaskTriggers}
                     </h2>
-                    <button is="emby-button" type="button" class="raised btnAddTrigger submit raised-mini" style="margin-left: 1em;" title="${ButtonAddScheduledTaskTrigger}">
-                        <i class="md-icon">add</i>
-                        <span>${ButtonAdd}</span>
+                    <button is="emby-button" type="button" class="fab fab-mini btnAddTrigger submit" style="margin-left: 1em;" title="${ButtonAddScheduledTaskTrigger}">
+                        <i class="md-icon">&#xE145;</i>
                     </button>
                 </div>
                 <div class="taskTriggers"></div>
             </div>
         </div>
     </div>
-    <div data-role="popup" id="popupAddTrigger" class="popup" style="min-width: 300px;">
-        <form class="addTriggerForm">
+    <div data-role="popup" id="popupAddTrigger" class="dialog dialog-fixedSize dialog-small hide" style="position: fixed; top: 10%;">
+        <form class="addTriggerForm" style="padding:1em;">
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
                 <h3>${HeaderAddScheduledTaskTrigger}</h3>
             </div>
@@ -31,7 +35,6 @@
                         <option value="WeeklyTrigger">${OptionWeekly}</option>
                         <option value="IntervalTrigger">${OptionOnInterval}</option>
                         <option value="StartupTrigger">${OptionOnAppStartup}</option>
-                        <option value="SystemEventTrigger">${OptionAfterSystemEvent}</option>
                     </select>
                 </div>
                 <div id="fldDayOfWeek" class="selectContainer">
@@ -46,8 +49,7 @@
                     </select>
                 </div>
                 <div id="fldTimeOfDay" class="selectContainer">
-                    <select is="emby-select" id="selectTimeOfDay" label="${LabelTime}">
-                    </select>
+                    <select is="emby-select" id="selectTimeOfDay" label="${LabelTime}"></select>
                 </div>
                 <div id="fldSelectSystemEvent" class="selectContainer">
                     <select is="emby-select" id="selectSystemEvent" name="selectSystemEvent" label="${LabelEvent}">
@@ -66,16 +68,17 @@
                         <option value="216000000000">6 hours</option>
                         <option value="288000000000">8 hours</option>
                         <option value="432000000000">12 hours</option>
+                        <option value="864000000000">24 hours</option>
                     </select>
                 </div>
                 <div class="inputContainer">
-                    <input is="emby-input" id="txtTimeLimit" type="number" pattern="[0-9]*" min="1" step=".5" label="${LabelTimeLimitHours}"/>
+                    <input is="emby-input" id="txtTimeLimit" type="number" pattern="[0-9]*" min="1" step=".5" label="${LabelTimeLimitHours}" />
                 </div>
                 <div>
                     <button type="submit" data-icon="check">
                         ${ButtonAdd}
                     </button>
-                    <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">
+                    <button type="button" data-icon="delete" onclick="$(this).parents('.dialog').addClass('hide');">
                         ${ButtonCancel}
                     </button>
                 </div>

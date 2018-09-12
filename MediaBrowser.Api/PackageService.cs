@@ -49,7 +49,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "PackageType", Description = "Optional package type filter (System/UserInstalled)", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string PackageType { get; set; }
 
-        [ApiMember(Name = "TargetSystems", Description = "Optional. Filter by target system type. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET", AllowMultiple = true)]
+        [ApiMember(Name = "TargetSystems", Description = "Optional. Filter by target system type. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string TargetSystems { get; set; }
 
         [ApiMember(Name = "IsPremium", Description = "Optional. Filter by premium status", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
@@ -146,24 +146,24 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetPackageVersionUpdates request)
+        public async Task<object> Get(GetPackageVersionUpdates request)
         {
             PackageVersionInfo[] result = null;
 
             if (string.Equals(request.PackageType, "UserInstalled", StringComparison.OrdinalIgnoreCase) || string.Equals(request.PackageType, "All", StringComparison.OrdinalIgnoreCase))
             {
-                result = _installationManager.GetAvailablePluginUpdates(_appHost.ApplicationVersion, false, CancellationToken.None).Result.ToArray();
+                result = (await _installationManager.GetAvailablePluginUpdates(_appHost.ApplicationVersion, false, CancellationToken.None).ConfigureAwait(false)).ToArray();
             }
 
             else if (string.Equals(request.PackageType, "System", StringComparison.OrdinalIgnoreCase) ||
                      string.Equals(request.PackageType, "All", StringComparison.OrdinalIgnoreCase))
             {
-                var updateCheckResult = _appHost
-                    .CheckForApplicationUpdate(CancellationToken.None, new SimpleProgress<double>()).Result;
+                var updateCheckResult = await _appHost
+                    .CheckForApplicationUpdate(CancellationToken.None, new SimpleProgress<double>()).ConfigureAwait(false);
 
                 if (updateCheckResult.IsUpdateAvailable)
                 {
-                    result = new PackageVersionInfo[] {updateCheckResult.Package};
+                    result = new PackageVersionInfo[] { updateCheckResult.Package };
                 }
             }
 
@@ -224,11 +224,11 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <exception cref="ResourceNotFoundException"></exception>
-        public void Post(InstallPackage request)
+        public async Task Post(InstallPackage request)
         {
             var package = string.IsNullOrEmpty(request.Version) ?
-                _installationManager.GetLatestCompatibleVersion(request.Name, request.AssemblyGuid, _appHost.ApplicationVersion, request.UpdateClass).Result :
-                _installationManager.GetPackage(request.Name, request.AssemblyGuid, request.UpdateClass, Version.Parse(request.Version)).Result;
+                await _installationManager.GetLatestCompatibleVersion(request.Name, request.AssemblyGuid, _appHost.ApplicationVersion, request.UpdateClass).ConfigureAwait(false) :
+                await _installationManager.GetPackage(request.Name, request.AssemblyGuid, request.UpdateClass, Version.Parse(request.Version)).ConfigureAwait(false);
 
             if (package == null)
             {
@@ -244,7 +244,7 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Delete(CancelPackageInstallation request)
         {
-            var info = _installationManager.CurrentInstallations.FirstOrDefault(i => string.Equals(i.Item1.Id, request.Id));
+            var info = _installationManager.CurrentInstallations.FirstOrDefault(i => i.Item1.Id.Equals(request.Id));
 
             if (info != null)
             {

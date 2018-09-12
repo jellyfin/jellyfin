@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Services;
+using System.Linq;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -147,6 +148,13 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
+        private string[] SkipLogExtensions = new string[] 
+        {
+            ".js",
+            ".html",
+            ".css"
+        };
+
         public async Task WriteToAsync(IResponse response, CancellationToken cancellationToken)
         {
             try
@@ -157,17 +165,24 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
+                var path = Path;
+
                 if (string.IsNullOrWhiteSpace(RangeHeader) || (RangeStart <= 0 && RangeEnd >= TotalContentLength - 1))
                 {
-                    Logger.Info("Transmit file {0}", Path);
+                    var extension = System.IO.Path.GetExtension(path);
+
+                    if (extension == null || !SkipLogExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+                    {
+                        Logger.Debug("Transmit file {0}", path);
+                    }
 
                     //var count = FileShare == FileShareMode.ReadWrite ? TotalContentLength : 0;
 
-                    await response.TransmitFile(Path, 0, 0, FileShare, cancellationToken).ConfigureAwait(false);
+                    await response.TransmitFile(path, 0, 0, FileShare, cancellationToken).ConfigureAwait(false);
                     return;
                 }
 
-                await response.TransmitFile(Path, RangeStart, RangeLength, FileShare, cancellationToken).ConfigureAwait(false);
+                await response.TransmitFile(path, RangeStart, RangeLength, FileShare, cancellationToken).ConfigureAwait(false);
             }
             finally
             {

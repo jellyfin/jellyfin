@@ -1,9 +1,21 @@
-﻿<div id="dlnaSettingsPage" data-role="page" class="page type-interior withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Play%20to" data-require="scripts/dlnasettings,emby-select,emby-input,emby-checkbox,emby-button">
+﻿<div id="dlnaSettingsPage" data-role="page" class="page type-interior withTabs" data-require="scripts/dlnasettings,emby-select,emby-input,emby-checkbox,emby-button">
 
     <div>
         <div class="content-primary">
 
             <form class="dlnaSettingsForm">
+
+                <div class="verticalSection">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h2 class="sectionTitle">${TabSettings}</h2>
+                        <a is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20settings">${Help}</a>
+                    </div>
+
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="txtRemoteClientBitrateLimit" pattern="[0-9]*" min="0" step=".25" label="${LabelRemoteClientBitrateLimit}" />
+                        <div class="fieldDescription">${LabelRemoteClientBitrateLimitHelp}</div>
+                    </div>
+                </div>
 
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label>
@@ -22,7 +34,7 @@
                 </div>
 
                 <div class="inputContainer">
-                    <input is="emby-input" type="number" id="txtClientDiscoveryInterval" min="1" max="300" label="${LabelEnableDlnaClientDiscoveryInterval}"/>
+                    <input is="emby-input" type="number" id="txtClientDiscoveryInterval" min="1" max="300" label="${LabelEnableDlnaClientDiscoveryInterval}" />
                     <div class="fieldDescription">${LabelEnableDlnaClientDiscoveryIntervalHelp}</div>
                 </div>
 
@@ -43,7 +55,7 @@
                 </div>
 
                 <div class="inputContainer">
-                    <input is="emby-input" type="number" id="txtBlastInterval" min="1" max="300" label="${LabelBlastMessageInterval}"/>
+                    <input is="emby-input" type="number" id="txtBlastInterval" min="1" max="3600" label="${LabelBlastMessageInterval}" />
                     <div class="fieldDescription">${LabelBlastMessageIntervalHelp}</div>
                 </div>
                 <div class="selectContainer">

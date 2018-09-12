@@ -28,7 +28,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
@@ -88,7 +88,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
@@ -131,11 +131,6 @@ namespace MediaBrowser.Api
         public bool? EnableUserData { get; set; }
     }
 
-    [Route("/Shows/{Id}/Similar", "GET", Summary = "Finds tv shows similar to a given one.")]
-    public class GetSimilarShows : BaseGetSimilarItemsFromItem
-    {
-    }
-
     [Route("/Shows/{Id}/Episodes", "GET", Summary = "Gets episodes for a tv season")]
     public class GetEpisodes : IReturn<QueryResult<BaseItemDto>>, IHasItemFields, IHasDtoOptions
     {
@@ -144,7 +139,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Fields to return within the items, in addition to basic information
@@ -212,7 +207,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Fields to return within the items, in addition to basic information
@@ -288,66 +283,20 @@ namespace MediaBrowser.Api
             _authContext = authContext;
         }
 
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetSimilarShows request)
-        {
-            var result = GetSimilarItemsResult(request);
-
-            return ToOptimizedSerializedResultUsingCache(result);
-        }
-
-        private QueryResult<BaseItemDto> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request)
-        {
-            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
-
-            var item = string.IsNullOrEmpty(request.Id) ?
-                (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
-                _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
-
-            var dtoOptions = GetDtoOptions(_authContext, request);
-
-            var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
-            {
-                Limit = request.Limit,
-                IncludeItemTypes = new[]
-                {
-                        typeof(Series).Name
-                },
-                SimilarTo = item,
-                DtoOptions = dtoOptions
-
-            });
-
-            var returnList = _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user);
-
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = returnList,
-
-                TotalRecordCount = itemsResult.Count
-            };
-
-            return result;
-        }
-
         public object Get(GetUpcomingEpisodes request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
             var minPremiereDate = DateTime.Now.Date.ToUniversalTime().AddDays(-1);
 
-            var parentIdGuid = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId);
+            var parentIdGuid = string.IsNullOrWhiteSpace(request.ParentId) ? Guid.Empty : new Guid(request.ParentId);
 
             var options = GetDtoOptions(_authContext, request);
 
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Episode).Name },
-                OrderBy = new[] { ItemSortBy.PremiereDate, ItemSortBy.SortName }.Select(i => new Tuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                OrderBy = new[] { ItemSortBy.PremiereDate, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
                 MinPremiereDate = minPremiereDate,
                 StartIndex = request.StartIndex,
                 Limit = request.Limit,
@@ -365,7 +314,7 @@ namespace MediaBrowser.Api
                 Items = returnItems
             };
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -391,7 +340,7 @@ namespace MediaBrowser.Api
 
             var returnItems = _dtoService.GetBaseItemDtos(result.Items, options, user);
 
-            return ToOptimizedSerializedResultUsingCache(new QueryResult<BaseItemDto>
+            return ToOptimizedResult(new QueryResult<BaseItemDto>
             {
                 TotalRecordCount = result.TotalRecordCount,
                 Items = returnItems

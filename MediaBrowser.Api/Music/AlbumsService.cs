@@ -64,7 +64,7 @@ namespace MediaBrowser.Api.Music
                 request, new[] { typeof(MusicArtist) },
                 SimilarItemsHelper.GetSimiliarityScore);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace MediaBrowser.Api.Music
                 request, new[] { typeof(MusicAlbum) },
                 GetAlbumSimilarityScore);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         /// <summary>

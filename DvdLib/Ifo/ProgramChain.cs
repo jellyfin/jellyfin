@@ -15,8 +15,6 @@ namespace DvdLib.Ifo
 
     public class ProgramChain
     {
-        private ushort _unknown1;
-
         private byte _programCount;
         public readonly List<Program> Programs;
 

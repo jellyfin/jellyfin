@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using System;
 using System.IO;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Movies
 {
@@ -30,14 +31,13 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 {
                     return null;
                 }
-                
-                if (filename.IndexOf("[boxset]", StringComparison.OrdinalIgnoreCase) != -1 || 
-                    args.ContainsFileSystemEntryByName("collection.xml"))
+
+                if (filename.IndexOf("[boxset]", StringComparison.OrdinalIgnoreCase) != -1 || args.ContainsFileSystemEntryByName("collection.xml"))
                 {
                     return new BoxSet
                     {
                         Path = args.Path,
-                        Name = ResolverHelper.StripBrackets(Path.GetFileName(args.Path))
+                        Name = Path.GetFileName(args.Path).Replace("[boxset]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim()
                     };
                 }
             }

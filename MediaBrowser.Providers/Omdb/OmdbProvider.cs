@@ -14,6 +14,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
 
 namespace MediaBrowser.Providers.Omdb
 {
@@ -24,13 +25,15 @@ namespace MediaBrowser.Providers.Omdb
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IHttpClient _httpClient;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private readonly IApplicationHost _appHost;
 
-        public OmdbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
+        public OmdbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IApplicationHost appHost, IServerConfigurationManager configurationManager)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
+            _appHost = appHost;
         }
 
         public async Task Fetch<T>(MetadataResult<T> itemResult, string imdbId, string language, string country, CancellationToken cancellationToken)
@@ -90,10 +93,10 @@ namespace MediaBrowser.Providers.Omdb
                 item.CommunityRating = imdbRating;
             }
 
-            if (!string.IsNullOrEmpty(result.Website))
-            {
-                item.HomePageUrl = result.Website;
-            }
+            //if (!string.IsNullOrEmpty(result.Website))
+            //{
+            //    item.HomePageUrl = result.Website;
+            //}
 
             if (!string.IsNullOrWhiteSpace(result.imdbID))
             {
@@ -197,10 +200,10 @@ namespace MediaBrowser.Providers.Omdb
                 item.CommunityRating = imdbRating;
             }
 
-            if (!string.IsNullOrEmpty(result.Website))
-            {
-                item.HomePageUrl = result.Website;
-            }
+            //if (!string.IsNullOrEmpty(result.Website))
+            //{
+            //    item.HomePageUrl = result.Website;
+            //}
 
             if (!string.IsNullOrWhiteSpace(result.imdbID))
             {
@@ -265,9 +268,16 @@ namespace MediaBrowser.Providers.Omdb
             return false;
         }
 
-        public static string GetOmdbUrl(string query, CancellationToken cancellationToken)
+        public static string GetOmdbUrl(string query, IApplicationHost appHost, CancellationToken cancellationToken)
         {
-            var url = "https://www.omdbapi.com?apikey=fe53f97e";
+            var baseUrl = appHost.GetValue("omdb_baseurl");
+
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                baseUrl = "https://www.omdbapi.com";
+            }
+
+            var url = baseUrl + "?apikey=fe53f97e";
 
             if (!string.IsNullOrWhiteSpace(query))
             {
@@ -293,19 +303,19 @@ namespace MediaBrowser.Providers.Omdb
             if (fileInfo.Exists)
             {
                 // If it's recent or automatic updates are enabled, don't re-download
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 3)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 1)
                 {
                     return path;
                 }
             }
 
-            var url = GetOmdbUrl(string.Format("i={0}&plot=short&tomatoes=true&r=json", imdbParam), cancellationToken);
+            var url = GetOmdbUrl(string.Format("i={0}&plot=short&tomatoes=true&r=json", imdbParam), _appHost, cancellationToken);
 
             using (var response = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
                 using (var stream = response.Content)
                 {
-                    var rootObject = _jsonSerializer.DeserializeFromStream<RootObject>(stream);
+                    var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<RootObject>(stream).ConfigureAwait(false);
                     _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
                     _jsonSerializer.SerializeToFile(rootObject, path);
                 }
@@ -330,19 +340,19 @@ namespace MediaBrowser.Providers.Omdb
             if (fileInfo.Exists)
             {
                 // If it's recent or automatic updates are enabled, don't re-download
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 3)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 1)
                 {
                     return path;
                 }
             }
 
-            var url = GetOmdbUrl(string.Format("i={0}&season={1}&detail=full", imdbParam, seasonId), cancellationToken);
+            var url = GetOmdbUrl(string.Format("i={0}&season={1}&detail=full", imdbParam, seasonId), _appHost, cancellationToken);
 
             using (var response = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
             {
                 using (var stream = response.Content)
                 {
-                    var rootObject = _jsonSerializer.DeserializeFromStream<SeasonRootObject>(stream);
+                    var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<SeasonRootObject>(stream).ConfigureAwait(false);
                     _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
                     _jsonSerializer.SerializeToFile(rootObject, path);
                 }
@@ -401,7 +411,7 @@ namespace MediaBrowser.Providers.Omdb
             // But only do it if english is the preferred language because this data will not be localized
             if (isConfiguredForEnglish && !string.IsNullOrWhiteSpace(result.Genre))
             {
-                item.Genres.Clear();
+                item.Genres = Array.Empty<string>();
 
                 foreach (var genre in result.Genre
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)

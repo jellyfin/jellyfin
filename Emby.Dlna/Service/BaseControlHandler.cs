@@ -255,7 +255,7 @@ namespace Emby.Dlna.Service
             }
 
             var originalHeaders = response.Headers;
-            var headers = string.Join(", ", originalHeaders.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray(originalHeaders.Count));
+            var headers = string.Join(", ", originalHeaders.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray());
             //builder.Append(response.Xml);
 
             Logger.Debug("Control response. Headers: {0}", headers);

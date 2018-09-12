@@ -12,7 +12,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Querying;
+using MediaBrowser.Controller.Dto;
+using System.Globalization;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -29,10 +30,13 @@ namespace Emby.Server.Implementations.Library
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
 
-        public UserDataManager(ILogManager logManager, IServerConfigurationManager config)
+        private Func<IUserManager> _userManager;
+
+        public UserDataManager(ILogManager logManager, IServerConfigurationManager config, Func<IUserManager> userManager)
         {
             _config = config;
             _logger = logManager.GetLogger(GetType().Name);
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -41,7 +45,14 @@ namespace Emby.Server.Implementations.Library
         /// <value>The repository.</value>
         public IUserDataRepository Repository { get; set; }
 
-        public void SaveUserData(Guid userId, IHasUserData item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
+        public void SaveUserData(Guid userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
+        {
+            var user = _userManager().GetUserById(userId);
+
+            SaveUserData(user, item, userData, reason, cancellationToken);
+        }
+
+        public void SaveUserData(User user, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
         {
             if (userData == null)
             {
@@ -51,14 +62,12 @@ namespace Emby.Server.Implementations.Library
             {
                 throw new ArgumentNullException("item");
             }
-            if (userId == Guid.Empty)
-            {
-                throw new ArgumentNullException("userId");
-            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
             var keys = item.GetUserDataKeys();
+
+            var userId = user.InternalId;
 
             foreach (var key in keys)
             {
@@ -73,7 +82,7 @@ namespace Emby.Server.Implementations.Library
                 Keys = keys,
                 UserData = userData,
                 SaveReason = reason,
-                UserId = userId,
+                UserId = user.Id,
                 Item = item
 
             }, _logger);
@@ -88,18 +97,9 @@ namespace Emby.Server.Implementations.Library
         /// <returns></returns>
         public void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken)
         {
-            if (userData == null)
-            {
-                throw new ArgumentNullException("userData");
-            }
-            if (userId == Guid.Empty)
-            {
-                throw new ArgumentNullException("userId");
-            }
+            var user = _userManager().GetUserById(userId);
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            Repository.SaveAllUserData(userId, userData, cancellationToken);
+            Repository.SaveAllUserData(user.InternalId, userData, cancellationToken);
         }
 
         /// <summary>
@@ -109,37 +109,30 @@ namespace Emby.Server.Implementations.Library
         /// <returns></returns>
         public List<UserItemData> GetAllUserData(Guid userId)
         {
-            if (userId == Guid.Empty)
-            {
-                throw new ArgumentNullException("userId");
-            }
+            var user = _userManager().GetUserById(userId);
 
-            return Repository.GetAllUserData(userId);
+            return Repository.GetAllUserData(user.InternalId);
         }
 
         public UserItemData GetUserData(Guid userId, Guid itemId, List<string> keys)
         {
-            if (userId == Guid.Empty)
-            {
-                throw new ArgumentNullException("userId");
-            }
-            if (keys == null)
-            {
-                throw new ArgumentNullException("keys");
-            }
-            if (keys.Count == 0)
-            {
-                throw new ArgumentException("UserData keys cannot be empty.");
-            }
+            var user = _userManager().GetUserById(userId);
+
+            return GetUserData(user, itemId, keys);
+        }
+
+        public UserItemData GetUserData(User user, Guid itemId, List<string> keys)
+        {
+            var userId = user.InternalId;
 
             var cacheKey = GetCacheKey(userId, itemId);
 
             return _userData.GetOrAdd(cacheKey, k => GetUserDataInternal(userId, keys));
         }
 
-        private UserItemData GetUserDataInternal(Guid userId, List<string> keys)
+        private UserItemData GetUserDataInternal(long internalUserId, List<string> keys)
         {
-            var userData = Repository.GetUserData(userId, keys);
+            var userData = Repository.GetUserData(internalUserId, keys);
 
             if (userData != null)
             {
@@ -150,7 +143,6 @@ namespace Emby.Server.Implementations.Library
             {
                 return new UserItemData
                 {
-                    UserId = userId,
                     Key = keys[0]
                 };
             }
@@ -162,41 +154,41 @@ namespace Emby.Server.Implementations.Library
         /// Gets the internal key.
         /// </summary>
         /// <returns>System.String.</returns>
-        private string GetCacheKey(Guid userId, Guid itemId)
+        private string GetCacheKey(long internalUserId, Guid itemId)
         {
-            return userId.ToString("N") + itemId.ToString("N");
+            return internalUserId.ToString(CultureInfo.InvariantCulture) + "-" + itemId.ToString("N");
         }
 
-        public UserItemData GetUserData(IHasUserData user, IHasUserData item)
+        public UserItemData GetUserData(User user, BaseItem item)
         {
-            return GetUserData(user.Id, item);
+            return GetUserData(user, item.Id, item.GetUserDataKeys());
         }
 
-        public UserItemData GetUserData(string userId, IHasUserData item)
+        public UserItemData GetUserData(string userId, BaseItem item)
         {
             return GetUserData(new Guid(userId), item);
         }
 
-        public UserItemData GetUserData(Guid userId, IHasUserData item)
+        public UserItemData GetUserData(Guid userId, BaseItem item)
         {
             return GetUserData(userId, item.Id, item.GetUserDataKeys());
         }
 
-        public UserItemDataDto GetUserDataDto(IHasUserData item, User user)
+        public UserItemDataDto GetUserDataDto(BaseItem item, User user)
         {
-            var userData = GetUserData(user.Id, item);
+            var userData = GetUserData(user, item);
             var dto = GetUserItemDataDto(userData);
 
-            item.FillUserDataDtoValues(dto, userData, null, user, new ItemFields[] { });
+            item.FillUserDataDtoValues(dto, userData, null, user, new DtoOptions());
             return dto;
         }
 
-        public UserItemDataDto GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, ItemFields[] fields)
+        public UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions options)
         {
-            var userData = GetUserData(user.Id, item);
+            var userData = GetUserData(user, item);
             var dto = GetUserItemDataDto(userData);
 
-            item.FillUserDataDtoValues(dto, userData, itemDto, user, fields);
+            item.FillUserDataDtoValues(dto, userData, itemDto, user, options);
             return dto;
         }
 
@@ -230,13 +222,15 @@ namespace Emby.Server.Implementations.Library
         {
             var playedToCompletion = false;
 
-            var positionTicks = reportedPositionTicks ?? item.RunTimeTicks ?? 0;
-            var hasRuntime = item.RunTimeTicks.HasValue && item.RunTimeTicks > 0;
+            var runtimeTicks = item.GetRunTimeTicksForPlayState();
+
+            var positionTicks = reportedPositionTicks ?? runtimeTicks;
+            var hasRuntime = runtimeTicks > 0;
 
             // If a position has been reported, and if we know the duration
             if (positionTicks > 0 && hasRuntime)
             {
-                var pctIn = Decimal.Divide(positionTicks, item.RunTimeTicks.Value) * 100;
+                var pctIn = Decimal.Divide(positionTicks, runtimeTicks) * 100;
 
                 // Don't track in very beginning
                 if (pctIn < _config.Configuration.MinResumePct)
@@ -245,7 +239,7 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 // If we're at the end, assume completed
-                else if (pctIn > _config.Configuration.MaxResumePct || positionTicks >= item.RunTimeTicks.Value)
+                else if (pctIn > _config.Configuration.MaxResumePct || positionTicks >= runtimeTicks)
                 {
                     positionTicks = 0;
                     data.Played = playedToCompletion = true;
@@ -254,7 +248,7 @@ namespace Emby.Server.Implementations.Library
                 else
                 {
                     // Enforce MinResumeDuration
-                    var durationSeconds = TimeSpan.FromTicks(item.RunTimeTicks.Value).TotalSeconds;
+                    var durationSeconds = TimeSpan.FromTicks(runtimeTicks).TotalSeconds;
 
                     if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
                     {

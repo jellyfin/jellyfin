@@ -82,11 +82,6 @@ namespace Emby.Server.Implementations.EnvironmentInfo
             return Environment.GetEnvironmentVariable(name);
         }
 
-        public virtual string GetUserId()
-        {
-            return null;
-        }
-
         public string StackTrace
         {
             get { return Environment.StackTrace; }

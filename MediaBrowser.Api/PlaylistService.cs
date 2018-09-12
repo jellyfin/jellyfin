@@ -9,6 +9,7 @@ using MediaBrowser.Model.Querying;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Extensions;
+using System;
 
 namespace MediaBrowser.Api
 {
@@ -21,10 +22,10 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Ids", Description = "Item Ids to add to the playlist", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
         public string Ids { get; set; }
 
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid UserId { get; set; }
 
-        [ApiMember(Name = "MediaType", Description = "The playlist media type", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "MediaType", Description = "The playlist media type", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string MediaType { get; set; }
     }
 
@@ -42,7 +43,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
     }
 
     [Route("/Playlists/{Id}/Items/{ItemId}/Move/{NewIndex}", "POST", Summary = "Moves a playlist item")]
@@ -76,14 +77,14 @@ namespace MediaBrowser.Api
     public class GetPlaylistItems : IReturn<QueryResult<BaseItemDto>>, IHasDtoOptions
     {
         [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
@@ -139,9 +140,7 @@ namespace MediaBrowser.Api
 
         public void Post(MoveItem request)
         {
-            var task = _playlistManager.MoveItem(request.Id, request.ItemId, request.NewIndex);
-
-            Task.WaitAll(task);
+            _playlistManager.MoveItem(request.Id, request.ItemId, request.NewIndex);
         }
 
         public async Task<object> Post(CreatePlaylist request)
@@ -149,7 +148,7 @@ namespace MediaBrowser.Api
             var result = await _playlistManager.CreatePlaylist(new PlaylistCreationRequest
             {
                 Name = request.Name,
-                ItemIdList = SplitValue(request.Ids, ','),
+                ItemIdList = GetGuids(request.Ids),
                 UserId = request.UserId,
                 MediaType = request.MediaType
 
@@ -160,22 +159,18 @@ namespace MediaBrowser.Api
 
         public void Post(AddToPlaylist request)
         {
-            var task = _playlistManager.AddToPlaylist(request.Id, request.Ids.Split(','), request.UserId);
-
-            Task.WaitAll(task);
+            _playlistManager.AddToPlaylist(request.Id, GetGuids(request.Ids), request.UserId);
         }
 
         public void Delete(RemoveFromPlaylist request)
         {
-            var task = _playlistManager.RemoveFromPlaylist(request.Id, request.EntryIds.Split(','));
-
-            Task.WaitAll(task);
+            _playlistManager.RemoveFromPlaylist(request.Id, request.EntryIds.Split(','));
         }
 
         public object Get(GetPlaylistItems request)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(request.Id);
-            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
+            var user = !request.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(request.UserId) : null;
 
             var items = playlist.GetManageableItems().ToArray();
 

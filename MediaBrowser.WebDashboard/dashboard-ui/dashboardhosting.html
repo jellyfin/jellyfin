@@ -1,66 +1,96 @@
-﻿<div id="dashboardHostingPage" data-role="page" class="page type-interior advancedConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Hosting%20Settings">
+﻿<div id="dashboardHostingPage" data-role="page" class="page type-interior advancedConfigurationPage withTabs">
 
     <div>
         <div class="content-primary">
 
             <form class="dashboardHostingForm">
 
-                <div class="inputContainer">
-                    <input is="emby-input" type="text" id="txtLocalAddress" label="${LabelBindToLocalNetworkAddress}" />
-                    <div class="fieldDescription">${LabelBindToLocalNetworkAddressHelp}</div>
-                </div>
-                <div class="inputContainer">
-                    <input is="emby-input" type="number" id="txtPortNumber" label="${LabelLocalHttpServerPortNumber}" pattern="[0-9]*" required="required" min="1" max="65535" />
-                    <div class="fieldDescription">${LabelLocalHttpServerPortNumberHelp}</div>
-                </div>
-                <div class="inputContainer">
-                    <input is="emby-input" type="number" id="txtHttpsPort" pattern="[0-9]*" required="required" min="1" max="65535" label="${LabelHttpsPort}" />
-                    <div class="fieldDescription">${LabelHttpsPortHelp}</div>
-                </div>
-                <div class="inputContainer">
-                    <input is="emby-input" type="number" label="${LabelPublicHttpPort}" id="txtPublicPort" pattern="[0-9]*" required="required" min="1" max="65535" />
-                    <div class="fieldDescription">${LabelPublicHttpPortHelp}</div>
-                </div>
-                <div class="inputContainer">
-                    <input is="emby-input" type="number" id="txtPublicHttpsPort" pattern="[0-9]*" required="required" min="1" max="65535" label="${LabelPublicHttpsPort}" />
-                    <div class="fieldDescription">${LabelPublicHttpsPortHelp}</div>
-                </div>
-
-                <div class="inputContainer">
-                    <input is="emby-input" id="txtDdns" type="text" label="${LabelExternalDDNS}" />
-                    <div class="fieldDescription">${LabelExternalDDNSHelp}</div>
-                </div>
-
-                <div class="inputContainer">
-                    <div style="display: flex; align-items: center;">
-                        <div style="flex-grow:1;">
-                            <input is="emby-input" type="text" id="txtCertificatePath" label="${LabelCustomCertificatePath}" autocomplete="off" />
-                        </div>
-                        <button type="button" is="paper-icon-button-light" id="btnSelectCertPath" title="${ButtonSelectDirectory}" class="emby-input-iconbutton"><i class="md-icon">search</i></button>
+                <div class="verticalSection verticalSection-extrabottompadding">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h2 class="sectionTitle">${TabHosting}</h2>
+                        <a is="emby-linkbutton" class="raised button-alt headerHelpButton" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Hosting%20Settings">${Help}</a>
                     </div>
-                    <div class="fieldDescription">${LabelCustomCertificatePathHelp}</div>
-                </div>
 
-                <div class="inputContainer">
-                    <input is="emby-input" id="txtCertPassword" type="password" label="${LabelCertificatePassword}" autocomplete="new-password" />
-                    <div class="fieldDescription">${LabelCertificatePasswordHelp}</div>
-                </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="text" id="txtLanNetworks" label="${LabelLanNetworks}" />
+                        <div class="fieldDescription">${LanNetworksHelp}</div>
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="text" id="txtLocalAddress" label="${LabelBindToLocalNetworkAddress}" />
+                        <div class="fieldDescription">${LabelBindToLocalNetworkAddressHelp}</div>
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="txtPortNumber" label="${LabelLocalHttpServerPortNumber}" pattern="[0-9]*" required="required" min="1" max="65535" />
+                        <div class="fieldDescription">${LabelLocalHttpServerPortNumberHelp}</div>
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="txtHttpsPort" pattern="[0-9]*" required="required" min="1" max="65535" label="${LabelHttpsPort}" />
+                        <div class="fieldDescription">${LabelHttpsPortHelp}</div>
+                    </div>
 
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkEnableHttps" />
-                        <span>${RequireHttps}</span>
-                    </label>
-                    <div class="fieldDescription checkboxFieldDescription">${RequireHttpsHelp}</div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkRemoteAccess" />
+                            <span>${AllowRemoteAccess}</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">${AllowRemoteAccessHelp}</div>
+                    </div>
+                    <div class="inputContainer fldExternalAddressFilter hide">
+                        <input is="emby-input" type="text" id="txtExternalAddressFilter" label="${LabelAllowedRemoteAddresses}" />
+                        <div class="fieldDescription">${AllowedRemoteAddressesHelp}</div>
+                    </div>
+                    <div class="selectContainer fldExternalAddressFilterMode hide">
+                        <select is="emby-select" id="selectExternalAddressFilterMode" label="${LabelAllowedRemoteAddressesMode}">
+                            <option value="whitelist">${Whitelist}</option>
+                            <option value="blacklist">${Blacklist}</option>
+                        </select>
+                    </div>
+                    <div class="inputContainer fldPublicPort hide">
+                        <input is="emby-input" type="number" label="${LabelPublicHttpPort}" id="txtPublicPort" pattern="[0-9]*" required="required" min="1" max="65535" />
+                        <div class="fieldDescription">${LabelPublicHttpPortHelp}</div>
+                    </div>
+                    <div class="inputContainer fldPublicHttpsPort hide">
+                        <input is="emby-input" type="number" id="txtPublicHttpsPort" pattern="[0-9]*" required="required" min="1" max="65535" label="${LabelPublicHttpsPort}" />
+                        <div class="fieldDescription">${LabelPublicHttpsPortHelp}</div>
+                    </div>
+
+                    <div class="inputContainer fldDdns hide">
+                        <input is="emby-input" id="txtDdns" type="text" label="${LabelExternalDDNS}" />
+                        <div class="fieldDescription">${LabelExternalDDNSHelp}</div>
+                    </div>
+
+                    <div class="inputContainer fldCertificatePath hide">
+                        <div style="display: flex; align-items: center;">
+                            <div style="flex-grow:1;">
+                                <input is="emby-input" type="text" id="txtCertificatePath" label="${LabelCustomCertificatePath}" autocomplete="off" />
+                            </div>
+                            <button type="button" is="paper-icon-button-light" id="btnSelectCertPath" title="${ButtonSelectDirectory}" class="emby-input-iconbutton"><i class="md-icon">search</i></button>
+                        </div>
+                        <div class="fieldDescription">${LabelCustomCertificatePathHelp}</div>
+                    </div>
+
+                    <div class="inputContainer fldCertPassword hide">
+                        <input is="emby-input" id="txtCertPassword" type="password" label="${LabelCertificatePassword}" autocomplete="new-password" />
+                        <div class="fieldDescription">${LabelCertificatePasswordHelp}</div>
+                    </div>
+
+                    <div class="selectContainer fldHttpsMode hide">
+                        <select is="emby-select" id="selectHttpsMode" label="${LabelSecureConnectionsMode}">
+                            <option value="disabled">${Disabled}</option>
+                            <option value="enabled">${PreferredNotRequired}</option>
+                            <option value="required">${RequiredForAllRemoteConnections}</option>
+                            <option value="proxy">${HandledByProxy}</option>
+                        </select>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription fldEnableUpnp hide">
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkEnableUpnp" />
+                            <span>${LabelEnableAutomaticPortMap}</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">${LabelEnableAutomaticPortMapHelp}</div>
+                    </div>
                 </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkEnableUpnp" />
-                        <span>${LabelEnableAutomaticPortMap}</span>
-                    </label>
-                    <div class="fieldDescription checkboxFieldDescription">${LabelEnableAutomaticPortMapHelp}</div>
-                </div>
-                <br />
                 <div>
                     <button is="emby-button" type="submit" class="raised button-submit block">
                         <span>${ButtonSave}</span>

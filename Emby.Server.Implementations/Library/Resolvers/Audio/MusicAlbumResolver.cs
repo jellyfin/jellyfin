@@ -52,14 +52,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// <returns>MusicAlbum.</returns>
         protected override MusicAlbum Resolve(ItemResolveArgs args)
         {
-            if (!args.IsDirectory) return null;
-
-            // Avoid mis-identifying top folders
-            if (args.HasParent<MusicAlbum>()) return null;
-            if (args.Parent.IsRoot) return null;
-
             var collectionType = args.GetCollectionType();
-
             var isMusicMediaFolder = string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase);
 
             // If there's a collection type and it's not music, don't allow it.
@@ -67,6 +60,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             {
                 return null;
             }
+
+            if (!args.IsDirectory) return null;
+
+            // Avoid mis-identifying top folders
+            if (args.HasParent<MusicAlbum>()) return null;
+            if (args.Parent.IsRoot) return null;
 
             return IsMusicAlbum(args) ? new MusicAlbum() : null;
         }
@@ -117,24 +116,22 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 {
                     if (allowSubfolders)
                     {
-                        var path = fileSystemInfo.FullName;
-                        var isMultiDisc = IsMultiDiscFolder(path, libraryOptions);
-
-                        if (isMultiDisc)
+                        if (notMultiDisc)
                         {
-                            var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryOptions, libraryManager);
+                            continue;
+                        }
 
-                            if (hasMusic)
+                        var path = fileSystemInfo.FullName;
+                        var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryOptions, libraryManager);
+
+                        if (hasMusic)
+                        {
+                            if (IsMultiDiscFolder(path, libraryOptions))
                             {
                                 logger.Debug("Found multi-disc folder: " + path);
                                 discSubfolderCount++;
                             }
-                        }
-                        else
-                        {
-                            var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryOptions, libraryManager);
-
-                            if (hasMusic)
+                            else
                             {
                                 // If there are folders underneath with music that are not multidisc, then this can't be a multi-disc album
                                 notMultiDisc = true;

@@ -17,7 +17,7 @@ namespace MediaBrowser.Api
         public MetadataRefreshMode MetadataRefreshMode { get; set; }
 
         [ApiMember(Name = "ImageRefreshMode", Description = "Specifies the image refresh mode", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
-        public ImageRefreshMode ImageRefreshMode { get; set; }
+        public MetadataRefreshMode ImageRefreshMode { get; set; }
 
         [ApiMember(Name = "ReplaceAllMetadata", Description = "Determines if metadata should be replaced. Only applicable if mode is FullRefresh", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
         public bool ReplaceAllMetadata { get; set; }
@@ -73,9 +73,8 @@ namespace MediaBrowser.Api
                 ImageRefreshMode = request.ImageRefreshMode,
                 ReplaceAllImages = request.ReplaceAllImages,
                 ReplaceAllMetadata = request.ReplaceAllMetadata,
-                ForceSave = request.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || request.ImageRefreshMode == ImageRefreshMode.FullRefresh || request.ReplaceAllImages || request.ReplaceAllMetadata,
-                IsAutomated = false,
-                ValidateChildren = request.Recursive
+                ForceSave = request.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || request.ImageRefreshMode == MetadataRefreshMode.FullRefresh || request.ReplaceAllImages || request.ReplaceAllMetadata,
+                IsAutomated = false
             };
         }
     }

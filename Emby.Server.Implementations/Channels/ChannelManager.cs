@@ -51,7 +51,6 @@ namespace Emby.Server.Implementations.Channels
         private readonly IProviderManager _providerManager;
 
         private readonly ILocalizationManager _localization;
-        private readonly ConcurrentDictionary<Guid, bool> _refreshedItems = new ConcurrentDictionary<Guid, bool>();
 
         public ChannelManager(IUserManager userManager, IDtoService dtoService, ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IUserDataManager userDataManager, IJsonSerializer jsonSerializer, ILocalizationManager localization, IHttpClient httpClient, IProviderManager providerManager)
         {
@@ -72,13 +71,58 @@ namespace Emby.Server.Implementations.Channels
         {
             get
             {
-                return TimeSpan.FromHours(6);
+                return TimeSpan.FromHours(3);
             }
         }
 
         public void AddParts(IEnumerable<IChannel> channels)
         {
             Channels = channels.ToArray();
+        }
+
+        public bool EnableMediaSourceDisplay(BaseItem item)
+        {
+            var internalChannel = _libraryManager.GetItemById(item.ChannelId);
+            var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
+
+            return !(channel is IDisableMediaSourceDisplay);
+        }
+
+        public bool CanDelete(BaseItem item)
+        {
+            var internalChannel = _libraryManager.GetItemById(item.ChannelId);
+            var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
+
+            var supportsDelete = channel as ISupportsDelete;
+            return supportsDelete != null && supportsDelete.CanDelete(item);
+        }
+
+        public bool EnableMediaProbe(BaseItem item)
+        {
+            var internalChannel = _libraryManager.GetItemById(item.ChannelId);
+            var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
+
+            return channel is ISupportsMediaProbe;
+        }
+
+        public Task DeleteItem(BaseItem item)
+        {
+            var internalChannel = _libraryManager.GetItemById(item.ChannelId);
+            if (internalChannel == null)
+            {
+                throw new ArgumentException();
+            }
+
+            var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
+
+            var supportsDelete = channel as ISupportsDelete;
+
+            if (supportsDelete == null)
+            {
+                throw new ArgumentException();
+            }
+
+            return supportsDelete.DeleteItem(item.ExternalId, CancellationToken.None);
         }
 
         private IEnumerable<IChannel> GetAllChannels()
@@ -92,9 +136,9 @@ namespace Emby.Server.Implementations.Channels
             return GetAllChannels().Select(i => GetInternalChannelId(i.Name));
         }
 
-        public Task<QueryResult<Channel>> GetChannelsInternal(ChannelQuery query, CancellationToken cancellationToken)
+        public QueryResult<Channel> GetChannelsInternal(ChannelQuery query)
         {
-            var user = string.IsNullOrWhiteSpace(query.UserId)
+            var user = query.UserId.Equals(Guid.Empty)
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
@@ -102,6 +146,25 @@ namespace Emby.Server.Implementations.Channels
                 .Select(GetChannelEntity)
                 .OrderBy(i => i.SortName)
                 .ToList();
+
+            if (query.IsRecordingsFolder.HasValue)
+            {
+                var val = query.IsRecordingsFolder.Value;
+                channels = channels.Where(i =>
+                {
+                    try
+                    {
+                        var hasAttributes = GetChannelProvider(i) as IHasFolderAttributes;
+
+                        return (hasAttributes != null && hasAttributes.Attributes.Contains("Recordings", StringComparer.OrdinalIgnoreCase)) == val;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+
+                }).ToList();
+            }
 
             if (query.SupportsLatestItems.HasValue)
             {
@@ -111,6 +174,23 @@ namespace Emby.Server.Implementations.Channels
                     try
                     {
                         return GetChannelProvider(i) is ISupportsLatestMedia == val;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+
+                }).ToList();
+            }
+
+            if (query.SupportsMediaDeletion.HasValue)
+            {
+                var val = query.SupportsMediaDeletion.Value;
+                channels = channels.Where(i =>
+                {
+                    try
+                    {
+                        return GetChannelProvider(i) is ISupportsDelete == val;
                     }
                     catch
                     {
@@ -161,22 +241,29 @@ namespace Emby.Server.Implementations.Channels
 
             var returnItems = all.ToArray(all.Count);
 
-            var result = new QueryResult<Channel>
+            if (query.RefreshLatestChannelItems)
+            {
+                foreach (var item in returnItems)
+                {
+                    var task = RefreshLatestChannelItems(GetChannelProvider(item), CancellationToken.None);
+                    Task.WaitAll(task);
+                }
+            }
+
+            return new QueryResult<Channel>
             {
                 Items = returnItems,
                 TotalRecordCount = totalCount
             };
-
-            return Task.FromResult(result);
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken)
+        public QueryResult<BaseItemDto> GetChannels(ChannelQuery query)
         {
-            var user = string.IsNullOrWhiteSpace(query.UserId)
+            var user = query.UserId.Equals(Guid.Empty)
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
-            var internalResult = await GetChannelsInternal(query, cancellationToken).ConfigureAwait(false);
+            var internalResult = GetChannelsInternal(query);
 
             var dtoOptions = new DtoOptions()
             {
@@ -195,8 +282,6 @@ namespace Emby.Server.Implementations.Channels
 
         public async Task RefreshChannels(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            _refreshedItems.Clear();
-
             var allChannelsList = GetAllChannels().ToList();
 
             var numComplete = 0;
@@ -230,7 +315,7 @@ namespace Emby.Server.Implementations.Channels
 
         private Channel GetChannelEntity(IChannel channel)
         {
-            var item = GetChannel(GetInternalChannelId(channel.Name).ToString("N"));
+            var item = GetChannel(GetInternalChannelId(channel.Name));
 
             if (item == null)
             {
@@ -240,23 +325,23 @@ namespace Emby.Server.Implementations.Channels
             return item;
         }
 
-        private List<ChannelMediaInfo> GetSavedMediaSources(BaseItem item)
+        private List<MediaSourceInfo> GetSavedMediaSources(BaseItem item)
         {
-            var path = Path.Combine(item.GetInternalMetadataPath(), "channelmediasources.json");
+            var path = Path.Combine(item.GetInternalMetadataPath(), "channelmediasourceinfos.json");
 
             try
             {
-                return _jsonSerializer.DeserializeFromFile<List<ChannelMediaInfo>>(path) ?? new List<ChannelMediaInfo>();
+                return _jsonSerializer.DeserializeFromFile<List<MediaSourceInfo>>(path) ?? new List<MediaSourceInfo>();
             }
             catch
             {
-                return new List<ChannelMediaInfo>();
+                return new List<MediaSourceInfo>();
             }
         }
 
-        private void SaveMediaSources(BaseItem item, List<ChannelMediaInfo> mediaSources)
+        private void SaveMediaSources(BaseItem item, List<MediaSourceInfo> mediaSources)
         {
-            var path = Path.Combine(item.GetInternalMetadataPath(), "channelmediasources.json");
+            var path = Path.Combine(item.GetInternalMetadataPath(), "channelmediasourceinfos.json");
 
             if (mediaSources == null || mediaSources.Count == 0)
             {
@@ -278,10 +363,10 @@ namespace Emby.Server.Implementations.Channels
 
         public IEnumerable<MediaSourceInfo> GetStaticMediaSources(BaseItem item, CancellationToken cancellationToken)
         {
-            IEnumerable<ChannelMediaInfo> results = GetSavedMediaSources(item);
+            IEnumerable<MediaSourceInfo> results = GetSavedMediaSources(item);
 
-            return SortMediaInfoResults(results)
-                .Select(i => GetMediaSource(item, i))
+            return results
+                .Select(i => NormalizeMediaSource(item, i))
                 .ToList();
         }
 
@@ -292,7 +377,7 @@ namespace Emby.Server.Implementations.Channels
 
             var requiresCallback = channelPlugin as IRequiresMediaInfoCallback;
 
-            IEnumerable<ChannelMediaInfo> results;
+            IEnumerable<MediaSourceInfo> results;
 
             if (requiresCallback != null)
             {
@@ -301,20 +386,20 @@ namespace Emby.Server.Implementations.Channels
             }
             else
             {
-                results = new List<ChannelMediaInfo>();
+                results = new List<MediaSourceInfo>();
             }
 
-            return SortMediaInfoResults(results)
-                .Select(i => GetMediaSource(item, i))
+            return results
+                .Select(i => NormalizeMediaSource(item, i))
                 .ToList();
         }
 
-        private readonly ConcurrentDictionary<string, Tuple<DateTime, List<ChannelMediaInfo>>> _channelItemMediaInfo =
-            new ConcurrentDictionary<string, Tuple<DateTime, List<ChannelMediaInfo>>>();
+        private readonly ConcurrentDictionary<string, Tuple<DateTime, List<MediaSourceInfo>>> _channelItemMediaInfo =
+            new ConcurrentDictionary<string, Tuple<DateTime, List<MediaSourceInfo>>>();
 
-        private async Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaSourcesInternal(IRequiresMediaInfoCallback channel, string id, CancellationToken cancellationToken)
+        private async Task<IEnumerable<MediaSourceInfo>> GetChannelItemMediaSourcesInternal(IRequiresMediaInfoCallback channel, string id, CancellationToken cancellationToken)
         {
-            Tuple<DateTime, List<ChannelMediaInfo>> cachedInfo;
+            Tuple<DateTime, List<MediaSourceInfo>> cachedInfo;
 
             if (_channelItemMediaInfo.TryGetValue(id, out cachedInfo))
             {
@@ -328,56 +413,24 @@ namespace Emby.Server.Implementations.Channels
                    .ConfigureAwait(false);
             var list = mediaInfo.ToList();
 
-            var item2 = new Tuple<DateTime, List<ChannelMediaInfo>>(DateTime.UtcNow, list);
+            var item2 = new Tuple<DateTime, List<MediaSourceInfo>>(DateTime.UtcNow, list);
             _channelItemMediaInfo.AddOrUpdate(id, item2, (key, oldValue) => item2);
 
             return list;
         }
 
-        private MediaSourceInfo GetMediaSource(BaseItem item, ChannelMediaInfo info)
+        private MediaSourceInfo NormalizeMediaSource(BaseItem item, MediaSourceInfo info)
         {
-            var source = info.ToMediaSource(item.Id);
+            info.RunTimeTicks = info.RunTimeTicks ?? item.RunTimeTicks;
 
-            source.RunTimeTicks = source.RunTimeTicks ?? item.RunTimeTicks;
-
-            return source;
-        }
-
-        private IEnumerable<ChannelMediaInfo> SortMediaInfoResults(IEnumerable<ChannelMediaInfo> channelMediaSources)
-        {
-            var list = channelMediaSources.ToList();
-
-            var options = _config.GetChannelsConfiguration();
-
-            var width = options.PreferredStreamingWidth;
-
-            if (width.HasValue)
-            {
-                var val = width.Value;
-
-                var res = list
-                    .OrderBy(i => i.Width.HasValue && i.Width.Value <= val ? 0 : 1)
-                    .ThenBy(i => Math.Abs((i.Width ?? 0) - val))
-                    .ThenByDescending(i => i.Width ?? 0)
-                    .ThenBy(list.IndexOf)
-                    .ToList();
-
-
-                return res;
-            }
-
-            return list
-                .OrderByDescending(i => i.Width ?? 0)
-                .ThenBy(list.IndexOf);
+            return info;
         }
 
         private async Task<Channel> GetChannel(IChannel channelInfo, CancellationToken cancellationToken)
         {
-            var parentFolder =  GetInternalChannelFolder(cancellationToken);
-            var parentFolderId = parentFolder.Id;
+            var parentFolderId = Guid.Empty;
 
             var id = GetInternalChannelId(channelInfo.Name);
-            var idString = id.ToString("N");
 
             var path = Channel.GetInternalMetadataPath(_config.ApplicationPaths.InternalMetadataPath, id);
 
@@ -405,11 +458,11 @@ namespace Emby.Server.Implementations.Channels
             }
             item.Path = path;
 
-            if (!string.Equals(item.ChannelId, idString, StringComparison.OrdinalIgnoreCase))
+            if (!item.ChannelId.Equals(id))
             {
                 forceUpdate = true;
             }
-            item.ChannelId = idString;
+            item.ChannelId = id;
 
             if (item.ParentId != parentFolderId)
             {
@@ -419,25 +472,24 @@ namespace Emby.Server.Implementations.Channels
 
             item.OfficialRating = GetOfficialRating(channelInfo.ParentalRating);
             item.Overview = channelInfo.Description;
-            item.HomePageUrl = channelInfo.HomePageUrl;
 
             if (string.IsNullOrWhiteSpace(item.Name))
             {
                 item.Name = channelInfo.Name;
             }
 
-            item.OnMetadataChanged();
-
             if (isNew)
             {
-                _libraryManager.CreateItem(item, cancellationToken);
-            }
-            else if (forceUpdate)
-            {
-                item.UpdateToRepository(ItemUpdateType.None, cancellationToken);
+                item.OnMetadataChanged();
+                _libraryManager.CreateItem(item, null);
             }
 
-            await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken);
+            await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
+            {
+                ForceSave = !isNew && forceUpdate
+
+            }, cancellationToken);
+
             return item;
         }
 
@@ -458,6 +510,11 @@ namespace Emby.Server.Implementations.Channels
             }
         }
 
+        public Channel GetChannel(Guid id)
+        {
+            return _libraryManager.GetItemById(id) as Channel;
+        }
+
         public Channel GetChannel(string id)
         {
             return _libraryManager.GetItemById(id) as Channel;
@@ -468,14 +525,14 @@ namespace Emby.Server.Implementations.Channels
             return _libraryManager.GetItemIds(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Channel).Name },
-                OrderBy = new Tuple<string, SortOrder>[] { new Tuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) }
+                OrderBy = new ValueTuple<string, SortOrder>[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) }
 
             }).Select(i => GetChannelFeatures(i.ToString("N"))).ToArray();
         }
 
         public ChannelFeatures GetChannelFeatures(string id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentNullException("id");
             }
@@ -486,13 +543,8 @@ namespace Emby.Server.Implementations.Channels
             return GetChannelFeaturesDto(channel, channelProvider, channelProvider.GetChannelFeatures());
         }
 
-        public bool SupportsSync(string channelId)
+        public bool SupportsExternalTransfer(Guid channelId)
         {
-            if (string.IsNullOrWhiteSpace(channelId))
-            {
-                throw new ArgumentNullException("channelId");
-            }
-
             //var channel = GetChannel(channelId);
             var channelProvider = GetChannelProvider(channelId);
 
@@ -503,7 +555,6 @@ namespace Emby.Server.Implementations.Channels
             IChannel provider,
             InternalChannelFeatures features)
         {
-            var isIndexable = provider is IIndexableChannel;
             var supportsLatest = provider is ISupportsLatestMedia;
 
             return new ChannelFeatures
@@ -518,57 +569,28 @@ namespace Emby.Server.Implementations.Channels
                 SupportsLatestMedia = supportsLatest,
                 Name = channel.Name,
                 Id = channel.Id.ToString("N"),
-                SupportsContentDownloading = features.SupportsContentDownloading && (isIndexable || supportsLatest),
+                SupportsContentDownloading = features.SupportsContentDownloading,
                 AutoRefreshLevels = features.AutoRefreshLevels
             };
         }
 
         private Guid GetInternalChannelId(string name)
         {
-            if (string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentNullException("name");
             }
             return _libraryManager.GetNewItemId("Channel " + name, typeof(Channel));
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetLatestChannelItems(AllChannelMediaQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<BaseItemDto>> GetLatestChannelItems(InternalItemsQuery query, CancellationToken cancellationToken)
         {
-            var user = string.IsNullOrWhiteSpace(query.UserId)
-                ? null
-                : _userManager.GetUserById(query.UserId);
-
-            var limit = query.Limit;
-
-            // See below about parental control
-            if (user != null)
-            {
-                query.StartIndex = null;
-                query.Limit = null;
-            }
-
             var internalResult = await GetLatestChannelItemsInternal(query, cancellationToken).ConfigureAwait(false);
 
             var items = internalResult.Items;
             var totalRecordCount = internalResult.TotalRecordCount;
 
-            // Supporting parental control is a hack because it has to be done after querying the remote data source
-            // This will get screwy if apps try to page, so limit to 10 results in an attempt to always keep them on the first page
-            if (user != null)
-            {
-                items = items.Where(i => i.IsVisible(user))
-                    .Take(limit ?? 10)
-                    .ToArray();
-
-                totalRecordCount = items.Length;
-            }
-
-            var dtoOptions = new DtoOptions()
-            {
-                Fields = query.Fields
-            };
-
-            var returnItems = _dtoService.GetBaseItemDtos(items, dtoOptions, user);
+            var returnItems = _dtoService.GetBaseItemDtos(items, query.DtoOptions, query.User);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -579,407 +601,150 @@ namespace Emby.Server.Implementations.Channels
             return result;
         }
 
-        public async Task<QueryResult<BaseItem>> GetLatestChannelItemsInternal(AllChannelMediaQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<BaseItem>> GetLatestChannelItemsInternal(InternalItemsQuery query, CancellationToken cancellationToken)
         {
-            var user = string.IsNullOrWhiteSpace(query.UserId)
-                ? null
-                : _userManager.GetUserById(query.UserId);
-
-            if (!string.IsNullOrWhiteSpace(query.UserId) && user == null)
-            {
-                throw new ArgumentException("User not found.");
-            }
-
-            var channels = GetAllChannels();
+            var channels = GetAllChannels().Where(i => i is ISupportsLatestMedia).ToArray();
 
             if (query.ChannelIds.Length > 0)
             {
                 // Avoid implicitly captured closure
                 var ids = query.ChannelIds;
                 channels = channels
-                    .Where(i => ids.Contains(GetInternalChannelId(i.Name).ToString("N")))
+                    .Where(i => ids.Contains(GetInternalChannelId(i.Name)))
                     .ToArray();
             }
 
-            // Avoid implicitly captured closure
-            var userId = query.UserId;
+            if (channels.Length == 0)
+            {
+                return new QueryResult<BaseItem>();
+            }
 
-            var tasks = channels
-                .Select(async i =>
+            foreach (var channel in channels)
+            {
+                await RefreshLatestChannelItems(channel, cancellationToken).ConfigureAwait(false);
+            }
+
+            query.IsFolder = false;
+
+            // hack for trailers, figure out a better way later
+            var sortByPremiereDate = channels.Length == 1 && channels[0].GetType().Name.IndexOf("Trailer") != -1;
+
+            if (sortByPremiereDate)
+            {
+                query.OrderBy = new []
                 {
-                    var indexable = i as ISupportsLatestMedia;
-
-                    if (indexable != null)
-                    {
-                        try
-                        {
-                            var result = await GetLatestItems(indexable, i, userId, cancellationToken).ConfigureAwait(false);
-
-                            var resultItems = result.ToList();
-
-                            return new Tuple<IChannel, ChannelItemResult>(i, new ChannelItemResult
-                            {
-                                Items = resultItems,
-                                TotalRecordCount = resultItems.Count
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error getting all media from {0}", ex, i.Name);
-                        }
-                    }
-                    return new Tuple<IChannel, ChannelItemResult>(i, new ChannelItemResult());
-                });
-
-            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            var totalCount = results.Length;
-
-            IEnumerable<Tuple<IChannel, ChannelItemInfo>> items = results
-                .SelectMany(i => i.Item2.Items.Select(m => new Tuple<IChannel, ChannelItemInfo>(i.Item1, m)));
-
-            if (query.ContentTypes.Length > 0)
-            {
-                // Avoid implicitly captured closure
-                var contentTypes = query.ContentTypes;
-
-                items = items.Where(i => contentTypes.Contains(i.Item2.ContentType));
+                    new ValueTuple<string, SortOrder>(ItemSortBy.PremiereDate, SortOrder.Descending),
+                    new ValueTuple<string, SortOrder>(ItemSortBy.ProductionYear, SortOrder.Descending),
+                    new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending)
+                };
             }
-            if (query.ExtraTypes.Length > 0)
+            else
             {
-                // Avoid implicitly captured closure
-                var contentTypes = query.ExtraTypes;
-
-                items = items.Where(i => contentTypes.Contains(i.Item2.ExtraType));
+                query.OrderBy = new []
+                {
+                    new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending)
+                };
             }
 
-            // Avoid implicitly captured closure
-            var token = cancellationToken;
-            var internalItems = items.Select(i =>
-            {
-                var channelProvider = i.Item1;
-                var internalChannelId = GetInternalChannelId(channelProvider.Name);
-                return GetChannelItemEntity(i.Item2, channelProvider, internalChannelId, token);
-            }).ToArray();
-
-            internalItems = ApplyFilters(internalItems, query.Filters, user).ToArray();
-            RefreshIfNeeded(internalItems);
-
-            if (query.StartIndex.HasValue)
-            {
-                internalItems = internalItems.Skip(query.StartIndex.Value).ToArray();
-            }
-            if (query.Limit.HasValue)
-            {
-                internalItems = internalItems.Take(query.Limit.Value).ToArray();
-            }
-
-            return new QueryResult<BaseItem>
-            {
-                TotalRecordCount = totalCount,
-                Items = internalItems
-            };
+            return _libraryManager.GetItemsResult(query);
         }
 
-        private async Task<IEnumerable<ChannelItemInfo>> GetLatestItems(ISupportsLatestMedia indexable, IChannel channel, string userId, CancellationToken cancellationToken)
+        private async Task RefreshLatestChannelItems(IChannel channel, CancellationToken cancellationToken)
         {
-            var cacheLength = CacheLength;
-            var cachePath = GetChannelDataCachePath(channel, userId, "channelmanager-latest", null, false);
+            var internalChannel = await GetChannel(channel, cancellationToken);
 
-            try
+            var query = new InternalItemsQuery();
+            query.Parent = internalChannel;
+            query.EnableTotalRecordCount = false;
+            query.ChannelIds = new Guid[] { internalChannel.Id };
+
+            var result = await GetChannelItemsInternal(query, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
+
+            foreach (var item in result.Items)
             {
-                if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
+                var folder = item as Folder;
+
+                if (folder != null)
                 {
-                    return _jsonSerializer.DeserializeFromFile<List<ChannelItemInfo>>(cachePath);
-                }
-            }
-            catch (FileNotFoundException)
-            {
-
-            }
-            catch (IOException)
-            {
-
-            }
-
-            await _resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                try
-                {
-                    if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
+                    await GetChannelItemsInternal(new InternalItemsQuery
                     {
-                        return _jsonSerializer.DeserializeFromFile<List<ChannelItemInfo>>(cachePath);
-                    }
+                        Parent = folder,
+                        EnableTotalRecordCount = false,
+                        ChannelIds = new Guid[] { internalChannel.Id }
+
+                    }, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
                 }
-                catch (FileNotFoundException)
-                {
-
-                }
-                catch (IOException)
-                {
-
-                }
-
-                var result = await indexable.GetLatestMedia(new ChannelLatestMediaSearch
-                {
-                    UserId = userId
-
-                }, cancellationToken).ConfigureAwait(false);
-
-                var resultItems = result.ToList();
-
-                CacheResponse(resultItems, cachePath);
-
-                return resultItems;
-            }
-            finally
-            {
-                _resourcePool.Release();
             }
         }
 
-        public async Task<QueryResult<BaseItem>> GetAllMediaInternal(AllChannelMediaQuery query, CancellationToken cancellationToken)
-        {
-            var channels = GetAllChannels();
-
-            if (query.ChannelIds.Length > 0)
-            {
-                // Avoid implicitly captured closure
-                var ids = query.ChannelIds;
-                channels = channels
-                    .Where(i => ids.Contains(GetInternalChannelId(i.Name).ToString("N")))
-                    .ToArray();
-            }
-
-            var tasks = channels
-                .Select(async i =>
-                {
-                    var indexable = i as IIndexableChannel;
-
-                    if (indexable != null)
-                    {
-                        try
-                        {
-                            var result = await GetAllItems(indexable, i, new InternalAllChannelMediaQuery
-                            {
-                                UserId = query.UserId,
-                                ContentTypes = query.ContentTypes,
-                                ExtraTypes = query.ExtraTypes,
-                                TrailerTypes = query.TrailerTypes
-
-                            }, cancellationToken).ConfigureAwait(false);
-
-                            return new Tuple<IChannel, ChannelItemResult>(i, result);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error getting all media from {0}", ex, i.Name);
-                        }
-                    }
-                    return new Tuple<IChannel, ChannelItemResult>(i, new ChannelItemResult());
-                });
-
-            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            var totalCount = results.Length;
-
-            IEnumerable<Tuple<IChannel, ChannelItemInfo>> items = results
-                .SelectMany(i => i.Item2.Items.Select(m => new Tuple<IChannel, ChannelItemInfo>(i.Item1, m)))
-                .OrderBy(i => i.Item2.Name);
-
-            if (query.StartIndex.HasValue)
-            {
-                items = items.Skip(query.StartIndex.Value);
-            }
-            if (query.Limit.HasValue)
-            {
-                items = items.Take(query.Limit.Value);
-            }
-
-            // Avoid implicitly captured closure
-            var token = cancellationToken;
-            var internalItems = items.Select(i =>
-            {
-                var channelProvider = i.Item1;
-                var internalChannelId = GetInternalChannelId(channelProvider.Name);
-                return GetChannelItemEntity(i.Item2, channelProvider, internalChannelId, token);
-            }).ToArray();
-
-            return new QueryResult<BaseItem>
-            {
-                TotalRecordCount = totalCount,
-                Items = internalItems
-            };
-        }
-
-        public async Task<QueryResult<BaseItemDto>> GetAllMedia(AllChannelMediaQuery query, CancellationToken cancellationToken)
-        {
-            var user = string.IsNullOrWhiteSpace(query.UserId)
-                ? null
-                : _userManager.GetUserById(query.UserId);
-
-            var internalResult = await GetAllMediaInternal(query, cancellationToken).ConfigureAwait(false);
-
-            RefreshIfNeeded(internalResult.Items);
-
-            var dtoOptions = new DtoOptions()
-            {
-                Fields = query.Fields
-            };
-
-            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user);
-
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = returnItems,
-                TotalRecordCount = internalResult.TotalRecordCount
-            };
-
-            return result;
-        }
-
-        private async Task<ChannelItemResult> GetAllItems(IIndexableChannel indexable, IChannel channel, InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
-        {
-            var cacheLength = CacheLength;
-            var folderId = _jsonSerializer.SerializeToString(query).GetMD5().ToString("N");
-            var cachePath = GetChannelDataCachePath(channel, query.UserId, folderId, null, false);
-
-            try
-            {
-                if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
-                {
-                    return _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
-                }
-            }
-            catch (FileNotFoundException)
-            {
-
-            }
-            catch (IOException)
-            {
-
-            }
-
-            await _resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                try
-                {
-                    if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
-                    {
-                        return _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
-                    }
-                }
-                catch (FileNotFoundException)
-                {
-
-                }
-                catch (IOException)
-                {
-
-                }
-
-                var result = await indexable.GetAllMedia(query, cancellationToken).ConfigureAwait(false);
-
-                CacheResponse(result, cachePath);
-
-                return result;
-            }
-            finally
-            {
-                _resourcePool.Release();
-            }
-        }
-
-        public async Task<QueryResult<BaseItem>> GetChannelItemsInternal(ChannelItemQuery query, IProgress<double> progress, CancellationToken cancellationToken)
+        public async Task<QueryResult<BaseItem>> GetChannelItemsInternal(InternalItemsQuery query, IProgress<double> progress, CancellationToken cancellationToken)
         {
             // Get the internal channel entity
-            var channel = GetChannel(query.ChannelId);
+            var channel = GetChannel(query.ChannelIds[0]);
 
             // Find the corresponding channel provider plugin
             var channelProvider = GetChannelProvider(channel);
 
-            var channelInfo = channelProvider.GetChannelFeatures();
-
-            int? providerStartIndex = null;
-            int? providerLimit = null;
-
-            if (channelInfo.MaxPageSize.HasValue)
-            {
-                providerStartIndex = query.StartIndex;
-
-                if (query.Limit.HasValue && query.Limit.Value > channelInfo.MaxPageSize.Value)
-                {
-                    query.Limit = Math.Min(query.Limit.Value, channelInfo.MaxPageSize.Value);
-                }
-                providerLimit = query.Limit;
-
-                // This will cause some providers to fail
-                if (providerLimit == 0)
-                {
-                    providerLimit = 1;
-                }
-            }
-
-            var user = string.IsNullOrWhiteSpace(query.UserId)
-                ? null
-                : _userManager.GetUserById(query.UserId);
+            var user = query.User;
 
             ChannelItemSortField? sortField = null;
-            ChannelItemSortField parsedField;
             var sortDescending = false;
 
-            if (query.OrderBy.Length == 1 &&
-                Enum.TryParse(query.OrderBy[0].Item1, true, out parsedField))
-            {
-                sortField = parsedField;
-                sortDescending = query.OrderBy[0].Item2 == SortOrder.Descending;
-            }
+            var parentItem = !query.ParentId.Equals(Guid.Empty) ? _libraryManager.GetItemById(query.ParentId) : channel;
 
             var itemsResult = await GetChannelItems(channelProvider,
                 user,
-                query.FolderId,
-                providerStartIndex,
-                providerLimit,
+                parentItem is Channel ? null : parentItem.ExternalId,
                 sortField,
                 sortDescending,
                 cancellationToken)
                 .ConfigureAwait(false);
 
-            var providerTotalRecordCount = providerLimit.HasValue ? itemsResult.TotalRecordCount : null;
-
-            var internalItems = itemsResult.Items.Select(i => GetChannelItemEntity(i, channelProvider, channel.Id, cancellationToken)).ToArray();
-
-            if (user != null)
+            if (query.ParentId.Equals(Guid.Empty))
             {
-                internalItems = internalItems.Where(i => i.IsVisible(user)).ToArray();
+                query.Parent = channel;
+            }
+            query.ChannelIds = Array.Empty<Guid>();
 
-                if (providerTotalRecordCount.HasValue)
+            // Not yet sure why this is causing a problem
+            query.GroupByPresentationUniqueKey = false;
+
+            //_logger.Debug("GetChannelItemsInternal");
+
+            // null if came from cache
+            if (itemsResult != null)
+            {
+                var internalItems = itemsResult.Items
+                    .Select(i => GetChannelItemEntity(i, channelProvider, channel.Id, parentItem, cancellationToken))
+                    .ToArray();
+
+                var existingIds = _libraryManager.GetItemIds(query);
+                var deadIds = existingIds.Except(internalItems.Select(i => i.Id))
+                    .ToArray();
+
+                foreach (var deadId in deadIds)
                 {
-                    providerTotalRecordCount = providerTotalRecordCount.Value;
+                    var deadItem = _libraryManager.GetItemById(deadId);
+                    if (deadItem != null)
+                    {
+                        _libraryManager.DeleteItem(deadItem, new DeleteOptions
+                        {
+                            DeleteFileLocation = false,
+                            DeleteFromExternalProvider = false
+
+                        }, parentItem, false);
+                    }
                 }
             }
 
-            return GetReturnItems(internalItems, providerTotalRecordCount, user, query);
+            return _libraryManager.GetItemsResult(query);
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<BaseItemDto>> GetChannelItems(InternalItemsQuery query, CancellationToken cancellationToken)
         {
-            var user = string.IsNullOrWhiteSpace(query.UserId)
-                ? null
-                : _userManager.GetUserById(query.UserId);
-
             var internalResult = await GetChannelItemsInternal(query, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
 
-            var dtoOptions = new DtoOptions()
-            {
-                Fields = query.Fields
-            };
-
-            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user);
+            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, query.DtoOptions, query.User);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -993,29 +758,24 @@ namespace Emby.Server.Implementations.Channels
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
         private async Task<ChannelItemResult> GetChannelItems(IChannel channel,
             User user,
-            string folderId,
-            int? startIndex,
-            int? limit,
+            string externalFolderId,
             ChannelItemSortField? sortField,
             bool sortDescending,
             CancellationToken cancellationToken)
         {
-            var userId = user.Id.ToString("N");
+            var userId = user == null ? null : user.Id.ToString("N");
 
             var cacheLength = CacheLength;
-            var cachePath = GetChannelDataCachePath(channel, userId, folderId, sortField, sortDescending);
+            var cachePath = GetChannelDataCachePath(channel, userId, externalFolderId, sortField, sortDescending);
 
             try
             {
-                if (!startIndex.HasValue && !limit.HasValue)
+                if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                 {
-                    if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
+                    var cachedResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+                    if (cachedResult != null)
                     {
-                        var cachedResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
-                        if (cachedResult != null)
-                        {
-                            return cachedResult;
-                        }
+                        return null;
                     }
                 }
             }
@@ -1034,15 +794,12 @@ namespace Emby.Server.Implementations.Channels
             {
                 try
                 {
-                    if (!startIndex.HasValue && !limit.HasValue)
+                    if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                     {
-                        if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
+                        var cachedResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+                        if (cachedResult != null)
                         {
-                            var cachedResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
-                            if (cachedResult != null)
-                            {
-                                return cachedResult;
-                            }
+                            return null;
                         }
                     }
                 }
@@ -1057,19 +814,13 @@ namespace Emby.Server.Implementations.Channels
 
                 var query = new InternalChannelItemQuery
                 {
-                    UserId = userId,
-                    StartIndex = startIndex,
-                    Limit = limit,
+                    UserId = user == null ? Guid.Empty : user.Id,
                     SortBy = sortField,
-                    SortDescending = sortDescending
+                    SortDescending = sortDescending,
+                    FolderId = externalFolderId
                 };
 
-                if (!string.IsNullOrWhiteSpace(folderId))
-                {
-                    var categoryItem = _libraryManager.GetItemById(new Guid(folderId));
-
-                    query.FolderId = categoryItem.ExternalId;
-                }
+                query.FolderId = externalFolderId;
 
                 var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
 
@@ -1078,10 +829,7 @@ namespace Emby.Server.Implementations.Channels
                     throw new InvalidOperationException("Channel returned a null result from GetChannelItems");
                 }
 
-                if (!startIndex.HasValue && !limit.HasValue)
-                {
-                    CacheResponse(result, cachePath);
-                }
+                CacheResponse(result, cachePath);
 
                 return result;
             }
@@ -1107,7 +855,7 @@ namespace Emby.Server.Implementations.Channels
 
         private string GetChannelDataCachePath(IChannel channel,
             string userId,
-            string folderId,
+            string externalFolderId,
             ChannelItemSortField? sortField,
             bool sortDescending)
         {
@@ -1121,10 +869,10 @@ namespace Emby.Server.Implementations.Channels
                 userCacheKey = hasCacheKey.GetCacheKey(userId) ?? string.Empty;
             }
 
-            var filename = string.IsNullOrWhiteSpace(folderId) ? "root" : folderId;
+            var filename = string.IsNullOrEmpty(externalFolderId) ? "root" : externalFolderId.GetMD5().ToString("N");
             filename += userCacheKey;
 
-            var version = (channel.DataVersion ?? string.Empty).GetMD5().ToString("N");
+            var version = ((channel.DataVersion ?? string.Empty) + "2").GetMD5().ToString("N");
 
             if (sortField.HasValue)
             {
@@ -1144,40 +892,6 @@ namespace Emby.Server.Implementations.Channels
                 filename + ".json");
         }
 
-        private QueryResult<BaseItem> GetReturnItems(IEnumerable<BaseItem> items,
-            int? totalCountFromProvider,
-            User user,
-            ChannelItemQuery query)
-        {
-            items = ApplyFilters(items, query.Filters, user);
-
-            items = _libraryManager.Sort(items, user, query.OrderBy);
-
-            var all = items.ToList();
-            var totalCount = totalCountFromProvider ?? all.Count;
-
-            if (!totalCountFromProvider.HasValue)
-            {
-                if (query.StartIndex.HasValue)
-                {
-                    all = all.Skip(query.StartIndex.Value).ToList();
-                }
-                if (query.Limit.HasValue)
-                {
-                    all = all.Take(query.Limit.Value).ToList();
-                }
-            }
-
-            var returnItemArray = all.ToArray(all.Count);
-            RefreshIfNeeded(returnItemArray);
-
-            return new QueryResult<BaseItem>
-            {
-                Items = returnItemArray,
-                TotalRecordCount = totalCount
-            };
-        }
-
         private string GetIdToHash(string externalId, string channelName)
         {
             // Increment this as needed to force new downloads
@@ -1185,7 +899,7 @@ namespace Emby.Server.Implementations.Channels
             return externalId + (channelName ?? string.Empty) + "16";
         }
 
-        private T GetItemById<T>(string idString, string channelName, string channnelDataVersion, out bool isNew)
+        private T GetItemById<T>(string idString, string channelName, out bool isNew)
             where T : BaseItem, new()
         {
             var id = GetIdToHash(idString, channelName).GetMBId(typeof(T));
@@ -1201,7 +915,7 @@ namespace Emby.Server.Implementations.Channels
                 _logger.ErrorException("Error retrieving channel item from database", ex);
             }
 
-            if (item == null || !string.Equals(item.ExternalEtag, channnelDataVersion, StringComparison.Ordinal))
+            if (item == null)
             {
                 item = new T();
                 isNew = true;
@@ -1211,13 +925,14 @@ namespace Emby.Server.Implementations.Channels
                 isNew = false;
             }
 
-            item.ExternalEtag = channnelDataVersion;
             item.Id = id;
             return item;
         }
 
-        private BaseItem GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, Guid internalChannelId, CancellationToken cancellationToken)
+        private BaseItem GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, Guid internalChannelId, BaseItem parentFolder, CancellationToken cancellationToken)
         {
+            var parentFolderId = parentFolder.Id;
+
             BaseItem item;
             bool isNew;
             bool forceUpdate = false;
@@ -1226,66 +941,76 @@ namespace Emby.Server.Implementations.Channels
             {
                 if (info.FolderType == ChannelFolderType.MusicAlbum)
                 {
-                    item = GetItemById<MusicAlbum>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                    item = GetItemById<MusicAlbum>(info.Id, channelProvider.Name, out isNew);
                 }
                 else if (info.FolderType == ChannelFolderType.MusicArtist)
                 {
-                    item = GetItemById<MusicArtist>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                    item = GetItemById<MusicArtist>(info.Id, channelProvider.Name, out isNew);
                 }
                 else if (info.FolderType == ChannelFolderType.PhotoAlbum)
                 {
-                    item = GetItemById<PhotoAlbum>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                    item = GetItemById<PhotoAlbum>(info.Id, channelProvider.Name, out isNew);
                 }
                 else if (info.FolderType == ChannelFolderType.Series)
                 {
-                    item = GetItemById<Series>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                    item = GetItemById<Series>(info.Id, channelProvider.Name, out isNew);
                 }
                 else if (info.FolderType == ChannelFolderType.Season)
                 {
-                    item = GetItemById<Season>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                    item = GetItemById<Season>(info.Id, channelProvider.Name, out isNew);
                 }
                 else
                 {
-                    item = GetItemById<Folder>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                    item = GetItemById<Folder>(info.Id, channelProvider.Name, out isNew);
                 }
             }
             else if (info.MediaType == ChannelMediaType.Audio)
             {
                 if (info.ContentType == ChannelMediaContentType.Podcast)
                 {
-                    item = GetItemById<AudioPodcast>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                    item = GetItemById<AudioBook>(info.Id, channelProvider.Name, out isNew);
                 }
                 else
                 {
-                    item = GetItemById<Audio>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                    item = GetItemById<Audio>(info.Id, channelProvider.Name, out isNew);
                 }
             }
             else
             {
                 if (info.ContentType == ChannelMediaContentType.Episode)
                 {
-                    item = GetItemById<Episode>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                    item = GetItemById<Episode>(info.Id, channelProvider.Name, out isNew);
                 }
                 else if (info.ContentType == ChannelMediaContentType.Movie)
                 {
-                    item = GetItemById<Movie>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                    item = GetItemById<Movie>(info.Id, channelProvider.Name, out isNew);
                 }
                 else if (info.ContentType == ChannelMediaContentType.Trailer || info.ExtraType == ExtraType.Trailer)
                 {
-                    item = GetItemById<Trailer>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                    item = GetItemById<Trailer>(info.Id, channelProvider.Name, out isNew);
                 }
                 else
                 {
-                    item = GetItemById<Video>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                    item = GetItemById<Video>(info.Id, channelProvider.Name, out isNew);
                 }
             }
 
-            item.RunTimeTicks = info.RunTimeTicks;
+            var enableMediaProbe = channelProvider is ISupportsMediaProbe;
+
+            if (info.IsLiveStream)
+            {
+                item.RunTimeTicks = null;
+            }
+
+            else if (isNew || !enableMediaProbe)
+            {
+                item.RunTimeTicks = info.RunTimeTicks;
+            }
 
             if (isNew)
             {
                 item.Name = info.Name;
-                item.Genres = info.Genres;
+                item.Genres = info.Genres.ToArray();
                 item.Studios = info.Studios.ToArray(info.Studios.Count);
                 item.CommunityRating = info.CommunityRating;
                 item.Overview = info.Overview;
@@ -1297,7 +1022,7 @@ namespace Emby.Server.Implementations.Channels
                 item.OfficialRating = info.OfficialRating;
                 item.DateCreated = info.DateCreated ?? DateTime.UtcNow;
                 item.Tags = info.Tags.ToArray(info.Tags.Count);
-                item.HomePageUrl = info.HomePageUrl;
+                item.OriginalTitle = info.OriginalTitle;
             }
             else if (info.Type == ChannelItemType.Folder && info.FolderType == ChannelFolderType.Container)
             {
@@ -1326,22 +1051,56 @@ namespace Emby.Server.Implementations.Channels
             {
                 if (!info.TrailerTypes.SequenceEqual(trailer.TrailerTypes))
                 {
+                    _logger.Debug("Forcing update due to TrailerTypes {0}", item.Name);
                     forceUpdate = true;
                 }
-                trailer.TrailerTypes = info.TrailerTypes;
+                trailer.TrailerTypes = info.TrailerTypes.ToArray();
             }
 
-            item.ChannelId = internalChannelId.ToString("N");
-
-            if (item.ParentId != internalChannelId)
+            if (info.DateModified > item.DateModified)
             {
+                item.DateModified = info.DateModified;
+                _logger.Debug("Forcing update due to DateModified {0}", item.Name);
                 forceUpdate = true;
             }
-            item.ParentId = internalChannelId;
+
+            // was used for status
+            //if (!string.Equals(item.ExternalEtag ?? string.Empty, info.Etag ?? string.Empty, StringComparison.Ordinal))
+            //{
+            //    item.ExternalEtag = info.Etag;
+            //    forceUpdate = true;
+            //    _logger.Debug("Forcing update due to ExternalEtag {0}", item.Name);
+            //}
+
+            if (!internalChannelId.Equals(item.ChannelId))
+            {
+                forceUpdate = true;
+                _logger.Debug("Forcing update due to ChannelId {0}", item.Name);
+            }
+            item.ChannelId = internalChannelId;
+
+            if (!item.ParentId.Equals(parentFolderId))
+            {
+                forceUpdate = true;
+                _logger.Debug("Forcing update due to parent folder Id {0}", item.Name);
+            }
+            item.ParentId = parentFolderId;
+
+            var hasSeries = item as IHasSeriesName;
+            if (hasSeries != null)
+            {
+                if (!string.Equals(hasSeries.SeriesName, info.SeriesName, StringComparison.OrdinalIgnoreCase))
+                {
+                    forceUpdate = true;
+                    _logger.Debug("Forcing update due to SeriesName {0}", item.Name);
+                }
+                hasSeries.SeriesName = info.SeriesName;
+            }
 
             if (!string.Equals(item.ExternalId, info.Id, StringComparison.OrdinalIgnoreCase))
             {
                 forceUpdate = true;
+                _logger.Debug("Forcing update due to ExternalId {0}", item.Name);
             }
             item.ExternalId = info.Id;
 
@@ -1363,20 +1122,41 @@ namespace Emby.Server.Implementations.Channels
                 item.Path = mediaSource == null ? null : mediaSource.Path;
             }
 
-            if (!string.IsNullOrWhiteSpace(info.ImageUrl) && !item.HasImage(ImageType.Primary))
+            if (!string.IsNullOrEmpty(info.ImageUrl) && !item.HasImage(ImageType.Primary))
             {
                 item.SetImagePath(ImageType.Primary, info.ImageUrl);
+                _logger.Debug("Forcing update due to ImageUrl {0}", item.Name);
+                forceUpdate = true;
+            }
+
+            if (!info.IsLiveStream)
+            {
+                if (item.Tags.Contains("livestream", StringComparer.OrdinalIgnoreCase))
+                {
+                    item.Tags = item.Tags.Except(new[] { "livestream" }, StringComparer.OrdinalIgnoreCase).ToArray();
+                    _logger.Debug("Forcing update due to Tags {0}", item.Name);
+                    forceUpdate = true;
+                }
+            }
+            else
+            {
+                if (!item.Tags.Contains("livestream", StringComparer.OrdinalIgnoreCase))
+                {
+                    item.Tags = item.Tags.Concat(new[] { "livestream" }).ToArray();
+                    _logger.Debug("Forcing update due to Tags {0}", item.Name);
+                    forceUpdate = true;
+                }
             }
 
             item.OnMetadataChanged();
 
             if (isNew)
             {
-                _libraryManager.CreateItem(item, cancellationToken);
+                _libraryManager.CreateItem(item, parentFolder);
 
                 if (info.People != null && info.People.Count > 0)
                 {
-                    _libraryManager.UpdatePeople(item, info.People ?? new List<PersonInfo>());
+                    _libraryManager.UpdatePeople(item, info.People);
                 }
             }
             else if (forceUpdate)
@@ -1384,27 +1164,24 @@ namespace Emby.Server.Implementations.Channels
                 item.UpdateToRepository(ItemUpdateType.None, cancellationToken);
             }
 
-            SaveMediaSources(item, info.MediaSources);
+            if ((isNew || forceUpdate) && info.Type == ChannelItemType.Media)
+            {
+                if (enableMediaProbe && !info.IsLiveStream && item.HasPathProtocol)
+                {
+                    SaveMediaSources(item, new List<MediaSourceInfo>());
+                }
+                else
+                {
+                    SaveMediaSources(item, info.MediaSources);
+                }
+            }
+
+            if (isNew || forceUpdate || item.DateLastRefreshed == default(DateTime))
+            {
+                _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.Normal);
+            }
 
             return item;
-        }
-
-        private void RefreshIfNeeded(BaseItem[] programs)
-        {
-            foreach (var program in programs)
-            {
-                RefreshIfNeeded(program);
-            }
-        }
-
-        private void RefreshIfNeeded(BaseItem program)
-        {
-            if (!_refreshedItems.ContainsKey(program.Id))
-            {
-                _refreshedItems.TryAdd(program.Id, true);
-                _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.Low);
-            }
-
         }
 
         internal IChannel GetChannelProvider(Channel channel)
@@ -1415,7 +1192,7 @@ namespace Emby.Server.Implementations.Channels
             }
 
             var result = GetAllChannels()
-                .FirstOrDefault(i => string.Equals(GetInternalChannelId(i.Name).ToString("N"), channel.ChannelId, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(channel.ChannelId) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase));
 
             if (result == null)
             {
@@ -1425,15 +1202,10 @@ namespace Emby.Server.Implementations.Channels
             return result;
         }
 
-        internal IChannel GetChannelProvider(string internalChannelId)
+        internal IChannel GetChannelProvider(Guid internalChannelId)
         {
-            if (internalChannelId == null)
-            {
-                throw new ArgumentNullException("internalChannelId");
-            }
-
             var result = GetAllChannels()
-                .FirstOrDefault(i => string.Equals(GetInternalChannelId(i.Name).ToString("N"), internalChannelId, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(i => internalChannelId.Equals(GetInternalChannelId(i.Name)));
 
             if (result == null)
             {
@@ -1441,176 +1213,6 @@ namespace Emby.Server.Implementations.Channels
             }
 
             return result;
-        }
-
-        private IEnumerable<BaseItem> ApplyFilters(IEnumerable<BaseItem> items, IEnumerable<ItemFilter> filters, User user)
-        {
-            foreach (var filter in filters.OrderByDescending(f => (int)f))
-            {
-                items = ApplyFilter(items, filter, user);
-            }
-
-            return items;
-        }
-
-        private IEnumerable<BaseItem> ApplyFilter(IEnumerable<BaseItem> items, ItemFilter filter, User user)
-        {
-            // Avoid implicitly captured closure
-            var currentUser = user;
-
-            switch (filter)
-            {
-                case ItemFilter.IsFavoriteOrLikes:
-                    return items.Where(item =>
-                    {
-                        var userdata = _userDataManager.GetUserData(user, item);
-
-                        if (userdata == null)
-                        {
-                            return false;
-                        }
-
-                        var likes = userdata.Likes ?? false;
-                        var favorite = userdata.IsFavorite;
-
-                        return likes || favorite;
-                    });
-
-                case ItemFilter.Likes:
-                    return items.Where(item =>
-                    {
-                        var userdata = _userDataManager.GetUserData(user, item);
-
-                        return userdata != null && userdata.Likes.HasValue && userdata.Likes.Value;
-                    });
-
-                case ItemFilter.Dislikes:
-                    return items.Where(item =>
-                    {
-                        var userdata = _userDataManager.GetUserData(user, item);
-
-                        return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
-                    });
-
-                case ItemFilter.IsFavorite:
-                    return items.Where(item =>
-                    {
-                        var userdata = _userDataManager.GetUserData(user, item);
-
-                        return userdata != null && userdata.IsFavorite;
-                    });
-
-                case ItemFilter.IsResumable:
-                    return items.Where(item =>
-                    {
-                        var userdata = _userDataManager.GetUserData(user, item);
-
-                        return userdata != null && userdata.PlaybackPositionTicks > 0;
-                    });
-
-                case ItemFilter.IsPlayed:
-                    return items.Where(item => item.IsPlayed(currentUser));
-
-                case ItemFilter.IsUnplayed:
-                    return items.Where(item => item.IsUnplayed(currentUser));
-
-                case ItemFilter.IsFolder:
-                    return items.Where(item => item.IsFolder);
-
-                case ItemFilter.IsNotFolder:
-                    return items.Where(item => !item.IsFolder);
-            }
-
-            return items;
-        }
-
-        public BaseItemDto GetChannelFolder(string userId, CancellationToken cancellationToken)
-        {
-            var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(userId);
-
-            var folder =  GetInternalChannelFolder(cancellationToken);
-
-            return _dtoService.GetBaseItemDto(folder, new DtoOptions(), user);
-        }
-
-        public Folder GetInternalChannelFolder(CancellationToken cancellationToken)
-        {
-            var name = _localization.GetLocalizedString("Channels");
-
-            return _libraryManager.GetNamedView(name, "channels", "zz_" + name, cancellationToken);
-        }
-    }
-
-    public class ChannelsEntryPoint : IServerEntryPoint
-    {
-        private readonly IServerConfigurationManager _config;
-        private readonly IChannelManager _channelManager;
-        private readonly ITaskManager _taskManager;
-        private readonly IFileSystem _fileSystem;
-
-        public ChannelsEntryPoint(IChannelManager channelManager, ITaskManager taskManager, IServerConfigurationManager config, IFileSystem fileSystem)
-        {
-            _channelManager = channelManager;
-            _taskManager = taskManager;
-            _config = config;
-            _fileSystem = fileSystem;
-        }
-
-        public void Run()
-        {
-            var channels = ((ChannelManager)_channelManager).Channels
-                .Select(i => i.GetType().FullName.GetMD5().ToString("N"))
-                .ToArray();
-
-            var channelsString = string.Join(",", channels);
-
-            if (!string.Equals(channelsString, GetSavedLastChannels(), StringComparison.OrdinalIgnoreCase))
-            {
-                _taskManager.QueueIfNotRunning<RefreshChannelsScheduledTask>();
-
-                SetSavedLastChannels(channelsString);
-            }
-        }
-
-        private string DataPath
-        {
-            get { return Path.Combine(_config.ApplicationPaths.DataPath, "channels.txt"); }
-        }
-
-        private string GetSavedLastChannels()
-        {
-            try
-            {
-                return _fileSystem.ReadAllText(DataPath);
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
-        private void SetSavedLastChannels(string value)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    _fileSystem.DeleteFile(DataPath);
-
-                }
-                else
-                {
-                    _fileSystem.WriteAllText(DataPath, value);
-                }
-            }
-            catch
-            {
-            }
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
         }
     }
 }

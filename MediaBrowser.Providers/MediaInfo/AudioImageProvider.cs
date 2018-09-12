@@ -32,12 +32,12 @@ namespace MediaBrowser.Providers.MediaInfo
             _fileSystem = fileSystem;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasMetadata item)
+        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType> { ImageType.Primary };
         }
 
-        public Task<DynamicImageResponse> GetImage(IHasMetadata item, ImageType type, CancellationToken cancellationToken)
+        public Task<DynamicImageResponse> GetImage(BaseItem item, ImageType type, CancellationToken cancellationToken)
         {
             var audio = (Audio)item;
 
@@ -92,27 +92,22 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private string GetAudioImagePath(Audio item)
         {
-            string filename;
+            string filename = null;
 
             if (item.GetType() == typeof(Audio))
             {
-                filename = item.Album ?? string.Empty;
-                filename += string.Join(",", item.Artists);
+                var albumArtist = item.AlbumArtists.FirstOrDefault();
 
-                if (!string.IsNullOrWhiteSpace(item.Album))
+                if (!string.IsNullOrWhiteSpace(item.Album) && !string.IsNullOrWhiteSpace(albumArtist))
                 {
-                    filename += "_" + item.Album;
-                }
-                else if (!string.IsNullOrWhiteSpace(item.Name))
-                {
-                    filename += "_" + item.Name;
+                    filename = (item.Album + "-" + albumArtist).GetMD5().ToString("N");
                 }
                 else
                 {
-                    filename += "_" + item.Id.ToString("N");
+                    filename = item.Id.ToString("N");
                 }
 
-                filename = filename.GetMD5() + ".jpg";
+                filename += ".jpg";
             }
             else
             {
@@ -138,11 +133,20 @@ namespace MediaBrowser.Providers.MediaInfo
             get { return "Image Extractor"; }
         }
 
-        public bool Supports(IHasMetadata item)
+        public bool Supports(BaseItem item)
         {
+            if (item.IsShortcut)
+            {
+                return false;
+            }
+            if (!item.IsFileProtocol)
+            {
+                return false;
+            }
+
             var audio = item as Audio;
 
-            return item.LocationType == LocationType.FileSystem && audio != null;
+            return audio != null;
         }
     }
 }
