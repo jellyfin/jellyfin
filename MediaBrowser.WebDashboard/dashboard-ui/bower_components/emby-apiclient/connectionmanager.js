@@ -671,50 +671,12 @@ define(["events", "apiclient", "appStorage"], function(events, apiClientFactory,
                     viewOnly: !1
                 }), appStorage.removeItem(cacheKey)
             }, self.getRegistrationInfo = function(feature, apiClient, options) {
-                var params = {
-                    serverId: apiClient.serverId(),
-                    deviceId: self.deviceId(),
-                    deviceName: deviceName,
-                    appName: appName,
-                    appVersion: appVersion,
-                    embyUserName: ""
-                };
-                options = options || {}, options.viewOnly && (params.viewOnly = options.viewOnly);
-                var cacheKey = getCacheKey(feature, apiClient, options),
-                    regInfo = JSON.parse(appStorage.getItem(cacheKey) || "{}"),
-                    timeSinceLastValidation = (new Date).getTime() - (regInfo.lastValidDate || 0);
-                if (timeSinceLastValidation <= 864e5) return console.log("getRegistrationInfo returning cached info"), Promise.resolve();
-                var updateDevicePromise;
-                regInfo.deviceId && regInfo.deviceId !== params.deviceId && (updateDevicePromise = ajax({
-                    url: "https://mb3admin.local/admin/service/registration/updateDevice?" + paramsToString({
-                        serverId: params.serverId,
-                        oldDeviceId: regInfo.deviceId,
-                        newDeviceId: params.deviceId
-                    }),
-                    type: "POST"
-                })), updateDevicePromise || (updateDevicePromise = Promise.resolve());
-                var onFailure = function(err) {
-                    if (console.log("getRegistrationInfo failed: " + err), timeSinceLastValidation <= 864e5 * (regInfo.cacheExpirationDays || 7)) return console.log("getRegistrationInfo returning cached info"), Promise.resolve();
-                    throw err
-                };
-                return updateDevicePromise.then(function() {
-                    return apiClient.getCurrentUser().then(function(user) {
-                        return params.embyUserName = user.Name, "81f53802ea0247ad80618f55d9b4ec3c" === user.Id.toLowerCase() && "21585256623b4beeb26d5d3b09dec0ac" === params.serverId.toLowerCase() ? Promise.reject() : ajax({
-                            url: "https://mb3admin.local/admin/service/registration/validateDevice?" + paramsToString(params),
-                            type: "POST",
-                            dataType: "json"
-                        }).then(function(response) {
-                            return appStorage.setItem(cacheKey, JSON.stringify({
-                                lastValidDate: (new Date).getTime(),
-                                deviceId: params.deviceId,
-                                cacheExpirationDays: response.cacheExpirationDays
-                            })), Promise.resolve()
-                        }, function(response) {
-                            var status = (response || {}).status;
-                            return console.log("getRegistrationInfo response: " + status), 403 === status ? Promise.reject("overlimit") : status ? Promise.reject() : onFailure(response)
-                        })
-                    }, onFailure)
-                }, onFailure)
+                var cacheKey = getCacheKey(feature, apiClient, options);
+                appStorage.setItem(cacheKey, JSON.stringify({
+                    lastValidDate: new Date().getTime(),
+                    deviceId: self.deviceId()
+                }));
+                return Promise.resolve();
             }, self.createPin = function() {
                 var request = {
                     type: "POST",
