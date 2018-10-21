@@ -18,7 +18,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IServerApplicationHost _applicationHost;
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
-        private const string MbAdminUrl = "https://www.mb3admin.com/admin/";
+        private const string MbAdminUrl = "https://www.mb3admin.local/admin/";
 
         public UsageReporter(IServerApplicationHost applicationHost, IHttpClient httpClient, ILogger logger)
         {
