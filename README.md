@@ -7,6 +7,13 @@ It features a REST-based API with built-in documentation to facilitate client de
 
 This repository is a hard fork of Emby 3.4.1.18 which unlocks Premium status by default and includes a buildable source repository for Debian and other package types.
 
+## Rationale from JustAMan
+I want to have a fresh enough build based on NetCore (not on a Mono which is being deprecated) with unlocked features.
+It's dangerous here, so I'm taking the power of GPL with me and work of other mighty Github users to make this happen.
+
+---
+Now the readme of previous fork follows.
+
 ## Rationale
 
 I will start by saying I am only an Emby user and a professional sysadmin who lightly dabbles in Python. This is the story of why I'm forking Emby completely and forming a separate project.
