@@ -178,7 +178,7 @@ namespace Emby.Server.Implementations.Updates
 
                 var options = new HttpRequestOptions
                 {
-                    Url = "https://www.mb3admin.com/admin/service/package/retrieveall?includeAllRuntimes=true",
+                    Url = "https://www.mb3admin.local/admin/service/package/retrieveall?includeAllRuntimes=true",
                     CancellationToken = cancellationToken
                 };
 
@@ -213,7 +213,7 @@ namespace Emby.Server.Implementations.Updates
         {
             using (var response = await _httpClient.SendAsync(new HttpRequestOptions
             {
-                Url = "https://www.mb3admin.com/admin/service/EmbyPackages.json",
+                Url = "https://www.mb3admin.local/admin/service/EmbyPackages.json",
                 CancellationToken = cancellationToken,
                 Progress = new SimpleProgress<Double>(),
                 CacheLength = GetCacheLength(),

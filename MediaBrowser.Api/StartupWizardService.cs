@@ -78,7 +78,7 @@ namespace MediaBrowser.Api
         {
             try
             {
-                var url = string.Format("http://www.mb3admin.com/admin/service/package/installed?mac={0}&product=MBServer&operation=Install&version={1}",
+                var url = string.Format("http://www.mb3admin.local/admin/service/package/installed?mac={0}&product=MBServer&operation=Install&version={1}",
                     _appHost.SystemId,
                     _appHost.ApplicationVersion.ToString());
 

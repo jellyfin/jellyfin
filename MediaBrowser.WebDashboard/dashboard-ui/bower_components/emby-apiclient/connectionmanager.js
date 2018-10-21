@@ -686,7 +686,7 @@ define(["events", "apiclient", "appStorage"], function(events, apiClientFactory,
                 if (timeSinceLastValidation <= 864e5) return console.log("getRegistrationInfo returning cached info"), Promise.resolve();
                 var updateDevicePromise;
                 regInfo.deviceId && regInfo.deviceId !== params.deviceId && (updateDevicePromise = ajax({
-                    url: "https://mb3admin.com/admin/service/registration/updateDevice?" + paramsToString({
+                    url: "https://mb3admin.local/admin/service/registration/updateDevice?" + paramsToString({
                         serverId: params.serverId,
                         oldDeviceId: regInfo.deviceId,
                         newDeviceId: params.deviceId
@@ -700,7 +700,7 @@ define(["events", "apiclient", "appStorage"], function(events, apiClientFactory,
                 return updateDevicePromise.then(function() {
                     return apiClient.getCurrentUser().then(function(user) {
                         return params.embyUserName = user.Name, "81f53802ea0247ad80618f55d9b4ec3c" === user.Id.toLowerCase() && "21585256623b4beeb26d5d3b09dec0ac" === params.serverId.toLowerCase() ? Promise.reject() : ajax({
-                            url: "https://mb3admin.com/admin/service/registration/validateDevice?" + paramsToString(params),
+                            url: "https://mb3admin.local/admin/service/registration/validateDevice?" + paramsToString(params),
                             type: "POST",
                             dataType: "json"
                         }).then(function(response) {

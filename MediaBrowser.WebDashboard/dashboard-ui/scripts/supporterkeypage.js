@@ -38,7 +38,7 @@ define(["fetchHelper", "dom", "registrationServices", "loading", "confirm", "glo
     function getPremiereStatus(key) {
         var postData = "key=" + key + "&serverId=" + ApiClient.serverId();
         return fetchHelper.ajax({
-            url: "https://mb3admin.com/admin/service/registration/getStatus",
+            url: "https://mb3admin.local/admin/service/registration/getStatus",
             type: "POST",
             data: postData,
             contentType: "application/x-www-form-urlencoded",
@@ -69,7 +69,7 @@ define(["fetchHelper", "dom", "registrationServices", "loading", "confirm", "glo
             console.log("after confirm");
             var postData = "key=" + key + "&feature=" + feature;
             fetchHelper.ajax({
-                url: "https://mb3admin.com/admin/service/stripe/requestSubCancel",
+                url: "https://mb3admin.local/admin/service/stripe/requestSubCancel",
                 type: "POST",
                 data: postData,
                 contentType: "application/x-www-form-urlencoded"
@@ -90,7 +90,7 @@ define(["fetchHelper", "dom", "registrationServices", "loading", "confirm", "glo
         loading.show();
         var form = this,
             email = form.querySelector("#txtEmail").value,
-            url = "https://mb3admin.com/admin/service/supporter/retrievekey?email=" + email;
+            url = "https://mb3admin.local/admin/service/supporter/retrievekey?email=" + email;
         return console.log(url), fetchHelper.ajax({
             url: url,
             type: "POST",

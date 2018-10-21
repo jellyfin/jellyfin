@@ -41,7 +41,7 @@ define(["jQuery", "loading", "libraryMenu", "globalize", "connectionManager", "e
                 if (regStatus += "</p>", $("#regStatus", page).html(regStatus), pluginSecurityInfo.IsMBSupporter)
                     if ($(".premiumDescription", page).hide(), $(".supporterDescription", page).hide(), pkg.price > 0) {
                         $(".premiumHasPrice", page).show(), $("#featureId", page).val(pkg.featureId), $("#featureName", page).val(pkg.name), $("#amount", page).val(pkg.price), $("#regPrice", page).html("<h3>" + globalize.translate("ValuePriceUSD").replace("{0}", "$" + pkg.price.toFixed(2)) + "</h3>"), $("#ppButton", page).hide();
-                        var url = "https://mb3admin.com/admin/service/user/getPayPalEmail?id=" + pkg.owner;
+                        var url = "https://mb3admin.local/admin/service/user/getPayPalEmail?id=" + pkg.owner;
                         fetch(url).then(function(response) {
                             return response.json()
                         }).then(function(dev) {

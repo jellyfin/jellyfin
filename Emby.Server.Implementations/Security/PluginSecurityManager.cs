@@ -23,8 +23,8 @@ namespace Emby.Server.Implementations.Security
     /// </summary>
     public class PluginSecurityManager : ISecurityManager
     {
-        private const string MBValidateUrl = "https://mb3admin.com/admin/service/registration/validate";
-        private const string AppstoreRegUrl = /*MbAdmin.HttpsUrl*/ "https://mb3admin.com/admin/service/appstore/register";
+        private const string MBValidateUrl = "https://mb3admin.local/admin/service/registration/validate";
+        private const string AppstoreRegUrl = /*MbAdmin.HttpsUrl*/ "https://mb3admin.local/admin/service/appstore/register";
 
         public async Task<bool> IsSupporter()
         {
