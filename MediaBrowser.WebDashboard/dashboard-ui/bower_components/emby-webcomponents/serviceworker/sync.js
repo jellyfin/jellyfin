@@ -1,1 +1,4 @@
-self.addEventListener("sync",function(event){"use strict";event.tag});
+self.addEventListener("sync", function(event) {
+    "use strict";
+    event.tag
+});
