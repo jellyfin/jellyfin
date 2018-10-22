@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="Emby.XmlTv" Version="1.0.18" />
+    <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     <PackageReference Include="ServiceStack.Text.Core" Version="5.2.0" />
     <PackageReference Include="sharpcompress" Version="0.22.0" />
     <PackageReference Include="SimpleInjector" Version="4.3.0" />
