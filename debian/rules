@@ -14,7 +14,7 @@ override_dh_auto_test:
 override_dh_clistrip:
 
 override_dh_auto_build:
-	dotnet build --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln
+	dotnet build --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln --output='$(CURDIR)/usr/lib/emby-server/bin'
 
 override_dh_auto_clean:
 	dotnet clean --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln

@@ -1,13 +1,8 @@
 Source: emby-server
 Section: misc
 Priority: optional
-Maintainer: Joshua Boniface <joshua@boniface.me>
+Maintainer: Vasily <just.one.man@yandex.ru>
 Build-Depends:  debhelper (>= 9),
-#                libmono-cil-dev (>= 5.14),
-#                mono-devel (>= 5.14),
-#                mono-xbuild (>= 5.14),
-#                cli-common-dev (>= 0.9),
-#                referenceassemblies-pcl,
                 dotnet-sdk-2.1,
                 libc6-dev
 Standards-Version: 3.9.4
