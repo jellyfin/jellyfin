@@ -17,6 +17,6 @@ Replaces: mediabrowser, emby, emby-server-beta, emby-server-dev
 Breaks: mediabrowser, emby, emby-server-beta, emby-server-dev
 Conflicts: mediabrowser, emby, emby-server-beta, emby-server-dev
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, at, libsqlite3-0
+Depends: ${shlibs:Depends}, ${misc:Depends}, at, libsqlite3-0, dotnet-runtime-2.1
 Description: Emby Server is a home media server.
  It is built on top of other popular open source technologies such as Service Stack, jQuery, jQuery mobile, and Mono. It features a REST-based api with built-in documentation to facilitate client development. We also have client libraries for our api to enable rapid development.

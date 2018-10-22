@@ -1,6 +1,5 @@
 #! /usr/bin/make -f
 CONFIG := Release
-RUNTIME := linux-x64
 TERM := xterm
 SHELL := /bin/bash
 export DH_VERBOSE=1
@@ -15,7 +14,7 @@ override_dh_auto_test:
 override_dh_clistrip:
 
 override_dh_auto_build:
-	dotnet build --configuration $(CONFIG) --runtime $(RUNTIME) $(CURDIR)/MediaBrowser.sln
+	dotnet build --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln
 
 override_dh_auto_clean:
-	dotnet clean --configuration $(CONFIG) --runtime $(RUNTIME) $(CURDIR)/MediaBrowser.sln
+	dotnet clean --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln
