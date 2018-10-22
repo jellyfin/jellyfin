@@ -18,3 +18,4 @@ override_dh_auto_build:
 
 override_dh_auto_clean:
 	dotnet clean --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln
+	rm -rf '$(CURDIR)/usr/lib/emby-server'
