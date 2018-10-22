@@ -1,3 +1,9 @@
+emby-server (3.5.2-unlocked) unstable; urgency=medium
+
+  * Taking changes from upstream 3.5.2, beautifying some JS files
+
+ -- Vasily <just.one.man@yandex.ru>  Mon, 22 Oct 2018 03:45:13 +0400
+
 emby-server (3.4.1.18-unlocked) unstable; urgency=medium
 
   * Hard fork of Emby 3.4.1.18 including premium unlock
