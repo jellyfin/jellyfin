@@ -1,1 +1,36 @@
-.emby-input{display:block;margin:0;margin-bottom:0!important;font-size:110%;font-family:inherit;font-weight:inherit;padding:.4em .25em;-webkit-box-sizing:border-box;box-sizing:border-box;outline:0!important;-webkit-tap-highlight-color:transparent;width:100%}.emby-input::-moz-focus-inner{border:0}.inputContainer{margin-bottom:1.8em}.inputLabel{display:inline-block;margin-bottom:.25em}.emby-input+.fieldDescription{margin-top:.25em}.emby-input-iconbutton{-webkit-align-self:flex-end;align-self:flex-end}
+.emby-input {
+    display: block;
+    margin: 0;
+    margin-bottom: 0 !important;
+    font-size: 110%;
+    font-family: inherit;
+    font-weight: inherit;
+    padding: .4em .25em;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    outline: 0 !important;
+    -webkit-tap-highlight-color: transparent;
+    width: 100%
+}
+
+.emby-input::-moz-focus-inner {
+    border: 0
+}
+
+.inputContainer {
+    margin-bottom: 1.8em
+}
+
+.inputLabel {
+    display: inline-block;
+    margin-bottom: .25em
+}
+
+.emby-input+.fieldDescription {
+    margin-top: .25em
+}
+
+.emby-input-iconbutton {
+    -webkit-align-self: flex-end;
+    align-self: flex-end
+}
