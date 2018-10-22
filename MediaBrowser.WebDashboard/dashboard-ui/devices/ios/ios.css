@@ -1,1 +1,8 @@
-html{font-size:82%!important}.formDialogFooter{position:static!important;margin:0 -1em!important}
+html {
+    font-size: 82% !important
+}
+
+.formDialogFooter {
+    position: static !important;
+    margin: 0 -1em !important
+}
