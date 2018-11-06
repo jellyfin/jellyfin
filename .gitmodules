@@ -1,3 +1,6 @@
 [submodule "Emby.XmlTv"]
 	path = Emby.XmlTv
 	url = https://github.com/JustAMan/Emby.XmlTv.git
+[submodule "ImageMagickSharp"]
+	path = ImageMagickSharp
+	url = https://github.com/JustAMan/ImageMagickSharp.git
