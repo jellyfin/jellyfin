@@ -6,11 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ImageMagickSharp" Version="1.0.0.20" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ImageMagickSharp/ImageMagickSharp/ImageMagickSharp.csproj" />
+    <ProjectReference Include="..\ImageMagickSharp\ImageMagickSharp\ImageMagickSharp.csproj" />
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />

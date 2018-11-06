@@ -4,3 +4,6 @@
 [submodule "ImageMagickSharp"]
 	path = ImageMagickSharp
 	url = https://github.com/JustAMan/ImageMagickSharp.git
+[submodule "Emby.IsoMounting"]
+	path = Emby.IsoMounting
+	url = https://github.com/JustAMan/Emby.IsoMounting.git
