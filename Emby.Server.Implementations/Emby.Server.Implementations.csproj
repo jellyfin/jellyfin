@@ -17,10 +17,10 @@
     <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj" />
     <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
+    <ProjectReference Include="..\Emby.XmlTv/Emby.XmlTv/Emby.XmlTv.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Emby.XmlTv" Version="1.0.18" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     <PackageReference Include="ServiceStack.Text.Core" Version="5.2.0" />
     <PackageReference Include="sharpcompress" Version="0.22.0" />
