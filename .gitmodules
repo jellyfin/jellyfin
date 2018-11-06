@@ -1,0 +1,3 @@
+[submodule "Emby.XmlTv"]
+	path = Emby.XmlTv
+	url = https://github.com/JustAMan/Emby.XmlTv.git
