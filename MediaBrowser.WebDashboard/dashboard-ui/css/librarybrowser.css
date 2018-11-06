@@ -141,11 +141,6 @@
     -webkit-box-align: center
 }
 
-.mainAnimatedPages,
-.pageTabContent {
-    contain: layout style
-}
-
 .hiddenViewMenuBar .skinHeader {
     display: none
 }
