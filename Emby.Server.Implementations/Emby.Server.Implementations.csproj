@@ -17,7 +17,7 @@
     <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj" />
     <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
-    <ProjectReference Include="..\Emby.XmlTv/Emby.XmlTv/Emby.XmlTv.csproj" />
+    <ProjectReference Include="..\Emby.XmlTv\Emby.XmlTv\Emby.XmlTv.csproj" />
   </ItemGroup>
 
   <ItemGroup>

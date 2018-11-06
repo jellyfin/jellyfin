@@ -34,12 +34,10 @@
     <Reference Include="Emby.Server.MediaEncoding">
       <HintPath>..\ThirdParty\emby\Emby.Server.MediaEncoding.dll</HintPath>
     </Reference>
-    <Reference Include="MediaBrowser.IsoMounting.Linux">
-      <HintPath>..\ThirdParty\MediaBrowser.IsoMounting.Linux\MediaBrowser.IsoMounting.Linux.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Emby.IsoMounting\IsoMounter\IsoMounter.csproj" />
     <ProjectReference Include="..\BDInfo\BDInfo.csproj" />
     <ProjectReference Include="..\DvdLib\DvdLib.csproj" />
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
