@@ -14,11 +14,9 @@ override_dh_auto_test:
 override_dh_clistrip:
 
 override_dh_auto_build:
-	git submodule init
-	git submodule update
-	dotnet build --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln --output='$(CURDIR)/usr/lib/jellyfin/bin'
-	dotnet publish --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln --output='$(CURDIR)/usr/lib/jellyfin/bin'
+#	dotnet build --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln --output='$(CURDIR)/usr/lib/emby-server/bin'
+	dotnet publish --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln --output='$(CURDIR)/usr/lib/emby-server/bin'
 
 override_dh_auto_clean:
-	dotnet clean --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln || true
-	rm -rf '$(CURDIR)/usr/lib/jellyfin'
+	dotnet clean --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln
+	rm -rf '$(CURDIR)/usr/lib/emby-server'
