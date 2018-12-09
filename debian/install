@@ -1,5 +1,5 @@
-usr/lib/jellyfin usr/lib/
-debian/jellyfin.conf etc/
-debian/jellyfin-sudoers etc/sudoers.d/
-debian/bin/jellyfin usr/bin/
-debian/restart.sh usr/lib/jellyfin
+usr/lib/emby-server usr/lib/
+debian/emby-server.conf etc/
+debian/emby etc/sudoers.d/
+debian/bin/emby-server usr/bin/
+debian/restart.sh usr/lib/emby-server
