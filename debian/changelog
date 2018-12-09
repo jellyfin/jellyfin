@@ -1,9 +1,3 @@
-jellyfin (3.5.2) unstable; urgency=medium
-
-  * Rename from emby-server on version 3.5.2
-
- -- Joshua Boniface <joshua@boniface.me>  Sun, 9 Dec 2018 15:20:58 -0400
-
 emby-server (3.5.2-unlocked) unstable; urgency=medium
 
   * Taking changes from upstream 3.5.2, beautifying some JS files
