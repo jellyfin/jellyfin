@@ -1,0 +1,121 @@
+#!/bin/bash
+# vim:set ft=sh sw=2 sts=2 st=2 et:
+# Author: HurricaneHernandez <carlos@techbyte.ca>
+# Modified for CentOS/Fedora by: FC7 <casasfernando@outlook.com>
+
+DESC=EmbyServer
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+NAME=emby-server
+CONF_FILE=/etc/${NAME}.conf
+DEFAULT_FILE=/etc/default/${NAME}
+SCRIPTNAME=/usr/bin/emby-server
+
+# Source Emby server default configuration
+. $DEFAULT_FILE
+
+# Source Emby server user configuration overrides
+if [[ -f $CONF_FILE ]]; then
+  . $CONF_FILE
+else
+  echo "${CONF_FILE} not found using default settings.";
+fi
+
+# Ensure the runas user has restart privilege to restart the service if not try to add the user to emby group. WARN on failure
+if [[ "$EMBY_USER" != "emby" ]]; then
+  groups $EMBY_USER | grep -q emby
+  if [[ $? -ne 0 ]]; then
+    if [[ $EUID -eq 0 ]]; then
+      usermod -a -G emby $EMBY_USER
+    else
+      echo "WARNING: The runas user is not part of emby group and you don't have enough privileges to add it. The restart button in the GUI will probably fail."
+      echo "To solve this start the emby-server service using the startup scripts (systemd/sysv) or"
+      echo "add the runas user ($EMBY_USER) to the emby group manually and restart Emby."
+    fi
+  fi
+fi
+
+# Data directory where Emby database, cache and logs are stored
+PROGRAMDATA=$EMBY_DATA
+PROGRAMDATA_OPT="-programdata $PROGRAMDATA"
+
+# Path to store PID file
+PIDFILE=$EMBY_PIDFILE
+
+# Full path of Emby binary
+EMBY_EXEC=$EMBY_BIN
+
+# Path of emby program files
+EMBY_PATH=$EMBY_DIR
+
+# path to mono bin
+MONO_EXEC=$MONO_BIN
+
+# umask
+UMASK=${UMASK:-002}
+
+# Mono environment variables
+MAGICK_HOME_ENV="MAGICK_HOME=${EMBY_PATH}"
+EMBY_LIBRARY_PATH=$(find /usr/lib/emby-server/ -maxdepth 1 -mindepth 1 -type d| grep -v bin | grep -v etc | grep -v -e "/\.")
+MAGICK_CODER_FILTER_PATH_ENV="MAGICK_CODER_FILTER_PATH=$(find ${EMBY_LIBRARY_PATH} -type d -name "filters" | grep EmbyMagick)"
+MAGICK_CODER_MODULE_PATH_ENV="MAGICK_CODER_MODULE_PATH=$(find ${EMBY_LIBRARY_PATH} -type d -name "coders" | grep EmbyMagick)"
+MONO_EXEC_ENV="$MONO_ENV ${EMBY_LIBRARY_PATH:+"LD_LIBRARY_PATH=${EMBY_LIBRARY_PATH}${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"}"
+
+# Mono options
+MONO_EXEC_OPTS=$MONO_OPTS
+
+# restart function
+RESTART_OPTS="-restartpath ${EMBY_PATH}/restart.sh"
+
+# Emby options
+EMBY_OPTS="$PROGRAMDATA_OPT $RESTART_OPTS $EMBY_ADD_OPTS"
+
+PID_PATH=$(dirname $PIDFILE)
+
+# Exit if the mono-sgen not installed
+if [[ ! -x $MONO_EXEC ]]; then
+  if [[ -n "$(command -v mono-sgen)" ]]; then
+    MONO_EXEC=$(command -v mono-sgen)
+  else
+    MONO_EXEC=$(command -v mono)
+  fi
+fi
+
+# Create programdata  directory if not exist and ensure the emby user can write to it
+if [[ ! -d $PROGRAMDATA ]]; then
+  if [[ $EUID -eq 0 ]]; then
+    mkdir -p $PROGRAMDATA
+  else
+    echo "WARNING: $EMBY_DATA directory does not exist."
+    echo "To solve this, if it is an upgrade verify that \"EMBY_DATA\" is set to the correct path in /etc/emby-server.conf."
+    echo "You may need to locate the path of your library files and set EMBY_DATA to that path."
+    echo "If this is an new installation please rerun last command with elevated permissions."
+  fi
+fi
+
+# Set right permission for directories
+DATA_CURRENT_USER=$(ls -lad $PROGRAMDATA | awk '{print $3}')
+
+if [[ "$DATA_CURRENT_USER" != "$EMBY_USER" ]]; then
+  if [[ $EUID -eq 0 ]]; then
+    chown -R $EMBY_USER.$EMBY_GROUP $PROGRAMDATA
+  else
+    echo "WARNING: $EMBY_DATA directory does not have the correct permissions."
+    echo "Please rerun this script with elevated permissions."
+  fi
+fi
+
+case "$1" in
+  start)
+    echo $$ > $PIDFILE
+    exec su -s /bin/sh -c 'umask $0; exec "$1" "$@"' $EMBY_USER -- \
+      $UMASK env $MAGICK_HOME_ENV $MAGICK_CODER_FILTER_PATH_ENV $MAGICK_CODER_MODULE_PATH_ENV \
+      $MONO_EXEC_ENV $MONO_EXEC $MONO_EXEC_OPTS $EMBY_EXEC $EMBY_OPTS
+    ;;
+  clear)
+    [[ -e $PIDFILE ]] && rm -rf $PIDFILE
+    ;;
+  *)
+    echo "Usage: $SCRIPTNAME {start|clear}" >&2
+    exit 3
+    ;;
+esac

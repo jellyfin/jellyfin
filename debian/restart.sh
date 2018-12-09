@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NAME=jellyfin
+NAME=emby-server
 
 restart_cmds=("s6-svc -t /var/run/s6/services/${NAME}" \
   "systemctl restart ${NAME}" \
