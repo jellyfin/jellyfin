@@ -16,8 +16,5 @@ script
 	# Log file
 	logger -t "$0" "DEBUG: `set`"
 	exec /usr/bin/jellyfin start
-end script
-
-post-stop script
-	exec /usr/bin/jellyfin clear
+    exec /usr/bin/dotnet /usr/lib/jellyfin/bin/EmbyServer.dll 
 end script
