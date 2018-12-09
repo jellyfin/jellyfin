@@ -1,12 +1,12 @@
 [Unit]
-Description=Emby Media Server
+Description=Jellyfin Media Server
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/emby-server start
+ExecStart=/usr/bin/jellyfin start
 Restart=on-abort
 TimeoutSec=20
-ExecStopPost=/usr/bin/emby-server clear
+ExecStopPost=/usr/bin/jellyfin clear
 
 [Install]
 WantedBy=multi-user.target
