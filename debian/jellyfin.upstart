@@ -1,4 +1,4 @@
-description "emby-server daemon"
+description "jellyfin daemon"
 
 start on (local-filesystems and net-device-up IFACE!=lo)
 stop on runlevel [!2345]
@@ -15,9 +15,9 @@ script
 
 	# Log file
 	logger -t "$0" "DEBUG: `set`"
-	exec /usr/bin/emby-server start
+	exec /usr/bin/jellyfin start
 end script
 
 post-stop script
-	exec /usr/bin/emby-server clear
+	exec /usr/bin/jellyfin clear
 end script
