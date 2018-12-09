@@ -1,4 +1,4 @@
-Source: emby-server
+Source: jellyfin
 Section: misc
 Priority: optional
 Maintainer: Vasily <just.one.man@yandex.ru>
@@ -7,10 +7,10 @@ Build-Depends:  debhelper (>= 9),
                 libc6-dev
 Standards-Version: 3.9.4
 
-Package: emby-server
-Replaces: mediabrowser, emby, emby-server-beta, emby-server-dev
-Breaks: mediabrowser, emby, emby-server-beta, emby-server-dev
-Conflicts: mediabrowser, emby, emby-server-beta, emby-server-dev
+Package: jellyfin
+Replaces: mediabrowser, emby, emby-server-beta, jellyfin-dev, emby-server
+Breaks: mediabrowser, emby, emby-server-beta, jellyfin-dev, emby-server
+Conflicts: mediabrowser, emby, emby-server-beta, jellyfin-dev, emby-server
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, at, libsqlite3-0, dotnet-runtime-2.1
 Description: Emby Server is a home media server.

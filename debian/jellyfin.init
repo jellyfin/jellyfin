@@ -1,6 +1,6 @@
 #!/bin/bash
 ### BEGIN INIT INFO
-# Provides:          emby-server
+# Provides:          jellyfin
 # Required-Start:    $remote_fs $local_fs $network
 # Required-Stop:     $remote_fs $local_fs $network
 # Default-Start:     2 3 4 5
@@ -19,23 +19,23 @@
 # Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
 . /lib/lsb/init-functions
 
-NAME=emby-server
+NAME=jellyfin
 CONF_FILE=/etc/${NAME}.conf
 DEFAULT_FILE=/etc/default/${NAME}
 
-# Source Emby server default configuration
+# Source Jellyfin default configuration
 . $DEFAULT_FILE
 
-# Source Emby server user configuration overrides
+# Source Jellyfin user configuration overrides
 if [[ -f $CONF_FILE ]]; then
   . $CONF_FILE
 else
   echo "${CONF_FILE} not found using default settings.";
 fi
 
-# Path of emby binary
-EMBYSERVER=/usr/bin/emby-server
-PIDFILE=${EMBY_PIDFILE-/var/run/emby-server.pid}
+# Path of jellyfin binary
+JELLYFINSERVER=/usr/bin/jellyfin
+PIDFILE=${JELLYFIN_PIDFILE-/var/run/jellyfin.pid}
 
 case "$1" in
   start)
@@ -45,7 +45,7 @@ case "$1" in
       log_end_msg 0
       exit 0
     fi
-    exec $EMBYSERVER start &
+    exec $JELLYFINSERVER start &
     sleep 2
     if [[ -s $PIDFILE ]] && [[ -n "$(ps -p $(cat $PIDFILE) -o pid=)" ]]; then
       log_end_msg 0
@@ -74,7 +74,7 @@ case "$1" in
     fi
     ;;
   status)
-    status_of_proc -p $PIDFILE "$EMBYSERVER" "$NAME"
+    status_of_proc -p $PIDFILE "$JELLYFINSERVER" "$NAME"
     exit $? # notreached due to set -e
     ;;
   restart|force-reload)
@@ -82,7 +82,7 @@ case "$1" in
     $0 start || exit $?
     ;;
   *)
-    echo "Usage: /etc/init.d/emby-server {start|stop|status|restart|force-reload}" >&2
+    echo "Usage: /etc/init.d/jellyfin {start|stop|status|restart|force-reload}" >&2
     exit 3
     ;;
 esac
