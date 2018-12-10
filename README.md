@@ -19,4 +19,4 @@ Debian build facilities are integrated into the repo at `debian/`.
 2. Run `dpkg-buildpackage -us -uc -jX`, where X is your core count.
 3. Install the resulting `jellyfin*.deb` file on your system.
 
-A huge thanks to Carlos Hernandez who created the Debian build configuration for Emby 3.1.1, which is forward-ported to 3.4.1 in this repository. His repository is [here](https://download.opensuse.org/repositories/home:/emby/Debian_9.0/) and contains stock packages for the 3.1.1 release.
+A huge thanks to Carlos Hernandez who created the Debian build configuration for Emby 3.1.1.
