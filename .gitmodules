@@ -1,9 +1,0 @@
-[submodule "Emby.XmlTv"]
-	path = Emby.XmlTv
-	url = https://github.com/jellyfin/Emby.XmlTv.git
-[submodule "ImageMagickSharp"]
-	path = ImageMagickSharp
-	url = https://github.com/jellyfin/ImageMagickSharp.git
-[submodule "Emby.IsoMounting"]
-	path = Emby.IsoMounting
-	url = https://github.com/jellyfin/Emby.IsoMounting.git
