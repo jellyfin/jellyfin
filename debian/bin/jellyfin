@@ -29,19 +29,19 @@ if [[ "$JELLYFIN_USER" != "jellyfin" ]]; then
     else
       echo "WARNING: The runas user is not part of jellyfin group and you don't have enough privileges to add it. The restart button in the GUI will probably fail."
       echo "To solve this start the jellyfin service using the startup scripts (systemd/sysv) or"
-      echo "add the runas user ($JELLYFIN_USER) to the jellyfin group manually and restart Emby."
+      echo "add the runas user ($JELLYFIN_USER) to the jellyfin group manually and restart Jellyfin."
     fi
   fi
 fi
 
-# Data directory where Emby database, cache and logs are stored
+# Data directory where Jellyfin database, cache and logs are stored
 PROGRAMDATA=$JELLYFIN_DATA
 PROGRAMDATA_OPT="-programdata $PROGRAMDATA"
 
 # Path to store PID file
 PIDFILE=$JELLYFIN_PIDFILE
 
-# Full path of Emby binary
+# Full path of Jellyfin binary
 JELLYFIN_EXEC=$JELLYFIN_BIN
 
 # Path of jellyfin program files
@@ -66,7 +66,7 @@ MONO_EXEC_OPTS=$MONO_OPTS
 # restart function
 RESTART_OPTS="-restartpath ${JELLYFIN_PATH}/restart.sh"
 
-# Emby options
+# Jellyfin options
 JELLYFIN_OPTS="$PROGRAMDATA_OPT $RESTART_OPTS $JELLYFIN_ADD_OPTS"
 
 PID_PATH=$(dirname $PIDFILE)

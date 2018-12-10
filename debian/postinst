@@ -15,7 +15,7 @@ if [[ -f $CONF_FILE ]]; then
   . $CONF_FILE
 fi
 
-# Data directory where Emby database, cache and logs are stored
+# Data directory where Jellyfin database, cache and logs are stored
 PROGRAMDATA=${JELLYFIN_DATA-/var/lib/$NAME}
 
 case "$1" in
