@@ -1,4 +1,11 @@
-# Contributors
+# Jellyfin Contributors
+
+ - [JoshuaBoniface](https://github.com/joshuaboniface)
+ - [nvllsvm](https://github.com/nvllsvm)
+ - [JustAMan](https://github.com/JustAMan)
+ - [dcrdev](https://github.com/dcrdev)
+
+# Emby Contributors
 
  - [LukePulverenti](https://github.com/LukePulverenti) 
  - [ebr11](https://github.com/ebr11) 
