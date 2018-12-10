@@ -15,7 +15,7 @@ if [[ -f $CONF_FILE ]]; then
   . $CONF_FILE
 fi
 
-# Data directory where Emby database, cache and logs are stored
+# Data directory where Jellyfin database, cache and logs are stored
 PROGRAMDATA=${JELLYFIN_DATA-/var/lib/$NAME}
 
 case "$1" in
@@ -41,7 +41,7 @@ case "$1" in
       sleep 1
       # if it's still running, show error
       if [[ -n "$(ps -p $JELLYFIN_PID -o pid=)" ]]; then
-        echo "Could not successfully stop EmbyServer, please do so before uninstalling."
+        echo "Could not successfully stop Jellyfin, please do so before uninstalling."
         exit 1
       else
         [[ -f $PIDFILE ]] && rm $PIDFILE

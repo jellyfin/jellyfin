@@ -9,11 +9,11 @@
 ## Don't edit this file
 ## Edit user configuration in /etc/jellyfin.conf to change
 ##
-## JELLYFIN_USER=       #$JELLYFIN_USER, username to run Emby under, the default is jellyfin
-## JELLYFIN_GROUP=      #$JELLYFIN_GROUP, Jellyfin group where Emby user belongs
-## JELLYFIN_DIR=        #$JELLYFIN_DIR, the location of Emby program files the default is /usr/lib/jellyfin
+## JELLYFIN_USER=       #$JELLYFIN_USER, username to run Jellyfin under, the default is jellyfin
+## JELLYFIN_GROUP=      #$JELLYFIN_GROUP, Jellyfin group where Jellyfin user belongs
+## JELLYFIN_DIR=        #$JELLYFIN_DIR, the location of Jellyfin program files the default is /usr/lib/jellyfin
 ## JELLYFIN_BIN=        #$JELLYFIN_BIN, full path of MediaBrowser.Server.Mono.exe the default is /usr/lib/jellyfin/bin/MediaBrowser.Server.Mono.exe
-## JELLYFIN_DATA=       #$JELLYFIN_DATA, the location of Emby data, cache, logs, the default is /var/lib/jellyfin
+## JELLYFIN_DATA=       #$JELLYFIN_DATA, the location of Jellyfin data, cache, logs, the default is /var/lib/jellyfin
 ## JELLYFIN_PIDFILE=    #$JELLYFIN_PIDFILE, the location of jellyfin.pid, the default is /var/run/jellyfin/jellyfin.pid
 ## JELLYFIN_ADD_OPTS=   #$JELLYFIN_ADD_OPTS, additional options to pass to the Jellyfin executable, beyond ffmpeg, ffprobe and restart
 ## MONO_BIN=        #$MONO_BIN, full path of mono binary, the default is /usr/bin/mono-sgen
