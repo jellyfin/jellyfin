@@ -1,12 +1,13 @@
 Format: http://dep.debian.net/deps/dep5
-Upstream-Name: emby
-Source: https://raw.githubusercontent.com/MediaBrowser/MediaBrowser/master/LICENSE.md
+Upstream-Name: jellyfin
+Source: https://github.com/jellyfin/jellyfin
 
 Files: *
-Copyright: 2015 Luke Pulverenti <luke.pulverenti@gmail.com>
+Copyright: 2018 Jellyfin Team
 License: GPL-2.0+
 
 Files: debian/*
+Copyright: 2018 Joshua Boniface <joshua@boniface.me>
 Copyright: 2014 Carlos Hernandez <carlos@techbyte.ca>
 License: GPL-2.0+
 

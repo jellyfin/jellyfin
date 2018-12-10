@@ -1,0 +1,44 @@
+### BEGIN INIT INFO
+# Provides:          Jellyfin Media Server
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Jellyfin Media Server
+# Description:       Runs Jellyfin Server
+### END INIT INFO
+
+# Carry out specific functions when asked to by the system
+pid=`ps -fA|grep dotnet|grep JellyfinServer|awk '{print $2}'| tr -d '\n'`
+
+case "$1" in
+  start)
+        if [ "$pid" == "" ]; then
+                echo "Starting Jellyfin..."
+                nohup dotnet /usr/lib/jellyfin/bin/EmbyServer.dll >/dev/null 2>&1 &
+        else
+                echo "Jellyfin already running"
+        fi
+    ;;
+  stop)
+        if [ "$pid" != "" ]; then
+                echo "Stopping Jellyfin..."
+                kill $pid
+                sleep 2
+        else
+                echo "Jellyfin not running"
+        fi
+    ;;
+  status)
+        if [ "$pid" != "" ]; then
+                echo "Jellyfin running as $pid"
+                ps -f $pid
+        else
+                echo "Jellyfin is not running"
+        fi
+  ;;
+  *)
+    echo "Usage: $0 {start|stop}"
+    exit 1
+    ;;
+esac
