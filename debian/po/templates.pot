@@ -6,8 +6,8 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: emby-server\n"
-"Report-Msgid-Bugs-To: emby-server@packages.debian.org\n"
+"Project-Id-Version: jellyfin-server\n"
+"Report-Msgid-Bugs-To: jellyfin-server@packages.debian.org\n"
 "POT-Creation-Date: 2015-06-12 20:51-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
@@ -20,38 +20,38 @@ msgstr ""
 #. Type: note
 #. Description
 #: ../templates:1001
-msgid "Emby permission info:"
+msgid "Jellyfin permission info:"
 msgstr ""
 
 #. Type: note
 #. Description
 #: ../templates:1001
 msgid ""
-"Emby by default runs under a user named \"emby\".  Please ensure that the "
-"user emby has read and write access to any folders you wish to add to your "
-"library. Otherwise please run emby under a different user."
+"Jellyfin by default runs under a user named \"jellyfin\".  Please ensure that the "
+"user jellyfin has read and write access to any folders you wish to add to your "
+"library. Otherwise please run jellyfin under a different user."
 msgstr ""
 
 #. Type: string
 #. Description
 #: ../templates:2001
-msgid "Username to run Emby as:"
+msgid "Username to run Jellyfin as:"
 msgstr ""
 
 #. Type: string
 #. Description
 #: ../templates:2001
-msgid "The user that emby will run as."
+msgid "The user that jellyfin will run as."
 msgstr ""
 
 #. Type: note
 #. Description
 #: ../templates:3001
-msgid "Emby still running"
+msgid "Jellyfin still running"
 msgstr ""
 
 #. Type: note
 #. Description
 #: ../templates:3001
-msgid "Emby is currently running. Please close it and try again."
+msgid "Jellyfin is currently running. Please close it and try again."
 msgstr ""
