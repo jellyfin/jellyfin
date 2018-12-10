@@ -7,6 +7,8 @@ Jellyfin is descended from Emby 3.5.2, ported to the .NET Core framework, and ai
 
 For further details, please see [our wiki](https://github.com/jellyfin/jellyfin/wiki) and join [our public chat on Matrix/Riot](https://matrix.to/#/#jellyfin:matrix.org).
 
+[![Feature Requests](http://feathub.com/jellyfin/jellyfin?format=svg)](http://feathub.com/jellyfin/jellyfin)
+
 ## Building Jellyfin packages
 
 Jellyfin seeks to integrate build facilities for any desired packaging format. Instructions for the various formats can be found below.
