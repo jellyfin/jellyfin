@@ -1,43 +1,22 @@
-Emby Server
+Jellyfin
 ============
 
-Emby Server is a personal media server with apps on just about every device.
+Jellyfin is a personal media server. The Jellyfin project was started as a result of Emby's decision to take their code closed-source, as well as various philosophical differences with the core developers. Jellyfin seeks to be the free software alternative to Emby and Plex to provide media management and streaming from a dedicated server to end-user devices.
 
-It features a REST-based API with built-in documentation to facilitate client development. We also have client libraries for our API to enable rapid development.
+Jellyfin is descended from Emby 3.5.2, ported to the .NET Core framework, and aims to contain build facilities for every platform.
 
-This repository is a hard fork of Emby 3.4.1.18 which unlocks Premium status by default and includes a buildable source repository for Debian and other package types.
+For further details, please see [our wiki](https://github.com/jellyfin/jellyfin/wiki) and join [our public chat on Matrix/Riot](https://matrix.to/#/#jellyfin:matrix.org).
 
-## Rationale from JustAMan
-I want to have a fresh enough build based on NetCore (not on a Mono which is being deprecated) with unlocked features.
-It's dangerous here, so I'm taking the power of GPL with me and work of other mighty Github users to make this happen.
+## Building Jellyfin packages
 
----
-Now the readme of previous fork follows.
+Jellyfin seeks to integrate build facilities for any desired packaging format. Instructions for the various formats can be found below.
 
-## Rationale
+### Debian/Ubuntu
 
-I will start by saying I am only an Emby user and a professional sysadmin who lightly dabbles in Python. This is the story of why I'm forking Emby completely and forming a separate project.
+Debian build facilities are integrated into the repo at `debian/`.
 
-In 2015, I and a number of other users requested LDAP support for Emby. I had been trying it out for about a year, as I was specifically looking for a Free Software alternative to Plex. This was the last missing feature for me, and one that I viewed as simple and critical to any piece of authenticated web-based software. I was also very willing to support the project with a premium membership when it fit my last need, so I waited patiently.
+1. Install the `dotnet-sdk-2.1` package via [Microsoft's repositories](https://dotnet.microsoft.com/download/linux-package-manager/debian9/sdk-2.1.500).
+2. Run `dpkg-buildpackage -us -uc -jX`, where X is your core count.
+3. Install the resulting `jellyfin*.deb` file on your system.
 
-Emby continued to operate and update as it did until 2017. During this time however the Emby team began taking various extensions, as well as all mobile apps, out of their public repositories. I'm at this point still unsure of their status. This raised suspicion on my part but alone is legitimate. However in light of future events it certainly appears part of a pattern. The LDAP issue in particular also lingered, with numerous delays due to seemingly unrelated code changes and a number of noncommittal responses from the developers as to the status of the feature.
-
-In the early part of 2017, the core developers added a nag screen. While the details are disputed, what I can say for certain is that for at least one minor version release, I was experiencing a 10 second nagscreen prompting me to purchase a Premium licence, before *almost every* video I watched. The developers had intended this to be once every 24 hours, but in either case I was extremely disappointed in this obviously-user-hostile "feature". Further investigation into the Emby user forums as well as GitHub showed an extremely stark and, to me, chilling attitude from the core developers and the premium-paid community: an attitude that the developers can and should be making money off of Emby, a GPL project that, to my knowledge, was gifted to the current developers under this license in the past, by any means necessary; and a hostile contempt towards any user who dared criticize this decision (specifically new users, non-premium, who were testing Emby or who had no desire for the Premium features).
-
-This attitude was further demonstrated in the response to the issue on GitHub, where the developers appeared openly hostile to any criticism, though without the echo-chamber of the user forums to police the critics. The nagscreen was eventually removed, however the stain of this behaviour and attitude remained apparent.
-
-In late 2017, it was then discovered that there were possible violations of the GPL license within the projects main repository. Specifically, a number of binary-only DLL files to which no source was provided and that the project would not build without; these files are at this time sill present in this repository as well. There was further hostility and outright evasiveness on the part of the lead developer to answering simple questions regarding the license status of these components, with delayed, terse, and noncommittal answers.
-
-At long last earlier this year, the LDAP feature was released - as a Premium-only plugin. And issues of source control and user builds finally came to a head with the 3.5.0 version, which split several components of the source package into separate repositories. Public access to these repositories was not granted for some time, with further noncommittal and evasive answers from the Emby developers, preventing users from building this release. While this situation was eventually rectified, for me this was the last straw.
-
-In light of these actions, I believe that the core Emby developers do not respect the Free Software community that their project implies it is a part of, nor do they respect their gratis users. The developers seek to monetize this project, as is their right, but their methods are overbearing, arbitrary, and demonstrate contempt for users who choose them because they are a Free Software project, including package maintainers and contributors, while outright demanding via extortion payment for their product. For these reasons, I do not believe they are good stewards of the project, and this fork seeks to build an alternative to them in the Free Software space, while declaring to always remain both gratis and libre and respect its community.
-
-I welcome any feedback, forks, or pull requests.
-
- * Joshua
-
-## Building the Debian package
-
-Enter the repository directory and run `dpkg-buildpackage -us -uc -jX`, where X is your core count. It will take some time to build and has many dependencies, especially `mono-devel` version 5.18 or newer. Obtain the latest version by using the [instructions here](https://www.mono-project.com/download/stable/#download-lin-debian).
-
-A huge thanks to Carlos Hernandez who created the Debian build configuration for Emby 3.1.1, which is forward-ported to 3.4.1 in this repository. His repository is [here](https://download.opensuse.org/repositories/home:/emby/Debian_9.0/) and contains stock packages for the 3.1.1 release.
+A huge thanks to Carlos Hernandez who created the Debian build configuration for Emby 3.1.1.
