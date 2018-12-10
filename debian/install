@@ -1,4 +1,5 @@
 usr/lib/jellyfin usr/lib/
-debian/jellyfin.conf etc/
-debian/jellyfin-sudoers etc/sudoers.d/
-debian/restart.sh usr/lib/jellyfin
+debian/conf/jellyfin.conf etc/
+debian/conf/jellyfin etc/default/
+debian/bin/jellyfin-sudoers etc/sudoers.d/
+debian/bin/restart.sh usr/lib/jellyfin/
