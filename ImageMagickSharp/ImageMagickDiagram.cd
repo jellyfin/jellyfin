@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ImageMagickSharp.Constants" Collapsed="true">
+    <Position X="13.75" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAgAAAAAABAAAAAAAAAIAAAAAA=</HashCode>
+      <FileName>Global\Constants.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ImageMagickSharp.WandBase" Collapsed="true">
+    <Position X="9.5" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Wand\WandBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ImageMagickSharp.WandException" Collapsed="true">
+    <Position X="13.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Wand\WandException.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ImageMagickSharp.WandNativeString" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="17.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAIAACAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Wand\WandNativeString.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="ImageMagickSharp.PixelWand">
+    <Position X="0.75" Y="2.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAICEAAAACAAAgAAAAAAAAAAAAEAABAAAAAAgBAgAAg=</HashCode>
+      <FileName>Pixel\PixelWand.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ImageMagickSharp.PixelWandInterop" Collapsed="true">
+    <Position X="15.5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQBAAEAAABAAAAAAAAEMAAgAAAAAAAQAAQAAAAAA=</HashCode>
+      <FileName>Pixel\PixelWandInterop.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ImageMagickSharp.MagickWand">
+    <Position X="3.5" Y="2.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AIIAAEAAACAAQAAAABBgAACAAAgACBQAAAQAAMQAABA=</HashCode>
+      <FileName>Magick\MagickWand.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ImageMagickSharp.MagickWandInterop" Collapsed="true">
+    <Position X="13.75" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAQEIACAAAAAAUAAggggAAAADhgAAAAAgAAYAAACAAA=</HashCode>
+      <FileName>Magick\MagickWandInterop.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ImageMagickSharp.ImageWand">
+    <Position X="10.5" Y="2.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAABAAAAACAAAAAAEAAAAgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Image\ImageWand.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ImageMagickSharp.ImageWandInterop" Collapsed="true">
+    <Position X="17.25" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIACEEIgAAEAAEAAiAAQEARSECQAAwQEAQAMQAgASCA=</HashCode>
+      <FileName>Image\ImageWandInterop.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ImageMagickSharp.DrawingWand">
+    <Position X="7.75" Y="2.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Drawing\DrawingWand.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ImageMagickSharp.DrawingWandInterop" Collapsed="true">
+    <Position X="15.5" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Drawing\DrawingWandInterop.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ImageMagickSharp.Wand" Collapsed="true">
+    <Position X="17.25" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAAAEAAAAAEAAAAAAADACkAQBAABAAAAAA=</HashCode>
+      <FileName>Wand\Wand.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ImageMagickSharp.WandInterop" Collapsed="true">
+    <Position X="15.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAQAIAAAAAAA=</HashCode>
+      <FileName>Wand\WandInterop.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ImageMagickSharp.WandCore" Collapsed="true">
+    <Position X="2.5" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAACAAAAAAIAAAAAAAAAAAA=</HashCode>
+      <FileName>Wand\WandCore.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="ImageMagickSharp.FilterTypes" Collapsed="true">
+    <Position X="13.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QIAAiAgAIIBAgAARIAAAAgACAAIIIgEATACQAEEIQAA=</HashCode>
+      <FileName>Global\FilterTypes.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
