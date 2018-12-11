@@ -1261,7 +1261,7 @@
     "LabelPlayMethodDirectPlay": "Direct Playing",
     "LabelAudioCodec": "\u97f3\u8a0a\uff1a{0}",
     "LabelVideoCodec": "\u5f71\u7247\uff1a{0}",
-    "LabelLocalAccessUrl": "In-Home (LAN) access: {0}",
+    "LabelLocalAccessUrl": "LAN address: {0}",
     "LabelRemoteAccessUrl": "Remote (WAN) access: {0}",
     "LabelRunningOnPort": "\u904b\u884c\u65bc http \u9023\u63a5\u57e0 {0}.",
     "LabelRunningOnPorts": "\u904b\u884c\u65bc http \u9023\u63a5\u57e0 {0}, \u548c https \u9023\u63a5\u57e0 {1}.",
