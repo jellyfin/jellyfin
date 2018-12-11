@@ -204,7 +204,7 @@ define(["apphost", "globalize", "connectionManager", "itemHelper", "appRouter", 
                     navigator.share({
                         title: item.Name,
                         text: item.Overview,
-                        url: "https://emby.media"
+                        url: "https://github.com/jellyfin/jellyfin"
                     });
                     break;
                 case "album":
