@@ -8,7 +8,6 @@ using Emby.Server.Connect;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.Net;
-using Emby.Server.Sync;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Sync;
@@ -56,7 +55,6 @@ namespace MediaBrowser.Server.Mono
 
             list.Add(GetType().Assembly);
             list.Add(typeof(ConnectManager).Assembly);
-            list.Add(typeof(Emby.Server.Sync.SyncManager).Assembly);
 
             return list;
         }
