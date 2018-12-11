@@ -62,3 +62,12 @@ Debian build facilities are integrated into the repo at `debian/`.
 3. Install the resulting `jellyfin_*.deb` file on your system.
 
 A huge thanks to Carlos Hernandez who created the original Debian build configuration for Emby 3.1.1.
+
+### Windows (64 bit)
+A pre-built windows installer will be available soon. Until then it isn't too hard to install Jellyfin from Source.
+
+1. Install the dotnet core SDK 2.1 from [Microsoft's Webpage](https://dotnet.microsoft.com/download/dotnet-core/2.1) and [install Git for Windows](https://gitforwindows.org/)
+2. Clone Jellyfin into a directory of your choice. `git clone https://github.com/jellyfin/jellyfin.git C:\Jellyfin`
+3. From the Jellyfin directory you can use our Jellyfin build script. Call `Build-Jellyfin.ps1 -InstallFFMPEG` from inside the directory in a powershell window. Make sure you've set your executionpolicy to unsrestricted. If you want to optimize for your environment you can use the -WindowsVersion and -Architecture flags to do so, default is generic windows x64. The -InstallLocation flag lets you select where the compiled binaries go, default is `$Env:AppData\JellyFin-Server\` . The -InstallFFMPEG flag will automatically pull the stable FFMPEG binaries appropriate to your architecture (x86/x64 only for now) from [Zeranoe](https://ffmpeg.zeranoe.com/builds/), and then place them in your emby directory. 
+4. (Optional) Use [NSSM](https://nssm.cc/) to configure JellyFin to run as a service
+5. Jellyfin is now available in the default directory (or the directory you chose). Assuming you kept the default directory, to start it from a powershell window run, `&"$env:APPDATA\Jellyfin-Server\EmbyServer.exe"`. To start it from CMD run, `%APPDATA%\Jellyfin-Server\EmbyServer.exe`
