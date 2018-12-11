@@ -9,11 +9,11 @@
     </Headers>
   </Identification>
   <Manufacturer>Emby</Manufacturer>
-  <ManufacturerUrl>https://emby.media</ManufacturerUrl>
+  <ManufacturerUrl>https://github.com/jellyfin/jellyfin</ManufacturerUrl>
   <ModelName>Emby Server</ModelName>
   <ModelDescription>UPnP/AV 1.0 Compliant Media Server</ModelDescription>
   <ModelNumber>01</ModelNumber>
-  <ModelUrl>https://emby.media</ModelUrl>
+  <ModelUrl>https://github.com/jellyfin/jellyfin</ModelUrl>
   <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
   <EnableSingleAlbumArtLimit>false</EnableSingleAlbumArtLimit>
   <EnableSingleSubtitleLimit>false</EnableSingleSubtitleLimit>

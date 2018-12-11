@@ -301,9 +301,9 @@ namespace MediaBrowser.Providers.Movies
 
         public static string AdjustImageLanguage(string imageLanguage, string requestLanguage)
         {
-            if (!string.IsNullOrEmpty(imageLanguage) 
-                && !string.IsNullOrEmpty(requestLanguage) 
-                && requestLanguage.Length > 2 
+            if (!string.IsNullOrEmpty(imageLanguage)
+                && !string.IsNullOrEmpty(requestLanguage)
+                && requestLanguage.Length > 2
                 && imageLanguage.Length == 2
                 && requestLanguage.StartsWith(imageLanguage, StringComparison.OrdinalIgnoreCase))
             {
