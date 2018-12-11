@@ -13,9 +13,41 @@ While our first priority is a stable build, we will eventually add features that
 
 [Feature Requests](http://feathub.com/jellyfin/jellyfin)
 
-## Building Jellyfin packages
+## Prebuilt Jellyfin packages
+
+Prebuild packages are available for Debian/Ubuntu and Arch.
+
+### Arch
+
+The Jellyfin package is in the AUR at https://aur.archlinux.org/packages/jellyfin-git/
+
+### Debian/Ubuntu
+
+A package repository is available at https://repo.jellyfin.org. To use it:
+
+0. Install the `dotnet-runtime-2.1` package via [Microsoft's repositories](https://dotnet.microsoft.com/download/linux-package-manager/debian9/sdk-2.1.500).
+0. Import the GPG signing key (signed by Joshua):
+    ```
+    wget -O - https://repo.jellyfin.org/debian/jellyfin-signing-key-joshua.gpg.key | sudo apt-key add -
+    ```
+0. Add an entry to `/etc/sources.list.d/jellyfin.list`:
+    ```
+    echo "deb https://repo.jellyfin.org/debian $( grep -Ewo -m1 --color=none 'jessie|stretch|buster' /etc/os-release || echo buster ) main" | sudo tee /etc/apt/sources.list.d/jellyfin.list
+    ```
+0. Update APT repositories:
+    ```
+    sudo apt update
+    ```
+0. Install Jellyfin:
+    ```
+    sudo apt install jellyfin
+    ```
+
+## Building Jellyfin packages from source
 
 Jellyfin seeks to integrate build facilities for any desired packaging format. Instructions for the various formats can be found below.
+
+NOTE: When building from source, it is strongly advised to clone the full Git repository, rather than using a `.zip`/`.tar` archive.
 
 ### Debian/Ubuntu
 
