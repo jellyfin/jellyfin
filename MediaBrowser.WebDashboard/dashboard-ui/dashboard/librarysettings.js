@@ -32,7 +32,7 @@ define(["jQuery", "loading", "libraryMenu", "fnchecked", "emby-checkbox", "emby-
     }
 
     function onSubmitFail(response) {
-        loading.hide(), response && 404 === response.status ? alertText("The metadata path entered could not be found. Please ensure the path is valid and try again.") : response && 500 === response.status && alertText("The metadata path entered is not valid. Please ensure the path exists and that Emby server has write access to the folder.")
+        loading.hide(), response && 404 === response.status ? alertText("The metadata path entered could not be found. Please ensure the path is valid and try again.") : response && 500 === response.status && alertText("The metadata path entered is not valid. Please ensure the path exists and that Jellyfin server has write access to the folder.")
     }
 
     function onSubmit() {
