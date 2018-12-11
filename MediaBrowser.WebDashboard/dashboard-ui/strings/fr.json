@@ -1638,8 +1638,6 @@
     "HardwareAccelerationWarning": "L'activation de l'acc\u00e9l\u00e9ration mat\u00e9rielle peut provoquer une instabilit\u00e9 dans certains environnements. Assurez-vous que votre syst\u00e8me d'exploitation et vos pilotes vid\u00e9o sont compl\u00e8tement \u00e0 jour. Si vous avez des difficult\u00e9s pour lire des vid\u00e9os apr\u00e8s l'activation, vous devrez remettre ce param\u00e8tre sur Auto.",
     "HeaderSelectCodecIntrosPath": "Choisir le chemin des introductions de codec",
     "ValueExample": "Exemple\u00a0: {0}",
-    "OptionEnableAnonymousUsageReporting": "Autoriser le rapport anonyme d'utilisation",
-    "OptionEnableAnonymousUsageReportingHelp": "Autoriser Jellyfin \u00e0 collecter des donn\u00e9es anonyme comme les extensions install\u00e9es, les versions de vos applications Jellyfin, etc. Ces informations sont uniquement collect\u00e9es dans le but d'am\u00e9liorer le logiciel.",
     "LabelFileOrUrl": "Fichier ou URL :",
     "OptionEnableForAllTuners": "Autoriser pour tous les tuners",
     "HeaderTuners": "Tuners",
