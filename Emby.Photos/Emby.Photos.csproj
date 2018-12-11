@@ -9,7 +9,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\SharedVersion.cs"/>
+    <Compile Include="..\SharedVersion.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TagLib.Portable" Version="1.0.4" />
   </ItemGroup>
 
   <PropertyGroup>
