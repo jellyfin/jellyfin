@@ -29,7 +29,7 @@ define(["appSettings", "loading", "browser", "emby-linkbutton"], function(appSet
                 break;
             case "ServerUpdateNeeded":
                 Dashboard.alert({
-                    message: Globalize.translate("ServerUpdateNeeded", '<a href="https://emby.media">https://emby.media</a>')
+                    message: Globalize.translate("ServerUpdateNeeded", '<a href="https://github.com/jellyfin/jellyfin">https://github.com/jellyfin/jellyfin</a>')
                 });
                 break;
             case "Unavailable":
@@ -158,7 +158,7 @@ define(["appSettings", "loading", "browser", "emby-linkbutton"], function(appSet
             var page = this;
             if (page.querySelector("#txtSignupEmail").value = "", page.querySelector("#txtSignupUsername").value = "", page.querySelector("#txtSignupPassword").value = "", page.querySelector("#txtSignupPasswordConfirm").value = "", browser.safari && AppInfo.isNativeApp) page.querySelector(".embyIntroDownloadMessage").innerHTML = Globalize.translate("EmbyIntroDownloadMessageWithoutLink");
             else {
-                page.querySelector(".embyIntroDownloadMessage").innerHTML = Globalize.translate("EmbyIntroDownloadMessage", '<a is="emby-linkbutton" class="button-link" href="http://emby.media" target="_blank">http://emby.media</a>')
+                page.querySelector(".embyIntroDownloadMessage").innerHTML = Globalize.translate("EmbyIntroDownloadMessage", '<a is="emby-linkbutton" class="button-link" href="https://github.com/jellyfin/jellyfin" target="_blank">http://emby.media</a>')
             }
         }), view.addEventListener("viewshow", function() {
             loadPage(view, params)

@@ -6,7 +6,7 @@ define(["globalize", "shell", "browser", "apphost"], function(globalize, shell, 
     }
 
     function getPremiumInfoUrl() {
-        return "https://emby.media/premiere"
+        return "https://github.com/jellyfin/jellyfin"
     }
 
     function beginPurchase(feature, email) {
