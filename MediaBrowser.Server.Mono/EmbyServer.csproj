@@ -28,9 +28,6 @@
     <Reference Include="Emby.Server.Connect">
       <HintPath>..\ThirdParty\emby\Emby.Server.Connect.dll</HintPath>
     </Reference>
-    <Reference Include="Emby.Server.Sync">
-      <HintPath>..\ThirdParty\emby\Emby.Server.Sync.dll</HintPath>
-    </Reference>
     <Reference Include="Emby.Server.MediaEncoding">
       <HintPath>..\ThirdParty\emby\Emby.Server.MediaEncoding.dll</HintPath>
     </Reference>
