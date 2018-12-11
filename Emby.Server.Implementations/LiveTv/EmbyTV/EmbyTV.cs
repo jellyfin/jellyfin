@@ -279,7 +279,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public string HomePageUrl
         {
-            get { return "https://emby.media"; }
+            get { return "https://github.com/jellyfin/jellyfin"; }
         }
 
         public async Task RefreshSeriesTimers(CancellationToken cancellationToken, IProgress<double> progress)

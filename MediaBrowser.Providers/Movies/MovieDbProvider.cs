@@ -287,7 +287,7 @@ namespace MediaBrowser.Providers.Movies
             if (!string.IsNullOrEmpty(language))
             {
                 // They require this to be uppercase
-                // https://emby.media/community/index.php?/topic/32454-fr-follow-tmdbs-new-language-api-update/?p=311148
+                // /community/index.php?/topic/32454-fr-follow-tmdbs-new-language-api-update/?p=311148
                 var parts = language.Split('-');
 
                 if (parts.Length == 2)
@@ -301,9 +301,9 @@ namespace MediaBrowser.Providers.Movies
 
         public static string AdjustImageLanguage(string imageLanguage, string requestLanguage)
         {
-            if (!string.IsNullOrEmpty(imageLanguage) 
-                && !string.IsNullOrEmpty(requestLanguage) 
-                && requestLanguage.Length > 2 
+            if (!string.IsNullOrEmpty(imageLanguage)
+                && !string.IsNullOrEmpty(requestLanguage)
+                && requestLanguage.Length > 2
                 && imageLanguage.Length == 2
                 && requestLanguage.StartsWith(imageLanguage, StringComparison.OrdinalIgnoreCase))
             {

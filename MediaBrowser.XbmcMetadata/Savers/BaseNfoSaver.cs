@@ -353,7 +353,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (!string.IsNullOrEmpty(stream.Language))
                 {
-                    // https://emby.media/community/index.php?/topic/49071-nfo-not-generated-on-actualize-or-rescan-or-identify
+                    // /community/index.php?/topic/49071-nfo-not-generated-on-actualize-or-rescan-or-identify
                     writer.WriteElementString("language", RemoveInvalidXMLChars(stream.Language));
                 }
 
@@ -777,7 +777,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                             //Logger.Debug("Verifying custom provider tagname {0}", tagName);
                             XmlConvert.VerifyName(tagName);
                             //Logger.Debug("Saving custom provider tagname {0}", tagName);
-                            
+
                             writer.WriteElementString(GetTagForProviderKey(providerKey), providerId);
                         }
                         catch (ArgumentException)
