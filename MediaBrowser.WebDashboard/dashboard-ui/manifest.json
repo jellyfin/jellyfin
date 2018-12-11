@@ -1,6 +1,6 @@
 ﻿{
-  "name": "Emby",
-  "short_name": "Emby",
+  "name": "Jellyfin",
+  "short_name": "Jellyfin",
   "start_url": "/web/index.html",
   "description": "The open media solution.",
   "lang": "en-US",

@@ -27,7 +27,6 @@ define(["appSettings", "loading", "apphost", "iapManager", "events", "shell", "g
                 });
                 dlg.classList.add("formDialog");
                 var html = "";
-                html += '<div class="formDialogHeader">', html += '<button is="paper-icon-button-light" class="btnCancelSupporterInfo autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>', html += '<h3 class="formDialogHeaderTitle">Emby Premiere', html += "</h3>", html += "</div>", html += '<div class="formDialogContent smoothScrollY">', html += '<div class="dialogContentInner dialog-content-centered">', html += "<h1>" + globalize.translate("sharedcomponents#HeaderDiscoverEmbyPremiere") + "</h1>", html += "<p>" + globalize.translate("sharedcomponents#MessageDidYouKnowCinemaMode") + "</p>", html += "<p>" + globalize.translate("sharedcomponents#MessageDidYouKnowCinemaMode2") + "</p>", html += '<h1 style="margin-top:1.5em;">' + globalize.translate("sharedcomponents#HeaderBenefitsEmbyPremiere") + "</h1>", html += '<div class="paperList">', html += getSubscriptionBenefits().map(getSubscriptionBenefitHtml).join(""), html += "</div>", html += "<br/>", html += '<div class="formDialogFooter">', html += '<button is="emby-button" type="button" class="raised button-submit block btnGetPremiere block formDialogFooterItem" autoFocus><span>' + globalize.translate("sharedcomponents#HeaderBecomeProjectSupporter") + "</span></button>";
                 var seconds = 11;
                 html += '<div class="continueTimeText formDialogFooterItem" style="margin: 1.5em 0 .5em;">' + globalize.translate("sharedcomponents#ContinueInSecondsValue", seconds) + "</div>", html += '<button is="emby-button" type="button" class="raised button-cancel block btnContinue block formDialogFooterItem hide"><span>' + globalize.translate("sharedcomponents#Continue") + "</span></button>", html += "</div>", html += "</div>", html += "</div>", dlg.innerHTML = html;
                 var i, length, isRejected = !0,
@@ -111,7 +110,7 @@ define(["appSettings", "loading", "apphost", "iapManager", "events", "shell", "g
     }
 
     function showOverLimitAlert() {
-        return alertText("Your Emby Premiere device limit has been exceeded. Please check with the owner of your Emby Server and have them contact Emby support at apps@emby.media if necessary.").catch(function() {
+        return alertText("Your Jellyfin Premiere device limit has been exceeded. Please check with the owner of your Jellyfin Server and have them contact Jellyfin support at apps@emby.media if necessary.").catch(function() {
             return Promise.resolve()
         })
     }
@@ -166,7 +165,7 @@ define(["appSettings", "loading", "apphost", "iapManager", "events", "shell", "g
             var unlockText = globalize.translate("sharedcomponents#ButtonUnlockWithPurchase");
             unlockableProductInfo.price && (unlockText = globalize.translate("sharedcomponents#ButtonUnlockPrice", unlockableProductInfo.price)), html += "<p>", html += '<button is="emby-button" type="button" class="raised secondary block btnPurchase" data-featureid="' + unlockableProductInfo.id + '"><span>' + unlockText + "</span></button>", html += "</p>"
         }
-        html += "<p>", html += '<button is="emby-button" type="button" class="raised button-cancel block btnRestorePurchase"><span>' + iapManager.getRestoreButtonText() + "</span></button>", html += "</p>", subscriptionOptions.length && (html += '<h1 style="margin-top:1.5em;">' + globalize.translate("sharedcomponents#HeaderBenefitsEmbyPremiere") + "</h1>", html += '<div class="paperList" style="margin-bottom:1em;">', html += getSubscriptionBenefits().map(getSubscriptionBenefitHtml).join(""), html += "</div>"), "playback" === dialogOptions.feature && (html += "<p>", html += '<button is="emby-button" type="button" class="raised button-cancel block btnPlayMinute"><span>' + globalize.translate("sharedcomponents#ButtonPlayOneMinute") + "</span></button>", html += "</p>"), html += getTermsOfPurchaseHtml(), html += "</form>", html += "</div>", html += "</div>", dlg.innerHTML = html, document.body.appendChild(dlg);
+        html += "<p>", html += '<button is="emby-button" type="button" class="raised button-cancel block btnRestorePurchase"><span>' + iapManager.getRestoreButtonText() + "</span></button>", html += "</p>", subscriptionOptions.length && (html += '<h1 style="margin-top:1.5em;">' + globalize.translate("sharedcomponents#HeaderBenefitsJellyfinPremiere") + "</h1>", html += '<div class="paperList" style="margin-bottom:1em;">', html += getSubscriptionBenefits().map(getSubscriptionBenefitHtml).join(""), html += "</div>"), "playback" === dialogOptions.feature && (html += "<p>", html += '<button is="emby-button" type="button" class="raised button-cancel block btnPlayMinute"><span>' + globalize.translate("sharedcomponents#ButtonPlayOneMinute") + "</span></button>", html += "</p>"), html += getTermsOfPurchaseHtml(), html += "</form>", html += "</div>", html += "</div>", dlg.innerHTML = html, document.body.appendChild(dlg);
         var btnPurchases = dlg.querySelectorAll(".btnPurchase");
         for (i = 0, length = btnPurchases.length; i < length; i++) btnPurchases[i].addEventListener("click", onPurchaseButtonClick);
         for (btnPurchases = dlg.querySelectorAll(".buttonPremiereInfo"), i = 0, length = btnPurchases.length; i < length; i++) btnPurchases[i].addEventListener("click", showExternalPremiereInfo);
@@ -204,7 +203,7 @@ define(["appSettings", "loading", "apphost", "iapManager", "events", "shell", "g
             icon: "&#xE639;",
             text: globalize.translate("sharedcomponents#LiveTvFeatureDescription")
         }), list.push({
-            name: "Emby DVR",
+            name: "Jellyfin DVR",
             icon: "&#xE1B2;",
             text: globalize.translate("sharedcomponents#DvrFeatureDescription")
         }), list.push({
@@ -240,12 +239,12 @@ define(["appSettings", "loading", "apphost", "iapManager", "events", "shell", "g
         });
         dlg.classList.add("formDialog");
         var html = "";
-        html += '<div class="formDialogHeader">', html += '<button is="paper-icon-button-light" class="btnCloseDialog autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>', html += '<h3 class="formDialogHeaderTitle">', html += iapManager.getRestoreButtonText(), html += "</h3>", html += "</div>", html += '<div class="formDialogContent smoothScrollY">', html += '<div class="dialogContentInner dialog-content-centered">', html += '<p style="margin:2em 0;">', html += globalize.translate("sharedcomponents#HowDidYouPay"), html += "</p>", html += "<p>", html += '<button is="emby-button" type="button" class="raised button-cancel block btnRestoreSub"><span>' + globalize.translate("sharedcomponents#IHaveEmbyPremiere") + "</span></button>", html += "</p>", unlockableProductInfo && (html += "<p>", html += '<button is="emby-button" type="button" class="raised button-cancel block btnRestoreUnlock"><span>' + globalize.translate("sharedcomponents#IPurchasedThisApp") + "</span></button>", html += "</p>"), html += "</div>", html += "</div>", dlg.innerHTML = html, document.body.appendChild(dlg), loading.hide(), layoutManager.tv && centerFocus(dlg.querySelector(".formDialogContent"), !1, !0), dlg.querySelector(".btnCloseDialog").addEventListener("click", function() {
+        html += '<div class="formDialogHeader">', html += '<button is="paper-icon-button-light" class="btnCloseDialog autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>', html += '<h3 class="formDialogHeaderTitle">', html += iapManager.getRestoreButtonText(), html += "</h3>", html += "</div>", html += '<div class="formDialogContent smoothScrollY">', html += '<div class="dialogContentInner dialog-content-centered">', html += '<p style="margin:2em 0;">', html += globalize.translate("sharedcomponents#HowDidYouPay"), html += "</p>", html += "<p>", html += '<button is="emby-button" type="button" class="raised button-cancel block btnRestoreSub"><span>' + globalize.translate("sharedcomponents#IHaveJellyfinPremiere") + "</span></button>", html += "</p>", unlockableProductInfo && (html += "<p>", html += '<button is="emby-button" type="button" class="raised button-cancel block btnRestoreUnlock"><span>' + globalize.translate("sharedcomponents#IPurchasedThisApp") + "</span></button>", html += "</p>"), html += "</div>", html += "</div>", dlg.innerHTML = html, document.body.appendChild(dlg), loading.hide(), layoutManager.tv && centerFocus(dlg.querySelector(".formDialogContent"), !1, !0), dlg.querySelector(".btnCloseDialog").addEventListener("click", function() {
             dialogHelper.close(dlg)
         }), dlg.querySelector(".btnRestoreSub").addEventListener("click", function() {
             dialogHelper.close(dlg), alertText({
                 text: globalize.translate("sharedcomponents#MessageToValidateSupporter"),
-                title: "Emby Premiere"
+                title: "Jellyfin Premiere"
             })
         });
         var btnRestoreUnlock = dlg.querySelector(".btnRestoreUnlock");
@@ -286,7 +285,7 @@ define(["appSettings", "loading", "apphost", "iapManager", "events", "shell", "g
     function showPremiereInfo() {
         return appHost.supports("externalpremium") ? (showExternalPremiereInfo(), Promise.resolve()) : iapManager.getSubscriptionOptions().then(function(subscriptionOptions) {
             return showInAppPurchaseInfo(subscriptionOptions, null, {
-                title: "Emby Premiere",
+                title: "Jellyfin Premiere",
                 feature: "sync"
             })
         })

@@ -138,11 +138,6 @@ define(["dom", "layoutManager", "inputManager", "connectionManager", "events", "
             pageIds: ["userProfilesPage", "newUserPage", "editUserPage", "userLibraryAccessPage", "userParentalControlPage", "userPasswordPage"],
             icon: "people"
         }, {
-            name: "Emby Premiere",
-            href: "supporterkey.html",
-            pageIds: ["supporterKeyPage"],
-            icon: "star"
-        }, {
             name: globalize.translate("TabLibrary"),
             href: "library.html",
             pageIds: ["mediaLibraryPage", "librarySettingsPage", "libraryDisplayPage", "metadataImagesConfigurationPage", "metadataNfoPage"],
@@ -419,13 +414,13 @@ define(["dom", "layoutManager", "inputManager", "connectionManager", "events", "
             })
         },
         setDefaultTitle: function() {
-            pageTitleElement || (pageTitleElement = document.querySelector(".pageTitle")), pageTitleElement && (pageTitleElement.classList.add("pageTitleWithLogo"), pageTitleElement.classList.add("pageTitleWithDefaultLogo"), pageTitleElement.style.backgroundImage = null, pageTitleElement.innerHTML = ""), document.title = "Emby"
+            pageTitleElement || (pageTitleElement = document.querySelector(".pageTitle")), pageTitleElement && (pageTitleElement.classList.add("pageTitleWithLogo"), pageTitleElement.classList.add("pageTitleWithDefaultLogo"), pageTitleElement.style.backgroundImage = null, pageTitleElement.innerHTML = ""), document.title = "Jellyfin"
         },
         setTitle: function(title) {
             if (null == title) return void LibraryMenu.setDefaultTitle();
             "-" === title && (title = "");
             var html = title;
-            pageTitleElement || (pageTitleElement = document.querySelector(".pageTitle")), pageTitleElement && (pageTitleElement.classList.remove("pageTitleWithLogo"), pageTitleElement.classList.remove("pageTitleWithDefaultLogo"), pageTitleElement.style.backgroundImage = null, pageTitleElement.innerHTML = html || ""), document.title = title || "Emby"
+            pageTitleElement || (pageTitleElement = document.querySelector(".pageTitle")), pageTitleElement && (pageTitleElement.classList.remove("pageTitleWithLogo"), pageTitleElement.classList.remove("pageTitleWithDefaultLogo"), pageTitleElement.style.backgroundImage = null, pageTitleElement.innerHTML = html || ""), document.title = title || "Jellyfin"
         },
         setTransparentMenu: function(transparent) {
             transparent ? skinHeader.classList.add("semiTransparent") : skinHeader.classList.remove("semiTransparent")
