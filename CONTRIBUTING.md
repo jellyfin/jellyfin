@@ -27,7 +27,7 @@ We adhere to a fairly standard fork-and-PR model of development:
 
 3. Submit a pull request from your feature branch back to the upstream master branch.
 
-All PRs require review before merging. Once that is done, if the PR is not tagged with the WIP label, it should be immediately merged by the reviewer assuming that they have write access. If you do not have write access, please eel free to leave reviews as well and suggest changes as they will be taken into account as well.
+All PRs require review before merging. Once that is done, if the PR is not tagged with the WIP label, it should be immediately merged by the reviewer assuming that they have write access. If you do not have write access, please feel free to leave reviews as well and suggest changes as they will be taken into account as well.
 
 ## Developer Access
 
@@ -35,4 +35,6 @@ We are open with granting developer (merge/write) access to those who show inter
 
 ## How can I contribute?
 
-If you're a .NET C# or Javascript developer, please feel free to jump right. If you're not a developer, please consider helping out by contributing documentation, testing the latest releases and reporting bugs, or by telling your friends about the project! Any little bit helps.
+If you're a .NET C# or Javascript developer, please feel free to jump right in - we can use all the help we can get!
+
+ If you're not a developer, please consider helping out by contributing documentation, testing the latest releases and reporting bugs, or by telling your friends about the project! Any little bit helps.
