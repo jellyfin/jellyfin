@@ -57,118 +57,115 @@ namespace Emby.Photos
             {
                 try
                 {
-                    using (var fileStream = _fileSystem.OpenRead(item.Path))
+                    using (var file = TagLib.File.Create(item.Path))
                     {
-                        using (var file = TagLib.File.Create(new StreamFileAbstraction(Path.GetFileName(item.Path), fileStream, null)))
+                        var image = file as TagLib.Image.File;
+
+                        var tag = file.GetTag(TagTypes.TiffIFD) as IFDTag;
+
+                        if (tag != null)
                         {
-                            var image = file as TagLib.Image.File;
+                            var structure = tag.Structure;
 
-                            var tag = file.GetTag(TagTypes.TiffIFD) as IFDTag;
-
-                            if (tag != null)
+                            if (structure != null)
                             {
-                                var structure = tag.Structure;
+                                var exif = structure.GetEntry(0, (ushort)IFDEntryTag.ExifIFD) as SubIFDEntry;
 
-                                if (structure != null)
+                                if (exif != null)
                                 {
-                                    var exif = structure.GetEntry(0, (ushort)IFDEntryTag.ExifIFD) as SubIFDEntry;
+                                    var exifStructure = exif.Structure;
 
-                                    if (exif != null)
+                                    if (exifStructure != null)
                                     {
-                                        var exifStructure = exif.Structure;
+                                        var entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ApertureValue) as RationalIFDEntry;
 
-                                        if (exifStructure != null)
+                                        if (entry != null)
                                         {
-                                            var entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ApertureValue) as RationalIFDEntry;
+                                            double val = entry.Value.Numerator;
+                                            val /= entry.Value.Denominator;
+                                            item.Aperture = val;
+                                        }
 
-                                            if (entry != null)
-                                            {
-                                                double val = entry.Value.Numerator;
-                                                val /= entry.Value.Denominator;
-                                                item.Aperture = val;
-                                            }
+                                        entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ShutterSpeedValue) as RationalIFDEntry;
 
-                                            entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ShutterSpeedValue) as RationalIFDEntry;
-
-                                            if (entry != null)
-                                            {
-                                                double val = entry.Value.Numerator;
-                                                val /= entry.Value.Denominator;
-                                                item.ShutterSpeed = val;
-                                            }
+                                        if (entry != null)
+                                        {
+                                            double val = entry.Value.Numerator;
+                                            val /= entry.Value.Denominator;
+                                            item.ShutterSpeed = val;
                                         }
                                     }
                                 }
                             }
+                        }
 
-                            if (image != null)
+                        if (image != null)
+                        {
+                            item.CameraMake = image.ImageTag.Make;
+                            item.CameraModel = image.ImageTag.Model;
+
+                            item.Width = image.Properties.PhotoWidth;
+                            item.Height = image.Properties.PhotoHeight;
+
+                            var rating = image.ImageTag.Rating;
+                            if (rating.HasValue)
                             {
-                                item.CameraMake = image.ImageTag.Make;
-                                item.CameraModel = image.ImageTag.Model;
+                                item.CommunityRating = rating;
+                            }
+                            else
+                            {
+                                item.CommunityRating = null;
+                            }
 
-                                item.Width = image.Properties.PhotoWidth;
-                                item.Height = image.Properties.PhotoHeight;
+                            item.Overview = image.ImageTag.Comment;
 
-                                var rating = image.ImageTag.Rating;
-                                if (rating.HasValue)
+                            if (!string.IsNullOrWhiteSpace(image.ImageTag.Title))
+                            {
+                                if (!item.LockedFields.Contains(MetadataFields.Name))
                                 {
-                                    item.CommunityRating = rating;
+                                    item.Name = image.ImageTag.Title;
                                 }
-                                else
+                            }
+
+                            var dateTaken = image.ImageTag.DateTime;
+                            if (dateTaken.HasValue)
+                            {
+                                item.DateCreated = dateTaken.Value;
+                                item.PremiereDate = dateTaken.Value;
+                                item.ProductionYear = dateTaken.Value.Year;
+                            }
+
+                            item.Genres = image.ImageTag.Genres;
+                            item.Tags = image.ImageTag.Keywords;
+                            item.Software = image.ImageTag.Software;
+
+                            if (image.ImageTag.Orientation == TagLib.Image.ImageOrientation.None)
+                            {
+                                item.Orientation = null;
+                            }
+                            else
+                            {
+                                MediaBrowser.Model.Drawing.ImageOrientation orientation;
+                                if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out orientation))
                                 {
-                                    item.CommunityRating = null;
+                                    item.Orientation = orientation;
                                 }
+                            }
 
-                                item.Overview = image.ImageTag.Comment;
+                            item.ExposureTime = image.ImageTag.ExposureTime;
+                            item.FocalLength = image.ImageTag.FocalLength;
 
-                                if (!string.IsNullOrWhiteSpace(image.ImageTag.Title))
-                                {
-                                    if (!item.LockedFields.Contains(MetadataFields.Name))
-                                    {
-                                        item.Name = image.ImageTag.Title;
-                                    }
-                                }
+                            item.Latitude = image.ImageTag.Latitude;
+                            item.Longitude = image.ImageTag.Longitude;
+                            item.Altitude = image.ImageTag.Altitude;
 
-                                var dateTaken = image.ImageTag.DateTime;
-                                if (dateTaken.HasValue)
-                                {
-                                    item.DateCreated = dateTaken.Value;
-                                    item.PremiereDate = dateTaken.Value;
-                                    item.ProductionYear = dateTaken.Value.Year;
-                                }
-
-                                item.Genres = image.ImageTag.Genres;
-                                item.Tags = image.ImageTag.Keywords;
-                                item.Software = image.ImageTag.Software;
-
-                                if (image.ImageTag.Orientation == TagLib.Image.ImageOrientation.None)
-                                {
-                                    item.Orientation = null;
-                                }
-                                else
-                                {
-                                    MediaBrowser.Model.Drawing.ImageOrientation orientation;
-                                    if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out orientation))
-                                    {
-                                        item.Orientation = orientation;
-                                    }
-                                }
-
-                                item.ExposureTime = image.ImageTag.ExposureTime;
-                                item.FocalLength = image.ImageTag.FocalLength;
-
-                                item.Latitude = image.ImageTag.Latitude;
-                                item.Longitude = image.ImageTag.Longitude;
-                                item.Altitude = image.ImageTag.Altitude;
-
-                                if (image.ImageTag.ISOSpeedRatings.HasValue)
-                                {
-                                    item.IsoSpeedRating = Convert.ToInt32(image.ImageTag.ISOSpeedRatings.Value);
-                                }
-                                else
-                                {
-                                    item.IsoSpeedRating = null;
-                                }
+                            if (image.ImageTag.ISOSpeedRatings.HasValue)
+                            {
+                                item.IsoSpeedRating = Convert.ToInt32(image.ImageTag.ISOSpeedRatings.Value);
+                            }
+                            else
+                            {
+                                item.IsoSpeedRating = null;
                             }
                         }
                     }
