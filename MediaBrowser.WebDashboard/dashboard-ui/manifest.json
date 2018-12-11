@@ -6,14 +6,6 @@
   "lang": "en-US",
   "related_applications": [
     {
-      "platform": "android",
-      "location": "https://play.google.com/store/apps/details?id=com.mb.android"
-    },
-    {
-      "platform": "ios",
-      "location": "https://itunes.apple.com/us/app/emby/id992180193?ls=1&mt=8"
-    },
-    {
       "platform": "web"
     }
   ],
