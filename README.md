@@ -15,7 +15,11 @@ While our first priority is a stable build, we will eventually add features that
 
 ## Prebuilt Jellyfin packages
 
-Prebuild packages are available for Debian/Ubuntu and Arch.
+Prebuild packages are available for Debian/Ubuntu and Arch, and via Docker Hub.
+
+### Docker
+
+The Jellyfin Docker image is available on Docker Hub at https://hub.docker.com/r/jellyfin/jellyfin/
 
 ### Arch
 
