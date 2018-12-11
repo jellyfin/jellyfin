@@ -20,15 +20,15 @@ define(["connectionManager", "globalize", "userSettings", "apphost"], function(c
     }
 
     function showBlurayMessage() {
-        return showMessage("Playback of Bluray folders in this app is experimental. Some titles may not work at all. For a better experience, consider converting to mkv video files, or use an Emby app with native Bluray folder support.", "blurayexpirementalinfo", "nativeblurayplayback")
+        return showMessage("Playback of Bluray folders in this app is experimental. Some titles may not work at all. For a better experience, consider converting to mkv video files, or use an Jellyfin app with native Bluray folder support.", "blurayexpirementalinfo", "nativeblurayplayback")
     }
 
     function showDvdMessage() {
-        return showMessage("Playback of Dvd folders in this app is experimental. Some titles may not work at all. For a better experience, consider converting to mkv video files, or use an Emby app with native Dvd folder support.", "dvdexpirementalinfo", "nativedvdplayback")
+        return showMessage("Playback of Dvd folders in this app is experimental. Some titles may not work at all. For a better experience, consider converting to mkv video files, or use an Jellyfin app with native Dvd folder support.", "dvdexpirementalinfo", "nativedvdplayback")
     }
 
     function showIsoMessage() {
-        return showMessage("Playback of ISO files in this app is experimental. Some titles may not work at all. For a better experience, consider converting to mkv video files, or use an Emby app with native ISO support.", "isoexpirementalinfo", "nativeisoplayback")
+        return showMessage("Playback of ISO files in this app is experimental. Some titles may not work at all. For a better experience, consider converting to mkv video files, or use an Jellyfin app with native ISO support.", "isoexpirementalinfo", "nativeisoplayback")
     }
 
     function ExpirementalPlaybackWarnings() {

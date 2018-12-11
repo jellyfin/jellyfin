@@ -71,7 +71,7 @@ define(["loading", "dialogHelper", "dom", "listViewStyle", "emby-input", "emby-b
         }).catch(function(response) {
             if (response) {
                 if (404 === response.status) return alertText("The path could not be found. Please ensure the path is valid and try again."), Promise.reject();
-                if (500 === response.status) return alertText(validateWriteable ? "Emby Server requires write access to this folder. Please ensure write access and try again." : "The path could not be found. Please ensure the path is valid and try again."), Promise.reject()
+                if (500 === response.status) return alertText(validateWriteable ? "Jellyfin Server requires write access to this folder. Please ensure write access and try again." : "The path could not be found. Please ensure the path is valid and try again."), Promise.reject()
             }
             return Promise.resolve()
         })
