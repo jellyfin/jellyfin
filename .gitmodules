@@ -1,0 +1,3 @@
+[submodule "ThirdParty/taglib-sharp"]
+	path = ThirdParty/taglib-sharp
+	url = git@github.com:mono/taglib-sharp.git
