@@ -34,7 +34,7 @@ A package repository is available at https://repo.jellyfin.org. To use it:
     ```
     wget -O - https://repo.jellyfin.org/debian/jellyfin-signing-key-joshua.gpg.key | sudo apt-key add -
     ```
-0. Add an entry to `/etc/sources.list.d/jellyfin.list`:
+0. Add an entry to `/etc/apt/sources.list.d/jellyfin.list` (note that Ubuntu will get `buster` but this should work fine):
     ```
     echo "deb https://repo.jellyfin.org/debian $( grep -Ewo -m1 --color=none 'jessie|stretch|buster' /etc/os-release || echo buster ) main" | sudo tee /etc/apt/sources.list.d/jellyfin.list
     ```
@@ -51,14 +51,14 @@ A package repository is available at https://repo.jellyfin.org. To use it:
 
 Jellyfin seeks to integrate build facilities for any desired packaging format. Instructions for the various formats can be found below.
 
-NOTE: When building from source, it is strongly advised to clone the full Git repository, rather than using a `.zip`/`.tar` archive.
+NOTE: When building from source, only cloning the full Git repository is supported, rather than using a `.zip`/`.tar` archive, in order to support submodules.
 
 ### Debian/Ubuntu
 
 Debian build facilities are integrated into the repo at `debian/`.
 
 1. Install the `dotnet-sdk-2.1` package via [Microsoft's repositories](https://dotnet.microsoft.com/download/dotnet-core/2.1).
-2. Run `dpkg-buildpackage -us -uc -jX`, where X is your core count.
-3. Install the resulting `jellyfin*.deb` file on your system.
+2. Run `dpkg-buildpackage -us -uc`.
+3. Install the resulting `jellyfin_*.deb` file on your system.
 
-A huge thanks to Carlos Hernandez who created the Debian build configuration for Emby 3.1.1.
+A huge thanks to Carlos Hernandez who created the original Debian build configuration for Emby 3.1.1.
