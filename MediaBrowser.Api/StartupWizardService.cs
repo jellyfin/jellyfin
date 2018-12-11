@@ -148,16 +148,6 @@ namespace MediaBrowser.Api
 
             var result = new UpdateStartupUserResult();
 
-            if (!string.IsNullOrWhiteSpace(user.ConnectUserName) &&
-                string.IsNullOrWhiteSpace(request.ConnectUserName))
-            {
-                await _connectManager.RemoveConnect(user).ConfigureAwait(false);
-            }
-            else if (!string.Equals(user.ConnectUserName, request.ConnectUserName, StringComparison.OrdinalIgnoreCase))
-            {
-                result.UserLinkResult = await _connectManager.LinkUser(user, request.ConnectUserName).ConfigureAwait(false);
-            }
-
             return result;
         }
     }

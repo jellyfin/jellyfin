@@ -25,12 +25,6 @@
     <PackageReference Include="SQLitePCLRaw.core" Version="1.1.11" />
     <PackageReference Include="SQLitePCLRaw.provider.sqlite3.netstandard11" Version="1.1.11" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
-    <Reference Include="Emby.Server.Connect">
-      <HintPath>..\ThirdParty\emby\Emby.Server.Connect.dll</HintPath>
-    </Reference>
-    <Reference Include="Emby.Server.Sync">
-      <HintPath>..\ThirdParty\emby\Emby.Server.Sync.dll</HintPath>
-    </Reference>
     <Reference Include="Emby.Server.MediaEncoding">
       <HintPath>..\ThirdParty\emby\Emby.Server.MediaEncoding.dll</HintPath>
     </Reference>
