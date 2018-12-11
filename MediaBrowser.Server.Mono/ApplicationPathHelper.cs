@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace MediaBrowser.Server.Mono
 {
@@ -22,7 +23,15 @@ namespace MediaBrowser.Server.Mono
                 ConfigurationManager.AppSettings["DebugProgramDataPath"] : 
                 ConfigurationManager.AppSettings["ReleaseProgramDataPath"];
 
-            programDataPath = programDataPath.Replace("%ApplicationData%", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                programDataPath = programDataPath.Replace("%ApplicationData%", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+            }
+            else
+            {
+                programDataPath = programDataPath.Replace("%ApplicationData%", "/var/lib");
+            }
+            
 
             programDataPath = programDataPath
                 .Replace('/', Path.DirectorySeparatorChar)
