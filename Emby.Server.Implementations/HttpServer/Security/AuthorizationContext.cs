@@ -162,10 +162,6 @@ namespace Emby.Server.Implementations.HttpServer.Security
                         _authRepo.Update(tokenInfo);
                     }
                 }
-                else
-                {
-                    info.User = _connectManager.GetUserFromExchangeToken(token);
-                }
                 httpReq.Items["OriginalAuthenticationInfo"] = tokenInfo;
             }
 
