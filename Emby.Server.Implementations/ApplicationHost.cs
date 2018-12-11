@@ -1994,7 +1994,8 @@ namespace Emby.Server.Implementations
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
-                WanAddress = ConnectManager.WanApiAddress,
+                // TODO - remove WanAddress
+                WanAddress = "0.0.0.0",
                 HasUpdateAvailable = HasUpdateAvailable,
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
@@ -2027,7 +2028,8 @@ namespace Emby.Server.Implementations
                 Version = ApplicationVersion.ToString(),
                 Id = SystemId,
                 OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
-                WanAddress = ConnectManager.WanApiAddress,
+                // TODO - remove WanAddress
+                WanAddress = "0.0.0.0",
                 ServerName = FriendlyName,
                 LocalAddress = localAddress
             };

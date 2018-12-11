@@ -51,12 +51,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (!IsExemptFromAuthenticationToken(auth, authAttribtues, request))
             {
-                var valid = IsValidConnectKey(auth.Token);
-
-                if (!valid)
-                {
-                    ValidateSecurityToken(request, auth.Token);
-                }
+                ValidateSecurityToken(request, auth.Token);
             }
 
             if (authAttribtues.AllowLocalOnly && !request.IsLocal)
@@ -219,16 +214,6 @@ namespace Emby.Server.Implementations.HttpServer.Security
             object info;
             request.Items.TryGetValue("OriginalAuthenticationInfo", out info);
             return info as AuthenticationInfo;
-        }
-
-        private bool IsValidConnectKey(string token)
-        {
-            if (string.IsNullOrEmpty(token))
-            {
-                return false;
-            }
-
-            return ConnectManager.IsAuthorizationTokenValid(token);
         }
 
         private void ValidateSecurityToken(IRequest request, string token)

@@ -4,8 +4,8 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 //using Emby.Server.CinemaMode;
-using Emby.Server.Connect;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.Net;
 using MediaBrowser.Controller.Connect;
@@ -36,7 +36,7 @@ namespace MediaBrowser.Server.Mono
 
         protected override IConnectManager CreateConnectManager()
         {
-            return new ConnectManager();
+            return new Emby.Server.Implementations.Library.ConnectManager();
         }
 
         //protected override ISyncManager CreateSyncManager()
@@ -54,7 +54,6 @@ namespace MediaBrowser.Server.Mono
             var list = new List<Assembly>();
 
             list.Add(GetType().Assembly);
-            list.Add(typeof(ConnectManager).Assembly);
 
             return list;
         }
