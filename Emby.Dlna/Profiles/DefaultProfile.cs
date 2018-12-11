@@ -18,8 +18,8 @@ namespace Emby.Dlna.Profiles
             ModelDescription = "UPnP/AV 1.0 Compliant Media Server";
             ModelName = "Emby Server";
             ModelNumber = "01";
-            ModelUrl = "https://emby.media";
-            ManufacturerUrl = "https://emby.media";
+            ModelUrl = "https://github.com/jellyfin/jellyfin";
+            ManufacturerUrl = "https://github.com/jellyfin/jellyfin";
 
             AlbumArtPn = "JPEG_SM";
 

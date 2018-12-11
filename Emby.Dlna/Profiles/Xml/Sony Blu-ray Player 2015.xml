@@ -10,11 +10,11 @@
     </Headers>
   </Identification>
   <Manufacturer>Microsoft Corporation</Manufacturer>
-  <ManufacturerUrl>https://emby.media</ManufacturerUrl>
+  <ManufacturerUrl>https://github.com/jellyfin/jellyfin</ManufacturerUrl>
   <ModelName>Windows Media Player Sharing</ModelName>
   <ModelDescription>UPnP/AV 1.0 Compliant Media Server</ModelDescription>
   <ModelNumber>3.0</ModelNumber>
-  <ModelUrl>https://emby.media</ModelUrl>
+  <ModelUrl>https://github.com/jellyfin/jellyfin</ModelUrl>
   <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
   <EnableSingleAlbumArtLimit>false</EnableSingleAlbumArtLimit>
   <EnableSingleSubtitleLimit>false</EnableSingleSubtitleLimit>
