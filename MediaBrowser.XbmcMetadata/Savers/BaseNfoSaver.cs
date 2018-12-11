@@ -777,7 +777,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                             //Logger.Debug("Verifying custom provider tagname {0}", tagName);
                             XmlConvert.VerifyName(tagName);
                             //Logger.Debug("Saving custom provider tagname {0}", tagName);
-                            
+
                             writer.WriteElementString(GetTagForProviderKey(providerKey), providerId);
                         }
                         catch (ArgumentException)

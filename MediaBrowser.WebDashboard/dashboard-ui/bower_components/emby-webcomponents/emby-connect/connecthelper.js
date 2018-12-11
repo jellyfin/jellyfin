@@ -40,8 +40,8 @@ define(["globalize", "apphost", "loading", "alert", "emby-linkbutton"], function
 
     function showGuestGeneralErrorMessage() {
         var html;
-        appHost.supports("externallinks") && (html = globalize.translate("sharedcomponents#ErrorAddingGuestAccount1", '<a is="emby-linkbutton" class="button-link" href="https://emby.media/connect" target="_blank">https://emby.media/connect</a>'), html += "<br/><br/>" + globalize.translate("sharedcomponents#ErrorAddingGuestAccount2", "apps@emby.media"));
-        var text = globalize.translate("sharedcomponents#ErrorAddingGuestAccount1", "https://emby.media/connect");
+        appHost.supports("externallinks") && (html = globalize.translate("sharedcomponents#ErrorAddingGuestAccount1", '<a is="emby-linkbutton" class="button-link" href="https://github.com/jellyfin/jellyfin" target="_blank">https://github.com/jellyfin/jellyfin</a>'), html += "<br/><br/>" + globalize.translate("sharedcomponents#ErrorAddingGuestAccount2", "apps@emby.media"));
+        var text = globalize.translate("sharedcomponents#ErrorAddingGuestAccount1", "https://github.com/jellyfin/jellyfin");
         return text += "\n\n" + globalize.translate("sharedcomponents#ErrorAddingGuestAccount2", "apps@emby.media"), alert({
             text: text,
             html: html
@@ -57,7 +57,7 @@ define(["globalize", "apphost", "loading", "alert", "emby-linkbutton"], function
 
     function showLinkUserErrorMessage(username, statusCode) {
         var html, text;
-        return 502 === statusCode ? showConnectServerUnreachableErrorMessage() : (username ? (appHost.supports("externallinks") && (html = globalize.translate("sharedcomponents#ErrorAddingEmbyConnectAccount1", '<a is="emby-linkbutton" class="button-link" href="https://emby.media/connect" target="_blank">https://emby.media/connect</a>'), html += "<br/><br/>" + globalize.translate("sharedcomponents#ErrorAddingEmbyConnectAccount2", "apps@emby.media")), text = globalize.translate("sharedcomponents#ErrorAddingEmbyConnectAccount1", "https://emby.media/connect"), text += "\n\n" + globalize.translate("sharedcomponents#ErrorAddingEmbyConnectAccount2", "apps@emby.media")) : html = text = globalize.translate("sharedcomponents#DefaultErrorMessage"), alert({
+        return 502 === statusCode ? showConnectServerUnreachableErrorMessage() : (username ? (appHost.supports("externallinks") && (html = globalize.translate("sharedcomponents#ErrorAddingEmbyConnectAccount1", '<a is="emby-linkbutton" class="button-link" href="https://github.com/jellyfin/jellyfin" target="_blank">https://github.com/jellyfin/jellyfin</a>'), html += "<br/><br/>" + globalize.translate("sharedcomponents#ErrorAddingEmbyConnectAccount2", "apps@emby.media")), text = globalize.translate("sharedcomponents#ErrorAddingEmbyConnectAccount1", "https://github.com/jellyfin/jellyfin"), text += "\n\n" + globalize.translate("sharedcomponents#ErrorAddingEmbyConnectAccount2", "apps@emby.media")) : html = text = globalize.translate("sharedcomponents#DefaultErrorMessage"), alert({
             text: text,
             html: html
         }))

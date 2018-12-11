@@ -12,7 +12,7 @@ define(["fetchHelper", "dom", "registrationServices", "loading", "confirm", "glo
                 if (statusInfo) {
                     var statusLine, indicator = page.querySelector("#status-indicator .listItemIcon"),
                         extendedPlans = page.querySelector("#extended-plans");
-                    switch (extendedPlans.innerHTML = globalize.translate("MessagePremiereExtendedPlans", '<a is="emby-linkbutton" class="button-link" href="https://emby.media/premiere-ext.html" target="_blank">', "</a>"), statusInfo.deviceStatus) {
+                    switch (extendedPlans.innerHTML = globalize.translate("MessagePremiereExtendedPlans", '<a is="emby-linkbutton" class="button-link" href="https://github.com/jellyfin/jellyfin" target="_blank">', "</a>"), statusInfo.deviceStatus) {
                         case 2:
                             statusLine = globalize.translate("MessagePremiereStatusOver", statusInfo.planType), indicator.classList.add("expiredBackground"), indicator.classList.remove("nearExpiredBackground"), indicator.innerHTML = "&#xE000;", extendedPlans.classList.remove("hide");
                             break;
@@ -134,7 +134,7 @@ define(["fetchHelper", "dom", "registrationServices", "loading", "confirm", "glo
         registrationServices.showPremiereInfo(), e.preventDefault(), e.stopPropagation()
     }
     return function(view, params) {
-        view.querySelector("#supporterKeyForm").addEventListener("submit", updateSupporterKey), view.querySelector("#lostKeyForm").addEventListener("submit", retrieveSupporterKey), view.querySelector(".benefits").innerHTML = globalize.translate("HeaderSupporterBenefit", '<a is="emby-linkbutton" class="lnkPremiere button-link" href="http://emby.media/premiere" target="_blank">', "</a>"), view.querySelector(".lnkPremiere").addEventListener("click", onSupporterLinkClick), view.addEventListener("viewshow", function() {
+        view.querySelector("#supporterKeyForm").addEventListener("submit", updateSupporterKey), view.querySelector("#lostKeyForm").addEventListener("submit", retrieveSupporterKey), view.querySelector(".benefits").innerHTML = globalize.translate("HeaderSupporterBenefit", '<a is="emby-linkbutton" class="lnkPremiere button-link" href="https://github.com/jellyfin/jellyfin" target="_blank">', "</a>"), view.querySelector(".lnkPremiere").addEventListener("click", onSupporterLinkClick), view.addEventListener("viewshow", function() {
             load(this)
         })
     }

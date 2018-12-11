@@ -142,7 +142,7 @@ define(["appSettings", "loading", "apphost", "iapManager", "events", "shell", "g
     function getTermsOfPurchaseHtml() {
         var html = "",
             termsOfPurchase = iapManager.getTermsOfPurchase ? iapManager.getTermsOfPurchase() : [];
-        return termsOfPurchase.length ? (html += "<h1>" + globalize.translate("sharedcomponents#HeaderTermsOfPurchase") + "</h1>", termsOfPurchase.push('<a is="emby-linkbutton" class="button-link" href="https://emby.media/privacy" target="_blank">' + globalize.translate("sharedcomponents#PrivacyPolicy") + "</a>"), termsOfPurchase.push('<a is="emby-linkbutton" class="button-link" href="https://emby.media/terms" target="_blank">' + globalize.translate("sharedcomponents#TermsOfUse") + "</a>"), html += "<ul>", html += termsOfPurchase.map(getPurchaseTermHtml).join(""), html += "</ul>") : html
+        return termsOfPurchase.length ? (html += "<h1>" + globalize.translate("sharedcomponents#HeaderTermsOfPurchase") + "</h1>", termsOfPurchase.push('<a is="emby-linkbutton" class="button-link" href="https://github.com/jellyfin/jellyfin" target="_blank">' + globalize.translate("sharedcomponents#PrivacyPolicy") + "</a>"), termsOfPurchase.push('<a is="emby-linkbutton" class="button-link" href="https://github.com/jellyfin/jellyfin" target="_blank">' + globalize.translate("sharedcomponents#TermsOfUse") + "</a>"), html += "<ul>", html += termsOfPurchase.map(getPurchaseTermHtml).join(""), html += "</ul>") : html
     }
 
     function showInAppPurchaseElement(subscriptionOptions, unlockableProductInfo, dialogOptions, resolve, reject) {
