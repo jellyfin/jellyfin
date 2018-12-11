@@ -272,20 +272,6 @@ namespace Emby.Server.Implementations.Library
                     authenticationProvider = authResult.Item1;
                     success = authResult.Item2;
                 }
-
-                // Maybe user accidently entered connect credentials. let's be flexible
-                if (!success && user.ConnectLinkType.HasValue && !string.IsNullOrWhiteSpace(user.ConnectUserName))
-                {
-                    try
-                    {
-                        await _connectFactory().Authenticate(user.ConnectUserName, password).ConfigureAwait(false);
-                        success = true;
-                    }
-                    catch
-                    {
-
-                    }
-                }
             }
             else
             {
@@ -315,23 +301,6 @@ namespace Emby.Server.Implementations.Library
                 {
                     user.Policy.AuthenticationProviderId = providerId;
                     UpdateUserPolicy(user, user.Policy, true);
-                }
-            }
-
-            // Try originally entered username
-            if (!success && (user == null || !string.Equals(user.ConnectUserName, username, StringComparison.OrdinalIgnoreCase)))
-            {
-                try
-                {
-                    var connectAuthResult = await _connectFactory().Authenticate(username, password).ConfigureAwait(false);
-
-                    user = Users.FirstOrDefault(i => string.Equals(i.ConnectUserId, connectAuthResult.User.Id, StringComparison.OrdinalIgnoreCase));
-
-                    success = user != null;
-                }
-                catch
-                {
-
                 }
             }
 
@@ -775,11 +744,6 @@ namespace Emby.Server.Implementations.Library
             if (user == null)
             {
                 throw new ArgumentNullException("user");
-            }
-
-            if (user.ConnectLinkType.HasValue)
-            {
-                await _connectFactory().RemoveConnect(user).ConfigureAwait(false);
             }
 
             var allUsers = Users.ToList();
