@@ -5,7 +5,7 @@ Jellyfin is a personal media server. The Jellyfin project was started as a resul
 
 Jellyfin is descended from Emby 3.5.2, ported to the .NET Core framework, and aims to contain build facilities for every platform.
 
-For further details, please see [our wiki](https://github.com/jellyfin/jellyfin/wiki) and join [our public chat on Matrix/Riot](https://matrix.to/#/#jellyfin:matrix.org).
+For further details, please see [our wiki](https://github.com/jellyfin/jellyfin/wiki). To receive the latest project updates feel free to join [our public chat on Matrix/Riot](https://matrix.to/#/#jellyfin:matrix.org) and to subscribe to [our subreddit](https://www.reddit.com/r/jellyfin/).
 
 ## Feature Requests
 
