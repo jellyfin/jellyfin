@@ -1261,7 +1261,7 @@
     "LabelPlayMethodDirectPlay": "Direkte Avspilling",
     "LabelAudioCodec": "Lyd: {0}",
     "LabelVideoCodec": "Video: {0}",
-    "LabelLocalAccessUrl": "In-Home (LAN) access: {0}",
+    "LabelLocalAccessUrl": "LAN address: {0}",
     "LabelRemoteAccessUrl": "Remote (WAN) access: {0}",
     "LabelRunningOnPort": "Kj\u00f8rer p\u00e5 http port {0}.",
     "LabelRunningOnPorts": "Kj\u00f8rer p\u00e5 http port {0} og https port {1}.",
