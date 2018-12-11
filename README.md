@@ -26,3 +26,21 @@ Debian build facilities are integrated into the repo at `debian/`.
 3. Install the resulting `jellyfin*.deb` file on your system.
 
 A huge thanks to Carlos Hernandez who created the Debian build configuration for Emby 3.1.1.
+
+### Windows (64 bit)
+A pre-built windows installer will be available at [The JellyFin Repository](https://repo.jellyfin.org/).
+
+1. Install the dotnet core SDK 2.1 from [Microsoft's Webpage](https://dotnet.microsoft.com/download/thank-you/dotnet-sdk-2.1.500-windows-x64-installer)
+2. Clone Jellyfin into a directory of your choice. From that directory run in powershell `dotnet publish -c Release -r win10-x64 MediaBrowser.sln -o $Env:APPDATA\Jellyfin-Server` or in CMD `dotnet publish -c Release -r win10-x64 MediaBrowser.sln -o %APPDATA%\Jellyfin-Server`
+3. (Optional) Copy the ffmpeg binaries into the Jellyfin directory:
+```
+Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-4.1-win64-static.zip -UseBasicParsing -OutFile $env:TEMP\fmmpeg.zip
+Expand-Archive $env:TEMP\fmmpeg.zip -DestinationPath $env:TEMP\ffmpeg\
+Get-ChildItem "$env:temp\ffmpeg\ffmpeg-4.1-win64-static\bin" | ForEach-Object {
+    Copy-Item $_ -Destination $Env:AppData\JellyFin-Server\
+}
+Remove-Item $env:TEMP\ffmpeg\ -Recurse -Force
+Remove-Item $env:TEMP\fmmpeg.zip -Force
+```
+4. (Optional) Use [NSSM](https://nssm.cc/) to configure JellyFin to run as a service
+5. Jellyfin is now available in your Appdata\Roaming directory. To start it from a powershell window, `&"$env:APPDATA\Jellyfin-Server\EmbyServer.exe"`
