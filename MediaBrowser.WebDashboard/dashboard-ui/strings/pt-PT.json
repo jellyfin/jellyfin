@@ -1262,7 +1262,7 @@
     "LabelAudioCodec": "\u00c1udio: {0}",
     "LabelVideoCodec": "V\u00eddeo: {0}",
     "LabelLocalAccessUrl": "LAN address: {0}",
-    "LabelRemoteAccessUrl": "Remote (WAN) access: {0}",
+    "LabelRemoteAccessUrl": "WAN address: {0}",
     "LabelRunningOnPort": "A executar na porta http {0}.",
     "LabelRunningOnPorts": "A executar na porta http {0} e na porta https {1}.",
     "HeaderLatestFromChannel": "Mais recentes de {0}",
