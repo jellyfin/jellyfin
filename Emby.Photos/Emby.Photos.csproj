@@ -3,9 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
-    <Reference Include="TagLib.Portable">
-      <HintPath>..\ThirdParty\taglib\TagLib.Portable.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\ThirdParty\taglib-sharp\src\taglib-sharp.csproj" />
   </ItemGroup>
 
   <ItemGroup>
