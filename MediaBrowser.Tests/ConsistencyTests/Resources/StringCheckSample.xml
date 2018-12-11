@@ -14,7 +14,6 @@
   <Dictionary Token="LabelRestartServer" Text="Restart Server" />
   <Dictionary Token="LabelShowLogWindow" Text="Show Log Window" />
   <Dictionary Token="LabelPrevious" Text="Previous">
-    <Occurence FileName="\wizardagreement.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\wizardagreement.html" LineNumber="21" />
     <Occurence FileName="\wizardcomponents.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\wizardcomponents.html" LineNumber="54" />
     <Occurence FileName="\wizardfinish.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\wizardfinish.html" LineNumber="40" />
     <Occurence FileName="\wizardlibrary.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\wizardlibrary.html" LineNumber="19" />
@@ -28,7 +27,6 @@
     <Occurence FileName="\wizardfinish.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\wizardfinish.html" LineNumber="41" />
   </Dictionary>
   <Dictionary Token="LabelNext" Text="Next">
-    <Occurence FileName="\wizardagreement.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\wizardagreement.html" LineNumber="22" />
     <Occurence FileName="\wizardcomponents.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\wizardcomponents.html" LineNumber="55" />
     <Occurence FileName="\wizardlibrary.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\wizardlibrary.html" LineNumber="20" />
     <Occurence FileName="\wizardlivetvguide.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\wizardlivetvguide.html" LineNumber="31" />
@@ -86,21 +84,6 @@
   <Dictionary Token="LabelChapterImageExtractionForMoviesHelp" Text="Extracting chapter images will allow clients to display graphical scene selection menus. The process can be slow, cpu-intensive and may require several gigabytes of space. It runs as a nightly scheduled task, although this is configurable in the scheduled tasks area. It is not recommended to run this task during peak usage hours." />
   <Dictionary Token="LabelEnableAutomaticPortMapping" Text="Enable automatic port mapping" />
   <Dictionary Token="LabelEnableAutomaticPortMappingHelp" Text="UPnP allows automated router configuration for easy remote access. This may not work with some router models." />
-  <Dictionary Token="HeaderTermsOfService" Text="Emby Terms of Service">
-    <Occurence FileName="\wizardagreement.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\wizardagreement.html" LineNumber="9" />
-  </Dictionary>
-  <Dictionary Token="MessagePleaseAcceptTermsOfService" Text="Please accept the terms of service and privacy policy before continuing.">
-    <Occurence FileName="\wizardagreement.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\wizardagreement.html" LineNumber="12" />
-  </Dictionary>
-  <Dictionary Token="OptionIAcceptTermsOfService" Text="I accept the terms of service">
-    <Occurence FileName="\wizardagreement.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\wizardagreement.html" LineNumber="17" />
-  </Dictionary>
-  <Dictionary Token="ButtonPrivacyPolicy" Text="Privacy policy">
-    <Occurence FileName="\wizardagreement.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\wizardagreement.html" LineNumber="14" />
-  </Dictionary>
-  <Dictionary Token="ButtonTermsOfService" Text="Terms of Service">
-    <Occurence FileName="\wizardagreement.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\wizardagreement.html" LineNumber="15" />
-  </Dictionary>
   <Dictionary Token="HeaderDeveloperOptions" Text="Developer Options">
     <Occurence FileName="\dashboardgeneral.html" FullPath="F:\Projects\Softworkz_Emby\Emby\MediaBrowser.WebDashboard\dashboard-ui\dashboardgeneral.html" LineNumber="108" />
   </Dictionary>

@@ -772,12 +772,6 @@ var Dashboard = {
             autoFocus: !1,
             roles: "admin"
         }), defineRoute({
-            path: "/wizardagreement.html",
-            dependencies: ["dashboardcss"],
-            autoFocus: !1,
-            anonymous: !0,
-            controller: "scripts/wizardagreement"
-        }), defineRoute({
             path: "/wizardremoteaccess.html",
             dependencies: ["dashboardcss"],
             autoFocus: !1,

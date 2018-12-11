@@ -15,7 +15,7 @@ define(["loading", "emby-checkbox", "emby-button", "emby-select"], function(load
     }
 
     function navigateToNextPage() {
-        Dashboard.navigate("wizardagreement.html")
+        Dashboard.navigate("wizardfinish.html")
     }
 
     function onSubmit(e) {
