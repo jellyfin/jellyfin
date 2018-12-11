@@ -235,5 +235,7 @@ pip-log.txt
 MediaBrowser.WebDashboard/dashboard-ui/.idea/
 /.vs
 
+.idea/
+
 # Don't ignore the debian/bin folder
 !debian/bin/
