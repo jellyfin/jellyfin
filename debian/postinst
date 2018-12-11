@@ -34,8 +34,6 @@ case "$1" in
       mkdir $PROGRAMDATA
       chown -R jellyfin:jellyfin $PROGRAMDATA
     fi
-    # ensure jellyfin binary has appropriate permissions
-    chmod 755 /usr/bin/jellyfin
 
     chmod +x ${JELLYFIN_DIR}/restart.sh > /dev/null 2>&1 || true
 
