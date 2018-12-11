@@ -1262,7 +1262,7 @@
     "LabelAudioCodec": "\uc624\ub514\uc624: {0}",
     "LabelVideoCodec": "\ube44\ub514\uc624: {0}",
     "LabelLocalAccessUrl": "LAN address: {0}",
-    "LabelRemoteAccessUrl": "Remote (WAN) access: {0}",
+    "LabelRemoteAccessUrl": "WAN address: {0}",
     "LabelRunningOnPort": "Running on http port {0}.",
     "LabelRunningOnPorts": "Running on http port {0}, and https port {1}.",
     "HeaderLatestFromChannel": "Latest from {0}",
