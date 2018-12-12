@@ -29,16 +29,22 @@ The Jellyfin Docker image is available on Docker Hub at https://hub.docker.com/r
 
 The Jellyfin package is in the AUR at https://aur.archlinux.org/packages/jellyfin-git/
 
+### Unraid
+
+An Unraid Docker template is available. See [this documentation page](https://github.com/jellyfin/jellyfin/blob/master/unRaid/docker-templates/README.md) for details on installing it.
+
 ### Debian/Ubuntu
 
-A package repository is available at https://repo.jellyfin.org. To use it:
+A package repository is available at https://repo.jellyfin.org.
+
+#### Clean install
 
 0. Install the `dotnet-runtime-2.1` package via [Microsoft's repositories](https://dotnet.microsoft.com/download/dotnet-core/2.1).
 0. Import the GPG signing key (signed by Joshua):
     ```
     wget -O - https://repo.jellyfin.org/debian/jellyfin-signing-key-joshua.gpg.key | sudo apt-key add -
     ```
-0. Add an entry to `/etc/apt/sources.list.d/jellyfin.list` (note that Ubuntu will get `buster` but this should work fine):
+0. Add an entry to `/etc/apt/sources.list.d/jellyfin.list` (note that Ubuntu will get `buster` in the list file, but this should still work fine):
     ```
     echo "deb https://repo.jellyfin.org/debian $( grep -Ewo -m1 --color=none 'jessie|stretch|buster' /etc/os-release || echo buster ) main" | sudo tee /etc/apt/sources.list.d/jellyfin.list
     ```
@@ -51,9 +57,42 @@ A package repository is available at https://repo.jellyfin.org. To use it:
     sudo apt install jellyfin
     ```
 
-### Unraid
+#### Upgrade from Emby
 
-An Unraid Docker template is available. See [this documentation page](https://github.com/jellyfin/jellyfin/blob/master/unRaid/docker-templates/README.md) for details on installing it.
+The following procedure should work to upgrade from Emby to Jellyfin on an existing installation:
+
+0. Upgrade to Emby 3.5.X, preferably 3.5.2, so the database schema is fully up-to-date and consistent. This is somewhat optional but can reduce the risk of obscure bugs later on.
+0. Stop the `emby-server` daemon:
+    ```
+    sudo service emby-server stop
+    ```
+0. Move your existing Emby data directory out of the way:
+    ```
+    sudo mv /var/lib/emby /var/lib/emby.backup
+    ```
+0. Remove the `emby-server` package:
+    ```
+    sudo apt remove emby-server
+    ```
+0. Install the `jellyfin` package using the instructions above, verifying that `/var/lib/emby` is a symlink to `/var/lib/jellyfin`.
+0. Stop the `jellyfin` daemon:
+    ```
+    sudo service jellyfin stop
+    ```
+0. Copy over all the data files from the old backup data directory:
+    ```
+    sudo cp -a /var/lib/emby.backup/* /var/lib/jellyfin/
+    ```
+0. Correct ownership on the new data directory:
+    ```
+    sudo chown -R jellyfin /var/lib/jellyfin
+    ```
+0. Start the `jellyfin` daemon:
+    ```
+    sudo service jellyfin start
+    ```
+
+This same general procedure should apply for upgrades on any other platform as well though the specific commands and/or paths may be different.
 
 ## Building Jellyfin packages from source
 
