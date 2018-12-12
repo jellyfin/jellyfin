@@ -8,11 +8,18 @@ namespace Jellyfin.XmlTv.Test
     [TestFixture]
     public class XmlTvReaderDateTimeTests
     {
+        private string _testFilePath;
+
+        [SetUp]
+        public void BeforeEachTest()
+        {
+            _testFilePath = Path.GetFullPath(Path.Combine("XmlFiles", "MultilanguageData.xml"));
+        }
+
         [Test]
         public void ShouldHandlePartDates()
         {
-            var testFile = Path.GetFullPath(@"MultilanguageData.xml");
-            var reader = new XmlTvReader(testFile, "es");
+            var reader = new XmlTvReader(_testFilePath, "es");
             
             Assert.AreEqual(Parse("01 Jan 2016 00:00:00"), reader.ParseDate("2016"));
             Assert.AreEqual(Parse("01 Jan 2016 00:00:00"), reader.ParseDate("201601"));
@@ -25,8 +32,7 @@ namespace Jellyfin.XmlTv.Test
         [Test]
         public void ShouldHandleDateWithOffset()
         {
-            var testFile = Path.GetFullPath(@"MultilanguageData.xml");
-            var reader = new XmlTvReader(testFile, "es");
+            var reader = new XmlTvReader(_testFilePath, "es");
 
             // parse variations on 1:00AM
             Assert.AreEqual(Parse("01 Jan 2016 12:00:00"), reader.ParseDate("20160101120000 +0000"));
@@ -44,8 +50,7 @@ namespace Jellyfin.XmlTv.Test
         [Test]
         public void ShouldHandlePartDatesWithOffset()
         {
-            var testFile = Path.GetFullPath(@"MultilanguageData.xml");
-            var reader = new XmlTvReader(testFile, "es");
+            var reader = new XmlTvReader(_testFilePath, "es");
 
             Assert.AreEqual(Parse("01 Jan 2016 01:00:00"), reader.ParseDate("2016 -0100"));
             Assert.AreEqual(Parse("01 Jan 2016 01:00:00"), reader.ParseDate("201601 -0100"));
@@ -58,8 +63,7 @@ namespace Jellyfin.XmlTv.Test
         [Test]
         public void ShouldHandleSpaces()
         {
-            var testFile = Path.GetFullPath(@"MultilanguageData.xml");
-            var reader = new XmlTvReader(testFile, "es");
+            var reader = new XmlTvReader(_testFilePath, "es");
 
             // parse variations on 1:00AM
             Assert.AreEqual(Parse("01 Jan 2016 12:00:00"), reader.ParseDate("20160101120000 +000"));
@@ -70,8 +74,7 @@ namespace Jellyfin.XmlTv.Test
         [Test]
         public void ShouldHandleSpaces2()
         {
-            var testFile = Path.GetFullPath(@"MultilanguageData.xml");
-            var reader = new XmlTvReader(testFile, "es");
+            var reader = new XmlTvReader(_testFilePath, "es");
 
             // parse variations on 1:00AM
             Assert.AreEqual(Parse("01 Jan 2016 12:00:00"), reader.ParseDate("20160101120000 0"));
