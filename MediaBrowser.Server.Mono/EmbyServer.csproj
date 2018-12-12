@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <AssemblyName>jellyfin</AssemblyName>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
@@ -17,17 +18,11 @@
 
   <ItemGroup>
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
-    <PackageReference Include="ServiceStack.Text.Core" Version="5.2.0" />
-    <PackageReference Include="sharpcompress" Version="0.22.0" />
-    <PackageReference Include="SimpleInjector" Version="4.3.0" />
-    <PackageReference Include="SkiaSharp" Version="1.60.3" />
+    <PackageReference Include="SkiaSharp" Version="1.68.0" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="1.1.11" />
     <PackageReference Include="SQLitePCLRaw.core" Version="1.1.11" />
     <PackageReference Include="SQLitePCLRaw.provider.sqlite3.netstandard11" Version="1.1.11" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
-    <Reference Include="Emby.Server.MediaEncoding">
-      <HintPath>..\ThirdParty\emby\Emby.Server.MediaEncoding.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>
