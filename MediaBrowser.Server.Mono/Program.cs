@@ -2,6 +2,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Mono.Native;
 using MediaBrowser.Server.Startup.Common;
 using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -24,6 +25,7 @@ using Mono.Unix.Native;
 using ILogger = MediaBrowser.Model.Logging.ILogger;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 using System.Threading;
+using EmbyServer;
 
 namespace MediaBrowser.Server.Mono
 {
@@ -46,8 +48,8 @@ namespace MediaBrowser.Server.Mono
             var options = new StartupOptions(Environment.GetCommandLineArgs());
 
             // Allow this to be specified on the command line.
-            var customProgramDataPath = options.GetOption("-programdata");
-
+            var customProgramDataPath = options.GetOption("-programdata");            
+            
             var appPaths = CreateApplicationPaths(applicationPath, customProgramDataPath);
             _appPaths = appPaths;
 
@@ -83,16 +85,43 @@ namespace MediaBrowser.Server.Mono
             SQLitePCL.Batteries_V2.Init();
         }
 
-        private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, string programDataPath)
+        private static ServerApplicationPaths CreateApplicationPaths(
+            string applicationPath,
+            string programDataPath)
         {
-            if (string.IsNullOrEmpty(programDataPath))
-            {
-                programDataPath = ApplicationPathHelper.GetProgramDataPath(applicationPath);
-            }
-
             var appFolderPath = Path.GetDirectoryName(applicationPath);
 
-            return new ServerApplicationPaths(programDataPath, appFolderPath, Path.GetDirectoryName(applicationPath));
+            if (!string.IsNullOrEmpty(programDataPath))
+            {
+                return new ServerApplicationPaths(
+                    programDataPath,
+                    appFolderPath,
+                    Path.GetDirectoryName(applicationPath));
+            }
+
+            var useDebugPaths = false;
+#if DEBUG
+            useDebugPaths = true;
+#endif
+            
+            var debugProgramDataPath = ConfigurationManager.AppSettings["DebugProgramDataPath"];
+            var releaseProgramDataPath = ConfigurationManager.AppSettings["ReleaseProgramDataPath"];
+            var operatingSystemInfoLookup = new OperatingSystemInformationLookup();
+            
+            var applicationPathHelper =
+                new ApplicationPathHelper(
+                    debugProgramDataPath,
+                    releaseProgramDataPath,
+                    operatingSystemInfoLookup,
+                    useDebugPaths);
+            
+            programDataPath = applicationPathHelper.GetProgramDataPath(applicationPath);
+            Directory.CreateDirectory(programDataPath);
+
+            return new ServerApplicationPaths(
+                programDataPath,
+                appFolderPath,
+                Path.GetDirectoryName(applicationPath));
         }
 
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options)
