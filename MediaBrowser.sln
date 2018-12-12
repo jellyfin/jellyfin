@@ -72,6 +72,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Dlna.Test", "tests
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2AC30C72-9249-4621-967C-929ECA51D9F2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Drawing.Test", "tests\Jellyfin.Drawing.Test\Jellyfin.Drawing.Test.csproj", "{DB1A8734-E61E-4DC8-9664-681E691DDD2C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -593,6 +595,26 @@ Global
 		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Release|x64.Build.0 = Release|Any CPU
 		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Release|x86.ActiveCfg = Release|Any CPU
 		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Release|x86.Build.0 = Release|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Debug|Win32.Build.0 = Debug|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Debug|x64.Build.0 = Debug|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Debug|x86.Build.0 = Debug|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Release|Win32.ActiveCfg = Release|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Release|Win32.Build.0 = Release|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Release|x64.ActiveCfg = Release|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Release|x64.Build.0 = Release|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Release|x86.ActiveCfg = Release|Any CPU
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -602,5 +624,8 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D9DDBA32-F017-4B04-A9A8-684B09792D6B} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
+		{70DF5E87-3CCE-4EB4-96C0-7570FEBE785F} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
+		{393482D5-4902-4D78-A085-D3D1DAAB35C5} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
+		{DB1A8734-E61E-4DC8-9664-681E691DDD2C} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
 	EndGlobalSection
 EndGlobal
