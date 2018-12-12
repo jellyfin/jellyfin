@@ -1,3 +1,9 @@
+jellyfin (3.5.2-1) unstable; urgency=medium
+
+  * Add ffmpeg dependency and cleanup work
+
+ -- Joshua Boniface <joshua@boniface.me>  Tue, 11 Dec 2018 20:55:32 -0500
+
 jellyfin (3.5.2) unstable; urgency=medium
 
   * Rename from emby-server on version 3.5.2
