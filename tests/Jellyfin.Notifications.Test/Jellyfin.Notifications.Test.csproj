@@ -16,4 +16,8 @@
         <PackageReference Include="NUnit3TestAdapter" Version="3.11.2" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\Emby.Notifications\Emby.Notifications.csproj" />
+    </ItemGroup>
+
 </Project>
