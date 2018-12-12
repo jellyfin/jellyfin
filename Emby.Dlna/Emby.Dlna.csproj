@@ -33,6 +33,7 @@
     <EmbeddedResource Include="Profiles\Xml\foobar2000.xml" />
     <EmbeddedResource Include="Profiles\Xml\LG Smart TV.xml" />
     <EmbeddedResource Include="Profiles\Xml\Linksys DMA2100.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Marantz.xml" />
     <EmbeddedResource Include="Profiles\Xml\MediaMonkey.xml" />
     <EmbeddedResource Include="Profiles\Xml\Panasonic Viera.xml" />
     <EmbeddedResource Include="Profiles\Xml\Popcorn Hour.xml" />
@@ -52,8 +53,5 @@
     <EmbeddedResource Include="Profiles\Xml\WDTV Live.xml" />
     <EmbeddedResource Include="Profiles\Xml\Xbox One.xml" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\Marantz.xml" />
-  </ItemGroup>
-  
+
 </Project>

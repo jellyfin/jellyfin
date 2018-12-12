@@ -21,10 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
-    <PackageReference Include="ServiceStack.Text.Core" Version="5.2.0" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="5.4.0" />
     <PackageReference Include="sharpcompress" Version="0.22.0" />
-    <PackageReference Include="SimpleInjector" Version="4.3.0" />
+    <PackageReference Include="SimpleInjector" Version="4.4.2" />
     <PackageReference Include="SQLitePCL.pretty.core" Version="1.1.8" />
     <PackageReference Include="SQLitePCLRaw.core" Version="1.1.11" />
   </ItemGroup>
@@ -133,50 +132,20 @@
  </ItemGroup>
  <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\br.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\ca.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\co.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\dk.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\fr.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\gb.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\ie.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\jp.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\kz.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\mx.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\nl.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\nz.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\us.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\uk.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\es.txt" />
- </ItemGroup>
- <ItemGroup>
    <EmbeddedResource Include="Localization\Ratings\ro.txt" />
  </ItemGroup>
  <ItemGroup>
