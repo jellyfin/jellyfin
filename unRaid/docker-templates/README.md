@@ -8,7 +8,7 @@ Click on the Docker tab
 
 Add the following line under "Template Repositories" 
 
-https://raw.githubusercontent.com/jellyfin/jellyfin/unRaid/docker-templates 
+https://github.com/jellyfin/jellyfin/unRaid/docker-templates 
 
 Click save than click on Add Container and selectr jellyfin.
 
