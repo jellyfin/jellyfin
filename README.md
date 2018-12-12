@@ -25,6 +25,8 @@ Prebuild packages are available for Debian/Ubuntu and Arch, and via Docker Hub.
 
 The Jellyfin Docker image is available on Docker Hub at https://hub.docker.com/r/jellyfin/jellyfin/
 
+Set to **mode host & not bridge** for the TV guide to work proeprly
+
 ### Arch
 
 The Jellyfin package is in the AUR at https://aur.archlinux.org/packages/jellyfin-git/
