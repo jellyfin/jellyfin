@@ -1,0 +1,10 @@
+variables:
+  GIT_DEPTH: "1"
+  GIT_SUBMODULE_STRATEGY: "recursive"
+
+build:docker:
+  image: docker
+  services:
+    - docker:dind
+  script:
+    - docker build .
