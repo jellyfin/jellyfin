@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<tv date="20151126" generator-name="XMLTV GUI V. 3.14.01W" generator-url="http://www.birtles.org.uk/xmltv">
+  <channel id="UK_RT_2667">
+    <display-name lang="en">BBC1 HD</display-name>
+  </channel>
+  <programme start="20151126100000 +0000" stop="20151126110000 +0000" channel="UK_RT_2667">
+    <title lang="es">Homes Under the Hammer - Spanish</title>
+    <title lang="es">Homes Under the Hammer - Spanish 2</title>
+    <title lang="en">Homes Under the Hammer - English</title>
+    <title lang="en">Homes Under the Hammer - English 2</title>
+    <title lang="">Homes Under the Hammer - Empty Language</title>
+    <title>Homes Under the Hammer - No Language</title>
+    <desc lang="en">Lucy Alexander, Martin Roberts and Dion Dublin explore a semi in Chingford, London, a one-bedroom flat in Brighton and a Victorian terrace in Normanton, Derby.</desc>
+    <credits>
+      <actor>Presenter - Lucy Alexander</actor>
+      <actor>Presenter - Martin Roberts</actor>
+      <actor>Presenter - Dion Dublin</actor>
+    </credits>
+    <category lang="en">Property - English</category>
+    <category lang="es">Property - Spanish</category>
+    <category lang="">Property - Empty Language</category>
+    <category>Property - No Language</category>
+    <length units="minutes">60</length>
+    <episode-num system="xmltv_ns">18.50/30.</episode-num>
+    <video>
+      <aspect>16:9</aspect>
+    </video>
+    <subtitles type="teletext">
+      <language lang="en">English</language>
+    </subtitles>
+  </programme>
+  <programme start="20151126110000 +0000" stop="20151126120000 +0000" channel="UK_RT_2667">
+    <title lang="en">Homes Under the Hammer - English</title>
+    <title lang="en">Homes Under the Hammer - English 2</title>
+    <title lang="">Homes Under the Hammer - No Language</title>
+    <desc lang="en">Lucy Alexander, Martin Roberts and Dion Dublin explore a semi in Chingford, London, a one-bedroom flat in Brighton and a Victorian terrace in Normanton, Derby.</desc>
+    <credits>
+      <actor>Presenter - Lucy Alexander</actor>
+      <actor>Presenter - Martin Roberts</actor>
+      <actor>Presenter - Dion Dublin</actor>
+    </credits>
+    <category lang="en">Property - English</category>
+    <category lang="">Property - Empty Language</category>
+    <length units="minutes">60</length>
+    <episode-num system="xmltv_ns">18.50/30.</episode-num>
+    <video>
+      <aspect>16:9</aspect>
+    </video>
+    <subtitles type="teletext">
+      <language lang="en">English</language>
+    </subtitles>
+  </programme>
+</tv>
