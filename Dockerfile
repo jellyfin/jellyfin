@@ -4,7 +4,8 @@ FROM microsoft/dotnet:${DOTNET_VERSION}-sdk as builder
 WORKDIR /repo
 COPY . .
 ARG CONFIGURATION=RELEASE
-RUN dotnet clean \
+RUN export DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+ && dotnet clean \
  && dotnet build --configuration ${CONFIGURATION} $(pwd)/MediaBrowser.sln \
  && dotnet publish --configuration ${CONFIGURATION} $(pwd)/MediaBrowser.sln --output /jellyfin
 
