@@ -68,6 +68,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BDInfo.Test", "tests\BDInfo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DvdLib.Test", "tests\DvdLib.Test\DvdLib.Test.csproj", "{393482D5-4902-4D78-A085-D3D1DAAB35C5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Dlna.Test", "tests\Jellyfin.Dlna.Test\Jellyfin.Dlna.Test.csproj", "{D9DDBA32-F017-4B04-A9A8-684B09792D6B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2AC30C72-9249-4621-967C-929ECA51D9F2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -569,11 +573,34 @@ Global
 		{393482D5-4902-4D78-A085-D3D1DAAB35C5}.Release|x64.Build.0 = Release|Any CPU
 		{393482D5-4902-4D78-A085-D3D1DAAB35C5}.Release|x86.ActiveCfg = Release|Any CPU
 		{393482D5-4902-4D78-A085-D3D1DAAB35C5}.Release|x86.Build.0 = Release|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Debug|Win32.Build.0 = Debug|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Debug|x64.Build.0 = Debug|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Debug|x86.Build.0 = Debug|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Release|Win32.ActiveCfg = Release|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Release|Win32.Build.0 = Release|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Release|x64.ActiveCfg = Release|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Release|x64.Build.0 = Release|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Release|x86.ActiveCfg = Release|Any CPU
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3448830C-EBDC-426C-85CD-7BBB9651A7FE}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D9DDBA32-F017-4B04-A9A8-684B09792D6B} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
 	EndGlobalSection
 EndGlobal
