@@ -96,6 +96,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Api.Test", "tests\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Common.Test", "tests\Jellyfin.Common.Test\Jellyfin.Common.Test.csproj", "{6C1A297B-DA4A-4291-8E09-1BE27A7896C7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Controller.Test", "tests\Jellyfin.Controller.Test\Jellyfin.Controller.Test.csproj", "{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -857,6 +859,26 @@ Global
 		{6C1A297B-DA4A-4291-8E09-1BE27A7896C7}.Release|x64.Build.0 = Release|Any CPU
 		{6C1A297B-DA4A-4291-8E09-1BE27A7896C7}.Release|x86.ActiveCfg = Release|Any CPU
 		{6C1A297B-DA4A-4291-8E09-1BE27A7896C7}.Release|x86.Build.0 = Release|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Debug|Win32.Build.0 = Debug|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Debug|x64.Build.0 = Debug|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Debug|x86.Build.0 = Debug|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Release|Win32.ActiveCfg = Release|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Release|Win32.Build.0 = Release|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Release|x64.ActiveCfg = Release|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Release|x64.Build.0 = Release|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Release|x86.ActiveCfg = Release|Any CPU
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -880,5 +902,6 @@ Global
 		{94668F26-EF57-4308-84E7-F3AEFF6BEEEF} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
 		{80313AD3-B247-414E-8421-332CF600192A} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
 		{6C1A297B-DA4A-4291-8E09-1BE27A7896C7} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
+		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
 	EndGlobalSection
 EndGlobal
