@@ -17,4 +17,4 @@ EXPOSE 8096
 VOLUME /config /media
 ENV PUID=1000 PGID=1000
 ENTRYPOINT chown $PUID:$PGID /config /media \
- && gosu $PUID:$PGID dotnet /jellyfin/EmbyServer.dll -programdata /config
+ && gosu $PUID:$PGID dotnet /jellyfin/jellyfin.dll -programdata /config
