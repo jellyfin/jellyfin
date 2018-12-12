@@ -24,6 +24,7 @@ using Mono.Unix.Native;
 using ILogger = MediaBrowser.Model.Logging.ILogger;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 using System.Threading;
+using InteropServices = System.Runtime.InteropServices;
 
 namespace MediaBrowser.Server.Mono
 {
@@ -87,12 +88,19 @@ namespace MediaBrowser.Server.Mono
         {
             if (string.IsNullOrEmpty(programDataPath))
             {
-                programDataPath = ApplicationPathHelper.GetProgramDataPath(applicationPath);
+                if (InteropServices.RuntimeInformation.IsOSPlatform(InteropServices.OSPlatform.Windows))
+                {
+                    programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "jellyfin");
+                }
+                else
+                {
+                    programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".jellyfin");
+                }
             }
 
             var appFolderPath = Path.GetDirectoryName(applicationPath);
 
-            return new ServerApplicationPaths(programDataPath, appFolderPath, Path.GetDirectoryName(applicationPath));
+            return new ServerApplicationPaths(programDataPath, appFolderPath, appFolderPath);
         }
 
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options)
