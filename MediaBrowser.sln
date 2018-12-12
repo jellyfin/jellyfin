@@ -100,6 +100,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Controller.Test", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.LocalMetadata.Test", "tests\Jellyfin.LocalMetadata.Test\Jellyfin.LocalMetadata.Test.csproj", "{B1E67507-8344-4759-97C0-5938BE4028C3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Model.Test", "tests\Jellyfin.Model.Test\Jellyfin.Model.Test.csproj", "{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -901,6 +903,26 @@ Global
 		{B1E67507-8344-4759-97C0-5938BE4028C3}.Release|x64.Build.0 = Release|Any CPU
 		{B1E67507-8344-4759-97C0-5938BE4028C3}.Release|x86.ActiveCfg = Release|Any CPU
 		{B1E67507-8344-4759-97C0-5938BE4028C3}.Release|x86.Build.0 = Release|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Debug|Win32.Build.0 = Debug|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Debug|x64.Build.0 = Debug|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Debug|x86.Build.0 = Debug|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Release|Win32.ActiveCfg = Release|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Release|Win32.Build.0 = Release|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Release|x64.ActiveCfg = Release|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Release|x64.Build.0 = Release|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Release|x86.ActiveCfg = Release|Any CPU
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -926,5 +948,6 @@ Global
 		{6C1A297B-DA4A-4291-8E09-1BE27A7896C7} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
 		{FFE772D4-4EA0-4CFF-959F-F03A665D21EE} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
 		{B1E67507-8344-4759-97C0-5938BE4028C3} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
+		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
 	EndGlobalSection
 EndGlobal
