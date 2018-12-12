@@ -16,18 +16,14 @@ if($IsWindows){
 }
 
 function Build-JellyFin {
-    if($Architecture -eq 'arm64'){
-        if($WindowsVersion -ne 'win10'){
+    if(($Architecture -eq 'arm64') -and ($WindowsVersion -ne 'win10')){
             Write-Error "arm64 only supported with Windows10 Version"
             exit
         }
-    }
-    if($Architecture -eq 'arm'){
-        if($WindowsVersion -notin @('win10','win81','win8')){
+    if(($Architecture -eq 'arm') -and ($WindowsVersion -notin @('win10','win81','win8'))){
             Write-Error "arm only supported with Windows 8 or higher"
             exit
         }
-    }
     dotnet publish -c $BuildType -r "$windowsversion-$Architecture" MediaBrowser.sln -o $InstallLocation -v $DotNetVerbosity
 }
 
