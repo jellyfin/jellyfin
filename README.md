@@ -51,6 +51,10 @@ A package repository is available at https://repo.jellyfin.org. To use it:
     sudo apt install jellyfin
     ```
 
+### Unraid
+
+An Unraid Docker template is available. See [this documentation page](https://github.com/jellyfin/jellyfin/blob/master/unRaid/docker-templates/README.md) for details on installing it.
+
 ## Building Jellyfin packages from source
 
 Jellyfin seeks to integrate build facilities for any desired packaging format. Instructions for the various formats can be found below.
