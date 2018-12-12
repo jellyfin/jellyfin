@@ -106,6 +106,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Providers.Test", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.WebDashboard.Test", "tests\Jellyfin.WebDashboard.Test\Jellyfin.WebDashboard.Test.csproj", "{7D87AEB7-A2AD-4649-A9BC-ED577851D282}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.XbmcMetadata.Test", "tests\Jellyfin.XbmcMetadata.Test\Jellyfin.XbmcMetadata.Test.csproj", "{368FAC59-60D1-49D6-AF2C-EC489551C5E4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -967,6 +969,26 @@ Global
 		{7D87AEB7-A2AD-4649-A9BC-ED577851D282}.Release|x64.Build.0 = Release|Any CPU
 		{7D87AEB7-A2AD-4649-A9BC-ED577851D282}.Release|x86.ActiveCfg = Release|Any CPU
 		{7D87AEB7-A2AD-4649-A9BC-ED577851D282}.Release|x86.Build.0 = Release|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Debug|Win32.Build.0 = Debug|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Debug|x64.Build.0 = Debug|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Debug|x86.Build.0 = Debug|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Release|Win32.ActiveCfg = Release|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Release|Win32.Build.0 = Release|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Release|x64.ActiveCfg = Release|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Release|x64.Build.0 = Release|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Release|x86.ActiveCfg = Release|Any CPU
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -995,5 +1017,6 @@ Global
 		{55FDA93E-B630-4EBF-BE13-45ABF23FF66F} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
 		{F15C15AA-FF3C-4B9D-B779-157573A026D6} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
 		{7D87AEB7-A2AD-4649-A9BC-ED577851D282} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
+		{368FAC59-60D1-49D6-AF2C-EC489551C5E4} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
 	EndGlobalSection
 EndGlobal
