@@ -1,4 +1,4 @@
-define(["loading", "connectHelper", "globalize", "dashboardcss", "emby-input", "emby-button", "emby-linkbutton"], function(loading, connectHelper, globalize) {
+define(["loading", "globalize", "dashboardcss", "emby-input", "emby-button", "emby-linkbutton"], function(loading, globalize) {
     "use strict";
 
     function getApiClient() {
@@ -26,14 +26,12 @@ define(["loading", "connectHelper", "globalize", "dashboardcss", "emby-input", "
         apiClient.ajax({
             type: "POST",
             data: {
-                Name: form.querySelector("#txtUsername").value,
-                ConnectUserName: form.querySelector("#txtConnectUserName").value
+                Name: form.querySelector("#txtUsername").value
             },
             url: apiClient.getUrl("Startup/User"),
             dataType: "json"
         }).then(onUpdateUserComplete, function(response) {
             response && response.status;
-            connectHelper.showLinkUserErrorMessage(form.querySelector("#txtConnectUserName").value)
         })
     }
 
@@ -46,7 +44,7 @@ define(["loading", "connectHelper", "globalize", "dashboardcss", "emby-input", "
         var page = this,
             apiClient = getApiClient();
         apiClient.getJSON(apiClient.getUrl("Startup/User")).then(function(user) {
-            page.querySelector("#txtUsername").value = user.Name || "", page.querySelector("#txtConnectUserName").value = user.ConnectUserName || "", loading.hide()
+            page.querySelector("#txtUsername").value = user.Name || "", loading.hide()
         })
     }
     return function(view, params) {
