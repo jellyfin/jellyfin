@@ -13,6 +13,10 @@ While our first priority is a stable build, we will eventually add features that
 
 [Feature Requests](http://feathub.com/jellyfin/jellyfin)
 
+## Contributing to Jellyfin
+
+If you're interested in contributing, please see [CONTRIBUTING.md](https://github.com/jellyfin/jellyfin/blob/master/CONTRIBUTING.md).
+
 ## Prebuilt Jellyfin packages
 
 Prebuild packages are available for Debian/Ubuntu and Arch, and via Docker Hub.
