@@ -33,7 +33,7 @@ The Jellyfin package is in the AUR at https://aur.archlinux.org/packages/jellyfi
 
 A package repository is available at https://repo.jellyfin.org. To use it:
 
-0. Install the `dotnet-runtime-2.1` package via [Microsoft's repositories](https://dotnet.microsoft.com/download/dotnet-core/2.1).
+0. Install the `dotnet-runtime-2.2` package via [Microsoft's repositories](https://dotnet.microsoft.com/download/dotnet-core/2.2).
 0. Import the GPG signing key (signed by Joshua):
     ```
     wget -O - https://repo.jellyfin.org/debian/jellyfin-signing-key-joshua.gpg.key | sudo apt-key add -
@@ -65,7 +65,7 @@ NOTE: When building from source, only cloning the full Git repository is support
 
 Debian build facilities are integrated into the repo at `debian/`.
 
-0. Install the `dotnet-sdk-2.1` package via [Microsoft's repositories](https://dotnet.microsoft.com/download/dotnet-core/2.1).
+0. Install the `dotnet-sdk-2.2` package via [Microsoft's repositories](https://dotnet.microsoft.com/download/dotnet-core/2.2).
 0. Run `dpkg-buildpackage -us -uc`.
 0. Install the resulting `jellyfin_*.deb` file on your system.
 
@@ -75,7 +75,7 @@ A huge thanks to Carlos Hernandez who created the original Debian build configur
 
 A pre-built windows installer will be available soon. Until then it isn't too hard to install Jellyfin from Source.
 
-0. Install the dotnet core SDK 2.1 from [Microsoft's Webpage](https://dotnet.microsoft.com/download/dotnet-core/2.1) and [install Git for Windows](https://gitforwindows.org/)
+0. Install the dotnet core SDK 2.2 from [Microsoft's Webpage](https://dotnet.microsoft.com/download/dotnet-core/2.2) and [install Git for Windows](https://gitforwindows.org/)
 0. Clone Jellyfin into a directory of your choice.
     ```
     git clone https://github.com/jellyfin/jellyfin.git C:\Jellyfin
