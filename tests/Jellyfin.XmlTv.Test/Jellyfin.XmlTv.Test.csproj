@@ -20,4 +20,10 @@
       <ProjectReference Include="..\..\Emby.XmlTv\Emby.XmlTv\Emby.XmlTv.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="XmlFiles\*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
 </Project>
