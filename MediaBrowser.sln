@@ -76,6 +76,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Drawing.Test", "te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Drawing.ImageMagick.Test", "tests\Jellyfin.Drawing.ImageMagick.Test\Jellyfin.Drawing.ImageMagick.Test.csproj", "{D290F8B9-5C8C-4B11-82A7-E1F1615771B6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Drawing.Skia.Test", "tests\Jellyfin.Drawing.Skia.Test\Jellyfin.Drawing.Skia.Test.csproj", "{941A0327-CBE9-4804-BD45-49C0D4889E2D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -637,6 +639,26 @@ Global
 		{D290F8B9-5C8C-4B11-82A7-E1F1615771B6}.Release|x64.Build.0 = Release|Any CPU
 		{D290F8B9-5C8C-4B11-82A7-E1F1615771B6}.Release|x86.ActiveCfg = Release|Any CPU
 		{D290F8B9-5C8C-4B11-82A7-E1F1615771B6}.Release|x86.Build.0 = Release|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Debug|Win32.Build.0 = Debug|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Debug|x64.Build.0 = Debug|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Debug|x86.Build.0 = Debug|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Release|Win32.ActiveCfg = Release|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Release|Win32.Build.0 = Release|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Release|x64.ActiveCfg = Release|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Release|x64.Build.0 = Release|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Release|x86.ActiveCfg = Release|Any CPU
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -650,5 +672,6 @@ Global
 		{393482D5-4902-4D78-A085-D3D1DAAB35C5} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
 		{DB1A8734-E61E-4DC8-9664-681E691DDD2C} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
 		{D290F8B9-5C8C-4B11-82A7-E1F1615771B6} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
+		{941A0327-CBE9-4804-BD45-49C0D4889E2D} = {2AC30C72-9249-4621-967C-929ECA51D9F2}
 	EndGlobalSection
 EndGlobal
