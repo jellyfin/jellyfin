@@ -5,7 +5,7 @@
 
 # Under systemd, use
 #  /etc/systemd/system/jellyfin.service.d/jellyfin.service.conf
-# to override the user, the exec command, or this config file's location.
+# to override the user or this config file's location.
 
 #
 # This is a POSIX shell fragment
