@@ -15,7 +15,6 @@ override_dh_auto_test:
 override_dh_clistrip:
 
 override_dh_auto_build:
-	dotnet build --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln --output='$(CURDIR)/usr/lib/jellyfin/bin'
 	dotnet publish --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln --output='$(CURDIR)/usr/lib/jellyfin/bin'
 
 override_dh_auto_clean:
