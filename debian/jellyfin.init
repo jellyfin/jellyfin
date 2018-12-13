@@ -9,13 +9,14 @@
 ### END INIT INFO
 
 # Carry out specific functions when asked to by the system
-pid=`ps -fA|grep dotnet|grep JellyfinServer|awk '{print $2}'| tr -d '\n'`
+pid=`ps -fA|grep dotnet|grep jellyfin|awk '{print $2}'| tr -d '\n'`
 
 case "$1" in
   start)
         if [ "$pid" == "" ]; then
                 echo "Starting Jellyfin..."
-                nohup dotnet /usr/lib/jellyfin/bin/EmbyServer.dll >/dev/null 2>&1 &
+                . /etc/default/jellyfin
+                nohup su -u $JELLYFIN_USER -c $JELLYFIN_DOTNET $JELLYFIN_COMMAND
         else
                 echo "Jellyfin already running"
         fi
