@@ -11,13 +11,26 @@
 # This is a POSIX shell fragment
 #
 
+#
 # General options
+#
+
+# Path to the jellyfin.dll executable
 JELLYFIN_EXE="/usr/lib/jellyfin/bin/jellyfin.dll"
+# Data directory
 JELLYFIN_DATA="/var/lib/jellyfin"
+# Restart script for in-app server control
 JELLYFIN_RESTART_SCRIPT="/usr/lib/jellyfin/restart.sh"
+# Additional options for the binary
 JELLYFIN_ADD_OPTS=""
 
-# init/upstart options
+#
+# SysV init/Upstart options
+#
+
+# Application username
 JELLYFIN_USER="jellyfin"
+# .NET Core runtime binary
 JELLYFIN_DOTNET="/usr/bin/dotnet"
+# Full application command
 JELLYFIN_COMMAND="$JELLYFIN_EXE -programdata $JELLYFIN_DATA -restartpath $JELLYFIN_RESTART_SCRIPT $JELLYFIN_ADD_OPTS"
