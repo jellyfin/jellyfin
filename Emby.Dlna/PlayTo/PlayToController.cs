@@ -539,7 +539,7 @@ namespace Emby.Dlna.PlayTo
                 return _logger;
             }
 
-            return null;
+            return null; // TODO: @bond NullLogger
         }
 
         private PlaylistItem GetPlaylistItem(BaseItem item, List<MediaSourceInfo> mediaSources, DeviceProfile profile, string deviceId, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)

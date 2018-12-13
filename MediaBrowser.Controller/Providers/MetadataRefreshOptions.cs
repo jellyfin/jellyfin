@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Providers
         public bool EnableRemoteContentProbe { get; set; }
 
         public MetadataRefreshOptions(IFileSystem fileSystem)
-			: this(new DirectoryService(null, fileSystem)) // TODO
+			: this(new DirectoryService(null, fileSystem)) // TODO: @bond NullLogger
         {
         }
 
