@@ -232,7 +232,7 @@ namespace MediaBrowser.Api
             }
             catch
             {
-                //Logger.ErrorException("Error getting plugin list", ex);
+                //Logger.LogError("Error getting plugin list", ex);
                 // Play it safe here
                 if (requireAppStoreEnabled)
                 {

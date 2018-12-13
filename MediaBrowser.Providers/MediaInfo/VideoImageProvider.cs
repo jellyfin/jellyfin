@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.MediaInfo
             // Can't extract if we didn't find a video stream in the file
             if (!video.DefaultVideoStreamIndex.HasValue)
             {
-                _logger.Info("Skipping image extraction due to missing DefaultVideoStreamIndex for {0}.", video.Path ?? string.Empty);
+                _logger.LogInformation("Skipping image extraction due to missing DefaultVideoStreamIndex for {0}.", video.Path ?? string.Empty);
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
 

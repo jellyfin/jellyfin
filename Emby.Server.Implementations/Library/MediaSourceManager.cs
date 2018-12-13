@@ -6,7 +6,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -255,7 +255,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting media sources", ex);
+                _logger.LogError("Error getting media sources", ex);
                 return new List<MediaSourceInfo>();
             }
         }
@@ -476,12 +476,12 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error probing live tv stream", ex);
+                _logger.LogError("Error probing live tv stream", ex);
                 AddMediaInfo(mediaSource, isAudio);
             }
 
             var json = _jsonSerializer.SerializeToString(mediaSource);
-            _logger.Info("Live stream opened: " + json);
+            _logger.LogInformation("Live stream opened: " + json);
             var clone = _jsonSerializer.DeserializeFromString<MediaSourceInfo>(json);
 
             if (!request.UserId.Equals(Guid.Empty))
@@ -624,7 +624,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     mediaInfo = _jsonSerializer.DeserializeFromFile<MediaInfo>(cacheFilePath);
 
-                    //_logger.Debug("Found cached media info");
+                    //_logger.LogDebug("Found cached media info");
                 }
                 catch (Exception ex)
                 {
@@ -658,7 +658,7 @@ namespace Emby.Server.Implementations.Library
                     _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(cacheFilePath));
                     _jsonSerializer.SerializeToFile(mediaInfo, cacheFilePath);
 
-                    //_logger.Debug("Saved media info to {0}", cacheFilePath);
+                    //_logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }
             }
 
@@ -679,7 +679,7 @@ namespace Emby.Server.Implementations.Library
                 mediaStreams = newList;
             }
 
-            _logger.Info("Live tv media info probe took {0} seconds", (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture));
+            _logger.LogInformation("Live tv media info probe took {0} seconds", (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture));
 
             mediaSource.Bitrate = mediaInfo.Bitrate;
             mediaSource.Container = mediaInfo.Container;
@@ -815,16 +815,16 @@ namespace Emby.Server.Implementations.Library
                 {
                     liveStream.ConsumerCount--;
 
-                    _logger.Info("Live stream {0} consumer count is now {1}", liveStream.OriginalStreamId, liveStream.ConsumerCount);
+                    _logger.LogInformation("Live stream {0} consumer count is now {1}", liveStream.OriginalStreamId, liveStream.ConsumerCount);
 
                     if (liveStream.ConsumerCount <= 0)
                     {
                         _openStreams.Remove(id);
 
-                        _logger.Info("Closing live stream {0}", id);
+                        _logger.LogInformation("Closing live stream {0}", id);
 
                         await liveStream.Close().ConfigureAwait(false);
-                        _logger.Info("Live stream {0} closed successfully", id);
+                        _logger.LogInformation("Live stream {0} closed successfully", id);
                     }
                 }
             }

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.Providers
         }
 
         public DirectoryService(IFileSystem fileSystem)
-            : this(new NullLogger(), fileSystem)
+            : this(null, fileSystem) // TODO change
         {
         }
 
@@ -37,7 +37,7 @@ namespace MediaBrowser.Controller.Providers
 
             if (!_cache.TryGetValue(path, out entries))
             {
-                //_logger.Debug("Getting files for " + path);
+                //_logger.LogDebug("Getting files for " + path);
 
                 entries = _fileSystem.GetFileSystemEntries(path).ToArray();
 

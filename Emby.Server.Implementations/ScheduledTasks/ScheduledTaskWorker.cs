@@ -10,7 +10,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
@@ -146,7 +146,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         }
                         catch (Exception ex)
                         {
-                            Logger.ErrorException("Error deserializing {0}", ex, path);
+                            Logger.LogError("Error deserializing {0}", ex, path);
                         }
                         _readFromFile = true;
                     }
@@ -360,7 +360,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 return;
             }
 
-            Logger.Info("{0} fired for task: {1}", trigger.GetType().Name, Name);
+            Logger.LogInformation("{0} fired for task: {1}", trigger.GetType().Name, Name);
 
             trigger.Stop();
 
@@ -408,7 +408,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             CurrentCancellationTokenSource = new CancellationTokenSource();
 
-            Logger.Info("Executing {0}", Name);
+            Logger.LogInformation("Executing {0}", Name);
 
             ((TaskManager)TaskManager).OnTaskExecuting(this);
 
@@ -436,7 +436,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error", ex);
+                Logger.LogError("Error", ex);
 
                 failureException = ex;
 
@@ -493,7 +493,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             if (State == TaskState.Running)
             {
-                Logger.Info("Attempting to cancel Scheduled Task {0}", Name);
+                Logger.LogInformation("Attempting to cancel Scheduled Task {0}", Name);
                 CurrentCancellationTokenSource.Cancel();
             }
         }
@@ -614,7 +614,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var elapsedTime = endTime - startTime;
 
-            Logger.Info("{0} {1} after {2} minute(s) and {3} seconds", Name, status, Math.Truncate(elapsedTime.TotalMinutes), elapsedTime.Seconds);
+            Logger.LogInformation("{0} {1} after {2} minute(s) and {3} seconds", Name, status, Math.Truncate(elapsedTime.TotalMinutes), elapsedTime.Seconds);
 
             var result = new TaskResult
             {
@@ -664,12 +664,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        Logger.Info(Name + ": Cancelling");
+                        Logger.LogInformation(Name + ": Cancelling");
                         token.Cancel();
                     }
                     catch (Exception ex)
                     {
-                        Logger.ErrorException("Error calling CancellationToken.Cancel();", ex);
+                        Logger.LogError("Error calling CancellationToken.Cancel();", ex);
                     }
                 }
                 var task = _currentTask;
@@ -677,21 +677,21 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        Logger.Info(Name + ": Waiting on Task");
+                        Logger.LogInformation(Name + ": Waiting on Task");
                         var exited = Task.WaitAll(new[] { task }, 2000);
 
                         if (exited)
                         {
-                            Logger.Info(Name + ": Task exited");
+                            Logger.LogInformation(Name + ": Task exited");
                         }
                         else
                         {
-                            Logger.Info(Name + ": Timed out waiting for task to stop");
+                            Logger.LogInformation(Name + ": Timed out waiting for task to stop");
                         }
                     }
                     catch (Exception ex)
                     {
-                        Logger.ErrorException("Error calling Task.WaitAll();", ex);
+                        Logger.LogError("Error calling Task.WaitAll();", ex);
                     }
                 }
 
@@ -699,12 +699,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        Logger.Debug(Name + ": Disposing CancellationToken");
+                        Logger.LogDebug(Name + ": Disposing CancellationToken");
                         token.Dispose();
                     }
                     catch (Exception ex)
                     {
-                        Logger.ErrorException("Error calling CancellationToken.Dispose();", ex);
+                        Logger.LogError("Error calling CancellationToken.Dispose();", ex);
                     }
                 }
                 if (wassRunning)

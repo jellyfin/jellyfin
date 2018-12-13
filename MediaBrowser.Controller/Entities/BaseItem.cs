@@ -12,7 +12,6 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
@@ -36,6 +35,7 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -798,7 +798,7 @@ namespace MediaBrowser.Controller.Entities
 
                 builder.Append(chunkBuilder);
             }
-            //Logger.Debug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
+            //logger.LogDebug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
             return builder.ToString().RemoveDiacritics();
         }
 
@@ -1414,7 +1414,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error refreshing owned items for {0}", ex, Path ?? Name);
+                    Logger.LogError("Error refreshing owned items for {0}", ex, Path ?? Name);
                 }
             }
 
@@ -1802,7 +1802,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (!isAllowed)
                 {
-                    Logger.Debug("{0} has an unrecognized parental rating of {1}.", Name, rating);
+                    Logger.LogDebug("{0} has an unrecognized parental rating of {1}.", Name, rating);
                 }
 
                 return isAllowed;
@@ -2058,7 +2058,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (itemByPath == null)
                 {
-                    //Logger.Warn("Unable to find linked item at path {0}", info.Path);
+                    //Logger.LogWarning("Unable to find linked item at path {0}", info.Path);
                 }
 
                 return itemByPath;
@@ -2070,7 +2070,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (item == null)
                 {
-                    //Logger.Warn("Unable to find linked item at path {0}", info.Path);
+                    //Logger.LogWarning("Unable to find linked item at path {0}", info.Path);
                 }
 
                 return item;

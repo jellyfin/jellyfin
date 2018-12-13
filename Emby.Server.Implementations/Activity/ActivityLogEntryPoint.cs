@@ -10,7 +10,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 using System;
@@ -129,7 +129,7 @@ namespace Emby.Server.Implementations.Activity
 
             if (item == null)
             {
-                //_logger.Warn("PlaybackStopped reported with null media info.");
+                //_logger.LogWarning("PlaybackStopped reported with null media info.");
                 return;
             }
 
@@ -160,7 +160,7 @@ namespace Emby.Server.Implementations.Activity
 
             if (item == null)
             {
-                //_logger.Warn("PlaybackStart reported with null media info.");
+                //_logger.LogWarning("PlaybackStart reported with null media info.");
                 return;
             }
 
@@ -284,7 +284,7 @@ namespace Emby.Server.Implementations.Activity
                 Name = string.Format(_localization.GetLocalizedString("FailedLoginAttemptWithUserName"), e.Argument.Username),
                 Type = "AuthenticationFailed",
                 ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), e.Argument.RemoteEndPoint),
-                Severity = LogSeverity.Error
+                Severity = LogLevel.Error
             });
         }
 
@@ -468,7 +468,7 @@ namespace Emby.Server.Implementations.Activity
                     Type = NotificationType.TaskFailed.ToString(),
                     Overview = string.Join(Environment.NewLine, vals.ToArray()),
                     ShortOverview = runningTime,
-                    Severity = LogSeverity.Error
+                    Severity = LogLevel.Error
                 });
             }
         }

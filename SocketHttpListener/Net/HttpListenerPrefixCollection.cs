@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace SocketHttpListener.Net
 {

@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -32,10 +32,10 @@ namespace Emby.Server.Implementations.Library
 
         private Func<IUserManager> _userManager;
 
-        public UserDataManager(ILogManager logManager, IServerConfigurationManager config, Func<IUserManager> userManager)
+        public UserDataManager(ILoggerFactory loggerFactory, IServerConfigurationManager config, Func<IUserManager> userManager)
         {
             _config = config;
-            _logger = logManager.GetLogger(GetType().Name);
+            _logger = loggerFactory.CreateLogger(GetType().Name);
             _userManager = userManager;
         }
 

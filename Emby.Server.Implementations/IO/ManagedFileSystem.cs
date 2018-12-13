@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.IO
@@ -395,7 +395,7 @@ namespace Emby.Server.Implementations.IO
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error determining CreationTimeUtc for {0}", ex, info.FullName);
+                Logger.LogError("Error determining CreationTimeUtc for {0}", ex, info.FullName);
                 return DateTime.MinValue;
             }
         }
@@ -434,7 +434,7 @@ namespace Emby.Server.Implementations.IO
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error determining LastAccessTimeUtc for {0}", ex, info.FullName);
+                Logger.LogError("Error determining LastAccessTimeUtc for {0}", ex, info.FullName);
                 return DateTime.MinValue;
             }
         }

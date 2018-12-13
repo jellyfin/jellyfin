@@ -7,7 +7,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.LiveTv;
@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             FileSystem.CreateDirectory(FileSystem.GetDirectoryName(TempFilePath));
 
-            Logger.Info("Opening HDHR UDP Live stream from {0}", uri.Host);
+            Logger.LogInformation("Opening HDHR UDP Live stream from {0}", uri.Host);
 
             var remoteAddress = IPAddress.Parse(uri.Host);
             var embyRemoteAddress = _networkManager.ParseIpAddress(uri.Host);
@@ -71,7 +71,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
                 catch (Exception)
                 {
-                    Logger.Error("Unable to determine local ip address for Legacy HDHomerun stream.");
+                    Logger.LogError("Unable to determine local ip address for Legacy HDHomerun stream.");
                     return;
                 }
             }
@@ -92,7 +92,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     {
                         if (!(ex is OperationCanceledException))
                         {
-                            Logger.ErrorException("Error opening live stream:", ex);
+                            Logger.LogError("Error opening live stream:", ex);
                         }
                         throw;
                     }
@@ -131,12 +131,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         }
                         catch (OperationCanceledException ex)
                         {
-                            Logger.Info("HDHR UDP stream cancelled or timed out from {0}", remoteAddress);
+                            Logger.LogInformation("HDHR UDP stream cancelled or timed out from {0}", remoteAddress);
                             openTaskCompletionSource.TrySetException(ex);
                         }
                         catch (Exception ex)
                         {
-                            Logger.ErrorException("Error opening live stream:", ex);
+                            Logger.LogError("Error opening live stream:", ex);
                             openTaskCompletionSource.TrySetException(ex);
                         }
 

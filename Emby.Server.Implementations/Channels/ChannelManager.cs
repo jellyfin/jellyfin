@@ -10,7 +10,7 @@ using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
@@ -300,7 +300,7 @@ namespace Emby.Server.Implementations.Channels
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error getting channel information for {0}", ex, channelInfo.Name);
+                    _logger.LogError("Error getting channel information for {0}", ex, channelInfo.Name);
                 }
 
                 numComplete++;
@@ -709,7 +709,7 @@ namespace Emby.Server.Implementations.Channels
             // Not yet sure why this is causing a problem
             query.GroupByPresentationUniqueKey = false;
 
-            //_logger.Debug("GetChannelItemsInternal");
+            //_logger.LogDebug("GetChannelItemsInternal");
 
             // null if came from cache
             if (itemsResult != null)
@@ -849,7 +849,7 @@ namespace Emby.Server.Implementations.Channels
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error writing to channel cache file: {0}", ex, path);
+                _logger.LogError("Error writing to channel cache file: {0}", ex, path);
             }
         }
 
@@ -912,7 +912,7 @@ namespace Emby.Server.Implementations.Channels
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error retrieving channel item from database", ex);
+                _logger.LogError("Error retrieving channel item from database", ex);
             }
 
             if (item == null)
@@ -1051,7 +1051,7 @@ namespace Emby.Server.Implementations.Channels
             {
                 if (!info.TrailerTypes.SequenceEqual(trailer.TrailerTypes))
                 {
-                    _logger.Debug("Forcing update due to TrailerTypes {0}", item.Name);
+                    _logger.LogDebug("Forcing update due to TrailerTypes {0}", item.Name);
                     forceUpdate = true;
                 }
                 trailer.TrailerTypes = info.TrailerTypes.ToArray();
@@ -1060,7 +1060,7 @@ namespace Emby.Server.Implementations.Channels
             if (info.DateModified > item.DateModified)
             {
                 item.DateModified = info.DateModified;
-                _logger.Debug("Forcing update due to DateModified {0}", item.Name);
+                _logger.LogDebug("Forcing update due to DateModified {0}", item.Name);
                 forceUpdate = true;
             }
 
@@ -1069,20 +1069,20 @@ namespace Emby.Server.Implementations.Channels
             //{
             //    item.ExternalEtag = info.Etag;
             //    forceUpdate = true;
-            //    _logger.Debug("Forcing update due to ExternalEtag {0}", item.Name);
+            //    _logger.LogDebug("Forcing update due to ExternalEtag {0}", item.Name);
             //}
 
             if (!internalChannelId.Equals(item.ChannelId))
             {
                 forceUpdate = true;
-                _logger.Debug("Forcing update due to ChannelId {0}", item.Name);
+                _logger.LogDebug("Forcing update due to ChannelId {0}", item.Name);
             }
             item.ChannelId = internalChannelId;
 
             if (!item.ParentId.Equals(parentFolderId))
             {
                 forceUpdate = true;
-                _logger.Debug("Forcing update due to parent folder Id {0}", item.Name);
+                _logger.LogDebug("Forcing update due to parent folder Id {0}", item.Name);
             }
             item.ParentId = parentFolderId;
 
@@ -1092,7 +1092,7 @@ namespace Emby.Server.Implementations.Channels
                 if (!string.Equals(hasSeries.SeriesName, info.SeriesName, StringComparison.OrdinalIgnoreCase))
                 {
                     forceUpdate = true;
-                    _logger.Debug("Forcing update due to SeriesName {0}", item.Name);
+                    _logger.LogDebug("Forcing update due to SeriesName {0}", item.Name);
                 }
                 hasSeries.SeriesName = info.SeriesName;
             }
@@ -1100,7 +1100,7 @@ namespace Emby.Server.Implementations.Channels
             if (!string.Equals(item.ExternalId, info.Id, StringComparison.OrdinalIgnoreCase))
             {
                 forceUpdate = true;
-                _logger.Debug("Forcing update due to ExternalId {0}", item.Name);
+                _logger.LogDebug("Forcing update due to ExternalId {0}", item.Name);
             }
             item.ExternalId = info.Id;
 
@@ -1125,7 +1125,7 @@ namespace Emby.Server.Implementations.Channels
             if (!string.IsNullOrEmpty(info.ImageUrl) && !item.HasImage(ImageType.Primary))
             {
                 item.SetImagePath(ImageType.Primary, info.ImageUrl);
-                _logger.Debug("Forcing update due to ImageUrl {0}", item.Name);
+                _logger.LogDebug("Forcing update due to ImageUrl {0}", item.Name);
                 forceUpdate = true;
             }
 
@@ -1134,7 +1134,7 @@ namespace Emby.Server.Implementations.Channels
                 if (item.Tags.Contains("livestream", StringComparer.OrdinalIgnoreCase))
                 {
                     item.Tags = item.Tags.Except(new[] { "livestream" }, StringComparer.OrdinalIgnoreCase).ToArray();
-                    _logger.Debug("Forcing update due to Tags {0}", item.Name);
+                    _logger.LogDebug("Forcing update due to Tags {0}", item.Name);
                     forceUpdate = true;
                 }
             }
@@ -1143,7 +1143,7 @@ namespace Emby.Server.Implementations.Channels
                 if (!item.Tags.Contains("livestream", StringComparer.OrdinalIgnoreCase))
                 {
                     item.Tags = item.Tags.Concat(new[] { "livestream" }).ToArray();
-                    _logger.Debug("Forcing update due to Tags {0}", item.Name);
+                    _logger.LogDebug("Forcing update due to Tags {0}", item.Name);
                     forceUpdate = true;
                 }
             }

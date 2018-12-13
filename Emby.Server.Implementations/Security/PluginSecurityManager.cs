@@ -12,7 +12,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 
@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.Security
         /// Initializes a new instance of the <see cref="PluginSecurityManager" /> class.
         /// </summary>
         public PluginSecurityManager(IServerApplicationHost appHost, IHttpClient httpClient, IJsonSerializer jsonSerializer,
-            IApplicationPaths appPaths, ILogManager logManager, IFileSystem fileSystem, ICryptoProvider cryptographyProvider)
+            IApplicationPaths appPaths, ILoggerFactory loggerFactory, IFileSystem fileSystem, ICryptoProvider cryptographyProvider)
         {
             if (httpClient == null)
             {
@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Security
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _cryptographyProvider = cryptographyProvider;
-            _logger = logManager.GetLogger("SecurityManager");
+            _logger = loggerFactory.CreateLogger("SecurityManager");
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace Emby.Server.Implementations.Security
                     if (reg == null)
                     {
                         var msg = "Result from appstore registration was null.";
-                        _logger.Error(msg);
+                        _logger.LogError(msg);
                         throw new ArgumentException(msg);
                     }
                     if (!String.IsNullOrEmpty(reg.key))
@@ -152,7 +152,7 @@ namespace Emby.Server.Implementations.Security
             }
             catch (HttpException e)
             {
-                _logger.ErrorException("Error registering appstore purchase {0}", e, parameters ?? "NO PARMS SENT");
+                _logger.LogError("Error registering appstore purchase {0}", e, parameters ?? "NO PARMS SENT");
 
                 if (e.StatusCode.HasValue && e.StatusCode.Value == HttpStatusCode.PaymentRequired)
                 {
@@ -161,7 +161,7 @@ namespace Emby.Server.Implementations.Security
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Error registering appstore purchase {0}", e, parameters ?? "NO PARMS SENT");
+                _logger.LogError("Error registering appstore purchase {0}", e, parameters ?? "NO PARMS SENT");
                 SaveAppStoreInfo(parameters);
                 //TODO - could create a re-try routine on start-up if this file is there.  For now we can handle manually.
                 throw new Exception("Error registering store sale");

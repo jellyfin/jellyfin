@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -204,7 +204,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error processing web socket message", ex);
+                _logger.LogError("Error processing web socket message", ex);
             }
         }
 

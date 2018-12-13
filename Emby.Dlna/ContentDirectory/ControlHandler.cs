@@ -12,7 +12,7 @@ using Emby.Dlna.Service;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
@@ -68,7 +68,7 @@ namespace Emby.Dlna.ContentDirectory
             _profile = profile;
             _config = config;
 
-            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, Logger, libraryManager, mediaEncoder);
+            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, _logger, libraryManager, mediaEncoder);
         }
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, IDictionary<string, string> methodParams)
@@ -1334,7 +1334,7 @@ namespace Emby.Dlna.ContentDirectory
                 };
             }
 
-            Logger.Error("Error parsing item Id: {0}. Returning user root folder.", id);
+            _logger.LogError("Error parsing item Id: {id}. Returning user root folder.", id);
 
             return new ServerItem(_libraryManager.GetUserRootFolder());
         }

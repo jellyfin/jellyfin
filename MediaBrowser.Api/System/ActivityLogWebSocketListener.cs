@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;

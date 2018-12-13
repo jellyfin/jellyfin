@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Controller.LiveTv;
 using System.Net;
 
@@ -244,7 +244,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private async Task ReleaseLockkey(ISocket tcpClient, uint lockKeyValue)
         {
-            _logger.Info("HdHomerunManager.ReleaseLockkey {0}", lockKeyValue);
+            _logger.LogInformation("HdHomerunManager.ReleaseLockkey {0}", lockKeyValue);
 
             var ipEndPoint = new IpEndPointInfo(_remoteIp, HdHomeRunPort);
 

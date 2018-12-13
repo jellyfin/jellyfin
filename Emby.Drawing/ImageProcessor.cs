@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
@@ -261,7 +261,7 @@ namespace Emby.Drawing
             //if (originalImageSize.HasValue && options.HasDefaultOptions(originalImagePath, originalImageSize.Value) && !autoOrient)
             //{
             //    // Just spit out the original file if all the options are default
-            //    _logger.Info("Returning original image {0}", originalImagePath);
+            //    _logger.LogInformation("Returning original image {0}", originalImagePath);
             //    return new ValueTuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             //}
 
@@ -302,7 +302,7 @@ namespace Emby.Drawing
             {
                 // Decoder failed to decode it
 #if DEBUG
-                _logger.ErrorException("Error encoding image", ex);
+                _logger.LogError("Error encoding image", ex);
 #endif
                 // Just spit out the original file if all the options are default
                 return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
@@ -310,7 +310,7 @@ namespace Emby.Drawing
             catch (Exception ex)
             {
                 // If it fails for whatever reason, return the original image
-                _logger.ErrorException("Error encoding image", ex);
+                _logger.LogError("Error encoding image", ex);
 
                 // Just spit out the original file if all the options are default
                 return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
@@ -464,7 +464,7 @@ namespace Emby.Drawing
             }
 
             var path = info.Path;
-            _logger.Info("Getting image size for item {0} {1}", item.GetType().Name, path);
+            _logger.LogInformation("Getting image size for item {0} {1}", item.GetType().Name, path);
 
             var size = GetImageSize(path, allowSlowMethods);
 
@@ -603,7 +603,7 @@ namespace Emby.Drawing
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Image conversion failed for {0}", ex, originalImagePath);
+                    _logger.LogError("Image conversion failed for {0}", ex, originalImagePath);
                 }
             }
 
@@ -660,7 +660,7 @@ namespace Emby.Drawing
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error enhancing image", ex);
+                _logger.LogError("Error enhancing image", ex);
             }
 
             return new ValueTuple<string, DateTime, bool>(originalImagePath, dateModified, inputImageSupportsTransparency);
@@ -827,11 +827,11 @@ namespace Emby.Drawing
 
         public void CreateImageCollage(ImageCollageOptions options)
         {
-            _logger.Info("Creating image collage and saving to {0}", options.OutputPath);
+            _logger.LogInformation("Creating image collage and saving to {0}", options.OutputPath);
 
             _imageEncoder.CreateImageCollage(options);
 
-            _logger.Info("Completed creation of image collage and saved to {0}", options.OutputPath);
+            _logger.LogInformation("Completed creation of image collage and saved to {0}", options.OutputPath);
         }
 
         public IImageEnhancer[] GetSupportedEnhancers(BaseItem item, ImageType imageType)
@@ -853,7 +853,7 @@ namespace Emby.Drawing
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
+                    _logger.LogError("Error in image enhancer: {0}", ex, i.GetType().Name);
                 }
             }
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System.Linq;
 
 namespace Mono.Nat
