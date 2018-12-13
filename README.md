@@ -119,7 +119,7 @@ A pre-built windows installer will be available soon. Until then it isn't too ha
     ```
     git clone https://github.com/jellyfin/jellyfin.git C:\Jellyfin
     ```
-0. From the Jellyfin directory you can use our Jellyfin build script. Call `Build-Jellyfin.ps1 -InstallFFMPEG` from inside the directory in a powershell window. Make sure you've set your executionpolicy to unsrestricted.
+0. From the Jellyfin directory you can use our Jellyfin build script. Call `Build-Jellyfin.ps1 -InstallFFMPEG` from inside the directory in a powershell window. Make sure you've set your executionpolicy to unrestricted.
 
     Additional flags:
       * If you want to optimize for your environment you can use the `-WindowsVersion` and `-Architecture` flags to do so; the default is generic Windows x64.
