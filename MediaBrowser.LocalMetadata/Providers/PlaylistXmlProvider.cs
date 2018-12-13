@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.LocalMetadata.Parsers;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System.IO;
 using System.Threading;
 using MediaBrowser.LocalMetadata.Savers;

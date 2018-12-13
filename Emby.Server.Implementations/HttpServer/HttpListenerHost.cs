@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -252,11 +252,11 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (logExceptionStackTrace)
                 {
-                    _logger.ErrorException("Error processing request", ex);
+                    _logger.LogError("Error processing request", ex);
                 }
                 else if (logExceptionMessage)
                 {
-                    _logger.Error(ex.Message);
+                    _logger.LogError(ex.Message);
                 }
 
                 var httpRes = httpReq.Response;
@@ -274,7 +274,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch
             {
-                //_logger.ErrorException("Error this.ProcessRequest(context)(Exception while writing error to the response)", errorEx);
+                //_logger.LogError("Error this.ProcessRequest(context)(Exception while writing error to the response)", errorEx);
             }
         }
 
@@ -320,10 +320,10 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (_listener != null)
             {
-                _logger.Info("Stopping HttpListener...");
+                _logger.LogInformation("Stopping HttpListener...");
                 var task = _listener.Stop();
                 Task.WaitAll(task);
-                _logger.Info("HttpListener stopped");
+                _logger.LogInformation("HttpListener stopped");
             }
         }
 
@@ -713,7 +713,7 @@ namespace Emby.Server.Implementations.HttpServer
             var pathParts = pathInfo.TrimStart('/').Split('/');
             if (pathParts.Length == 0)
             {
-                _logger.Error("Path parts empty for PathInfo: {0}, Url: {1}", pathInfo, httpReq.RawUrl);
+                _logger.LogError("Path parts empty for PathInfo: {0}, Url: {1}", pathInfo, httpReq.RawUrl);
                 return null;
             }
 
@@ -729,7 +729,7 @@ namespace Emby.Server.Implementations.HttpServer
                 };
             }
 
-            _logger.Error("Could not find handler for {0}", pathInfo);
+            _logger.LogError("Could not find handler for {0}", pathInfo);
             return null;
         }
 
@@ -783,7 +783,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             ServiceController = new ServiceController();
 
-            _logger.Info("Calling ServiceStack AppHost.Init");
+            _logger.LogInformation("Calling ServiceStack AppHost.Init");
 
             var types = services.Select(r => r.GetType()).ToArray();
 
@@ -853,7 +853,7 @@ namespace Emby.Server.Implementations.HttpServer
             //using (var reader = new StreamReader(stream))
             //{
             //    var json = reader.ReadToEnd();
-            //    Logger.Info(json);
+            //    logger.LogInformation(json);
             //    return _jsonSerializer.DeserializeFromString(json, type);
             //}
             return _jsonSerializer.DeserializeFromStreamAsync(stream, type);
@@ -919,7 +919,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return Task.CompletedTask;
             }
 
-            //_logger.Debug("Websocket message received: {0}", result.MessageType);
+            //_logger.LogDebug("Websocket message received: {0}", result.MessageType);
 
             var tasks = _webSocketListeners.Select(i => Task.Run(async () =>
             {
@@ -929,7 +929,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("{0} failed processing WebSocket message {1}", ex, i.GetType().Name, result.MessageType ?? string.Empty);
+                    _logger.LogError("{0} failed processing WebSocket message {1}", ex, i.GetType().Name, result.MessageType ?? string.Empty);
                 }
             }));
 

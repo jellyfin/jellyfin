@@ -5,7 +5,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Services;
 using System.Linq;
 
@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.HttpServer
             var rangeString = string.Format("bytes {0}-{1}/{2}", RangeStart, RangeEnd, TotalContentLength);
             Headers["Content-Range"] = rangeString;
 
-            Logger.Info("Setting range response values for {0}. RangeRequest: {1} Content-Length: {2}, Content-Range: {3}", Path, RangeHeader, lengthString, rangeString);
+            Logger.LogInformation("Setting range response values for {0}. RangeRequest: {1} Content-Length: {2}, Content-Range: {3}", Path, RangeHeader, lengthString, rangeString);
         }
 
         /// <summary>
@@ -173,7 +173,7 @@ namespace Emby.Server.Implementations.HttpServer
 
                     if (extension == null || !SkipLogExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                     {
-                        Logger.Debug("Transmit file {0}", path);
+                        Logger.LogDebug("Transmit file {0}", path);
                     }
 
                     //var count = FileShare == FileShareMode.ReadWrite ? TotalContentLength : 0;

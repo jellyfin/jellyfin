@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Subtitles
 {
@@ -277,7 +278,7 @@ namespace MediaBrowser.Api.Subtitles
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error downloading subtitles", ex);
+                    Logger.LogError("Error downloading subtitles", ex);
                 }
 
             });

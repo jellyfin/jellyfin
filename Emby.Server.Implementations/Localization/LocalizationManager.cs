@@ -10,7 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Reflection;
 
 namespace Emby.Server.Implementations.Localization
@@ -82,7 +82,7 @@ namespace Emby.Server.Implementations.Localization
                     using (var stream = _assemblyInfo.GetManifestResourceStream(type, resource))
                     {
                         var target = Path.Combine(localizationPath, filename);
-                        _logger.Info("Extracting ratings to {0}", target);
+                        _logger.LogInformation("Extracting ratings to {0}", target);
 
                         using (var fs = _fileSystem.GetFileStream(target, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
                         {

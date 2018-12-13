@@ -2,7 +2,7 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using Emby.Dlna.Service;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Xml;

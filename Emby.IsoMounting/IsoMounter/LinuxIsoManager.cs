@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.System;
 using System.Runtime.InteropServices;
 
@@ -20,7 +20,7 @@ namespace IsoMounter
         private readonly IEnvironmentInfo EnvironmentInfo;
         private readonly bool ExecutablesAvailable;
         private readonly IFileSystem FileSystem;
-        private readonly ILogger Logger;
+        private readonly ILogger _logger;
         private readonly string MountCommand;
         private readonly string MountPointRoot;
         private readonly IProcessFactory ProcessFactory;
@@ -36,24 +36,24 @@ namespace IsoMounter
 
             EnvironmentInfo = environment;
             FileSystem = fileSystem;
-            Logger = logger;
+            _logger = logger;
             ProcessFactory = processFactory;
 
             MountPointRoot = FileSystem.DirectorySeparatorChar + "tmp" + FileSystem.DirectorySeparatorChar + "Emby";
 
-            Logger.Debug(
+            _logger.LogDebug(
                 "[{0}] System PATH is currently set to [{1}].",
                 Name,
                 EnvironmentInfo.GetEnvironmentVariable("PATH") ?? ""
             );
 
-            Logger.Debug(
+            _logger.LogDebug(
                 "[{0}] System path separator is [{1}].",
                 Name,
                 EnvironmentInfo.PathSeparator
             );
 
-            Logger.Debug(
+            _logger.LogDebug(
                 "[{0}] Mount point root is [{1}].",
                 Name,
                 MountPointRoot
@@ -65,7 +65,7 @@ namespace IsoMounter
 
             SudoCommand = GetFullPathForExecutable("sudo");
 
-            Logger.Info(
+            _logger.LogInformation(
                 "[{0}] Using version of [sudo] located at [{1}].",
                 Name,
                 SudoCommand
@@ -73,7 +73,7 @@ namespace IsoMounter
 
             MountCommand = GetFullPathForExecutable("mount");
 
-            Logger.Info(
+            _logger.LogInformation(
                 "[{0}] Using version of [mount] located at [{1}].",
                 Name,
                 MountCommand
@@ -81,7 +81,7 @@ namespace IsoMounter
 
             UmountCommand = GetFullPathForExecutable("umount");
 
-            Logger.Info(
+            _logger.LogInformation(
                 "[{0}] Using version of [umount] located at [{1}].",
                 Name,
                 UmountCommand
@@ -119,7 +119,7 @@ namespace IsoMounter
         {
 
             if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Linux) {
-                Logger.Info(
+                _logger.LogInformation(
                     "[{0}] Checking we can attempt to mount [{1}], Extension = [{2}], Operating System = [{3}], Executables Available = [{4}].",
                     Name,
                     path,
@@ -182,7 +182,7 @@ namespace IsoMounter
                 return;
             }
 
-            Logger.Info(
+            _logger.LogInformation(
                 "[{0}] Disposing [{1}].",
                 Name,
                 disposing.ToString()
@@ -230,7 +230,7 @@ namespace IsoMounter
 
             var uid = getuid();
 
-            Logger.Debug(
+            _logger.LogDebug(
                 "[{0}] Our current UID is [{1}], GetUserId() returned [{2}].",
                 Name,
                 uid.ToString(),
@@ -267,13 +267,13 @@ namespace IsoMounter
                 //StreamReader outputReader = process.StandardOutput.;
                 //StreamReader errorReader = process.StandardError;
 
-                Logger.Debug(
+                _logger.LogDebug(
                     "[{0}] Standard output from process is [{1}].",
                     Name,
                     process.StandardOutput.ReadToEnd()
                 );
 
-                Logger.Debug(
+                _logger.LogDebug(
                     "[{0}] Standard error from process is [{1}].",
                     Name,
                     process.StandardError.ReadToEnd()
@@ -283,7 +283,7 @@ namespace IsoMounter
 
                 processFailed = true;
 
-                Logger.Debug(
+                _logger.LogDebug(
                     "[{0}] Unhandled exception executing command, exception is [{1}].",
                     Name,
                     ex.Message
@@ -308,13 +308,13 @@ namespace IsoMounter
 
             if (!string.IsNullOrEmpty(isoPath)) {
 
-                Logger.Info(
+                _logger.LogInformation(
                     "[{0}] Attempting to mount [{1}].",
                     Name,
                     isoPath
                 );
 
-                Logger.Debug(
+                _logger.LogDebug(
                     "[{0}] ISO will be mounted at [{1}].",
                     Name,
                     mountPoint
@@ -342,7 +342,7 @@ namespace IsoMounter
                 cmdArguments = string.Format("\"{0}\" \"{1}\" \"{2}\"", MountCommand, isoPath, mountPoint);
             }
 
-            Logger.Debug(
+            _logger.LogDebug(
                 "[{0}] Mount command [{1}], mount arguments [{2}].",
                 Name,
                 cmdFilename,
@@ -351,7 +351,7 @@ namespace IsoMounter
 
             if (ExecuteCommand(cmdFilename, cmdArguments)) {
 
-                Logger.Info(
+                _logger.LogInformation(
                     "[{0}] ISO mount completed successfully.",
                     Name
                 );
@@ -360,7 +360,7 @@ namespace IsoMounter
 
             } else {
 
-                Logger.Info(
+                _logger.LogInformation(
                     "[{0}] ISO mount completed with errors.",
                     Name
                 );
@@ -371,7 +371,7 @@ namespace IsoMounter
 
                 } catch (Exception ex) {
 
-                    Logger.Info(
+                    _logger.LogInformation(
                         "[{0}] Unhandled exception removing mount point, exception is [{1}].",
                         Name,
                         ex.Message
@@ -395,7 +395,7 @@ namespace IsoMounter
 
             if (mount != null) {
 
-                Logger.Info(
+                _logger.LogInformation(
                     "[{0}] Attempting to unmount ISO [{1}] mounted on [{2}].",
                     Name,
                     mount.IsoPath,
@@ -416,7 +416,7 @@ namespace IsoMounter
                 cmdArguments = string.Format("\"{0}\" \"{1}\"", UmountCommand, mount.MountedPath);
             }
 
-            Logger.Debug(
+            _logger.LogDebug(
                 "[{0}] Umount command [{1}], umount arguments [{2}].",
                 Name,
                 cmdFilename,
@@ -425,14 +425,14 @@ namespace IsoMounter
 
             if (ExecuteCommand(cmdFilename, cmdArguments)) {
 
-                Logger.Info(
+                _logger.LogInformation(
                     "[{0}] ISO unmount completed successfully.",
                     Name
                 );
 
             } else {
 
-                Logger.Info(
+                _logger.LogInformation(
                     "[{0}] ISO unmount completed with errors.",
                     Name
                 );
@@ -445,7 +445,7 @@ namespace IsoMounter
 
             } catch (Exception ex) {
 
-                Logger.Info(
+                _logger.LogInformation(
                     "[{0}] Unhandled exception removing mount point, exception is [{1}].",
                     Name,
                     ex.Message

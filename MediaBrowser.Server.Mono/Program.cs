@@ -1,4 +1,3 @@
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Mono.Native;
 using MediaBrowser.Server.Startup.Common;
 using System;
@@ -15,16 +14,18 @@ using Emby.Drawing;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.EnvironmentInfo;
 using Emby.Server.Implementations.IO;
-using Emby.Server.Implementations.Logging;
 using Emby.Server.Implementations.Networking;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using Mono.Unix.Native;
-using ILogger = MediaBrowser.Model.Logging.ILogger;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 using System.Threading;
 using InteropServices = System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
+using Serilog;
+using Serilog.AspNetCore;
 
 namespace MediaBrowser.Server.Mono
 {
@@ -33,7 +34,7 @@ namespace MediaBrowser.Server.Mono
         private static ILogger _logger;
         private static IFileSystem FileSystem;
         private static IServerApplicationPaths _appPaths;
-        private static ILogManager _logManager;
+        private static ILoggerFactory _loggerFactory;
 
         private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
         private static bool _restartOnShutdown;
@@ -52,23 +53,24 @@ namespace MediaBrowser.Server.Mono
             var appPaths = CreateApplicationPaths(applicationPath, customProgramDataPath);
             _appPaths = appPaths;
 
-            using (var logManager = new SimpleLogManager(appPaths.LogDirectoryPath, "server"))
+            var logger = new LoggerConfiguration()
+                            .Enrich.FromLogContext()
+                            .WriteTo.Console()
+                            .CreateLogger();
+
+            using (var loggerFactory = new SerilogLoggerFactory(logger))
             {
-                _logManager = logManager;
+                _loggerFactory = loggerFactory;
 
-                var task = logManager.ReloadLogger(LogSeverity.Debug, CancellationToken.None);
-                Task.WaitAll(task);
-                logManager.AddConsoleOutput();
+                _logger = loggerFactory.CreateLogger("Main");
 
-                var logger = _logger = logManager.GetLogger("Main");
-
-                ApplicationHost.LogEnvironmentInfo(logger, appPaths, true);
+                ApplicationHost.LogEnvironmentInfo(_logger, appPaths, true);
 
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-                RunApplication(appPaths, logManager, options);
+                RunApplication(appPaths, loggerFactory, options);
 
-                _logger.Info("Disposing app host");
+                _logger.LogInformation("Disposing app host");
 
                 if (_restartOnShutdown)
                 {
@@ -109,27 +111,27 @@ namespace MediaBrowser.Server.Mono
             return new ServerApplicationPaths(programDataPath, appFolderPath, appFolderPath);
         }
 
-        private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options)
+        private static void RunApplication(ServerApplicationPaths appPaths, ILoggerFactory loggerFactory, StartupOptions options)
         {
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
             var environmentInfo = GetEnvironmentInfo();
 
-            var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), environmentInfo, null, appPaths.TempDirectory, true);
+            var fileSystem = new ManagedFileSystem(loggerFactory.CreateLogger("FileSystem"), environmentInfo, null, appPaths.TempDirectory, true);
 
             FileSystem = fileSystem;
 
             using (var appHost = new MonoAppHost(appPaths,
-                logManager,
+                loggerFactory,
                 options,
                 fileSystem,
                 new PowerManagement(),
                 "embyserver-mono_{version}.zip",
                 environmentInfo,
                 new NullImageEncoder(),
-                new SystemEvents(logManager.GetLogger("SystemEvents")),
-                new NetworkManager(logManager.GetLogger("NetworkManager"), environmentInfo)))
+                new SystemEvents(loggerFactory.CreateLogger("SystemEvents")),
+                new NetworkManager(loggerFactory.CreateLogger("NetworkManager"), environmentInfo)))
             {
                 if (options.ContainsOption("-v"))
                 {
@@ -141,7 +143,7 @@ namespace MediaBrowser.Server.Mono
 
                 appHost.Init();
 
-                appHost.ImageProcessor.ImageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo, appHost.LocalizationManager);
+                appHost.ImageProcessor.ImageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo, appHost.LocalizationManager);
 
                 Console.WriteLine("Running startup tasks");
 
@@ -221,7 +223,7 @@ namespace MediaBrowser.Server.Mono
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error getting unix name", ex);
+                    _logger.LogError("Error getting unix name", ex);
                 }
                 _unixName = uname;
             }
@@ -243,6 +245,8 @@ namespace MediaBrowser.Server.Mono
         {
             var exception = (Exception)e.ExceptionObject;
 
+            // TODO
+            /*
             new UnhandledExceptionWriter(_appPaths, _logger, _logManager, FileSystem, new ConsoleLogger()).Log(exception);
 
             if (!Debugger.IsAttached)
@@ -254,7 +258,7 @@ namespace MediaBrowser.Server.Mono
                 {
                     Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
                 }
-            }
+            }*/
         }
 
         public static void Shutdown()
@@ -271,7 +275,7 @@ namespace MediaBrowser.Server.Mono
 
         private static void StartNewInstance(StartupOptions startupOptions)
         {
-            _logger.Info("Starting new instance");
+            _logger.LogInformation("Starting new instance");
 
             string module = startupOptions.GetOption("-restartpath");
             string commandLineArgsString = startupOptions.GetOption("-restartargs") ?? string.Empty;
@@ -290,8 +294,8 @@ namespace MediaBrowser.Server.Mono
                 commandLineArgsString = string.Join(" ", args);
             }
 
-            _logger.Info("Executable: {0}", module);
-            _logger.Info("Arguments: {0}", commandLineArgsString);
+            _logger.LogInformation("Executable: {0}", module);
+            _logger.LogInformation("Arguments: {0}", commandLineArgsString);
 
             Process.Start(module, commandLineArgsString);
         }

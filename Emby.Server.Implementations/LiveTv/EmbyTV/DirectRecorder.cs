@@ -8,7 +8,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 onStarted();
 
-                _logger.Info("Copying recording stream to file {0}", targetFile);
+                _logger.LogInformation("Copying recording stream to file {0}", targetFile);
 
                 // The media source is infinite so we need to handle stopping ourselves
                 var durationToken = new CancellationTokenSource(duration);
@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 await directStreamProvider.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
             }
 
-            _logger.Info("Recording completed to file {0}", targetFile);
+            _logger.LogInformation("Recording completed to file {0}", targetFile);
         }
 
         private async Task RecordFromMediaSource(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false))
             {
-                _logger.Info("Opened recording stream from tuner provider");
+                _logger.LogInformation("Opened recording stream from tuner provider");
 
                 _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(targetFile));
 
@@ -86,7 +86,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     onStarted();
 
-                    _logger.Info("Copying recording stream to file {0}", targetFile);
+                    _logger.LogInformation("Copying recording stream to file {0}", targetFile);
 
                     // The media source if infinite so we need to handle stopping ourselves
                     var durationToken = new CancellationTokenSource(duration);
@@ -96,7 +96,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
-            _logger.Info("Recording completed to file {0}", targetFile);
+            _logger.LogInformation("Recording completed to file {0}", targetFile);
         }
     }
 }

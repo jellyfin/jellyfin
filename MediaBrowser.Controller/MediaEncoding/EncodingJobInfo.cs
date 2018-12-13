@@ -8,7 +8,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Session;
@@ -738,7 +738,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error disposing iso mount", ex);
+                    _logger.LogError(ex, "Error disposing iso mount");
                 }
 
                 IsoMount = null;

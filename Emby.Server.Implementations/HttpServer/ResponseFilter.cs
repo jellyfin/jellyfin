@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Globalization;
 using System.Text;
@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (exception != null)
             {
-                _logger.ErrorException("Error processing request for {0}", exception, req.RawUrl);
+                _logger.LogError("Error processing request for {0}", exception, req.RawUrl);
 
                 if (!string.IsNullOrEmpty(exception.Message))
                 {

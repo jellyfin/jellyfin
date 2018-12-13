@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.TV
 {
@@ -72,7 +72,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                     {
                         if (episodeInfo.EpisodeNumber.HasValue && episodeInfo.SeasonNumber.HasValue)
                         {
-                            _logger.Debug("Found folder underneath series with episode number: {0}. Season {1}. Episode {2}",
+                            _logger.LogDebug("Found folder underneath series with episode number: {0}. Season {1}. Episode {2}",
                                 path,
                                 episodeInfo.SeasonNumber.Value,
                                 episodeInfo.EpisodeNumber.Value);

@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
@@ -23,6 +22,7 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -264,7 +264,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         protected virtual List<BaseItem> LoadChildren()
         {
-            //Logger.Debug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
+            //logger.LogDebug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
             //just load our children from the repo - the library will be validated and maintained in other processes
             return GetCachedChildren();
         }
@@ -303,7 +303,7 @@ namespace MediaBrowser.Controller.Entities
                 var id = child.Id;
                 if (dictionary.ContainsKey(id))
                 {
-                    Logger.Error("Found folder containing items with duplicate id. Path: {0}, Child Name: {1}",
+                    Logger.LogError("Found folder containing items with duplicate id. Path: {0}, Child Name: {1}",
                         Path ?? Name,
                         child.Path ?? child.Name);
                 }
@@ -425,7 +425,7 @@ namespace MediaBrowser.Controller.Entities
 
                         else
                         {
-                            Logger.Debug("Removed item: " + item.Path);
+                            Logger.LogDebug("Removed item: " + item.Path);
 
                             item.SetParent(null);
                             LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
@@ -795,7 +795,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (!(this is ICollectionFolder))
                 {
-                    Logger.Debug("Query requires post-filtering due to LinkedChildren. Type: " + GetType().Name);
+                    Logger.LogDebug("Query requires post-filtering due to LinkedChildren. Type: " + GetType().Name);
                     return true;
                 }
             }
@@ -846,7 +846,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (CollapseBoxSetItems(query, this, query.User, ConfigurationManager))
             {
-                Logger.Debug("Query requires post-filtering due to CollapseBoxSetItems");
+                Logger.LogDebug("Query requires post-filtering due to CollapseBoxSetItems");
                 return true;
             }
 
@@ -1575,7 +1575,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         try
                         {
-                            Logger.Debug("Found shortcut at {0}", i.FullName);
+                            Logger.LogDebug("Found shortcut at {0}", i.FullName);
 
                             var resolvedPath = CollectionFolder.ApplicationHost.ExpandVirtualPath(FileSystem.ResolveShortcut(i.FullName));
 
@@ -1588,13 +1588,13 @@ namespace MediaBrowser.Controller.Entities
                                 };
                             }
 
-                            Logger.Error("Error resolving shortcut {0}", i.FullName);
+                            Logger.LogError("Error resolving shortcut {0}", i.FullName);
 
                             return null;
                         }
                         catch (IOException ex)
                         {
-                            Logger.ErrorException("Error resolving shortcut {0}", ex, i.FullName);
+                            Logger.LogError("Error resolving shortcut {0}", ex, i.FullName);
                             return null;
                         }
                     })
@@ -1605,7 +1605,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (!newShortcutLinks.SequenceEqual(currentShortcutLinks, new LinkedChildComparer(FileSystem)))
                 {
-                    Logger.Info("Shortcut links have changed for {0}", Path);
+                    Logger.LogInformation("Shortcut links have changed for {0}", Path);
 
                     newShortcutLinks.AddRange(LinkedChildren.Where(i => i.Type == LinkedChildType.Manual));
                     LinkedChildren = newShortcutLinks.ToArray();

@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using SocketHttpListener.Net;
 using System;
 using System.Collections.Generic;
@@ -74,7 +74,7 @@ namespace EmbyServer.SocketSharp
 
             foreach (var prefix in urlPrefixes)
             {
-                _logger.Info("Adding HttpListener prefix " + prefix);
+                _logger.LogInformation("Adding HttpListener prefix " + prefix);
                 _listener.Prefixes.Add(prefix);
             }
 
@@ -93,7 +93,7 @@ namespace EmbyServer.SocketSharp
         {
             var url = request.Url.ToString();
 
-            logger.Info("{0} {1}. UserAgent: {2}", request.IsWebSocketRequest ? "WS" : "HTTP " + request.HttpMethod, url, request.UserAgent ?? string.Empty);
+            logger.LogInformation("{0} {1}. UserAgent: {2}", request.IsWebSocketRequest ? "WS" : "HTTP " + request.HttpMethod, url, request.UserAgent ?? string.Empty);
         }
 
         private Task InitTask(HttpListenerContext context, CancellationToken cancellationToken)
@@ -114,7 +114,7 @@ namespace EmbyServer.SocketSharp
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error processing request", ex);
+                _logger.LogError("Error processing request", ex);
 
                 httpReq = httpReq ?? GetRequest(context);
                 return ErrorHandler(ex, httpReq, true, true);
@@ -148,7 +148,7 @@ namespace EmbyServer.SocketSharp
 
                 if (connectingArgs.AllowConnection)
                 {
-                    _logger.Debug("Web socket connection allowed");
+                    _logger.LogDebug("Web socket connection allowed");
 
                     var webSocketContext = await ctx.AcceptWebSocketAsync(null).ConfigureAwait(false);
 
@@ -169,14 +169,14 @@ namespace EmbyServer.SocketSharp
                 }
                 else
                 {
-                    _logger.Warn("Web socket connection not allowed");
+                    _logger.LogWarning("Web socket connection not allowed");
                     ctx.Response.StatusCode = 401;
                     ctx.Response.Close();
                 }
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("AcceptWebSocketAsync error", ex);
+                _logger.LogError("AcceptWebSocketAsync error", ex);
                 ctx.Response.StatusCode = 500;
                 ctx.Response.Close();
             }
@@ -206,7 +206,7 @@ namespace EmbyServer.SocketSharp
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error closing web socket response", ex);
+                _logger.LogError("Error closing web socket response", ex);
             }
         }
 

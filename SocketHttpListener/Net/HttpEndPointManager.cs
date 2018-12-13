@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using SocketHttpListener.Primitives;
 

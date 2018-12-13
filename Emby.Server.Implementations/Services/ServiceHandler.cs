@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Services;
 
 namespace Emby.Server.Implementations.Services
@@ -63,7 +63,8 @@ namespace Emby.Server.Implementations.Services
             if (this.RestPath == null)
             {
                 string contentType;
-                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, new NullLogger(), out contentType);
+                // TODO: change null out
+                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, null, out contentType);
 
                 if (contentType != null)
                     ResponseContentType = contentType;

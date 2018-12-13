@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
+using System;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Threading;
 using System.Linq;
-using System;
 
 namespace MediaBrowser.Controller.Session
 {
@@ -231,7 +231,7 @@ namespace MediaBrowser.Controller.Session
             }
 
             var newController = factory(this);
-            _logger.Debug("Creating new {0}", newController.GetType().Name);
+            _logger.LogDebug("Creating new {0}", newController.GetType().Name);
             controllers.Add(newController);
 
             SessionControllers = controllers.ToArray();
@@ -337,7 +337,7 @@ namespace MediaBrowser.Controller.Session
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error reporting playback progress", ex);
+                _logger.LogError("Error reporting playback progress", ex);
             }
         }
 
@@ -371,7 +371,7 @@ namespace MediaBrowser.Controller.Session
 
                 if (disposable != null)
                 {
-                    _logger.Debug("Disposing session controller {0}", disposable.GetType().Name);
+                    _logger.LogDebug("Disposing session controller {0}", disposable.GetType().Name);
 
                     try
                     {
@@ -379,7 +379,7 @@ namespace MediaBrowser.Controller.Session
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error disposing session controller", ex);
+                        _logger.LogError("Error disposing session controller", ex);
                     }
                 }
             }

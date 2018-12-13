@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations.IO
                 var bytesRead = await CopyToAsyncInternal(source, target, buffer, cancellationToken).ConfigureAwait(false);
 
                 //var position = fs.Position;
-                //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
+                //_logger.LogDebug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
 
                 if (bytesRead == 0)
                 {

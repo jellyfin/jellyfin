@@ -7,7 +7,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading;
@@ -376,7 +376,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting image info for {0}", ex, info.Name);
+                _logger.LogError("Error getting image info for {0}", ex, info.Name);
             }
 
             return null;

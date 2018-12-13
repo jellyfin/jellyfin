@@ -18,6 +18,8 @@
 
   <ItemGroup>
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="2.1.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.0.0" />
     <PackageReference Include="SkiaSharp" Version="1.68.0" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="1.1.11" />
     <PackageReference Include="SQLitePCLRaw.core" Version="1.1.11" />

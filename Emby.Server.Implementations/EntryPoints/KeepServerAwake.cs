@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using MediaBrowser.Model.System;
@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error resetting system standby timer", ex);
+                _logger.LogError("Error resetting system standby timer", ex);
             }
         }
 
