@@ -249,6 +249,5 @@ debian/files
 debian/jellyfin.substvars
 debian/jellyfin/
 
-
 # Don't ignore the debian/bin folder
 !debian/bin/
