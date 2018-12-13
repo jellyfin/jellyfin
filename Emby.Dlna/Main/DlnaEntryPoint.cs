@@ -274,7 +274,7 @@ namespace Emby.Dlna.Main
                     Location = uri, // Must point to the URL that serves your devices UPnP description document. 
                     FriendlyName = "Jellyfin",
                     Manufacturer = "Jellyfin",
-                    ModelName = "Jellyfin Media Player",
+                    ModelName = "Jellyfin Server",
                     Uuid = udn
                     // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.                
                 };
