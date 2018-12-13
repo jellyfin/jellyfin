@@ -18,5 +18,5 @@ override_dh_auto_build:
 	dotnet publish --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln --output='$(CURDIR)/usr/lib/jellyfin/bin'
 
 override_dh_auto_clean:
-	dotnet clean --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln || true
+	dotnet clean -maxcpucount:1 --configuration $(CONFIG) $(CURDIR)/MediaBrowser.sln || true
 	rm -rf '$(CURDIR)/usr/lib/jellyfin'
