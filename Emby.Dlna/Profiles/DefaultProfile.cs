@@ -16,7 +16,7 @@ namespace Emby.Dlna.Profiles
 
             Manufacturer = "Jellyfin";
             ModelDescription = "UPnP/AV 1.0 Compliant Media Server";
-            ModelName = "Jellyfin Media Player";
+            ModelName = "Jellyfin Server";
             ModelNumber = "01";
             ModelUrl = "https://github.com/jellyfin/jellyfin";
             ManufacturerUrl = "https://github.com/jellyfin/jellyfin";
