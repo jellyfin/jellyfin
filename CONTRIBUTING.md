@@ -25,7 +25,7 @@ We adhere to a fairly standard fork-and-PR model of development:
 
 2. Make your changes on a local feature branch of your copy of the repository.
 
-3. Submit a pull request from your feature branch back to the upstream master branch.
+3. Submit a pull request from your feature branch back to the upstream develop branch. If your PR includes *only* documentation or text file changes you should submit it against master.
 
 All PRs require review before merging. Once that is done, if the PR is not tagged with the WIP label, it should be immediately merged by the reviewer assuming that they have write access. If you do not have write access, please feel free to leave reviews as well and suggest changes as they will be taken into account as well.
 
