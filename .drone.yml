@@ -1,0 +1,38 @@
+kind: pipeline
+name: build:debian
+
+clone:
+  depth: 1
+
+steps:
+- name: submodules
+  image: docker:git
+  commands:
+    - git submodule update --init
+- name: build:debian
+  image: plugins/docker
+  group: build
+  settings:
+    repo: jellyfin/jellyfin
+    dry_run: true
+    dockerfile: Dockerfile.debian_package
+
+
+---
+kind: pipeline
+name: build:docker
+
+clone:
+  depth: 1
+
+steps:
+- name: submodules
+  image: docker:git
+  commands:
+    - git submodule update --init
+- name: build:docker
+  image: plugins/docker
+  group: build
+  settings:
+    repo: jellyfin/jellyfin
+    dry_run: true
