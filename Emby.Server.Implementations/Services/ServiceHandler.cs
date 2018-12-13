@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.Services
             if (this.RestPath == null)
             {
                 string contentType;
-                // TODO: change null out
+                // TODO: @bond NullLogger
                 this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, null, out contentType);
 
                 if (contentType != null)

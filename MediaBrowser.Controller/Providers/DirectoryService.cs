@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.Providers
         }
 
         public DirectoryService(IFileSystem fileSystem)
-            : this(null, fileSystem) // TODO change
+            : this(null, fileSystem) // TODO: @bond NullLogger
         {
         }
 

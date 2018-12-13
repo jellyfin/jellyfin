@@ -58,6 +58,7 @@ namespace SocketHttpListener.Net
             auth_schemes = AuthenticationSchemes.Anonymous;
         }
 
+        // TODO: @bond NullLogger
         public HttpListener(X509Certificate certificate, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IStreamHelper streamHelper, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
             :this(null, certificate, cryptoProvider, socketFactory, networkManager, textEncoding, streamHelper, fileSystem, environmentInfo)
         {

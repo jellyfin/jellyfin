@@ -180,7 +180,7 @@ namespace Emby.Dlna.Didl
                 return _logger;
             }
 
-            return null;
+            return null; // TODO: @bond NullLogger
         }
 
         private string GetMimeType(string input)
@@ -925,7 +925,7 @@ namespace Emby.Dlna.Didl
             }
             catch (XmlException)
             {
-                _logger?.LogError("Error adding xml value: {value}", name);
+                _logger.LogError("Error adding xml value: {value}", name);
             }
         }
 
@@ -937,7 +937,7 @@ namespace Emby.Dlna.Didl
             }
             catch (XmlException)
             {
-                _logger?.LogError("Error adding xml value: {value}", value);
+                _logger.LogError("Error adding xml value: {value}", value);
             }
         }
 
