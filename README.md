@@ -127,3 +127,14 @@ A pre-built windows installer will be available soon. Until then it isn't too ha
       * The `-InstallFFMPEG` flag will automatically pull the stable ffmpeg binaries appropriate to your architecture (x86/x64 only for now) from [Zeranoe](https://ffmpeg.zeranoe.com/builds/) and place them in your Jellyfin directory. 
 0. (Optional) Use [NSSM](https://nssm.cc/) to configure JellyFin to run as a service
 0. Jellyfin is now available in the default directory (or the directory you chose). Assuming you kept the default directory, to start it from a Powershell window, run, `&"$env:APPDATA\Jellyfin-Server\EmbyServer.exe"`. To start it from CMD, run, `%APPDATA%\Jellyfin-Server\EmbyServer.exe`
+
+## The Name and its conventions
+
+The general rule is: if it is proper or required to capitalize it, `Jellyfin`, capitalize it; if the opposite is true, `jellyfin`, lowercase it, but prefer capitalization. Specifically:
+
+* Writing referring to the project in the abstract should use capitalized `Jellyfin` at all times. `the Jellyfin Project seeks to`
+* C# class and project names, including their files and directories, should use capitalized `Jellyfin` as require by the C# Camelcase standards. `Jellyfin.LiveTV`
+* Other code elements, where the code formatting or style requires lowercase, should use lowercase `jellyfin`. `jellyfinWebComponentsBowerPath`
+* The Git repository and non-C# files inside of it should use lowercase `jellyfin` for convenience on case-sensitive filesystems. `jellyfin.sln`
+* Package names should use lowercase `jellyfin` on all platforms. `jellyfin_3.5.2-1_all.deb`
+* The logo may use either depending on aesthetics and font choice.
