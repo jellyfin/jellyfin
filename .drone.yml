@@ -1,9 +1,6 @@
 kind: pipeline
 name: build:debian
 
-clone:
-  depth: 1
-
 steps:
 - name: submodules
   image: docker:git
@@ -21,9 +18,6 @@ steps:
 ---
 kind: pipeline
 name: build:docker
-
-clone:
-  depth: 1
 
 steps:
 - name: submodules
