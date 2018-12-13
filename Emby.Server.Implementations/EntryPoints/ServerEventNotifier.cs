@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception)
             {
-                //Logger.ErrorException("Error sending message", ex);
+                //Logger.LogError("Error sending message", ex);
             }
         }
 
@@ -179,7 +179,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception)
             {
-                //Logger.ErrorException("Error sending message", ex);
+                //Logger.LogError("Error sending message", ex);
             }
         }
 

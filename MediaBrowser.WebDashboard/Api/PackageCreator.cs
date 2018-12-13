@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;

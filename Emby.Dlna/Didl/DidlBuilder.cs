@@ -11,7 +11,7 @@ using Emby.Dlna.ContentDirectory;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.Globalization;
@@ -180,7 +180,7 @@ namespace Emby.Dlna.Didl
                 return _logger;
             }
 
-            return new NullLogger();
+            return null;
         }
 
         private string GetMimeType(string input)
@@ -925,7 +925,7 @@ namespace Emby.Dlna.Didl
             }
             catch (XmlException)
             {
-                //_logger.Error("Error adding xml value: " + value);
+                _logger?.LogError("Error adding xml value: {value}", name);
             }
         }
 
@@ -937,7 +937,7 @@ namespace Emby.Dlna.Didl
             }
             catch (XmlException)
             {
-                //_logger.Error("Error adding xml value: " + value);
+                _logger?.LogError("Error adding xml value: {value}", value);
             }
         }
 

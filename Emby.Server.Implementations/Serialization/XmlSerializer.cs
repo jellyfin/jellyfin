@@ -4,7 +4,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 
 namespace Emby.Server.Implementations.Serialization
@@ -90,7 +90,7 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="file">The file.</param>
         public void SerializeToFile(object obj, string file)
         {
-            _logger.Debug("Serializing to file {0}", file);
+            _logger.LogDebug("Serializing to file {0}", file);
             using (var stream = new FileStream(file, FileMode.Create))
             {
                 SerializeToStream(obj, stream);
@@ -105,7 +105,7 @@ namespace Emby.Server.Implementations.Serialization
         /// <returns>System.Object.</returns>
         public object DeserializeFromFile(Type type, string file)
         {
-            _logger.Debug("Deserializing file {0}", file);
+            _logger.LogDebug("Deserializing file {0}", file);
             using (var stream = _fileSystem.OpenRead(file))
             {
                 return DeserializeFromStream(type, stream);

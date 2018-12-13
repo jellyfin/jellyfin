@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
@@ -122,7 +122,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (startDate < now)
             {
-                EventHelper.FireEventIfNotNull(TimerFired, this, new GenericEventArgs<TimerInfo> { Argument = item }, Logger);
+                EventHelper.FireEventIfNotNull(TimerFired, this, new GenericEventArgs<TimerInfo> { Argument = item }, base.Logger);
                 return;
             }
 
@@ -143,7 +143,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error scheduling wake timer", ex);
+                _logger.LogError("Error scheduling wake timer", ex);
             }
         }
 
@@ -153,12 +153,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (_timers.TryAdd(item.Id, timer))
             {
-                _logger.Info("Creating recording timer for {0}, {1}. Timer will fire in {2} minutes", item.Id, item.Name, dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture));
+                _logger.LogInformation("Creating recording timer for {0}, {1}. Timer will fire in {2} minutes", item.Id, item.Name, dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture));
             }
             else
             {
                 timer.Dispose();
-                _logger.Warn("Timer already exists for item {0}", item.Id);
+                _logger.LogWarning("Timer already exists for item {0}", item.Id);
             }
         }
 
@@ -178,7 +178,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var timer = GetAll().FirstOrDefault(i => string.Equals(i.Id, timerId, StringComparison.OrdinalIgnoreCase));
             if (timer != null)
             {
-                EventHelper.FireEventIfNotNull(TimerFired, this, new GenericEventArgs<TimerInfo> { Argument = timer }, Logger);
+                EventHelper.FireEventIfNotNull(TimerFired, this, new GenericEventArgs<TimerInfo> { Argument = timer }, base.Logger);
             }
         }
 

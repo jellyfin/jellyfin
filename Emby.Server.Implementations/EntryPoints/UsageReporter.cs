@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -75,7 +75,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 throw new ArgumentException("Client info must have a device Id");
             }
 
-            _logger.Info("App Activity: app: {0}, version: {1}, deviceId: {2}, deviceName: {3}",
+            _logger.LogInformation("App Activity: app: {0}, version: {1}, deviceId: {2}, deviceName: {3}",
                 app.AppName ?? "Unknown App",
                 app.AppVersion ?? "Unknown",
                 app.DeviceId,

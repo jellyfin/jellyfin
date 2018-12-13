@@ -4,7 +4,7 @@ using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Providers
@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Providers
         public bool EnableRemoteContentProbe { get; set; }
 
         public MetadataRefreshOptions(IFileSystem fileSystem)
-			: this(new DirectoryService(new NullLogger(), fileSystem))
+			: this(new DirectoryService(null, fileSystem)) // TODO
         {
         }
 

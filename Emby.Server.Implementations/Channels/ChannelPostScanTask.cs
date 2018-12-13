@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading;
@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Channels
 
         private void CleanChannel(Guid id, CancellationToken cancellationToken)
         {
-            _logger.Info("Cleaning channel {0} from database", id);
+            _logger.LogInformation("Cleaning channel {0} from database", id);
 
             // Delete all channel items
             var allIds = _libraryManager.GetItemIds(new InternalItemsQuery

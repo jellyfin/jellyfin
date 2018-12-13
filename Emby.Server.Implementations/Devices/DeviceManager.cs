@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
@@ -434,7 +434,7 @@ namespace Emby.Server.Implementations.Devices
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error creating camera uploads library", ex);
+                        _logger.LogError("Error creating camera uploads library", ex);
                     }
 
                     _config.Configuration.CameraUploadUpgraded = true;

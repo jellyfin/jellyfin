@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -232,7 +233,7 @@ namespace MediaBrowser.Api
             //        item.SetProviderId(key.Key, value);
             //    }
             //}
-            Logger.Info("Setting provider id's to item {0}-{1}: {2}", item.Id, item.Name, _json.SerializeToString(request.ProviderIds));
+            Logger.LogInformation("Setting provider id's to item {0}-{1}: {2}", item.Id, item.Name, _json.SerializeToString(request.ProviderIds));
 
             // Since the refresh process won't erase provider Ids, we need to set this explicitly now.
             item.ProviderIds = request.ProviderIds;

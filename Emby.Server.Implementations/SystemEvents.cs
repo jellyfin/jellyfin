@@ -1,6 +1,6 @@
 ﻿using System;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations

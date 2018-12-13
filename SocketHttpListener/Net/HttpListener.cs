@@ -7,7 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
@@ -59,7 +59,7 @@ namespace SocketHttpListener.Net
         }
 
         public HttpListener(X509Certificate certificate, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, INetworkManager networkManager, ITextEncoding textEncoding, IStreamHelper streamHelper, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
-            :this(new NullLogger(), certificate, cryptoProvider, socketFactory, networkManager, textEncoding, streamHelper, fileSystem, environmentInfo)
+            :this(null, certificate, cryptoProvider, socketFactory, networkManager, textEncoding, streamHelper, fileSystem, environmentInfo)
         {
         }
 

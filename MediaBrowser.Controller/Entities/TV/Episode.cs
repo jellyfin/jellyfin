@@ -357,7 +357,7 @@ namespace MediaBrowser.Controller.Entities.TV
                     }
                     catch (Exception ex)
                     {
-                        Logger.ErrorException("Error in FillMissingEpisodeNumbersFromPath. Episode: {0}", ex, Path ?? Name ?? Id.ToString());
+                        Logger.LogError(ex, "Error in FillMissingEpisodeNumbersFromPath. Episode: {Episode}", Path ?? Name ?? Id.ToString());
                     }
                 }
             }

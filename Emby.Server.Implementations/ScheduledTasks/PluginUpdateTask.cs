@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
@@ -89,11 +89,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 }
                 catch (HttpException ex)
                 {
-                    _logger.ErrorException("Error downloading {0}", ex, package.name);
+                    _logger.LogError("Error downloading {0}", ex, package.name);
                 }
                 catch (IOException ex)
                 {
-                    _logger.ErrorException("Error updating {0}", ex, package.name);
+                    _logger.LogError("Error updating {0}", ex, package.name);
                 }
 
                 // Update progress

@@ -9,7 +9,7 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 
 namespace Emby.Server.Implementations.AppBase
@@ -99,12 +99,12 @@ namespace Emby.Server.Implementations.AppBase
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
-        protected BaseConfigurationManager(IApplicationPaths applicationPaths, ILogManager logManager, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
+        protected BaseConfigurationManager(IApplicationPaths applicationPaths, ILoggerFactory loggerFactory, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
         {
             CommonApplicationPaths = applicationPaths;
             XmlSerializer = xmlSerializer;
             FileSystem = fileSystem;
-            Logger = logManager.GetLogger(GetType().Name);
+            Logger = loggerFactory.CreateLogger(GetType().Name);
 
             UpdateCachePath();
         }
@@ -123,7 +123,7 @@ namespace Emby.Server.Implementations.AppBase
         /// </summary>
         public void SaveConfiguration()
         {
-            Logger.Info("Saving system configuration");
+            Logger.LogInformation("Saving system configuration");
             var path = CommonApplicationPaths.SystemConfigurationFilePath;
 
             FileSystem.CreateDirectory(FileSystem.GetDirectoryName(path));
@@ -259,7 +259,7 @@ namespace Emby.Server.Implementations.AppBase
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error loading configuration file: {0}", ex, path);
+                Logger.LogError("Error loading configuration file: {0}", ex, path);
 
                 return Activator.CreateInstance(configurationType);
             }

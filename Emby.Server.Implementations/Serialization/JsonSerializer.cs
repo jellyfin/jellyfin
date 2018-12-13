@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using System.Threading.Tasks;
 
@@ -69,7 +69,7 @@ namespace Emby.Common.Implementations.Serialization
 
         private Stream OpenFile(string path)
         {
-            //_logger.Debug("Deserializing file {0}", path);
+            //_logger.LogDebug("Deserializing file {0}", path);
             return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131072);
         }
 

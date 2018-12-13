@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Movies;
@@ -25,8 +25,8 @@ namespace MediaBrowser.Providers.TV
             IRemoteImageProvider, 
             IHasOrder
     {
-        public MovieDbEpisodeImageProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILogManager logManager)
-            : base(httpClient, configurationManager, jsonSerializer, fileSystem, localization, logManager)
+        public MovieDbEpisodeImageProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILoggerFactory loggerFactory)
+            : base(httpClient, configurationManager, jsonSerializer, fileSystem, localization, loggerFactory)
         {}
 
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)

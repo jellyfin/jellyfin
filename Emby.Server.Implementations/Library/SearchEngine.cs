@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Search;
 using System;
@@ -23,12 +23,12 @@ namespace Emby.Server.Implementations.Library
         private readonly IUserManager _userManager;
         private readonly ILogger _logger;
 
-        public SearchEngine(ILogManager logManager, ILibraryManager libraryManager, IUserManager userManager)
+        public SearchEngine(ILoggerFactory loggerFactory, ILibraryManager libraryManager, IUserManager userManager)
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
 
-            _logger = logManager.GetLogger("SearchEngine");
+            _logger = loggerFactory.CreateLogger("SearchEngine");
         }
 
         public QueryResult<SearchHintInfo> GetSearchHints(SearchQuery query)

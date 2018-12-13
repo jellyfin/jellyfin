@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -29,14 +29,14 @@ namespace Emby.Server.Implementations.LiveTv
         private readonly IServerApplicationHost _appHost;
         private IApplicationPaths _appPaths;
 
-        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, IServerApplicationHost appHost)
+        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILoggerFactory loggerFactory, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, IServerApplicationHost appHost)
         {
             _liveTvManager = liveTvManager;
             _jsonSerializer = jsonSerializer;
             _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
             _appHost = appHost;
-            _logger = logManager.GetLogger(GetType().Name);
+            _logger = loggerFactory.CreateLogger(GetType().Name);
             _appPaths = appPaths;
         }
 
@@ -116,7 +116,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
             }
 
-            _logger.Debug("MediaSources: {0}", _jsonSerializer.SerializeToString(list));
+            _logger.LogDebug("MediaSources: {0}", _jsonSerializer.SerializeToString(list));
 
             return list;
         }

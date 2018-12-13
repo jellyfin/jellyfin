@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -30,7 +30,7 @@ namespace Emby.Drawing.Net
 
         private void LogInfo()
         {
-            _logger.Info("GDIImageEncoder starting");
+            _logger.LogInformation("GDIImageEncoder starting");
             using (var stream = GetType().Assembly.GetManifestResourceStream(GetType().Namespace + ".empty.png"))
             {
                 using (var img = Image.FromStream(stream))
@@ -38,7 +38,7 @@ namespace Emby.Drawing.Net
 
                 }
             }
-            _logger.Info("GDIImageEncoder started");
+            _logger.LogInformation("GDIImageEncoder started");
         }
 
         public string[] SupportedInputFormats
@@ -214,7 +214,7 @@ namespace Emby.Drawing.Net
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error drawing indicator overlay", ex);
+                _logger.LogError("Error drawing indicator overlay", ex);
             }
         }
 

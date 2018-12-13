@@ -13,7 +13,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Sync;
 using IsoMounter;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 
@@ -21,7 +21,8 @@ namespace MediaBrowser.Server.Mono
 {
     public class MonoAppHost : ApplicationHost
     {
-        public MonoAppHost(ServerApplicationPaths applicationPaths, ILogManager logManager, StartupOptions options, IFileSystem fileSystem, IPowerManagement powerManagement, string releaseAssetFilename, IEnvironmentInfo environmentInfo, MediaBrowser.Controller.Drawing.IImageEncoder imageEncoder, ISystemEvents systemEvents, MediaBrowser.Common.Net.INetworkManager networkManager) : base(applicationPaths, logManager, options, fileSystem, powerManagement, releaseAssetFilename, environmentInfo, imageEncoder, systemEvents, networkManager)
+        public MonoAppHost(ServerApplicationPaths applicationPaths, ILoggerFactory loggerFactory, StartupOptions options, IFileSystem fileSystem, IPowerManagement powerManagement, string releaseAssetFilename, IEnvironmentInfo environmentInfo, MediaBrowser.Controller.Drawing.IImageEncoder imageEncoder, ISystemEvents systemEvents, MediaBrowser.Common.Net.INetworkManager networkManager)
+            : base(applicationPaths, loggerFactory, options, fileSystem, powerManagement, releaseAssetFilename, environmentInfo, imageEncoder, systemEvents, networkManager)
         {
         }
 
@@ -86,7 +87,8 @@ namespace MediaBrowser.Server.Mono
 
         protected override IHttpListener CreateHttpListener()
         {
-            return new EmbyServer.SocketSharp.WebSocketSharpListener(LogManager.GetLogger("HttpServer"),
+            return new EmbyServer.SocketSharp.WebSocketSharpListener(
+                Logger,
                 Certificate,
                 StreamHelper,
                 TextEncoding,

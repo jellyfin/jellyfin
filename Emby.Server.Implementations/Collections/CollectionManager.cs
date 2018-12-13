@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -265,7 +265,7 @@ namespace Emby.Server.Implementations.Collections
 
                 if (child == null)
                 {
-                    _logger.Warn("No collection title exists with the supplied Id");
+                    _logger.LogWarning("No collection title exists with the supplied Id");
                     continue;
                 }
 
@@ -365,7 +365,7 @@ namespace Emby.Server.Implementations.Collections
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error creating camera uploads library", ex);
+                        _logger.LogError("Error creating camera uploads library", ex);
                     }
 
                     _config.Configuration.CollectionsUpgraded = true;

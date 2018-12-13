@@ -14,7 +14,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Controller.IO;
 
@@ -131,7 +131,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             var userInfo = uriAddress.UserInfo;
             if (!string.IsNullOrWhiteSpace(userInfo))
             {
-                _logger.Info("Found userInfo in url: {0} ... url: {1}", userInfo, url);
+                _logger.LogInformation("Found userInfo in url: {0} ... url: {1}", userInfo, url);
                 url = url.Replace(userInfo + "@", string.Empty);
             }
 
@@ -421,11 +421,11 @@ namespace Emby.Server.Implementations.HttpClientManager
             {
                 if (options.LogRequestAsDebug)
                 {
-                    _logger.Debug("HttpClientManager {0}: {1}", httpMethod.ToUpper(), options.Url);
+                    _logger.LogDebug("HttpClientManager {0}: {1}", httpMethod.ToUpper(), options.Url);
                 }
                 else
                 {
-                    _logger.Info("HttpClientManager {0}: {1}", httpMethod.ToUpper(), options.Url);
+                    _logger.LogInformation("HttpClientManager {0}: {1}", httpMethod.ToUpper(), options.Url);
                 }
             }
 
@@ -595,11 +595,11 @@ namespace Emby.Server.Implementations.HttpClientManager
             {
                 if (options.LogRequestAsDebug)
                 {
-                    _logger.Debug("HttpClientManager.GetTempFileResponse url: {0}", options.Url);
+                    _logger.LogDebug("HttpClientManager.GetTempFileResponse url: {0}", options.Url);
                 }
                 else
                 {
-                    _logger.Info("HttpClientManager.GetTempFileResponse url: {0}", options.Url);
+                    _logger.LogInformation("HttpClientManager.GetTempFileResponse url: {0}", options.Url);
                 }
             }
 
@@ -685,7 +685,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             {
                 if (options.LogErrors)
                 {
-                    _logger.ErrorException("Error " + webException.Status + " getting response from " + options.Url, webException);
+                    _logger.LogError("Error " + webException.Status + " getting response from " + options.Url, webException);
                 }
 
                 var exception = new HttpException(webException.Message, webException);
@@ -723,7 +723,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (options.LogErrors)
             {
-                _logger.ErrorException("Error getting response from " + options.Url, ex);
+                _logger.LogError("Error getting response from " + options.Url, ex);
             }
 
             return ex;
@@ -789,7 +789,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
                 if (options.LogErrors)
                 {
-                    _logger.Error(msg);
+                    _logger.LogError(msg);
                 }
 
                 client.LastTimeout = DateTime.UtcNow;
@@ -824,7 +824,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                                 {
                                     var msg = reader.ReadToEnd();
 
-                                    _logger.Error(msg);
+                                    _logger.LogError(msg);
                                 }
                             }
                         }

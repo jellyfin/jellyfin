@@ -1,7 +1,7 @@
 ﻿using System;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using Emby.Server.Implementations.Udp;
 using MediaBrowser.Model.Net;
@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Failed to start UDP Server", ex);
+                _logger.LogError("Failed to start UDP Server", ex);
             }
         }
 

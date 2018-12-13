@@ -6,7 +6,7 @@ using System.Linq;
 using Emby.Server.Implementations.Data;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Activity;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Querying;
 using SQLitePCL.pretty;
 using MediaBrowser.Model.Extensions;
@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Activity
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error loading database file. Will reset and retry.", ex);
+                Logger.LogError("Error loading database file. Will reset and retry.", ex);
 
                 FileSystem.DeleteFile(DbFilePath);
 
@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.Activity
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error migrating activity log database", ex);
+                Logger.LogError("Error migrating activity log database", ex);
             }
         }
 
@@ -308,7 +308,7 @@ namespace Emby.Server.Implementations.Activity
             index++;
             if (reader[index].SQLiteType != SQLiteType.Null)
             {
-                info.Severity = (LogSeverity)Enum.Parse(typeof(LogSeverity), reader[index].ToString(), true);
+                info.Severity = (LogLevel)Enum.Parse(typeof(LogLevel), reader[index].ToString(), true);
             }
 
             return info;
