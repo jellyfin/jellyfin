@@ -90,13 +90,20 @@ namespace MediaBrowser.Server.Mono
             {
                 if (InteropServices.RuntimeInformation.IsOSPlatform(InteropServices.OSPlatform.Windows))
                 {
-                    programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "jellyfin");
+                    programDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                 }
                 else
                 {
-                    programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".jellyfin");
+                    // $XDG_DATA_HOME defines the base directory relative to which user specific data files should be stored.
+                    programDataPath = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+                    // If $XDG_DATA_HOME is either not set or empty, $HOME/.local/share should be used.
+                    if (string.IsNullOrEmpty(programDataPath)){
+                        programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
+                    }
                 }
             }
+
+            programDataPath = Path.Combine(programDataPath, "jellyfin");
 
             var appFolderPath = Path.GetDirectoryName(applicationPath);
 
