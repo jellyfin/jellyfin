@@ -1,37 +1,36 @@
-# Defaults for jellyfin initscript
-# sourced by /etc/init.d/jellyfin and /usr/lib/jellyfin/jellyfin.sh
-# installed at /etc/default/jellyfin by the maintainer scripts
+# Jellyfin default configuration options
+
+# Use this file to override the default configurations; add additional
+# options with JELLYFIN_ADD_OPTS.
+
+# Under systemd, use
+#  /etc/systemd/system/jellyfin.service.d/jellyfin.service.conf
+# to override the user or this config file's location.
 
 #
 # This is a POSIX shell fragment
 #
 
-## Don't edit this file
-## Edit user configuration in /etc/jellyfin.conf to change
-##
-## JELLYFIN_USER=       #$JELLYFIN_USER, username to run Jellyfin under, the default is jellyfin
-## JELLYFIN_GROUP=      #$JELLYFIN_GROUP, Jellyfin group where Jellyfin user belongs
-## JELLYFIN_DIR=        #$JELLYFIN_DIR, the location of Jellyfin program files the default is /usr/lib/jellyfin
-## JELLYFIN_BIN=        #$JELLYFIN_BIN, full path of MediaBrowser.Server.Mono.exe the default is /usr/lib/jellyfin/bin/MediaBrowser.Server.Mono.exe
-## JELLYFIN_DATA=       #$JELLYFIN_DATA, the location of Jellyfin data, cache, logs, the default is /var/lib/jellyfin
-## JELLYFIN_PIDFILE=    #$JELLYFIN_PIDFILE, the location of jellyfin.pid, the default is /var/run/jellyfin/jellyfin.pid
-## JELLYFIN_ADD_OPTS=   #$JELLYFIN_ADD_OPTS, additional options to pass to the Jellyfin executable, beyond ffmpeg, ffprobe and restart
-## MONO_BIN=        #$MONO_BIN, full path of mono binary, the default is /usr/bin/mono-sgen
-## MONO_OPTS=       #$MONO_OPTS, list of additional options to pass to mono binary
-## MONO_ENV=        #$MONO_ENV, list of environment variables for running mono binary
-##
-## EXAMPLE if want to run as different user
-## add JELLYFIN_USER=username to /etc/jellyfin.conf
-## otherwise default jellyfin is used
+#
+# General options
+#
 
-JELLYFIN_USER="jellyfin"
-JELLYFIN_GROUP="jellyfin"
-JELLYFIN_DIR="/usr/lib/jellyfin"
-JELLYFIN_BIN="/usr/lib/jellyfin/bin/MediaBrowser.Server.Mono.exe"
+# Path to the jellyfin.dll executable
+JELLYFIN_EXE="/usr/lib/jellyfin/bin/jellyfin.dll"
+# Data directory
 JELLYFIN_DATA="/var/lib/jellyfin"
-JELLYFIN_PIDFILE="/var/run/jellyfin.pid"
+# Restart script for in-app server control
+JELLYFIN_RESTART_SCRIPT="/usr/lib/jellyfin/restart.sh"
+# Additional options for the binary
 JELLYFIN_ADD_OPTS=""
-MONO_BIN="/usr/bin/mono-sgen"
-MONO_OPTS="--optimize=all"
-MONO_ENV="MONO_THREADS_PER_CPU=250 MONO_GC_PARAMS=nursery-size=128m"
-UMASK="002"
+
+#
+# SysV init/Upstart options
+#
+
+# Application username
+JELLYFIN_USER="jellyfin"
+# .NET Core runtime binary
+JELLYFIN_DOTNET="/usr/bin/dotnet"
+# Full application command
+JELLYFIN_COMMAND="$JELLYFIN_EXE -programdata $JELLYFIN_DATA -restartpath $JELLYFIN_RESTART_SCRIPT $JELLYFIN_ADD_OPTS"

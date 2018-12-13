@@ -15,6 +15,6 @@ script
 
 	# Log file
 	logger -t "$0" "DEBUG: `set`"
-	exec /usr/bin/jellyfin start
-    exec /usr/bin/dotnet /usr/lib/jellyfin/bin/EmbyServer.dll 
+    . /etc/default/jellyfin
+    exec su -u $JELLYFIN_USER -c $JELLYFIN_DOTNET $JELLYFIN_COMMAND
 end script
