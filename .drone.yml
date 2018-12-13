@@ -8,7 +8,7 @@ steps:
 - name: submodules
   image: docker:git
   commands:
-    - git submodule update --init
+    - git submodule update --init --recursive
 - name: build:debian
   image: plugins/docker
   group: build
@@ -29,7 +29,7 @@ steps:
 - name: submodules
   image: docker:git
   commands:
-    - git submodule update --init
+    - git submodule update --init --recursive
 - name: build:docker
   image: plugins/docker
   group: build
