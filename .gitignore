@@ -235,7 +235,19 @@ pip-log.txt
 MediaBrowser.WebDashboard/dashboard-ui/.idea/
 /.vs
 
+##########
+# Rider
+##########
 .idea/
+
+#########################
+# Debian build artifacts
+#########################
+
+debian/.debhelper/
+debian/files
+debian/jellyfin.substvars
+debian/jellyfin/
 
 # Don't ignore the debian/bin folder
 !debian/bin/
