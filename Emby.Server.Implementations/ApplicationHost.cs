@@ -693,7 +693,7 @@ namespace Emby.Server.Implementations
 
             return parts;
         }
-        /*/
+        /*
         private void SetBaseExceptionMessage()
         {
             var builder = GetBaseExceptionMessage(ApplicationPaths);
@@ -799,13 +799,9 @@ namespace Emby.Server.Implementations
             }
 
             JsonSerializer = CreateJsonSerializer();
-            /*
-            OnLoggerLoaded(true);
-            LoggerFactory.LoggerLoaded += (s, e) => OnLoggerLoaded(false);
 
-            LoggerFactory.LogSeverity = ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging
-                ? LogSeverity.Debug
-                : LogSeverity.Info;*/
+            OnLoggerLoaded(true);
+            //LoggerFactory.LoggerLoaded += (s, e) => OnLoggerLoaded(false);
 
             DiscoverTypes();
 
@@ -815,7 +811,7 @@ namespace Emby.Server.Implementations
 
             FindParts();
         }
-        /*
+
         protected virtual void OnLoggerLoaded(bool isFirstLoad)
         {
             Logger.LogInformation("Application version: {0}", ApplicationVersion);
@@ -834,9 +830,9 @@ namespace Emby.Server.Implementations
                     pluginBuilder.AppendLine(string.Format("{0} {1}", plugin.Name, plugin.Version));
                 }
 
-                Logger.LogMultiline("Plugins:", LogSeverity.Info, pluginBuilder);
+                Logger.LogInformation("Plugins: {plugins}", pluginBuilder.ToString());
             }
-        }*/
+        }
 
         protected virtual IHttpClient CreateHttpClient()
         {
