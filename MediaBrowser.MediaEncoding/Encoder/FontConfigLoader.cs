@@ -10,7 +10,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.MediaEncoding.Encoder
@@ -72,12 +72,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             catch (HttpException ex)
             {
                 // Don't let the server crash because of this
-                _logger.ErrorException("Error downloading ffmpeg font files", ex);
+                _logger.LogError("Error downloading ffmpeg font files", ex);
             }
             catch (Exception ex)
             {
                 // Don't let the server crash because of this
-                _logger.ErrorException("Error writing ffmpeg font files", ex);
+                _logger.LogError("Error writing ffmpeg font files", ex);
             }
         }
 
@@ -103,7 +103,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 catch (IOException ex)
                 {
                     // Log this, but don't let it fail the operation
-                    _logger.ErrorException("Error copying file", ex);
+                    _logger.LogError("Error copying file", ex);
                 }
             }
 
@@ -127,7 +127,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 catch (Exception ex)
                 {
                     // The core can function without the font file, so handle this
-                    _logger.ErrorException("Failed to download ffmpeg font file from {0}", ex, url);
+                    _logger.LogError("Failed to download ffmpeg font file from {0}", ex, url);
                 }
             }
 
@@ -145,12 +145,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             catch (IOException ex)
             {
                 // Log this, but don't let it fail the operation
-                _logger.ErrorException("Error deleting temp file {0}", ex, tempFile);
+                _logger.LogError("Error deleting temp file {0}", ex, tempFile);
             }
         }
         private void Extract7zArchive(string archivePath, string targetPath)
         {
-            _logger.Info("Extracting {0} to {1}", archivePath, targetPath);
+            _logger.LogInformation("Extracting {0} to {1}", archivePath, targetPath);
 
             _zipClient.ExtractAllFrom7z(archivePath, targetPath, true);
         }

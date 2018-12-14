@@ -1,16 +1,15 @@
-﻿using MediaBrowser.Model.Logging;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Net;
 using System.Collections.Generic;
-
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -110,7 +109,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                         }
 
                         //var position = fs.Position;
-                        //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
+                        //_logger.LogDebug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
 
                         if (bytesRead == 0)
                         {

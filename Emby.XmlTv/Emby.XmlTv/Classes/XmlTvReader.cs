@@ -87,7 +87,7 @@ namespace Emby.XmlTv.Classes
 
             if (string.IsNullOrEmpty(id))
             {
-                //Logger.Error("No id found for channel row");
+                //LLogError("No id found for channel row");
                 // Log.Error("  channel#{0} doesnt contain an id", iChannel);
                 return null;
             }
@@ -130,7 +130,7 @@ namespace Emby.XmlTv.Classes
 
             if (string.IsNullOrEmpty(result.DisplayName))
             {
-                //Logger.Error("No display-name found for channel {0}", id);
+                //LLogError("No display-name found for channel {0}", id);
                 return null;
             }
 

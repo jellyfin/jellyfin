@@ -15,9 +15,9 @@ using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 using OpenSubtitlesHandler;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
@@ -34,9 +34,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IJsonSerializer _json;
         private readonly IFileSystem _fileSystem;
 
-        public OpenSubtitleDownloader(ILogManager logManager, IHttpClient httpClient, IServerConfigurationManager config, IEncryptionManager encryption, IJsonSerializer json, IFileSystem fileSystem)
+        public OpenSubtitleDownloader(ILoggerFactory loggerFactory, IHttpClient httpClient, IServerConfigurationManager config, IEncryptionManager encryption, IJsonSerializer json, IFileSystem fileSystem)
         {
-            _logger = logManager.GetLogger(GetType().Name);
+            _logger = loggerFactory.CreateLogger(GetType().Name);
             _httpClient = httpClient;
             _config = config;
             _encryption = encryption;
@@ -208,7 +208,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var result = OpenSubtitles.GetSubLanguages("en");
             if (!(result is MethodResponseGetSubLanguages))
             {
-                _logger.Error("Invalid response type");
+                _logger.LogError("Invalid response type");
                 return new List<NameIdPair>();
             }
 
@@ -243,19 +243,19 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 case VideoContentType.Episode:
                     if (!request.IndexNumber.HasValue || !request.ParentIndexNumber.HasValue || string.IsNullOrEmpty(request.SeriesName))
                     {
-                        _logger.Debug("Episode information missing");
+                        _logger.LogDebug("Episode information missing");
                         return new List<RemoteSubtitleInfo>();
                     }
                     break;
                 case VideoContentType.Movie:
                     if (string.IsNullOrEmpty(request.Name))
                     {
-                        _logger.Debug("Movie name missing");
+                        _logger.LogDebug("Movie name missing");
                         return new List<RemoteSubtitleInfo>();
                     }
                     if (string.IsNullOrWhiteSpace(imdbIdText) || !long.TryParse(imdbIdText.TrimStart('t'), NumberStyles.Any, _usCulture, out imdbId))
                     {
-                        _logger.Debug("Imdb id missing");
+                        _logger.LogDebug("Imdb id missing");
                         return new List<RemoteSubtitleInfo>();
                     }
                     break;
@@ -263,7 +263,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (string.IsNullOrEmpty(request.MediaPath))
             {
-                _logger.Debug("Path Missing");
+                _logger.LogDebug("Path Missing");
                 return new List<RemoteSubtitleInfo>();
             }
 
@@ -300,7 +300,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var result = await OpenSubtitles.SearchSubtitlesAsync(parms.ToArray(), cancellationToken).ConfigureAwait(false);
             if (!(result is MethodResponseSubtitleSearch))
             {
-                _logger.Error("Invalid response type");
+                _logger.LogError("Invalid response type");
                 return new List<RemoteSubtitleInfo>();
             }
 
