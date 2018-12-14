@@ -154,8 +154,13 @@ namespace MediaBrowser.Server.Mono
             }
         }
 
-        private static async Task createLogger()
+        private static void createLogger()
         {
+            var logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
+            if (string.IsNullOrEmpty(logDir)){
+                logDir = Path.Combine(_appPaths.ProgramDataPath, "logs");
+                Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", logDir);
+            }
             try
             {
                 string path = Path.Combine(_appPaths.ProgramDataPath, "logging.json");
@@ -168,11 +173,13 @@ namespace MediaBrowser.Server.Mono
                     using (Stream rscstr = assembly.GetManifestResourceStream(resourcePath))
                     using (Stream fstr = File.Open(path, FileMode.CreateNew))
                     {
-                        await rscstr.CopyToAsync(fstr);
+                        rscstr.CopyTo(fstr);
                     }
                 }
                 var configuration = new ConfigurationBuilder()
-                    .AddJsonFile(path)
+                    .SetBasePath(_appPaths.ProgramDataPath)
+                    .AddJsonFile("logging.json")
+                    .AddEnvironmentVariables("JELLYFIN_")
                     .Build();
 
                 Serilog.Log.Logger = new LoggerConfiguration()
@@ -185,7 +192,7 @@ namespace MediaBrowser.Server.Mono
                 Serilog.Log.Logger = new LoggerConfiguration()
                     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] {Message:lj}{NewLine}{Exception}")
                     .WriteTo.File(
-                        Path.Combine(AppContext.BaseDirectory, "logs", "log_.log"),
+                        Path.Combine(logDir, "logs", "log_.log"),
                         rollingInterval: RollingInterval.Day,
                         outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] {Message}{NewLine}{Exception}")
                     .Enrich.FromLogContext()
