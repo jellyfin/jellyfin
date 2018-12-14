@@ -15,7 +15,7 @@ While our first priority is a stable build, we will eventually add features that
 
 ## Contributing to Jellyfin
 
-If you're interested in contributing, please see [CONTRIBUTING.md](https://github.com/jellyfin/jellyfin/blob/master/CONTRIBUTING.md).
+If you're interested in contributing, please see [our wiki for guidelines](https://github.com/jellyfin/jellyfin/wiki/Contributing-to-Jellyfin).
 
 ## Prebuilt Jellyfin packages
 
