@@ -405,7 +405,7 @@ namespace Emby.Server.Implementations
             // hack alert, until common can target .net core
             BaseExtensions.CryptographyProvider = CryptographyProvider;
 
-            XmlSerializer = new MyXmlSerializer(fileSystem, LoggerFactory.CreateLogger("XmlSerializer"));
+            XmlSerializer = new MyXmlSerializer(fileSystem, loggerFactory.CreateLogger("XmlSerializer"));
 
             NetworkManager = networkManager;
             networkManager.LocalSubnetsFn = GetConfiguredLocalSubnets;
