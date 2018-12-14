@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -15,10 +16,12 @@ namespace Emby.Server.Implementations.EntryPoints
     /// </summary>
     public class RefreshUsersMetadata : IScheduledTask, IConfigurableScheduledTask
     {
+        private readonly ILogger _logger;
         /// <summary>
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
+
         private IFileSystem _fileSystem;
 
         public string Name => "Refresh Users";
@@ -41,8 +44,9 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// Initializes a new instance of the <see cref="RefreshUsersMetadata" /> class.
         /// </summary>
-        public RefreshUsersMetadata(IUserManager userManager, IFileSystem fileSystem)
+        public RefreshUsersMetadata(ILogger logger, IUserManager userManager, IFileSystem fileSystem)
         {
+            _logger = logger;
             _userManager = userManager;
             _fileSystem = fileSystem;
         }
@@ -55,7 +59,7 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await user.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken).ConfigureAwait(false);
+                await user.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), cancellationToken).ConfigureAwait(false);
             }
         }
 

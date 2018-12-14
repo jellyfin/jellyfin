@@ -484,10 +484,9 @@ namespace Emby.Server.Implementations.Channels
                 _libraryManager.CreateItem(item, null);
             }
 
-            await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
+            await item.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
             {
                 ForceSave = !isNew && forceUpdate
-
             }, cancellationToken);
 
             return item;
@@ -1178,7 +1177,7 @@ namespace Emby.Server.Implementations.Channels
 
             if (isNew || forceUpdate || item.DateLastRefreshed == default(DateTime))
             {
-                _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.Normal);
+                _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), RefreshPriority.Normal);
             }
 
             return item;

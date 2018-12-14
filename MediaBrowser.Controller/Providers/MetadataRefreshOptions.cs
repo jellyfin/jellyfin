@@ -24,11 +24,6 @@ namespace MediaBrowser.Controller.Providers
         public bool ForceSave { get; set; }
         public bool EnableRemoteContentProbe { get; set; }
 
-        public MetadataRefreshOptions(IFileSystem fileSystem)
-			: this(new DirectoryService(null, fileSystem)) // TODO: @bond NullLogger
-        {
-        }
-
         public MetadataRefreshOptions(IDirectoryService directoryService)
             : base(directoryService)
         {

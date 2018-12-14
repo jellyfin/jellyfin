@@ -718,7 +718,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             string contentType;
-            var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, _logger, out contentType);
+            var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, out contentType);
 
             if (restPath != null)
             {

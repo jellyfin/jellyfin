@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 previouslyFailedImages = new List<string>();
             }
 
-            var directoryService = new DirectoryService(_fileSystem);
+            var directoryService = new DirectoryService(_logger, _fileSystem);
 
             foreach (var video in videos)
             {
