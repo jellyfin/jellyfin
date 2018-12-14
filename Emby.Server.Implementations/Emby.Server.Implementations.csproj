@@ -18,6 +18,7 @@
     <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
     <ProjectReference Include="..\Emby.XmlTv\Emby.XmlTv\Emby.XmlTv.csproj" />
+    <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -147,11 +148,6 @@
    <EmbeddedResource Include="Localization\Ratings\uk.txt" />
    <EmbeddedResource Include="Localization\Ratings\es.txt" />
    <EmbeddedResource Include="Localization\Ratings\ro.txt" />
- </ItemGroup>
- <ItemGroup>
-   <Reference Include="Emby.Server.MediaEncoding">
-     <HintPath>..\ThirdParty\emby\Emby.Server.MediaEncoding.dll</HintPath>
-   </Reference>
  </ItemGroup>
  
 </Project>
