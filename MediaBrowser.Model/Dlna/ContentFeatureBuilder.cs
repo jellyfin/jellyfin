@@ -59,11 +59,11 @@ namespace MediaBrowser.Model.Dlna
             int? audioChannels,
             int? audioBitDepth,
             bool isDirectStream,
-            long runtimeTicks,
+            long? runtimeTicks,
             TranscodeSeekInfo transcodeSeekInfo)
         {
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
-            string orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetOrgOpValue(runtimeTicks > 0, isDirectStream, transcodeSeekInfo);
+            string orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetOrgOpValue(runtimeTicks != null && runtimeTicks > 0, isDirectStream, transcodeSeekInfo);
 
             // 0 = native, 1 = transcoded
             string orgCi = isDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
@@ -113,10 +113,10 @@ namespace MediaBrowser.Model.Dlna
             int? videoBitrate,
             TransportStreamTimestamp timestamp,
             bool isDirectStream,
-            long runtimeTicks,
+            long? runtimeTicks,
             string videoProfile,
             double? videoLevel,
-            float videoFramerate,
+            float? videoFramerate,
             int? packetLength,
             TranscodeSeekInfo transcodeSeekInfo,
             bool? isAnamorphic,
@@ -128,7 +128,7 @@ namespace MediaBrowser.Model.Dlna
             bool? isAvc)
         {
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
-            string orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetOrgOpValue(runtimeTicks > 0, isDirectStream, transcodeSeekInfo);
+            string orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetOrgOpValue(runtimeTicks == null && runtimeTicks > 0, isDirectStream, transcodeSeekInfo);
 
             // 0 = native, 1 = transcoded
             string orgCi = isDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
