@@ -101,9 +101,8 @@ namespace MediaBrowser.Server.Mono
                         programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
                     }
                 }
+                programDataPath = Path.Combine(programDataPath, "jellyfin");
             }
-
-            programDataPath = Path.Combine(programDataPath, "jellyfin");
 
             var appFolderPath = Path.GetDirectoryName(applicationPath);
 
