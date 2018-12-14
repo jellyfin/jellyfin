@@ -4,7 +4,6 @@
 # Places the output .deb file in the parent directory
 
 set -o xtrace
-set -o errexit
 set -o nounset
 
 package_temporary_dir="`mktemp -d`"
@@ -16,6 +15,7 @@ cleanup() {
     test -d "$package_temporary_dir" && rm -r "$package_temporary_dir"
 }
 trap cleanup EXIT
+trap cleanup INT
 
 docker build . -t "$image_name" -f ./Dockerfile.debian_package
 docker run --rm -v "$package_temporary_dir:/temp" "$image_name" cp -r /dist /temp/
