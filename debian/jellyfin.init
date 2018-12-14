@@ -9,7 +9,7 @@
 ### END INIT INFO
 
 # Carry out specific functions when asked to by the system
-pid=`ps -fA|grep dotnet|grep jellyfin|awk '{print $2}'| tr -d '\n'`
+pid=`pgrep jellyfin`
 
 case "$1" in
   start)
