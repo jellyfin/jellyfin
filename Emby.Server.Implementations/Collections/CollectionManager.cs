@@ -143,7 +143,7 @@ namespace Emby.Server.Implementations.Collections
 
                 if (options.ItemIdList.Length > 0)
                 {
-                    AddToCollection(collection.Id, options.ItemIdList, false, new MetadataRefreshOptions(_fileSystem)
+                    AddToCollection(collection.Id, options.ItemIdList, false, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
                     {
                         // The initial adding of items is going to create a local metadata file
                         // This will cause internet metadata to be skipped as a result
@@ -152,7 +152,7 @@ namespace Emby.Server.Implementations.Collections
                 }
                 else
                 {
-                    _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.High);
+                    _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), RefreshPriority.High);
                 }
 
                 EventHelper.FireEventIfNotNull(CollectionCreated, this, new CollectionCreatedEventArgs
@@ -173,12 +173,12 @@ namespace Emby.Server.Implementations.Collections
 
         public void AddToCollection(Guid collectionId, IEnumerable<string> ids)
         {
-            AddToCollection(collectionId, ids, true, new MetadataRefreshOptions(_fileSystem));
+            AddToCollection(collectionId, ids, true, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)));
         }
 
         public void AddToCollection(Guid collectionId, IEnumerable<Guid> ids)
         {
-            AddToCollection(collectionId, ids.Select(i => i.ToString("N")), true, new MetadataRefreshOptions(_fileSystem));
+            AddToCollection(collectionId, ids.Select(i => i.ToString("N")), true, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)));
         }
 
         private void AddToCollection(Guid collectionId, IEnumerable<string> ids, bool fireEvent, MetadataRefreshOptions refreshOptions)
@@ -283,7 +283,7 @@ namespace Emby.Server.Implementations.Collections
             }
 
             collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
-            _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(_fileSystem)
+            _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
             {
                 ForceSave = true
             }, RefreshPriority.High);

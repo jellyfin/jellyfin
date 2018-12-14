@@ -24,11 +24,11 @@ namespace Emby.Server.Implementations.Services
             return Task.FromResult(host.CreateInstance(requestType)); 
         }
 
-        public static RestPath FindMatchingRestPath(string httpMethod, string pathInfo, ILogger logger, out string contentType)
+        public static RestPath FindMatchingRestPath(string httpMethod, string pathInfo, out string contentType)
         {
             pathInfo = GetSanitizedPathInfo(pathInfo, out contentType);
 
-            return ServiceController.Instance.GetRestPathForRequest(httpMethod, pathInfo, logger);
+            return ServiceController.Instance.GetRestPathForRequest(httpMethod, pathInfo);
         }
 
         public static string GetSanitizedPathInfo(string pathInfo, out string contentType)
@@ -63,8 +63,7 @@ namespace Emby.Server.Implementations.Services
             if (this.RestPath == null)
             {
                 string contentType;
-                // TODO: @bond NullLogger
-                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, null, out contentType);
+                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, out contentType);
 
                 if (contentType != null)
                     ResponseContentType = contentType;

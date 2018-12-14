@@ -532,23 +532,13 @@ namespace Emby.Dlna.PlayTo
             return null;
         }
 
-        private ILogger GetStreamBuilderLogger()
-        {
-            if (_config.GetDlnaConfiguration().EnableDebugLog)
-            {
-                return _logger;
-            }
-
-            return null; // TODO: @bond NullLogger
-        }
-
         private PlaylistItem GetPlaylistItem(BaseItem item, List<MediaSourceInfo> mediaSources, DeviceProfile profile, string deviceId, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
         {
             if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger()).BuildVideoItem(new VideoOptions
+                    StreamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildVideoItem(new VideoOptions
                     {
                         ItemId = item.Id,
                         MediaSources = mediaSources.ToArray(),
@@ -568,7 +558,7 @@ namespace Emby.Dlna.PlayTo
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger()).BuildAudioItem(new AudioOptions
+                    StreamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildAudioItem(new AudioOptions
                     {
                         ItemId = item.Id,
                         MediaSources = mediaSources.ToArray(),

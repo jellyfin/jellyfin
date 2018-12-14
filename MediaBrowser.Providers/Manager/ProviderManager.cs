@@ -329,7 +329,11 @@ namespace MediaBrowser.Providers.Manager
             var options = GetMetadataOptions(item);
             var libraryOptions = _libraryManagerFactory().GetLibraryOptions(item);
 
-            return GetImageProviders(item, libraryOptions, options, new ImageRefreshOptions(new DirectoryService(_logger, _fileSystem)), includeDisabled).OfType<IRemoteImageProvider>();
+            return GetImageProviders(item, libraryOptions, options,
+                    new ImageRefreshOptions(
+                        new DirectoryService(_logger, _fileSystem)),
+                    includeDisabled)
+                .OfType<IRemoteImageProvider>();
         }
 
         private bool CanRefresh(IMetadataProvider provider, BaseItem item, LibraryOptions libraryOptions, MetadataOptions options, bool includeDisabled, bool forceEnableInternetMetadata)
@@ -506,7 +510,11 @@ namespace MediaBrowser.Providers.Manager
 
             var libraryOptions = new LibraryOptions();
 
-            var imageProviders = GetImageProviders(dummy, libraryOptions, options, new ImageRefreshOptions(new DirectoryService(_logger, _fileSystem)), true).ToList();
+            var imageProviders = GetImageProviders(dummy, libraryOptions, options,
+                                    new ImageRefreshOptions(
+                                        new DirectoryService(_logger, _fileSystem)),
+                                    true)
+                                .ToList();
 
             var pluginList = summary.Plugins.ToList();
 

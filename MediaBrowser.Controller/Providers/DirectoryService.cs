@@ -26,11 +26,6 @@ namespace MediaBrowser.Controller.Providers
             _fileSystem = fileSystem;
         }
 
-        public DirectoryService(IFileSystem fileSystem)
-            : this(null, fileSystem) // TODO: @bond NullLogger
-        {
-        }
-
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
             FileSystemMetadata[] entries;

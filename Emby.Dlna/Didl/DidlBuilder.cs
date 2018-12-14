@@ -173,16 +173,6 @@ namespace Emby.Dlna.Didl
             writer.WriteFullEndElement();
         }
 
-        private ILogger GetStreamBuilderLogger(DlnaOptions options)
-        {
-            if (options.EnableDebugLog)
-            {
-                return _logger;
-            }
-
-            return null; // TODO: @bond NullLogger
-        }
-
         private string GetMimeType(string input)
         {
             var mime = MimeTypes.GetMimeType(input);
@@ -202,7 +192,7 @@ namespace Emby.Dlna.Didl
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(video, true, _user);
 
-                streamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger(options)).BuildVideoItem(new VideoOptions
+                streamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildVideoItem(new VideoOptions
                 {
                     ItemId = video.Id,
                     MediaSources = sources.ToArray(),
@@ -509,7 +499,7 @@ namespace Emby.Dlna.Didl
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(audio, true, _user);
 
-                streamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger(options)).BuildAudioItem(new AudioOptions
+                streamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildAudioItem(new AudioOptions
                 {
                     ItemId = audio.Id,
                     MediaSources = sources.ToArray(),

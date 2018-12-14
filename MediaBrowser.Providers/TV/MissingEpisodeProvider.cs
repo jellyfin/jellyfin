@@ -414,7 +414,7 @@ namespace MediaBrowser.Providers.TV
 
             season.AddChild(episode, cancellationToken);
 
-            await episode.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken).ConfigureAwait(false);
+            await episode.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
