@@ -230,7 +230,7 @@ namespace Emby.Drawing.Skia
             return tempPath;
         }
 
-        private static SKEncodedOrigin GetSKCodecOrigin(ImageOrientation? orientation)
+        private static SKEncodedOrigin GetSKEncodedOrigin(ImageOrientation? orientation)
         {
             if (!orientation.HasValue)
             {
@@ -275,7 +275,7 @@ namespace Emby.Drawing.Skia
                 {
                     if (codec == null)
                     {
-                        origin = GetSKCodecOrigin(orientation);
+                        origin = GetSKEncodedOrigin(orientation);
                         return null;
                     }
 
@@ -291,7 +291,7 @@ namespace Emby.Drawing.Skia
                     }
                     else
                     {
-                        origin = GetSKCodecOrigin(orientation);
+                        origin = GetSKEncodedOrigin(orientation);
                     }
 
                     return bitmap;
@@ -594,7 +594,10 @@ namespace Emby.Drawing.Skia
                         if (hasForegroundColor)
                         {
                             Double opacity;
-                            if (!Double.TryParse(options.ForegroundLayer, out opacity)) opacity = .4;
+                            if (!Double.TryParse(options.ForegroundLayer, out opacity))
+                            {
+                                opacity = .4;
+                            }
 
                             canvas.DrawColor(new SKColor(0, 0, 0, (Byte)((1 - opacity) * 0xFF)), SKBlendMode.SrcOver);
                         }
