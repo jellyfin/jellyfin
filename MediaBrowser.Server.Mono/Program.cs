@@ -53,12 +53,12 @@ namespace MediaBrowser.Server.Mono
             var appPaths = CreateApplicationPaths(applicationPath, customProgramDataPath);
             _appPaths = appPaths;
 
-            var logger = new LoggerConfiguration()
-                            .Enrich.FromLogContext()
-                            .WriteTo.Console()
-                            .CreateLogger();
-
-            using (var loggerFactory = new SerilogLoggerFactory(logger))
+            using (var loggerFactory = new SerilogLoggerFactory(
+                    new LoggerConfiguration()
+                        .Enrich.FromLogContext()
+                        .WriteTo.Console()
+                        .CreateLogger()
+                , true))
             {
                 _loggerFactory = loggerFactory;
 
