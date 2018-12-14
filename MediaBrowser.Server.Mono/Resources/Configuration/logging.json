@@ -1,0 +1,19 @@
+{
+    "Serilog": {
+        "MinimumLevel": "Information",
+        "WriteTo": [
+            { "Name": "Console",
+                "Args": {
+                    "outputTemplate": "[{Timestamp:HH:mm:ss}] [{Level:u3}] {Message}{NewLine}{Exception}"
+                }
+            },
+            { "Name": "File",
+                "Args": {
+                    "path": "logs//log_.log",
+                    "rollingInterval": "Day",
+                    "outputTemplate": "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] {Message}{NewLine}{Exception}"
+                }
+            }
+        ]
+    }
+}
