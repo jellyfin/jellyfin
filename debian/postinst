@@ -37,9 +37,6 @@ case "$1" in
 
     chmod +x ${JELLYFIN_DIR}/restart.sh > /dev/null 2>&1 || true
 
-    # Link hardcoded /var/lib/emby to /var/lib/jellyfin (TEMPORARY)
-    ln -sf /var/lib/jellyfin /var/lib/emby
-
     ;;
     abort-upgrade|abort-remove|abort-deconfigure)
     ;;
