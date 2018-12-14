@@ -137,13 +137,14 @@ namespace MediaBrowser.Server.Mono
                     return;
                 }
 
-                Console.WriteLine("appHost.Init");
+                //Console.WriteLine("appHost.Init");
 
                 appHost.Init();
 
                 appHost.ImageProcessor.ImageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo, appHost.LocalizationManager);
 
-                Console.WriteLine("Running startup tasks");
+                //Console.WriteLine("Running startup tasks");
+                _logger.LogInformation("Running startup tasks");
 
                 var task = appHost.RunStartupTasks();
                 Task.WaitAll(task);
@@ -291,10 +292,12 @@ namespace MediaBrowser.Server.Mono
         {
             var exception = (Exception)e.ExceptionObject;
 
-            // TODO
-            /*
-            new UnhandledExceptionWriter(_appPaths, _logger, _logManager, FileSystem, new ConsoleLogger()).Log(exception);
+            //new UnhandledExceptionWriter(_appPaths, _logger, _logManager, FileSystem, new ConsoleLogger()).Log(exception);
 
+            _logger.LogCritical(exception, "Unhandled Exception");
+
+            // TODO: @bond
+            /*
             if (!Debugger.IsAttached)
             {
                 var message = LogHelper.GetLogMessage(exception).ToString();
@@ -304,7 +307,8 @@ namespace MediaBrowser.Server.Mono
                 {
                     Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
                 }
-            }*/
+            }
+            */
         }
 
         public static void Shutdown()

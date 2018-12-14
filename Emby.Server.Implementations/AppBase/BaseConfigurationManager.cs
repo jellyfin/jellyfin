@@ -97,7 +97,7 @@ namespace Emby.Server.Implementations.AppBase
         /// Initializes a new instance of the <see cref="BaseConfigurationManager" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
-        /// <param name="logManager">The log manager.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
         protected BaseConfigurationManager(IApplicationPaths applicationPaths, ILoggerFactory loggerFactory, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
         {
