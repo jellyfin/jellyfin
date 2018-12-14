@@ -272,9 +272,9 @@ namespace Emby.Dlna.Main
                 {
                     CacheLifetime = TimeSpan.FromSeconds(1800), //How long SSDP clients can cache this info.
                     Location = uri, // Must point to the URL that serves your devices UPnP description document. 
-                    FriendlyName = "Emby Server",
-                    Manufacturer = "Emby",
-                    ModelName = "Emby Server",
+                    FriendlyName = "Jellyfin",
+                    Manufacturer = "Jellyfin",
+                    ModelName = "Jellyfin Server",
                     Uuid = udn
                     // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.                
                 };
