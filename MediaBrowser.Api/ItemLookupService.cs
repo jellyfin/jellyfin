@@ -240,7 +240,7 @@ namespace MediaBrowser.Api
             //item.ProductionYear = request.ProductionYear;
             //item.Name = request.Name;
 
-            return _providerManager.RefreshFullItem(item, new MetadataRefreshOptions(_fileSystem)
+            return _providerManager.RefreshFullItem(item, new MetadataRefreshOptions(new DirectoryService(Logger,  _fileSystem))
             {
                 MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                 ImageRefreshMode = MetadataRefreshMode.FullRefresh,

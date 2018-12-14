@@ -1292,7 +1292,7 @@ namespace Emby.Server.Implementations.LiveTv
                     }
 
                     //currentChannel.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken);
-                    await currentChannel.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
+                    await currentChannel.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
                     {
                         ForceSave = true
 

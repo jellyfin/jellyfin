@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 {
                     var item = _libraryManager.GetPerson(person);
 
-                    var options = new MetadataRefreshOptions(_fileSystem)
+                    var options = new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
                     {
                         ImageRefreshMode = MetadataRefreshMode.ValidationOnly,
                         MetadataRefreshMode = MetadataRefreshMode.ValidationOnly

@@ -99,7 +99,7 @@ namespace Emby.Server.Implementations.Services
             pathsAtFirstMatch.Add(restPath);
         }
 
-        public RestPath GetRestPathForRequest(string httpMethod, string pathInfo, ILogger logger)
+        public RestPath GetRestPathForRequest(string httpMethod, string pathInfo)
         {
             var matchUsingPathParts = RestPath.GetPathPartsForMatching(pathInfo);
 
@@ -117,7 +117,7 @@ namespace Emby.Server.Implementations.Services
                 RestPath bestMatch = null;
                 foreach (var restPath in firstMatches)
                 {
-                    var score = restPath.MatchScore(httpMethod, matchUsingPathParts, logger);
+                    var score = restPath.MatchScore(httpMethod, matchUsingPathParts);
                     if (score > bestScore)
                     {
                         bestScore = score;
@@ -140,7 +140,7 @@ namespace Emby.Server.Implementations.Services
                 RestPath bestMatch = null;
                 foreach (var restPath in firstMatches)
                 {
-                    var score = restPath.MatchScore(httpMethod, matchUsingPathParts, logger);
+                    var score = restPath.MatchScore(httpMethod, matchUsingPathParts);
                     if (score > bestScore)
                     {
                         bestScore = score;
