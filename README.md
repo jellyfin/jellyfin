@@ -37,6 +37,8 @@ An Unraid Docker template is available. See [this documentation page](https://gi
 
 A package repository is available at https://repo.jellyfin.org.
 
+NOTE: Ubuntu users may find that the `ffmpeg` dependency package is not present in their release or is simply a rebranded `libav` which is not directly compatible. Please [obtain the ffmpeg package directly from the FFMPEG site](https://ffmpeg.org/download.html#build-linux) to use Jellyfin on Ubuntu.
+
 #### Clean install
 
 0. Install the `dotnet-runtime-2.2` package via [Microsoft's repositories](https://dotnet.microsoft.com/download/dotnet-core/2.2).
