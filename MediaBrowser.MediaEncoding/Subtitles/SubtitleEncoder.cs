@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -190,7 +190,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 var bytes = await GetBytes(path, protocol, cancellationToken).ConfigureAwait(false);
 
                 var charset = _textEncoding.GetDetectedEncodingName(bytes, bytes.Length, language, true);
-                _logger.Debug("charset {0} detected for {1}", charset ?? "null", path);
+                _logger.LogDebug("charset {0} detected for {1}", charset ?? "null", path);
 
                 if (!string.IsNullOrEmpty(charset))
                 {
@@ -423,7 +423,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 ErrorDialog = false
             });
 
-            _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            _logger.LogInformation("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             try
             {
@@ -431,7 +431,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error starting ffmpeg", ex);
+                _logger.LogError("Error starting ffmpeg", ex);
 
                 throw;
             }
@@ -442,13 +442,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 try
                 {
-                    _logger.Info("Killing ffmpeg subtitle conversion process");
+                    _logger.LogInformation("Killing ffmpeg subtitle conversion process");
 
                     process.Kill();
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error killing subtitle conversion process", ex);
+                    _logger.LogError("Error killing subtitle conversion process", ex);
                 }
             }
 
@@ -466,12 +466,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     try
                     {
-                        _logger.Info("Deleting converted subtitle due to failure: ", outputPath);
+                        _logger.LogInformation("Deleting converted subtitle due to failure: ", outputPath);
                         _fileSystem.DeleteFile(outputPath);
                     }
                     catch (IOException ex)
                     {
-                        _logger.ErrorException("Error deleting converted subtitle {0}", ex, outputPath);
+                        _logger.LogError("Error deleting converted subtitle {0}", ex, outputPath);
                     }
                 }
             }
@@ -484,13 +484,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 var msg = string.Format("ffmpeg subtitle conversion failed for {0}", inputPath);
 
-                _logger.Error(msg);
+                _logger.LogError(msg);
 
                 throw new Exception(msg);
             }
             await SetAssFont(outputPath).ConfigureAwait(false);
 
-            _logger.Info("ffmpeg subtitle conversion succeeded for {0}", inputPath);
+            _logger.LogInformation("ffmpeg subtitle conversion succeeded for {0}", inputPath);
         }
 
         /// <summary>
@@ -553,7 +553,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 ErrorDialog = false
             });
 
-            _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            _logger.LogInformation("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             try
             {
@@ -561,7 +561,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error starting ffmpeg", ex);
+                _logger.LogError("Error starting ffmpeg", ex);
 
                 throw;
             }
@@ -572,13 +572,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 try
                 {
-                    _logger.Info("Killing ffmpeg subtitle extraction process");
+                    _logger.LogInformation("Killing ffmpeg subtitle extraction process");
 
                     process.Kill();
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error killing subtitle extraction process", ex);
+                    _logger.LogError("Error killing subtitle extraction process", ex);
                 }
             }
 
@@ -594,7 +594,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 try
                 {
-                    _logger.Info("Deleting extracted subtitle due to failure: {0}", outputPath);
+                    _logger.LogInformation("Deleting extracted subtitle due to failure: {0}", outputPath);
                     _fileSystem.DeleteFile(outputPath);
                 }
                 catch (FileNotFoundException)
@@ -603,7 +603,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
                 catch (IOException ex)
                 {
-                    _logger.ErrorException("Error deleting extracted subtitle {0}", ex, outputPath);
+                    _logger.LogError("Error deleting extracted subtitle {0}", ex, outputPath);
                 }
             }
             else if (!_fileSystem.FileExists(outputPath))
@@ -615,7 +615,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 var msg = string.Format("ffmpeg subtitle extraction failed for {0} to {1}", inputPath, outputPath);
 
-                _logger.Error(msg);
+                _logger.LogError(msg);
 
                 throw new Exception(msg);
             }
@@ -623,7 +623,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 var msg = string.Format("ffmpeg subtitle extraction completed for {0} to {1}", inputPath, outputPath);
 
-                _logger.Info(msg);
+                _logger.LogInformation(msg);
             }
 
             if (string.Equals(outputCodec, "ass", StringComparison.OrdinalIgnoreCase))
@@ -639,7 +639,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <returns>Task.</returns>
         private async Task SetAssFont(string file)
         {
-            _logger.Info("Setting ass font within {0}", file);
+            _logger.LogInformation("Setting ass font within {0}", file);
 
             string text;
             Encoding encoding;
@@ -659,11 +659,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             if (!string.Equals(text, newText))
             {
                 using (var fileStream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+                using (var writer = new StreamWriter(fileStream, encoding))
                 {
-                    using (var writer = new StreamWriter(fileStream, encoding))
-                    {
-                        writer.Write(newText);
-                    }
+                    writer.Write(newText);
                 }
             }
         }
@@ -698,7 +696,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             var charset = _textEncoding.GetDetectedEncodingName(bytes, bytes.Length, language, true);
 
-            _logger.Debug("charset {0} detected for {1}", charset ?? "null", path);
+            _logger.LogDebug("charset {0} detected for {1}", charset ?? "null", path);
 
             return charset;
         }

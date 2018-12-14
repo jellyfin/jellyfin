@@ -13,7 +13,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.MediaEncoding.Probing
@@ -1351,11 +1351,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                     {
                         video.Timestamp = GetMpegTimestamp(video.Path);
 
-                        _logger.Debug("Video has {0} timestamp", video.Timestamp);
+                        _logger.LogDebug("Video has {0} timestamp", video.Timestamp);
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error extracting timestamp info from {0}", ex, video.Path);
+                        _logger.LogError("Error extracting timestamp info from {0}", ex, video.Path);
                         video.Timestamp = null;
                     }
                 }
