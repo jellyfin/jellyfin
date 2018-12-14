@@ -18,6 +18,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -381,11 +382,11 @@ namespace MediaBrowser.Api.Playback
 
             if (item is Audio)
             {
-                Logger.Info("User policy for {0}. EnableAudioPlaybackTranscoding: {1}", user.Name, user.Policy.EnableAudioPlaybackTranscoding);
+                Logger.LogInformation("User policy for {0}. EnableAudioPlaybackTranscoding: {1}", user.Name, user.Policy.EnableAudioPlaybackTranscoding);
             }
             else
             {
-                Logger.Info("User policy for {0}. EnablePlaybackRemuxing: {1} EnableVideoPlaybackTranscoding: {2} EnableAudioPlaybackTranscoding: {3}", 
+                Logger.LogInformation("User policy for {0}. EnablePlaybackRemuxing: {1} EnableVideoPlaybackTranscoding: {2} EnableAudioPlaybackTranscoding: {3}", 
                     user.Name,
                     user.Policy.EnablePlaybackRemuxing,
                     user.Policy.EnableVideoPlaybackTranscoding, 
@@ -525,7 +526,7 @@ namespace MediaBrowser.Api.Playback
             {
                 var isInLocalNetwork = _networkManager.IsInLocalNetwork(Request.RemoteIp);
 
-                Logger.Info("RemoteClientBitrateLimit: {0}, RemoteIp: {1}, IsInLocalNetwork: {2}", remoteClientMaxBitrate, Request.RemoteIp, isInLocalNetwork);
+                Logger.LogInformation("RemoteClientBitrateLimit: {0}, RemoteIp: {1}, IsInLocalNetwork: {2}", remoteClientMaxBitrate, Request.RemoteIp, isInLocalNetwork);
                 if (!isInLocalNetwork)
                 {
                     maxBitrate = Math.Min(maxBitrate ?? remoteClientMaxBitrate, remoteClientMaxBitrate);

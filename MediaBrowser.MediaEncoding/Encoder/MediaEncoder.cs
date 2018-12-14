@@ -9,7 +9,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -25,6 +24,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.System;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -117,7 +117,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error setting FFREPORT environment variable", ex);
+                    _logger.LogError("Error setting FFREPORT environment variable", ex);
                 }
             }
         }
@@ -132,7 +132,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch (Exception ex)
                 {
-                    //_logger.ErrorException("Error setting FFREPORT environment variable", ex);
+                    //_logger.LogError("Error setting FFREPORT environment variable", ex);
                 }
             }
         }
@@ -145,7 +145,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error setting FFREPORT environment variable", ex);
+                _logger.LogError("Error setting FFREPORT environment variable", ex);
             }
             try
             {
@@ -153,7 +153,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error setting FFREPORT environment variable", ex);
+                _logger.LogError("Error setting FFREPORT environment variable", ex);
             }
         }
 
@@ -252,7 +252,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return;
             }
 
-            _logger.Info("Attempting to update encoder path to {0}. pathType: {1}", path ?? string.Empty, pathType ?? string.Empty);
+            _logger.LogInformation("Attempting to update encoder path to {0}. pathType: {1}", path ?? string.Empty, pathType ?? string.Empty);
 
             Tuple<string, string> newPaths;
 
@@ -414,8 +414,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private void LogPaths()
         {
-            _logger.Info("FFMpeg: {0}", FFMpegPath ?? "not found");
-            _logger.Info("FFProbe: {0}", FFProbePath ?? "not found");
+            _logger.LogInformation("FFMpeg: {0}", FFMpegPath ?? "not found");
+            _logger.LogInformation("FFProbe: {0}", FFProbePath ?? "not found");
         }
 
         private EncodingOptions GetEncodingOptions()
@@ -557,11 +557,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (forceEnableLogging)
             {
-                _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+                _logger.LogInformation("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
             }
             else
             {
-                _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+                _logger.LogDebug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
             }
 
             using (var processWrapper = new ProcessWrapper(process, this, _logger))
@@ -651,7 +651,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch
                 {
-                    _logger.Error("I-frame image extraction failed, will attempt standard way. Input: {0}", inputArgument);
+                    _logger.LogError("I-frame image extraction failed, will attempt standard way. Input: {0}", inputArgument);
                 }
             }
 
@@ -753,7 +753,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 ErrorDialog = false
             });
 
-            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            _logger.LogDebug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
@@ -781,7 +781,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     var msg = string.Format("ffmpeg image extraction failed for {0}", inputPath);
 
-                    _logger.Error(msg);
+                    _logger.LogError(msg);
 
                     throw new Exception(msg);
                 }
@@ -873,7 +873,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 ErrorDialog = false
             });
 
-            _logger.Info(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
+            _logger.LogInformation(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
 
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -925,7 +925,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     var msg = string.Format("ffmpeg image extraction failed for {0}", inputArgument);
 
-                    _logger.Error(msg);
+                    _logger.LogError(msg);
 
                     throw new Exception(msg);
                 }
@@ -957,7 +957,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IProgress<double> progress,
             CancellationToken cancellationToken)
         {
-            _logger.Error("EncodeVideo");
+            _logger.LogError("EncodeVideo");
             var job = await new VideoEncoder(this,
                 _logger,
                 ConfigurationManager,
@@ -995,18 +995,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             catch (Exception ex)
             {
-                _logger.Error("Error in WaitForExit", ex);
+                _logger.LogError("Error in WaitForExit", ex);
             }
 
             try
             {
-                _logger.Info("Killing ffmpeg process");
+                _logger.LogInformation("Killing ffmpeg process");
 
                 process.Process.Kill();
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error killing process", ex);
+                _logger.LogError("Error killing process", ex);
             }
         }
 

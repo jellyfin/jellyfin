@@ -17,6 +17,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
+using Microsoft.Extensions.Logging;
+using MediaBrowser.Api.LiveTv;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {

@@ -1,9 +1,9 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Logging;
 using System;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -60,7 +60,7 @@ namespace MediaBrowser.Api.Playback
         {
             if (!_isPaused)
             {
-                _logger.Debug("Sending pause command to ffmpeg");
+                _logger.LogDebug("Sending pause command to ffmpeg");
 
                 try
                 {
@@ -69,7 +69,7 @@ namespace MediaBrowser.Api.Playback
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error pausing transcoding", ex);
+                    _logger.LogError("Error pausing transcoding", ex);
                 }
             }
         }
@@ -78,7 +78,7 @@ namespace MediaBrowser.Api.Playback
         {
             if (_isPaused)
             {
-                _logger.Debug("Sending unpause command to ffmpeg");
+                _logger.LogDebug("Sending unpause command to ffmpeg");
 
                 try
                 {
@@ -87,7 +87,7 @@ namespace MediaBrowser.Api.Playback
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error unpausing transcoding", ex);
+                    _logger.LogError("Error unpausing transcoding", ex);
                 }
             }
         }
@@ -110,11 +110,11 @@ namespace MediaBrowser.Api.Playback
 
                 if (gap < targetGap)
                 {
-                    //_logger.Debug("Not throttling transcoder gap {0} target gap {1}", gap, targetGap);
+                    //_logger.LogDebug("Not throttling transcoder gap {0} target gap {1}", gap, targetGap);
                     return false;
                 }
 
-                //_logger.Debug("Throttling transcoder gap {0} target gap {1}", gap, targetGap);
+                //_logger.LogDebug("Throttling transcoder gap {0} target gap {1}", gap, targetGap);
                 return true;
             }
 
@@ -135,21 +135,21 @@ namespace MediaBrowser.Api.Playback
 
                     if (gap < targetGap)
                     {
-                        //_logger.Debug("Not throttling transcoder gap {0} target gap {1} bytes downloaded {2}", gap, targetGap, bytesDownloaded);
+                        //_logger.LogDebug("Not throttling transcoder gap {0} target gap {1} bytes downloaded {2}", gap, targetGap, bytesDownloaded);
                         return false;
                     }
 
-                    //_logger.Debug("Throttling transcoder gap {0} target gap {1} bytes downloaded {2}", gap, targetGap, bytesDownloaded);
+                    //_logger.LogDebug("Throttling transcoder gap {0} target gap {1} bytes downloaded {2}", gap, targetGap, bytesDownloaded);
                     return true;
                 }
                 catch
                 {
-                    //_logger.Error("Error getting output size");
+                    //_logger.LogError("Error getting output size");
                     return false;
                 }
             }
 
-            //_logger.Debug("No throttle data for " + path);
+            //_logger.LogDebug("No throttle data for " + path);
             return false;
         }
 
