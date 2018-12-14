@@ -16,7 +16,7 @@ case "$1" in
         if [ "$pid" == "" ]; then
                 echo "Starting Jellyfin..."
                 . /etc/default/jellyfin
-                nohup su -u $JELLYFIN_USER -c $JELLYFIN_DOTNET $JELLYFIN_COMMAND
+                nohup su -u $JELLYFIN_USER -c /usr/lib/jellyfin/bin/jellyfin $JELLYFIN_ARGS
         else
                 echo "Jellyfin already running"
         fi
