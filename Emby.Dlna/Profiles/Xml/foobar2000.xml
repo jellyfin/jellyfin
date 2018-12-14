@@ -7,9 +7,9 @@
       <HttpHeaderInfo name="User-Agent" value="foobar" match="Substring" />
     </Headers>
   </Identification>
-  <Manufacturer>Emby</Manufacturer>
+  <Manufacturer>Jellyfin</Manufacturer>
   <ManufacturerUrl>https://github.com/jellyfin/jellyfin</ManufacturerUrl>
-  <ModelName>Emby Server</ModelName>
+  <ModelName>Jellyfin Server</ModelName>
   <ModelDescription>UPnP/AV 1.0 Compliant Media Server</ModelDescription>
   <ModelNumber>01</ModelNumber>
   <ModelUrl>https://github.com/jellyfin/jellyfin</ModelUrl>
