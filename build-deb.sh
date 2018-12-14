@@ -1,21 +1,23 @@
-#!/bin/bash
+#!/usr/bin/env sh
 
 # Build a Jellyfin .deb file with Docker on Linux
 # Places the output .deb file in the parent directory
 
 set -o xtrace
 set -o errexit
-set -o pipefail
 set -o nounset
 
-date="$( date +%s )"
-curdir="$( pwd )"
-tmpdir="$( mktemp -d )"
-curuser="$( whoami )"
+package_temporary_dir="`mktemp -d`"
+current_user="`whoami`"
+image_name="jellyfin-debuild"
 
-docker build ${curdir} --tag jellyfin-debuild-${date} --file ${curdir}/Dockerfile.debian_package
-docker run --volume ${tmpdir}:/temp --interactive --tty jellyfin-debuild-${date} cp --recursive /dist /temp/
-docker image rm jellyfin-debuild-${date} --force
-sudo chown --recursive ${curuser} ${tmpdir}
-mv ${tmpdir}/dist/*.deb ${curdir}/../
-rm --recursive --force ${tmpdir}
+cleanup() {
+    docker image rm $image_name --force
+    test -d ${package_temporary_dir} && rm -r ${package_temporary_dir}
+}
+trap cleanup EXIT
+
+docker build . -t $image_name -f ./Dockerfile.debian_package
+docker run --rm -v $package_temporary_dir:/temp $image_name cp -r /dist /temp/
+sudo chown -R $current_user $package_temporary_dir
+mv $package_temporary_dir/dist/*.deb ../
