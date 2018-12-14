@@ -23,6 +23,7 @@ using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certif
 using System.Threading;
 using InteropServices = System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using Serilog;
 using Serilog.AspNetCore;
@@ -53,12 +54,9 @@ namespace MediaBrowser.Server.Mono
             var appPaths = CreateApplicationPaths(applicationPath, customProgramDataPath);
             _appPaths = appPaths;
 
-            using (var loggerFactory = new SerilogLoggerFactory(
-                    new LoggerConfiguration()
-                        .Enrich.FromLogContext()
-                        .WriteTo.Console()
-                        .CreateLogger()
-                , true))
+            createLogger();
+
+            using (var loggerFactory = new SerilogLoggerFactory())
             {
                 _loggerFactory = loggerFactory;
 
@@ -153,6 +151,47 @@ namespace MediaBrowser.Server.Mono
                 task = ApplicationTaskCompletionSource.Task;
 
                 Task.WaitAll(task);
+            }
+        }
+
+        private static async Task createLogger()
+        {
+            try
+            {
+                string path = Path.Combine(_appPaths.ProgramDataPath, "logging.json");
+
+                if (!File.Exists(path))
+                {
+                    var assembly = typeof(MainClass).Assembly;
+                    // For some reason the csproj name is used instead of the assembly name
+                    var resourcePath = "EmbyServer.Resources.Configuration.logging.json";
+                    using (Stream rscstr = assembly.GetManifestResourceStream(resourcePath))
+                    using (Stream fstr = File.Open(path, FileMode.CreateNew))
+                    {
+                        await rscstr.CopyToAsync(fstr);
+                    }
+                }
+                var configuration = new ConfigurationBuilder()
+                    .AddJsonFile(path)
+                    .Build();
+
+                Serilog.Log.Logger = new LoggerConfiguration()
+                    .ReadFrom.Configuration(configuration)
+                    .Enrich.FromLogContext()
+                    .CreateLogger();
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Logger = new LoggerConfiguration()
+                    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+                    .WriteTo.File(
+                        Path.Combine(AppContext.BaseDirectory, "logs", "log_.log"),
+                        rollingInterval: RollingInterval.Day,
+                        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] {Message}{NewLine}{Exception}")
+                    .Enrich.FromLogContext()
+                    .CreateLogger();
+
+                Serilog.Log.Logger.Fatal(ex, "Failed to read logger config");
             }
         }
 
