@@ -1,0 +1,232 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <Import Project="..\packages\NUnit.3.10.1\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.10.1\build\NUnit.props')" />
+  <Import Project="..\packages\NUnit3TestAdapter.3.10.0\build\net35\NUnit3TestAdapter.props" Condition="Exists('..\packages\NUnit3TestAdapter.3.10.0\build\net35\NUnit3TestAdapter.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4D1C6110-D6F2-496E-BD7E-E45B7217D458}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>tests</RootNamespace>
+    <AssemblyName>tests</AssemblyName>
+    <ReleaseVersion>2.0.4.0</ReleaseVersion>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\taglib-sharp.snk</AssemblyOriginatorKeyFile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>False</Optimize>
+    <OutputPath>.\</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>False</Optimize>
+    <OutputPath>.\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="atk-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.2\lib\net45\atk-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="cairo-sharp, Version=1.10.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.2\lib\net45\cairo-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="gdk-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.2\lib\net45\gdk-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="gio-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.2\lib\net45\gio-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="glib-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.2\lib\net45\glib-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="gtk-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.2\lib\net45\gtk-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=3.10.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="pango-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.2\lib\net45\pango-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="fixtures\Helpers.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Collections\ByteVectorCollectionTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Collections\ByteVectorTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Collections\FileTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Collections\StringCollectionTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\AacFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\AiffFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\AsfFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\WavFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\MpgFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\MkvFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\AviFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\DsfFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\FlacFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\Id3BothFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\Id3V1FormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\Id3V2FormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\IFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\JpegFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\M4aFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\M4vFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\Mpcv8FormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\MpcFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\OggFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\OpusFormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\ExtendedTests.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\StandardTests.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\AddImageMetadataTests.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegCanonZoombrowserTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegNikon1Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegNikon2Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegNikon3Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegNikon4Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegNoMetadataTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegOlympus1Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegOlympus2Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegOlympus3Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegPanasonicTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegSegmentSizeTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegSony1Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegSony2Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegTangledTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\RationalTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\Utils.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\Validators\CommentModificationValidator.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\Validators\ImageTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\Validators\IMetadataInvariantValidator.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\Validators\IMetadataModificationValidator.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\Validators\KeywordsModificationValidator.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\Validators\NoModificationValidator.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\Validators\TagCommentModificationValidator.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\Validators\TagKeywordsModificationValidator.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\XapTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\XmpCrashTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\XmpSpecTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Performance\PerformanceTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.TaggingFormats\ApeTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.TaggingFormats\AsfTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.TaggingFormats\DivXTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.TaggingFormats\Id3V1Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.TaggingFormats\Id3V2Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.TaggingFormats\InfoTagTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.TaggingFormats\MovieIdTagTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.TaggingFormats\Mpeg4Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.TaggingFormats\XiphTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Collections\ImageBlockFileTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\Id3V24FormatTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\BadCommentMarkerTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\BGO493530Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\BGO625367Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\BGO631333Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\CopyFromTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\EmptyCommentTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\GifExiftoolLongCommentTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\GifExiftoolTangled1Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\GifExiftoolTangled2Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\GifExiftoolTangled3Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\GifExiftoolTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\GifGimpTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\InvalidIFDEntryTypeTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\InvalidIFDOffsetTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegBGO624097Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegCanonBibble5Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegNikon1Bibble5Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegNikon2Bibble5Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegOlympusCorruptMNTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\JpegPropertyTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\NullOrientationTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\PngGimpPngcrushTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\PngGimpTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\RecursiveIFDTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\TiffCanonBibble516BitTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\TiffCanonBibble58BitTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\TiffCanonDpp16BitTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\TiffCanonDpp8BitTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\TiffGimp1Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\TiffGimp2Test.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\TiffNikon1Bibble516BitTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\TiffNikon1Bibble58BitTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\TiffNikon1ViewNX16BitTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\TiffNikon1ViewNX8BitTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\TiffNikon2Bibble516BitTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\TiffNikon2Bibble58BitTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\TiffNikon2ViewNX16BitTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\TiffNikon2ViewNX8BitTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\Validators\PropertyModificationValidator.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\Validators\RemoveMetadataValidator.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\Validators\TagPropertyModificationValidator.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\IptcTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.FileFormats\AudibleFormat.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\XmlNullEndedTest.cs" />
+    <Compile Include="fixtures\TagLib.Tests.Images\jpegSonyDscRX100M4.cs" />
+    <Compile Include="MainWindow.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <MonoDevelop.Autotools.MakefileInfo RelativeMakefileName="Makefile.am" BuildTargetName="build" IsAutotoolsProject="True" RelativeConfigureInPath="..">
+          <BuildFilesVar Sync="True" Name="ASSEMBLY_CSFILES" />
+          <DeployFilesVar />
+          <ResourcesVar />
+          <OthersVar />
+          <GacRefVar />
+          <AsmRefVar />
+          <ProjectRefVar />
+        </MonoDevelop.Autotools.MakefileInfo>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+  <ItemGroup>
+    <ProjectReference Include="..\src\taglib-sharp.csproj">
+      <Project>{6B143A39-C7B2-4743-9917-92262C60E9A6}</Project>
+      <Name>taglib-sharp</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <Import Project="..\packages\GtkSharp.Win32.3.1.2\build\net45\GtkSharp.Win32.targets" Condition="Exists('..\packages\GtkSharp.Win32.3.1.2\build\net45\GtkSharp.Win32.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\NUnit3TestAdapter.3.10.0\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit3TestAdapter.3.10.0\build\net35\NUnit3TestAdapter.props'))" />
+    <Error Condition="!Exists('..\packages\NUnit.3.10.1\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.10.1\build\NUnit.props'))" />
+    <Error Condition="!Exists('..\packages\GtkSharp.3.1.2\build\net45\GtkSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\GtkSharp.3.1.2\build\net45\GtkSharp.targets'))" />
+  </Target>
+  <Import Project="..\packages\GtkSharp.3.1.2\build\net45\GtkSharp.targets" Condition="Exists('..\packages\GtkSharp.3.1.2\build\net45\GtkSharp.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\NUnit3TestAdapter.3.10.0\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit3TestAdapter.3.10.0\build\net35\NUnit3TestAdapter.props'))" />
+  </Target>
+</Project>

@@ -1,0 +1,8 @@
+prefix=@prefix@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+                                                                                
+Name: TagLib Sharp
+Description: A library for reading and writing tags to audio files.
+Version: @VERSION@
+Libs: -r:${libdir}/mono/taglib-sharp/taglib-sharp.dll

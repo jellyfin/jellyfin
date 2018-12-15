@@ -1,0 +1,10 @@
+<configuration>
+   <runtime>
+      <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+       <dependentAssembly>
+         <assemblyIdentity name="@ASSEMBLY_NAME@" publicKeyToken="db62eba44689b5b0" />
+         <bindingRedirect oldVersion="@POLICY_2_0_VERSIONS@" newVersion="@ASSEMBLY_VERSION@"/>
+       </dependentAssembly>
+      </assemblyBinding>
+   </runtime>
+</configuration>

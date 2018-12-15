@@ -1,0 +1,221 @@
+<Package>
+	<Overview>
+		<Title>TagLib#</Title>
+		<Remarks>This package provides support for reading and writing
+		the tagging information for a large number of tagging formats,
+		as well as reading media properties for many standard audio and video formats.</Remarks>
+		<Copyright>Copyright (C) 2007-2008 Brian Nickel</Copyright>
+	</Overview>
+	<Namespace Name="TagLib">
+		<Docs>
+			<summary>TagLib provides a generic interface for reading
+			media properties and editing tags on different audio and
+			video files.</summary>
+			<remarks>The most straightforward way to read a file is
+			through <see cref="M:TagLib.File.Create(System.String)"
+			/>, which does type detection to create the correct <see
+			cref="T:TagLib.File" />.</remarks>
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.Aac">
+		<Docs>
+			<summary><para>The TagLib.Aac namespace contains classes
+			for handling the AAC file format.</para></summary>
+			<remarks><para>See
+            http://www.hydrogenaudio.org/forums/lofiversion/index.php/t21617.html
+			for the complete specification.</para></remarks>
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.Aiff">
+		<Docs>
+			<summary><para>The TagLib.Aiff namespace contains classes
+			for handling the AIFF file format.</para></summary>
+			<remarks><para>See
+			http://en.wikipedia.org/wiki/Audio_Interchange_File_Format for
+			the complete specification.</para></remarks>
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.Ape">
+		<Docs>
+			<summary><para>The TagLib.Ape namespace contains classes
+			for reading APE tags.</para></summary>
+			<remarks><para>See
+			http://wiki.hydrogenaudio.org/index.php?title=APEv2 for
+			the complete specification.</para></remarks>
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.Asf">
+		<Docs>
+			<summary>The TagLib.Asf namespace contains classes for
+			handling the Microsoft Advanced Systems Format file
+			format.</summary>
+			<remarks>See
+			http://www.microsoft.com/windows/windowsmedia/forpros/format/asfspec.aspx
+			for the complete specification.</remarks>
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.Flac">
+		<Docs>
+			<summary>The TagLib.Flac namespace contains classes for
+			handling the Xiph FLAC file format.</summary>
+			<remarks>See http://flac.sourceforge.net/format.html for
+			the complete specification.</remarks>
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.Id3v1">
+		<Docs>
+			<summary>The TagLib.Id3v1 namespace contains classes for
+			handling the ID3v1.1 tagging format.</summary>
+			<remarks>See http://www.id3.org/ID3v1 for the complete
+			specification.</remarks>
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.Id3v2">
+		<Docs>
+			<summary>The TagLib.Id3v2 namespace contains classes for
+			handling the ID3v2 tagging format.</summary>
+			<remarks>See http://www.id3.org/Developer_Information
+			for the complete specification.</remarks>
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.Mpeg4">
+		<Docs>
+		<summary>The TagLib.Mpeg4 namespace contains classes for
+		handling the MPEG-4 file format.</summary>
+		<remarks>See
+		http://standards.iso.org/ittf/PubliclyAvailableStandards/c041828_ISO_IEC_14496-12_2005(E).zip
+		for the complete specification.</remarks>
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.Mpeg">
+		<Docs>
+		<summary>The TagLib.Mpeg namespace contains classes for handling
+		MPEG-1/2 files and MPEG audio files.</summary>
+		<remarks />
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.MusePack">
+		<Docs>
+		<summary>The TagLib.MusePack namespace contains classes for
+		handling the MusePack file format.</summary>
+		<remarks>See http://www.musepack.net/ for the complete
+		specification.</remarks>
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.NonContainer">
+		<Docs>
+			<summary>The TagLib.NonContainer namespace provides
+			classes for dealing with files that do not have a
+			standardized tagging mechanism and may have any number
+			of tags at their beginning or end.</summary>
+			<remarks>The FLAC file format is included in this
+			because despite having a standard tagging mechanism, ID3
+			and APE tags are not uncommonly attached to the
+			file.</remarks>
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.Ogg.Codecs">
+		<Docs>
+			<summary>The TagLib.Ogg.Codecs namespace contains
+			standard codecs used in Xiph Ogg files.</summary>
+			<remarks />
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.Ogg">
+		<Docs>
+			<summary>The TagLib.Ogg namespace contains classes for
+			handling the Xiph OGG file format.</summary>
+			<remarks>See http://www.xiph.org/ogg/ for the complete
+			specification.</remarks>
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.Riff">
+		<Docs>
+			<summary>The TagLib.Riff namespace contains all classes
+			relevant to the reading of Microsoft RIFF files. These
+			files include namely the WAV and AVI file
+			formats.</summary>
+			<remarks>See
+			http://msdn2.microsoft.com/en-us/library/ms779636.aspx
+			for information on the RIFF AVI format.</remarks>
+		</Docs>
+	</Namespace>
+	<Namespace Name="TagLib.WavPack">
+		<Docs>
+			<summary>The TagLib.WavPack namespace contains all
+			classes relevant to the reading of WavPack
+			files.</summary>
+			<remarks>See http://www.wavpack.com/ for the complete
+			specification.</remarks>
+		</Docs>
+	</Namespace>
+	<ActionSet Name="InjectMenuItem">
+		<File Path="@DOCDIR@/../monodoc.xml">
+			<Insert Target="/node/node[@name='various']" IfMissing="//node[@name='classlib-taglib-sharp']">
+				<node label="TagLib#" name="classlib-taglib-sharp" />
+			</Insert>
+		</File>
+	</ActionSet>
+	
+	<ActionSet Name="RemoveMenuItem">
+		<File Path="@DOCDIR@/../monodoc.xml">
+			<Remove Target="//node[@name='classlib-taglib-sharp']" />
+		</File>
+	</ActionSet>
+	
+	<ActionSet Name="InsertMissingValues">
+		<File Path="en/index.xml">
+			<Replace Source="/Package/Overview/Title" Target="/Overview/Title" />
+			<Replace Source="/Package/Overview/Copyright" Target="/Overview/Copyright" />
+			<Replace Source="/Package/Overview/Remarks" Target="/Overview/Remarks" />
+		</File>
+		<File Path="en/ns-TagLib.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.Aac.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.Aac']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.Aiff.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.Aiff']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.Ape.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.Ape']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.Asf.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.Asf']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.Flac.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.Flac']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.Id3v1.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.Id3v1']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.Id3v2.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.Id3v2']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.Mpeg4.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.Mpeg4']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.Mpeg.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.Mpeg']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.MusePack.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.MusePack']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.NonContainer.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.NonContainer']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.Ogg.Codecs.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.Ogg.Codecs']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.Ogg.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.Ogg']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.Riff.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.Riff']/Docs" Target="/Namespace/Docs" />
+		</File>
+		<File Path="en/ns-TagLib.WavPack.xml">
+			<Replace Source="/Package/Namespace[@Name='TagLib.WavPack']/Docs" Target="/Namespace/Docs" />
+		</File>
+	</ActionSet>
+</Package>

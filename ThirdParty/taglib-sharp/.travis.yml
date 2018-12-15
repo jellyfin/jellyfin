@@ -1,0 +1,24 @@
+sudo: required
+dist: trusty
+language: csharp
+solution: taglib-sharp.sln
+dotnet: 2.1.4
+mono: latest
+
+# https://github.com/travis-ci/travis-ci/issues/5932#issuecomment-215693171
+before_install:
+  - mkdir -p .nuget
+  - wget -O .nuget/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+  - mono .nuget/nuget.exe # Output NuGet's version number
+
+install:
+  - sudo apt-get update -qq > /dev/null
+  - mono .nuget/nuget.exe restore taglib-sharp.sln -Verbosity detailed
+  - mono .nuget/nuget.exe install NUnit.Runners -Version 3.8.0 -OutputDirectory packages
+  - dotnet restore
+
+script:
+  - ./autogen.sh
+  - msbuild taglib-sharp.sln
+  - cd tests
+  - mono ../packages/NUnit.ConsoleRunner.3.8.0/tools/nunit3-console.exe --labels=All tests.dll

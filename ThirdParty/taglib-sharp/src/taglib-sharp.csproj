@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net40;netstandard2.0</TargetFrameworks>
+    <Version>2.1.0.0</Version>
+    <PackageId>TagLib#</PackageId>
+    <Product>TagLib#</Product>
+    <Description>A library for reading and writing audio metatags.</Description>
+    <Copyright>Copyright (c) 2006-2007 Brian Nickel.  Copyright (c) 2009-2010 Other contributors</Copyright>
+    <Company />
+    <Authors>Brian Nickel</Authors>
+    <AssemblyName>taglib-sharp</AssemblyName>
+    <RootNamespace>TagLib</RootNamespace>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\taglib-sharp.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net40|AnyCPU'">
+    <DocumentationFile>bin\Debug\net40\taglib-sharp.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net40|AnyCPU'">
+    <DocumentationFile>bin\Release\net40\taglib-sharp.xml</DocumentationFile>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,10 @@
+# EditorConfig is awesome: http://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# MediaPortal code style
+[*]
+indent_style = tab
+end_of_line = crlf
+insert_final_newline = true

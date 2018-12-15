@@ -1,0 +1,368 @@
+Version 2.1.0.0
+July 3, 2012
+
+Fixes and Features in this release include:
+  * Bump the version number because of an ABI break in 363f8ae
+  * Initial support for Audible files (bgo#601543)
+
+Contributors to this release:
+  Alan McGovern, Alexander Kojevnikov, Guy Taylor
+
+--------------------------------------------------------------------------------
+
+Version 2.0.5.0
+July 1, 2012
+
+Fixes and Features in this release include:
+  * Fix a freeze on some mp3 files where header was at the end of file
+  * Properly implement partial matching for File.Find and File.RFind
+  * [Mpeg4] Fix parsing of some apple tags (bgo#658920)
+  * Add partial support for IPTC-IIM
+  * Fix nested UDTA boxes
+  * [Mpeg4] Attempt to handle corrupt tags a little better (bgo#676934)
+  * Mark the file as corrupt instead of throwing exception (bgo#643477)
+  * StartTag.ReadTag should not silence exceptions
+  * Check for short popularimeter tags
+  * On corrupt Id3v2 frame, skip just that frame (bgo#650674)
+  * Use O(N) rather than O(N^2) deunsynchronization algorithm
+
+Contributors to this release:
+  Alan McGovern, Alexander Kojevnikov, Anton Drachev, Chow Loong Jin,
+  Eamon Nerbonne, Eberhard Beilharz, Jakub 'Fiołek' Fijałkowski,
+  Samuel D. Jack, Stephen Shaw, Tim Howard
+
+--------------------------------------------------------------------------------
+
+Version 2.0.4.0
+April 13, 2011
+
+Fixes and Features in this release include:
+  * Support for Photo metadata
+    + read/write for EXIF, XMP, PNG, JPEG, TIFF
+	+ read support for many RAW formats
+	+ see examples/ParsePhoto.cs
+  * Support for Matroska metadata reading (eg WebM and .mkv)
+  * Fix File.ReadBlock for slow connections (bgo#639817)
+
+Contributors to this release:
+  Alexander Kojevnikov, Colin Turner, Gabriel Burt, Jeroen Asselman,
+  Julien Moutte, Marek Habersack, Mike Gemünde, Paul Lange,
+  Ruben Vermeersch, Stephane Delcroix, Tim Howard
+
+--------------------------------------------------------------------------------
+
+Version 2.0.3.7
+March 20, 2010
+
+TagLib# bugs are now tracked at http://bugzilla.gnome.org.
+
+Fixes and Features in this release include:
+  * Solution/projects migrated to VS format
+  * Fix ID3v2 unsyncing (bgo#593138)
+  * Fix ID3v2.3 exetended header size calculation (bgo#604488)
+  * Make TagLib.File IDisposable (closes any open streams)
+  * Don't throw an exception if RVA2 data is partially incorrect
+  * Fall back to nunit-console is nunit-console2 not found (bgo#593673)
+  * Add build check for `al` tool (bgo#575303)
+
+Contributors to this release:
+  Alexander Kojevnikov, Andrés G. Aragoneses, Bertrand Lorentz,
+  Eamon Nerbonne, Ruben Vermeersch
+
+--------------------------------------------------------------------------------
+
+Version 2.0.3.6
+February 24, 2010
+
+TagLib# bugs are now tracked at http://bugzilla.gnome.org.
+
+Fixes and Features in this release include:
+  * Reverse small API break introduced in 2.0.3.5
+
+Contributors to this release:
+  Gabriel Burt
+
+--------------------------------------------------------------------------------
+
+Version 2.0.3.5
+February 23, 2010
+
+TagLib# bugs are now tracked at http://bugzilla.gnome.org.
+
+Fixes and Features in this release include:
+  * Add BitsPerSample property (bgo#610585)
+  * Support COMPILATION in ogg (bgo#586336)
+  * Fix removing some/all tag-types (bgo#574653)
+
+Contributors to this release:
+  Alexander Kojevnikov, Helmut Wahrmann
+
+--------------------------------------------------------------------------------
+
+Version 2.0.3.4
+January 26, 2010
+
+TagLib# bugs are now tracked at http://bugzilla.gnome.org.
+
+Get releases from http://download.banshee-project.org/taglib-sharp/
+
+Fixes and Features in this release include:
+  * Fix IndexOutOfRangeException (bgo#607376)
+  * Fix issue with converting/parsing year (bgo#606283)
+  * Support the 'alis' handler code/track type (bgo#584193)
+
+--------------------------------------------------------------------------------
+
+Version 2.0.3.3
+September 30, 2009
+
+TagLib# bugs are now tracked at http://bugzilla.gnome.org.
+
+Get releases from http://download.banshee-project.org/taglib-sharp/
+
+Fixes and Features in this release include:
+  * Be more robust with tags with NULL bytes in the middle (bgo#558123)
+  * Support AIFF file format (bgo#579261)
+  * Support ADTS AAC files (bgo#580553)
+  * Support for m2v files (bgo#574411)
+  * Support for Sort* values in Ape tags (bgo#571421)
+  * Add new properties: MusicBrainz, ArtistId, ReleaseId, ReleaseArtistId,
+    TrackId, DiscId, ReleaseStatus, ReleaseType, ReleaseCountry, MusicIpId,
+	and AmazonId (bgo#563170)
+  * Add fallback options for album artist getter (bgo#574652)
+  * Fixed bug with Ape.Tag's Pictures setter (bgo#575943)
+  * Fix crashing when parsing some comment frames (bgo#582735)
+  * Fixed CopyTo method (bgo#572382)
+  * Fixed typo in Ogg DiscNumber setter that wrote TrackCount
+    to the DISCTOTAL field (bgo#572382)
+  * Fixed NRE when calling GetTag on FLAC file (bgo#572380)
+  * Build improvements
+  * API documentation fixes
+
+Contributors to this release:
+  Alexander Kojevnikov, Andy Beal, Bernd Niedergesaess, Bertrand Lorentz,
+  Félix Velasco, Gabriel Burt, Gregory S. Chudov, Helmut Wahrmann, 
+  John Millikin, Patrick Dehne
+
+--------------------------------------------------------------------------------
+
+Version 2.0.3.2
+February 16, 2009
+
+TagLib# bugs are now tracked at http://bugzilla.gnome.org.
+
+Get releases from http://download.banshee-project.org/taglib-sharp/
+
+Contributors to this release:
+  Aaron Bockover, Andy Beal, Bernd Niedergesaess,
+  Bertrand Lorentz, Gabriel Burt, John Millikin
+
+Fixes in this release include:
+  * Fix infinite loops when reading/writing video files
+  * Fix parsing ID3v2 with Data Length Indicator set
+  * Fix install/build issues with the docs
+  * Fix casing of APE tags
+  * Add support for *Sort values for artist, album, etc
+  * Install .pc file to datadir since we're noarch
+  * New unit tests for AVI files
+  * Recognize mp1/mp2 extensions and mimetypes
+
+--------------------------------------------------------------------------------
+
+Version 2.0.3.1
+January 20, 2009
+
+TagLib# bugs are now tracked at http://bugzilla.gnome.org.
+
+Contributors to this release:
+  Andy Beal, Gabriel Burt, Jeffrey Stedfast, John Millikin
+
+Fixes in this release include:
+  * Add support for artwork in ogg files
+  * Recognize .oga, ogv, .m4b, and some other mimetypes
+  * Add support for Mpeg4 dash atoms
+  * Fix bug with parsing ID3v2 w/ the tag-wide Unsync flag set
+
+--------------------------------------------------------------------------------
+
+Version 2.0.3.0
+January 10, 2008
+
+This release of TagLib# features many bug fixes and a complete rework of the
+documentation to better serve the Windows community. Fixes include:
+	* Make Asf.Tag enumerable.
+	* Don't duplicate genres stored in "(0)Blues" format.
+	* Save Id3v2.RelativeVolumeFrame as XRVA and XRV in ID3v2.3 and ID3v2.2.
+	* Insert new comments before other comment frames in Id3v2.Tag
+	* Use CultureInfo.CurrentCulture to get the correct comment language in
+	  Id3v2.Tag.
+	* Skip iTunes comments in Id3v2.CommentsFrame.
+	* Save multi-string values as a single box with a semicolon separator
+	  in Mpeg4.AppleTag to improve compatability with iTunes.
+	* Make the Id3v2.Tag.DefaultVersion = 3 because most commercial programs
+	  have some crippling ID3v2.4 problem.
+	* Added Id3v2.Tag.IsCompilation
+	* Don't crash on misformatted field in XiphComment.
+	* Recognize the .divx extension as a RIFF file.
+	* Use one byte rather than four to store compilation in Mpeg4.AppleTag.
+	* Don't check the image format flags anymore in Mpeg4.AppleTag, just use
+	  the file contents.
+	* Don't crash in NonContainer.EndTag when the file is less than 128
+	  bytes.
+	* Allow saving of multi-page comment packets in Ogg through massive
+	  rewrite of pagination.
+	* Allow correct reading of multi-page comment packets in Ogg.Bitstream.
+	* Use try/finally on all load and save operations to prevent files from
+	  being left open.
+	* Produce correct output on empty ID3v1 tag.
+	* Remove broken Id3v1.Tag.IsEmpty.
+	* src/TagLib/Riff/List.cs: Make sure fields are cleared when SetValue
+	* Clear value when null is passed in Riff.List.SetValue.
+	* Make Riff.DivXTag.Clear clear the title.
+	* Read genres correctly in Riff.MovieIdTag.
+	* Complete codec descriptions for RIFF and ASF files.
+	* Fix reading of UTF16-BE Id3v2.SynchronizedLyricsFrames.
+	* Throw NotImplementedException for private frames in ID3v2.2.
+	* Fix writing Id3v2.GeneralEncapulatedObjectFrame in UTF16.
+	* Added support for multiple non-indexed artists in ID3v2.3
+	* Correctly parse nil separated UTF-16BE strings.
+	* Allow parsing of variable length years in Ape.Tag.
+	* Fix writing of Mpeg4 files by correctly reading in values to
+	  Mpeg4.FileParser.UtdaTree.
+	* Allow parsing of all year lengths in Mpeg4.AppleTag and correctly
+	  clear zeroed values.
+	* Use Semicolons rather than commas in Tag.Joined* to reflect the
+	  behavior of Windows Media Player.
+	* Remove "WM/GenreID" from Asf.Tag when storing a new genre.
+	* Switch ordering of check in looking for ASF content descriptors to
+	  emphasize name rather than order.
+	* Don't throw exception on zero byte strings in ByteVector.ToString ().
+	* Use ContentDescriptionObject.Copyright in Asf.Tag.
+	* Switch order of play_duration and send_duration in Asf.HeaderObject.
+	  This is backwards from the specification but conforms to actual files.
+	* Don't count preroll in ASF durations.
+	* Don't double-count position when counting frames.
+	* Ensure Id3v2.FrameHeader is converting headers from versions 2 and 3.
+	* Always set the encoding to default in Id3v2.Tag when writing a frame
+	  to prevent misencoding.
+	* Stopped ArgumentOutOfRangeExceptions from occuring when corrupt
+	  RelativeVolumeframe is encountered.
+	* Fixed rendering of Ape.Item on non-latin characters.
+	* Added new constructors to Picture to obsolete CreateFromFile,
+	  CreateFromPath.
+	* Changed Asf.Tag to write large pictures to the ASF Metadata Library
+	  Object rather than ignoring them.
+	* Changed the way Mpeg.AudioHeader checked for Xing identifier to
+	  prevent first change exception if none was found.
+	* Use StringBuilder instead of string addition.
+	* Don't crash if Mpeg4.IsoHandlerBox does not contain a nil delimiter.
+	* Limit scanning in Mpeg.AudioFile to 4096 bytes of audio stream to
+	  prevent reading whole file if corrupt.
+	* Replace protected CombinedTag constructor with public one to allow
+	  compiling in Orcas.
+	* Include MonoDevelop files in distributed package.
+	* Correctly parse beats per minute when they contain floating point
+	  numbers.
+
+Added features:
+	* Added support for Fraunhofer VBRI header. (Authored by hwahrmann.)
+	* Obsoleted Tag.Duplicate in favor of Tag.CopyTo which can be extended
+	  to provide better support for copying between matching tag types.
+	* Added ByteVector.UseBrokenLatin1Behavior that when true reads tags
+	  from the system encoding instead of Latin1.
+	* Added support for reading APE files. (Authored by hwahrmann.)
+	* Added generic Id3v2.GetFrames<T>() to reduce casting.
+	* Added support for one of each type of cover image in Ape.Tag
+	* Added recognition of BMP and GIF images in Picture.
+	* Added Id3v2.PopularimeterFrame capable of handling ratings from
+	  Windows Media Player.
+	* Added Id3v2.Tag.UseNumericGenres which can be disabled to prevent
+	  genres from being written as indices.
+	* Added File.InvariantStartPosition and File.InvariantEndPosition to
+	  mark the edges of the media portion of the file.
+	  
+Special thanks to those who contributed since the last release:
+	AgentS, codi, craig, Dakuja, DavidT@Imerge, evgeni, hwahrmann, jms,
+	jmurphy, jocker, jonx, jposen, kajic, kurros, nokturnal, oliphant,
+	renzska, sambeckett, sukhjinder, and anyone else who I may have
+	forgotten.
+
+--------------------------------------------------------------------------------
+
+Version 2.0.2.0
+July 3, 2007
+
+This is the second bug fix release for TagLib#. Fixes include:
+	* Read AttachedPictureFrame correctly when UTF-16 encoded.
+	* Stop infinite recursion with rare Xing header.
+	* Add "VBR" to the MPEG Audio description if a Xing header is present.
+	* Update unit tests for changes in 2.0.1.
+	* Fix Artists (added in 2.0.1) to point to Performers. Was pointing
+	nowhere.
+	* Make ByteVector.Find return correctly if (data.Count == pattern.Count
+	+ offset).
+	* Set to this.data instead of data in PrivateFrame constructor.
+
+Outstanding bugs:
+	* MPEG-4 tags do not show up in Nokia N95 Phone.
+	* Large pictures should be stored in the ASF HeaderExtensionObject.
+
+Outstanding feature requests:
+	* Add slow read support to get correct information from VBR MP3's
+	lacking Xing headers.
+	* Add TagLib.Tag.Key
+	* Add TagLib.Id3v2.PopularimeterFrame
+	* Support ID3v2 chapters.
+	* Return invariant data sections for a file.
+
+Special thanks to those who contributed in some way to the project over the past
+year:
+	Aaron Bockover, Alan, Alexander Hixon, Andrés Gómez Aragoneses,
+	Clint Banzhaf, D Bera, David Wu, Da_FileServer, Dennis Cranston,
+	Fabrice Deshayes aka Xtream, Gabriel Rosenhouse, gozza11, Gustavo Rubio,
+	Herman Mahone, HugoPalma, Ilya Konstantinov, Ion Todirel, jc BAUDHUIN,
+	jmurphy, JustinC, lindea, Michael Monreal, maciej, mikec, mtampe,
+	Patrick Laplante, pipes, renzska, sambeckett, Sebastian Dröge,
+	Timm Preetz, wilson, and anyone else who I may have forgotten.
+
+--------------------------------------------------------------------------------
+
+Version 2.0.1
+June 24, 2007
+
+This is the first bug fix release for TagLib#. Fixes include:
+	* Use Picard Tag mapping for all tags to improve constistency.
+	* Add JoinedAlbumArtists and FirstAlbumArtist for clarity.
+	* Add Artist pointing to Performers with an ObsoleteAttribute.
+	* Handle ID3v2 comments ending with text delimiters better.
+	* Clear ID3v2 pictures when Pictures is set to null.
+	* Don't try storing pictures larger than 64K in ASF files.
+	* Don't throw an exception when saving MPEG-4 files without UTDA boxes.
+	* Fix the clearing of MPEG-4 boxes.
+	* Use Box.DataSize instead of Header.DataSize when calculating the
+	MPEG-4 padding.
+	* Recognize WMA Lossless in the codec description.
+
+Outstanding bugs:
+	* MPEG-4 tags do not show up in Nokia N95 Phone.
+
+Special thanks to those who contributed in some way to the project over the past
+year:
+	Aaron Bockover, Alan, Alexander Hixon, Andrés Gómez Aragoneses,
+	Clint Banzhaf, D Bera, David Wu, Da_FileServer, Dennis Cranston,
+	Fabrice Deshayes aka Xtream, Gabriel Rosenhouse, gozza11, Gustavo Rubio,
+	Herman Mahone, HugoPalma, Ilya Konstantinov, Ion Todirel, jc BAUDHUIN,
+	jmurphy, JustinC, lindea, Michael Monreal, maciej, mikec, mtampe,
+	Patrick Laplante, renzska, Sebastian Dröge, Timm Preetz, wilson, and
+	anyone else who I may have forgotten.
+
+--------------------------------------------------------------------------------
+
+Version 2.0.0
+June 11, 2007
+
+This is the first stable release of TagLib#. TagLib# is a .NET 2.0 library for
+reading and writing tagging data from audio and video files. In addition it
+supports the reading of audio and video properties and can be used for media 
+validation. Special thanks to Aaron Bockover and Da_FileServer their help, and 
+everyone who has submitted a bug report or feature request.
