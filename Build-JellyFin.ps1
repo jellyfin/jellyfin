@@ -1,18 +1,25 @@
 ﻿[CmdletBinding()]
 param(
     [switch]$InstallFFMPEG,
+    [switch]$InstallNSSM,
     [switch]$GenerateZip,
-    [string]$InstallLocation = "$Env:AppData/JellyFin-Server/",
+    [string]$InstallLocation = "$Env:AppData/Jellyfin-Server/",
     [ValidateSet('Debug','Release')][string]$BuildType = 'Release',
     [ValidateSet('Quiet','Minimal', 'Normal')][string]$DotNetVerbosity = 'Minimal',
     [ValidateSet('win','win7', 'win8','win81','win10')][string]$WindowsVersion = 'win',
     [ValidateSet('x64','x86', 'arm', 'arm64')][string]$Architecture = 'x64'
 )
 
-if($IsWindows){
-    $TempDir = $env:Temp
+#Check if we are on PowershellCore or not.
+if($PSVersionTable.PSEdition -eq 'Core'){
+    #This checks from powershellcore which OS we are on to make the tempdir appropriately
+    if($IsWindows){
+        $TempDir = $env:Temp
+    }else{
+        $TempDir = mktemp -d 
+    }
 }else{
-    $TempDir = mktemp -d 
+    $TempDir = $env:Temp
 }
 
 function Build-JellyFin {
@@ -59,12 +66,49 @@ function Install-FFMPEG {
     Remove-Item "$tempdir/ffmpeg/" -Recurse -Force -ErrorAction Continue | Write-Verbose
     Remove-Item "$tempdir/fmmpeg.zip" -Force -ErrorAction Continue | Write-Verbose
 }
+
+function Install-NSSM {
+    param(
+        [string]$InstallLocation,
+        [string]$Architecture
+    )
+    Write-Verbose "Checking Architecture"
+    if($Architecture -notin @('x86','x64')){
+        Write-Warning "No builds available for your selected architecture of $Architecture"
+        Write-Warning "NSSM will not be installed" 
+    }else{
+         Write-Verbose "Downloading NSSM"
+         Invoke-WebRequest -Uri https://nssm.cc/ci/nssm-2.24-101-g897c7ad.zip -UseBasicParsing -OutFile "$tempdir/nssm.zip" | Write-Verbose
+    }
+   
+    Expand-Archive "$tempdir/nssm.zip" -DestinationPath "$tempdir/nssm/" | Write-Verbose
+    if($Architecture -eq 'x64'){
+        Write-Verbose "Copying Binaries to Jellyfin location"
+        Get-ChildItem "$tempdir/nssm/nssm-2.24-101-g897c7ad/win64" | ForEach-Object {
+            Copy-Item $_.FullName -Destination $installLocation | Write-Verbose
+        }
+    }else{
+        Write-Verbose "Copying Binaries to Jellyfin location"
+        Get-ChildItem "$tempdir/nssm/nssm-2.24-101-g897c7ad/win32" | ForEach-Object {
+            Copy-Item $_.FullName -Destination $installLocation | Write-Verbose
+        }
+    }
+    Remove-Item "$tempdir/nssm/" -Recurse -Force -ErrorAction Continue | Write-Verbose
+    Remove-Item "$tempdir/nssm.zip" -Force -ErrorAction Continue | Write-Verbose
+}
+
 Write-Verbose "Starting Build Process: Selected Environment is $WindowsVersion-$Architecture"
 Build-JellyFin
 if($InstallFFMPEG.IsPresent -or ($InstallFFMPEG -eq $true)){
     Write-Verbose "Starting FFMPEG Install"
     Install-FFMPEG $InstallLocation $Architecture
 }
+if($InstallNSSM.IsPresent -or ($InstallNSSM -eq $true)){
+    Write-Verbose "Starting NSSM Install"
+    Install-NSSM $InstallLocation $Architecture
+}
+Copy-Item .\install-jellyfin.ps1 $InstallLocation\install-jellyfin.ps1
+Copy-Item .\installjellyfin.bat $InstallLocation\installjellyfin.bat
 if($GenerateZip.IsPresent -or ($GenerateZip -eq $true)){
     Compress-Archive -Path $InstallLocation -DestinationPath "$InstallLocation/jellyfin.zip" -Force
 }
