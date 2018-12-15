@@ -312,7 +312,7 @@ namespace Rssdp.Infrastructure
             {
                 await _CommsServer.SendMessage(System.Text.Encoding.UTF8.GetBytes(message), endPoint, receivedOnlocalIpAddress, cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 
             }
