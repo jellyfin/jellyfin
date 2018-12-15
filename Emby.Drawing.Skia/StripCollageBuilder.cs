@@ -99,56 +99,48 @@ namespace Emby.Drawing.Skia
                         using (var resizeBitmap = new SKBitmap(iWidth, iHeight, currentBitmap.ColorType, currentBitmap.AlphaType))
                         {
                             currentBitmap.Resize(resizeBitmap, SKBitmapResizeMethod.Lanczos3);
-                            // determine how much to crop
+                            // crop image
                             int ix = (int)Math.Abs((iWidth - iSlice) / 2);
                             using (var image = SKImage.FromBitmap(resizeBitmap))
+                            using (var subset = image.Subset(SKRectI.Create(ix, 0, iSlice, iHeight)))
                             {
-                                // crop image
-                                using (var subset = image.Subset(SKRectI.Create(ix, 0, iSlice, iHeight)))
+                                // draw image onto canvas
+                                canvas.DrawImage(subset ?? image, (horizontalImagePadding * (i + 1)) + (iSlice * i), verticalSpacing);
+
+                                if (subset == null)
                                 {
-                                    // draw image onto canvas
-                                    canvas.DrawImage(subset ?? image, (horizontalImagePadding * (i + 1)) + (iSlice * i), verticalSpacing);
+                                    continue;
+                                }
+                                // create reflection of image below the drawn image
+                                using (var croppedBitmap = SKBitmap.FromImage(subset))
+                                using (var reflectionBitmap = new SKBitmap(croppedBitmap.Width, croppedBitmap.Height / 2, croppedBitmap.ColorType, croppedBitmap.AlphaType))
+                                {
+                                    // resize to half height
+                                    croppedBitmap.Resize(reflectionBitmap, SKBitmapResizeMethod.Lanczos3);
 
-                                    if (subset == null)
+                                    using (var flippedBitmap = new SKBitmap(reflectionBitmap.Width, reflectionBitmap.Height, reflectionBitmap.ColorType, reflectionBitmap.AlphaType))
+                                    using (var flippedCanvas = new SKCanvas(flippedBitmap))
                                     {
-                                        continue;
-                                    }
+                                        // flip image vertically
+                                        var matrix = SKMatrix.MakeScale(1, -1);
+                                        matrix.SetScaleTranslate(1, -1, 0, flippedBitmap.Height);
+                                        flippedCanvas.SetMatrix(matrix);
+                                        flippedCanvas.DrawBitmap(reflectionBitmap, 0, 0);
+                                        flippedCanvas.ResetMatrix();
 
-                                    using (var croppedBitmap = SKBitmap.FromImage(subset))
-                                    {
-                                        // create reflection of image below the drawn image
-                                        using (var reflectionBitmap = new SKBitmap(croppedBitmap.Width, croppedBitmap.Height / 2, croppedBitmap.ColorType, croppedBitmap.AlphaType))
+                                        // create gradient to make image appear as a reflection
+                                        var remainingHeight = height - (iHeight + (2 * verticalSpacing));
+                                        flippedCanvas.ClipRect(SKRect.Create(reflectionBitmap.Width, remainingHeight));
+                                        using (var gradient = new SKPaint())
                                         {
-                                            // resize to half height
-                                            croppedBitmap.Resize(reflectionBitmap, SKBitmapResizeMethod.Lanczos3);
-
-                                            using (var flippedBitmap = new SKBitmap(reflectionBitmap.Width, reflectionBitmap.Height, reflectionBitmap.ColorType, reflectionBitmap.AlphaType))
-                                            {
-                                                using (var flippedCanvas = new SKCanvas(flippedBitmap))
-                                                {
-                                                    // flip image vertically
-                                                    var matrix = SKMatrix.MakeScale(1, -1);
-                                                    matrix.SetScaleTranslate(1, -1, 0, flippedBitmap.Height);
-                                                    flippedCanvas.SetMatrix(matrix);
-                                                    flippedCanvas.DrawBitmap(reflectionBitmap, 0, 0);
-                                                    flippedCanvas.ResetMatrix();
-
-                                                    // create gradient to make image appear as a reflection
-                                                    var remainingHeight = height - (iHeight + (2 * verticalSpacing));
-                                                    flippedCanvas.ClipRect(SKRect.Create(reflectionBitmap.Width, remainingHeight));
-                                                    using (var gradient = new SKPaint())
-                                                    {
-                                                        gradient.IsAntialias = true;
-                                                        gradient.BlendMode = SKBlendMode.SrcOver;
-                                                        gradient.Shader = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(0, remainingHeight), new[] { new SKColor(0, 0, 0, 128), new SKColor(0, 0, 0, 208), new SKColor(0, 0, 0, 240), new SKColor(0, 0, 0, 255) }, null, SKShaderTileMode.Clamp);
-                                                        flippedCanvas.DrawPaint(gradient);
-                                                    }
-
-                                                    // finally draw reflection onto canvas
-                                                    canvas.DrawBitmap(flippedBitmap, (horizontalImagePadding * (i + 1)) + (iSlice * i), iHeight + (2 * verticalSpacing));
-                                                }
-                                            }
+                                            gradient.IsAntialias = true;
+                                            gradient.BlendMode = SKBlendMode.SrcOver;
+                                            gradient.Shader = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(0, remainingHeight), new[] { new SKColor(0, 0, 0, 128), new SKColor(0, 0, 0, 208), new SKColor(0, 0, 0, 240), new SKColor(0, 0, 0, 255) }, null, SKShaderTileMode.Clamp);
+                                            flippedCanvas.DrawPaint(gradient);
                                         }
+
+                                        // finally draw reflection onto canvas
+                                        canvas.DrawBitmap(flippedBitmap, (horizontalImagePadding * (i + 1)) + (iSlice * i), iHeight + (2 * verticalSpacing));
                                     }
                                 }
                             }
@@ -172,7 +164,7 @@ namespace Emby.Drawing.Skia
                     currentIndex = 0;
                 }
 
-                SKCodecOrigin origin;
+                SKEncodedOrigin origin;
                 bitmap = SkiaEncoder.Decode(paths[currentIndex], false, _fileSystem, null, out origin);
 
                 imagesTested[currentIndex] = 0;
@@ -202,7 +194,6 @@ namespace Emby.Drawing.Skia
                 {
                     for (var y = 0; y < 2; y++)
                     {
-                        SKCodecOrigin origin;
                         int newIndex;
 
                         using (var currentBitmap = GetNextValidImage(paths, imageIndex, out newIndex))

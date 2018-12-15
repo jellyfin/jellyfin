@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\SharedVersion.cs">
+      <Link>Properties\SharedVersion.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BDInfo\BDInfo.csproj">
+      <Project>{88ae38df-19d7-406f-a6a9-09527719a21e}</Project>
+      <Name>BDInfo</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
+      <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
+      <Name>MediaBrowser.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
+      <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
+      <Name>MediaBrowser.Controller</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
+      <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
+      <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj">
+      <Project>{4a4402d4-e910-443b-b8fc-2c18286a2ca0}</Project>
+      <Name>OpenSubtitlesHandler</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

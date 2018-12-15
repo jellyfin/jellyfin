@@ -24,6 +24,7 @@ using Mono.Unix.Native;
 using ILogger = MediaBrowser.Model.Logging.ILogger;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 using System.Threading;
+using InteropServices = System.Runtime.InteropServices;
 
 namespace MediaBrowser.Server.Mono
 {
@@ -87,12 +88,25 @@ namespace MediaBrowser.Server.Mono
         {
             if (string.IsNullOrEmpty(programDataPath))
             {
-                programDataPath = ApplicationPathHelper.GetProgramDataPath(applicationPath);
+                if (InteropServices.RuntimeInformation.IsOSPlatform(InteropServices.OSPlatform.Windows))
+                {
+                    programDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                }
+                else
+                {
+                    // $XDG_DATA_HOME defines the base directory relative to which user specific data files should be stored.
+                    programDataPath = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+                    // If $XDG_DATA_HOME is either not set or empty, $HOME/.local/share should be used.
+                    if (string.IsNullOrEmpty(programDataPath)){
+                        programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
+                    }
+                }
+                programDataPath = Path.Combine(programDataPath, "jellyfin");
             }
 
             var appFolderPath = Path.GetDirectoryName(applicationPath);
 
-            return new ServerApplicationPaths(programDataPath, appFolderPath, Path.GetDirectoryName(applicationPath));
+            return new ServerApplicationPaths(programDataPath, appFolderPath, appFolderPath);
         }
 
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options)

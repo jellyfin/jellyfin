@@ -829,7 +829,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        private void DisposeIsoMount()
+        protected void DisposeIsoMount()
         {
             if (IsoMount != null)
             {
@@ -846,7 +846,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float framerate, double? percentComplete, long bytesTranscoded, int? bitRate)
+        public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
         {
             var ticks = transcodingPosition.HasValue ? transcodingPosition.Value.Ticks : 0;
 
