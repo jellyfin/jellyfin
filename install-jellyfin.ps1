@@ -51,33 +51,48 @@ else
 
 if($Quiet.IsPresent -or $Quiet -eq $true){
     $Script:JellyfinDataDir = "$env:AppData\jellyfin\"
-    if([string]::IsNullOrEmpty($InstallLocation)){$Script:DefaultJellyFinInstallDirectory = "$env:Appdata\jellyfin\"}else{$Script:DefaultJellyFinInstallDirectory = $InstallLocation}
+    if([string]::IsNullOrEmpty($InstallLocation)){
+        $Script:DefaultJellyfinInstallDirectory = "$env:Appdata\jellyfin\"
+    }else{
+        $Script:DefaultJellyfinInstallDirectory = $InstallLocation
+    }
     
-    if([string]::IsNullOrEmpty($EmbyLibraryLocation)){$Script:defaultEmbyDataDir = "$env:Appdata\Emby-Server\data\"}else{$Script:defaultEmbyDataDir = $EmbyLibraryLocation}
+    if([string]::IsNullOrEmpty($EmbyLibraryLocation)){
+        $Script:defaultEmbyDataDir = "$env:Appdata\Emby-Server\data\"
+    }else{
+        $Script:defaultEmbyDataDir = $EmbyLibraryLocation
+    }
     
-    if($InstallAsService.IsPresent -or $InstallAsService -eq $true){$Script:InstallAsService = $true ; $Script:JellyfinDataDir = "C:\WINDOWS\system32\config\systemprofile\AppData\Roaming\jellyfin\" }else{$Script:InstallAsService = $false}
-    if($null -eq $ServiceUser){$Script:InstallServiceAsUser = $false}else{$Script:InstallServiceAsUser = $true; $Script:UserCredentials = $ServiceUser;  $Script:JellyfinDataDir = "C:\Users\$($Script:UserCredentials.UserName)\Appdata\Roaming\jellyfin\"}
+    if($InstallAsService.IsPresent -or $InstallAsService -eq $true){
+        $Script:InstallAsService = $true 
+        $Script:JellyfinDataDir = "C:\WINDOWS\system32\config\systemprofile\AppData\Roaming\jellyfin\" 
+    }else{$Script:InstallAsService = $false}
+    if($null -eq $ServiceUser){
+        $Script:InstallServiceAsUser = $false
+    }else{
+        $Script:InstallServiceAsUser = $true
+        $Script:UserCredentials = $ServiceUser
+        $Script:JellyfinDataDir = "C:\Users\$($Script:UserCredentials.UserName)\Appdata\Roaming\jellyfin\"}
     if($CreateDesktopShorcut.IsPresent -or $CreateDesktopShorcut -eq $true) {$Script:CreateShortcut = $true}else{$Script:CreateShortcut = $false}
     if($MigrateEmbyLibrary.IsPresent -or $MigrateEmbyLibrary -eq $true){$Script:MigrateLibrary = $true}else{$Script:MigrateLibrary = $false}
     if($LaunchJellyfin.IsPresent -or $LaunchJellyfin -eq $true){$Script:StartJellyfin = $true}else{$Script:StartJellyfin = $false}
     
-    if(-not (Test-Path $Script:DefaultJellyFinInstallDirectory)){
-        mkdir $Script:DefaultJellyFinInstallDirectory
+    if(-not (Test-Path $Script:DefaultJellyfinInstallDirectory)){
+        mkdir $Script:DefaultJellyfinInstallDirectory
     }
-    Copy-Item -Path $PSScriptRoot/* -DestinationPath "$Script:DefaultJellyFinInstallDirectory/" -Force -Recurse
+    Copy-Item -Path $PSScriptRoot/* -DestinationPath "$Script:DefaultJellyfinInstallDirectory/" -Force -Recurse
     if($Script:InstallAsService){
         if($Script:InstallServiceAsUser){
-            &"$Script:DefaultJellyFinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyFinInstallDirectory\jellyfin.exe`"
+            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyfinInstallDirectory\jellyfin.exe`"
             Start-Sleep -Milliseconds 500
             &sc.exe config Jellyfin obj=".\$($Script:UserCredentials.UserName)" password="$($Script:UserCredentials.GetNetworkCredential().Password)"
-            &"$Script:DefaultJellyFinInstallDirectory\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START 
+            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START 
         }else{
-            &"$Script:DefaultJellyFinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyFinInstallDirectory\jellyfin.exe`"
+            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyfinInstallDirectory\jellyfin.exe`"
             Start-Sleep -Milliseconds 500
-            #&"$Script:DefaultJellyFinInstallDirectory\nssm.exe" set Jellyfin ObjectName $Script:UserCredentials.UserName $Script:UserCredentials.GetNetworkCredential().Password
+            #&"$Script:DefaultJellyfinInstallDirectory\nssm.exe" set Jellyfin ObjectName $Script:UserCredentials.UserName $Script:UserCredentials.GetNetworkCredential().Password
             #Set-Service -Name Jellyfin -Credential $Script:UserCredentials
-            Start-Sleep -Milliseconds 500
-            &"$Script:DefaultJellyFinInstallDirectory\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START 
+            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START 
         }
     }
     if($Script:MigrateLibrary){
@@ -90,14 +105,14 @@ if($Quiet.IsPresent -or $Quiet -eq $true){
     if($Script:CreateShortcut){
         $WshShell = New-Object -comObject WScript.Shell
         $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\Jellyfin.lnk")
-        $Shortcut.TargetPath = "$Script:DefaultJellyFinInstallDirectory\jellyfin.exe"
+        $Shortcut.TargetPath = "$Script:DefaultJellyfinInstallDirectory\jellyfin.exe"
         $Shortcut.Save()
     }
     if($Script:StartJellyfin){
         if($Script:InstallAsService){
             Get-Service Jellyfin | Start-Service
         }else{
-            Start-Process -FilePath $Script:DefaultJellyFinInstallDirectory\jellyfin.exe -PassThru
+            Start-Process -FilePath $Script:DefaultJellyfinInstallDirectory\jellyfin.exe -PassThru
         }
     }
 }else{
@@ -107,7 +122,7 @@ Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
 $Script:JellyFinDataDir = "$env:AppData\jellyfin\"
-$Script:DefaultJellyFinInstallDirectory = "$env:Appdata\jellyfin\"
+$Script:DefaultJellyfinInstallDirectory = "$env:Appdata\jellyfin\"
 $Script:defaultEmbyDataDir = "$env:Appdata\Emby-Server\"
 $Script:InstallAsService = $False
 $Script:InstallServiceAsUser = $false
@@ -127,26 +142,26 @@ function InstallJellyfin {
     $ProgressBar.Minimum = 1
     $ProgressBar.Maximum = 100
     $ProgressBar.Value = 1
-    if(-not (Test-Path $Script:DefaultJellyFinInstallDirectory)){
-        mkdir $Script:DefaultJellyFinInstallDirectory
+    if(-not (Test-Path $Script:DefaultJellyfinInstallDirectory)){
+        mkdir $Script:DefaultJellyfinInstallDirectory
     }
     Write-Host "Copying Jellyfin Data"
     $progressbar.Value = 10 
-    Copy-Item -Path $PSScriptRoot/* -Destination $Script:DefaultJellyFinInstallDirectory/ -Force -Recurse
+    Copy-Item -Path $PSScriptRoot/* -Destination $Script:DefaultJellyfinInstallDirectory/ -Force -Recurse
     Write-Host "Finished Copying"
     $ProgressBar.Value = 50
     if($Script:InstallAsService){
         if($Script:InstallServiceAsUser){
             Write-Host "Installing Service as user $($Script:UserCredentials.UserName)"
-            &"$Script:DefaultJellyFinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyFinInstallDirectory\jellyfin.exe`"
+            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyfinInstallDirectory\jellyfin.exe`"
             Start-Sleep -Milliseconds 500
             &sc.exe config Jellyfin obj=".\$($Script:UserCredentials.UserName)" password="$($Script:UserCredentials.GetNetworkCredential().Password)"
-            &"$Script:DefaultJellyFinInstallDirectory\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START 
+            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START 
         }else{
             Write-Host "Installing Service as LocalSystem"
-            &"$Script:DefaultJellyFinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyFinInstallDirectory\jellyfin.exe`"
+            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyfinInstallDirectory\jellyfin.exe`"
             Start-Sleep -Milliseconds 500
-            &"$Script:DefaultJellyFinInstallDirectory\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START 
+            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START 
         }
     }
     $progressbar.Value = 60
@@ -164,7 +179,7 @@ function InstallJellyfin {
         Write-Host "Creating Shortcut"
         $WshShell = New-Object -comObject WScript.Shell
         $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\Jellyfin.lnk")
-        $Shortcut.TargetPath = "$Script:DefaultJellyFinInstallDirectory\jellyfin.exe"
+        $Shortcut.TargetPath = "$Script:DefaultJellyfinInstallDirectory\jellyfin.exe"
         $Shortcut.Save()
     }
     $ProgressBar.Value = 90
@@ -174,7 +189,7 @@ function InstallJellyfin {
             Get-Service Jellyfin | Start-Service
         }else{
             Write-Host "Starting Jellyfin"
-            Start-Process -FilePath $Script:DefaultJellyFinInstallDirectory\jellyfin.exe -PassThru
+            Start-Process -FilePath $Script:DefaultJellyfinInstallDirectory\jellyfin.exe -PassThru
         }
     }
     $progressbar.Value = 100
@@ -282,12 +297,12 @@ $InstallLocationBox.multiline    = $false
 $InstallLocationBox.width        = 205
 $InstallLocationBox.height       = 20
 $InstallLocationBox.location     = New-Object System.Drawing.Point(110,50)
-$InstallLocationBox.Text            = $Script:DefaultJellyFinInstallDirectory
+$InstallLocationBox.Text            = $Script:DefaultJellyfinInstallDirectory
 $InstallLocationBox.Font         = 'Microsoft Sans Serif,10'
 $GUIElementsCollection += $InstallLocationBox
 
 $InstallAsServiceCheck                       = New-Object system.Windows.Forms.CheckBox
-$InstallAsServiceCheck.text                  = "Install as Service?"
+$InstallAsServiceCheck.text                  = "Install as Service"
 $InstallAsServiceCheck.AutoSize              = $false
 $InstallAsServiceCheck.width                 = 140
 $InstallAsServiceCheck.height                = 20
@@ -296,7 +311,7 @@ $InstallAsServiceCheck.Font                  = 'Microsoft Sans Serif,10'
 $GUIElementsCollection += $InstallAsServiceCheck
 
 $ServiceUserLabel            = New-Object system.Windows.Forms.Label
-$ServiceUserLabel.text       = "Service user"
+$ServiceUserLabel.text       = "Run Service As:"
 $ServiceUserLabel.AutoSize   = $true
 $ServiceUserLabel.width      = 100
 $ServiceUserLabel.height     = 20
@@ -307,7 +322,7 @@ $ServiceUserLabel.Enabled    = $false
 $GUIElementsCollection += $ServiceUserLabel
 
 $ServiceUserBox                  = New-Object system.Windows.Forms.ComboBox
-$ServiceUserBox.text             = "User for Service"
+$ServiceUserBox.text             = "Run Service As"
 $ServiceUserBox.width            = 195
 $ServiceUserBox.height           = 20
 @('Local System','Custom User') | ForEach-Object {[void] $ServiceUserBox.Items.Add($_)}
@@ -319,7 +334,7 @@ $ServiceUserBox.DropDownStyle    = [System.Windows.Forms.ComboBoxStyle]::DropDow
 $GUIElementsCollection += $ServiceUserBox
 
 $MigrateLibraryCheck                       = New-Object system.Windows.Forms.CheckBox
-$MigrateLibraryCheck.text                  = "Import Emby Library?"
+$MigrateLibraryCheck.text                  = "Import Emby Library"
 $MigrateLibraryCheck.AutoSize              = $false
 $MigrateLibraryCheck.width                 = 160
 $MigrateLibraryCheck.height                = 20
@@ -350,7 +365,7 @@ $LibraryLocationBox.Enabled      = $false
 $GUIElementsCollection += $LibraryLocationBox
 
 $CreateShortcutCheck                       = New-Object system.Windows.Forms.CheckBox
-$CreateShortcutCheck.text                  = "Desktop Shortcut?"
+$CreateShortcutCheck.text                  = "Desktop Shortcut"
 $CreateShortcutCheck.AutoSize              = $false
 $CreateShortcutCheck.width                 = 150
 $CreateShortcutCheck.height                = 20
@@ -359,7 +374,7 @@ $CreateShortcutCheck.Font                  = 'Microsoft Sans Serif,10'
 $GUIElementsCollection += $CreateShortcutCheck
 
 $StartProgramCheck                       = New-Object system.Windows.Forms.CheckBox
-$StartProgramCheck.text                  = "Start Jellyfin?"
+$StartProgramCheck.text                  = "Start Jellyfin"
 $StartProgramCheck.AutoSize              = $false
 $StartProgramCheck.width                 = 160
 $StartProgramCheck.height                = 20

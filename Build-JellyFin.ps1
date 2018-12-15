@@ -10,14 +10,9 @@ param(
     [ValidateSet('x64','x86', 'arm', 'arm64')][string]$Architecture = 'x64'
 )
 
-#Check if we are on PowershellCore or not.
-if($PSVersionTable.PSEdition -eq 'Core'){
-    #This checks from powershellcore which OS we are on to make the tempdir appropriately
-    if($IsWindows){
-        $TempDir = $env:Temp
-    }else{
-        $TempDir = mktemp -d 
-    }
+#PowershellCore and *nix check to make determine which temp dir to use.
+if(($PSVersionTable.PSEdition -eq 'Core') -and (-not $IsWindows)){
+    $TempDir = mktemp -d
 }else{
     $TempDir = $env:Temp
 }
