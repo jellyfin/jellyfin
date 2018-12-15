@@ -9,14 +9,17 @@
 ### END INIT INFO
 
 # Carry out specific functions when asked to by the system
-pid=`ps -fA|grep dotnet|grep jellyfin|awk '{print $2}'| tr -d '\n'`
+
+pidfile="/var/run/jellyfin.pid"
+pid=`cat $pidfile`
 
 case "$1" in
   start)
         if [ "$pid" == "" ]; then
                 echo "Starting Jellyfin..."
                 . /etc/default/jellyfin
-                nohup su -u $JELLYFIN_USER -c $JELLYFIN_DOTNET $JELLYFIN_COMMAND
+                nohup su -u $JELLYFIN_USER -c /usr/bin/jellyfin $JELLYFIN_ARGS
+                echo ?? > $pidfile
         else
                 echo "Jellyfin already running"
         fi
@@ -26,6 +29,7 @@ case "$1" in
                 echo "Stopping Jellyfin..."
                 kill $pid
                 sleep 2
+                rm -f $pidfile
         else
                 echo "Jellyfin not running"
         fi

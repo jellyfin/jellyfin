@@ -24,16 +24,16 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IFileSystem _fileSystem;
         private readonly ISubtitleEncoder _subtitleEncoder;
-        private readonly IApplicationPaths _appPaths;
-        private readonly IAssemblyInfo _assemblyInfo;
+        // private readonly IApplicationPaths _appPaths;
+        // private readonly IAssemblyInfo _assemblyInfo;
 
-        public EncodingHelper(IMediaEncoder mediaEncoder, IFileSystem fileSystem, ISubtitleEncoder subtitleEncoder, IApplicationPaths appPaths, IAssemblyInfo assemblyInfo)
+        public EncodingHelper(IMediaEncoder mediaEncoder, IFileSystem fileSystem, ISubtitleEncoder subtitleEncoder)
         {
             _mediaEncoder = mediaEncoder;
             _fileSystem = fileSystem;
             _subtitleEncoder = subtitleEncoder;
-            _appPaths = appPaths;
-            _assemblyInfo = assemblyInfo;
+            // _appPaths = appPaths;
+            // _assemblyInfo = assemblyInfo;
         }
 
         public string GetH264Encoder(EncodingJobInfo state, EncodingOptions encodingOptions)
@@ -550,22 +550,24 @@ namespace MediaBrowser.Controller.MediaEncoding
                 ? string.Empty
                 : string.Format(",setpts=PTS -{0}/TB", seconds.ToString(_usCulture));
 
-            var fallbackFontPath = Path.Combine(_appPaths.ProgramDataPath, "fonts", "DroidSansFallback.ttf");
-            string fallbackFontParam = string.Empty;
+            // var fallbackFontPath = Path.Combine(_appPaths.ProgramDataPath, "fonts", "DroidSansFallback.ttf");
+            // string fallbackFontParam = string.Empty;
 
-            if (!_fileSystem.FileExists(fallbackFontPath))
-            {
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(fallbackFontPath));
-                using (var stream = _assemblyInfo.GetManifestResourceStream(GetType(), GetType().Namespace + ".DroidSansFallback.ttf"))
-                {
-                    using (var fileStream = _fileSystem.GetFileStream(fallbackFontPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
-                    {
-                        stream.CopyTo(fileStream);
-                    }
-                }
-            }
+            // if (!_fileSystem.FileExists(fallbackFontPath))
+            // {
+            //     _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(fallbackFontPath));
+            //     using (var stream = _assemblyInfo.GetManifestResourceStream(GetType(), GetType().Namespace + ".DroidSansFallback.ttf"))
+            //     {
+            //         using (var fileStream = _fileSystem.GetFileStream(fallbackFontPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+            //         {
+            //             stream.CopyTo(fileStream);
+            //         }
+            //     }
+            // }
 
-            fallbackFontParam = string.Format(":force_style='FontName=Droid Sans Fallback':fontsdir='{0}'", _mediaEncoder.EscapeSubtitleFilterPath(_fileSystem.GetDirectoryName(fallbackFontPath)));
+            // fallbackFontParam = string.Format(":force_style='FontName=Droid Sans Fallback':fontsdir='{0}'", _mediaEncoder.EscapeSubtitleFilterPath(_fileSystem.GetDirectoryName(fallbackFontPath)));
+
+            string fallbackFontParam = "";
 
             if (state.SubtitleStream.IsExternal)
             {

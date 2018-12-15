@@ -267,7 +267,7 @@ namespace MediaBrowser.Model.Dlna
             int? videoBitrate,
             string videoProfile,
             double? videoLevel,
-            float videoFramerate,
+            float? videoFramerate,
             int? packetLength,
             TransportStreamTimestamp timestamp,
             bool? isAnamorphic,

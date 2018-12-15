@@ -152,14 +152,6 @@ define(["datetime", "events", "itemHelper", "serverNotifications", "dom", "globa
     }
 
     function renderHasPendingRestart(view, apiClient, hasPendingRestart) {
-        if (hasPendingRestart) view.querySelector("#pUpToDate").classList.add("hide"), view.querySelector("#pUpdateNow").classList.add("hide");
-        else {
-            if (DashboardPage.lastAppUpdateCheck && (new Date).getTime() - DashboardPage.lastAppUpdateCheck < 18e5) return;
-            DashboardPage.lastAppUpdateCheck = (new Date).getTime(), apiClient.getAvailableApplicationUpdate().then(function(packageInfo) {
-                var version = packageInfo[0];
-                version ? (view.querySelector("#pUpToDate").classList.add("hide"), view.querySelector("#pUpdateNow").classList.remove("hide"), view.querySelector("#newVersionNumber").innerHTML = globalize.translate("VersionXIsAvailableForDownload").replace("{0}", version.versionStr)) : (view.querySelector("#pUpToDate").classList.remove("hide"), view.querySelector("#pUpdateNow").classList.add("hide"))
-            })
-        }
     }
 
     function reloadSystemInfo(view, apiClient) {

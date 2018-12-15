@@ -14,7 +14,7 @@ namespace Emby.Dlna.PlayTo
     public class SsdpHttpClient
     {
         private const string USERAGENT = "Microsoft-Windows/6.2 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50";
-        private const string FriendlyName = "Emby";
+        private const string FriendlyName = "Jellyfin";
 
         private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _config;

@@ -497,8 +497,6 @@
     "ButtonUpdateNow": "Nu bijwerken",
     "TabHosting": "Hosting",
     "PleaseUpdateManually": "Sluit a.u.b. de Jellyfin Server af en installeer de nieuwste versie.",
-    "NewServerVersionAvailable": "Er is een nieuwe versie van Jellyfin Server beschikbaar!",
-    "ServerUpToDate": "Jellyfin Server is up-to-date",
     "LabelComponentsUpdated": "De volgende onderdelen zijn ge\u00efnstalleerd of bijgewerkt:",
     "MessagePleaseRestartServerToFinishUpdating": "Herstart de server om de updates af te ronden en te activeren.",
     "LabelDownMixAudioScale": "Geluidsversterking verbeteren als er gemixt wordt:",
