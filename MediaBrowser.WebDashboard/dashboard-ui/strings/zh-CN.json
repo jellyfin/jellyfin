@@ -497,8 +497,6 @@
     "ButtonUpdateNow": "\u73b0\u5728\u66f4\u65b0",
     "TabHosting": "\u4e3b\u673a",
     "PleaseUpdateManually": "\u8bf7\u5173\u95ed Jellyfin \u670d\u52a1\u5668\u7136\u540e\u5b89\u88c5\u6700\u65b0\u7684\u7248\u672c\u3002",
-    "NewServerVersionAvailable": "Jellyfin \u670d\u52a1\u7aef\u6709\u65b0\u7684\u7248\u672c\u4e86\uff01",
-    "ServerUpToDate": "Jellyfin \u670d\u52a1\u7aef\u662f\u6700\u65b0\u7684\u7248\u672c",
     "LabelComponentsUpdated": "\u4e0b\u9762\u7684\u7ec4\u4ef6\u5df2\u5b89\u88c5\u6216\u66f4\u65b0\uff1a",
     "MessagePleaseRestartServerToFinishUpdating": "\u8bf7\u91cd\u65b0\u542f\u52a8\u670d\u52a1\u5668\u6765\u5b8c\u6210\u5e94\u7528\u66f4\u65b0\u3002",
     "LabelDownMixAudioScale": "\u7f29\u6df7\u97f3\u9891\u589e\u5f3a\uff1a",
