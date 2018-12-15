@@ -224,8 +224,10 @@ namespace Emby.Dlna.Api
             var first = pathInfo[0];
 
             // backwards compatibility
+            // TODO: Work out what this is doing.
             if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase))
+                string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(first, "jellyfin", StringComparison.OrdinalIgnoreCase ))
             {
                 index++;
             }

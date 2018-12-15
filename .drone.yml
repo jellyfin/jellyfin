@@ -1,14 +1,11 @@
 kind: pipeline
 name: build:debian
 
-clone:
-  depth: 1
-
 steps:
 - name: submodules
   image: docker:git
   commands:
-    - git submodule update --init
+    - git submodule update --init --recursive
 - name: build:debian
   image: plugins/docker
   group: build
@@ -22,14 +19,11 @@ steps:
 kind: pipeline
 name: build:docker
 
-clone:
-  depth: 1
-
 steps:
 - name: submodules
   image: docker:git
   commands:
-    - git submodule update --init
+    - git submodule update --init --recursive
 - name: build:docker
   image: plugins/docker
   group: build
