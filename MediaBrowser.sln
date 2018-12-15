@@ -56,7 +56,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.Notifications", "Emby.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.Naming", "Emby.Naming\Emby.Naming.csproj", "{E5AF7B26-2239-4CE0-B477-0AA2018EDAA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageMagickSharp", "ImageMagickSharp\ImageMagickSharp\ImageMagickSharp.csproj", "{124E0710-6572-497B-B2A5-696AA08AD8BB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageMagickSharp", "ThirdParty\ImageMagickSharp\ImageMagickSharp\ImageMagickSharp.csproj", "{124E0710-6572-497B-B2A5-696AA08AD8BB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "taglib-sharp", "ThirdParty\taglib-sharp\src\taglib-sharp.csproj", "{D45FC504-D06B-41A0-A220-C20B7E8F1304}"
 EndProject

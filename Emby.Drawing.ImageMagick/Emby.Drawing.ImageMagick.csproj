@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ImageMagickSharp\ImageMagickSharp\ImageMagickSharp.csproj" />
+    <ProjectReference Include="..\ThirdParty\ImageMagickSharp\ImageMagickSharp\ImageMagickSharp.csproj" />
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
