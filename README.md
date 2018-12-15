@@ -28,6 +28,7 @@ The Jellyfin Docker image is available on Docker Hub at https://hub.docker.com/r
 ### Raspberry Pi Docker
 
 There is even a Raspberry Pi version of the Docker image as well : https://hub.docker.com/r/fzbasescu/jellyfinpie
+
 ### Arch
 
 The Jellyfin package is in the AUR at https://aur.archlinux.org/packages/jellyfin-git/
@@ -132,3 +133,18 @@ A pre-built windows installer will be available soon. Until then it isn't too ha
       * The `-InstallFFMPEG` flag will automatically pull the stable ffmpeg binaries appropriate to your architecture (x86/x64 only for now) from [Zeranoe](https://ffmpeg.zeranoe.com/builds/) and place them in your Jellyfin directory. 
 0. (Optional) Use [NSSM](https://nssm.cc/) to configure JellyFin to run as a service
 0. Jellyfin is now available in the default directory (or the directory you chose). Assuming you kept the default directory, to start it from a Powershell window, run, `&"$env:APPDATA\Jellyfin-Server\EmbyServer.exe"`. To start it from CMD, run, `%APPDATA%\Jellyfin-Server\EmbyServer.exe`
+
+### Docker (also for Raspberry Pi)
+
+0. Clone Jellyfin into a directory of your choice.
+    ```
+    git clone https://github.com/jellyfin/jellyfin.git C:\Jellyfin
+    ```
+1. Go to the jellyfin folder
+    ```
+    cd jellyfin
+    ```
+2. Build Docker Image
+   ```
+   docker build -t jellyfin .
+   ```
