@@ -138,7 +138,7 @@ A pre-built windows installer will be available soon. Until then it isn't too ha
 
 0. Clone Jellyfin into a directory of your choice.
     ```
-    git clone https://github.com/jellyfin/jellyfin.git C:\Jellyfin
+    git clone https://github.com/jellyfin/jellyfin.git
     ```
 1. Go to the jellyfin folder
     ```
