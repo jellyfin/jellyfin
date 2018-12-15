@@ -16,5 +16,5 @@ script
 	# Log file
 	logger -t "$0" "DEBUG: `set`"
     . /etc/default/jellyfin
-    exec su -u $JELLYFIN_USER -c /usr/lib/jellyfin/bin/jellyfin $JELLYFIN_ARGS
+    exec su -u $JELLYFIN_USER -c /usr/bin/jellyfin $JELLYFIN_ARGS
 end script
