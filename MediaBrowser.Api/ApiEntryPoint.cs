@@ -423,12 +423,10 @@ namespace MediaBrowser.Api
 
             var timerDuration = 10000;
 
-            /*
             if (job.Type != TranscodingJobType.Progressive)
             {
                 timerDuration = 60000;
             }
-            */
 
             job.PingTimeout = timerDuration;
             job.LastPingDate = DateTime.UtcNow;
