@@ -1,8 +1,5 @@
 using System;
-using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.System;
 
 namespace IsoMounter
 {
