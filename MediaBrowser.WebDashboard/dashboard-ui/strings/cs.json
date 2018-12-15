@@ -497,8 +497,6 @@
     "ButtonUpdateNow": "Aktualizujte te\u010f",
     "TabHosting": "Hostov\u00e1n\u00ed",
     "PleaseUpdateManually": "Please shutdown Jellyfin Server and install the latest version.",
-    "NewServerVersionAvailable": "Je dostupn\u00e1 nov\u00e1 verze Jellyfin Server!",
-    "ServerUpToDate": "Jellyfin Server je aktu\u00e1ln\u00ed",
     "LabelComponentsUpdated": "N\u00e1sleduj\u00edc\u00ed komponenty budou instalov\u00e1ny nebo aktualizov\u00e1ny:",
     "MessagePleaseRestartServerToFinishUpdating": "Restartujte, pros\u00edm, server pro aplikaci aktualizac\u00ed.",
     "LabelDownMixAudioScale": "Zes\u00edlen\u00ed audia p\u0159i downmix:",

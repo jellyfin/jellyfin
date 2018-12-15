@@ -15,7 +15,7 @@ While our first priority is a stable build, we will eventually add features that
 
 ## Contributing to Jellyfin
 
-If you're interested in contributing, please see [CONTRIBUTING.md](https://github.com/jellyfin/jellyfin/blob/master/CONTRIBUTING.md).
+If you're interested in contributing, please see [our wiki for guidelines](https://github.com/jellyfin/jellyfin/wiki/Contributing-to-Jellyfin).
 
 ## Prebuilt Jellyfin packages
 
@@ -36,6 +36,8 @@ An Unraid Docker template is available. See [this documentation page](https://gi
 ### Debian/Ubuntu
 
 A package repository is available at https://repo.jellyfin.org.
+
+NOTE: Ubuntu users may find that the `ffmpeg` dependency package is not present in their release or is simply a rebranded `libav` which is not directly compatible. Please [obtain the ffmpeg package directly from the FFMPEG site](https://ffmpeg.org/download.html#build-linux) to use Jellyfin on Ubuntu.
 
 #### Clean install
 

@@ -17,26 +17,7 @@
                     <div class="paperList" style="padding: 1em;">
                         <p id="appVersionNumber">
                         </p>
-                        <p id="pUpToDate" class="hide flex align-items-center">
-                            <i class="md-icon" style="background-color: #52B54B; border-radius: .25em; color: #fff; margin-right: .5em; padding: .25em; font-size: 110%;">check</i>
-                            ${ServerUpToDate}
-                        </p>
-                        <div id="pUpdateNow" class="hide">
-                            <p>
-                                <strong>${NewServerVersionAvailable}</strong>
-                            </p>
-                            <p id="newVersionNumber"></p>
-                            <div id="btnUpdateApplicationContainer">
-                                <button id="btnUpdateApplication" is="emby-button" type="button" class="raised block" onclick="DashboardPage.updateApplication(this);">
-                                    <span>${ButtonUpdateNow}</span>
-                                </button>
-                            </div>
-                            <div id="btnManualUpdateContainer">
-
-                            </div>
-                        </div>
                         <p id="ports"></p>
-                        <div id="pPluginUpdates"></div>
 
                         <p class="localUrl"></p>
                         <p class="hide">
@@ -58,17 +39,6 @@
                         <h3>${HeaderRunningTasks}</h3>
                         <div id="divRunningTasks" class="paperList" style="padding: 1em;">
                         </div>
-                    </div>
-
-                    <div style="margin-top: 2em;" class="hide" id="collapsiblePendingInstallations">
-                        <h3>${HeaderPendingInstallations}</h3>
-                        <div class="paperList" style="padding: 1em;">
-                            <p>${LabelComponentsUpdated}</p>
-                            <div id="pendingInstallations">
-                            </div>
-                            <p>${MessagePleaseRestartServerToFinishUpdating}</p>
-                        </div>
-
                     </div>
 
                 </div>
