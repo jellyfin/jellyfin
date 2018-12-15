@@ -14,7 +14,7 @@ namespace Jellyfin.XmlTv.Test
         public void BeforeEachTest()
         {
             _testFilePath = Path.GetFullPath(Path.Combine("XmlFiles", "MultilanguageData.xml"));
-        }
+        } 
 
         [Test]
         public void ShouldHandlePartDates()
