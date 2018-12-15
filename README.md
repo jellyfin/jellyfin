@@ -25,6 +25,9 @@ Prebuild packages are available for Debian/Ubuntu and Arch, and via Docker Hub.
 
 The Jellyfin Docker image is available on Docker Hub at https://hub.docker.com/r/jellyfin/jellyfin/
 
+### Raspberry Pi Docker
+
+There is even a Raspberry Pi version of the Docker image as well : https://hub.docker.com/r/fzbasescu/jellyfinpie
 ### Arch
 
 The Jellyfin package is in the AUR at https://aur.archlinux.org/packages/jellyfin-git/
