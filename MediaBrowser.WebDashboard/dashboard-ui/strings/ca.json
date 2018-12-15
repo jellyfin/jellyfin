@@ -497,8 +497,6 @@
     "ButtonUpdateNow": "Actualitza Ara",
     "TabHosting": "Hosting",
     "PleaseUpdateManually": "Si et plau, apaga Jellyfin Server i actualitza manualment.",
-    "NewServerVersionAvailable": "Hi ha una nova versi\u00f3 del Servidor Jellyfin disponible!",
-    "ServerUpToDate": "L'Jellyfin est\u00e0 actualitzat",
     "LabelComponentsUpdated": "Els seg\u00fcents components han estat instal\u00b7lats o actualitzats:",
     "MessagePleaseRestartServerToFinishUpdating": "Si et plau, reinicia el servidor per finalitzar les actualitzacions.",
     "LabelDownMixAudioScale": "Audio boost when downmixing:",

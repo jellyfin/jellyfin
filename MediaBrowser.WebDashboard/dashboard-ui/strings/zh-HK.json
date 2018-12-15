@@ -497,8 +497,6 @@
     "ButtonUpdateNow": "Update Now",
     "TabHosting": "Hosting",
     "PleaseUpdateManually": "Please shutdown Jellyfin Server and install the latest version.",
-    "NewServerVersionAvailable": "\u66f4\u65b0\u767c\u4f48\u4e86!",
-    "ServerUpToDate": "\u5df2\u7d93\u662f\u6700\u65b0\u7248\u672c",
     "LabelComponentsUpdated": "The following components have been installed or updated:",
     "MessagePleaseRestartServerToFinishUpdating": "\u8acb\u91cd\u65b0\u555f\u52d5\u4f86\u78ba\u8a8d\u66f4\u65b0",
     "LabelDownMixAudioScale": "Audio boost when downmixing:",
