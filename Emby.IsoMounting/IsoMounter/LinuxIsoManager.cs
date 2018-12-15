@@ -146,14 +146,10 @@ namespace IsoMounter
 
         public Task<IIsoMount> Mount(string isoPath, CancellationToken cancellationToken)
         {
-            LinuxMount mountedISO;
-
-            if (MountISO(isoPath, out mountedISO))
-            {
+            if (MountISO(isoPath, out LinuxMount mountedISO)) {
                 return Task.FromResult<IIsoMount>(mountedISO);
             }
-            else
-            {
+            else {
                 throw new IOException(String.Format(
                     "An error occurred trying to mount image [$0].",
                     isoPath
