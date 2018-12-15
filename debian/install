@@ -1,4 +1,3 @@
-usr/bin/jellyfin usr/bin/
 usr/lib/jellyfin usr/lib/
 debian/conf/jellyfin etc/default/
 debian/conf/jellyfin.service.conf etc/systemd/system/jellyfin.service.d/
