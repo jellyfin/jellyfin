@@ -4,7 +4,8 @@ Priority: optional
 Maintainer: Vasily <just.one.man@yandex.ru>
 Build-Depends:  debhelper (>= 9),
                 dotnet-sdk-2.2,
-                libc6-dev
+                libc6-dev,
+                libcurl4-openssl-dev
 Standards-Version: 3.9.4
 
 Package: jellyfin
