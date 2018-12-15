@@ -421,15 +421,14 @@ namespace MediaBrowser.Api
                 return;
             }
 
-            /*
             var timerDuration = 10000;
 
+            /*
             if (job.Type != TranscodingJobType.Progressive)
             {
                 timerDuration = 60000;
             }
             */
-            var timerDuration = 2000;
 
             job.PingTimeout = timerDuration;
             job.LastPingDate = DateTime.UtcNow;
