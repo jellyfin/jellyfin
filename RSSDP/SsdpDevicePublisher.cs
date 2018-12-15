@@ -310,11 +310,16 @@ namespace Rssdp.Infrastructure
 
             try
             {
-                await _CommsServer.SendMessage(System.Text.Encoding.UTF8.GetBytes(message), endPoint, receivedOnlocalIpAddress, cancellationToken).ConfigureAwait(false);
+                await _CommsServer.SendMessage(
+                        System.Text.Encoding.UTF8.GetBytes(message),
+                        endPoint,
+                        receivedOnlocalIpAddress,
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (Exception)
             {
-                
+
             }
 
             //WriteTrace(String.Format("Sent search response to " + endPoint.ToString()), device);
