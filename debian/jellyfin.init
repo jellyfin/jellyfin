@@ -11,7 +11,7 @@
 # Carry out specific functions when asked to by the system
 
 pidfile="/var/run/jellyfin.pid"
-pid=`cat /var/run/jellyfin.pid`
+pid=`cat $pidfile`
 
 case "$1" in
   start)
