@@ -53,6 +53,10 @@ case "$1" in
         [[ -f $PIDFILE ]] && rm $PIDFILE
       fi
     fi
+
+    # Clean up old Emby cruft that can break the user's system
+    test -f /etc/sudoers.d/emby && rm -f /etc/sudoers.d/emby
+
     ;;
   abort-upgrade)
     ;;
