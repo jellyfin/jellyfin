@@ -377,7 +377,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     nonCachedChildren = GetNonCachedChildren(directoryService);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     return;
                 }

@@ -1,19 +1,13 @@
 using System;
 using System.Net;
 using System.Security.Principal;
-using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Text;
 using SocketHttpListener.Net.WebSockets;
-using SocketHttpListener.Primitives;
 using System.Threading.Tasks;
 
 namespace SocketHttpListener.Net
 {
     public sealed unsafe partial class HttpListenerContext
     {
-        internal HttpListener _listener;
         private HttpListenerResponse _response;
         private IPrincipal _user;
 
