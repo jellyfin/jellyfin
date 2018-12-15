@@ -217,7 +217,7 @@ namespace Emby.Dlna.Server
         {
             if (string.IsNullOrEmpty(_profile.FriendlyName))
             {
-                return "Emby - " + _serverName;
+                return "Jellyfin - " + _serverName;
             }
 
             var characterList = new List<char>();

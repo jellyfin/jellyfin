@@ -497,8 +497,6 @@
     "ButtonUpdateNow": "Jetzt aktualisieren",
     "TabHosting": "Hosting",
     "PleaseUpdateManually": "Bitte Jellyfin Server herunterfahren und die aktuellste Version installieren.",
-    "NewServerVersionAvailable": "Eine neue Version des Jellyfin Servers ist verf\u00fcgbar!",
-    "ServerUpToDate": "Jellyfin Server ist auf dem aktuellsten Stand.",
     "LabelComponentsUpdated": "Die folgenden Komponenten wurden installiert oder aktualisiert:",
     "MessagePleaseRestartServerToFinishUpdating": "Bitte den Server neustarten, um die Aktualisierungen abzuschlie\u00dfen.",
     "LabelDownMixAudioScale": "Audio Verst\u00e4rkung bei Downmixing:",

@@ -497,8 +497,6 @@
     "ButtonUpdateNow": "Friss\u00edtsd most",
     "TabHosting": "Szerver",
     "PleaseUpdateManually": "K\u00e9rlek \u00e1ll\u00edtsd le az Jellyfin szervert \u00e9s telep\u00edtsd a leg\u00fajabb verzi\u00f3t.",
-    "NewServerVersionAvailable": "El\u00e9rhet\u0151 az Jellyfin Szerver \u00fajabb verzi\u00f3ja!",
-    "ServerUpToDate": "Jellyfin szerver naprak\u00e9sz",
     "LabelComponentsUpdated": "A k\u00f6vetkez\u0151 komponensek telep\u00edtve, vagy friss\u00edtve lettek.",
     "MessagePleaseRestartServerToFinishUpdating": "Ind\u00edtsd \u00fajra  szervert a friss\u00edt\u00e9sek \u00e9rv\u00e9nyes\u00edt\u00e9s\u00e9hez.",
     "LabelDownMixAudioScale": "Audio boost when downmixing:",
