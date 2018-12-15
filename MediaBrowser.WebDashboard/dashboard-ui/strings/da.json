@@ -497,8 +497,6 @@
     "ButtonUpdateNow": "Opdater nu",
     "TabHosting": "Hosting",
     "PleaseUpdateManually": "Please shutdown Jellyfin Server and install the latest version.",
-    "NewServerVersionAvailable": "En ny version af Jellyfin serveren er tilg\u00e6ngelig!",
-    "ServerUpToDate": "Jellyfin serveren er opdateret",
     "LabelComponentsUpdated": "F\u00f8lgende komponenter er blevet installeret eller opdateret:",
     "MessagePleaseRestartServerToFinishUpdating": "Genstart venligt serveret for at afslutte opdateringen.",
     "LabelDownMixAudioScale": "For\u00f8g lydstyrke ved nedmiksning:",

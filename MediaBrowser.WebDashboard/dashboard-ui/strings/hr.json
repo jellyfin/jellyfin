@@ -497,8 +497,6 @@
     "ButtonUpdateNow": "A\u017euriraj sad",
     "TabHosting": "Poslu\u017eivanje",
     "PleaseUpdateManually": "Please shutdown Jellyfin Server and install the latest version.",
-    "NewServerVersionAvailable": "Nova verzija Jellyfin servera je dostupna!",
-    "ServerUpToDate": "Jellyfin server je a\u017euran",
     "LabelComponentsUpdated": "Sljede\u0107e komponente su instalirane ili a\u017eurirane.",
     "MessagePleaseRestartServerToFinishUpdating": "Molimo ponovo pokrenite server kako bi se zavr\u0161ila a\u017euriranja.",
     "LabelDownMixAudioScale": "Poja\u010daj zvuk kada radi\u0161 downmix:",
