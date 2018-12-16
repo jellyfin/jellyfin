@@ -1,3 +1,9 @@
+jellyfin (3.5.2-3) unstable; urgency=medium
+
+  * Correct several bugs in 3.5.2-2 packaging
+
+ -- Joshua Boniface <joshua@boniface.me>  Sat, 15 Dec 2018 18:17:32 -0500
+
 jellyfin (3.5.2-2) unstable; urgency=medium
 
   * Major code updates related to rebranding and cleanup
