@@ -15,7 +15,7 @@ override_dh_auto_test:
 override_dh_clistrip:
 
 override_dh_auto_build:
-	dotnet publish --configuration $(CONFIG) --output='$(CURDIR)/usr/lib/jellyfin/bin' --self-contained --runtime linux-x64
+	dotnet publish MediaBrowser.Server.Mono/EmbyServer.csproj --configuration $(CONFIG) --output='$(CURDIR)/usr/lib/jellyfin/bin' --self-contained --runtime linux-x64
 
 override_dh_auto_clean:
 	dotnet clean -maxcpucount:1 --configuration $(CONFIG) || true
