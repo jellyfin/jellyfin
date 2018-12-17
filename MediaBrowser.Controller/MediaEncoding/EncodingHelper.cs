@@ -771,14 +771,18 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var request = state.BaseRequest;
             var profile = state.GetRequestedProfiles(targetVideoCodec).FirstOrDefault();
-            if (string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+
+            // vaapi does not support Baseline profile, force Constrained Baseline in this case,
+            // which is compatible (and ugly)
+            if (string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase) &&
+                profile != null && profile.ToLower().Contains("baseline"))
             {
-                param += " -profile:v 578";
+                    profile = "constrained_baseline";
             }
-            else if (!string.IsNullOrEmpty(profile))
+
+            if (!string.IsNullOrEmpty(profile))
             {
                 if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase))
                 {
                     // not supported by h264_omx
@@ -1102,11 +1106,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (videoStream != null)
             {
-                if (bitrate.HasValue && videoStream.BitRate.HasValue)
-                {
-                    bitrate = Math.Min(videoStream.BitRate.Value, bitrate.Value);
-                }
-
                 if (bitrate.HasValue)
                 {
                     var inputVideoCodec = videoStream.Codec;
