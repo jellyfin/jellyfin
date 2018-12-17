@@ -27,7 +27,7 @@ The Jellyfin Docker image is available on Docker Hub at https://hub.docker.com/r
 
 ### Raspberry Pi Docker
 
-There is even a Raspberry Pi version of the Docker image as well : https://hub.docker.com/r/fzbasescu/jellyfinpie
+There is even a Raspberry Pi version of the Docker image as well: https://hub.docker.com/r/fzbasescu/jellyfinpie
 
 ### Arch
 
