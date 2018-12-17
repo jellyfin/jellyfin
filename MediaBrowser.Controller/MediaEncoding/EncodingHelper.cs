@@ -1106,11 +1106,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (videoStream != null)
             {
-                if (bitrate.HasValue && videoStream.BitRate.HasValue)
-                {
-                    bitrate = Math.Min(videoStream.BitRate.Value, bitrate.Value);
-                }
-
                 if (bitrate.HasValue)
                 {
                     var inputVideoCodec = videoStream.Codec;
