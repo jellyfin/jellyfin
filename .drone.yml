@@ -1,5 +1,5 @@
 kind: pipeline
-name: build:debian
+name: build:x86_64:debian
 
 steps:
 - name: submodules
@@ -17,7 +17,49 @@ steps:
 
 ---
 kind: pipeline
-name: build:docker
+name: build:x86_64:docker
+
+steps:
+- name: submodules
+  image: docker:git
+  commands:
+    - git submodule update --init --recursive
+- name: build:docker
+  image: plugins/docker
+  group: build
+  settings:
+    repo: jellyfin/jellyfin
+    dry_run: true
+
+
+---
+kind: pipeline
+name: build:arm64:docker
+
+platform:
+  os: linux
+  arch: arm64
+
+steps:
+- name: submodules
+  image: docker:git
+  commands:
+    - git submodule update --init --recursive
+- name: build:docker
+  image: plugins/docker
+  group: build
+  settings:
+    repo: jellyfin/jellyfin
+    dry_run: true
+
+
+---
+kind: pipeline
+name: build:arm:docker
+
+platform:
+  os: linux
+  arch: arm
 
 steps:
 - name: submodules
