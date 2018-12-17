@@ -423,8 +423,6 @@ namespace SocketHttpListener
 
         private bool processPingFrame(WebSocketFrame frame)
         {
-            //var mask = Mask.Unmask;
-
             return true;
         }
 
