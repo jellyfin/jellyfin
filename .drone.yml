@@ -1,6 +1,9 @@
 kind: pipeline
 name: build:x86_64:debian
 
+clone:
+  depth: 50
+
 steps:
 - name: submodules
   image: docker:git
@@ -19,6 +22,9 @@ steps:
 kind: pipeline
 name: build:x86_64:docker
 
+clone:
+  depth: 50
+
 steps:
 - name: submodules
   image: docker:git
@@ -35,6 +41,9 @@ steps:
 ---
 kind: pipeline
 name: build:arm64:docker
+
+clone:
+  depth: 50
 
 platform:
   os: linux
@@ -56,6 +65,9 @@ steps:
 ---
 kind: pipeline
 name: build:arm:docker
+
+clone:
+  depth: 50
 
 platform:
   os: linux
