@@ -39,62 +39,7 @@ A package repository is available at https://repo.jellyfin.org.
 
 NOTE: Ubuntu users may find that the `ffmpeg` dependency package is not present in their release or is simply a rebranded `libav` which is not directly compatible. Please [obtain the ffmpeg package directly from the FFMPEG site](https://ffmpeg.org/download.html#build-linux) to use Jellyfin on Ubuntu.
 
-#### Clean install
-
-0. Install the `dotnet-runtime-2.2` package via [Microsoft's repositories](https://dotnet.microsoft.com/download/dotnet-core/2.2).
-0. Import the GPG signing key (signed by Joshua):
-    ```
-    wget -O - https://repo.jellyfin.org/debian/jellyfin-signing-key-joshua.gpg.key | sudo apt-key add -
-    ```
-0. Add an entry to `/etc/apt/sources.list.d/jellyfin.list` (note that Ubuntu will get `buster` in the list file, but this should still work fine):
-    ```
-    echo "deb https://repo.jellyfin.org/debian $( grep -Ewo -m1 --color=none 'jessie|stretch|buster' /etc/os-release || echo buster ) main" | sudo tee /etc/apt/sources.list.d/jellyfin.list
-    ```
-0. Update APT repositories:
-    ```
-    sudo apt update
-    ```
-0. Install Jellyfin:
-    ```
-    sudo apt install jellyfin
-    ```
-
-#### Upgrade from Emby
-
-The following procedure should work to upgrade from Emby to Jellyfin on an existing installation:
-
-0. Upgrade to Emby 3.5.X, preferably 3.5.2, so the database schema is fully up-to-date and consistent. This is somewhat optional but can reduce the risk of obscure bugs later on.
-0. Stop the `emby-server` daemon:
-    ```
-    sudo service emby-server stop
-    ```
-0. Move your existing Emby data directory out of the way:
-    ```
-    sudo mv /var/lib/emby /var/lib/emby.backup
-    ```
-0. Remove the `emby-server` package:
-    ```
-    sudo apt remove emby-server
-    ```
-0. Install the `jellyfin` package using the instructions above, verifying that `/var/lib/emby` is a symlink to `/var/lib/jellyfin`.
-0. Stop the `jellyfin` daemon:
-    ```
-    sudo service jellyfin stop
-    ```
-0. Copy over all the data files from the old backup data directory:
-    ```
-    sudo cp -a /var/lib/emby.backup/* /var/lib/jellyfin/
-    ```
-0. Correct ownership on the new data directory:
-    ```
-    sudo chown -R jellyfin:jellyfin /var/lib/jellyfin
-    ```
-0. Start the `jellyfin` daemon:
-    ```
-    sudo service jellyfin start
-    ```
-
-This same general procedure should apply for upgrades on any other platform as well though the specific commands and/or paths may be different.
+For instructions on using the repository, please see [our wiki](https://github.com/jellyfin/jellyfin/wiki/Jellyfin-Debian-repository).
 
 ## Building Jellyfin packages from source
 
