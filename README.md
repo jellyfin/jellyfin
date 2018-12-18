@@ -26,7 +26,7 @@ Jellyfin is a free software media system that puts you in control of managing an
 
 For further details, please see [our wiki](https://github.com/jellyfin/jellyfin/wiki).
 
-To receive the latest project updates feel free to join [our public chat on Matrix/Riot](https://matrix.to/#/#jellyfin:matrix.org), and follow us on [Social Media](https://github.com/jellyfin/jellyfin/wiki/Social-Media).
+To receive the latest updates, please visit [our public chat on Matrix/Riot](https://matrix.to/#/#jellyfin:matrix.org), our [announce chat](https://matrix.to/#/#jellyfin-announce:matrix.org) for release info, and follow us on [Social Media](https://github.com/jellyfin/jellyfin/wiki/Social-Media).
 
 ## About
 
