@@ -39,13 +39,11 @@ Jellyfin is descended from Emby 3.5.2, ported to the .NET Core framework, and ai
 
 
 <p align="center">
-New idea or improvement?
-<br>
+  <strong>New idea or improvement?</strong>
 <em>Open a <a href="https://github.com/jellyfin/jellyfin/wiki/Feature-Requests">Feature Request</a>.</em>
 </p>
 <p align="center">
-Something not working right?
-<br>
+  <Strong>Something not working right?</strong>
 <em>Open an <a href="https://github.com/jellyfin/jellyfin/wiki/Issue-Guidelines">Issue</a>.</em>
 </p>
 
