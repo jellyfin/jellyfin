@@ -170,9 +170,9 @@ namespace Emby.Photos
                         }
                     }
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    _logger.LogError("Image Provider - Error reading image tag for {0}", e, item.Path);
+                    _logger.LogError(ex, "Image Provider - Error reading image tag for {0}", item.Path);
                 }
             }
 

@@ -134,7 +134,7 @@ namespace Emby.Notifications
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error sending notification to {0}", ex, service.Name);
+                _logger.LogError(ex, "Error sending notification to {0}", service.Name);
             }
         }
 
@@ -146,7 +146,7 @@ namespace Emby.Notifications
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error in IsEnabledForUser", ex);
+                _logger.LogError(ex, "Error in IsEnabledForUser");
                 return false;
             }
         }
@@ -177,7 +177,7 @@ namespace Emby.Notifications
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error in GetNotificationTypes", ex);
+                    _logger.LogError(ex, "Error in GetNotificationTypes");
                     return new List<NotificationTypeInfo>();
                 }
 

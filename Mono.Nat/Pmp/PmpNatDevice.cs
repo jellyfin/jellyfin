@@ -198,7 +198,7 @@ namespace Mono.Nat.Pmp
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error in CreatePortMapListen", ex);
+                    _logger.LogError(ex, "Error in CreatePortMapListen");
                     return;
                 }
             }

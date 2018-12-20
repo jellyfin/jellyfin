@@ -41,7 +41,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (logOutput)
                 {
-                    _logger.LogError("Error validating encoder", ex);
+                    _logger.LogError(ex, "Error validating encoder");
                 }
             }
 
@@ -78,9 +78,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 output = GetProcessOutput(encoderAppPath, "-decoders");
             }
-            catch (Exception )
+            catch (Exception ex)
             {
-                //_logger.LogError("Error detecting available decoders", ex);
+                _logger.LogError(ex, "Error detecting available decoders");
             }
 
             var found = new List<string>();
@@ -187,7 +187,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 RedirectStandardOutput = true
             });
 
-            _logger.LogInformation("Running {0} {1}", path, arguments);
+            _logger.LogInformation("Running {path} {arguments}", path, arguments);
 
             using (process)
             {
@@ -199,16 +199,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch
                 {
-                    _logger.LogInformation("Killing process {0} {1}", path, arguments);
+                    _logger.LogInformation("Killing process {path} {arguments}", path, arguments);
 
                     // Hate having to do this
                     try
                     {
                         process.Kill();
                     }
-                    catch (Exception ex1)
+                    catch (Exception ex)
                     {
-                        _logger.LogError("Error killing process", ex1);
+                        _logger.LogError(ex, "Error killing process");
                     }
 
                     throw;

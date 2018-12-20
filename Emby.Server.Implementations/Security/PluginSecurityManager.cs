@@ -150,18 +150,15 @@ namespace Emby.Server.Implementations.Security
                 SaveAppStoreInfo(parameters);
                 throw;
             }
-            catch (HttpException e)
+            catch (HttpException ex)
             {
-                _logger.LogError("Error registering appstore purchase {0}", e, parameters ?? "NO PARMS SENT");
+                _logger.LogError(ex, "Error registering appstore purchase {parameters}", parameters ?? "NO PARMS SENT");
 
-                if (e.StatusCode.HasValue && e.StatusCode.Value == HttpStatusCode.PaymentRequired)
-                {
-                }
                 throw new Exception("Error registering store sale");
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                _logger.LogError("Error registering appstore purchase {0}", e, parameters ?? "NO PARMS SENT");
+                _logger.LogError(ex, "Error registering appstore purchase {parameters}", parameters ?? "NO PARMS SENT");
                 SaveAppStoreInfo(parameters);
                 //TODO - could create a re-try routine on start-up if this file is there.  For now we can handle manually.
                 throw new Exception("Error registering store sale");

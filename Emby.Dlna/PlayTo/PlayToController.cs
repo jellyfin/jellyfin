@@ -156,7 +156,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error reporting progress", ex);
+                _logger.LogError(ex, "Error reporting progress");
             }
         }
 
@@ -204,7 +204,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error reporting playback stopped", ex);
+                _logger.LogError(ex, "Error reporting playback stopped");
             }
         }
 
@@ -223,7 +223,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error reporting progress", ex);
+                _logger.LogError(ex, "Error reporting progress");
             }
         }
 
@@ -247,7 +247,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error reporting progress", ex);
+                _logger.LogError(ex, "Error reporting progress");
             }
         }
 
@@ -278,7 +278,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error reporting progress", ex);
+                _logger.LogError(ex, "Error reporting progress");
             }
         }
 

@@ -131,7 +131,7 @@ namespace Rssdp.Infrastructure
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError("Error in BeginListeningForBroadcasts", ex);
+                            _logger.LogError(ex, "Error in BeginListeningForBroadcasts");
                         }
                     }
                 }
@@ -197,7 +197,7 @@ namespace Rssdp.Infrastructure
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error sending socket message from {0} to {1}", ex, socket.LocalIPAddress.ToString(), destination.ToString());
+                _logger.LogError(ex, "Error sending socket message from {0} to {1}", socket.LocalIPAddress.ToString(), destination.ToString());
             }
         }
 
@@ -376,7 +376,7 @@ namespace Rssdp.Infrastructure
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error in CreateSsdpUdpSocket. IPAddress: {0}", ex, address);
+                        _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: {0}", address);
                     }
                 }
             }

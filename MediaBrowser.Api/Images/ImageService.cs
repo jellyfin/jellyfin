@@ -362,7 +362,7 @@ namespace MediaBrowser.Api.Images
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error getting image information for {0}", ex, info.Path);
+                Logger.LogError(ex, "Error getting image information for {path}", info.Path);
 
                 return null;
             }

@@ -112,7 +112,7 @@ namespace EmbyServer.SocketSharp
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error in HttpListenerResponseWrapper: " + ex.Message, ex);
+                    _logger.LogError(ex, "Error in HttpListenerResponseWrapper");
                 }
             }
         }

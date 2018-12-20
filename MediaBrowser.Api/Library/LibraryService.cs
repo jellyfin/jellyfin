@@ -1001,7 +1001,7 @@ namespace MediaBrowser.Api.Library
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error refreshing library", ex);
+                    Logger.LogError(ex, "Error refreshing library");
                 }
             });
         }

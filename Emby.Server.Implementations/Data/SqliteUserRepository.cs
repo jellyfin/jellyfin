@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.Data
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error migrating users database", ex);
+                Logger.LogError(ex, "Error migrating users database");
             }
         }
 

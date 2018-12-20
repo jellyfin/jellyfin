@@ -358,7 +358,7 @@ namespace MediaBrowser.Providers.TV
                     }
                     catch (HttpException ex)
                     {
-                        _logger.LogError("Error updating tvdb series id {0}, language {1}", ex, seriesId, language);
+                        _logger.LogError(ex, "Error updating tvdb series id {ID}, language {Language}", seriesId, language);
 
                         // Already logged at lower levels, but don't fail the whole operation, unless timed out
                         // We have to fail this to make it run again otherwise new episode data could potentially be missing

@@ -72,12 +72,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             catch (HttpException ex)
             {
                 // Don't let the server crash because of this
-                _logger.LogError("Error downloading ffmpeg font files", ex);
+                _logger.LogError(ex, "Error downloading ffmpeg font files");
             }
             catch (Exception ex)
             {
                 // Don't let the server crash because of this
-                _logger.LogError("Error writing ffmpeg font files", ex);
+                _logger.LogError(ex, "Error writing ffmpeg font files");
             }
         }
 
@@ -103,7 +103,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 catch (IOException ex)
                 {
                     // Log this, but don't let it fail the operation
-                    _logger.LogError("Error copying file", ex);
+                    _logger.LogError(ex, "Error copying file");
                 }
             }
 
@@ -127,7 +127,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 catch (Exception ex)
                 {
                     // The core can function without the font file, so handle this
-                    _logger.LogError("Failed to download ffmpeg font file from {0}", ex, url);
+                    _logger.LogError(ex, "Failed to download ffmpeg font file from {url}", url);
                 }
             }
 
@@ -145,12 +145,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             catch (IOException ex)
             {
                 // Log this, but don't let it fail the operation
-                _logger.LogError("Error deleting temp file {0}", ex, tempFile);
+                _logger.LogError(ex, "Error deleting temp file {path}", tempFile);
             }
         }
         private void Extract7zArchive(string archivePath, string targetPath)
         {
-            _logger.LogInformation("Extracting {0} to {1}", archivePath, targetPath);
+            _logger.LogInformation("Extracting {ArchivePath} to {TargetPath}", archivePath, targetPath);
 
             _zipClient.ExtractAllFrom7z(archivePath, targetPath, true);
         }

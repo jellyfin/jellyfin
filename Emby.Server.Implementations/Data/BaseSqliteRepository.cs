@@ -323,7 +323,7 @@ namespace Emby.Server.Implementations.Data
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error disposing database", ex);
+                Logger.LogError(ex, "Error disposing database");
             }
         }
 

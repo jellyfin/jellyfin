@@ -176,7 +176,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error downloading subtitles", ex);
+                _logger.LogError(ex, "Error downloading subtitles");
             }
 
             return false;

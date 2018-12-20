@@ -259,7 +259,7 @@ namespace Emby.Server.Implementations.AppBase
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error loading configuration file: {0}", ex, path);
+                Logger.LogError(ex, "Error loading configuration file: {path}", path);
 
                 return Activator.CreateInstance(configurationType);
             }

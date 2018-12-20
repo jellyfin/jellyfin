@@ -270,7 +270,7 @@ namespace MediaBrowser.Server.Mono
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error getting unix name", ex);
+                    _logger.LogError(ex, "Error getting unix name");
                 }
                 _unixName = uname;
             }

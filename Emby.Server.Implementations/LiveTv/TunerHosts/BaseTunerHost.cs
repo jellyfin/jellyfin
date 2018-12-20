@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error getting channel list", ex);
+                    Logger.LogError(ex, "Error getting channel list");
 
                     if (enableCache)
                     {
@@ -161,7 +161,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError("Error getting channels", ex);
+                        Logger.LogError(ex, "Error getting channels");
                     }
                 }
             }
@@ -201,7 +201,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error getting channels", ex);
+                    Logger.LogError(ex, "Error getting channels");
                 }
             }
 
@@ -221,7 +221,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error opening tuner", ex);
+                    Logger.LogError(ex, "Error opening tuner");
                 }
             }
 

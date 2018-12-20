@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error refreshing {0}", ex, name);
+                    _logger.LogError(ex, "Error refreshing {StudioName}", name);
                 }
 
                 numComplete++;

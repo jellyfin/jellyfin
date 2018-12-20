@@ -342,7 +342,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error getting BDInfo", ex);
+                _logger.LogError(ex, "Error getting BDInfo");
                 return null;
             }
         }

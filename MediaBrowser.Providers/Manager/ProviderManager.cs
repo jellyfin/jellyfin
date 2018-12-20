@@ -144,7 +144,7 @@ namespace MediaBrowser.Providers.Manager
                 return service.RefreshMetadata(item, options, cancellationToken);
             }
 
-            _logger.LogError("Unable to find a metadata service for item of type " + item.GetType().Name);
+            _logger.LogError("Unable to find a metadata service for item of type {TypeName}", item.GetType().Name);
             return Task.FromResult(ItemUpdateType.None);
         }
 
@@ -250,7 +250,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                _logger.LogError("{0} failed in GetImageInfos for type {1}", ex, provider.GetType().Name, item.GetType().Name);
+                _logger.LogError(ex, "{0} failed in GetImageInfos for type {1}", provider.GetType().Name, item.GetType().Name);
                 return new List<RemoteImageInfo>();
             }
         }
@@ -400,7 +400,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                _logger.LogError("{0} failed in Supports for type {1}", ex, provider.GetType().Name, item.GetType().Name);
+                _logger.LogError(ex, "{0} failed in Supports for type {1}", provider.GetType().Name, item.GetType().Name);
                 return false;
             }
         }
@@ -642,7 +642,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error in {0} GetSavePath", ex, saver.Name);
+                        _logger.LogError(ex, "Error in {0} GetSavePath", saver.Name);
                         continue;
                     }
 
@@ -653,7 +653,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error in metadata saver", ex);
+                        _logger.LogError(ex, "Error in metadata saver");
                     }
                     finally
                     {
@@ -668,7 +668,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error in metadata saver", ex);
+                        _logger.LogError(ex, "Error in metadata saver");
                     }
                 }
             }
@@ -731,7 +731,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error in {0}.IsEnabledFor", ex, saver.Name);
+                _logger.LogError(ex, "Error in {0}.IsEnabledFor", saver.Name);
                 return false;
             }
         }
@@ -876,7 +876,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error in {0}.Suports", ex, i.GetType().Name);
+                    _logger.LogError(ex, "Error in {0}.Suports", i.GetType().Name);
                     return false;
                 }
             });
@@ -1070,7 +1070,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error refreshing item", ex);
+                    _logger.LogError(ex, "Error refreshing item");
                 }
             }
 
@@ -1147,7 +1147,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error refreshing library", ex);
+                _logger.LogError(ex, "Error refreshing library");
             }
         }
 

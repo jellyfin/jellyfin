@@ -245,7 +245,7 @@ namespace MediaBrowser.WebDashboard.Api
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error getting plugin information from {0}", ex, p.GetType().Name);
+                    _logger.LogError(ex, "Error getting plugin information from {Plugin}", p.GetType().Name);
                     return null;
                 }
             })

@@ -216,7 +216,7 @@ namespace Emby.Server.Implementations.EntryPoints
             catch
             {
                 // Commenting out because users are reporting problems out of our control
-                //_logger.LogError("Error creating port forwarding rules", ex);
+                //_logger.LogError(ex, "Error creating port forwarding rules");
             }
         }
 
@@ -253,6 +253,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error creating http port map");
                 return;
             }
 
@@ -262,6 +263,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error creating https port map");
             }
         }
 
@@ -309,7 +311,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error stopping NAT Discovery", ex);
+                        _logger.LogError(ex, "Error stopping NAT Discovery");
                     }
                 }
             }

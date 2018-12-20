@@ -499,7 +499,7 @@ namespace Emby.Server.Implementations.Updates
             }
             catch (Exception ex)
             {
-                _logger.LogError("Package installation failed", ex);
+                _logger.LogError(ex, "Package installation failed");
 
                 lock (CurrentInstallations)
                 {
@@ -610,9 +610,9 @@ namespace Emby.Server.Implementations.Updates
                     _fileSystem.WriteAllText(target + ".ver", package.versionStr);
                 }
             }
-            catch (IOException e)
+            catch (IOException ex)
             {
-                _logger.LogError("Error attempting to move file from {0} to {1}", e, tempFile, target);
+                _logger.LogError(ex, "Error attempting to move file from {TempFile} to {TargetFile}", tempFile, target);
                 throw;
             }
 
@@ -620,10 +620,10 @@ namespace Emby.Server.Implementations.Updates
             {
                 _fileSystem.DeleteFile(tempFile);
             }
-            catch (IOException e)
+            catch (IOException ex)
             {
                 // Don't fail because of this
-                _logger.LogError("Error deleting temp file {0]", e, tempFile);
+                _logger.LogError(ex, "Error deleting temp file {TempFile}", tempFile);
             }
         }
 

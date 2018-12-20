@@ -81,7 +81,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 }
                                 catch (Exception ex)
                                 {
-                                    Logger.LogError("Error parsing set node", ex);
+                                    Logger.LogError(ex, "Error parsing set node");
                                 }
                             }
                         }

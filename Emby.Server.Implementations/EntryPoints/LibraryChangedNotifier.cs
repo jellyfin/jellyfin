@@ -331,7 +331,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error in GetLibraryUpdateInfo", ex);
+                    _logger.LogError(ex, "Error in GetLibraryUpdateInfo");
                     return;
                 }
 
@@ -346,7 +346,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error sending LibraryChanged message", ex);
+                    _logger.LogError(ex, "Error sending LibraryChanged message");
                 }
             }
         }

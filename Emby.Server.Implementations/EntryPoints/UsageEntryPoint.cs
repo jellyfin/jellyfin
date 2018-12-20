@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception ex)
             {
-                //_logger.LogError("Error sending anonymous usage statistics.", ex);
+                _logger.LogError(ex, "Error sending anonymous usage statistics.");
             }
         }
 
@@ -119,7 +119,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception ex)
             {
-                //_logger.LogError("Error sending anonymous usage statistics.", ex);
+                _logger.LogError(ex, "Error sending anonymous usage statistics.");
             }
         }
 

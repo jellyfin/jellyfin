@@ -90,7 +90,7 @@ namespace Mono.Nat
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error decoding device response", ex);
+                _logger.LogError(ex, "Error decoding device response");
             }
         }
 
