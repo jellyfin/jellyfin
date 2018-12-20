@@ -371,6 +371,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 catch (Exception ex)
                 {
+                    Logger.LogError(ex, "Error retrieving children folder");
                     return;
                 }
 
@@ -419,11 +420,7 @@ namespace MediaBrowser.Controller.Entities
 
                     foreach (var item in itemsRemoved)
                     {
-                        if (!item.IsFileProtocol)
-                        {
-                        }
-
-                        else
+                        if (item.IsFileProtocol)
                         {
                             Logger.LogDebug("Removed item: " + item.Path);
 
@@ -571,14 +568,9 @@ namespace MediaBrowser.Controller.Entities
                     await child.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
                 }
 
-                if (recursive)
+                if (recursive && child is Folder folder)
                 {
-                    var folder = child as Folder;
-
-                    if (folder != null)
-                    {
-                        await folder.RefreshMetadataRecursive(folder.Children.ToList(), refreshOptions, true, progress, cancellationToken);
-                    }
+                    await folder.RefreshMetadataRecursive(folder.Children.ToList(), refreshOptions, true, progress, cancellationToken);
                 }
             }
         }
@@ -782,7 +774,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], typeof(BoxSet).Name, StringComparison.OrdinalIgnoreCase))
             {
-                Logger.Debug("Query requires post-filtering due to BoxSet query");
+                Logger.LogDebug("Query requires post-filtering due to BoxSet query");
                 return true;
             }
 
@@ -803,44 +795,44 @@ namespace MediaBrowser.Controller.Entities
             // Filter by Video3DFormat
             if (query.Is3D.HasValue)
             {
-                Logger.Debug("Query requires post-filtering due to Is3D");
+                Logger.LogDebug("Query requires post-filtering due to Is3D");
                 return true;
             }
 
             if (query.HasOfficialRating.HasValue)
             {
-                Logger.Debug("Query requires post-filtering due to HasOfficialRating");
+                Logger.LogDebug("Query requires post-filtering due to HasOfficialRating");
                 return true;
             }
 
             if (query.IsPlaceHolder.HasValue)
             {
-                Logger.Debug("Query requires post-filtering due to IsPlaceHolder");
+                Logger.LogDebug("Query requires post-filtering due to IsPlaceHolder");
                 return true;
             }
 
             if (query.HasSpecialFeature.HasValue)
             {
-                Logger.Debug("Query requires post-filtering due to HasSpecialFeature");
+                Logger.LogDebug("Query requires post-filtering due to HasSpecialFeature");
                 return true;
             }
 
             if (query.HasSubtitles.HasValue)
             {
-                Logger.Debug("Query requires post-filtering due to HasSubtitles");
+                Logger.LogDebug("Query requires post-filtering due to HasSubtitles");
                 return true;
             }
 
             if (query.HasTrailer.HasValue)
             {
-                Logger.Debug("Query requires post-filtering due to HasTrailer");
+                Logger.LogDebug("Query requires post-filtering due to HasTrailer");
                 return true;
             }
 
             // Filter by VideoType
             if (query.VideoTypes.Length > 0)
             {
-                Logger.Debug("Query requires post-filtering due to VideoTypes");
+                Logger.LogDebug("Query requires post-filtering due to VideoTypes");
                 return true;
             }
 
@@ -852,19 +844,19 @@ namespace MediaBrowser.Controller.Entities
 
             if (!string.IsNullOrEmpty(query.AdjacentTo))
             {
-                Logger.Debug("Query requires post-filtering due to AdjacentTo");
+                Logger.LogDebug("Query requires post-filtering due to AdjacentTo");
                 return true;
             }
 
             if (query.SeriesStatuses.Length > 0)
             {
-                Logger.Debug("Query requires post-filtering due to SeriesStatuses");
+                Logger.LogDebug("Query requires post-filtering due to SeriesStatuses");
                 return true;
             }
 
             if (query.AiredDuringSeason.HasValue)
             {
-                Logger.Debug("Query requires post-filtering due to AiredDuringSeason");
+                Logger.LogDebug("Query requires post-filtering due to AiredDuringSeason");
                 return true;
             }
 
@@ -872,7 +864,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(typeof(Series).Name))
                 {
-                    Logger.Debug("Query requires post-filtering due to IsPlayed");
+                    Logger.LogDebug("Query requires post-filtering due to IsPlayed");
                     return true;
                 }
             }
@@ -1594,7 +1586,7 @@ namespace MediaBrowser.Controller.Entities
                         }
                         catch (IOException ex)
                         {
-                            Logger.LogError("Error resolving shortcut {0}", ex, i.FullName);
+                            Logger.LogError(ex, "Error resolving shortcut {0}", i.FullName);
                             return null;
                         }
                     })
