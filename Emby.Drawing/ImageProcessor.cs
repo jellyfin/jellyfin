@@ -646,16 +646,16 @@ namespace Emby.Drawing
                 var cacheGuid = GetImageCacheTag(item, image, enhancers);
 
                 // Enhance if we have enhancers
-                var ehnancedImageInfo = await GetEnhancedImageInternal(originalImagePath, item, imageType, imageIndex, enhancers, cacheGuid, cancellationToken).ConfigureAwait(false);
+                var enhancedImageInfo = await GetEnhancedImageInternal(originalImagePath, item, imageType, imageIndex, enhancers, cacheGuid, cancellationToken).ConfigureAwait(false);
 
-                var ehnancedImagePath = ehnancedImageInfo.Item1;
+                var enhancedImagePath = enhancedImageInfo.Item1;
 
                 // If the path changed update dateModified
-                if (!string.Equals(ehnancedImagePath, originalImagePath, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(enhancedImagePath, originalImagePath, StringComparison.OrdinalIgnoreCase))
                 {
-                    var treatmentRequiresTransparency = ehnancedImageInfo.Item2;
+                    var treatmentRequiresTransparency = enhancedImageInfo.Item2;
 
-                    return new ValueTuple<string, DateTime, bool>(ehnancedImagePath, _fileSystem.GetLastWriteTimeUtc(ehnancedImagePath), treatmentRequiresTransparency);
+                    return new ValueTuple<string, DateTime, bool>(enhancedImagePath, _fileSystem.GetLastWriteTimeUtc(enhancedImagePath), treatmentRequiresTransparency);
                 }
             }
             catch (Exception ex)
