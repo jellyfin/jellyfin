@@ -299,7 +299,7 @@ namespace SocketHttpListener
                 }
                 OnError.Emit(this, new ErrorEventArgs(message));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }
@@ -310,7 +310,7 @@ namespace SocketHttpListener
             {
                 OnError.Emit(this, new ErrorEventArgs(message));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }
@@ -423,8 +423,6 @@ namespace SocketHttpListener
 
         private bool processPingFrame(WebSocketFrame frame)
         {
-            var mask = Mask.Unmask;
-
             return true;
         }
 

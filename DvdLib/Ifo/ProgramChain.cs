@@ -35,7 +35,6 @@ namespace DvdLib.Ifo
         private ushort _goupProgramNumber;
         public readonly ProgramChain Goup; // ?? maybe Group
 
-        private byte _playbackMode;
         public ProgramPlaybackMode PlaybackMode { get; private set; }
         public uint ProgramCount { get; private set; }
 

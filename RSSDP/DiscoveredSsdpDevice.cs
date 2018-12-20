@@ -17,7 +17,6 @@ namespace Rssdp
 
 		#region Fields
 
-		private SsdpRootDevice _Device;
 		private DateTimeOffset _AsAt;
 
 		#endregion
@@ -55,7 +54,6 @@ namespace Rssdp
 				if (_AsAt != value)
 				{
 					_AsAt = value;
-					_Device = null;
 				}
 			}
 		}

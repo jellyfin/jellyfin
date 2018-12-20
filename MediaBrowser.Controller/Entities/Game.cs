@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
-using System;
 
 namespace MediaBrowser.Controller.Entities
 {
