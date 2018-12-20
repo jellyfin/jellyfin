@@ -192,7 +192,7 @@ namespace SharpCifs.Smb
 					catch (Exception e)
 					{
 						throw new SmbException(e.Message, e);
-					}					
+					}
 				}
 
 				default:

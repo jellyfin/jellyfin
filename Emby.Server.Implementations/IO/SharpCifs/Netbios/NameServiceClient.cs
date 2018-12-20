@@ -117,8 +117,9 @@ namespace SharpCifs.Netbios
             {
                 Baddr = Config.GetInetAddress("jcifs.netbios.baddr", Extensions.GetAddressByName("255.255.255.255"));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+
             }
 
             _sndBuf = new byte[SndBufSize];
@@ -302,7 +303,10 @@ namespace SharpCifs.Netbios
                 }
 
             }
-            catch (TimeoutException) { }
+            catch (TimeoutException)
+            {
+
+            }
             catch (Exception ex)
             {
                 if (_log.Level > 2)

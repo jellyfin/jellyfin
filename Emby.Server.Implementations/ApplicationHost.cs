@@ -2214,7 +2214,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogDebug("Ping test result to {0}. Success: {1} {2}", apiUrl, false, ex.Message);
+                Logger.LogDebug(ex, "Ping test result to {0}. Success: {1}", apiUrl, false);
 
                 _validAddressResults.AddOrUpdate(apiUrl, false, (k, v) => false);
                 return false;

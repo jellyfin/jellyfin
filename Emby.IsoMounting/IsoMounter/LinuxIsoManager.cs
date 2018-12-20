@@ -260,35 +260,29 @@ namespace IsoMounter
                 }
             );
 
-            try {
-
+            try
+            {
                 process.Start();
 
                 //StreamReader outputReader = process.StandardOutput.;
                 //StreamReader errorReader = process.StandardError;
 
                 _logger.LogDebug(
-                    "[{0}] Standard output from process is [{1}].",
+                    "[{Name}] Standard output from process is [{Error}].",
                     Name,
                     process.StandardOutput.ReadToEnd()
                 );
 
                 _logger.LogDebug(
-                    "[{0}] Standard error from process is [{1}].",
+                    "[{Name}] Standard error from process is [{Error}].",
                     Name,
                     process.StandardError.ReadToEnd()
                 );
-
-            } catch (Exception ex) {
-
+            }
+            catch (Exception ex)
+            {
                 processFailed = true;
-
-                _logger.LogDebug(
-                    "[{0}] Unhandled exception executing command, exception is [{1}].",
-                    Name,
-                    ex.Message
-                );
-
+                _logger.LogDebug(ex, "[{Name}] Unhandled exception executing command.", Name);
             }
 
             if (!processFailed && process.ExitCode == 0) {
@@ -309,13 +303,13 @@ namespace IsoMounter
             if (!string.IsNullOrEmpty(isoPath)) {
 
                 _logger.LogInformation(
-                    "[{0}] Attempting to mount [{1}].",
+                    "[{Name}] Attempting to mount [{Path}].",
                     Name,
                     isoPath
                 );
 
                 _logger.LogDebug(
-                    "[{0}] ISO will be mounted at [{1}].",
+                    "[{Name}] ISO will be mounted at [{Path}].",
                     Name,
                     mountPoint
                 );
@@ -326,11 +320,16 @@ namespace IsoMounter
             
             }
 
-            try {
+            try
+            {
                 FileSystem.CreateDirectory(mountPoint);
-            } catch (UnauthorizedAccessException) {
+            }
+            catch (UnauthorizedAccessException)
+            {
                 throw new IOException("Unable to create mount point(Permission denied) for " + isoPath);
-            } catch (Exception) {
+            }
+            catch (Exception)
+            {
                 throw new IOException("Unable to create mount point for " + isoPath);
             }
 
@@ -365,18 +364,13 @@ namespace IsoMounter
                     Name
                 );
 
-                try {
-                    
+                try
+                {
                     FileSystem.DeleteDirectory(mountPoint, false);
-
-                } catch (Exception ex) {
-
-                    _logger.LogInformation(
-                        "[{0}] Unhandled exception removing mount point, exception is [{1}].",
-                        Name,
-                        ex.Message
-                    );
-
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogInformation(ex, "[{Name}] Unhandled exception removing mount point.", Name);
                 }
 
                 mountedISO = null;
@@ -439,20 +433,14 @@ namespace IsoMounter
 
             }
 
-            try {
-
+            try
+            {
                 FileSystem.DeleteDirectory(mount.MountedPath, false);
-
-            } catch (Exception ex) {
-
-                _logger.LogInformation(
-                    "[{0}] Unhandled exception removing mount point, exception is [{1}].",
-                    Name,
-                    ex.Message
-                );
-
             }
-                          
+            catch (Exception ex)
+            {
+                _logger.LogInformation(ex, "[{Name}] Unhandled exception removing mount point.", Name);
+            }
         }
 
         #endregion

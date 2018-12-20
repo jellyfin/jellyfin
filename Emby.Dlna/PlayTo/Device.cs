@@ -140,7 +140,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating device volume info for {0}", Properties.Name);
+                _logger.LogError(ex, "Error updating device volume info for {DeviceName}", Properties.Name);
             }
         }
 
@@ -507,7 +507,7 @@ namespace Emby.Dlna.PlayTo
                 if (_disposed)
                     return;
 
-                //_logger.LogError(ex, "Error updating device info for {0}", Properties.Name);
+                _logger.LogError(ex, "Error updating device info for {DeviceName}", Properties.Name);
 
                 _connectFailureCount++;
 
