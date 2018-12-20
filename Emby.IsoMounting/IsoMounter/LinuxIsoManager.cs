@@ -144,24 +144,17 @@ namespace IsoMounter
             return Task.FromResult(false);
         }
 
-        public async Task<IIsoMount> Mount(string isoPath, CancellationToken cancellationToken)
+        public Task<IIsoMount> Mount(string isoPath, CancellationToken cancellationToken)
         {
-
-            LinuxMount mountedISO;
-
-            if (MountISO(isoPath, out mountedISO)) {
-
-                return mountedISO;
-
-            }else{
-                
+            if (MountISO(isoPath, out LinuxMount mountedISO)) {
+                return Task.FromResult<IIsoMount>(mountedISO);
+            }
+            else {
                 throw new IOException(String.Format(
                     "An error occurred trying to mount image [$0].",
                     isoPath
                 ));
-
             }
-
         }
 
         #endregion
