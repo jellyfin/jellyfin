@@ -1,6 +1,7 @@
 ﻿{
-  "name": "Jellyfin",
-  "short_name": "Jellyfin",
+  "_comment": "This should be Jellyfin, but that breaks apps...",
+  "name": "Emby",
+  "short_name": "Emby",
   "start_url": "/web/index.html",
   "description": "The open media solution.",
   "lang": "en-US",
