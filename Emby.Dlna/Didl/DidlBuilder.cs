@@ -1070,9 +1070,9 @@ namespace Emby.Dlna.Didl
             {
                 tag = _imageProcessor.GetImageCacheTag(item, type);
             }
-            catch
+            catch (Exception ex)
             {
-
+                _logger.LogError(ex, "Error getting image cache tag");
             }
 
             int? width = imageInfo.Width;

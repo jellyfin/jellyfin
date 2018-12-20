@@ -619,7 +619,7 @@ namespace Emby.Server.Implementations.Dto
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error getting person {0}", c);
+                        _logger.LogError(ex, "Error getting person {Name}", c);
                         return null;
                     }
 

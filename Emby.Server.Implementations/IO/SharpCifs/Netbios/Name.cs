@@ -130,7 +130,7 @@ namespace SharpCifs.Netbios
             {
                 name = Runtime.GetStringForBytes(tmp, 0, length).Trim();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
             }

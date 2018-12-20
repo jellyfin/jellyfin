@@ -198,7 +198,7 @@ namespace Emby.Dlna
             }
             catch (ArgumentException ex)
             {
-                _logger.LogError(ex, "Error evaluating regex pattern {0}", pattern);
+                _logger.LogError(ex, "Error evaluating regex pattern {Pattern}", pattern);
                 return false;
             }
         }
@@ -324,7 +324,7 @@ namespace Emby.Dlna
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error parsing profile file: {0}", path);
+                    _logger.LogError(ex, "Error parsing profile file: {Path}", path);
 
                     return null;
                 }

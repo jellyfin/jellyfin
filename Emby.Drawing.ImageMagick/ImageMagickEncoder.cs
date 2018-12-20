@@ -101,9 +101,9 @@ namespace Emby.Drawing.ImageMagick
                     wand.SaveImage(tmpPath);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                //_logger.LogError(ex, "Error loading webp: ");
+                _logger.LogError(ex, "Error loading webp");
                 _webpAvailable = false;
             }
         }
