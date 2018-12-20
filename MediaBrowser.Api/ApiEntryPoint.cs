@@ -147,7 +147,7 @@ namespace MediaBrowser.Api
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error deleting encoded media cache", ex);
+                Logger.LogError(ex, "Error deleting encoded media cache");
             }
         }
 
@@ -557,7 +557,7 @@ namespace MediaBrowser.Api
                 {
                     try
                     {
-                        Logger.LogInformation("Stopping ffmpeg process with q command for {0}", job.Path);
+                        Logger.LogInformation("Stopping ffmpeg process with q command for {path}", job.Path);
 
                         //process.Kill();
                         process.StandardInput.WriteLine("q");
@@ -565,13 +565,13 @@ namespace MediaBrowser.Api
                         // Need to wait because killing is asynchronous
                         if (!process.WaitForExit(5000))
                         {
-                            Logger.LogInformation("Killing ffmpeg process for {0}", job.Path);
+                            Logger.LogInformation("Killing ffmpeg process for {path}", job.Path);
                             process.Kill();
                         }
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError("Error killing transcoding job for {0}", ex, job.Path);
+                        Logger.LogError(ex, "Error killing transcoding job for {path}", job.Path);
                     }
                 }
             }
@@ -589,7 +589,7 @@ namespace MediaBrowser.Api
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error closing live stream for {0}", ex, job.Path);
+                    Logger.LogError(ex, "Error closing live stream for {path}", job.Path);
                 }
             }
         }
@@ -620,15 +620,15 @@ namespace MediaBrowser.Api
             {
 
             }
-            catch (IOException)
+            catch (IOException ex)
             {
-                //Logger.LogError("Error deleting partial stream file(s) {0}", ex, path);
+                Logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
 
                 DeletePartialStreamFiles(path, jobType, retryCount + 1, 500);
             }
-            catch
+            catch (Exception ex)
             {
-                //Logger.LogError("Error deleting partial stream file(s) {0}", ex, path);
+                Logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
             }
         }
 
@@ -670,7 +670,7 @@ namespace MediaBrowser.Api
                 catch (IOException ex)
                 {
                     e = ex;
-                    //Logger.LogError("Error deleting HLS file {0}", ex, file);
+                    Logger.LogError(ex, "Error deleting HLS file {path}", file);
                 }
             }
 

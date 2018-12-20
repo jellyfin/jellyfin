@@ -114,7 +114,7 @@ namespace EmbyServer.SocketSharp
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error processing request", ex);
+                _logger.LogError(ex, "Error processing request");
 
                 httpReq = httpReq ?? GetRequest(context);
                 return ErrorHandler(ex, httpReq, true, true);
@@ -176,7 +176,7 @@ namespace EmbyServer.SocketSharp
             }
             catch (Exception ex)
             {
-                _logger.LogError("AcceptWebSocketAsync error", ex);
+                _logger.LogError(ex, "AcceptWebSocketAsync error");
                 ctx.Response.StatusCode = 500;
                 ctx.Response.Close();
             }
@@ -206,7 +206,7 @@ namespace EmbyServer.SocketSharp
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error closing web socket response", ex);
+                _logger.LogError(ex, "Error closing web socket response");
             }
         }
 

@@ -72,7 +72,7 @@ namespace MediaBrowser.XbmcMetadata
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error saving metadata for {0}", ex, item.Path ?? item.Name);
+                _logger.LogError(ex, "Error saving metadata for {path}", item.Path ?? item.Name);
             }
         }
     }

@@ -105,7 +105,7 @@ namespace MediaBrowser.Controller.Entities
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error loading library options", ex);
+                Logger.LogError(ex, "Error loading library options");
 
                 return new LibraryOptions();
             }

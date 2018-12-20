@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Security
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error migrating authentication database", ex);
+                Logger.LogError(ex, "Error migrating authentication database");
             }
         }
 

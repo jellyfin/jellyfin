@@ -180,7 +180,7 @@ namespace Emby.Server.Implementations.HttpServer
             if (!message.StartsWith("{", StringComparison.OrdinalIgnoreCase))
             {
                 // This info is useful sometimes but also clogs up the log
-                //_lLogError("Received web socket message that is not a json structure: " + message);
+                _logger.LogDebug("Received web socket message that is not a json structure: {message}", message);
                 return;
             }
 
@@ -204,7 +204,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error processing web socket message", ex);
+                _logger.LogError(ex, "Error processing web socket message");
             }
         }
 

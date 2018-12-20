@@ -166,7 +166,7 @@ namespace Emby.Server.Implementations.MediaEncoder
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError("Error extracting chapter images for {0}", ex, string.Join(",", video.Path));
+                            _logger.LogError(ex, "Error extracting chapter images for {0}", string.Join(",", video.Path));
                             success = false;
                             break;
                         }
@@ -226,7 +226,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
             foreach (var image in deadImages)
             {
-                _logger.LogDebug("Deleting dead chapter image {0}", image);
+                _logger.LogDebug("Deleting dead chapter image {path}", image);
 
                 try
                 {
@@ -234,7 +234,7 @@ namespace Emby.Server.Implementations.MediaEncoder
                 }
                 catch (IOException ex)
                 {
-                    _logger.LogError("Error deleting {0}.", ex, image);
+                    _logger.LogError(ex, "Error deleting {path}.", image);
                 }
             }
         }

@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error deserializing {0}", ex, jsonFile);
+                Logger.LogError(ex, "Error deserializing {jsonFile}", jsonFile);
             }
             return new List<T>();
         }

@@ -774,7 +774,7 @@ namespace MediaBrowser.Providers.Music
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error getting music brainz info", ex);
+                        _logger.LogError(ex, "Error getting music brainz info");
                     }
                 }
             }

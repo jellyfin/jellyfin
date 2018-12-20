@@ -211,7 +211,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (retry)
                 {
-                    _logger.LogError("IOException saving to {0}. {2}. Will retry saving to {1}", path, retryPath, ex.Message);
+                    _logger.LogError(ex, "IOException saving to {0}. Will retry saving to {1}", path, retryPath);
                 }
                 else
                 {
@@ -271,7 +271,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error setting hidden attribute on {0} - {1}", path, ex.Message);
+                _logger.LogError(ex, "Error setting hidden attribute on {0}", path);
             }
         }
 

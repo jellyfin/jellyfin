@@ -66,7 +66,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error sending message", ex);
+                _logger.LogError(ex, "Error sending message");
             }
         }
 

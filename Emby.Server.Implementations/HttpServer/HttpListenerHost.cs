@@ -252,7 +252,7 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (logExceptionStackTrace)
                 {
-                    _logger.LogError("Error processing request", ex);
+                    _logger.LogError(ex, "Error processing request");
                 }
                 else if (logExceptionMessage)
                 {
@@ -272,9 +272,9 @@ namespace Emby.Server.Implementations.HttpServer
                 httpRes.ContentType = "text/html";
                 await Write(httpRes, NormalizeExceptionMessage(ex.Message)).ConfigureAwait(false);
             }
-            catch
+            catch (Exception errorEx)
             {
-                //_logger.LogError("Error this.ProcessRequest(context)(Exception while writing error to the response)", errorEx);
+                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response)");
             }
         }
 
@@ -713,7 +713,7 @@ namespace Emby.Server.Implementations.HttpServer
             var pathParts = pathInfo.TrimStart('/').Split('/');
             if (pathParts.Length == 0)
             {
-                _logger.LogError("Path parts empty for PathInfo: {0}, Url: {1}", pathInfo, httpReq.RawUrl);
+                _logger.LogError("Path parts empty for PathInfo: {pathInfo}, Url: {RawUrl}", pathInfo, httpReq.RawUrl);
                 return null;
             }
 
@@ -729,7 +729,7 @@ namespace Emby.Server.Implementations.HttpServer
                 };
             }
 
-            _logger.LogError("Could not find handler for {0}", pathInfo);
+            _logger.LogError("Could not find handler for {pathInfo}", pathInfo);
             return null;
         }
 
@@ -919,7 +919,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return Task.CompletedTask;
             }
 
-            //_logger.LogDebug("Websocket message received: {0}", result.MessageType);
+            _logger.LogDebug("Websocket message received: {0}", result.MessageType);
 
             var tasks = _webSocketListeners.Select(i => Task.Run(async () =>
             {
@@ -929,7 +929,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("{0} failed processing WebSocket message {1}", ex, i.GetType().Name, result.MessageType ?? string.Empty);
+                    _logger.LogError(ex, "{0} failed processing WebSocket message {1}", i.GetType().Name, result.MessageType ?? string.Empty);
                 }
             }));
 

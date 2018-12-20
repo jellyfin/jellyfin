@@ -259,10 +259,9 @@ namespace MediaBrowser.Controller.Entities
                     {
                         return _libraryManager.GetGenre(i);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Full exception logged at lower levels
-                        _logger.LogError("Error getting genre");
+                        _logger.LogError(ex, "Error getting genre");
                         return null;
                     }
 
@@ -383,10 +382,9 @@ namespace MediaBrowser.Controller.Entities
                     {
                         return _libraryManager.GetGenre(i);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Full exception logged at lower levels
-                        _logger.LogError("Error getting genre");
+                        _logger.LogError(ex, "Error getting genre");
                         return null;
                     }
 

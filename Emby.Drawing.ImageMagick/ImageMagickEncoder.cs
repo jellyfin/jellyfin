@@ -103,7 +103,7 @@ namespace Emby.Drawing.ImageMagick
             }
             catch
             {
-                //_logger.LogError("Error loading webp: ", ex);
+                //_logger.LogError(ex, "Error loading webp: ");
                 _webpAvailable = false;
             }
         }
@@ -295,7 +295,7 @@ namespace Emby.Drawing.ImageMagick
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error drawing indicator overlay", ex);
+                _logger.LogError(ex, "Error drawing indicator overlay");
             }
         }
 

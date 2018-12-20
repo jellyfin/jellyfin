@@ -185,7 +185,7 @@ namespace Emby.Dlna.Main
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error starting ssdp handlers", ex);
+                _logger.LogError(ex, "Error starting ssdp handlers");
             }
         }
 
@@ -202,7 +202,7 @@ namespace Emby.Dlna.Main
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error starting device discovery", ex);
+                _logger.LogError(ex, "Error starting device discovery");
             }
         }
 
@@ -215,7 +215,7 @@ namespace Emby.Dlna.Main
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error stopping device discovery", ex);
+                _logger.LogError(ex, "Error stopping device discovery");
             }
         }
 
@@ -243,7 +243,7 @@ namespace Emby.Dlna.Main
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error registering endpoint", ex);
+                _logger.LogError(ex, "Error registering endpoint");
             }
         }
 
@@ -361,7 +361,7 @@ namespace Emby.Dlna.Main
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error starting PlayTo manager", ex);
+                    _logger.LogError(ex, "Error starting PlayTo manager");
                 }
             }
         }
@@ -379,7 +379,7 @@ namespace Emby.Dlna.Main
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error disposing PlayTo manager", ex);
+                        _logger.LogError(ex, "Error disposing PlayTo manager");
                     }
                     _manager = null;
                 }

@@ -148,7 +148,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error downloading subtitles for {0}", ex, video.Path);
+                    _logger.LogError(ex, "Error downloading subtitles for {Path}", video.Path);
                 }
 
                 // Update progress

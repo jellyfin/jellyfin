@@ -124,7 +124,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error starting ffmpeg", ex);
+                Logger.LogError(ex, "Error starting ffmpeg");
 
                 OnTranscodeFailedToStart(encodingJob.OutputFilePath, encodingJob);
 
@@ -179,9 +179,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 isSuccesful = exitCode == 0;
             }
-            catch
+            catch (Exception ex)
             {
-                Logger.LogError("FFMpeg exited with an error.");
+                Logger.LogError(ex, "FFMpeg exited with an error.");
             }
 
             if (isSuccesful && !job.IsCancelled)

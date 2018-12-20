@@ -138,7 +138,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error copying live stream.", ex);
+                    Logger.LogError(ex, "Error copying live stream.");
                 }
                 EnableStreamSharing = false;
                 await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);

@@ -173,7 +173,7 @@ namespace SocketHttpListener.Net
             {
                 HttpEndPointListener epl = (HttpEndPointListener)acceptEventArg.UserToken;
 
-                epl._logger.LogError("Error in socket.AcceptAsync", ex);
+                epl._logger.LogError(ex, "Error in socket.AcceptAsync");
             }
         }
 
@@ -238,7 +238,7 @@ namespace SocketHttpListener.Net
             }
             catch (Exception ex)
             {
-                epl._logger.LogError("Error in ProcessAccept", ex);
+                epl._logger.LogError(ex, "Error in ProcessAccept");
 
                 TryClose(accepted);
                 epl.Accept();

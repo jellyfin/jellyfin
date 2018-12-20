@@ -365,7 +365,7 @@ namespace Emby.Server.Implementations.Collections
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error creating camera uploads library", ex);
+                        _logger.LogError(ex, "Error creating camera uploads library");
                     }
 
                     _config.Configuration.CollectionsUpgraded = true;

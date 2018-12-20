@@ -67,7 +67,7 @@ namespace Emby.Server.Implementations.News
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error downloading news", ex);
+                _logger.LogError(ex, "Error downloading news");
             }
         }
 

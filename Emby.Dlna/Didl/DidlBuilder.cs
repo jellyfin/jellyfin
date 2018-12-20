@@ -913,9 +913,9 @@ namespace Emby.Dlna.Didl
 
                 writer.WriteFullEndElement();
             }
-            catch (XmlException)
+            catch (XmlException ex)
             {
-                _logger.LogError("Error adding xml value: {value}", name);
+                _logger.LogError(ex, "Error adding xml value: {value}", name);
             }
         }
 
@@ -925,9 +925,9 @@ namespace Emby.Dlna.Didl
             {
                 writer.WriteElementString(prefix, name, namespaceUri, value);
             }
-            catch (XmlException)
+            catch (XmlException ex)
             {
-                _logger.LogError("Error adding xml value: {value}", value);
+                _logger.LogError(ex, "Error adding xml value: {value}", value);
             }
         }
 

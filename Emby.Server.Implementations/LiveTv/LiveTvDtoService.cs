@@ -170,6 +170,7 @@ namespace Emby.Server.Implementations.LiveTv
                     }
                     catch (Exception ex)
                     {
+                        _logger.LogError(ex, "Error");
                     }
                 }
                 image = librarySeries.GetImageInfo(ImageType.Backdrop, 0);
@@ -185,6 +186,7 @@ namespace Emby.Server.Implementations.LiveTv
                     }
                     catch (Exception ex)
                     {
+                        _logger.LogError(ex, "Error");
                     }
                 }
             }
@@ -212,6 +214,7 @@ namespace Emby.Server.Implementations.LiveTv
                     }
                     catch (Exception ex)
                     {
+                        _logger.LogError(ex, "Error");
                     }
                 }
 
@@ -230,6 +233,7 @@ namespace Emby.Server.Implementations.LiveTv
                         }
                         catch (Exception ex)
                         {
+                            _logger.LogError(ex, "Error");
                         }
                     }
                 }
@@ -260,6 +264,7 @@ namespace Emby.Server.Implementations.LiveTv
                     }
                     catch (Exception ex)
                     {
+                        _logger.LogError(ex, "Error");
                     }
                 }
                 image = librarySeries.GetImageInfo(ImageType.Backdrop, 0);
@@ -275,6 +280,7 @@ namespace Emby.Server.Implementations.LiveTv
                     }
                     catch (Exception ex)
                     {
+                        _logger.LogError(ex, "Error");
                     }
                 }
             }
@@ -333,6 +339,7 @@ namespace Emby.Server.Implementations.LiveTv
                         }
                         catch (Exception ex)
                         {
+                            _logger.LogError(ex, "Error");
                         }
                     }
                 }
@@ -376,7 +383,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error getting image info for {0}", ex, info.Name);
+                _logger.LogError(ex, "Error getting image info for {name}", info.Name);
             }
 
             return null;

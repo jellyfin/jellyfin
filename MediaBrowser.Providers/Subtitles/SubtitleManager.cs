@@ -101,7 +101,7 @@ namespace MediaBrowser.Providers.Subtitles
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error downloading subtitles from {0}", ex, provider.Name);
+                        _logger.LogError(ex, "Error downloading subtitles from {Provider}", provider.Name);
                     }
                 }
                 return new RemoteSubtitleInfo[] { };
@@ -119,7 +119,7 @@ namespace MediaBrowser.Providers.Subtitles
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error downloading subtitles from {0}", ex, i.Name);
+                    _logger.LogError(ex, "Error downloading subtitles from {0}", i.Name);
                     return new RemoteSubtitleInfo[] { };
                 }
             });

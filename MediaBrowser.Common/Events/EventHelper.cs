@@ -28,7 +28,7 @@ namespace MediaBrowser.Common.Events
                     }
                     catch (Exception ex)
                     {
-                        logger.LogError("Error in event handler", ex);
+                        logger.LogError(ex, "Error in event handler");
                     }
                 });
             }
@@ -54,7 +54,7 @@ namespace MediaBrowser.Common.Events
                     }
                     catch (Exception ex)
                     {
-                        logger.LogError("Error in event handler", ex);
+                        logger.LogError(ex, "Error in event handler");
                     }
                 });
             }
@@ -77,7 +77,7 @@ namespace MediaBrowser.Common.Events
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError("Error in event handler", ex);
+                    logger.LogError(ex, "Error in event handler");
                 }
             }
         }
@@ -100,7 +100,7 @@ namespace MediaBrowser.Common.Events
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError("Error in event handler", ex);
+                    logger.LogError(ex, "Error in event handler");
                 }
             }
         }

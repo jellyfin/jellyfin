@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (exception != null)
             {
-                _logger.LogError("Error processing request for {0}", exception, req.RawUrl);
+                _logger.LogError(exception, "Error processing request for {RawUrl}", req.RawUrl);
 
                 if (!string.IsNullOrEmpty(exception.Message))
                 {

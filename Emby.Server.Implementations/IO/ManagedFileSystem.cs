@@ -175,7 +175,7 @@ namespace Emby.Server.Implementations.IO
                 path = System.IO.Path.GetFullPath(path);
                 return path;
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException)
             {
                 return filePath;
             }
@@ -395,7 +395,7 @@ namespace Emby.Server.Implementations.IO
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error determining CreationTimeUtc for {0}", ex, info.FullName);
+                Logger.LogError(ex, "Error determining CreationTimeUtc for {FullName}", info.FullName);
                 return DateTime.MinValue;
             }
         }
@@ -434,7 +434,7 @@ namespace Emby.Server.Implementations.IO
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error determining LastAccessTimeUtc for {0}", ex, info.FullName);
+                Logger.LogError(ex, "Error determining LastAccessTimeUtc for {FullName}", info.FullName);
                 return DateTime.MinValue;
             }
         }

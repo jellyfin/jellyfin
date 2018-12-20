@@ -1364,7 +1364,7 @@ namespace Emby.Server.Implementations.Data
                     }
                     catch (SerializationException ex)
                     {
-                        Logger.LogError("Error deserializing item", ex);
+                        Logger.LogError(ex, "Error deserializing item");
                     }
                 }
             }

@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Data
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error loading database file. Will reset and retry.", ex);
+                Logger.LogError(ex, "Error loading database file. Will reset and retry.");
 
                 FileSystem.DeleteFile(DbFilePath);
 

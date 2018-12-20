@@ -392,7 +392,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error authenticating with provider {0}", ex, provider.Name);
+                _logger.LogError(ex, "Error authenticating with provider {provider}", provider.Name);
 
                 return false;
             }
@@ -575,7 +575,7 @@ namespace Emby.Server.Implementations.Library
                 catch (Exception ex)
                 {
                     // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    _logger.LogError("Error generating PrimaryImageAspectRatio for {0}", ex, user.Name);
+                    _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {user}", user.Name);
                 }
             }
 
@@ -599,7 +599,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error getting {0} image info for {1}", ex, image.Type, image.Path);
+                _logger.LogError(ex, "Error getting {imageType} image info for {imagePath}", image.Type, image.Path);
                 return null;
             }
         }
@@ -775,7 +775,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (IOException ex)
                 {
-                    _logger.LogError("Error deleting file {0}", ex, configPath);
+                    _logger.LogError(ex, "Error deleting file {path}", configPath);
                 }
 
                 DeleteUserPolicy(user);
@@ -1045,7 +1045,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error reading policy file: {0}", ex, path);
+                _logger.LogError(ex, "Error reading policy file: {path}", path);
 
                 return GetDefaultPolicy(user);
             }
@@ -1109,7 +1109,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error deleting policy file", ex);
+                _logger.LogError(ex, "Error deleting policy file");
             }
         }
 
@@ -1144,7 +1144,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error reading policy file: {0}", ex, path);
+                _logger.LogError(ex, "Error reading policy file: {path}", path);
 
                 return new UserConfiguration();
             }

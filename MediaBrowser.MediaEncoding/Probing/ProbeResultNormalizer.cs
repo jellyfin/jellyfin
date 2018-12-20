@@ -1351,11 +1351,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                     {
                         video.Timestamp = GetMpegTimestamp(video.Path);
 
-                        _logger.LogDebug("Video has {0} timestamp", video.Timestamp);
+                        _logger.LogDebug("Video has {timestamp} timestamp", video.Timestamp);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error extracting timestamp info from {0}", ex, video.Path);
+                        _logger.LogError(ex, "Error extracting timestamp info from {path}", video.Path);
                         video.Timestamp = null;
                     }
                 }

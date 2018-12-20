@@ -302,7 +302,7 @@ namespace Emby.Drawing
             {
                 // Decoder failed to decode it
 #if DEBUG
-                _logger.LogError("Error encoding image", ex);
+                _logger.LogError(ex, "Error encoding image");
 #endif
                 // Just spit out the original file if all the options are default
                 return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
@@ -310,7 +310,7 @@ namespace Emby.Drawing
             catch (Exception ex)
             {
                 // If it fails for whatever reason, return the original image
-                _logger.LogError("Error encoding image", ex);
+                _logger.LogError(ex, "Error encoding image");
 
                 // Just spit out the original file if all the options are default
                 return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
@@ -603,7 +603,7 @@ namespace Emby.Drawing
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Image conversion failed for {0}", ex, originalImagePath);
+                    _logger.LogError(ex, "Image conversion failed for {originalImagePath}", originalImagePath);
                 }
             }
 
@@ -660,7 +660,7 @@ namespace Emby.Drawing
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error enhancing image", ex);
+                _logger.LogError(ex, "Error enhancing image");
             }
 
             return new ValueTuple<string, DateTime, bool>(originalImagePath, dateModified, inputImageSupportsTransparency);
@@ -853,7 +853,7 @@ namespace Emby.Drawing
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error in image enhancer: {0}", ex, i.GetType().Name);
+                    _logger.LogError(ex, "Error in image enhancer: {0}", i.GetType().Name);
                 }
             }
 

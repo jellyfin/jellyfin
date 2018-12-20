@@ -431,7 +431,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error starting ffmpeg", ex);
+                _logger.LogError(ex, "Error starting ffmpeg");
 
                 throw;
             }
@@ -448,7 +448,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error killing subtitle conversion process", ex);
+                    _logger.LogError(ex, "Error killing subtitle conversion process");
                 }
             }
 
@@ -471,7 +471,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
                     catch (IOException ex)
                     {
-                        _logger.LogError("Error deleting converted subtitle {0}", ex, outputPath);
+                        _logger.LogError(ex, "Error deleting converted subtitle {0}", outputPath);
                     }
                 }
             }
@@ -561,7 +561,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error starting ffmpeg", ex);
+                _logger.LogError(ex, "Error starting ffmpeg");
 
                 throw;
             }
@@ -578,7 +578,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error killing subtitle extraction process", ex);
+                    _logger.LogError(ex, "Error killing subtitle extraction process");
                 }
             }
 
@@ -603,7 +603,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
                 catch (IOException ex)
                 {
-                    _logger.LogError("Error deleting extracted subtitle {0}", ex, outputPath);
+                    _logger.LogError(ex, "Error deleting extracted subtitle {0}", outputPath);
                 }
             }
             else if (!_fileSystem.FileExists(outputPath))

@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.IO
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error in ReportFileSystemChanged for {0}", ex, path);
+                    Logger.LogError(ex, "Error in ReportFileSystemChanged for {path}", path);
                 }
             }
         }
@@ -354,7 +354,7 @@ namespace Emby.Server.Implementations.IO
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error watching path: {0}", ex, path);
+                    Logger.LogError(ex, "Error watching path: {path}", path);
                 }
             });
         }
@@ -382,7 +382,7 @@ namespace Emby.Server.Implementations.IO
             {
                 using (watcher)
                 {
-                    Logger.LogInformation("Stopping directory watching for path {0}", watcher.Path);
+                    Logger.LogInformation("Stopping directory watching for path {path}", watcher.Path);
 
                     watcher.Created -= watcher_Changed;
                     watcher.Deleted -= watcher_Changed;
@@ -439,7 +439,7 @@ namespace Emby.Server.Implementations.IO
             var ex = e.GetException();
             var dw = (FileSystemWatcher)sender;
 
-            Logger.LogError("Error in Directory watcher for: " + dw.Path, ex);
+            Logger.LogError(ex, "Error in Directory watcher for: {path}", dw.Path);
 
             DisposeWatcher(dw, true);
         }
@@ -461,7 +461,7 @@ namespace Emby.Server.Implementations.IO
             }
             catch (Exception ex)
             {
-                Logger.LogError("Exception in ReportFileSystemChanged. Path: {0}", ex, e.FullPath);
+                Logger.LogError(ex, "Exception in ReportFileSystemChanged. Path: {FullPath}", e.FullPath);
             }
         }
 
@@ -487,13 +487,13 @@ namespace Emby.Server.Implementations.IO
             {
                 if (_fileSystem.AreEqual(i, path))
                 {
-                    //logger.LogDebug("Ignoring change to {0}", path);
+                    Logger.LogDebug("Ignoring change to {path}", path);
                     return true;
                 }
 
                 if (_fileSystem.ContainsSubPath(i, path))
                 {
-                    //logger.LogDebug("Ignoring change to {0}", path);
+                    Logger.LogDebug("Ignoring change to {path}", path);
                     return true;
                 }
 
@@ -503,7 +503,7 @@ namespace Emby.Server.Implementations.IO
                 {
                     if (_fileSystem.AreEqual(parent, path))
                     {
-                        //logger.LogDebug("Ignoring change to {0}", path);
+                        Logger.LogDebug("Ignoring change to {path}", path);
                         return true;
                     }
                 }

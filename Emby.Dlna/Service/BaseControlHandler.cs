@@ -52,7 +52,7 @@ namespace Emby.Dlna.Service
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error processing control request", ex);
+                _logger.LogError(ex, "Error processing control request");
 
                 return new ControlErrorHandler().GetResponse(ex);
             }

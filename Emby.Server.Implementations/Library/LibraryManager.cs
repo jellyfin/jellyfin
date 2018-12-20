@@ -384,7 +384,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error deleting {0}", ex, metadataPath);
+                    _logger.LogError(ex, "Error deleting {metadataPath}", metadataPath);
                 }
             }
 
@@ -398,14 +398,13 @@ namespace Emby.Server.Implementations.Library
                 {
                     try
                     {
+                         _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
                         if (fileSystemInfo.IsDirectory)
                         {
-                            _logger.LogDebug("Deleting path {0}", fileSystemInfo.FullName);
                             _fileSystem.DeleteDirectory(fileSystemInfo.FullName, true);
                         }
                         else
                         {
-                            _logger.LogDebug("Deleting path {0}", fileSystemInfo.FullName);
                             _fileSystem.DeleteFile(fileSystemInfo.FullName);
                         }
                     }
@@ -489,7 +488,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error in {0} resolving {1}", ex, resolver.GetType().Name, args.Path);
+                _logger.LogError(ex, "Error in {resolver} resolving {path}", resolver.GetType().Name, args.Path);
                 return null;
             }
         }
@@ -587,7 +586,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     if (parent != null && parent.IsPhysicalRoot)
                     {
-                        _logger.LogError("Error in GetFilteredFileSystemEntries isPhysicalRoot: {0} IsVf: {1}", ex, isPhysicalRoot, isVf);
+                        _logger.LogError(ex, "Error in GetFilteredFileSystemEntries isPhysicalRoot: {0} IsVf: {1}", isPhysicalRoot, isVf);
 
                         files = new FileSystemMetadata[] { };
                     }
@@ -713,7 +712,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error resolving path {0}", ex, f.FullName);
+                    _logger.LogError(ex, "Error resolving path {path}", f.FullName);
                     return null;
                 }
             }).Where(i => i != null);
@@ -1148,7 +1147,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error running postscan task", ex);
+                    _logger.LogError(ex, "Error running postscan task");
                 }
 
                 numComplete++;
@@ -1199,7 +1198,7 @@ namespace Emby.Server.Implementations.Library
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError("Error resolving shortcut file {0}", ex, i);
+                            _logger.LogError(ex, "Error resolving shortcut file {file}", i);
                             return null;
                         }
                     })
@@ -1650,7 +1649,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error getting intros", ex);
+                _logger.LogError(ex, "Error getting intros");
 
                 return new List<IntroInfo>();
             }
@@ -1670,7 +1669,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error getting intro files", ex);
+                    _logger.LogError(ex, "Error getting intro files");
 
                     return new List<string>();
                 }
@@ -1693,7 +1692,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (video == null)
                 {
-                    _logger.LogError("Unable to locate item with Id {0}.", info.ItemId.Value);
+                    _logger.LogError("Unable to locate item with Id {ID}.", info.ItemId.Value);
                 }
             }
             else if (!string.IsNullOrEmpty(info.Path))
@@ -1705,7 +1704,7 @@ namespace Emby.Server.Implementations.Library
 
                     if (video == null)
                     {
-                        _logger.LogError("Intro resolver returned null for {0}.", info.Path);
+                        _logger.LogError("Intro resolver returned null for {path}.", info.Path);
                     }
                     else
                     {
@@ -1724,7 +1723,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error resolving path {0}.", ex, info.Path);
+                    _logger.LogError(ex, "Error resolving path {path}.", info.Path);
                 }
             }
             else
@@ -1873,7 +1872,7 @@ namespace Emby.Server.Implementations.Library
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error in ItemAdded event handler", ex);
+                        _logger.LogError(ex, "Error in ItemAdded event handler");
                     }
                 }
             }
@@ -1929,7 +1928,7 @@ namespace Emby.Server.Implementations.Library
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error in ItemUpdated event handler", ex);
+                        _logger.LogError(ex, "Error in ItemUpdated event handler");
                     }
                 }
             }
@@ -1965,7 +1964,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error in ItemRemoved event handler", ex);
+                    _logger.LogError(ex, "Error in ItemRemoved event handler");
                 }
             }
         }
@@ -2808,7 +2807,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error getting person", ex);
+                    _logger.LogError(ex, "Error getting person");
                     return null;
                 }
 

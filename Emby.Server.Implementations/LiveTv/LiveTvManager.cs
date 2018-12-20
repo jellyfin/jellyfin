@@ -1089,7 +1089,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _logger.LogDebug("Refreshing guide from {0}", service.Name);
+                _logger.LogDebug("Refreshing guide from {name}", service.Name);
 
                 try
                 {
@@ -1108,7 +1108,7 @@ namespace Emby.Server.Implementations.LiveTv
                 catch (Exception ex)
                 {
                     cleanDatabase = false;
-                    _logger.LogError("Error refreshing channels for service", ex);
+                    _logger.LogError(ex, "Error refreshing channels for service");
                 }
 
                 numComplete++;
@@ -1171,7 +1171,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error getting channel information for {0}", ex, channelInfo.Item2.Name);
+                    _logger.LogError(ex, "Error getting channel information for {name}", channelInfo.Item2.Name);
                 }
 
                 numComplete++;
@@ -1300,7 +1300,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error getting programs for channel {0}", ex, currentChannel.Name);
+                    _logger.LogError(ex, "Error getting programs for channel {name}", currentChannel.Name);
                 }
 
                 numComplete++;
@@ -1645,7 +1645,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error getting recordings", ex);
+                    _logger.LogError(ex, "Error getting recordings");
                     return new List<Tuple<TimerInfo, ILiveTvService>>();
                 }
             });
@@ -1721,7 +1721,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error getting recordings", ex);
+                    _logger.LogError(ex, "Error getting recordings");
                     return new List<Tuple<TimerInfo, ILiveTvService>>();
                 }
             });
@@ -1876,7 +1876,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error getting recordings", ex);
+                    _logger.LogError(ex, "Error getting recordings");
                     return new List<Tuple<SeriesTimerInfo, ILiveTvService>>();
                 }
             });
@@ -1922,7 +1922,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error getting recordings", ex);
+                    _logger.LogError(ex, "Error getting recordings");
                     return new List<Tuple<SeriesTimerInfo, ILiveTvService>>();
                 }
             });

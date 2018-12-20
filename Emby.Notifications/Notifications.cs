@@ -273,7 +273,7 @@ namespace Emby.Notifications
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error sending notification", ex);
+                _logger.LogError(ex, "Error sending notification");
             }
         }
 

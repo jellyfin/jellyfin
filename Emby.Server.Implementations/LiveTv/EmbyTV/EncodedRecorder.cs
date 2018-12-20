@@ -269,14 +269,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 try
                 {
-                    _logger.LogInformation("Stopping ffmpeg recording process for {0}", _targetPath);
+                    _logger.LogInformation("Stopping ffmpeg recording process for {path}", _targetPath);
 
                     //process.Kill();
                     _process.StandardInput.WriteLine("q");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error stopping recording transcoding job for {0}", ex, _targetPath);
+                    _logger.LogError(ex, "Error stopping recording transcoding job for {path}", _targetPath);
                 }
 
                 if (_hasExited)
@@ -286,7 +286,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    _logger.LogInformation("Calling recording process.WaitForExit for {0}", _targetPath);
+                    _logger.LogInformation("Calling recording process.WaitForExit for {path}", _targetPath);
 
                     if (_process.WaitForExit(10000))
                     {
@@ -295,7 +295,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error waiting for recording process to exit for {0}", ex, _targetPath);
+                    _logger.LogError(ex, "Error waiting for recording process to exit for {path}", _targetPath);
                 }
 
                 if (_hasExited)
@@ -305,13 +305,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    _logger.LogInformation("Killing ffmpeg recording process for {0}", _targetPath);
+                    _logger.LogInformation("Killing ffmpeg recording process for {path}", _targetPath);
 
                     _process.Kill();
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error killing recording transcoding job for {0}", ex, _targetPath);
+                    _logger.LogError(ex, "Error killing recording transcoding job for {path}", _targetPath);
                 }
             }
         }
@@ -329,7 +329,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 var exitCode = process.ExitCode;
 
-                _logger.LogInformation("FFMpeg recording exited with code {0} for {1}", exitCode, _targetPath);
+                _logger.LogInformation("FFMpeg recording exited with code {ExitCode} for {path}", exitCode, _targetPath);
 
                 if (exitCode == 0)
                 {
@@ -337,13 +337,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 else
                 {
-                    _taskCompletionSource.TrySetException(new Exception(string.Format("Recording for {0} failed. Exit code {1}", _targetPath, exitCode)));
+                    _taskCompletionSource.TrySetException(new Exception(string.Format("Recording for {path} failed. Exit code {ExitCode}", _targetPath, exitCode)));
                 }
             }
             catch
             {
-                _logger.LogError("FFMpeg recording exited with an error for {0}.", _targetPath);
-                _taskCompletionSource.TrySetException(new Exception(string.Format("Recording for {0} failed", _targetPath)));
+                _logger.LogError("FFMpeg recording exited with an error for {path}.", _targetPath);
+                _taskCompletionSource.TrySetException(new Exception(string.Format("Recording for {path} failed", _targetPath)));
             }
         }
 
@@ -357,7 +357,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error disposing recording log stream", ex);
+                    _logger.LogError(ex, "Error disposing recording log stream");
                 }
 
                 _logFileStream = null;
@@ -387,7 +387,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error reading ffmpeg recording log", ex);
+                _logger.LogError(ex, "Error reading ffmpeg recording log");
             }
         }
     }

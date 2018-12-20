@@ -141,7 +141,7 @@ namespace Emby.Server.Implementations.IO
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error processing directory changes", ex);
+                Logger.LogError(ex, "Error processing directory changes");
             }
         }
 
@@ -161,7 +161,7 @@ namespace Emby.Server.Implementations.IO
                     continue;
                 }
 
-                Logger.LogInformation(item.Name + " (" + item.Path + ") will be refreshed.");
+                Logger.LogInformation("{name} ({path}}) will be refreshed.", item.Name, item.Path);
 
                 try
                 {
@@ -172,11 +172,11 @@ namespace Emby.Server.Implementations.IO
                     // For now swallow and log. 
                     // Research item: If an IOException occurs, the item may be in a disconnected state (media unavailable)
                     // Should we remove it from it's parent?
-                    Logger.LogError("Error refreshing {0}", ex, item.Name);
+                    Logger.LogError(ex, "Error refreshing {name}", item.Name);
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error refreshing {0}", ex, item.Name);
+                    Logger.LogError(ex, "Error refreshing {name}", item.Name);
                 }
             }
         }
