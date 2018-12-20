@@ -124,7 +124,7 @@ namespace Rssdp.Infrastructure
             {
                 await SearchAsync(CancellationToken.None).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
             }
