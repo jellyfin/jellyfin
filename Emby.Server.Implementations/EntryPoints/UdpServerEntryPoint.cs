@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed to start UDP Server", ex);
+                _logger.LogError(ex, "Failed to start UDP Server");
             }
         }
 

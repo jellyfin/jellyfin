@@ -58,7 +58,7 @@ namespace Emby.Dlna
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error extracting DLNA profiles.", ex);
+                _logger.LogError(ex, "Error extracting DLNA profiles.");
             }
         }
 
@@ -198,7 +198,7 @@ namespace Emby.Dlna
             }
             catch (ArgumentException ex)
             {
-                _logger.LogError("Error evaluating regex pattern {0}", ex, pattern);
+                _logger.LogError(ex, "Error evaluating regex pattern {0}", pattern);
                 return false;
             }
         }
@@ -324,7 +324,7 @@ namespace Emby.Dlna
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error parsing profile file: {0}", ex, path);
+                    _logger.LogError(ex, "Error parsing profile file: {0}", path);
 
                     return null;
                 }

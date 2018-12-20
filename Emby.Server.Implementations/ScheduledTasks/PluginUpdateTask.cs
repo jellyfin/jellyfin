@@ -89,11 +89,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 }
                 catch (HttpException ex)
                 {
-                    _logger.LogError("Error downloading {0}", ex, package.name);
+                    _logger.LogError(ex, "Error downloading {name}", package.name);
                 }
                 catch (IOException ex)
                 {
-                    _logger.LogError("Error updating {0}", ex, package.name);
+                    _logger.LogError(ex, "Error updating {name}", package.name);
                 }
 
                 // Update progress

@@ -140,7 +140,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error updating device volume info for {0}", ex, Properties.Name);
+                _logger.LogError(ex, "Error updating device volume info for {0}", Properties.Name);
             }
         }
 
@@ -507,7 +507,7 @@ namespace Emby.Dlna.PlayTo
                 if (_disposed)
                     return;
 
-                //_logger.LogError("Error updating device info for {0}", ex, Properties.Name);
+                //_logger.LogError(ex, "Error updating device info for {0}", Properties.Name);
 
                 _connectFailureCount++;
 
@@ -767,7 +767,7 @@ namespace Emby.Dlna.PlayTo
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Unable to parse xml {0}", ex, trackString);
+                    _logger.LogError(ex, "Unable to parse xml {0}", trackString);
                     return new Tuple<bool, uBaseObject>(true, null);
                 }
             }

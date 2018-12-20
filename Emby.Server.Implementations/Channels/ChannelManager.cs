@@ -300,7 +300,7 @@ namespace Emby.Server.Implementations.Channels
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error getting channel information for {0}", ex, channelInfo.Name);
+                    _logger.LogError(ex, "Error getting channel information for {0}", channelInfo.Name);
                 }
 
                 numComplete++;
@@ -848,7 +848,7 @@ namespace Emby.Server.Implementations.Channels
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error writing to channel cache file: {0}", ex, path);
+                _logger.LogError(ex, "Error writing to channel cache file: {path}", path);
             }
         }
 
@@ -911,7 +911,7 @@ namespace Emby.Server.Implementations.Channels
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error retrieving channel item from database", ex);
+                _logger.LogError(ex, "Error retrieving channel item from database");
             }
 
             if (item == null)

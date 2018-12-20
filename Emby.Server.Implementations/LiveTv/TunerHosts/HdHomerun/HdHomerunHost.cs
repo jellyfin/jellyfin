@@ -303,7 +303,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error getting tuner info", ex);
+                    Logger.LogError(ex, "Error getting tuner info");
                 }
             }
 

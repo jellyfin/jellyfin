@@ -97,7 +97,7 @@ namespace MediaBrowser.Providers.TV
                 }
                 catch (HttpException ex)
                 {
-                    _logger.LogError("No metadata found for {0}", seasonNumber.Value);
+                    _logger.LogError(ex, "No metadata found for {0}", seasonNumber.Value);
 
                     if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                     {

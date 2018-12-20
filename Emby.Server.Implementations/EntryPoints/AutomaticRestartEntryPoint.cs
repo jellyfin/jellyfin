@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error restarting server", ex);
+                        _logger.LogError(ex, "Error restarting server");
                     }
                 }
             }
@@ -98,7 +98,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error getting timers", ex);
+                    _logger.LogError(ex, "Error getting timers");
                 }
             }
 

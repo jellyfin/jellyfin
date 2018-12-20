@@ -121,7 +121,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error creating PlayTo device.", ex);
+                _logger.LogError(ex, "Error creating PlayTo device.");
             }
             finally
             {

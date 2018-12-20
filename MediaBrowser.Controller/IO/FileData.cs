@@ -91,7 +91,7 @@ namespace MediaBrowser.Controller.IO
                     }
                     catch (Exception ex)
                     {
-                        logger.LogError("Error resolving shortcut from {0}", ex, fullName);
+                        logger.LogError(ex, "Error resolving shortcut from {path}", fullName);
                     }
                 }
                 else if (flattenFolderDepth > 0 && isDirectory)

@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.Networking
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error binding to NetworkAddressChanged event", ex);
+                    Logger.LogError(ex, "Error binding to NetworkAddressChanged event");
                 }
 
                 try
@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.Networking
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error binding to NetworkChange_NetworkAvailabilityChanged event", ex);
+                    Logger.LogError(ex, "Error binding to NetworkChange_NetworkAvailabilityChanged event");
                 }
             }
         }
@@ -372,7 +372,7 @@ namespace Emby.Server.Implementations.Networking
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError("Error resovling hostname", ex);
+                        Logger.LogError(ex, "Error resolving hostname");
                     }
                 }
             }
@@ -399,7 +399,7 @@ namespace Emby.Server.Implementations.Networking
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error in GetAllNetworkInterfaces", ex);
+                Logger.LogError(ex, "Error in GetAllNetworkInterfaces");
                 return new List<IPAddress>();
             }
 
@@ -428,7 +428,7 @@ namespace Emby.Server.Implementations.Networking
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error querying network interface", ex);
+                    Logger.LogError(ex, "Error querying network interface");
                     return new List<IPAddress>();
                 }
 

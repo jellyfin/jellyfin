@@ -229,7 +229,7 @@ namespace MediaBrowser.Controller.Net
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error sending web socket message {0}", ex, Name);
+                Logger.LogError(ex, "Error sending web socket message {Name}", Name);
                 DisposeConnection(tuple);
             }
         }

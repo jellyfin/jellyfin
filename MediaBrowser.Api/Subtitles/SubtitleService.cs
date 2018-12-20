@@ -278,7 +278,7 @@ namespace MediaBrowser.Api.Subtitles
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error downloading subtitles", ex);
+                    Logger.LogError(ex, "Error downloading subtitles");
                 }
 
             });

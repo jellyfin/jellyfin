@@ -147,7 +147,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         }
                         catch (Exception ex)
                         {
-                            Logger.LogError("Error deserializing {0}", ex, path);
+                            Logger.LogError(ex, "Error deserializing {path}", path);
                         }
                         _readFromFile = true;
                     }
@@ -437,7 +437,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error", ex);
+                Logger.LogError(ex, "Error");
 
                 failureException = ex;
 
@@ -670,7 +670,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError("Error calling CancellationToken.Cancel();", ex);
+                        Logger.LogError(ex, "Error calling CancellationToken.Cancel();");
                     }
                 }
                 var task = _currentTask;
@@ -692,7 +692,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError("Error calling Task.WaitAll();", ex);
+                        Logger.LogError(ex, "Error calling Task.WaitAll();");
                     }
                 }
 
@@ -705,7 +705,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError("Error calling CancellationToken.Dispose();", ex);
+                        Logger.LogError(ex, "Error calling CancellationToken.Dispose();");
                     }
                 }
                 if (wassRunning)

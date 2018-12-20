@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error in Path.GetFullPath", ex);
+                _logger.LogError(ex, "Error in Path.GetFullPath");
             }
 
             // Don't allow file system access outside of the source folder

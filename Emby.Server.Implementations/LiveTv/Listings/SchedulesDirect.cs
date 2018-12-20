@@ -527,7 +527,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error getting image info from schedules direct", ex);
+                _logger.LogError(ex, "Error getting image info from schedules direct");
 
                 return new List<ScheduleDirect.ShowImages>();
             }
@@ -557,35 +557,33 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             try
             {
                 using (var httpResponse = await Get(options, false, info).ConfigureAwait(false))
+                using (Stream responce = httpResponse.Content)
                 {
-                    using (Stream responce = httpResponse.Content)
-                    {
-                        var root = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Headends>>(responce).ConfigureAwait(false);
+                    var root = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Headends>>(responce).ConfigureAwait(false);
 
-                        if (root != null)
+                    if (root != null)
+                    {
+                        foreach (ScheduleDirect.Headends headend in root)
                         {
-                            foreach (ScheduleDirect.Headends headend in root)
+                            foreach (ScheduleDirect.Lineup lineup in headend.lineups)
                             {
-                                foreach (ScheduleDirect.Lineup lineup in headend.lineups)
+                                lineups.Add(new NameIdPair
                                 {
-                                    lineups.Add(new NameIdPair
-                                    {
-                                        Name = string.IsNullOrWhiteSpace(lineup.name) ? lineup.lineup : lineup.name,
-                                        Id = lineup.uri.Substring(18)
-                                    });
-                                }
+                                    Name = string.IsNullOrWhiteSpace(lineup.name) ? lineup.lineup : lineup.name,
+                                    Id = lineup.uri.Substring(18)
+                                });
                             }
                         }
-                        else
-                        {
-                            _logger.LogInformation("No lineups available");
-                        }
+                    }
+                    else
+                    {
+                        _logger.LogInformation("No lineups available");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error getting headends", ex);
+                _logger.LogError(ex, "Error getting headends");
             }
 
             return lineups;

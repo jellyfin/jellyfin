@@ -1423,7 +1423,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error refreshing owned items for {0}", ex, Path ?? Name);
+                    Logger.LogError(ex, "Error refreshing owned items for {path}", Path ?? Name);
                 }
             }
 

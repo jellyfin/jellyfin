@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error closing live stream", ex);
+                Logger.LogError(ex, "Error closing live stream");
             }
         }
 
@@ -139,7 +139,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
                 catch (Exception ex)
                 {
-                    //Logger.LogError("Error deleting file {0}", ex, path);
+                    Logger.LogError(ex, "Error deleting file {path}", path);
                     failedFiles.Add(path);
                 }
             }
@@ -242,7 +242,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error seeking stream", ex);
+                Logger.LogError(ex, "Error seeking stream");
             }
         }
     }

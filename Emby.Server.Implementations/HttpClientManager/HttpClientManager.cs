@@ -685,7 +685,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             {
                 if (options.LogErrors)
                 {
-                    _logger.LogError("Error " + webException.Status + " getting response from " + options.Url, webException);
+                    _logger.LogError(webException, "Error {status} getting response from {url}", webException.Status, options.Url);
                 }
 
                 var exception = new HttpException(webException.Message, webException);
@@ -723,7 +723,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (options.LogErrors)
             {
-                _logger.LogError("Error getting response from " + options.Url, ex);
+                _logger.LogError(ex, "Error getting response from {url}", options.Url);
             }
 
             return ex;

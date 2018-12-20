@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error getting file {0}", ex, path);
+                Logger.LogError(ex, "Error getting file {path}", path);
                 return null;
             }
         }
@@ -96,7 +96,7 @@ namespace MediaBrowser.Providers.Manager
                 localImagesFailed = true;
                 if (!(item is IItemByName))
                 {
-                    Logger.LogError("Error validating images for {0}", ex, item.Path ?? item.Name ?? "Unknown name");
+                    Logger.LogError(ex, "Error validating images for {0}", item.Path ?? item.Name ?? "Unknown name");
                 }
             }
 
@@ -268,7 +268,7 @@ namespace MediaBrowser.Providers.Manager
             //    }
             //    catch (Exception ex)
             //    {
-            //        Logger.LogError("Error in AddPersonImage", ex);
+            //        Logger.LogError(ex, "Error in AddPersonImage");
             //    }
             //}
 
@@ -767,7 +767,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error in {0}", ex, provider.Name);
+                    Logger.LogError(ex, "Error in {provider}", provider.Name);
 
                     // If a local provider fails, consider that a failure
                     refreshResult.ErrorMessage = ex.Message;
@@ -839,7 +839,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 refreshResult.ErrorMessage = ex.Message;
-                Logger.LogError("Error in {0}", ex, provider.Name);
+                Logger.LogError(ex, "Error in {provider}", provider.Name);
             }
         }
 
@@ -891,7 +891,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     refreshResult.Failures++;
                     refreshResult.ErrorMessage = ex.Message;
-                    Logger.LogError("Error in {0}", ex, provider.Name);
+                    Logger.LogError(ex, "Error in {provider}", provider.Name);
                 }
             }
 
@@ -951,7 +951,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error in {0}.HasChanged", ex, changeMonitor.GetType().Name);
+                Logger.LogError(ex, "Error in {0}.HasChanged", changeMonitor.GetType().Name);
                 return false;
             }
         }

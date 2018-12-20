@@ -214,7 +214,7 @@ namespace Emby.Drawing.Net
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error drawing indicator overlay", ex);
+                _logger.LogError(ex, "Error drawing indicator overlay");
             }
         }
 

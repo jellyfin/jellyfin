@@ -143,7 +143,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error scheduling wake timer", ex);
+                _logger.LogError(ex, "Error scheduling wake timer");
             }
         }
 
@@ -153,12 +153,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (_timers.TryAdd(item.Id, timer))
             {
-                _logger.LogInformation("Creating recording timer for {0}, {1}. Timer will fire in {2} minutes", item.Id, item.Name, dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture));
+                _logger.LogInformation("Creating recording timer for {id}, {name}. Timer will fire in {minutes} minutes", item.Id, item.Name, dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture));
             }
             else
             {
                 timer.Dispose();
-                _logger.LogWarning("Timer already exists for item {0}", item.Id);
+                _logger.LogWarning("Timer already exists for item {id}", item.Id);
             }
         }
 

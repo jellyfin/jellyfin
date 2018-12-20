@@ -256,7 +256,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error getting media sources", ex);
+                _logger.LogError(ex, "Error getting media sources");
                 return new List<MediaSourceInfo>();
             }
         }
@@ -477,7 +477,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error probing live tv stream", ex);
+                _logger.LogError(ex, "Error probing live tv stream");
                 AddMediaInfo(mediaSource, isAudio);
             }
 

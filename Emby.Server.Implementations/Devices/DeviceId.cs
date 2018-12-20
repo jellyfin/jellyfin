@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.Devices
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error reading file", ex);
+                _logger.LogError(ex, "Error reading file");
             }
 
             return null;
@@ -66,7 +66,7 @@ namespace Emby.Server.Implementations.Devices
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error writing to file", ex);
+                _logger.LogError(ex, "Error writing to file");
             }
         }
 

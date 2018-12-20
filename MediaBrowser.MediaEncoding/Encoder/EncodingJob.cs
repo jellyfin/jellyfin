@@ -82,7 +82,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error disposing log stream", ex);
+                    _logger.LogError(ex, "Error disposing log stream");
                 }
 
                 LogFileStream = null;
@@ -99,7 +99,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error closing media source", ex);
+                    _logger.LogError(ex, "Error closing media source");
                 }
             }
         }

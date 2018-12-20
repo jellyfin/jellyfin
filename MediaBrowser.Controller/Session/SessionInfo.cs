@@ -313,7 +313,7 @@ namespace MediaBrowser.Controller.Session
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error reporting playback progress", ex);
+                _logger.LogError(ex, "Error reporting playback progress");
             }
         }
 
@@ -355,7 +355,7 @@ namespace MediaBrowser.Controller.Session
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error disposing session controller", ex);
+                        _logger.LogError(ex, "Error disposing session controller");
                     }
                 }
             }

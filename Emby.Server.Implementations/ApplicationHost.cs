@@ -545,7 +545,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error creating {0}", ex, type.FullName);
+                Logger.LogError(ex, "Error creating {type}", type.FullName);
                 // Don't blow up in release mode
                 return null;
             }
@@ -625,7 +625,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error loading assembly {0}", ex, file);
+                Logger.LogError(ex, "Error loading assembly {file}", file);
                 return null;
             }
         }
@@ -648,7 +648,7 @@ namespace Emby.Server.Implementations
         /// <typeparam name="T"></typeparam>
         /// <param name="manageLiftime">if set to <c>true</c> [manage liftime].</param>
         /// <returns>IEnumerable{``0}.</returns>
-        public IEnumerable<T> GetExports<T>(bool manageLiftime = true)
+        public IEnumerable<T> GetExports<T>(bool manageLifetime = true)
         {
             var parts = GetExportTypes<T>()
                 .Select(CreateInstanceSafe)
@@ -656,7 +656,7 @@ namespace Emby.Server.Implementations
                 .Cast<T>()
                 .ToList();
 
-            if (manageLiftime)
+            if (manageLifetime)
             {
                 lock (DisposableParts)
                 {
@@ -667,7 +667,7 @@ namespace Emby.Server.Implementations
             return parts;
         }
 
-        public List<Tuple<T, string>> GetExportsWithInfo<T>(bool manageLiftime = true)
+        public List<Tuple<T, string>> GetExportsWithInfo<T>(bool manageLifetime = true)
         {
             var parts = GetExportTypes<T>()
                 .Select(i =>
@@ -683,7 +683,7 @@ namespace Emby.Server.Implementations
                 .Where(i => i != null)
                 .ToList();
 
-            if (manageLiftime)
+            if (manageLifetime)
             {
                 lock (DisposableParts)
                 {
@@ -693,6 +693,8 @@ namespace Emby.Server.Implementations
 
             return parts;
         }
+
+        // TODO: @bond
         /*
         private void SetBaseExceptionMessage()
         {
@@ -760,7 +762,7 @@ namespace Emby.Server.Implementations
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error in {0}", ex, name);
+                    Logger.LogError(ex, "Error in {name}", name);
                 }
                 Logger.LogInformation("Entry point completed: {0}. Duration: {1} seconds", name, (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture), "ImageInfos");
             }
@@ -777,7 +779,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error configuring autorun", ex);
+                Logger.LogError(ex, "Error configuring autorun");
             }
         }
 
@@ -1119,7 +1121,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error setting http limit", ex);
+                Logger.LogError(ex, "Error setting http limit");
             }
         }
 
@@ -1186,7 +1188,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error loading cert from {0}", ex, certificateLocation);
+                Logger.LogError(ex, "Error loading cert from {certificateLocation}", certificateLocation);
                 return null;
             }
         }
@@ -1415,7 +1417,7 @@ namespace Emby.Server.Implementations
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError("Error getting plugin Id from {0}.", ex, plugin.GetType().FullName);
+                        Logger.LogError(ex, "Error getting plugin Id from {pluginName}.", plugin.GetType().FullName);
                     }
                 }
 
@@ -1427,7 +1429,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error loading plugin {0}", ex, plugin.GetType().FullName);
+                Logger.LogError(ex, "Error loading plugin {pluginName}", plugin.GetType().FullName);
                 return null;
             }
 
@@ -1450,11 +1452,11 @@ namespace Emby.Server.Implementations
 
                 if (path == null)
                 {
-                    Logger.LogInformation("Loading {0}", assembly.FullName);
+                    Logger.LogInformation("Loading {assemblyName}", assembly.FullName);
                 }
                 else
                 {
-                    Logger.LogInformation("Loading {0} from {1}", assembly.FullName, path);
+                    Logger.LogInformation("Loading {assemblyName} from {path}", assembly.FullName, path);
                 }
             }
 
@@ -1507,7 +1509,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error loading types from assembly", ex);
+                Logger.LogError(ex, "Error loading types from assembly");
 
                 return new List<Tuple<Type, string>>();
             }
@@ -1554,7 +1556,7 @@ namespace Emby.Server.Implementations
                   ? "The http server is unable to start due to a Socket error. This can occasionally happen when the operating system takes longer than usual to release the IP bindings from the previous session. This can take up to five minutes. Please try waiting or rebooting the system."
                   : "Error starting Http Server";
 
-                Logger.LogError(msg, ex);
+                Logger.LogError(ex, msg);
 
                 if (HttpPort == ServerConfiguration.DefaultHttpPort)
                 {
@@ -1570,7 +1572,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error starting http server", ex);
+                Logger.LogError(ex, "Error starting http server");
 
                 throw;
             }
@@ -1605,7 +1607,7 @@ namespace Emby.Server.Implementations
             //        }
             //        catch (Exception ex)
             //        {
-            //            Logger.LogError("Error creating ssl cert", ex);
+            //            Logger.LogError(ex, "Error creating ssl cert");
             //            return null;
             //        }
             //    }
@@ -1710,7 +1712,7 @@ namespace Emby.Server.Implementations
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Error sending server restart notification", ex);
+                    Logger.LogError(ex, "Error sending server restart notification");
                 }
 
                 Logger.LogInformation("Calling RestartInternal");
@@ -1845,7 +1847,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error getting version number from {0}", ex, path);
+                Logger.LogError(ex, "Error getting version number from {path}", path);
 
                 return new Version(1, 0);
             }
@@ -1930,13 +1932,13 @@ namespace Emby.Server.Implementations
 
                         if (version < minRequiredVersion)
                         {
-                            Logger.LogInformation("Not loading {0} {1} because the minimum supported version is {2}. Please update to the newer version", filename, version, minRequiredVersion);
+                            Logger.LogInformation("Not loading {filename} {version} because the minimum supported version is {minRequiredVersion}. Please update to the newer version", filename, version, minRequiredVersion);
                             return false;
                         }
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError("Error getting version number from {0}", ex, path);
+                        Logger.LogError(ex, "Error getting version number from {path}", path);
 
                         return false;
                     }
@@ -2044,7 +2046,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error getting local Ip address information", ex);
+                Logger.LogError(ex, "Error getting local Ip address information");
             }
 
             return null;
@@ -2226,7 +2228,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error sending server shutdown notification", ex);
+                Logger.LogError(ex, "Error sending server shutdown notification");
             }
 
             ShutdownInternal();
@@ -2251,7 +2253,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error authorizing server", ex);
+                Logger.LogError(ex, "Error authorizing server");
             }
         }
 
@@ -2418,9 +2420,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error launching url: {0}", url);
-                Logger.LogError("Error launching url: {0}", ex, url);
-
+                Logger.LogError(ex, "Error launching url: {url}", url);
                 throw;
             }
         }
@@ -2491,7 +2491,7 @@ namespace Emby.Server.Implementations
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError("Error disposing {0}", ex, part.GetType().Name);
+                        Logger.LogError(ex, "Error disposing {0}", part.GetType().Name);
                     }
                 }
             }

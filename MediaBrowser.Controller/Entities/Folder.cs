@@ -303,7 +303,7 @@ namespace MediaBrowser.Controller.Entities
                 var id = child.Id;
                 if (dictionary.ContainsKey(id))
                 {
-                    Logger.LogError("Found folder containing items with duplicate id. Path: {0}, Child Name: {1}",
+                    Logger.LogError("Found folder containing items with duplicate id. Path: {path}, Child Name: {ChildName}",
                         Path ?? Name,
                         child.Path ?? child.Name);
                 }

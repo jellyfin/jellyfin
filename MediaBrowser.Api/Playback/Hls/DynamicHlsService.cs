@@ -367,7 +367,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             catch (IOException ex)
             {
-                Logger.LogError("Error deleting partial stream file(s) {0}", ex, path);
+                Logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
 
                 var task = Task.Delay(100);
                 Task.WaitAll(task);
@@ -375,7 +375,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error deleting partial stream file(s) {0}", ex, path);
+                Logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
             }
         }
 

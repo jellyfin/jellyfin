@@ -102,8 +102,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _originalFFMpegPath = ffMpegPath;
 
             _hasExternalEncoder = hasExternalEncoder;
-
-            SetEnvironmentVariable();
         }
 
         private readonly object _logLock = new object();
@@ -117,7 +115,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error setting FFREPORT environment variable", ex);
+                    _logger.LogError(ex, "Error setting FFREPORT environment variable");
                 }
             }
         }
@@ -132,28 +130,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch (Exception ex)
                 {
-                    //_logger.LogError("Error setting FFREPORT environment variable", ex);
+                    _logger.LogError(ex, "Error setting FFREPORT environment variable");
                 }
-            }
-        }
-
-        private void SetEnvironmentVariable()
-        {
-            try
-            {
-                //_environmentInfo.SetProcessEnvironmentVariable("FFREPORT", "file=program-YYYYMMDD-HHMMSS.txt:level=32");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error setting FFREPORT environment variable", ex);
-            }
-            try
-            {
-                //_environmentInfo.SetUserEnvironmentVariable("FFREPORT", "file=program-YYYYMMDD-HHMMSS.txt:level=32");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error setting FFREPORT environment variable", ex);
             }
         }
 
@@ -649,9 +627,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     throw;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    _logger.LogError("I-frame image extraction failed, will attempt standard way. Input: {0}", inputArgument);
+                    _logger.LogError(ex, "I-frame image extraction failed, will attempt standard way. Input: {arguments}", inputArgument);
                 }
             }
 
@@ -995,7 +973,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error in WaitForExit", ex);
+                _logger.LogError(ex, "Error in WaitForExit");
             }
 
             try
@@ -1006,7 +984,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error killing process", ex);
+                _logger.LogError(ex, "Error killing process");
             }
         }
 

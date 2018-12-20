@@ -230,7 +230,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error setting hidden attribute on {path} - {ex}", path, ex.Message);
+                Logger.LogError(ex, "Error setting hidden attribute on {path}", path);
             }
         }
 
@@ -283,7 +283,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 }
                 catch (XmlException ex)
                 {
-                    Logger.LogError("Error reading existng nfo", ex);
+                    Logger.LogError(ex, "Error reading existing nfo");
                 }
 
                 writer.WriteEndElement();
@@ -1000,7 +1000,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                         }
                         catch (Exception ex)
                         {
-                            logger.LogError("Error reading existing xml tags from {0}.", ex, path);
+                            logger.LogError(ex, "Error reading existing xml tags from {path}.", path);
                             return;
                         }
 

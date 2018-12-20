@@ -278,7 +278,7 @@ namespace MediaBrowser.Api.Playback
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error starting ffmpeg", ex);
+                Logger.LogError(ex, "Error starting ffmpeg");
 
                 ApiEntryPoint.Instance.OnTranscodeFailedToStart(outputPath, TranscodingJobType, state);
 
@@ -372,7 +372,7 @@ namespace MediaBrowser.Api.Playback
             //}
             //catch (Exception ex)
             //{
-            //    Logger.LogError("Error disposing ffmpeg.", ex);
+            //    Logger.LogError(ex, "Error disposing ffmpeg.");
             //}
         }
 

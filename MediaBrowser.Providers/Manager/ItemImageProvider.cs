@@ -173,7 +173,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 result.ErrorMessage = ex.Message;
-                _logger.LogError("Error in {0}", ex, provider.Name);
+                _logger.LogError(ex, "Error in {provider}", provider.Name);
             }
         }
 
@@ -310,7 +310,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 result.ErrorMessage = ex.Message;
-                _logger.LogError("Error in {0}", ex, provider.Name);
+                _logger.LogError(ex, "Error in {provider}", provider.Name);
             }
         }
 
@@ -577,7 +577,7 @@ namespace MediaBrowser.Providers.Manager
                         }
                         catch (IOException ex)
                         {
-                            _logger.LogError("Error examining images", ex);
+                            _logger.LogError(ex, "Error examining images");
                         }
                     }
 
@@ -586,7 +586,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (HttpException ex)
                 {
-                    // Sometimes providers send back bad url's. Just move onto the next image
+                    // Sometimes providers send back bad urls. Just move onto the next image
                     if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                     {
                         continue;
