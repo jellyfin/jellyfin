@@ -3,7 +3,7 @@
   "name": "Emby",
   "short_name": "Emby",
   "start_url": "/web/index.html",
-  "description": "The open media solution.",
+  "description": "Jellyfin: the Free Software media system.",
   "lang": "en-US",
   "related_applications": [
     {
