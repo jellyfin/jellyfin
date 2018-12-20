@@ -1,3 +1,9 @@
+jellyfin (3.5.2-4) unstable; urgency=medium
+
+  * Correct manifest.json bug and vdpau
+
+ -- Joshua Boniface <joshua@boniface.me>  Thu, 20 Dec 2018 18:31:43 -0500
+
 jellyfin (3.5.2-3) unstable; urgency=medium
 
   * Correct several bugs in 3.5.2-2 packaging
