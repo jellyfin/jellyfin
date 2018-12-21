@@ -109,7 +109,7 @@ namespace Mono.Nat.Pmp
 
                         if (attempt == 0)
                         {
-                            Task.Run(() => CreatePortMapListen(udpClient, mapping, cancellationTokenSource.Token));
+                            await Task.Run(() => CreatePortMapListen(udpClient, mapping, cancellationTokenSource.Token));
                         }
 
                         attempt++;
