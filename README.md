@@ -20,7 +20,7 @@ Jellyfin is a free software media system that puts you in control of managing an
 <a href="https://github.com/jellyfin/jellyfin"><img alt="GPL 2.0 License" src="https://img.shields.io/github/license/jellyfin/jellyfin.svg"></a>
 <a href="https://cloud.drone.io/jellyfin/jellyfin"><img alt="Build Status" src="https://cloud.drone.io/api/badges/jellyfin/jellyfin/status.svg"></a>
 <a href="https://hub.docker.com/r/jellyfin/jellyfin"><img alt="Docker Pull Count" src="https://img.shields.io/docker/pulls/jellyfin/jellyfin.svg"></a>
-<a href="https://matrix.to/#/#jellyfin:matrix.org"><img alt="Chat on Matrix" src="https://img.shields.io/matrix/!JXmoIxArWgVvbKKqex/matrix.org.svg?logo=matrix"></a>
+<a href="https://matrix.to/#/#jellyfin:matrix.org"><img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfin:matrix.org.svg?logo=matrix"></a>
 <a href="https://www.reddit.com/r/jellyfin/"><img alt="Join our Subreddit" src="https://img.shields.io/badge/reddit-r%2Fjellyfin-%23FF5700.svg"></a>
 </p>
 
