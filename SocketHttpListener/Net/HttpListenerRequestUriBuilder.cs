@@ -253,7 +253,7 @@ namespace SocketHttpListener.Net
                 //if (NetEventSource.IsEnabled)
                 //    NetEventSource.Error(this, SR.Format(SR.net_log_listener_cant_convert_percent_value, codePoint));
             }
-            catch (EncoderFallbackException e)
+            catch (EncoderFallbackException)
             {
                 // If utf8Encoding.GetBytes() fails
                 //if (NetEventSource.IsEnabled) NetEventSource.Error(this, SR.Format(SR.net_log_listener_cant_convert_to_utf8, unicodeString, e.Message));
@@ -303,11 +303,11 @@ namespace SocketHttpListener.Net
 
                 return true;
             }
-            catch (DecoderFallbackException e)
+            catch (DecoderFallbackException)
             {
                 //if (NetEventSource.IsEnabled) NetEventSource.Error(this, SR.Format(SR.net_log_listener_cant_convert_bytes, GetOctetsAsString(_rawOctets), e.Message));
             }
-            catch (EncoderFallbackException e)
+            catch (EncoderFallbackException)
             {
                 // If utf8Encoding.GetBytes() fails
                 //if (NetEventSource.IsEnabled) NetEventSource.Error(this, SR.Format(SR.net_log_listener_cant_convert_to_utf8, decodedString, e.Message));
