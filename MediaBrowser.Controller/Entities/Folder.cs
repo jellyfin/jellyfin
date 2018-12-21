@@ -379,6 +379,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 catch (Exception ex)
                 {
+                    Logger.ErrorException("Error retrieving children folder", ex);
                     return;
                 }
 
