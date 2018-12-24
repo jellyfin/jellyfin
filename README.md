@@ -22,6 +22,8 @@ Jellyfin is a free software media system that puts you in control of managing an
 <a href="https://hub.docker.com/r/jellyfin/jellyfin"><img alt="Docker Pull Count" src="https://img.shields.io/docker/pulls/jellyfin/jellyfin.svg"></a>
 <a href="https://matrix.to/#/#jellyfin:matrix.org"><img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfin:matrix.org.svg?logo=matrix"></a>
 <a href="https://www.reddit.com/r/jellyfin/"><img alt="Join our Subreddit" src="https://img.shields.io/badge/reddit-r%2Fjellyfin-%23FF5700.svg"></a>
+<a href="#backers"><img alt="Backers on Open Collective" src="https://opencollective.com/jellyfin/backers/badge.svg"></a>
+<a href="#sponsors"><img alt="Sponsors on Open Collective" src="https://opencollective.com/jellyfin/sponsors/badge.svg"></a> 
 </p>
 
 For further details, please see [our wiki](https://github.com/jellyfin/jellyfin/wiki).
@@ -51,3 +53,33 @@ Jellyfin is descended from Emby 3.5.2, ported to the .NET Core framework, and ai
 ## Contributing to Jellyfin
 
 If you're interested in contributing, please see [our wiki for guidelines](https://github.com/jellyfin/jellyfin/wiki/Contributing-to-Jellyfin).
+
+## Contributors
+
+This project exists thanks to all the people who contribute. 
+<a href="https://github.com/jellyfin/jellyfin/graphs/contributors"><img src="https://opencollective.com/jellyfin/contributors.svg?width=890&button=false" /></a>
+
+
+## Backers
+
+Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/jellyfin#backer)]
+
+<a href="https://opencollective.com/jellyfin#backers" target="_blank"><img src="https://opencollective.com/jellyfin/backers.svg?width=890"></a>
+
+
+## Sponsors
+
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/jellyfin#sponsor)]
+
+<a href="https://opencollective.com/jellyfin/sponsor/0/website" target="_blank"><img src="https://opencollective.com/jellyfin/sponsor/0/avatar.svg"></a>
+<a href="https://opencollective.com/jellyfin/sponsor/1/website" target="_blank"><img src="https://opencollective.com/jellyfin/sponsor/1/avatar.svg"></a>
+<a href="https://opencollective.com/jellyfin/sponsor/2/website" target="_blank"><img src="https://opencollective.com/jellyfin/sponsor/2/avatar.svg"></a>
+<a href="https://opencollective.com/jellyfin/sponsor/3/website" target="_blank"><img src="https://opencollective.com/jellyfin/sponsor/3/avatar.svg"></a>
+<a href="https://opencollective.com/jellyfin/sponsor/4/website" target="_blank"><img src="https://opencollective.com/jellyfin/sponsor/4/avatar.svg"></a>
+<a href="https://opencollective.com/jellyfin/sponsor/5/website" target="_blank"><img src="https://opencollective.com/jellyfin/sponsor/5/avatar.svg"></a>
+<a href="https://opencollective.com/jellyfin/sponsor/6/website" target="_blank"><img src="https://opencollective.com/jellyfin/sponsor/6/avatar.svg"></a>
+<a href="https://opencollective.com/jellyfin/sponsor/7/website" target="_blank"><img src="https://opencollective.com/jellyfin/sponsor/7/avatar.svg"></a>
+<a href="https://opencollective.com/jellyfin/sponsor/8/website" target="_blank"><img src="https://opencollective.com/jellyfin/sponsor/8/avatar.svg"></a>
+<a href="https://opencollective.com/jellyfin/sponsor/9/website" target="_blank"><img src="https://opencollective.com/jellyfin/sponsor/9/avatar.svg"></a>
+
+
