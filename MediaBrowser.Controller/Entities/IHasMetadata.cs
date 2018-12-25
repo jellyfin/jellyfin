@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.Entities
         /// This is called before any metadata refresh and returns true or false indicating if changes were made
         /// </summary>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        bool BeforeMetadataRefresh();
+        bool BeforeMetadataRefresh(bool replaceAllMetdata);
 
         /// <summary>
         /// Afters the metadata refresh.
@@ -58,8 +58,6 @@ namespace MediaBrowser.Controller.Entities
         bool SupportsPeople { get; }
 
         bool RequiresRefresh();
-
-        bool EnableRefreshOnDateModifiedChange { get; }
 
         string PresentationUniqueKey { get; set; }
 
@@ -171,12 +169,6 @@ namespace MediaBrowser.Controller.Entities
         bool ValidateImages(IDirectoryService directoryService);
 
         /// <summary>
-        /// Gets a value indicating whether this instance is owned item.
-        /// </summary>
-        /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
-        bool IsOwnedItem { get; }
-
-        /// <summary>
         /// Gets the containing folder path.
         /// </summary>
         /// <value>The containing folder path.</value>
@@ -227,12 +219,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if [always scan internal metadata path]; otherwise, <c>false</c>.</value>
         bool AlwaysScanInternalMetadataPath { get; }
-
-        /// <summary>
-        /// Determines whether [is internet metadata enabled].
-        /// </summary>
-        /// <returns><c>true</c> if [is internet metadata enabled]; otherwise, <c>false</c>.</returns>
-        bool IsInternetMetadataEnabled();
 
         /// <summary>
         /// Removes the image.
