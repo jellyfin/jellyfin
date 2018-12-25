@@ -1,3 +1,6 @@
 [submodule "ThirdParty/taglib-sharp"]
 	path = ThirdParty/taglib-sharp
 	url = https://github.com/mono/taglib-sharp.git
+[submodule "ThirdParty/Emby.Common"]
+	path = ThirdParty/Emby.Common
+	url = https://github.com/jellyfin/Emby.Common

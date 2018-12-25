@@ -51,16 +51,14 @@ namespace MediaBrowser.Api
         private readonly IServerConfigurationManager _config;
         private readonly IServerApplicationHost _appHost;
         private readonly IUserManager _userManager;
-        private readonly IConnectManager _connectManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IHttpClient _httpClient;
 
-        public StartupWizardService(IServerConfigurationManager config, IHttpClient httpClient, IServerApplicationHost appHost, IUserManager userManager, IConnectManager connectManager, IMediaEncoder mediaEncoder)
+        public StartupWizardService(IServerConfigurationManager config, IHttpClient httpClient, IServerApplicationHost appHost, IUserManager userManager, IMediaEncoder mediaEncoder)
         {
             _config = config;
             _appHost = appHost;
             _userManager = userManager;
-            _connectManager = connectManager;
             _mediaEncoder = mediaEncoder;
             _httpClient = httpClient;
         }

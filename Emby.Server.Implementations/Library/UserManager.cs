@@ -74,7 +74,6 @@ namespace Emby.Server.Implementations.Library
 
         private readonly Func<IImageProcessor> _imageProcessorFactory;
         private readonly Func<IDtoService> _dtoServiceFactory;
-        private readonly Func<IConnectManager> _connectFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly IFileSystem _fileSystem;
         private readonly ICryptoProvider _cryptographyProvider;
@@ -82,7 +81,7 @@ namespace Emby.Server.Implementations.Library
         private IAuthenticationProvider[] _authenticationProviders;
         private DefaultAuthenticationProvider _defaultAuthenticationProvider;
 
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ICryptoProvider cryptographyProvider)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ICryptoProvider cryptographyProvider)
         {
             _logger = logger;
             UserRepository = userRepository;
@@ -90,7 +89,6 @@ namespace Emby.Server.Implementations.Library
             _networkManager = networkManager;
             _imageProcessorFactory = imageProcessorFactory;
             _dtoServiceFactory = dtoServiceFactory;
-            _connectFactory = connectFactory;
             _appHost = appHost;
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
