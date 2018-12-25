@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             MaxWidth = info.MaxWidth;
             MaxHeight = info.MaxHeight;
             MaxFramerate = info.MaxFramerate;
-            ItemId = info.ItemId;
+            ItemId = info.ItemId.ToString("N");
             MediaSourceId = info.MediaSourceId;
             AudioCodec = info.TargetAudioCodec.FirstOrDefault();
             MaxAudioChannels = info.GlobalMaxAudioChannels;

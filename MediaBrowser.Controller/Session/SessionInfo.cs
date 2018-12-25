@@ -235,7 +235,7 @@ namespace MediaBrowser.Controller.Session
 
             foreach (var additionalUser in AdditionalUsers)
             {
-                if (userId == new Guid(additionalUser.UserId))
+                if (userId == additionalUser.UserId)
                 {
                     return true;
                 }
