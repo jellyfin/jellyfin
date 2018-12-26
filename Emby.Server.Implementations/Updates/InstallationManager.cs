@@ -549,13 +549,13 @@ namespace Emby.Server.Implementations.Updates
             // Do plugin-specific processing
             if (isPlugin)
             {
-                if (plugin != null)
+                if (plugin == null)
                 {
-                    OnPluginUpdated(plugin, package);
+                    OnPluginInstalled(package);
                 }
                 else
                 {
-                    OnPluginInstalled(package);
+                    OnPluginUpdated(plugin, package);
                 }
             }
         }

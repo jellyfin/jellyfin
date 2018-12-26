@@ -646,17 +646,16 @@ namespace Emby.Server.Implementations
         /// Gets the exports.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="manageLiftime">if set to <c>true</c> [manage liftime].</param>
+        /// <param name="manageLifetime">if set to <c>true</c> [manage liftime].</param>
         /// <returns>IEnumerable{``0}.</returns>
-        public IEnumerable<T> GetExports<T>(bool manageLiftime = true)
+        public IEnumerable<T> GetExports<T>(bool manageLifetime = true)
         {
             var parts = GetExportTypes<T>()
                 .Select(CreateInstanceSafe)
                 .Where(i => i != null)
-                .Cast<T>()
-                .ToList();
+                .Cast<T>();
 
-            if (manageLiftime)
+            if (manageLifetime)
             {
                 lock (DisposableParts)
                 {
@@ -667,7 +666,7 @@ namespace Emby.Server.Implementations
             return parts;
         }
 
-        public List<Tuple<T, string>> GetExportsWithInfo<T>(bool manageLiftime = true)
+        public List<Tuple<T, string>> GetExportsWithInfo<T>(bool manageLifetime = true)
         {
             var parts = GetExportTypes<T>()
                 .Select(i =>
@@ -683,7 +682,7 @@ namespace Emby.Server.Implementations
                 .Where(i => i != null)
                 .ToList();
 
-            if (manageLiftime)
+            if (manageLifetime)
             {
                 lock (DisposableParts)
                 {
@@ -707,7 +706,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
-        public async Task RunStartupTasks()
+        public Task RunStartupTasks()
         {
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
@@ -740,6 +739,7 @@ namespace Emby.Server.Implementations
             Logger.Info("All entry points have started");
 
             LogManager.RemoveConsoleOutput();
+            return Task.CompletedTask;
         }
 
         private void RunEntryPoints(IEnumerable<IServerEntryPoint> entryPoints, bool isBeforeStartup)
