@@ -132,9 +132,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 service.DataSourceChanged += service_DataSourceChanged;
 
-                var embyTv = service as EmbyTV.EmbyTV;
-
-                if (embyTv != null)
+                if (service is EmbyTV.EmbyTV embyTv)
                 {
                     embyTv.TimerCreated += EmbyTv_TimerCreated;
                     embyTv.TimerCancelled += EmbyTv_TimerCancelled;
@@ -251,18 +249,15 @@ namespace Emby.Server.Implementations.LiveTv
                 mediaSourceId = null;
             }
 
-            MediaSourceInfo info;
-            bool isVideo;
-            ILiveTvService service;
-            ILiveStream liveStream;
-
             var channel = (LiveTvChannel)_libraryManager.GetItemById(id);
-            isVideo = channel.ChannelType == ChannelType.TV;
-            service = GetService(channel);
+
+            bool isVideo = channel.ChannelType == ChannelType.TV;
+            ILiveTvService service = GetService(channel);
             _logger.LogInformation("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
 
-            var supportsManagedStream = service as ISupportsDirectStreamProvider;
-            if (supportsManagedStream != null)
+            MediaSourceInfo info;
+            ILiveStream liveStream;
+            if (service is ISupportsDirectStreamProvider supportsManagedStream)
             {
                 liveStream = await supportsManagedStream.GetChannelStreamWithDirectStreamProvider(channel.ExternalId, mediaSourceId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
                 info = liveStream.MediaSource;
@@ -303,14 +298,12 @@ namespace Emby.Server.Implementations.LiveTv
                 throw new NotImplementedException();
             }
 
-            var list = sources.ToList();
-
-            foreach (var source in list)
+            foreach (var source in sources)
             {
                 Normalize(source, service, baseItem.ChannelType == ChannelType.TV);
             }
 
-            return list;
+            return sources;
         }
 
         private ILiveTvService GetService(LiveTvChannel item)
@@ -542,13 +535,11 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var id = _tvDtoService.GetInternalProgramId(info.Id);
 
-            LiveTvProgram item = null;
-            allExistingPrograms.TryGetValue(id, out item);
-
             var isNew = false;
             var forceUpdate = false;
 
-            if (item == null)
+            LiveTvProgram item;
+            if (!allExistingPrograms.TryGetValue(id, out item))
             {
                 isNew = true;
                 item = new LiveTvProgram
@@ -783,11 +774,9 @@ namespace Emby.Server.Implementations.LiveTv
 
             var dto = _dtoService.GetBaseItemDto(program, new DtoOptions(), user);
 
-            var list = new List<Tuple<BaseItemDto, string, string>>();
-
-            var externalSeriesId = program.ExternalSeriesId;
-
-            list.Add(new Tuple<BaseItemDto, string, string>(dto, program.ExternalId, externalSeriesId));
+            var list = new List<Tuple<BaseItemDto, string, string>>() {
+                new Tuple<BaseItemDto, string, string>(dto, program.ExternalId, program.ExternalSeriesId)
+            };
 
             await AddRecordingInfo(list, cancellationToken).ConfigureAwait(false);
 
@@ -928,13 +917,11 @@ namespace Emby.Server.Implementations.LiveTv
                 programs = programs.Take(query.Limit.Value);
             }
 
-            var result = new QueryResult<BaseItem>
-            {
-                Items = programs.ToArray(),
-                TotalRecordCount = totalCount
-            };
-
-            return result;
+            return new QueryResult<BaseItem>
+                {
+                    Items = programs.ToArray(),
+                    TotalRecordCount = totalCount
+                };
         }
 
         public QueryResult<BaseItemDto> GetRecommendedPrograms(InternalItemsQuery query, DtoOptions options, CancellationToken cancellationToken)
@@ -948,17 +935,11 @@ namespace Emby.Server.Implementations.LiveTv
 
             var internalResult = GetRecommendedProgramsInternal(query, options, cancellationToken);
 
-            var user = query.User;
-
-            var returnArray = _dtoService.GetBaseItemDtos(internalResult.Items, options, user);
-
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = internalResult.TotalRecordCount
-            };
-
-            return result;
+            return new QueryResult<BaseItemDto>
+                {
+                    Items = _dtoService.GetBaseItemDtos(internalResult.Items, options, query.User),
+                    TotalRecordCount = internalResult.TotalRecordCount
+                };
         }
 
         private int GetRecommendationScore(LiveTvProgram program, User user, bool factorChannelWatchCount)
@@ -977,28 +958,26 @@ namespace Emby.Server.Implementations.LiveTv
 
             var channel = _libraryManager.GetItemById(program.ChannelId);
 
-            if (channel != null)
+            if (channel == null)
             {
-                var channelUserdata = _userDataManager.GetUserData(user, channel);
+                return score;
+            }
 
-                if (channelUserdata.Likes ?? false)
-                {
-                    score += 2;
-                }
-                else if (!(channelUserdata.Likes ?? true))
-                {
-                    score -= 2;
-                }
+            var channelUserdata = _userDataManager.GetUserData(user, channel);
 
-                if (channelUserdata.IsFavorite)
-                {
-                    score += 3;
-                }
+            if (channelUserdata.Likes.HasValue)
+            {
+                score += channelUserdata.Likes.Value ? 2 : -2;
+            }
 
-                if (factorChannelWatchCount)
-                {
-                    score += channelUserdata.PlayCount;
-                }
+            if (channelUserdata.IsFavorite)
+            {
+                score += 3;
+            }
+
+            if (factorChannelWatchCount)
+            {
+                score += channelUserdata.PlayCount;
             }
 
             return score;
@@ -1153,7 +1132,6 @@ namespace Emby.Server.Implementations.LiveTv
 
             var numComplete = 0;
             var parentFolder = GetInternalLiveTvFolder(cancellationToken);
-            var parentFolderId = parentFolder.Id;
 
             foreach (var channelInfo in allChannelsList)
             {
@@ -1239,30 +1217,11 @@ namespace Emby.Server.Implementations.LiveTv
 
                         programs.Add(programItem.Id);
 
-                        if (program.IsMovie)
-                        {
-                            isMovie = true;
-                        }
-
-                        if (program.IsSeries)
-                        {
-                            iSSeries = true;
-                        }
-
-                        if (program.IsSports)
-                        {
-                            isSports = true;
-                        }
-
-                        if (program.IsNews)
-                        {
-                            isNews = true;
-                        }
-
-                        if (program.IsKids)
-                        {
-                            isKids = true;
-                        }
+                        isMovie |= program.IsMovie;
+                        iSSeries |= program.IsSeries;
+                        isSports |= program.IsSports;
+                        isNews |= program.IsNews;
+                        isKids |= program.IsKids;
                     }
 
                     _logger.LogDebug("Channel {0} has {1} new programs and {2} updated programs", currentChannel.Name, newPrograms.Count, updatedPrograms.Count);
@@ -1304,8 +1263,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
 
                 numComplete++;
-                double percent = numComplete;
-                percent /= allChannelsList.Count;
+                double percent = numComplete / allChannelsList.Count;
 
                 progress.Report(85 * percent + 15);
             }
@@ -1320,7 +1278,6 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 IncludeItemTypes = validTypes,
                 DtoOptions = new DtoOptions(false)
-
             });
 
             var numComplete = 0;
@@ -1351,8 +1308,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
 
                 numComplete++;
-                double percent = numComplete;
-                percent /= list.Count;
+                double percent = numComplete / list.Count;
 
                 progress.Report(100 * percent);
             }
@@ -1414,28 +1370,22 @@ namespace Emby.Server.Implementations.LiveTv
                     excludeItemTypes.Add(typeof(Episode).Name);
                 }
             }
-            if (query.IsSports.HasValue)
+            if (query.IsSports ?? false)
             {
-                if (query.IsSports.Value)
-                {
-                    genres.Add("Sports");
-                }
+                genres.Add("Sports");
             }
-            if (query.IsKids.HasValue)
+            if (query.IsKids ?? false)
             {
-                if (query.IsKids.Value)
-                {
-                    genres.Add("Kids");
-                    genres.Add("Children");
-                    genres.Add("Family");
-                }
+                genres.Add("Kids");
+                genres.Add("Children");
+                genres.Add("Family");
             }
 
             var limit = query.Limit;
 
-            if ((query.IsInProgress ?? false))
+            if (query.IsInProgress ?? false)
             {
-                limit = (query.Limit ?? 10) * 2;
+                // limit = (query.Limit ?? 10) * 2;
                 limit = null;
 
                 //var allActivePaths = EmbyTV.EmbyTV.Current.GetAllActiveRecordings().Select(i => i.Path).ToArray();
@@ -1467,7 +1417,7 @@ namespace Emby.Server.Implementations.LiveTv
                 DtoOptions = dtoOptions
             });
 
-            if ((query.IsInProgress ?? false))
+            if (query.IsInProgress ?? false)
             {
                 result.Items = result
                     .Items
@@ -1494,60 +1444,33 @@ namespace Emby.Server.Implementations.LiveTv
 
                 dto.StartDate = program.StartDate;
                 dto.EpisodeTitle = program.EpisodeTitle;
-
-                if (program.IsRepeat)
-                {
-                    dto.IsRepeat = program.IsRepeat;
-                }
-                if (program.IsMovie)
-                {
-                    dto.IsMovie = program.IsMovie;
-                }
-                if (program.IsSeries)
-                {
-                    dto.IsSeries = program.IsSeries;
-                }
-                if (program.IsSports)
-                {
-                    dto.IsSports = program.IsSports;
-                }
-                if (program.IsLive)
-                {
-                    dto.IsLive = program.IsLive;
-                }
-                if (program.IsNews)
-                {
-                    dto.IsNews = program.IsNews;
-                }
-                if (program.IsKids)
-                {
-                    dto.IsKids = program.IsKids;
-                }
-                if (program.IsPremiere)
-                {
-                    dto.IsPremiere = program.IsPremiere;
-                }
+                dto.IsRepeat |= program.IsRepeat;
+                dto.IsMovie |= program.IsMovie;
+                dto.IsSeries |= program.IsSeries;
+                dto.IsSports |= program.IsSports;
+                dto.IsLive |= program.IsLive;
+                dto.IsNews |= program.IsNews;
+                dto.IsKids |= program.IsKids;
+                dto.IsPremiere |= program.IsPremiere;
 
                 if (hasChannelInfo || hasChannelImage)
                 {
-                    var channel = _libraryManager.GetItemById(program.ChannelId) as LiveTvChannel;
+                    var channel = _libraryManager.GetItemById(program.ChannelId);
 
-                    if (channel != null)
+                    if (channel is LiveTvChannel liveChannel)
                     {
-                        dto.ChannelName = channel.Name;
-                        dto.MediaType = channel.MediaType;
-                        dto.ChannelNumber = channel.Number;
+                        dto.ChannelName = liveChannel.Name;
+                        dto.MediaType = liveChannel.MediaType;
+                        dto.ChannelNumber = liveChannel.Number;
 
-                        if (hasChannelImage && channel.HasImage(ImageType.Primary))
+                        if (hasChannelImage && liveChannel.HasImage(ImageType.Primary))
                         {
-                            dto.ChannelPrimaryImageTag = _tvDtoService.GetImageTag(channel);
+                            dto.ChannelPrimaryImageTag = _tvDtoService.GetImageTag(liveChannel);
                         }
                     }
                 }
 
-                var externalSeriesId = program.ExternalSeriesId;
-
-                programTuples.Add(new Tuple<BaseItemDto, string, string>(dto, program.ExternalId, externalSeriesId));
+                programTuples.Add(new Tuple<BaseItemDto, string, string>(dto, program.ExternalId, program.ExternalSeriesId));
             }
 
             return AddRecordingInfo(programTuples, CancellationToken.None);
@@ -2037,19 +1960,13 @@ namespace Emby.Server.Implementations.LiveTv
 
         private async Task<Tuple<SeriesTimerInfo, ILiveTvService>> GetNewTimerDefaultsInternal(CancellationToken cancellationToken, LiveTvProgram program = null)
         {
-            var service = program != null ?
-                GetService(program) :
-                null;
-
-            if (service == null)
-            {
-                service = _services.First();
-            }
-
+            ILiveTvService service = null;
             ProgramInfo programInfo = null;
 
-            if (program != null)
+            if(program != null)
             {
+                service = GetService(program);
+
                 var channel = _libraryManager.GetItemById(program.ChannelId);
 
                 programInfo = new ProgramInfo
@@ -2077,6 +1994,11 @@ namespace Emby.Server.Implementations.LiveTv
                     Name = program.Name,
                     OfficialRating = program.OfficialRating
                 };
+            } 
+
+            if (service == null)
+            {
+                service = _services.First();
             }
 
             var info = await service.GetNewTimerDefaultsAsync(cancellationToken, programInfo).ConfigureAwait(false);
@@ -2147,8 +2069,7 @@ namespace Emby.Server.Implementations.LiveTv
             info.Priority = defaultValues.Priority;
 
             string newTimerId = null;
-            var supportsNewTimerIds = service as ISupportsNewTimerIds;
-            if (supportsNewTimerIds != null)
+            if (service is ISupportsNewTimerIds supportsNewTimerIds)
             {
                 newTimerId = await supportsNewTimerIds.CreateTimer(info, cancellationToken).ConfigureAwait(false);
                 newTimerId = _tvDtoService.GetInternalTimerId(newTimerId);
@@ -2192,8 +2113,7 @@ namespace Emby.Server.Implementations.LiveTv
             info.Priority = defaultValues.Priority;
 
             string newTimerId = null;
-            var supportsNewTimerIds = service as ISupportsNewTimerIds;
-            if (supportsNewTimerIds != null)
+            if (service is ISupportsNewTimerIds supportsNewTimerIds)
             {
                 newTimerId = await supportsNewTimerIds.CreateSeriesTimer(info, cancellationToken).ConfigureAwait(false);
                 newTimerId = _tvDtoService.GetInternalSeriesTimerId(newTimerId).ToString("N");
@@ -2354,8 +2274,7 @@ namespace Emby.Server.Implementations.LiveTv
                 throw new ResourceNotFoundException();
             }
 
-            var configurable = provider as IConfigurableTunerHost;
-            if (configurable != null)
+            if (provider is IConfigurableTunerHost configurable)
             {
                 await configurable.Validate(info).ConfigureAwait(false);
             }
