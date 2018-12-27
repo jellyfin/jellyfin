@@ -727,11 +727,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var encodinghelper = new EncodingHelper(this, FileSystem, SubtitleEncoder());
             if (videoStream != null)
             {
+                /* fix
                 var decoder = encodinghelper.GetHardwareAcceleratedVideoDecoder(VideoType.VideoFile, videoStream, GetEncodingOptions());
                 if (!string.IsNullOrWhiteSpace(decoder))
                 {
                     args = decoder + " " + args;
                 }
+                */
             }
 
             if (!string.IsNullOrWhiteSpace(container))
@@ -847,11 +849,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var encodinghelper = new EncodingHelper(this, FileSystem, SubtitleEncoder());
             if (videoStream != null)
             {
+                /* fix
                 var decoder = encodinghelper.GetHardwareAcceleratedVideoDecoder(VideoType.VideoFile, videoStream, GetEncodingOptions());
                 if (!string.IsNullOrWhiteSpace(decoder))
                 {
                     args = decoder + " " + args;
                 }
+                */
             }
 
             if (!string.IsNullOrWhiteSpace(container))

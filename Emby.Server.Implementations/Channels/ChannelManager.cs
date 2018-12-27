@@ -1086,7 +1086,7 @@ namespace Emby.Server.Implementations.Channels
             }
             item.ParentId = parentFolderId;
 
-            var hasSeries = item as IHasSeriesName;
+            var hasSeries = item as IHasSeries;
             if (hasSeries != null)
             {
                 if (!string.Equals(hasSeries.SeriesName, info.SeriesName, StringComparison.OrdinalIgnoreCase))

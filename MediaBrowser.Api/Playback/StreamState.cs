@@ -148,7 +148,6 @@ namespace MediaBrowser.Api.Playback
             DisposeTranscodingThrottler();
             DisposeLiveStream();
             DisposeLogStream();
-            DisposeIsoMount();
 
             TranscodingJob = null;
         }
@@ -251,9 +250,9 @@ namespace MediaBrowser.Api.Playback
         public DeviceProfile DeviceProfile { get; set; }
 
         public TranscodingJob TranscodingJob;
-        public override void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
+        public override void ReportTranscodingProgress(TimeSpan? transcodingPosition, float framerate, double? percentComplete, long bytesTranscoded, int? bitRate)
         {
-            ApiEntryPoint.Instance.ReportTranscodingProgress(TranscodingJob, this, transcodingPosition, framerate, percentComplete, bytesTranscoded, bitRate);
+            ApiEntryPoint.Instance.ReportTranscodingProgress(TranscodingJob, this, transcodingPosition, 0, percentComplete, 0, bitRate);
         }
     }
 }

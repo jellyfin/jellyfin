@@ -942,7 +942,7 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@Album", item.Album);
             saveItemStatement.TryBind("@IsVirtualItem", item.IsVirtualItem);
 
-            var hasSeriesName = item as IHasSeriesName;
+            var hasSeriesName = item as IHasSeries;
             if (hasSeriesName != null)
             {
                 saveItemStatement.TryBind("@SeriesName", hasSeriesName.SeriesName);
@@ -1757,7 +1757,7 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            var hasSeriesName = item as IHasSeriesName;
+            var hasSeriesName = item as IHasSeries;
             if (hasSeriesName != null)
             {
                 if (!reader.IsDBNull(index))

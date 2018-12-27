@@ -230,7 +230,7 @@ namespace MediaBrowser.Api
                 result.StartDate = program.StartDate;
             }
 
-            var hasSeries = item as IHasSeriesName;
+            var hasSeries = item as IHasSeries;
             if (hasSeries != null)
             {
                 result.Series = hasSeries.SeriesName;

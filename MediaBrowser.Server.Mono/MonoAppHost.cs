@@ -34,11 +34,6 @@ namespace MediaBrowser.Server.Mono
             }
         }
 
-        protected override IConnectManager CreateConnectManager()
-        {
-            return new Emby.Server.Implementations.Library.ConnectManager();
-        }
-
         //protected override ISyncManager CreateSyncManager()
         //{
         //    return new SyncManager();

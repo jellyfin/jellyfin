@@ -17,19 +17,17 @@ namespace Emby.Server.Implementations.HttpServer.Security
     {
         private readonly IServerConfigurationManager _config;
 
-        public AuthService(IUserManager userManager, IAuthorizationContext authorizationContext, IServerConfigurationManager config, IConnectManager connectManager, ISessionManager sessionManager, INetworkManager networkManager)
+        public AuthService(IUserManager userManager, IAuthorizationContext authorizationContext, IServerConfigurationManager config, ISessionManager sessionManager, INetworkManager networkManager)
         {
             AuthorizationContext = authorizationContext;
             _config = config;
             SessionManager = sessionManager;
-            ConnectManager = connectManager;
             UserManager = userManager;
             NetworkManager = networkManager;
         }
 
         public IUserManager UserManager { get; private set; }
         public IAuthorizationContext AuthorizationContext { get; private set; }
-        public IConnectManager ConnectManager { get; private set; }
         public ISessionManager SessionManager { get; private set; }
         public INetworkManager NetworkManager { get; private set; }
 
