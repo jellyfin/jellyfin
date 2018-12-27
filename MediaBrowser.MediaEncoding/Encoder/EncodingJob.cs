@@ -69,7 +69,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             DisposeLiveStream();
             DisposeLogStream();
-            DisposeIsoMount();
         }
 
         private void DisposeLogStream()

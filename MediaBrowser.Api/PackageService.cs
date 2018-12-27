@@ -62,21 +62,6 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class GetPackageVersionUpdates
-    /// </summary>
-    [Route("/Packages/Updates", "GET", Summary = "Gets available package updates for currently installed packages")]
-    [Authenticated(Roles = "Admin")]
-    public class GetPackageVersionUpdates : IReturn<PackageVersionInfo[]>
-    {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "PackageType", Description = "Package type filter (System/UserInstalled)", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string PackageType { get; set; }
-    }
-
-    /// <summary>
     /// Class InstallPackage
     /// </summary>
     [Route("/Packages/Installed/{Name}", "POST", Summary = "Installs a package")]
@@ -146,30 +131,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public async Task<object> Get(GetPackageVersionUpdates request)
-        {
-            PackageVersionInfo[] result = null;
-
-            if (string.Equals(request.PackageType, "UserInstalled", StringComparison.OrdinalIgnoreCase) || string.Equals(request.PackageType, "All", StringComparison.OrdinalIgnoreCase))
-            {
-                result = (await _installationManager.GetAvailablePluginUpdates(_appHost.ApplicationVersion, false, CancellationToken.None).ConfigureAwait(false)).ToArray();
-            }
-
-            else if (string.Equals(request.PackageType, "System", StringComparison.OrdinalIgnoreCase) ||
-                     string.Equals(request.PackageType, "All", StringComparison.OrdinalIgnoreCase))
-            {
-                var updateCheckResult = await _appHost
-                    .CheckForApplicationUpdate(CancellationToken.None, new SimpleProgress<double>()).ConfigureAwait(false);
-
-                if (updateCheckResult.IsUpdateAvailable)
-                {
-                    result = new PackageVersionInfo[] { updateCheckResult.Package };
-                }
-            }
-
-            return ToOptimizedResult(result ?? new PackageVersionInfo[] { });
-        }
-
+        ///
         /// <summary>
         /// Gets the specified request.
         /// </summary>

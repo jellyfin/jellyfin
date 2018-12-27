@@ -13,13 +13,11 @@ namespace Emby.Server.Implementations.HttpServer.Security
     public class AuthorizationContext : IAuthorizationContext
     {
         private readonly IAuthenticationRepository _authRepo;
-        private readonly IConnectManager _connectManager;
         private readonly IUserManager _userManager;
 
-        public AuthorizationContext(IAuthenticationRepository authRepo, IConnectManager connectManager, IUserManager userManager)
+        public AuthorizationContext(IAuthenticationRepository authRepo, IUserManager userManager)
         {
             _authRepo = authRepo;
-            _connectManager = connectManager;
             _userManager = userManager;
         }
 
