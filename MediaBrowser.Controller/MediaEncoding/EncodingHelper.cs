@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
@@ -12,8 +11,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Reflection;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -343,19 +340,19 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int GetVideoProfileScore(string profile)
         {
-            var list = new []
+            string[] list =
             {
-                "Constrained Baseline",
+                "ConstrainedBaseline",
                 "Baseline",
                 "Extended",
                 "Main",
                 "High",
-                "Progressive High",
-                "Constrained High"
+                "ProgressiveHigh",
+                "ConstrainedHigh"
             };
 
             // strip spaces because they may be stripped out on the query string
-            return Array.FindIndex(list, t => string.Equals(t.Replace(" ", ""), profile.Replace(" ", ""), StringComparison.OrdinalIgnoreCase));
+            return Array.FindIndex(list, t => string.Equals(t, profile.Replace(" ", ""), StringComparison.OrdinalIgnoreCase));
         }
 
         public string GetInputPathArgument(EncodingJobInfo state)
@@ -516,18 +513,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string NormalizeTranscodingLevel(string videoCodec, string level)
         {
-            double requestLevel;
-
             // Clients may direct play higher than level 41, but there's no reason to transcode higher
-            if (double.TryParse(level, NumberStyles.Any, _usCulture, out requestLevel))
+            if (double.TryParse(level, NumberStyles.Any, _usCulture, out double requestLevel)
+                && string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase)
+                && requestLevel > 41)
             {
-                if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (requestLevel > 41)
-                    {
-                        return "41";
-                    }
-                }
+                return "41";
             }
 
             return level;
@@ -623,7 +614,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // h264 (h264_qsv)
             else if (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase))
             {
-                string[] valid_h264_qsv = new string[] { "veryslow", "slower", "slow", "medium", "fast", "faster", "veryfast" };
+                string[] valid_h264_qsv = { "veryslow", "slower", "slow", "medium", "fast", "faster", "veryfast" };
 
                 if (valid_h264_qsv.Contains(encodingOptions.H264Preset, StringComparer.OrdinalIgnoreCase))
                 {
@@ -1958,12 +1949,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else
                 {
-                    state.PlayableStreamFileNames = new string[] { };
+                    state.PlayableStreamFileNames = Array.Empty<string>();
                 }
             }
             else
             {
-                state.PlayableStreamFileNames = new string[] { };
+                state.PlayableStreamFileNames = Array.Empty<string>();
             }
 
             if (mediaSource.Timestamp.HasValue)

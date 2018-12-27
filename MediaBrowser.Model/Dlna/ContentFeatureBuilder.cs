@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -28,7 +27,7 @@ namespace MediaBrowser.Model.Dlna
             DlnaFlags flagValue = DlnaFlags.BackgroundTransferMode |
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
-            
+
             string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
              DlnaMaps.FlagsToString(flagValue));
 

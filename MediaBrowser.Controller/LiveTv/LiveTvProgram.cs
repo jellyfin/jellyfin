@@ -47,50 +47,19 @@ namespace MediaBrowser.Controller.LiveTv
             return list;
         }
 
-        public static double GetDefaultPrimaryImageAspectRatio(IHasProgramAttributes item)
-        {
-            var serviceName = item.ServiceName;
-
-            if (item.IsMovie)
-            {
-                if (string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase) || string.Equals(serviceName, "Next Pvr", StringComparison.OrdinalIgnoreCase))
-                {
-                    double value = 2;
-                    value /= 3;
-
-                    return value;
-                }
-                else
-                {
-                    double value = 16;
-                    value /= 9;
-
-                    return value;
-                }
-            }
-            else
-            {
-                if (string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase) || string.Equals(serviceName, "Next Pvr", StringComparison.OrdinalIgnoreCase))
-                {
-                    double value = 2;
-                    value /= 3;
-
-                    return value;
-                }
-                else
-                {
-                    double value = 16;
-                    value /= 9;
-
-                    return value;
-                }
-            }
-        }
-
         private static string EmbyServiceName = "Emby";
         public override double GetDefaultPrimaryImageAspectRatio()
         {
-            return GetDefaultPrimaryImageAspectRatio(this);
+            var serviceName = ServiceName;
+
+            if (string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase) || string.Equals(serviceName, "Next Pvr", StringComparison.OrdinalIgnoreCase))
+            {
+                return 2 / 3;
+            }
+            else
+            {
+                return 16 / 9;
+            }
         }
 
         [IgnoreDataMember]

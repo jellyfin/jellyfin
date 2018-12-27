@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities
 
         public MusicVideo()
         {
-            Artists = new string[] {};
+            Artists = Array.Empty<string>();
         }
 
         [IgnoreDataMember]
