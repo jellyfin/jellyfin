@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using System;
+﻿using System;
 
 namespace MediaBrowser.Model.Playlists
 {
     public class PlaylistCreationRequest
     {
-         public string Name { get; set; }
+        public string Name { get; set; }
 
         public Guid[] ItemIdList { get; set; }
 

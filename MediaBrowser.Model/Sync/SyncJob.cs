@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using MediaBrowser.Model.Sync;
 
 namespace MediaBrowser.Model.Sync
 {
@@ -108,7 +106,7 @@ namespace MediaBrowser.Model.Sync
 
         public SyncJob()
         {
-            RequestedItemIds = new Guid[] { };
+            RequestedItemIds = Array.Empty<Guid>();
         }
     }
 }

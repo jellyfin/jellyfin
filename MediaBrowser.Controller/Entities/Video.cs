@@ -10,7 +10,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Extensions;
@@ -132,8 +131,6 @@ namespace MediaBrowser.Controller.Entities
         public bool HasSubtitles { get; set; }
 
         public bool IsPlaceHolder { get; set; }
-        public bool IsShortcut { get; set; }
-        public string ShortcutPath { get; set; }
 
         /// <summary>
         /// Gets or sets the default index of the video stream.
@@ -173,7 +170,7 @@ namespace MediaBrowser.Controller.Entities
             }
             else
             {
-                return new string[] {};
+                return Array.Empty<string>();
             }
             return mediaEncoder.GetPlayableStreamFileNames(Path, videoType);
         }
@@ -186,9 +183,9 @@ namespace MediaBrowser.Controller.Entities
 
         public Video()
         {
-            AdditionalParts = new string[] {};
-            LocalAlternateVersions = new string[] {};
-            SubtitleFiles = new string[] {};
+            AdditionalParts = Array.Empty<string>();
+            LocalAlternateVersions = Array.Empty<string>();
+            SubtitleFiles = Array.Empty<string>();
             LinkedAlternateVersions = EmptyLinkedChildArray;
         }
 
@@ -215,10 +212,10 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (!string.IsNullOrEmpty(PrimaryVersionId))
                 {
-                    var item = LibraryManager.GetItemById(PrimaryVersionId) as Video;
-                    if (item != null)
+                    var item = LibraryManager.GetItemById(PrimaryVersionId);
+                    if (item is Video video)
                     {
-                        return item.MediaSourceCount;
+                        return video.MediaSourceCount;
                     }
                 }
                 return LinkedAlternateVersions.Length + LocalAlternateVersions.Length + 1;
@@ -366,7 +363,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the additional parts.
         /// </summary>
         /// <returns>IEnumerable{Video}.</returns>
-        public IEnumerable<Video> GetAdditionalParts()
+        public IOrderedEnumerable<Video> GetAdditionalParts()
         {
             return GetAdditionalPartIds()
                 .Select(i => LibraryManager.GetItemById(i))
@@ -420,8 +417,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var updateType = base.UpdateFromResolvedItem(newItem);
 
-            var newVideo = newItem as Video;
-            if (newVideo != null)
+            if (newItem is Video newVideo)
             {
                 if (!AdditionalParts.SequenceEqual(newVideo.AdditionalParts, StringComparer.Ordinal))
                 {
@@ -463,7 +459,7 @@ namespace MediaBrowser.Controller.Entities
                     .Select(i => i.FullName)
                     .ToArray();
             }
-            return new string[] {};
+            return Array.Empty<string>();
         }
 
         /// <summary>
@@ -617,10 +613,6 @@ namespace MediaBrowser.Controller.Entities
             list.AddRange(localAlternates.Select(i => new Tuple<BaseItem, MediaSourceType>(i, MediaSourceType.Default)));
 
             return list;
-        }
-
-        public static bool IsHD (Video video) {
-            return video.Height >= 720;
         }
     }
 }

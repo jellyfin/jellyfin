@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public MediaInfoRequest()
         {
-            PlayableStreamFileNames = new string[] {};
+            PlayableStreamFileNames = Array.Empty<string>();
         }
     }
 }

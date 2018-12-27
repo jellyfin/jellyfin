@@ -19,8 +19,8 @@ namespace MediaBrowser.Controller.Entities.Movies
         public BoxSet()
         {
             RemoteTrailers = EmptyMediaUrlArray;
-            LocalTrailerIds = new Guid[] { };
-            RemoteTrailerIds = new Guid[] { };
+            LocalTrailerIds = Array.Empty<Guid>();
+            RemoteTrailerIds = Array.Empty<Guid>();
 
             DisplayOrder = ItemSortBy.PremiereDate;
         }
@@ -53,12 +53,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         public Guid[] RemoteTrailerIds { get; set; }
 
         /// <summary>
-        /// Gets or sets the remote trailers.
-        /// </summary>
-        /// <value>The remote trailers.</value>
-        public MediaUrl[] RemoteTrailers { get; set; }
-
-        /// <summary>
         /// Gets or sets the display order.
         /// </summary>
         /// <value>The display order.</value>
@@ -70,12 +64,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         }
 
         public override double GetDefaultPrimaryImageAspectRatio()
-        {
-            double value = 2;
-            value /= 3;
-
-            return value;
-        }
+            => 2 / 3;
 
         public override UnratedItem GetBlockUnratedType()
         {
@@ -254,7 +243,7 @@ namespace MediaBrowser.Controller.Entities.Movies
                     return FlattenItems(boxset.GetLinkedChildren(), expandedFolders);
                 }
 
-                return new BaseItem[] { };
+                return Array.Empty<BaseItem>();
             }
 
             return new[] { item };

@@ -12,10 +12,10 @@ namespace MediaBrowser.Controller.Entities
     {
         public Game()
         {
-            MultiPartGameFiles = new string[] {};
+            MultiPartGameFiles = Array.Empty<string>();
             RemoteTrailers = EmptyMediaUrlArray;
-            LocalTrailerIds = new Guid[] {};
-            RemoteTrailerIds = new Guid[] {};
+            LocalTrailerIds = Array.Empty<Guid>();
+            RemoteTrailerIds = Array.Empty<Guid>();
         }
 
         public Guid[] LocalTrailerIds { get; set; }
@@ -37,12 +37,6 @@ namespace MediaBrowser.Controller.Entities
         {
             get { return false; }
         }
-
-        /// <summary>
-        /// Gets or sets the remote trailers.
-        /// </summary>
-        /// <value>The remote trailers.</value>
-        public MediaUrl[] RemoteTrailers { get; set; }
 
         /// <summary>
         /// Gets the type of the media.

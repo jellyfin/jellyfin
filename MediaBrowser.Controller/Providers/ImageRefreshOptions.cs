@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Providers
             ImageRefreshMode = MetadataRefreshMode.Default;
             DirectoryService = directoryService;
 
-            ReplaceImages = new ImageType[] { };
+            ReplaceImages = Array.Empty<ImageType>();
             IsAutomated = true;
         }
 

@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.Providers
 
         public SubtitleOptions()
         {
-            DownloadLanguages = new string[] {};
+            DownloadLanguages = Array.Empty<string>();
 
             SkipIfAudioTrackMatches = true;
             RequirePerfectMatch = true;

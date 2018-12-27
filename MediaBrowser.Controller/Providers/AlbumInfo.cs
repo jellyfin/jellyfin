@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Providers
         {
             ArtistProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             SongInfos = new List<SongInfo>();
-            AlbumArtists = EmptyStringArray;
+            AlbumArtists = Array.Empty<string>();
         }
     }
 }
