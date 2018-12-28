@@ -279,7 +279,7 @@ namespace MediaBrowser.Providers.Movies
                 languages.Add("en");
             }
 
-            return string.Join(",", languages.ToArray(languages.Count));
+            return string.Join(",", languages.ToArray());
         }
 
         public static string NormalizeLanguage(string language)

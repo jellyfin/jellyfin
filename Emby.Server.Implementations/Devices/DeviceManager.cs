@@ -289,7 +289,7 @@ namespace Emby.Server.Implementations.Devices
 
                 var list = history.FilesUploaded.ToList();
                 list.Add(file);
-                history.FilesUploaded = list.ToArray(list.Count);
+                history.FilesUploaded = list.ToArray();
 
                 _json.SerializeToFile(history, path);
             }

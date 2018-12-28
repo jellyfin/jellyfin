@@ -648,7 +648,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            dto.People = list.ToArray(list.Count);
+            dto.People = list.ToArray();
         }
 
         /// <summary>

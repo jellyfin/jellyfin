@@ -145,7 +145,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                         _fileSystem.CreateDirectory(parentPath);
 
-                        _fileSystem.WriteAllText(failHistoryPath, string.Join("|", previouslyFailedImages.ToArray(previouslyFailedImages.Count)));
+                        _fileSystem.WriteAllText(failHistoryPath, string.Join("|", previouslyFailedImages.ToArray()));
                     }
 
                     numComplete++;

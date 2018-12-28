@@ -914,7 +914,7 @@ namespace MediaBrowser.Controller.Entities
                     // Try to preserve order
                     return result.OrderBy(i => ids.IndexOf(i.Id)).ToArray();
                 }
-                return result.ToArray(result.Count);
+                return result.ToArray();
             }
 
             return GetItemsInternal(query).Items;
@@ -1608,7 +1608,7 @@ namespace MediaBrowser.Controller.Entities
                     Logger.Info("Shortcut links have changed for {0}", Path);
 
                     newShortcutLinks.AddRange(LinkedChildren.Where(i => i.Type == LinkedChildType.Manual));
-                    LinkedChildren = newShortcutLinks.ToArray(newShortcutLinks.Count);
+                    LinkedChildren = newShortcutLinks.ToArray();
                     return true;
                 }
             }

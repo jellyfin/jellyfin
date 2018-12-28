@@ -242,7 +242,7 @@ namespace Emby.Dlna.Service
             }
 
             var originalHeaders = request.Headers;
-            var headers = string.Join(", ", originalHeaders.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray(originalHeaders.Count));
+            var headers = string.Join(", ", originalHeaders.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray());
 
             Logger.Debug("Control request. Headers: {0}", headers);
         }

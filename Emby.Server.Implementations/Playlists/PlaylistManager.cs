@@ -208,7 +208,7 @@ namespace Emby.Server.Implementations.Playlists
 
             var newList = playlist.LinkedChildren.ToList();
             newList.AddRange(list);
-            playlist.LinkedChildren = newList.ToArray(newList.Count);
+            playlist.LinkedChildren = newList.ToArray();
 
             playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
 
@@ -290,7 +290,7 @@ namespace Emby.Server.Implementations.Playlists
                 newList.Insert(newIndex, item);
             }
 
-            playlist.LinkedChildren = newList.ToArray(newList.Count);
+            playlist.LinkedChildren = newList.ToArray();
 
             playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
 

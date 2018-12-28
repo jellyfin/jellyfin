@@ -219,7 +219,7 @@ namespace Emby.Server.Implementations.Collections
             {
                 var newList = collection.LinkedChildren.ToList();
                 newList.AddRange(list);
-                collection.LinkedChildren = newList.ToArray(newList.Count);
+                collection.LinkedChildren = newList.ToArray();
 
                 collection.UpdateRatingToItems(linkedChildrenList);
 

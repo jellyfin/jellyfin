@@ -974,7 +974,7 @@ namespace MediaBrowser.Api.LiveTv
             fields.Remove(ItemFields.CanDownload);
             fields.Remove(ItemFields.DisplayPreferencesId);
             fields.Remove(ItemFields.Etag);
-            options.Fields = fields.ToArray(fields.Count);
+            options.Fields = fields.ToArray();
         }
 
         public object Get(GetChannel request)

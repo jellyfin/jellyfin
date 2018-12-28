@@ -941,7 +941,7 @@ namespace Emby.Dlna.PlayTo
             if (room != null && !string.IsNullOrWhiteSpace(room.Value))
                 friendlyNames.Add(room.Value);
 
-            deviceProperties.Name = string.Join(" ", friendlyNames.ToArray(friendlyNames.Count));
+            deviceProperties.Name = string.Join(" ", friendlyNames.ToArray());
 
             var model = document.Descendants(uPnpNamespaces.ud.GetName("modelName")).FirstOrDefault();
             if (model != null)
