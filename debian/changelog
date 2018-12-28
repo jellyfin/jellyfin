@@ -1,3 +1,10 @@
+jellyfin (3.5.2-5) unstable; urgency=medium
+
+  * Fully GPL'd release - remove tainted code from MediaBrowser.Common
+  * Several code cleanups and tweaks
+
+ -- Joshua Boniface <joshua@boniface.me>  Fri, 28 Dec 2018 10:26:30 -0500
+
 jellyfin (3.5.2-4) unstable; urgency=medium
 
   * Correct manifest.json bug and vdpau
