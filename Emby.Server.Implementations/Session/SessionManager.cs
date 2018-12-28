@@ -255,11 +255,10 @@ namespace Emby.Server.Implementations.Session
 
             if ((activityDate - lastActivityDate).TotalSeconds > 10)
             {
-                EventHelper.FireEventIfNotNull(SessionActivity, this, new SessionEventArgs
+                SessionActivity?.Invoke(this, new SessionEventArgs
                 {
                     SessionInfo = session
-
-                }, _logger);
+                });
             }
 
             return session;
@@ -693,7 +692,7 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            EventHelper.FireEventIfNotNull(PlaybackProgress, this, new PlaybackProgressEventArgs
+            PlaybackProgress?.Invoke(this, new PlaybackProgressEventArgs
             {
                 Item = libraryItem,
                 Users = users,
@@ -707,8 +706,7 @@ namespace Emby.Server.Implementations.Session
                 PlaySessionId = info.PlaySessionId,
                 IsAutomated = isAutomated,
                 Session = session
-
-            }, _logger);
+            });
 
             if (!isAutomated)
             {
@@ -1399,7 +1397,7 @@ namespace Emby.Server.Implementations.Session
 
                 if (result == null)
                 {
-                    EventHelper.FireEventIfNotNull(AuthenticationFailed, this, new GenericEventArgs<AuthenticationRequest>(request), _logger);
+                    AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
 
                     throw new SecurityException("Invalid user or password entered.");
                 }
@@ -1424,7 +1422,7 @@ namespace Emby.Server.Implementations.Session
                 ServerId = _appHost.SystemId
             };
 
-            EventHelper.FireEventIfNotNull(AuthenticationSucceeded, this, new GenericEventArgs<AuthenticationResult>(returnResult), _logger);
+            AuthenticationSucceeded?.Invoke(this, new GenericEventArgs<AuthenticationResult>(returnResult));
 
             return returnResult;
         }
@@ -1587,11 +1585,10 @@ namespace Emby.Server.Implementations.Session
 
             if (saveCapabilities)
             {
-                EventHelper.FireEventIfNotNull(CapabilitiesChanged, this, new SessionEventArgs
+                CapabilitiesChanged?.Invoke(this, new SessionEventArgs
                 {
                     SessionInfo = session
-
-                }, _logger);
+                });
 
                 try
                 {

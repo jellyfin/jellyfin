@@ -133,7 +133,7 @@ namespace Emby.Server.Implementations.IO
             Logger.LogDebug("Timer stopped.");
 
             DisposeTimer();
-            EventHelper.FireEventIfNotNull(Completed, this, EventArgs.Empty, Logger);
+            Completed?.Invoke(this, EventArgs.Empty);
 
             try
             {

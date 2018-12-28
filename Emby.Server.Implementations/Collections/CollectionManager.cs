@@ -155,12 +155,11 @@ namespace Emby.Server.Implementations.Collections
                     _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), RefreshPriority.High);
                 }
 
-                EventHelper.FireEventIfNotNull(CollectionCreated, this, new CollectionCreatedEventArgs
+                CollectionCreated?.Invoke(this, new CollectionCreatedEventArgs
                 {
                     Collection = collection,
                     Options = options
-
-                }, _logger);
+                });
 
                 return collection;
             }
@@ -230,12 +229,11 @@ namespace Emby.Server.Implementations.Collections
 
                 if (fireEvent)
                 {
-                    EventHelper.FireEventIfNotNull(ItemsAddedToCollection, this, new CollectionModifiedEventArgs
+                    ItemsAddedToCollection?.Invoke(this, new CollectionModifiedEventArgs
                     {
                         Collection = collection,
                         ItemsChanged = itemList
-
-                    }, _logger);
+                    });
                 }
             }
         }
@@ -288,12 +286,11 @@ namespace Emby.Server.Implementations.Collections
                 ForceSave = true
             }, RefreshPriority.High);
 
-            EventHelper.FireEventIfNotNull(ItemsRemovedFromCollection, this, new CollectionModifiedEventArgs
+            ItemsRemovedFromCollection?.Invoke(this, new CollectionModifiedEventArgs
             {
                 Collection = collection,
                 ItemsChanged = itemList
-
-            }, _logger);
+            });
         }
 
         public IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user)

@@ -184,7 +184,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (WebSocketConnected != null)
             {
-                EventHelper.FireEventIfNotNull(WebSocketConnected, this, new GenericEventArgs<IWebSocketConnection>(connection), _logger);
+                WebSocketConnected?.Invoke(this, new GenericEventArgs<IWebSocketConnection>(connection));
             }
         }
 
