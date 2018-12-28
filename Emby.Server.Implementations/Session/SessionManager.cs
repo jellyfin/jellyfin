@@ -18,7 +18,6 @@ using MediaBrowser.Model.Library;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

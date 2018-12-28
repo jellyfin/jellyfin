@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;

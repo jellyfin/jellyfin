@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Net;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
