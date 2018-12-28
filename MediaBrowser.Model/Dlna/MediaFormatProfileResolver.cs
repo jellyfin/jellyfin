@@ -101,7 +101,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     list.Add(MediaFormatProfile.MPEG_TS_JP_T);
                 }
-                return list.ToArray(list.Count);
+                return list.ToArray();
             }
             if (StringHelper.EqualsIgnoreCase(videoCodec, "h264"))
             {

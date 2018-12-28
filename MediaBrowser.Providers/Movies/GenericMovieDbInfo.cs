@@ -145,7 +145,7 @@ namespace MediaBrowser.Providers.Movies
                 movie.ProductionLocations = movieData
                     .production_countries
                     .Select(i => i.name)
-                    .ToArray(movieData.production_countries.Count);
+                    .ToArray();
             }
 
             movie.SetProviderId(MetadataProviders.Tmdb, movieData.id.ToString(_usCulture));
