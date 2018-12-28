@@ -1042,7 +1042,7 @@ namespace Emby.Server.Implementations.Session
                 command.PlayCommand = PlayCommand.PlayNow;
             }
 
-            command.ItemIds = items.Select(i => i.Id).ToArray(items.Count);
+            command.ItemIds = items.Select(i => i.Id).ToArray();
 
             if (user != null)
             {
@@ -1070,7 +1070,7 @@ namespace Emby.Server.Implementations.Session
 
                         if (episodes.Count > 0)
                         {
-                            command.ItemIds = episodes.Select(i => i.Id).ToArray(episodes.Count);
+                            command.ItemIds = episodes.Select(i => i.Id).ToArray();
                         }
                     }
                 }
@@ -1316,7 +1316,7 @@ namespace Emby.Server.Implementations.Session
                     UserName = user.Name
                 });
 
-                session.AdditionalUsers = list.ToArray(list.Count);
+                session.AdditionalUsers = list.ToArray();
             }
         }
 
@@ -1345,7 +1345,7 @@ namespace Emby.Server.Implementations.Session
                 var list = session.AdditionalUsers.ToList();
                 list.Remove(user);
 
-                session.AdditionalUsers = list.ToArray(list.Count);
+                session.AdditionalUsers = list.ToArray();
             }
         }
 
@@ -1669,7 +1669,7 @@ namespace Emby.Server.Implementations.Session
                 fields.Remove(ItemFields.Tags);
                 fields.Remove(ItemFields.ExtraIds);
 
-                dtoOptions.Fields = fields.ToArray(fields.Count);
+                dtoOptions.Fields = fields.ToArray();
 
                 _itemInfoDtoOptions = dtoOptions;
             }

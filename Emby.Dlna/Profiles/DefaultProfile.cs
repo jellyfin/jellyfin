@@ -173,7 +173,7 @@ namespace Emby.Dlna.Profiles
                 Value = value
             });
 
-            XmlRootAttributes = list.ToArray(list.Count);
+            XmlRootAttributes = list.ToArray();
         }
     }
 }

@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     session.ApplicationVersion
                 };
 
-                var key = string.Join("_", keys.ToArray(keys.Count)).GetMD5();
+                var key = string.Join("_", keys.ToArray()).GetMD5();
 
                 ClientInfo info;
                 if (!_apps.TryGetValue(key, out info))

@@ -1148,7 +1148,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            item.ImageInfos = list.ToArray(list.Count);
+            item.ImageInfos = list.ToArray();
         }
 
         public string ToValueString(ItemImageInfo image)
@@ -2566,7 +2566,7 @@ namespace Emby.Server.Implementations.Data
                 excludeIds.Add(item.Id);
                 excludeIds.AddRange(item.ExtraIds);
 
-                query.ExcludeItemIds = excludeIds.ToArray(excludeIds.Count);
+                query.ExcludeItemIds = excludeIds.ToArray();
                 query.ExcludeProviderIds = item.ProviderIds;
             }
 
@@ -2587,7 +2587,7 @@ namespace Emby.Server.Implementations.Data
                 list.Add(builder.ToString());
             }
 
-            return list.ToArray(list.Count);
+            return list.ToArray();
         }
 
         private void BindSearchParams(InternalItemsQuery query, IStatement statement)
@@ -2666,7 +2666,7 @@ namespace Emby.Server.Implementations.Data
 
             if (groups.Count > 0)
             {
-                return " Group by " + string.Join(",", groups.ToArray(groups.Count));
+                return " Group by " + string.Join(",", groups.ToArray());
             }
 
             return string.Empty;
@@ -2703,7 +2703,7 @@ namespace Emby.Server.Implementations.Data
 
             var whereText = whereClauses.Count == 0 ?
                 string.Empty :
-                " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
+                " where " + string.Join(" AND ", whereClauses.ToArray());
 
             commandText += whereText;
 
@@ -2761,7 +2761,7 @@ namespace Emby.Server.Implementations.Data
 
             var whereText = whereClauses.Count == 0 ?
                 string.Empty :
-                " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
+                " where " + string.Join(" AND ", whereClauses.ToArray());
 
             commandText += whereText;
 
@@ -2938,7 +2938,7 @@ namespace Emby.Server.Implementations.Data
                 var returnList = GetItemList(query);
                 return new QueryResult<BaseItem>
                 {
-                    Items = returnList.ToArray(returnList.Count),
+                    Items = returnList.ToArray(),
                     TotalRecordCount = returnList.Count
                 };
             }
@@ -2961,7 +2961,7 @@ namespace Emby.Server.Implementations.Data
 
             var whereText = whereClauses.Count == 0 ?
                 string.Empty :
-                " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
+                " where " + string.Join(" AND ", whereClauses.ToArray());
 
             var whereTextWithoutPaging = whereText;
 
@@ -3079,7 +3079,7 @@ namespace Emby.Server.Implementations.Data
 
                         LogQueryTime("GetItems", commandText, now);
 
-                        result.Items = list.ToArray(list.Count);
+                        result.Items = list.ToArray();
                         return result;
 
                     }, ReadTransactionMode);
@@ -3227,7 +3227,7 @@ namespace Emby.Server.Implementations.Data
 
             var whereText = whereClauses.Count == 0 ?
                 string.Empty :
-                " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
+                " where " + string.Join(" AND ", whereClauses.ToArray());
 
             commandText += whereText;
 
@@ -3299,7 +3299,7 @@ namespace Emby.Server.Implementations.Data
 
             var whereText = whereClauses.Count == 0 ?
                 string.Empty :
-                " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
+                " where " + string.Join(" AND ", whereClauses.ToArray());
 
             commandText += whereText;
 
@@ -3372,7 +3372,7 @@ namespace Emby.Server.Implementations.Data
                 var returnList = GetItemIdsList(query);
                 return new QueryResult<Guid>
                 {
-                    Items = returnList.ToArray(returnList.Count),
+                    Items = returnList.ToArray(),
                     TotalRecordCount = returnList.Count
                 };
             }
@@ -3387,7 +3387,7 @@ namespace Emby.Server.Implementations.Data
 
             var whereText = whereClauses.Count == 0 ?
                 string.Empty :
-                " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
+                " where " + string.Join(" AND ", whereClauses.ToArray());
 
             var whereTextWithoutPaging = whereText;
 
@@ -3495,7 +3495,7 @@ namespace Emby.Server.Implementations.Data
 
                         LogQueryTime("GetItemIds", commandText, now);
 
-                        result.Items = list.ToArray(list.Count);
+                        result.Items = list.ToArray();
                         return result;
 
                     }, ReadTransactionMode);
@@ -3690,7 +3690,7 @@ namespace Emby.Server.Implementations.Data
                     statement.TryBind("@IsMovie", true);
                 }
 
-                whereClauses.Add("(" + string.Join(" OR ", programAttribtues.ToArray(programAttribtues.Count)) + ")");
+                whereClauses.Add("(" + string.Join(" OR ", programAttribtues.ToArray()) + ")");
             }
             else if (query.IsMovie.HasValue)
             {
@@ -5813,7 +5813,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                         {
                             result.TotalRecordCount = list.Count;
                         }
-                        result.Items = list.ToArray(list.Count);
+                        result.Items = list.ToArray();
 
                         return result;
 

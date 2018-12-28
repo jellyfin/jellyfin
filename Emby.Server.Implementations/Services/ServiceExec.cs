@@ -181,7 +181,7 @@ namespace Emby.Server.Implementations.Services
                 }
 
                 if (reqFilters.Count > 0)
-                    actionCtx.RequestFilters = reqFilters.OrderBy(i => i.Priority).ToArray(reqFilters.Count);
+                    actionCtx.RequestFilters = reqFilters.OrderBy(i => i.Priority).ToArray();
 
                 actions.Add(actionCtx);
             }

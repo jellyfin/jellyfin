@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -24,10 +22,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    var list = current.ToArray(current.Length + 1);
-                    list[list.Length - 1] = name;
-
-                    item.Tags = list;
+                    item.Tags = current.Concat(new [] { name }).ToArray();
                 }
             }
         }

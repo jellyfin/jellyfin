@@ -522,7 +522,7 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.SubtitleFetcher
             }));
 
-            summary.Plugins = pluginList.ToArray(pluginList.Count);
+            summary.Plugins = pluginList.ToArray();
 
             var supportedImageTypes = imageProviders.OfType<IRemoteImageProvider>()
                 .SelectMany(i => i.GetSupportedImages(dummy))

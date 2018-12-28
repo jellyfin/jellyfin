@@ -728,7 +728,7 @@ namespace Emby.Server.Implementations
 
             Logger.Info("ServerId: {0}", SystemId);
 
-            var entryPoints = GetExports<IServerEntryPoint>().ToList();
+            var entryPoints = GetExports<IServerEntryPoint>();
             RunEntryPoints(entryPoints, true);
 
             Logger.Info("Core startup complete");
