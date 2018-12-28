@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities.TV
 {

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
+﻿using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Threading;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,8 +8,6 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Threading;
 
 namespace MediaBrowser.Controller.Net
 {

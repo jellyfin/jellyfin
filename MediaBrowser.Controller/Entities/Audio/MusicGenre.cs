@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Extensions;
-using MediaBrowser.Model.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -119,7 +118,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             var newPath = GetRebasedPath();
             if (!string.Equals(Path, newPath, StringComparison.Ordinal))
             {
-                Logger.Debug("{0} path has changed from {1} to {2}", GetType().Name, Path, newPath);
+                Logger.LogDebug("{0} path has changed from {1} to {2}", GetType().Name, Path, newPath);
                 return true;
             }
             return base.RequiresRefresh();
