@@ -122,7 +122,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (startDate < now)
             {
-                EventHelper.FireEventIfNotNull(TimerFired, this, new GenericEventArgs<TimerInfo> { Argument = item }, base.Logger);
+                TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo> { Argument = item });
                 return;
             }
 
@@ -178,7 +178,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var timer = GetAll().FirstOrDefault(i => string.Equals(i.Id, timerId, StringComparison.OrdinalIgnoreCase));
             if (timer != null)
             {
-                EventHelper.FireEventIfNotNull(TimerFired, this, new GenericEventArgs<TimerInfo> { Argument = timer }, base.Logger);
+                TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo> { Argument = timer });
             }
         }
 

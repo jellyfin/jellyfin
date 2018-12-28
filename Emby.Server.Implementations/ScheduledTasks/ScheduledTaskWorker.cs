@@ -465,11 +465,10 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             CurrentProgress = e;
 
-            EventHelper.FireEventIfNotNull(TaskProgress, this, new GenericEventArgs<double>
+            TaskProgress?.Invoke(this, new GenericEventArgs<double>
             {
                 Argument = e
-
-            }, Logger);
+            });
         }
 
         /// <summary>

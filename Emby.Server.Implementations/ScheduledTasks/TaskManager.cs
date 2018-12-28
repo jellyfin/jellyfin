@@ -331,11 +331,10 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="task">The task.</param>
         internal void OnTaskExecuting(IScheduledTaskWorker task)
         {
-            EventHelper.FireEventIfNotNull(TaskExecuting, this, new GenericEventArgs<IScheduledTaskWorker>
+            TaskExecuting?.Invoke(this, new GenericEventArgs<IScheduledTaskWorker>
             {
                 Argument = task
-
-            }, Logger);
+            });
         }
 
         /// <summary>
@@ -345,12 +344,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="result">The result.</param>
         internal void OnTaskCompleted(IScheduledTaskWorker task, TaskResult result)
         {
-            EventHelper.FireEventIfNotNull(TaskCompleted, task, new TaskCompletionEventArgs
+            TaskCompleted?.Invoke(task, new TaskCompletionEventArgs
             {
                 Result = result,
                 Task = task
-
-            }, Logger);
+            });
 
             ExecuteQueuedTasks();
         }
