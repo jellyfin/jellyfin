@@ -184,7 +184,7 @@ namespace Emby.Server.Implementations.Activity
 
                 var whereTextWithoutPaging = whereClauses.Count == 0 ?
                   string.Empty :
-                  " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
+                  " where " + string.Join(" AND ", whereClauses.ToArray());
 
                 if (startIndex.HasValue && startIndex.Value > 0)
                 {
@@ -199,7 +199,7 @@ namespace Emby.Server.Implementations.Activity
 
                 var whereText = whereClauses.Count == 0 ?
                     string.Empty :
-                    " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
+                    " where " + string.Join(" AND ", whereClauses.ToArray());
 
                 commandText += whereText;
 
@@ -244,7 +244,7 @@ namespace Emby.Server.Implementations.Activity
                         result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                     }
 
-                    result.Items = list.ToArray(list.Count);
+                    result.Items = list.ToArray();
                     return result;
 
                 }, ReadTransactionMode);
