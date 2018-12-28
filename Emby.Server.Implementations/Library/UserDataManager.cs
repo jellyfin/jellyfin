@@ -77,15 +77,14 @@ namespace Emby.Server.Implementations.Library
             var cacheKey = GetCacheKey(userId, item.Id);
             _userData.AddOrUpdate(cacheKey, userData, (k, v) => userData);
 
-            EventHelper.FireEventIfNotNull(UserDataSaved, this, new UserDataSaveEventArgs
+            UserDataSaved?.Invoke(this, new UserDataSaveEventArgs
             {
                 Keys = keys,
                 UserData = userData,
                 SaveReason = reason,
                 UserId = user.Id,
                 Item = item
-
-            }, _logger);
+            });
         }
 
         /// <summary>

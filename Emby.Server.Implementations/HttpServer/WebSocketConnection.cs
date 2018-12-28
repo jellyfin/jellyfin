@@ -118,7 +118,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         void socket_Closed(object sender, EventArgs e)
         {
-            EventHelper.FireEventIfNotNull(Closed, this, EventArgs.Empty, _logger);
+            Closed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>

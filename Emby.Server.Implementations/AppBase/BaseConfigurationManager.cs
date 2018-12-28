@@ -283,12 +283,11 @@ namespace Emby.Server.Implementations.AppBase
                 validatingStore.Validate(currentConfiguration, configuration);
             }
 
-            EventHelper.FireEventIfNotNull(NamedConfigurationUpdating, this, new ConfigurationUpdateEventArgs
+            NamedConfigurationUpdating?.Invoke( this, new ConfigurationUpdateEventArgs
             {
                 Key = key,
                 NewConfiguration = configuration
-
-            }, Logger);
+            });
 
             _configurations.AddOrUpdate(key, configuration, (k, v) => configuration);
 
@@ -305,12 +304,11 @@ namespace Emby.Server.Implementations.AppBase
 
         protected virtual void OnNamedConfigurationUpdated(string key, object configuration)
         {
-            EventHelper.FireEventIfNotNull(NamedConfigurationUpdated, this, new ConfigurationUpdateEventArgs
+            NamedConfigurationUpdated?.Invoke(this, new ConfigurationUpdateEventArgs
             {
                 Key = key,
                 NewConfiguration = configuration
-
-            }, Logger);
+            });
         }
 
         public Type GetConfigurationType(string key)

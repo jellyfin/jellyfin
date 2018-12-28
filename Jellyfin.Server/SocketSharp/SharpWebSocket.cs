@@ -55,15 +55,15 @@ namespace Jellyfin.SocketSharp
 
         void socket_OnError(object sender, SocketHttpListener.ErrorEventArgs e)
         {
-            _logger.LogError("Error in SharpWebSocket: {0}", e.Message ?? string.Empty);
-            //EventHelper.FireEventIfNotNull(Closed, this, EventArgs.Empty, _logger);
+            _logger.LogError("Error in SharpWebSocket: {Message}", e.Message ?? string.Empty);
+            //Closed?.Invoke(this, EventArgs.Empty);
         }
 
         void socket_OnClose(object sender, SocketHttpListener.CloseEventArgs e)
         {
             _taskCompletionSource.TrySetResult(true);
 
-            EventHelper.FireEventIfNotNull(Closed, this, EventArgs.Empty, _logger);
+            Closed?.Invoke(this, EventArgs.Empty);
         }
 
         void socket_OnMessage(object sender, SocketHttpListener.MessageEventArgs e)

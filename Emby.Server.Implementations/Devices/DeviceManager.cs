@@ -254,14 +254,14 @@ namespace Emby.Server.Implementations.Devices
 
             if (CameraImageUploaded != null)
             {
-                EventHelper.FireEventIfNotNull(CameraImageUploaded, this, new GenericEventArgs<CameraImageUploadInfo>
+                CameraImageUploaded?.Invoke(this, new GenericEventArgs<CameraImageUploadInfo>
                 {
                     Argument = new CameraImageUploadInfo
                     {
                         Device = device,
                         FileInfo = file
                     }
-                }, _logger);
+                });
             }
         }
 

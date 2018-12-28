@@ -2268,7 +2268,7 @@ namespace Emby.Server.Implementations
 
                 if (fireEvent)
                 {
-                    EventHelper.FireEventIfNotNull(HasUpdateAvailableChanged, this, EventArgs.Empty, Logger);
+                    HasUpdateAvailableChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
@@ -2384,11 +2384,10 @@ namespace Emby.Server.Implementations
         {
             Logger.LogInformation("Application has been updated to version {0}", package.versionStr);
 
-            EventHelper.FireEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<PackageVersionInfo>
+            ApplicationUpdated?.Invoke(this, new GenericEventArgs<PackageVersionInfo>
             {
                 Argument = package
-
-            }, Logger);
+            });
 
             NotifyPendingRestart();
         }

@@ -189,13 +189,12 @@ namespace MediaBrowser.Providers.Subtitles
             }
             catch (Exception ex)
             {
-                EventHelper.FireEventIfNotNull(SubtitleDownloadFailure, this, new SubtitleDownloadFailureEventArgs
+                SubtitleDownloadFailure?.Invoke(this, new SubtitleDownloadFailureEventArgs
                 {
                     Item = video,
                     Exception = ex,
                     Provider = provider.Name
-
-                }, _logger);
+                });
 
                 throw;
             }

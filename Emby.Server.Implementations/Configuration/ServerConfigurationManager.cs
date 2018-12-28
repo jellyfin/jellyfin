@@ -143,7 +143,7 @@ namespace Emby.Server.Implementations.Configuration
             ValidateMetadataPath(newConfig);
             ValidateSslCertificate(newConfig);
 
-            EventHelper.FireEventIfNotNull(ConfigurationUpdating, this, new GenericEventArgs<ServerConfiguration> { Argument = newConfig }, Logger);
+            ConfigurationUpdating?.Invoke(this, new GenericEventArgs<ServerConfiguration> { Argument = newConfig });
 
             base.ReplaceConfiguration(newConfiguration);
         }
