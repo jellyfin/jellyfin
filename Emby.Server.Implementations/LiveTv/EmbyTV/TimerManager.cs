@@ -1,15 +1,11 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Globalization;
+using System.Linq;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Events;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
-using System;
-using System.Collections.Concurrent;
-using System.Globalization;
-using System.Linq;
-using System.Threading;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Threading;

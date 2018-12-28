@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Net.WebSockets;
 using Emby.Server.Implementations.Net;
-using MediaBrowser.Common.Events;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.SocketSharp
