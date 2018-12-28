@@ -825,7 +825,7 @@ namespace Emby.Server.Implementations.HttpServer
                 });
             }
 
-            return routes.ToArray(routes.Count);
+            return routes.ToArray();
         }
 
         public Func<string, object> GetParseFn(Type propertyType)

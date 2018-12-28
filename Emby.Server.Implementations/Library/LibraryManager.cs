@@ -1493,7 +1493,7 @@ namespace Emby.Server.Implementations.Library
 
             return new QueryResult<BaseItem>
             {
-                Items = list.ToArray(list.Count)
+                Items = list.ToArray()
             };
         }
 

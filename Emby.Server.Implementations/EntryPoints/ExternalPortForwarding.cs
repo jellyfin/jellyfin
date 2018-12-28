@@ -12,7 +12,6 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Threading;
 using Mono.Nat;
-using MediaBrowser.Model.Extensions;
 using System.Threading;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -59,7 +58,7 @@ namespace Emby.Server.Implementations.EntryPoints
             values.Add(_appHost.EnableHttps.ToString());
             values.Add((config.EnableRemoteAccess).ToString());
 
-            return string.Join("|", values.ToArray(values.Count));
+            return string.Join("|", values.ToArray());
         }
 
         void _config_ConfigurationUpdated(object sender, EventArgs e)

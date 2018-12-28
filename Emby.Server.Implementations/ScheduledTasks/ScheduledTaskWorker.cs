@@ -9,7 +9,6 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -276,7 +275,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             get
             {
                 var triggers = InternalTriggers;
-                return triggers.Select(i => i.Item1).ToArray(triggers.Length);
+                return triggers.Select(i => i.Item1).ToArray();
             }
             set
             {
@@ -290,7 +289,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 SaveTriggers(triggerList);
 
-                InternalTriggers = triggerList.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray(triggerList.Length);
+                InternalTriggers = triggerList.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray();
             }
         }
 

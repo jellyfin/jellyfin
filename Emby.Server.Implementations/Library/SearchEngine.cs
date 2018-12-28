@@ -161,8 +161,8 @@ namespace Emby.Server.Implementations.Library
             var searchQuery = new InternalItemsQuery(user)
             {
                 SearchTerm = searchTerm,
-                ExcludeItemTypes = excludeItemTypes.ToArray(excludeItemTypes.Count),
-                IncludeItemTypes = includeItemTypes.ToArray(includeItemTypes.Count),
+                ExcludeItemTypes = excludeItemTypes.ToArray(),
+                IncludeItemTypes = includeItemTypes.ToArray(),
                 Limit = query.Limit,
                 IncludeItemsByName = string.IsNullOrEmpty(query.ParentId),
                 ParentId = string.IsNullOrEmpty(query.ParentId) ? Guid.Empty : new Guid(query.ParentId),

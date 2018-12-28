@@ -123,7 +123,7 @@ namespace MediaBrowser.Api.Movies
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 Limit = request.Limit,
-                IncludeItemTypes = itemTypes.ToArray(itemTypes.Count),
+                IncludeItemTypes = itemTypes.ToArray(),
                 IsMovie = true,
                 SimilarTo = item,
                 EnableGroupByMetadataKey = true,
@@ -177,12 +177,12 @@ namespace MediaBrowser.Api.Movies
 
             var likedMovies = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = itemTypes.ToArray(itemTypes.Count),
+                IncludeItemTypes = itemTypes.ToArray(),
                 IsMovie = true,
                 OrderBy = new[] { ItemSortBy.Random }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
                 Limit = 10,
                 IsFavoriteOrLiked = true,
-                ExcludeItemIds = recentlyPlayedMovies.Select(i => i.Id).ToArray(recentlyPlayedMovies.Count),
+                ExcludeItemIds = recentlyPlayedMovies.Select(i => i.Id).ToArray(),
                 EnableGroupByMetadataKey = true,
                 ParentId = parentIdGuid,
                 Recursive = true,
@@ -265,7 +265,7 @@ namespace MediaBrowser.Api.Movies
                     // Account for duplicates by imdb id, since the database doesn't support this yet
                     Limit = itemLimit + 2,
                     PersonTypes = new[] { PersonType.Director },
-                    IncludeItemTypes = itemTypes.ToArray(itemTypes.Count),
+                    IncludeItemTypes = itemTypes.ToArray(),
                     IsMovie = true,
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
@@ -305,7 +305,7 @@ namespace MediaBrowser.Api.Movies
                     Person = name,
                     // Account for duplicates by imdb id, since the database doesn't support this yet
                     Limit = itemLimit + 2,
-                    IncludeItemTypes = itemTypes.ToArray(itemTypes.Count),
+                    IncludeItemTypes = itemTypes.ToArray(),
                     IsMovie = true,
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
@@ -343,7 +343,7 @@ namespace MediaBrowser.Api.Movies
                 var similar = _libraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     Limit = itemLimit,
-                    IncludeItemTypes = itemTypes.ToArray(itemTypes.Count),
+                    IncludeItemTypes = itemTypes.ToArray(),
                     IsMovie = true,
                     SimilarTo = item,
                     EnableGroupByMetadataKey = true,

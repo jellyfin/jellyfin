@@ -241,7 +241,7 @@ namespace Emby.Server.Implementations.Security
 
             var whereTextWithoutPaging = whereClauses.Count == 0 ?
               string.Empty :
-              " where " + string.Join(" AND ", whereClauses.ToArray(whereClauses.Count));
+              " where " + string.Join(" AND ", whereClauses.ToArray());
 
             commandText += whereTextWithoutPaging;
 
@@ -298,7 +298,7 @@ namespace Emby.Server.Implementations.Security
                             }
                         }
 
-                        result.Items = list.ToArray(list.Count);
+                        result.Items = list.ToArray();
                         return result;
 
                     }, ReadTransactionMode);

@@ -512,7 +512,7 @@ namespace Emby.Dlna.Didl
                 streamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger(options)).BuildAudioItem(new AudioOptions
                 {
                     ItemId = audio.Id,
-                    MediaSources = sources.ToArray(sources.Count),
+                    MediaSources = sources.ToArray(),
                     Profile = _profile,
                     DeviceId = deviceId
                 });
