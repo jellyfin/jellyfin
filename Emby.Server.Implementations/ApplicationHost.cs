@@ -1962,6 +1962,7 @@ namespace Emby.Server.Implementations
         public async Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken)
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+            var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
 
             return new SystemInfo
             {
@@ -1984,8 +1985,7 @@ namespace Emby.Server.Implementations
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
-                // TODO - remove WanAddress
-                WanAddress = "0.0.0.0",
+                WanAddress = wanAddress,
                 HasUpdateAvailable = HasUpdateAvailable,
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
@@ -2012,14 +2012,13 @@ namespace Emby.Server.Implementations
         public async Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken)
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-
+            var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
             return new PublicSystemInfo
             {
                 Version = ApplicationVersion.ToString(),
                 Id = SystemId,
                 OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
-                // TODO - remove WanAddress
-                WanAddress = "0.0.0.0",
+                WanAddress = wanAddress,
                 ServerName = FriendlyName,
                 LocalAddress = localAddress
             };
@@ -2057,6 +2056,32 @@ namespace Emby.Server.Implementations
                 Logger.ErrorException("Error getting local Ip address information", ex);
             }
 
+            return null;
+        }
+
+        public async Task<string> GetWanApiUrl(CancellationToken cancellationToken)
+        {
+            var url = "http://ipv4.icanhazip.com";
+            try
+            {
+                using (var response = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    LogErrorResponseBody = false,
+                    LogErrors = false,
+                    LogRequest = false,
+                    TimeoutMs = 10000,
+                    BufferContent = false,
+                    CancellationToken = cancellationToken
+                }))
+                {
+                    return GetLocalApiUrl(response.ReadToEnd().Trim());
+                }
+            }
+            catch(Exception ex)
+            {
+                Logger.ErrorException("Error getting WAN Ip address information", ex);
+            }
             return null;
         }
 
