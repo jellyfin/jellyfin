@@ -156,9 +156,9 @@ function InstallJellyfin {
         Write-Host "Custom Install Location Chosen: $($InstallLocationBox.Text)"
         $Script:DefaultJellyfinInstallDirectory = $InstallLocationBox.Text
     }
-    if($Script:JellyfinDataDir -ne $LibraryLocationBox.Text){
-        Write-Host "Custom Library Location Chosen: $($LibraryLocationBox.Text)"
-        $Script:JellyfinDataDir = $LibraryLocationBox.Text
+    if($Script:JellyfinDataDir -ne $CustomLibraryBox.Text){
+        Write-Host "Custom Library Location Chosen: $($CustomLibraryBox.Text)"
+        $Script:JellyfinDataDir = $CustomLibraryBox.Text
     }
     if(-not (Test-Path $Script:DefaultJellyfinInstallDirectory)){
         mkdir $Script:DefaultJellyfinInstallDirectory
@@ -172,13 +172,13 @@ function InstallJellyfin {
         if($Script:InstallServiceAsUser){
             Write-Host "Installing Service as user $($Script:UserCredentials.UserName)"
             &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyfinInstallDirectory\jellyfin.exe`" -programdata `"$Script:JellyfinDataDir`"
-            Start-Sleep -Milliseconds 500
+            Start-Sleep -Milliseconds 2000
             &sc.exe config Jellyfin obj=".\$($Script:UserCredentials.UserName)" password="$($Script:UserCredentials.GetNetworkCredential().Password)"
             &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START 
         }else{
             Write-Host "Installing Service as LocalSystem"
             &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyfinInstallDirectory\jellyfin.exe`" -programdata `"$Script:JellyfinDataDir`"
-            Start-Sleep -Milliseconds 500
+            Start-Sleep -Milliseconds 2000
             &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START 
         }
     }
