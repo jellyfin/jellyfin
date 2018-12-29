@@ -1,7 +1,7 @@
 ### This header should be used to start new files.
 ### It provides an explicit per-file license reference that should be present on all new files.
 ### To use this header, delete these lines and the following empty line, modify <filename> to
-### the proper place, and then add new code following the header and a single empty line.
+### the proper full path, and then add new code following the header and a single empty line.
 
 // <filename>
 // Part of the Jellyfin project (https://jellyfin.media)
