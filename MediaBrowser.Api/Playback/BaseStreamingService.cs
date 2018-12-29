@@ -589,6 +589,22 @@ namespace MediaBrowser.Api.Playback
         }
 
         /// <summary>
+        /// Parses query parameters as StreamOptions
+        /// <summary>
+        /// <param name="request">The stream request.</param>
+        private void ParseStreamOptions(StreamRequest request)
+        {
+            foreach (var param in Request.QueryString) {
+                if (Char.IsLower(param.Name[0])) {
+                    // This was probably not parsed initially and should be a StreamOptions
+                    // TODO: This should be incorporated either in the lower framework for parsing requests
+                    // or the generated URL should correctly serialize it
+                    request.StreamOptions[param.Name] = param.Value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Parses the dlna headers.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -665,6 +681,8 @@ namespace MediaBrowser.Api.Playback
             {
                 ParseParams(request);
             }
+
+            ParseStreamOptions(request);
 
             var url = Request.PathInfo;
 
