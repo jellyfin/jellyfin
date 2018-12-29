@@ -11,7 +11,6 @@
     <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
     <ProjectReference Include="..\SocketHttpListener\SocketHttpListener.csproj" />
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
-    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj" />
     <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj" />
     <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj" />
     <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj" />
@@ -22,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Open.Nat" Version="2.1.0" />
     <PackageReference Include="ServiceStack.Text.Core" Version="5.4.0" />
     <PackageReference Include="sharpcompress" Version="0.22.0" />
     <PackageReference Include="SimpleInjector" Version="4.4.2" />
