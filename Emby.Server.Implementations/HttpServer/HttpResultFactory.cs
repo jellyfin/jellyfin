@@ -112,12 +112,15 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         private IHasHeaders GetHttpResult(IRequest requestContext, byte[] content, string contentType, bool addCachePrevention, IDictionary<string, string> responseHeaders = null)
         {
+            string compressionType = null;
+            bool isHeadRequest = false;
+
+            if (requestContext != null) {
+                compressionType = GetCompressionType(requestContext, content, contentType);
+                isHeadRequest = string.Equals(requestContext.Verb, "head", StringComparison.OrdinalIgnoreCase);
+            }
+
             IHasHeaders result;
-
-            var compressionType = requestContext == null ? null : GetCompressionType(requestContext, content, contentType);
-
-            var isHeadRequest = string.Equals(requestContext.Verb, "head", StringComparison.OrdinalIgnoreCase);
-
             if (string.IsNullOrEmpty(compressionType))
             {
                 var contentLength = content.Length;
