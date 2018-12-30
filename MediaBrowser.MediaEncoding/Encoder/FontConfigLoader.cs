@@ -3,15 +3,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Configuration;
-
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
