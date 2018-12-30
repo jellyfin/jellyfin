@@ -15,7 +15,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.LiveTv.Listings
 {
@@ -58,7 +58,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
 
         private async Task<string> GetXml(string path, CancellationToken cancellationToken)
         {
-            _logger.Info("xmltv path: {0}", path);
+            _logger.LogInformation("xmltv path: {path}", path);
 
             if (!path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
@@ -72,7 +72,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
                 return UnzipIfNeeded(path, cacheFile);
             }
 
-            _logger.Info("Downloading xmltv listings from {0}", path);
+            _logger.LogInformation("Downloading xmltv listings from {path}", path);
 
             string tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
             {
@@ -109,7 +109,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error extracting from gz file {0}", ex, file);
+                    _logger.LogError(ex, "Error extracting from gz file {file}", file);
                 }
 
                 try
@@ -119,7 +119,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error extracting from zip file {0}", ex, file);
+                    _logger.LogError(ex, "Error extracting from zip file {file}", file);
                 }
             }
 
@@ -177,10 +177,10 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
                 }
             }*/
 
-            _logger.Debug("Getting xmltv programs for channel {0}", channelId);
+            _logger.LogDebug("Getting xmltv programs for channel {id}", channelId);
 
             string path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
-            _logger.Debug("Opening XmlTvReader for {0}", path);
+            _logger.LogDebug("Opening XmlTvReader for {path}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
 
             return reader.GetProgrammes(channelId, startDateUtc, endDateUtc, cancellationToken)
@@ -273,7 +273,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
         {
             // In theory this should never be called because there is always only one lineup
             string path = await GetXml(info.Path, CancellationToken.None).ConfigureAwait(false);
-            _logger.Debug("Opening XmlTvReader for {0}", path);
+            _logger.LogDebug("Opening XmlTvReader for {path}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
             IEnumerable<XmlTvChannel> results = reader.GetChannels();
 
@@ -285,7 +285,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
         {
             // In theory this should never be called because there is always only one lineup
             string path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
-            _logger.Debug("Opening XmlTvReader for {0}", path);
+            _logger.LogDebug("Opening XmlTvReader for {path}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
             IEnumerable<XmlTvChannel> results = reader.GetChannels();
 
