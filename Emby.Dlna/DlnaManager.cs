@@ -530,7 +530,7 @@ namespace Emby.Dlna
             };
         }
     }
-
+    /*
     class DlnaProfileEntryPoint : IServerEntryPoint
     {
         private readonly IApplicationPaths _appPaths;
@@ -596,5 +596,6 @@ namespace Emby.Dlna
         public void Dispose()
         {
         }
-    }
+    }*/
 }
+

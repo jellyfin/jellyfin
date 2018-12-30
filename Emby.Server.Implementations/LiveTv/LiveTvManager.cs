@@ -2400,7 +2400,7 @@ namespace Emby.Server.Implementations.LiveTv
             if (provider == null)
             {
                 throw new ResourceNotFoundException(
-                    string.Format("Couldn't find provider with name: '{0}' of type: '{1}'", provider.Name, provider.Type)
+                    string.Format("Couldn't find provider of type: '{0}'", info.Type)
                 );
             }
 
