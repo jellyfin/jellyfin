@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
@@ -23,6 +22,7 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -264,7 +264,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         protected virtual List<BaseItem> LoadChildren()
         {
-            //Logger.Debug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
+            //logger.LogDebug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
             //just load our children from the repo - the library will be validated and maintained in other processes
             return GetCachedChildren();
         }
@@ -303,7 +303,7 @@ namespace MediaBrowser.Controller.Entities
                 var id = child.Id;
                 if (dictionary.ContainsKey(id))
                 {
-                    Logger.Error("Found folder containing items with duplicate id. Path: {0}, Child Name: {1}",
+                    Logger.LogError("Found folder containing items with duplicate id. Path: {path}, Child Name: {ChildName}",
                         Path ?? Name,
                         child.Path ?? child.Name);
                 }
@@ -371,6 +371,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 catch (Exception ex)
                 {
+                    Logger.LogError(ex, "Error retrieving children folder");
                     return;
                 }
 
@@ -419,13 +420,9 @@ namespace MediaBrowser.Controller.Entities
 
                     foreach (var item in itemsRemoved)
                     {
-                        if (!item.IsFileProtocol)
+                        if (item.IsFileProtocol)
                         {
-                        }
-
-                        else
-                        {
-                            Logger.Debug("Removed item: " + item.Path);
+                            Logger.LogDebug("Removed item: " + item.Path);
 
                             item.SetParent(null);
                             LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
@@ -571,14 +568,9 @@ namespace MediaBrowser.Controller.Entities
                     await child.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
                 }
 
-                if (recursive)
+                if (recursive && child is Folder folder)
                 {
-                    var folder = child as Folder;
-
-                    if (folder != null)
-                    {
-                        await folder.RefreshMetadataRecursive(folder.Children.ToList(), refreshOptions, true, progress, cancellationToken);
-                    }
+                    await folder.RefreshMetadataRecursive(folder.Children.ToList(), refreshOptions, true, progress, cancellationToken);
                 }
             }
         }
@@ -782,7 +774,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], typeof(BoxSet).Name, StringComparison.OrdinalIgnoreCase))
             {
-                Logger.Debug("Query requires post-filtering due to BoxSet query");
+                Logger.LogDebug("Query requires post-filtering due to BoxSet query");
                 return true;
             }
 
@@ -795,7 +787,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (!(this is ICollectionFolder))
                 {
-                    Logger.Debug("Query requires post-filtering due to LinkedChildren. Type: " + GetType().Name);
+                    Logger.LogDebug("Query requires post-filtering due to LinkedChildren. Type: " + GetType().Name);
                     return true;
                 }
             }
@@ -803,68 +795,68 @@ namespace MediaBrowser.Controller.Entities
             // Filter by Video3DFormat
             if (query.Is3D.HasValue)
             {
-                Logger.Debug("Query requires post-filtering due to Is3D");
+                Logger.LogDebug("Query requires post-filtering due to Is3D");
                 return true;
             }
 
             if (query.HasOfficialRating.HasValue)
             {
-                Logger.Debug("Query requires post-filtering due to HasOfficialRating");
+                Logger.LogDebug("Query requires post-filtering due to HasOfficialRating");
                 return true;
             }
 
             if (query.IsPlaceHolder.HasValue)
             {
-                Logger.Debug("Query requires post-filtering due to IsPlaceHolder");
+                Logger.LogDebug("Query requires post-filtering due to IsPlaceHolder");
                 return true;
             }
 
             if (query.HasSpecialFeature.HasValue)
             {
-                Logger.Debug("Query requires post-filtering due to HasSpecialFeature");
+                Logger.LogDebug("Query requires post-filtering due to HasSpecialFeature");
                 return true;
             }
 
             if (query.HasSubtitles.HasValue)
             {
-                Logger.Debug("Query requires post-filtering due to HasSubtitles");
+                Logger.LogDebug("Query requires post-filtering due to HasSubtitles");
                 return true;
             }
 
             if (query.HasTrailer.HasValue)
             {
-                Logger.Debug("Query requires post-filtering due to HasTrailer");
+                Logger.LogDebug("Query requires post-filtering due to HasTrailer");
                 return true;
             }
 
             // Filter by VideoType
             if (query.VideoTypes.Length > 0)
             {
-                Logger.Debug("Query requires post-filtering due to VideoTypes");
+                Logger.LogDebug("Query requires post-filtering due to VideoTypes");
                 return true;
             }
 
             if (CollapseBoxSetItems(query, this, query.User, ConfigurationManager))
             {
-                Logger.Debug("Query requires post-filtering due to CollapseBoxSetItems");
+                Logger.LogDebug("Query requires post-filtering due to CollapseBoxSetItems");
                 return true;
             }
 
             if (!string.IsNullOrEmpty(query.AdjacentTo))
             {
-                Logger.Debug("Query requires post-filtering due to AdjacentTo");
+                Logger.LogDebug("Query requires post-filtering due to AdjacentTo");
                 return true;
             }
 
             if (query.SeriesStatuses.Length > 0)
             {
-                Logger.Debug("Query requires post-filtering due to SeriesStatuses");
+                Logger.LogDebug("Query requires post-filtering due to SeriesStatuses");
                 return true;
             }
 
             if (query.AiredDuringSeason.HasValue)
             {
-                Logger.Debug("Query requires post-filtering due to AiredDuringSeason");
+                Logger.LogDebug("Query requires post-filtering due to AiredDuringSeason");
                 return true;
             }
 
@@ -872,7 +864,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(typeof(Series).Name))
                 {
-                    Logger.Debug("Query requires post-filtering due to IsPlayed");
+                    Logger.LogDebug("Query requires post-filtering due to IsPlayed");
                     return true;
                 }
             }
@@ -1575,7 +1567,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         try
                         {
-                            Logger.Debug("Found shortcut at {0}", i.FullName);
+                            Logger.LogDebug("Found shortcut at {0}", i.FullName);
 
                             var resolvedPath = CollectionFolder.ApplicationHost.ExpandVirtualPath(FileSystem.ResolveShortcut(i.FullName));
 
@@ -1588,13 +1580,13 @@ namespace MediaBrowser.Controller.Entities
                                 };
                             }
 
-                            Logger.Error("Error resolving shortcut {0}", i.FullName);
+                            Logger.LogError("Error resolving shortcut {0}", i.FullName);
 
                             return null;
                         }
                         catch (IOException ex)
                         {
-                            Logger.ErrorException("Error resolving shortcut {0}", ex, i.FullName);
+                            Logger.LogError(ex, "Error resolving shortcut {0}", i.FullName);
                             return null;
                         }
                     })
@@ -1605,7 +1597,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (!newShortcutLinks.SequenceEqual(currentShortcutLinks, new LinkedChildComparer(FileSystem)))
                 {
-                    Logger.Info("Shortcut links have changed for {0}", Path);
+                    Logger.LogInformation("Shortcut links have changed for {0}", Path);
 
                     newShortcutLinks.AddRange(LinkedChildren.Where(i => i.Type == LinkedChildType.Manual));
                     LinkedChildren = newShortcutLinks.ToArray();

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Globalization;
 using MediaBrowser.Model.Services;
@@ -11,7 +11,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (headers == null)
             {
-                logger.Info("{0} {1}. UserAgent: {2}", "HTTP " + method, url, userAgent ?? string.Empty);
+                logger.LogInformation("{0} {1}. UserAgent: {2}", "HTTP " + method, url, userAgent ?? string.Empty);
             }
             else
             {
@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.HttpServer
                     index++;
                 }
 
-                logger.Info("HTTP {0} {1}. {2}", method, url, headerText);
+                logger.LogInformation("HTTP {0} {1}. {2}", method, url, headerText);
             }
         }
 
@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             //var headerText = headers == null ? string.Empty : "Headers: " + string.Join(", ", headers.Where(i => i.Name.IndexOf("Access-", StringComparison.OrdinalIgnoreCase) == -1).Select(i => i.Name + "=" + i.Value).ToArray());
             var headerText = string.Empty;
-            logger.Info("HTTP Response {0} to {1}. Time: {2}{3}. {4} {5}", statusCode, endPoint, Convert.ToInt32(durationMs).ToString(CultureInfo.InvariantCulture), logSuffix, url, headerText);
+            logger.LogInformation("HTTP Response {0} to {1}. Time: {2}{3}. {4} {5}", statusCode, endPoint, Convert.ToInt32(durationMs).ToString(CultureInfo.InvariantCulture), logSuffix, url, headerText);
         }
     }
 }

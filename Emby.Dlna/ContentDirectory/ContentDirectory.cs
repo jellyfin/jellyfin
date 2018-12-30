@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using Emby.Dlna.Service;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Controller.MediaEncoding;

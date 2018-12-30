@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -131,7 +131,7 @@ namespace MediaBrowser.Providers.TV
                 _libraryManager.GetLibraryOptions(series).SeasonZeroDisplayName :
                 (seasonNumber.HasValue ? string.Format(_localization.GetLocalizedString("NameSeasonNumber"), seasonNumber.Value.ToString(_usCulture)) : _localization.GetLocalizedString("NameSeasonUnknown"));
 
-            _logger.Info("Creating Season {0} entry for {1}", seasonName, series.Name);
+            _logger.LogInformation("Creating Season {0} entry for {1}", seasonName, series.Name);
 
             var season = new Season
             {
@@ -147,7 +147,7 @@ namespace MediaBrowser.Providers.TV
 
             series.AddChild(season, cancellationToken);
 
-            await season.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken).ConfigureAwait(false);
+            await season.RefreshMetadata(new MetadataRefreshOptions(new  DirectoryService(_logger, _fileSystem)), cancellationToken).ConfigureAwait(false);
 
             return season;
         }
@@ -192,7 +192,7 @@ namespace MediaBrowser.Providers.TV
 
             foreach (var seasonToRemove in seasonsToRemove)
             {
-                _logger.Info("Removing virtual season {0} {1}", series.Name, seasonToRemove.IndexNumber);
+                _logger.LogInformation("Removing virtual season {0} {1}", series.Name, seasonToRemove.IndexNumber);
 
                 _libraryManager.DeleteItem(seasonToRemove, new DeleteOptions
                 {

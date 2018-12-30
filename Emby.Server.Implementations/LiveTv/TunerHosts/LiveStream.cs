@@ -8,7 +8,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.LiveTv;
 using System.Linq;
@@ -75,7 +75,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             EnableStreamSharing = false;
 
-            Logger.Info("Closing " + GetType().Name);
+            Logger.LogInformation("Closing " + GetType().Name);
 
             LiveStreamCancellationTokenSource.Cancel();
 
@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error closing live stream", ex);
+                Logger.LogError(ex, "Error closing live stream");
             }
         }
 
@@ -120,7 +120,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             if (retryCount == 0)
             {
-                Logger.Info("Deleting temp files {0}", string.Join(", ", paths.ToArray()));
+                Logger.LogInformation("Deleting temp files {0}", string.Join(", ", paths.ToArray()));
             }
 
             var failedFiles = new List<string>();
@@ -139,7 +139,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
                 catch (Exception ex)
                 {
-                    //Logger.ErrorException("Error deleting file {0}", ex, path);
+                    Logger.LogError(ex, "Error deleting file {path}", path);
                     failedFiles.Add(path);
                 }
             }
@@ -181,14 +181,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 isLastFile = nextFileInfo.Item2;
             }
 
-            Logger.Info("Live Stream ended.");
+            Logger.LogInformation("Live Stream ended.");
         }
 
         private Tuple<string, bool> GetNextFile(string currentFile)
         {
             var files = GetStreamFilePaths();
 
-            //Logger.Info("Live stream files: {0}", string.Join(", ", files.ToArray()));
+            //logger.LogInformation("Live stream files: {0}", string.Join(", ", files.ToArray()));
 
             if (string.IsNullOrEmpty(currentFile))
             {
@@ -204,7 +204,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private async Task CopyFile(string path, bool seekFile, int emptyReadLimit, bool allowAsync, Stream stream, CancellationToken cancellationToken)
         {
-            //Logger.Info("Opening live stream file {0}. Empty read limit: {1}", path, emptyReadLimit);
+            //logger.LogInformation("Opening live stream file {0}. Empty read limit: {1}", path, emptyReadLimit);
 
             using (var inputStream = (FileStream)GetInputStream(path, allowAsync))
             {
@@ -227,7 +227,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private void TrySeek(FileStream stream, long offset)
         {
-            //Logger.Info("TrySeek live stream");
+            //logger.LogInformation("TrySeek live stream");
             try
             {
                 stream.Seek(offset, SeekOrigin.End);
@@ -242,7 +242,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error seeking stream", ex);
+                Logger.LogError(ex, "Error seeking stream");
             }
         }
     }

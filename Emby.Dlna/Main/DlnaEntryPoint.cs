@@ -11,7 +11,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.TV;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -64,7 +64,7 @@ namespace Emby.Dlna.Main
         public static DlnaEntryPoint Current;
 
         public DlnaEntryPoint(IServerConfigurationManager config,
-            ILogManager logManager,
+            ILoggerFactory loggerFactory,
             IServerApplicationHost appHost,
             ISessionManager sessionManager,
             IHttpClient httpClient,
@@ -102,7 +102,7 @@ namespace Emby.Dlna.Main
             _timerFactory = timerFactory;
             _environmentInfo = environmentInfo;
             _networkManager = networkManager;
-            _logger = logManager.GetLogger("Dlna");
+            _logger = loggerFactory.CreateLogger("Dlna");
 
             ContentDirectory = new ContentDirectory.ContentDirectory(dlnaManager, 
                 userDataManager, 
@@ -185,13 +185,13 @@ namespace Emby.Dlna.Main
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error starting ssdp handlers", ex);
+                _logger.LogError(ex, "Error starting ssdp handlers");
             }
         }
 
         private void LogMessage(string msg)
         {
-            _logger.Debug(msg);
+            _logger.LogDebug(msg);
         }
 
         private void StartDeviceDiscovery(ISsdpCommunicationsServer communicationsServer)
@@ -202,7 +202,7 @@ namespace Emby.Dlna.Main
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error starting device discovery", ex);
+                _logger.LogError(ex, "Error starting device discovery");
             }
         }
 
@@ -210,12 +210,12 @@ namespace Emby.Dlna.Main
         {
             try
             {
-                _logger.Info("Disposing DeviceDiscovery");
+                _logger.LogInformation("Disposing DeviceDiscovery");
                 ((DeviceDiscovery)_deviceDiscovery).Dispose();
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error stopping device discovery", ex);
+                _logger.LogError(ex, "Error stopping device discovery");
             }
         }
 
@@ -243,7 +243,7 @@ namespace Emby.Dlna.Main
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error registering endpoint", ex);
+                _logger.LogError(ex, "Error registering endpoint");
             }
         }
 
@@ -263,7 +263,7 @@ namespace Emby.Dlna.Main
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
-                _logger.Info("Registering publisher for {0} on {1}", fullService, address.ToString());
+                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address.ToString());
 
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
                 var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
@@ -361,7 +361,7 @@ namespace Emby.Dlna.Main
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error starting PlayTo manager", ex);
+                    _logger.LogError(ex, "Error starting PlayTo manager");
                 }
             }
         }
@@ -374,12 +374,12 @@ namespace Emby.Dlna.Main
                 {
                     try
                     {
-                        _logger.Info("Disposing PlayToManager");
+                        _logger.LogInformation("Disposing PlayToManager");
                         _manager.Dispose();
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error disposing PlayTo manager", ex);
+                        _logger.LogError(ex, "Error disposing PlayTo manager");
                     }
                     _manager = null;
                 }
@@ -394,7 +394,7 @@ namespace Emby.Dlna.Main
 
             if (_communicationsServer != null)
             {
-                _logger.Info("Disposing SsdpCommunicationsServer");
+                _logger.LogInformation("Disposing SsdpCommunicationsServer");
                 _communicationsServer.Dispose();
                 _communicationsServer = null;
             }
@@ -409,7 +409,7 @@ namespace Emby.Dlna.Main
         {
             if (_Publisher != null)
             {
-                _logger.Info("Disposing SsdpDevicePublisher");
+                _logger.LogInformation("Disposing SsdpDevicePublisher");
                 _Publisher.Dispose();
                 _Publisher = null;
             }

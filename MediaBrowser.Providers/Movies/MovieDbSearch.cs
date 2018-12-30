@@ -2,7 +2,7 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -71,7 +71,7 @@ namespace MediaBrowser.Providers.Movies
                 year = year ?? yearInName;
             }
 
-            _logger.Info("MovieDbProvider: Finding id for item: " + name);
+            _logger.LogInformation("MovieDbProvider: Finding id for item: " + name);
             var language = idInfo.MetadataLanguage.ToLower();
 
             //nope - search for it

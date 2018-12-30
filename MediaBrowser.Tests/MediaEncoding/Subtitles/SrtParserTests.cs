@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading;
 using Emby.Server.MediaEncoding.Subtitles;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
@@ -123,7 +123,7 @@ namespace Emby.Server.Implementations.MediaEncoder
             {
                 if (chapter.StartPositionTicks >= runtimeTicks)
                 {
-                    _logger.Info("Stopping chapter extraction for {0} because a chapter was found with a position greater than the runtime.", video.Name);
+                    _logger.LogInformation("Stopping chapter extraction for {0} because a chapter was found with a position greater than the runtime.", video.Name);
                     break;
                 }
 
@@ -166,7 +166,7 @@ namespace Emby.Server.Implementations.MediaEncoder
                         }
                         catch (Exception ex)
                         {
-                            _logger.ErrorException("Error extracting chapter images for {0}", ex, string.Join(",", video.Path));
+                            _logger.LogError(ex, "Error extracting chapter images for {0}", string.Join(",", video.Path));
                             success = false;
                             break;
                         }
@@ -226,7 +226,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
             foreach (var image in deadImages)
             {
-                _logger.Debug("Deleting dead chapter image {0}", image);
+                _logger.LogDebug("Deleting dead chapter image {path}", image);
 
                 try
                 {
@@ -234,7 +234,7 @@ namespace Emby.Server.Implementations.MediaEncoder
                 }
                 catch (IOException ex)
                 {
-                    _logger.ErrorException("Error deleting {0}.", ex, image);
+                    _logger.LogError(ex, "Error deleting {path}.", image);
                 }
             }
         }

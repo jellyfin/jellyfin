@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Playlists;
 using System;
 using System.Collections.Generic;
@@ -136,7 +136,7 @@ namespace Emby.Server.Implementations.Playlists
 
                 parentFolder.AddChild(playlist, CancellationToken.None);
 
-                await playlist.RefreshMetadata(new MetadataRefreshOptions(_fileSystem) { ForceSave = true }, CancellationToken.None)
+                await playlist.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)) { ForceSave = true }, CancellationToken.None)
                     .ConfigureAwait(false);
 
                 if (options.ItemIdList.Length > 0)
@@ -217,7 +217,7 @@ namespace Emby.Server.Implementations.Playlists
                 SavePlaylistFile(playlist);
             }
 
-            _providerManager.QueueRefresh(playlist.Id, new MetadataRefreshOptions(_fileSystem)
+            _providerManager.QueueRefresh(playlist.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
             {
                 ForceSave = true
 
@@ -250,7 +250,7 @@ namespace Emby.Server.Implementations.Playlists
                 SavePlaylistFile(playlist);
             }
 
-            _providerManager.QueueRefresh(playlist.Id, new MetadataRefreshOptions(_fileSystem)
+            _providerManager.QueueRefresh(playlist.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
             {
                 ForceSave = true
 

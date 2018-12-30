@@ -4,7 +4,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.News;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Serialization;
@@ -67,7 +67,7 @@ namespace Emby.Server.Implementations.News
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error downloading news", ex);
+                _logger.LogError(ex, "Error downloading news");
             }
         }
 

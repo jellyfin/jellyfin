@@ -157,13 +157,9 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 await _sessionManager.SendMessageToAdminSessions(name, data, CancellationToken.None);
             }
-            catch (ObjectDisposedException)
-            {
-
-            }
             catch (Exception)
             {
-                //Logger.ErrorException("Error sending message", ex);
+
             }
         }
 
@@ -173,13 +169,9 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 await _sessionManager.SendMessageToUserSessions(new List<Guid> { user.Id }, name, data, CancellationToken.None);
             }
-            catch (ObjectDisposedException)
-            {
-
-            }
             catch (Exception)
             {
-                //Logger.ErrorException("Error sending message", ex);
+
             }
         }
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using MediaBrowser.Model.Diagnostics;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -20,12 +20,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public Tuple<List<string>, List<string>> Validate(string encoderPath)
         {
-            _logger.Info("Validating media encoder at {0}", encoderPath);
+            _logger.LogInformation("Validating media encoder at {0}", encoderPath);
 
             var decoders = GetDecoders(encoderPath);
             var encoders = GetEncoders(encoderPath);
 
-            _logger.Info("Encoder validation complete");
+            _logger.LogInformation("Encoder validation complete");
 
             return new Tuple<List<string>, List<string>>(decoders, encoders);
         }
@@ -41,7 +41,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (logOutput)
                 {
-                    _logger.ErrorException("Error validating encoder", ex);
+                    _logger.LogError(ex, "Error validating encoder");
                 }
             }
 
@@ -50,7 +50,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return false;
             }
 
-            _logger.Info("ffmpeg info: {0}", output);
+            _logger.LogInformation("ffmpeg info: {0}", output);
 
             if (output.IndexOf("Libav developers", StringComparison.OrdinalIgnoreCase) != -1)
             {
@@ -78,9 +78,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 output = GetProcessOutput(encoderAppPath, "-decoders");
             }
-            catch (Exception )
+            catch (Exception ex)
             {
-                //_logger.ErrorException("Error detecting available decoders", ex);
+                _logger.LogError(ex, "Error detecting available decoders");
             }
 
             var found = new List<string>();
@@ -107,7 +107,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    _logger.Info("Decoder available: " + codec);
+                    _logger.LogInformation("Decoder available: " + codec);
                     found.Add(codec);
                 }
             }
@@ -163,7 +163,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     if (index < required.Length - 1)
                     {
-                        _logger.Info("Encoder available: " + codec);
+                        _logger.LogInformation("Encoder available: " + codec);
                     }
 
                     found.Add(codec);
@@ -187,7 +187,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 RedirectStandardOutput = true
             });
 
-            _logger.Info("Running {0} {1}", path, arguments);
+            _logger.LogInformation("Running {path} {arguments}", path, arguments);
 
             using (process)
             {
@@ -199,16 +199,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch
                 {
-                    _logger.Info("Killing process {0} {1}", path, arguments);
+                    _logger.LogInformation("Killing process {path} {arguments}", path, arguments);
 
                     // Hate having to do this
                     try
                     {
                         process.Kill();
                     }
-                    catch (Exception ex1)
+                    catch (Exception ex)
                     {
-                        _logger.ErrorException("Error killing process", ex1);
+                        _logger.LogError(ex, "Error killing process");
                     }
 
                     throw;

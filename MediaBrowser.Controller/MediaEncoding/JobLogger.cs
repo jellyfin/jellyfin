@@ -1,10 +1,10 @@
 ﻿using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Logging;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -43,7 +43,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error reading ffmpeg log", ex);
+                _logger.LogError(ex, "Error reading ffmpeg log");
             }
         }
 

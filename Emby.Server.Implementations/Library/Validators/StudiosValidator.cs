@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading;
@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error refreshing {0}", ex, name);
+                    _logger.LogError(ex, "Error refreshing {StudioName}", name);
                 }
 
                 numComplete++;
@@ -77,7 +77,7 @@ namespace Emby.Server.Implementations.Library.Validators
 
             foreach (var item in deadEntities)
             {
-                _logger.Info("Deleting dead {2} {0} {1}.", item.Id.ToString("N"), item.Name, item.GetType().Name);
+                _logger.LogInformation("Deleting dead {2} {0} {1}.", item.Id.ToString("N"), item.Name, item.GetType().Name);
 
                 _libraryManager.DeleteItem(item, new DeleteOptions
                 {

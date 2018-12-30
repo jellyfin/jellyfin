@@ -3,7 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using SkiaSharp;
 using System;
 using System.IO;
@@ -81,7 +81,7 @@ namespace Emby.Drawing.Skia
             // test an operation that requires the native library
             SKPMColor.PreMultiply(SKColors.Black);
 
-            _logger.Info("SkiaSharp version: " + GetVersion());
+            _logger.LogInformation("SkiaSharp version: " + GetVersion());
         }
 
         public static string GetVersion()
@@ -530,7 +530,7 @@ namespace Emby.Drawing.Skia
                     throw new ArgumentOutOfRangeException(string.Format("Skia unable to read image {0}", inputPath));
                 }
 
-                //_logger.Info("Color type {0}", bitmap.Info.ColorType);
+                //_logger.LogInformation("Color type {0}", bitmap.Info.ColorType);
 
                 var originalImageSize = new ImageSize(bitmap.Width, bitmap.Height);
 
@@ -660,7 +660,7 @@ namespace Emby.Drawing.Skia
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error drawing indicator overlay", ex);
+                _logger.LogError(ex, "Error drawing indicator overlay");
             }
         }
 

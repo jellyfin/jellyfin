@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Services;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -190,17 +191,17 @@ namespace MediaBrowser.Api.Playback.Hls
 
                     if (currentTranscodingIndex == null)
                     {
-                        Logger.Debug("Starting transcoding because currentTranscodingIndex=null");
+                        Logger.LogDebug("Starting transcoding because currentTranscodingIndex=null");
                         startTranscoding = true;
                     }
                     else if (requestedIndex < currentTranscodingIndex.Value)
                     {
-                        Logger.Debug("Starting transcoding because requestedIndex={0} and currentTranscodingIndex={1}", requestedIndex, currentTranscodingIndex);
+                        Logger.LogDebug("Starting transcoding because requestedIndex={0} and currentTranscodingIndex={1}", requestedIndex, currentTranscodingIndex);
                         startTranscoding = true;
                     }
                     else if (requestedIndex - currentTranscodingIndex.Value > segmentGapRequiringTranscodingChange)
                     {
-                        Logger.Debug("Starting transcoding because segmentGap is {0} and max allowed gap is {1}. requestedIndex={2}", requestedIndex - currentTranscodingIndex.Value, segmentGapRequiringTranscodingChange, requestedIndex);
+                        Logger.LogDebug("Starting transcoding because segmentGap is {0} and max allowed gap is {1}. requestedIndex={2}", requestedIndex - currentTranscodingIndex.Value, segmentGapRequiringTranscodingChange, requestedIndex);
                         startTranscoding = true;
                     }
                     if (startTranscoding)
@@ -245,13 +246,13 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
             }
 
-            //Logger.Info("waiting for {0}", segmentPath);
+            //Logger.LogInformation("waiting for {0}", segmentPath);
             //while (!File.Exists(segmentPath))
             //{
             //    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             //}
 
-            Logger.Info("returning {0}", segmentPath);
+            Logger.LogInformation("returning {0}", segmentPath);
             job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
             return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, requestedIndex, job, cancellationToken).ConfigureAwait(false);
         }
@@ -358,7 +359,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 return;
             }
 
-            Logger.Debug("Deleting partial HLS file {0}", path);
+            Logger.LogDebug("Deleting partial HLS file {path}", path);
 
             try
             {
@@ -366,7 +367,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             catch (IOException ex)
             {
-                Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
+                Logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
 
                 var task = Task.Delay(100);
                 Task.WaitAll(task);
@@ -374,7 +375,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
+                Logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
             }
         }
 

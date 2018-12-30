@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Services
@@ -309,10 +309,10 @@ namespace Emby.Server.Implementations.Services
 
         private readonly Dictionary<string, string> propertyNamesMap = new Dictionary<string, string>();
 
-        public int MatchScore(string httpMethod, string[] withPathInfoParts, ILogger logger)
+        public int MatchScore(string httpMethod, string[] withPathInfoParts)
         {
             int wildcardMatchCount;
-            var isMatch = IsMatch(httpMethod, withPathInfoParts, logger, out wildcardMatchCount);
+            var isMatch = IsMatch(httpMethod, withPathInfoParts, out wildcardMatchCount);
             if (!isMatch)
             {
                 return -1;
@@ -348,31 +348,27 @@ namespace Emby.Server.Implementations.Services
         /// For performance withPathInfoParts should already be a lower case string
         /// to minimize redundant matching operations.
         /// </summary>
-        public bool IsMatch(string httpMethod, string[] withPathInfoParts, ILogger logger, out int wildcardMatchCount)
+        public bool IsMatch(string httpMethod, string[] withPathInfoParts, out int wildcardMatchCount)
         {
             wildcardMatchCount = 0;
 
             if (withPathInfoParts.Length != this.PathComponentsCount && !this.IsWildCardPath)
             {
-                //logger.Info("withPathInfoParts mismatch for {0} for {1}", httpMethod, string.Join("/", withPathInfoParts));
-                return false;
+               return false;
             }
 
             if (!Verbs.Contains(httpMethod, StringComparer.OrdinalIgnoreCase))
             {
-                //logger.Info("allowsAllVerbs mismatch for {0} for {1} allowedverbs {2}", httpMethod, string.Join("/", withPathInfoParts), this.allowedVerbs);
                 return false;
             }
 
             if (!ExplodeComponents(ref withPathInfoParts))
             {
-                //logger.Info("ExplodeComponents mismatch for {0} for {1}", httpMethod, string.Join("/", withPathInfoParts));
                 return false;
             }
 
             if (this.TotalComponentsCount != withPathInfoParts.Length && !this.IsWildCardPath)
             {
-                //logger.Info("TotalComponentsCount mismatch for {0} for {1}", httpMethod, string.Join("/", withPathInfoParts));
                 return false;
             }
 
@@ -393,7 +389,6 @@ namespace Emby.Server.Implementations.Services
                         // Ensure there are still enough parts left to match the remainder
                         if ((withPathInfoParts.Length - pathIx) < (this.TotalComponentsCount - i - 1))
                         {
-                            //logger.Info("withPathInfoParts length mismatch for {0} for {1}", httpMethod, string.Join("/", withPathInfoParts));
                             return false;
                         }
                     }
@@ -416,7 +411,6 @@ namespace Emby.Server.Implementations.Services
 
                     if (withPathInfoParts.Length <= pathIx || !LiteralsEqual(withPathInfoParts[pathIx], literalToMatch))
                     {
-                        //logger.Info("withPathInfoParts2 length mismatch for {0} for {1}. not equals: {2} != {3}.", httpMethod, string.Join("/", withPathInfoParts), withPathInfoParts[pathIx], literalToMatch);
                         return false;
                     }
                     pathIx++;

@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Services;
 using SocketHttpListener.Net;
 using IHttpFile = MediaBrowser.Model.Services.IHttpFile;

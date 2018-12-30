@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Text;
 using NLangDetect.Core;
@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.TextEncoding
 
                 if (!string.IsNullOrWhiteSpace(language))
                 {
-                    _logger.Debug("Text language detected as {0}", language);
+                    _logger.LogDebug("Text language detected as {0}", language);
                 }
             }
 
@@ -165,7 +165,7 @@ namespace Emby.Server.Implementations.TextEncoding
                 throw new ArgumentNullException("charset");
             }
 
-            _logger.Debug("Getting encoding object for character set: {0}", charset);
+            _logger.LogDebug("Getting encoding object for character set: {0}", charset);
 
             try
             {
@@ -174,7 +174,7 @@ namespace Emby.Server.Implementations.TextEncoding
             catch (ArgumentException)
             {
                 charset = charset.Replace("-", string.Empty);
-                _logger.Debug("Getting encoding object for character set: {0}", charset);
+                _logger.LogDebug("Getting encoding object for character set: {0}", charset);
 
                 return Encoding.GetEncoding(charset);
             }

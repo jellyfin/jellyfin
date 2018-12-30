@@ -7,7 +7,7 @@ using Emby.Dlna.Didl;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
 using System;
@@ -156,7 +156,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error reporting progress", ex);
+                _logger.LogError(ex, "Error reporting progress");
             }
         }
 
@@ -204,7 +204,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error reporting playback stopped", ex);
+                _logger.LogError(ex, "Error reporting playback stopped");
             }
         }
 
@@ -223,7 +223,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error reporting progress", ex);
+                _logger.LogError(ex, "Error reporting progress");
             }
         }
 
@@ -247,7 +247,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error reporting progress", ex);
+                _logger.LogError(ex, "Error reporting progress");
             }
         }
 
@@ -278,7 +278,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error reporting progress", ex);
+                _logger.LogError(ex, "Error reporting progress");
             }
         }
 
@@ -319,7 +319,7 @@ namespace Emby.Dlna.PlayTo
 
         public async Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
         {
-            _logger.Debug("{0} - Received PlayRequest: {1}", this._session.DeviceName, command.PlayCommand);
+            _logger.LogDebug("{0} - Received PlayRequest: {1}", this._session.DeviceName, command.PlayCommand);
 
             var user = command.ControllingUserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(command.ControllingUserId);
 
@@ -351,7 +351,7 @@ namespace Emby.Dlna.PlayTo
                 }
             }
 
-            _logger.Debug("{0} - Playlist created", _session.DeviceName);
+            _logger.LogDebug("{0} - Playlist created", _session.DeviceName);
 
             if (command.PlayCommand == PlayCommand.PlayLast)
             {
@@ -532,23 +532,13 @@ namespace Emby.Dlna.PlayTo
             return null;
         }
 
-        private ILogger GetStreamBuilderLogger()
-        {
-            if (_config.GetDlnaConfiguration().EnableDebugLog)
-            {
-                return _logger;
-            }
-
-            return new NullLogger();
-        }
-
         private PlaylistItem GetPlaylistItem(BaseItem item, List<MediaSourceInfo> mediaSources, DeviceProfile profile, string deviceId, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
         {
             if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger()).BuildVideoItem(new VideoOptions
+                    StreamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildVideoItem(new VideoOptions
                     {
                         ItemId = item.Id,
                         MediaSources = mediaSources.ToArray(),
@@ -568,7 +558,7 @@ namespace Emby.Dlna.PlayTo
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger()).BuildAudioItem(new AudioOptions
+                    StreamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildAudioItem(new AudioOptions
                     {
                         ItemId = item.Id,
                         MediaSources = mediaSources.ToArray(),
@@ -599,7 +589,7 @@ namespace Emby.Dlna.PlayTo
         {
             Playlist.Clear();
             Playlist.AddRange(items);
-            _logger.Debug("{0} - Playing {1} items", _session.DeviceName, Playlist.Count);
+            _logger.LogDebug("{0} - Playing {1} items", _session.DeviceName, Playlist.Count);
 
             await SetPlaylistIndex(0).ConfigureAwait(false);
             return true;

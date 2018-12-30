@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using Emby.Dlna.Server;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,13 +20,13 @@ namespace Emby.Dlna.Service
         private const string NS_SOAPENV = "http://schemas.xmlsoap.org/soap/envelope/";
 
         protected readonly IServerConfigurationManager Config;
-        protected readonly ILogger Logger;
+        protected readonly ILogger _logger;
         protected readonly IXmlReaderSettingsFactory XmlReaderSettingsFactory;
 
         protected BaseControlHandler(IServerConfigurationManager config, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
         {
             Config = config;
-            Logger = logger;
+            _logger = logger;
             XmlReaderSettingsFactory = xmlReaderSettingsFactory;
         }
 
@@ -52,7 +52,7 @@ namespace Emby.Dlna.Service
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error processing control request", ex);
+                _logger.LogError(ex, "Error processing control request");
 
                 return new ControlErrorHandler().GetResponse(ex);
             }
@@ -76,7 +76,7 @@ namespace Emby.Dlna.Service
                 }
             }
 
-            Logger.Debug("Received control request {0}", requestInfo.LocalName);
+            _logger.LogDebug("Received control request {0}", requestInfo.LocalName);
 
             var result = GetResult(requestInfo.LocalName, requestInfo.Headers);
 
@@ -118,7 +118,7 @@ namespace Emby.Dlna.Service
                 IsSuccessful = true
             };
 
-            //Logger.Debug(xml);
+            //logger.LogDebug(xml);
 
             controlResponse.Headers.Add("EXT", string.Empty);
 
@@ -244,7 +244,7 @@ namespace Emby.Dlna.Service
             var originalHeaders = request.Headers;
             var headers = string.Join(", ", originalHeaders.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray());
 
-            Logger.Debug("Control request. Headers: {0}", headers);
+            _logger.LogDebug("Control request. Headers: {0}", headers);
         }
 
         private void LogResponse(ControlResponse response)
@@ -258,7 +258,7 @@ namespace Emby.Dlna.Service
             var headers = string.Join(", ", originalHeaders.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray());
             //builder.Append(response.Xml);
 
-            Logger.Debug("Control response. Headers: {0}", headers);
+            _logger.LogDebug("Control response. Headers: {0}", headers);
         }
     }
 }

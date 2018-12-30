@@ -6,9 +6,9 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -381,7 +381,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         public void Post(ReportPlaybackStopped request)
         {
-            Logger.Debug("ReportPlaybackStopped PlaySessionId: {0}", request.PlaySessionId ?? string.Empty);
+            Logger.LogDebug("ReportPlaybackStopped PlaySessionId: {0}", request.PlaySessionId ?? string.Empty);
 
             if (!string.IsNullOrWhiteSpace(request.PlaySessionId))
             {

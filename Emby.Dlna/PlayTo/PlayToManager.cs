@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
@@ -93,7 +93,7 @@ namespace Emby.Dlna.PlayTo
             if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
                      nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
             {
-                //_logger.Debug("Upnp device {0} does not contain a MediaRenderer device (0).", location);
+                //_logger.LogDebug("Upnp device {0} does not contain a MediaRenderer device (0).", location);
                 return;
             }
 
@@ -121,7 +121,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error creating PlayTo device.", ex);
+                _logger.LogError(ex, "Error creating PlayTo device.");
             }
             finally
             {
@@ -155,9 +155,9 @@ namespace Emby.Dlna.PlayTo
         private async Task AddDevice(UpnpDeviceInfo info, string location, CancellationToken cancellationToken)
         {
             var uri = info.Location;
-            _logger.Debug("Attempting to create PlayToController from location {0}", location);
+            _logger.LogDebug("Attempting to create PlayToController from location {0}", location);
 
-            _logger.Debug("Logging session activity from location {0}", location);
+            _logger.LogDebug("Logging session activity from location {0}", location);
             string uuid;
             if (info.Headers.TryGetValue("USN", out uuid))
             {
@@ -237,7 +237,7 @@ namespace Emby.Dlna.PlayTo
                     SupportsMediaControl = true
                 });
 
-                _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
+                _logger.LogInformation("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
             }
         }
 
