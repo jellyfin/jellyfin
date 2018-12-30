@@ -11,12 +11,9 @@ namespace MediaBrowser.Controller.MediaEncoding
     {
         public string OutputDirectory { get; set; }
 
-        public string DeviceId { get; set; }
         public string ItemId { get; set; }
         public string MediaSourceId { get; set; }
         public string AudioCodec { get; set; }
-
-        public DeviceProfile DeviceProfile { get; set; }
 
         public bool ReadInputAtNativeFramerate { get; set; }
 
