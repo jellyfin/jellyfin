@@ -2066,7 +2066,7 @@ namespace Emby.Server.Implementations
             }
             catch(Exception ex)
             {
-                Logger.ErrorException("Error getting WAN Ip address information", ex);
+                Logger.LogError(ex, "Error getting WAN Ip address information");
             }
             return null;
         }
