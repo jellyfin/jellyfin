@@ -907,7 +907,7 @@ define(["loading", "appRouter", "layoutManager", "connectionManager", "cardBuild
             require(["alert"], function(alert) {
                 alert({
                     text: globalize.translate("AddItemToCollectionHelp"),
-                    html: globalize.translate("AddItemToCollectionHelp") + '<br/><br/><a is="emby-linkbutton" class="button-link" target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Collections">' + globalize.translate("ButtonLearnMore") + "</a>"
+                    html: globalize.translate("AddItemToCollectionHelp") + '<br/><br/><a is="emby-linkbutton" class="button-link" target="_blank" href="https://web.archive.org/web/20181216120305/https://github.com/MediaBrowser/Wiki/wiki/Collections">' + globalize.translate("ButtonLearnMore") + "</a>"
                 })
             })
         })

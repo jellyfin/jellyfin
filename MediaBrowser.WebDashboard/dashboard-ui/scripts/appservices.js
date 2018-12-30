@@ -48,7 +48,7 @@ define(["loading", "libraryMenu"], function(loading, libraryMenu) {
     function onPageShow() {
         var page = this,
             context = getParameterByName("context");
-        "sync" == context ? (libraryMenu.setTitle(Globalize.translate("TitleSync")), page.querySelector(".headerHelpButton").setAttribute("href", "https://github.com/MediaBrowser/Wiki/wiki/Sync")) : "livetv" == context ? (libraryMenu.setTitle(Globalize.translate("TitleLiveTV")), page.querySelector(".headerHelpButton").setAttribute("href", "https://github.com/MediaBrowser/Wiki/wiki/Live%20TV")) : "notifications" == context && (libraryMenu.setTitle(Globalize.translate("TitleNotifications")), page.querySelector(".headerHelpButton").setAttribute("href", "https://github.com/MediaBrowser/Wiki/wiki/Notifications"))
+        "sync" == context ? (libraryMenu.setTitle(Globalize.translate("TitleSync")), page.querySelector(".headerHelpButton").setAttribute("href", "https://web.archive.org/web/20181216120305/https://github.com/MediaBrowser/Wiki/wiki/Sync")) : "livetv" == context ? (libraryMenu.setTitle(Globalize.translate("TitleLiveTV")), page.querySelector(".headerHelpButton").setAttribute("href", "https://web.archive.org/web/20181216120305/https://github.com/MediaBrowser/Wiki/wiki/Live-TV")) : "notifications" == context && (libraryMenu.setTitle(Globalize.translate("TitleNotifications")), page.querySelector(".headerHelpButton").setAttribute("href", "https://web.archive.org/web/20181216120305/https://github.com/MediaBrowser/Wiki/wiki/Notifications"))
     }
     pageIdOn("pagebeforeshow", "appServicesPage", onPageShow), pageIdOn("pageshow", "appServicesPage", onPageShow), pageIdOn("pageshow", "appServicesPage", function() {
         reloadList(this)
