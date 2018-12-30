@@ -730,7 +730,7 @@ namespace Emby.Server.Implementations.Library
 
             _fileSystem.CreateDirectory(rootFolderPath);
 
-            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath));
+            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath))).DeepCopy<Folder,AggregateFolder>();
 
             // In case program data folder was moved
             if (!string.Equals(rootFolder.Path, rootFolderPath, StringComparison.Ordinal))
@@ -799,7 +799,7 @@ namespace Emby.Server.Implementations.Library
 
                         if (tmpItem == null)
                         {
-                            tmpItem = (UserRootFolder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath));
+                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath))).DeepCopy<Folder,UserRootFolder>();
                         }
 
                         // In case program data folder was moved
@@ -1493,7 +1493,7 @@ namespace Emby.Server.Implementations.Library
 
             return new QueryResult<BaseItem>
             {
-                Items = list.ToArray(list.Count)
+                Items = list.ToArray()
             };
         }
 

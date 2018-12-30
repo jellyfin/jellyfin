@@ -551,7 +551,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     list.Add(Path.Combine(item.ContainingFolderPath, "extrathumbs", "thumb" + outputIndex.ToString(UsCulture) + extension));
                 }
-                return list.ToArray(list.Count);
+                return list.ToArray();
             }
 
             if (type == ImageType.Primary)

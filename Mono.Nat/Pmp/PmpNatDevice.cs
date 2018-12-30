@@ -95,7 +95,7 @@ namespace Mono.Nat.Pmp
 
             try
             {
-                byte[] buffer = package.ToArray(package.Count);
+                byte[] buffer = package.ToArray();
                 int attempt = 0;
                 int delay = PmpConstants.RetryDelay;
 

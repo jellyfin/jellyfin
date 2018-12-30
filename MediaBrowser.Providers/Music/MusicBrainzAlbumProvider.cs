@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Xml;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.Music
 {

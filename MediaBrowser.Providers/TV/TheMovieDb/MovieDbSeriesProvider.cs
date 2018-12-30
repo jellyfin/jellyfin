@@ -236,7 +236,7 @@ namespace MediaBrowser.Providers.TV
 
             if (seriesInfo.networks != null)
             {
-                series.Studios = seriesInfo.networks.Select(i => i.name).ToArray(seriesInfo.networks.Count);
+                series.Studios = seriesInfo.networks.Select(i => i.name).ToArray();
             }
 
             if (seriesInfo.genres != null)

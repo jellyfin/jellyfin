@@ -7,8 +7,8 @@ Type = simple
 EnvironmentFile = /etc/default/jellyfin
 User = jellyfin
 ExecStart = /usr/bin/jellyfin -programdata ${JELLYFIN_DATA} -restartpath ${JELLYFIN_RESTART_SCRIPT} ${JELLYFIN_ADD_OPTS}
-Restart = on-abort
-TimeoutSec = 20
+Restart = on-failure
+TimeoutSec = 15
 
 [Install]
 WantedBy = multi-user.target

@@ -186,7 +186,7 @@ namespace MediaBrowser.Model.Dlna
                 list.Add(string.Format("{0}={1}", pair.Name, encodedValue));
             }
 
-            string queryString = string.Join("&", list.ToArray(list.Count));
+            string queryString = string.Join("&", list.ToArray());
 
             return GetUrl(baseUrl, queryString);
         }

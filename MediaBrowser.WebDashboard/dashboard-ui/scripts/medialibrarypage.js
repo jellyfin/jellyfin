@@ -190,18 +190,18 @@ define(["jQuery", "apphost", "scripts/taskbutton", "loading", "libraryMenu", "gl
         }, {
             name: globalize.translate("FolderTypeMovies"),
             value: "movies",
-            message: getLink("MovieLibraryHelp", "https://github.com/MediaBrowser/Wiki/wiki/Movie%20naming")
+            message: getLink("MovieLibraryHelp", "https://web.archive.org/web/20181216120305/https://github.com/MediaBrowser/Wiki/wiki/Movie-naming")
         }, {
             name: globalize.translate("FolderTypeMusic"),
             value: "music"
         }, {
             name: globalize.translate("FolderTypeTvShows"),
             value: "tvshows",
-            message: getLink("TvLibraryHelp", "https://github.com/MediaBrowser/Wiki/wiki/TV%20naming")
+            message: getLink("TvLibraryHelp", "https://web.archive.org/web/20181216120305/https://github.com/MediaBrowser/Wiki/wiki/TV-naming")
         }, {
             name: globalize.translate("FolderTypeBooks"),
             value: "books",
-            message: getLink("BookLibraryHelp", "https://github.com/MediaBrowser/Wiki/wiki/Book%20naming")
+            message: getLink("BookLibraryHelp", "https://web.archive.org/web/20181216120305/https://github.com/MediaBrowser/Wiki/wiki/Book-naming")
         }, {
             name: globalize.translate("FolderTypeGames"),
             value: "games",
