@@ -35,7 +35,7 @@ var Dashboard = {
         isConnectMode: function() {
             if (AppInfo.isNativeApp) return !0;
             var url = window.location.href.toLowerCase();
-            return -1 != url.indexOf("mediabrowser.tv") || -1 != url.indexOf("emby.media")
+            return -1 != url.indexOf("mediabrowser.tv") || -1 != url.indexOf("jellyfin.media")
         },
         allowPluginPages: function(pluginId) {
             var allowedPluginConfigs = ["b0daa30f-2e09-4083-a6ce-459d9fecdd80", "de228f12-e43e-4bd9-9fc0-2830819c3b92", "899c12c7-5b40-4c4e-9afd-afd74a685eb1", "14f5f69e-4c8d-491b-8917-8e90e8317530", "02528C96-F727-44D7-BE87-9EEF040758C3", "dc372f99-4e0e-4c6b-8c18-2b887ca4530c", "830fc68f-b964-4d2f-b139-48e22cd143c", "b9f0c474-e9a8-4292-ae41-eb3c1542f4cd", "7cfbb821-e8fd-40ab-b64e-a7749386a6b2", "4C2FDA1C-FD5E-433A-AD2B-718E0B73E9A9", "cd5a19be-7676-48ef-b64f-a17c98f2b889", "b2ff6a63-303a-4a84-b937-6e12f87e3eb9", "0277E613-3EC0-4360-A3DE-F8AF0AABB5E9", "9464BD84-D30D-4404-B2AD-DFF4E12D5FC5", "9574ac10-bf23-49bc-949f-924f23cfa48f", "66fd72a4-7e8e-4f22-8d1c-022ce4b9b0d5", "4DCB591C-0FA2-4C5D-A7E5-DABE37164C8B", "8e791e2a-058a-4b12-8493-8bf69d92d685", "577f89eb-58a7-4013-be06-9a970ddb1377", "6153FDF0-40CC-4457-8730-3B4A19512BAE", "de228f12-e43e-4bd9-9fc0-2830819c3b92", "6C3B6965-C257-47C2-AA02-64457AE21D91", "2FE79C34-C9DC-4D94-9DF2-2F3F36764414", "0417264b-5a93-4ad0-a1f0-b87569b7cf80", "e711475e-efad-431b-8527-033ba9873a34", "AB95885A-1D0E-445E-BDBF-80C1912C98C5", "F015EA06-B413-47F1-BF15-F049A799658B", "986a7283-205a-4436-862d-23135c067f8a", "8abc6789-fde2-4705-8592-4028806fa343", "2850d40d-9c66-4525-aa46-968e8ef04e97"].map(function(i) {
