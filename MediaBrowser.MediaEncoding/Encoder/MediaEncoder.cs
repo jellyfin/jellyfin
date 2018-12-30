@@ -6,7 +6,6 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -550,7 +549,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     //process.BeginErrorReadLine();
 
-                    var result = _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
+                    var result = await _jsonSerializer.DeserializeFromStreamAsync<InternalMediaInfoResult>(process.StandardOutput.BaseStream).ConfigureAwait(false);
 
                     if (result == null || (result.streams == null && result.format == null))
                     {

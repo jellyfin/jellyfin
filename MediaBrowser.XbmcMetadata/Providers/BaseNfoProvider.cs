@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.XbmcMetadata.Savers;
-using System.IO;
+﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
+using MediaBrowser.XbmcMetadata.Savers;
 
 namespace MediaBrowser.XbmcMetadata.Providers
 {
@@ -13,7 +13,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
     {
         protected IFileSystem FileSystem;
 
-        public async Task<MetadataResult<T>> GetMetadata(ItemInfo info,
+        public Task<MetadataResult<T>> GetMetadata(ItemInfo info,
             IDirectoryService directoryService,
             CancellationToken cancellationToken)
         {
@@ -23,7 +23,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
 
             if (file == null)
             {
-                return result;
+                return Task.FromResult(result);
             }
 
             var path = file.FullName;
@@ -44,7 +44,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
                 result.HasMetadata = false;
             }
 
-            return result;
+            return Task.FromResult(result);
         }
 
         protected abstract void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken);

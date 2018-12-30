@@ -41,13 +41,11 @@ namespace MediaBrowser.Common.Updates
             }
 
             using (var response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false))
+            using (var stream = response.Content)
             {
-                using (var stream = response.Content)
-                {
-                    var obj = _jsonSerializer.DeserializeFromStream<RootObject[]>(stream);
+                var obj = await _jsonSerializer.DeserializeFromStreamAsync<RootObject[]>(stream).ConfigureAwait(false);
 
-                    return CheckForUpdateResult(obj, minVersion, updateLevel, assetFilename, packageName, targetFilename);
-                }
+                return CheckForUpdateResult(obj, minVersion, updateLevel, assetFilename, packageName, targetFilename);
             }
         }
 
@@ -114,19 +112,17 @@ namespace MediaBrowser.Common.Updates
             };
 
             using (var response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false))
+            using (var stream = response.Content)
             {
-                using (var stream = response.Content)
-                {
-                    var obj = _jsonSerializer.DeserializeFromStream<RootObject[]>(stream);
+                var obj = await _jsonSerializer.DeserializeFromStreamAsync<RootObject[]>(stream).ConfigureAwait(false);
 
-                    obj = obj.Where(i => (i.assets ?? new List<Asset>()).Any(a => IsAsset(a, assetFilename, i.tag_name))).ToArray();
+                obj = obj.Where(i => (i.assets ?? new List<Asset>()).Any(a => IsAsset(a, assetFilename, i.tag_name))).ToArray();
 
-                    list.AddRange(obj.Where(i => MatchesUpdateLevel(i, PackageVersionClass.Release)).OrderByDescending(GetVersion).Take(1));
-                    list.AddRange(obj.Where(i => MatchesUpdateLevel(i, PackageVersionClass.Beta)).OrderByDescending(GetVersion).Take(1));
-                    list.AddRange(obj.Where(i => MatchesUpdateLevel(i, PackageVersionClass.Dev)).OrderByDescending(GetVersion).Take(1));
+                list.AddRange(obj.Where(i => MatchesUpdateLevel(i, PackageVersionClass.Release)).OrderByDescending(GetVersion).Take(1));
+                list.AddRange(obj.Where(i => MatchesUpdateLevel(i, PackageVersionClass.Beta)).OrderByDescending(GetVersion).Take(1));
+                list.AddRange(obj.Where(i => MatchesUpdateLevel(i, PackageVersionClass.Dev)).OrderByDescending(GetVersion).Take(1));
 
-                    return list;
-                }
+                return list;
             }
         }
 
