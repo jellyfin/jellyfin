@@ -4,6 +4,7 @@
  - [nvllsvm](https://github.com/nvllsvm)
  - [JustAMan](https://github.com/JustAMan)
  - [dcrdev](https://github.com/dcrdev)
+ - [EraYaN](https://github.com/EraYaN)
 
 # Emby Contributors
 
